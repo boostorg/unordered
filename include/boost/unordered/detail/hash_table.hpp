@@ -13,6 +13,10 @@
 #ifndef BOOST_UNORDERED_DETAIL_HASH_TABLE_HPP_INCLUDED
 #define BOOST_UNORDERED_DETAIL_HASH_TABLE_HPP_INCLUDED
 
+#if defined(_MSC_VER) && (_MSC_VER >= 1020)
+# pragma once
+#endif
+
 #include <boost/config.hpp>
 
 #include <cstddef>
@@ -102,12 +106,18 @@ namespace boost {
             typedef std::size_t size_type;
 
             typedef Alloc value_allocator;
-            typedef typename boost::detail::allocator::rebind_to<Alloc, node>::type node_allocator;
-            typedef typename boost::detail::allocator::rebind_to<Alloc, bucket>::type bucket_allocator;
-            typedef typename get_value_type<Alloc>::type value_type;
-            typedef typename get_pointer<node_allocator>::type node_ptr;
-            typedef typename get_pointer<bucket_allocator>::type bucket_ptr;
-            typedef typename get_reference<value_allocator>::type reference;
+
+            typedef BOOST_DEDUCED_TYPENAME
+                boost::unordered_detail::rebind_wrap<Alloc, node>::type
+                node_allocator;
+            typedef BOOST_DEDUCED_TYPENAME
+                boost::unordered_detail::rebind_wrap<Alloc, bucket>::type
+                bucket_allocator;
+
+            typedef BOOST_DEDUCED_TYPENAME allocator_value_type<Alloc>::type value_type;
+            typedef BOOST_DEDUCED_TYPENAME allocator_pointer<node_allocator>::type node_ptr;
+            typedef BOOST_DEDUCED_TYPENAME allocator_pointer<bucket_allocator>::type bucket_ptr;
+            typedef BOOST_DEDUCED_TYPENAME allocator_reference<value_allocator>::type reference;
 
 #if defined(BOOST_UNORDERED_PARANOID)
             // If the allocator has the expected pointer types I take some liberties.
@@ -117,7 +127,7 @@ namespace boost {
                     boost::is_same<bucket_ptr, bucket*>
                 >::value));
 
-            typedef typename boost::mpl::if_c<
+            typedef BOOST_DEDUCED_TYPENAME boost::mpl::if_c<
                 is_pointer_allocator, bucket_ptr, node_ptr>::type link_ptr;
 #else
             typedef bucket_ptr link_ptr;
@@ -195,7 +205,7 @@ namespace boost {
                 }
 
                 template <class V>
-                node_ptr construct(V const& v)
+                void construct(V const& v)
                 {
                     assert(!ptr_);
                     value_allocated_ = bucket_allocated_ = false;
@@ -209,11 +219,23 @@ namespace boost {
                     value_alloc_.construct(value_alloc_.address(
                             ptr_->value_), v);
                     value_allocated_ = true;
+                }
 
+                // no throw
+                link_ptr release()
+                {
                     node_ptr p = ptr_;
                     ptr_ = node_ptr();
-                    return p;
+                    return bucket_alloc_.address(*p);
                 }
+            };
+#else
+            class node_constructor
+                : public allocator_constructor<node_allocator>
+            {
+            public:
+                node_constructor(node_allocator& n, bucket_allocator&)
+                    : allocator_constructor<node_allocator>(n);
             };
 #endif
 
@@ -227,6 +249,11 @@ namespace boost {
 
                 explicit local_iterator_base(link_ptr n)
                     : node_pointer_(n) {}
+
+                bool not_finished() const
+                {
+                    return node_pointer_;
+                }
 
                 bool operator==(local_iterator_base const& x) const
                 {
@@ -253,11 +280,10 @@ namespace boost {
 
             // Erase Iterator
             //
-            // This is an internal 'iterator' (not an STL iterator) which stores a
-            // pointer to the pointer to the current node. This is needed to remove
-            // a node from a bucket.
+            // This is an internal 'iterator' (not an STL iterator) which is
+            // used to erase or move a node.
             //
-            // all no throw.
+            // All no throw.
 
             class erase_iterator
             {
@@ -273,7 +299,7 @@ namespace boost {
                     prev_ptr = &(*prev_ptr)->next_;
                 }
 
-                operator bool() const
+                bool not_finished() const
                 {
                     return *prev_ptr;
                 }
@@ -381,8 +407,7 @@ namespace boost {
                     if(buckets_[bucket_count_].next_) remove_end_marker();
 
                     for(size_type i = 0; i < bucket_count_; ++i)
-                        delete_nodes(erase_iterator(buckets_ + i),
-                                end(buckets_ + i));
+                        delete_nodes(erase_iterator(buckets_ + i));
 
                     for(size_type i2 = 0; i2 < bucket_count_ + 1; ++i2)
                         bucket_alloc_.destroy(buckets_ + i2);
@@ -401,10 +426,10 @@ namespace boost {
                     buckets_[bucket_count_].next_ = buckets_ + bucket_count_;
                 }
                 else {
-                    // This seems very wasteful, but I can't think of a better way
-                    // to create an end node and work with all allocators. Although,
-                    // I might change it to do something different when
-                    // typename node_allocator::pointer == node*.
+                    // This seems very wasteful, but I can't think of a better
+                    // way to create an end node and work with all allocators.
+                    // Although, I might change it to do something different
+                    // when typename node_allocator::pointer == node*.
                     buckets_[bucket_count_].next_ = node_alloc_.allocate(1);
                 }
 #endif
@@ -488,7 +513,7 @@ namespace boost {
                 return local_iterator_base(buckets_[n].next_);
             }
 
-            local_iterator_base end(size_type n) const
+            local_iterator_base end(size_type) const
             {
                 return local_iterator_base();
             }
@@ -498,11 +523,6 @@ namespace boost {
                 return local_iterator_base(b->next_);
             }
 
-            local_iterator_base end(bucket_ptr b) const
-            {
-                return local_iterator_base();
-            }
-
             // Bucket Size
 
             // no throw
@@ -510,8 +530,7 @@ namespace boost {
             {
                 std::size_t count = 0;
                 local_iterator_base it1 = begin(n);
-                local_iterator_base it2 = end(n);
-                while(it1 != it2) {
+                while(it1.not_finished()) {
                     ++count;
                     it1.increment();
                 }
@@ -527,8 +546,8 @@ namespace boost {
             erase_iterator get_for_erase(iterator_base r) const
             {
                 erase_iterator it(r.bucket_);
-                local_iterator_base end(r.local());
-                while(it != end) it.next();
+                local_iterator_base pos(r.local());
+                while(it != pos) it.next();
                 return it;
             }
 
@@ -571,13 +590,9 @@ namespace boost {
             // throws, strong exception-safety:
             link_ptr construct_node(value_type const& v)
             {
-#if defined(BOOST_UNORDERED_PARANOID)
-                allocator_constructor<node_allocator> a(node_alloc_);
-                return a.construct(v);
-#else
                 node_constructor a(node_alloc_, bucket_alloc_);
-                return bucket_alloc_.address(*a.construct(v));
-#endif
+                a.construct(v);
+                return a.release();
             }
 
             // Create Node
@@ -613,7 +628,7 @@ namespace boost {
                 link_ptr node = construct_node(v);
 
                 // Rest is no throw
-                if(position != end(base))
+                if(position.not_finished())
                     link_node(node, position);
                 else
                     link_node(node, base);
@@ -640,7 +655,15 @@ namespace boost {
 
             void delete_nodes(erase_iterator begin, local_iterator_base end)
             {
-                while(begin != end) delete_node(begin);
+                while(begin != end) {
+                    BOOST_ASSERT(begin.not_finished());
+                    delete_node(begin);
+                }
+            }
+
+            void delete_nodes(erase_iterator begin)
+            {
+                while(begin.not_finished()) delete_node(begin);
             }
 
             // Clear
@@ -657,8 +680,7 @@ namespace boost {
             {
                 bucket_ptr end = buckets_ + bucket_count_;
                 while(cached_begin_bucket_ != end) {
-                    delete_nodes(erase_iterator(cached_begin_bucket_),
-                            this->end(cached_begin_bucket_));
+                    delete_nodes(erase_iterator(cached_begin_bucket_));
                     ++cached_begin_bucket_;
                 }
                 BOOST_ASSERT(!size_);
@@ -697,10 +719,12 @@ namespace boost {
                         BOOST_ASSERT(!r1.bucket_->empty());
                     }
                     else {
-                        delete_nodes(get_for_erase(r1), end(r1.bucket_));
+                        BOOST_ASSERT(r1.bucket_ < r2.bucket_);
+
+                        delete_nodes(get_for_erase(r1));
 
                         for(bucket_ptr i = r1.bucket_ + 1; i != r2.bucket_; ++i)
-                            delete_nodes(erase_iterator(i), end(i));
+                            delete_nodes(erase_iterator(i));
 
                         delete_nodes(erase_iterator(r2.bucket_), r2.local());
         
@@ -749,28 +773,33 @@ namespace boost {
             }
         };
 
-        template <class ValueType, class Alloc>
-        struct hash_table_data_type
+#if defined(BOOST_MPL_CFG_MSVC_ETI_BUG)
+        template <>
+        class hash_table_data<int>
         {
-            typedef typename boost::detail::allocator::rebind_to<Alloc, ValueType>::type
-                value_allocator;
-            typedef hash_table_data<value_allocator> type;
+        public:
+            typedef int size_type;
+            typedef int iterator_base;
         };
+#endif
 
         template <class ValueType, class KeyType,
             class Hash, class Pred,
             class Alloc, bool EquivalentKeys>
         class hash_table
-            : public hash_table_data_type<ValueType, Alloc>::type
+            : public hash_table_data<Alloc>
         {
-            typedef typename hash_table_data_type<ValueType, Alloc>::type data;
+            typedef hash_table_data<Alloc> data;
+
+            typedef typename data::node_constructor node_constructor;
+            typedef typename data::link_ptr link_ptr;
 
         public:
 
-            typedef typename data::value_allocator value_allocator;
-            typedef typename data::node_allocator node_allocator;
-            typedef typename data::bucket_ptr bucket_ptr;
-            typedef typename data::erase_iterator erase_iterator;
+            typedef BOOST_DEDUCED_TYPENAME data::value_allocator value_allocator;
+            typedef BOOST_DEDUCED_TYPENAME data::node_allocator node_allocator;
+            typedef BOOST_DEDUCED_TYPENAME data::bucket_ptr bucket_ptr;
+            typedef BOOST_DEDUCED_TYPENAME data::erase_iterator erase_iterator;
 
             // Type definitions
 
@@ -782,8 +811,8 @@ namespace boost {
 
             // iterators
 
-            typedef typename data::local_iterator_base local_iterator_base;
-            typedef typename data::iterator_base iterator_base;
+            typedef BOOST_DEDUCED_TYPENAME data::local_iterator_base local_iterator_base;
+            typedef BOOST_DEDUCED_TYPENAME data::iterator_base iterator_base;
 
         private:
 
@@ -804,7 +833,7 @@ namespace boost {
 #if !defined(BOOST_MSVC) || BOOST_MSVC > 1200
                 boost::compressed_pair<hasher, key_equal> functions_;
 #else
-                typedef std::pair<hasher, key_equal> functions;
+                std::pair<hasher, key_equal> functions_;
 #endif
 
             public:
@@ -890,9 +919,9 @@ namespace boost {
             template <class I>
             std::size_t initial_size(I i, I j, size_type x)
             {
-                typedef typename boost::iterator_traversal<I>::type
+                BOOST_DEDUCED_TYPENAME boost::iterator_traversal<I>::type
                     iterator_traversal_tag;
-                return initial_size(i, j, x, iterator_traversal_tag());
+                return initial_size(i, j, x, iterator_traversal_tag);
             };
 
             template <class I>
@@ -1259,10 +1288,11 @@ namespace boost {
                 BOOST_ASSERT(src.node_alloc_ == dst.node_alloc_);
 
                 bucket_ptr end = src.buckets_ + src.bucket_count_; // no throw
+
                 for(; src.cached_begin_bucket_ != end;             // no throw
                         ++src.cached_begin_bucket_) {
                     erase_iterator it(src.cached_begin_bucket_);   // no throw
-                    while(it) {
+                    while(it.not_finished()) {
                         // This next line throws iff the hash function throws.
                         bucket_ptr dst_bucket = dst.buckets_ +
                             dst.index_from_hash(
@@ -1292,7 +1322,7 @@ namespace boost {
                 for(bucket_ptr i = src.cached_begin_bucket_; i != end; ++i) {
                     // no throw:
                     for(local_iterator_base it = src.begin(i);
-                            it != src.end(i); it.increment()) {
+                            it.not_finished(); it.increment()) {
                         // hash function can throw.
                         bucket_ptr dst_bucket = dst.buckets_ +
                             dst.index_from_hash(hf(extract_key(*it)));
@@ -1316,12 +1346,12 @@ namespace boost {
                 BOOST_STATIC_ASSERT(!EquivalentKeys);
                 BOOST_STATIC_ASSERT((
                             !boost::is_same<value_type, key_type>::value));
-                typedef typename value_type::second_type mapped_type;
+                typedef BOOST_DEDUCED_TYPENAME value_type::second_type mapped_type;
 
                 bucket_ptr bucket = get_bucket(k);
                 local_iterator_base node = find_iterator(bucket, k);
 
-                if (node != this->end(bucket))
+                if (node.not_finished())
                     return *node;
                 else
                 {
@@ -1358,10 +1388,10 @@ namespace boost {
             {
                 // Condition throws, no side effects.
                 if(it != this->end() && equal(extract_key(v), *it)) {
-                    return this->create_node(v, it);             // throws, strong
+                    return this->create_node(v, it);           // throws, strong
                 }
                 else {
-                    return unchecked_insert_equivalent(v);       // throws, strong
+                    return unchecked_insert_equivalent(v);     // throws, strong
                 }
             }
 
@@ -1371,8 +1401,33 @@ namespace boost {
             // strong otherwise
             iterator_base insert_equivalent(value_type const& v)
             {
-                reserve(size() + 1);                    // basic/strong
-                return unchecked_insert_equivalent(v);  // throws, strong
+                key_type const& k = extract_key(v);
+                size_type hash_value = hash_function()(k);
+                bucket_ptr bucket = this->buckets_
+                    + this->index_from_hash(hash_value);
+                local_iterator_base position = find_iterator(bucket, k);
+
+                // Create the node before rehashing in case it throws.
+                // throws, no side effects:
+                node_constructor a(this->node_alloc_, this->bucket_alloc_);
+                a.construct(v);
+
+                // strong/no throw:
+                if(reserve(size() + 1))     // basic/strong
+                    bucket = this->buckets_ + this->index_from_hash(hash_value);
+
+                // No throw from here.
+
+                link_ptr node = a.release();
+
+                // I'm relying on local_iterator_base not being invalidated by
+                // the rehash here.
+                if(position.not_finished())
+                    link_node(node, position);
+                else
+                    link_node(node, bucket);
+
+                return iterator_base(bucket, node);
             }
 
             // if hash function throws, basic exception safety
@@ -1380,16 +1435,20 @@ namespace boost {
             iterator_base insert_equivalent(iterator_base const& it, value_type const& v)
             {
                 if (it != this->end() && equal(extract_key(v), *it)) { // throws, no side effects
-                    // Create new node immediately as rehashing will invalidate 'it'
-                    iterator_base new_node = this->create_node(v, it); // throws, strong
+                    // Create the node before rehashing in case it throws.
+                    // throws, no side effects:
+                    node_constructor a(this->node_alloc_, this->bucket_alloc_);
+                    a.construct(v);
 
-                    // If reserve rehashes, new_node is invalidated.
-                    if (reserve(size() + 1))                      // basic/strong
-                        return iterator_base(                     // no throw
-                                get_bucket(extract_key(v)),       // throws, no effects
-                                new_node.local());
-                    else
-                        return new_node;
+                    // The hash function can throw in get_bucket, but that's okay
+                    // because then only basic exception safety is required.
+                    bucket_ptr base = reserve(size() + 1) ?
+                        get_bucket(extract_key(v)) : it.bucket_;
+
+                    link_ptr node = a.release();
+                    link_node(node, it.local());
+
+                    return iterator_base(base, node);
                 }
                 else {
                     return insert_equivalent(v);                  // basic/strong
@@ -1406,10 +1465,12 @@ namespace boost {
             {
                 // Throws, but no side effects in this initial code
                 key_type const& k = extract_key(v);
-                bucket_ptr bucket = get_bucket(k);
+                size_type hash_value = hash_function()(k);
+                bucket_ptr bucket = this->buckets_
+                    + this->index_from_hash(hash_value);
                 local_iterator_base pos = find_iterator(bucket, k);
                 
-                if (pos != this->end(bucket)) {                       // no throw
+                if (pos.not_finished()) {                       // no throw
                     // Found existing key, return it.
                     return std::pair<iterator_base, bool>(
                         iterator_base(bucket, pos), false);           // no throw
@@ -1418,12 +1479,20 @@ namespace boost {
                     // Doesn't already exist, add to bucket.
                     // Data is only changed in this block.
 
+                    // Create the node before rehashing in case it throws.
+                    // throws, no side effects:
+                    node_constructor a(this->node_alloc_, this->bucket_alloc_);
+                    a.construct(v);
+
                     // If we resize, then need to recalculate bucket.
                     if(reserve(size() + 1))                            // throws, basic/strong
-                        bucket = get_bucket(k);                        // throws, strong
+                        bucket = this->buckets_ + this->index_from_hash(hash_value);
+
+                    link_ptr node = a.release();
+                    link_node(node, bucket);
 
                     return std::pair<iterator_base, bool>(
-                        this->create_node(v, bucket), true);           // throws, strong
+                        iterator_base(bucket, node), true);           // throws, strong
                 }
             }
 
@@ -1488,9 +1557,9 @@ namespace boost {
             template <class InputIterator>
             void insert(InputIterator i, InputIterator j)
             {
-                typedef typename boost::iterator_traversal<InputIterator>::type
+                BOOST_DEDUCED_TYPENAME boost::iterator_traversal<InputIterator>::type
                     iterator_traversal_tag;
-                insert_for_range(i, j, iterator_traversal_tag());
+                insert_for_range(i, j, iterator_traversal_tag);
             }
 
         public:
@@ -1512,12 +1581,12 @@ namespace boost {
                 erase_iterator it(find_for_erase(bucket, k));
 
                 // Rest is no throw, side effects only after this point.
-                if (it) {
+                if (it.not_finished()) {
                     if (EquivalentKeys) {
                         do {
                             ++count;
                             this->delete_node(it);
-                        } while(it && equal(k, *it));
+                        } while(it.not_finished() && equal(k, *it));
                     }
                     else {
                         count = 1;
@@ -1542,15 +1611,14 @@ namespace boost {
             size_type count(key_type const& k) const
             {
                 local_iterator_base it = find_iterator(k); // throws, strong
-                local_iterator_base end;
                 size_type count = 0;
 
-                if(it != end) {
+                if(it.not_finished()) {
                     if(EquivalentKeys) {
                         do {
                             ++count;
                             it.increment();
-                        } while (it != end && equal(k, *it)); // throws, strong
+                        } while (it.not_finished() && equal(k, *it)); // throws, strong
                     }
                     else {
                         count = 1;
@@ -1568,7 +1636,7 @@ namespace boost {
                 bucket_ptr bucket = get_bucket(k);
                 local_iterator_base it = find_iterator(bucket, k);
 
-                if (it != this->end(bucket))
+                if (it.not_finished())
                     return iterator_base(bucket, it);
                 else
                     return this->end();
@@ -1581,15 +1649,14 @@ namespace boost {
             {
                 bucket_ptr bucket = get_bucket(k);
                 local_iterator_base it = find_iterator(bucket, k);
-                if (it != this->end(bucket)) {
+                if (it.not_finished()) {
                     local_iterator_base last = it;
 
                     if(EquivalentKeys) {
-                        local_iterator_base end = this->end(bucket);
                         local_iterator_base next = last;
                         next.increment();
 
-                        while(next != end && equal(k, *next)) {
+                        while(next.not_finished() && equal(k, *next)) {
                             last = next;
                             next.increment();
                         }
@@ -1625,8 +1692,7 @@ namespace boost {
                     key_type const& k) const
             {
                 local_iterator_base it = this->begin(bucket);
-                local_iterator_base end = this->end(bucket);
-                while (it != end && !equal(k, *it))
+                while (it.not_finished() && !equal(k, *it))
                     it.increment();
 
                 return it;
@@ -1637,7 +1703,7 @@ namespace boost {
                 const
             {
                 erase_iterator it(bucket);
-                while(it && !equal(k, *it))
+                while(it.not_finished() && !equal(k, *it))
                     it.next();
 
                 return it;
@@ -1660,18 +1726,16 @@ namespace boost {
         class hash_local_iterator
             : public boost::iterator <
                 std::forward_iterator_tag,
-                typename get_value_type<Alloc>::type,
+                BOOST_DEDUCED_TYPENAME allocator_value_type<Alloc>::type,
                 std::ptrdiff_t,
-                typename get_pointer<Alloc>::type,
-                typename get_reference<Alloc>::type >
+                BOOST_DEDUCED_TYPENAME allocator_pointer<Alloc>::type,
+                BOOST_DEDUCED_TYPENAME allocator_reference<Alloc>::type >
         {
         public:
-            typedef typename hash_local_iterator::pointer pointer;
-            typedef typename hash_local_iterator::reference reference;
-            typedef typename get_value_type<Alloc>::type value_type;
+            typedef BOOST_DEDUCED_TYPENAME allocator_value_type<Alloc>::type value_type;
 
         private:
-            typedef typename hash_table_data<Alloc>::local_iterator_base base;
+            typedef BOOST_DEDUCED_TYPENAME hash_table_data<Alloc>::local_iterator_base base;
             typedef hash_const_local_iterator<Alloc> const_local_iterator;
 
             friend class hash_const_local_iterator<Alloc>;
@@ -1680,7 +1744,8 @@ namespace boost {
         public:
             hash_local_iterator() : base_() {}
             explicit hash_local_iterator(base x) : base_(x) {}
-            reference operator*() const { return *base_; }
+            BOOST_DEDUCED_TYPENAME allocator_reference<Alloc>::type operator*() const
+                { return *base_; }
             value_type* operator->() const { return &*base_; }
             hash_local_iterator& operator++() { base_.increment(); return *this; }
             hash_local_iterator operator++(int) { hash_local_iterator tmp(base_); base_.increment(); return tmp; }
@@ -1694,18 +1759,16 @@ namespace boost {
         class hash_const_local_iterator
             : public boost::iterator <
                 std::forward_iterator_tag,
-                typename get_value_type<Alloc>::type,
+                BOOST_DEDUCED_TYPENAME allocator_value_type<Alloc>::type,
                 std::ptrdiff_t,
-                typename get_const_pointer<Alloc>::type,
-                typename get_const_reference<Alloc>::type >
+                BOOST_DEDUCED_TYPENAME allocator_const_pointer<Alloc>::type,
+                BOOST_DEDUCED_TYPENAME allocator_const_reference<Alloc>::type >
         {
         public:
-            typedef typename hash_const_local_iterator::pointer pointer;
-            typedef typename hash_const_local_iterator::reference reference;
-            typedef typename get_value_type<Alloc>::type value_type;
+            typedef BOOST_DEDUCED_TYPENAME allocator_value_type<Alloc>::type value_type;
 
         private:
-            typedef typename hash_table_data<Alloc>::local_iterator_base base;
+            typedef BOOST_DEDUCED_TYPENAME hash_table_data<Alloc>::local_iterator_base base;
             typedef hash_local_iterator<Alloc> local_iterator;
             friend class hash_local_iterator<Alloc>;
             base base_;
@@ -1714,7 +1777,8 @@ namespace boost {
             hash_const_local_iterator() : base_() {}
             explicit hash_const_local_iterator(base x) : base_(x) {}
             hash_const_local_iterator(local_iterator x) : base_(x.base_) {}
-            reference operator*() const { return *base_; }
+            BOOST_DEDUCED_TYPENAME allocator_const_reference<Alloc>::type
+                operator*() const { return *base_; }
             value_type const* operator->() const { return &*base_; }
             hash_const_local_iterator& operator++() { base_.increment(); return *this; }
             hash_const_local_iterator operator++(int) { hash_const_local_iterator tmp(base_); base_.increment(); return tmp; }
@@ -1733,18 +1797,16 @@ namespace boost {
         class hash_iterator
             : public boost::iterator <
                 std::forward_iterator_tag,
-                typename get_value_type<Alloc>::type,
+                BOOST_DEDUCED_TYPENAME allocator_value_type<Alloc>::type,
                 std::ptrdiff_t,
-                typename get_pointer<Alloc>::type,
-                typename get_reference<Alloc>::type >
+                BOOST_DEDUCED_TYPENAME allocator_pointer<Alloc>::type,
+                BOOST_DEDUCED_TYPENAME allocator_reference<Alloc>::type >
         {
         public:
-            typedef typename hash_iterator::pointer pointer;
-            typedef typename hash_iterator::reference reference;
-            typedef typename get_value_type<Alloc>::type value_type;
+            typedef BOOST_DEDUCED_TYPENAME allocator_value_type<Alloc>::type value_type;
 
         private:
-            typedef typename hash_table_data<Alloc>::iterator_base base;
+            typedef BOOST_DEDUCED_TYPENAME hash_table_data<Alloc>::iterator_base base;
             typedef hash_const_iterator<Alloc> const_iterator;
             friend class hash_const_iterator<Alloc>;
             base base_;
@@ -1753,7 +1815,8 @@ namespace boost {
 
             hash_iterator() : base_() {}
             explicit hash_iterator(base const& x) : base_(x) {}
-            reference operator*() const { return *base_; }
+            BOOST_DEDUCED_TYPENAME allocator_reference<Alloc>::type
+                operator*() const { return *base_; }
             value_type* operator->() const { return &*base_; }
             hash_iterator& operator++() { base_.increment(); return *this; }
             hash_iterator operator++(int) { hash_iterator tmp(base_); base_.increment(); return tmp; }
@@ -1767,18 +1830,16 @@ namespace boost {
         class hash_const_iterator
             : public boost::iterator <
                 std::forward_iterator_tag,
-                typename get_value_type<Alloc>::type,
+                BOOST_DEDUCED_TYPENAME allocator_value_type<Alloc>::type,
                 std::ptrdiff_t,
-                typename get_const_pointer<Alloc>::type,
-                typename get_const_reference<Alloc>::type >
+                BOOST_DEDUCED_TYPENAME allocator_const_pointer<Alloc>::type,
+                BOOST_DEDUCED_TYPENAME allocator_const_reference<Alloc>::type >
         {
         public:
-            typedef typename hash_const_iterator::pointer pointer;
-            typedef typename hash_const_iterator::reference reference;
-            typedef typename get_value_type<Alloc>::type value_type;
+            typedef BOOST_DEDUCED_TYPENAME allocator_value_type<Alloc>::type value_type;
 
         private:
-            typedef typename hash_table_data<Alloc>::iterator_base base;
+            typedef BOOST_DEDUCED_TYPENAME hash_table_data<Alloc>::iterator_base base;
             typedef hash_iterator<Alloc> iterator;
             friend class hash_iterator<Alloc>;
             friend class iterator_access;
@@ -1789,7 +1850,8 @@ namespace boost {
             hash_const_iterator() : base_() {}
             explicit hash_const_iterator(base const& x) : base_(x) {}
             hash_const_iterator(iterator const& x) : base_(x.base_) {}
-            reference operator*() const { return *base_; }
+            BOOST_DEDUCED_TYPENAME allocator_const_reference<Alloc>::type
+                operator*() const { return *base_; }
             value_type const* operator->() const { return &*base_; }
             hash_const_iterator& operator++() { base_.increment(); return *this; }
             hash_const_iterator operator++(int) { hash_const_iterator tmp(base_); base_.increment(); return tmp; }
@@ -1803,7 +1865,7 @@ namespace boost {
         {
         public:
             template <class Iterator>
-            static typename Iterator::base const& get(Iterator const& it) {
+            static BOOST_DEDUCED_TYPENAME Iterator::base const& get(Iterator const& it) {
                 return it.base_;
             }
         };
@@ -1814,18 +1876,21 @@ namespace boost {
         class hash_types
         {
         public:
-            typedef hash_table<ValueType, KeyType, Hash, Pred, Alloc,
-                EquivalentKeys> hash_table;
+            typedef BOOST_DEDUCED_TYPENAME
+                boost::unordered_detail::rebind_wrap<Alloc, ValueType>::type
+                value_allocator;
 
-            typedef typename hash_table::value_allocator value_allocator;
-            typedef typename hash_table::iterator_base iterator_base;
+            typedef hash_table<ValueType, KeyType, Hash, Pred, value_allocator,
+                    EquivalentKeys> hash_table;
+            typedef hash_table_data<value_allocator> data;
+            typedef BOOST_DEDUCED_TYPENAME data::iterator_base iterator_base;
 
             typedef hash_const_local_iterator<value_allocator> const_local_iterator;
             typedef hash_local_iterator<value_allocator> local_iterator;
             typedef hash_const_iterator<value_allocator> const_iterator;
             typedef hash_iterator<value_allocator> iterator;
 
-            typedef typename hash_table::size_type size_type;
+            typedef BOOST_DEDUCED_TYPENAME data::size_type size_type;
             typedef std::ptrdiff_t difference_type;
         };
     } // namespace boost::unordered_detail

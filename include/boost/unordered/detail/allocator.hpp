@@ -10,35 +10,58 @@
 # pragma once
 #endif
 
-#include <boost/detail/allocator_utilities.hpp>
+#include <boost/config.hpp>
+
+#if (defined(BOOST_NO_STD_ALLOCATOR) || defined(BOOST_DINKUMWARE_STDLIB)) \
+    && !defined(__BORLANDC__)
+#  define BOOST_UNORDERED_USE_ALLOCATOR_UTILITIES
+#endif
+
+#if defined(BOOST_UNORDERED_USE_ALLOCATOR_UTILITIES)
+#  include <boost/detail/allocator_utilities.hpp>
+#endif
+
 #include <boost/mpl/aux_/config/eti.hpp>
 
 namespace boost {
     namespace unordered_detail {
 
+#if defined(BOOST_UNORDERED_USE_ALLOCATOR_UTILITIES)
+        template <class Alloc, class T>
+        struct rebind_wrap : ::boost::detail::allocator::rebind_to<Alloc, T> {};
+#else
+        template <class Alloc, class T>
+        struct rebind_wrap
+        {
+            typedef BOOST_DEDUCED_TYPENAME
+                Alloc::BOOST_NESTED_TEMPLATE rebind<T>::other
+                type;
+        };
+#endif
+
         // Work around for Microsoft's ETI bug.
         
-        template <class Allocator> struct get_value_type
+        template <class Allocator> struct allocator_value_type
         {
             typedef typename Allocator::value_type type;
         };
 
-        template <class Allocator> struct get_pointer
+        template <class Allocator> struct allocator_pointer
         {
             typedef typename Allocator::pointer type;
         };
         
-        template <class Allocator> struct get_const_pointer
+        template <class Allocator> struct allocator_const_pointer
         {
             typedef typename Allocator::const_pointer type;
         };
         
-        template <class Allocator> struct get_reference
+        template <class Allocator> struct allocator_reference
         {
             typedef typename Allocator::reference type;
         };
         
-        template <class Allocator> struct get_const_reference
+        template <class Allocator> struct allocator_const_reference
         {
             typedef typename Allocator::const_reference type;
         };
@@ -46,31 +69,31 @@ namespace boost {
         #if defined(BOOST_MPL_CFG_MSVC_ETI_BUG)
 
         template <>
-        struct get_value_type<int>
+        struct allocator_value_type<int>
         {
             typedef int type;
         };
 
         template <>
-        struct get_pointer<int>
+        struct allocator_pointer<int>
         {
             typedef int type;
         };
 
         template <>
-        struct get_const_pointer<int>
+        struct allocator_const_pointer<int>
         {
             typedef int type;
         };
 
         template <>
-        struct get_reference<int>
+        struct allocator_reference<int>
         {
             typedef int type;
         };
 
         template <>
-        struct get_const_reference<int>
+        struct allocator_const_reference<int>
         {
             typedef int type;
         };
@@ -80,7 +103,7 @@ namespace boost {
         template <class Allocator>
         struct allocator_constructor
         {
-            typedef typename get_pointer<Allocator>::type pointer;
+            typedef typename allocator_pointer<Allocator>::type pointer;
 
             Allocator& alloc_;
             pointer ptr_;
@@ -100,12 +123,20 @@ namespace boost {
                 ptr_ = pointer();
                 return p;
             }
+
+            // no throw
+            pointer release()
+            {
+                pointer p = ptr_;
+                ptr_ = pointer();
+                return p;
+            }
         };
 
         template <class Allocator>
         struct allocator_array_constructor
         {
-            typedef typename get_pointer<Allocator>::type pointer;
+            typedef typename allocator_pointer<Allocator>::type pointer;
 
             Allocator& alloc_;
             pointer ptr_;
@@ -148,5 +179,9 @@ namespace boost {
         };
     }
 }
+
+#if defined(BOOST_UNORDERED_USE_ALLOCATOR_UTILITIES)
+#  undef BOOST_UNORDERED_USE_ALLOCATOR_UTILITIES
+#endif
 
 #endif

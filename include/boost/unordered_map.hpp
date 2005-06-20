@@ -51,13 +51,20 @@ namespace boost
 
     public:
         // types
+        /*! Key must be Assignable and CopyConstructible.
+         */
         typedef Key key_type;
         typedef std::pair<const Key, T> value_type;
         typedef T mapped_type;
+        /*! Hash is a unary function object type such for hf of type hasher
+         *  hf(x) has type std::size_t.
+         */
         typedef Hash hasher;
+        /*! Pred is a binary predicate that takes two arguments of type Key.
+         *  Pred is an equivalence realtion
+         */
         typedef Pred key_equal;
 
-        // This version can be used when compiling against CVS.
         typedef Alloc allocator_type;
         typedef typename allocator_type::pointer pointer;
         typedef typename allocator_type::const_pointer const_pointer;
@@ -69,11 +76,24 @@ namespace boost
 
         typedef typename implementation_defined::iterator iterator;
         typedef typename implementation_defined::const_iterator const_iterator;
+
+        /*! A local_iterator object may be used to iterate through a single
+         *  bucket, but may not be used to iterate across buckets.
+         */
         typedef typename implementation_defined::local_iterator local_iterator;
-        typedef typename implementation_defined::const_local_iterator const_local_iterator;
+
+        /*! A const_local_iterator object may be used to iterate through a single
+         * bucket, but may not be used to iterate across buckets.
+         */
+        typedef typename implementation_defined::const_local_iterator
+            const_local_iterator;
 
         // construct/destroy/copy
 
+        /*! Constructs an empty container with at least n buckets, using hf as
+         *  the hash function and eq as the key equality predicate. a is used
+         *  as the allocator.
+         */
         explicit unordered_map(
                 size_type n = boost::unordered_detail::default_initial_bucket_count,
                 const hasher &hf = hasher(),
@@ -83,6 +103,10 @@ namespace boost
         {
         }
 
+        /*! Constructs an empty container with at least n buckets, using hf as
+         *  the hash function and eq as the key equality predicate, and inserts
+         *  elements from [i,j) into it. a is used as the allocator.
+         */
         template <class InputIterator>
         unordered_map(InputIterator f, InputIterator l,
                 size_type n = boost::unordered_detail::default_initial_bucket_count,
@@ -338,8 +362,6 @@ namespace boost
         typedef T mapped_type;
         typedef Hash hasher;
         typedef Pred key_equal;
-
-        // This version can be used when compiling against CVS.
 
         typedef Alloc allocator_type;
         typedef typename allocator_type::pointer pointer;
