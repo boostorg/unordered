@@ -31,7 +31,7 @@ namespace boost
 {
     //! An unordered associative container that stores unique values.
     /*! For full details see section 6.3.4.3 of the Technical report.
-     *  http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2005/n1745.pdf
+     *  http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2005/n1836.pdf
      */
 
     template <class Value,
@@ -305,7 +305,7 @@ namespace boost
 
     //! An unordered associative container that stores equivalent values.
     /*! For full details see section 6.3.4.5 of the Technical report.
-     *  http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2005/n1745.pdf
+     *  http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2005/n1836.pdf
      */
 
     template <class Value,
