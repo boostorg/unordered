@@ -1,0 +1,63 @@
+
+#  Copyright Daniel James 2005. Use, modification, and distribution are
+#  subject to the Boost Software License, Version 1.0. (See accompanying
+#  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+import testing ;
+
+project unordered-test
+    : requirements
+        <toolset>intel-linux:"<cxxflags>-strict_ansi -cxxlib-icc"
+        # <debug-symbols>off
+        # TODO: Make this an option:
+        <define>REDUCED_TESTS
+    ;
+
+lib helpers
+    :
+        [ glob helpers/*.cpp ]
+    ;
+
+framework = helpers/<link>static /boost/test//boost_unit_test_framework ;
+
+test-suite helpers-test
+    :
+        [ run-fail helpers-test/simple_test.cpp $(framework) ]
+        [ run-fail helpers-test/allocator_test.cpp $(framework) ]
+        [ run helpers-test/exception_test.cpp $(framework) ]
+    ;
+
+test-suite compile-tests
+    :
+        [ compile-fail const_local_iterator_fail_test.cpp ]
+        [ compile-fail const_iterator_fail_test.cpp ]
+        [ compile-fail set_assign_fail_test.cpp ]
+        [ compile type_tests.cpp ]
+        [ run concept_test.cpp ]
+    ;
+
+test-suite basic-tests
+    :
+        [ run container_tests.cpp $(framework) ]
+        [ run iterator_tests.cpp $(framework) ]
+        [ run next_prime_tests.cpp $(framework) ]
+        [ run max_load_factor_test.cpp $(framework) ]
+    ;
+
+test-suite less-base-tests
+    :
+        [ run construct_tests.cpp $(framework) ]
+        [ run find_tests.cpp $(framework) ]
+        [ run count_tests.cpp $(framework) ]
+        [ run equal_range_tests.cpp $(framework) ]
+        [ run copy_construct_tests.cpp $(framework) ]
+        [ run swap_tests1.cpp $(framework) ]
+        [ run swap_tests2.cpp $(framework) ]
+        [ run swap_tests3.cpp $(framework) ]
+        [ run assign_tests.cpp $(framework) ]
+        [ run clear_tests.cpp $(framework) ]
+        [ run erase_tests.cpp $(framework) ]
+        [ run insert_tests.cpp $(framework) ]
+        [ run map_operator_tests.cpp $(framework) ]
+    ;
+
