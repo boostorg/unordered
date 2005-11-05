@@ -26,6 +26,7 @@
 
 #include <boost/iterator.hpp>
 #include <boost/iterator/iterator_categories.hpp>
+#include <boost/limits.hpp>
 #include <boost/assert.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/unordered/detail/allocator.hpp>
@@ -64,6 +65,13 @@ namespace boost {
             swap(x, y);
         }
 
+        std::size_t float_to_size_t(float f)
+        {
+            return f > (std::numeric_limits<std::size_t>::max)() ?
+                (std::numeric_limits<std::size_t>::max)() :
+                static_cast<std::size_t>(f);
+        }
+
         // prime number list, accessor
 
         static const std::size_t prime_list[] = {
@@ -79,6 +87,15 @@ namespace boost {
             std::size_t const* bound =
                 std::lower_bound(prime_list,prime_list + 28, n);
             if(bound == prime_list + 28)
+                bound--;
+            return *bound;
+        }
+
+        // no throw
+        inline std::size_t prev_prime(std::size_t n) {
+            std::size_t const* bound =
+                std::upper_bound(prime_list,prime_list + 28, n);
+            if(bound != prime_list)
                 bound--;
             return *bound;
         }
@@ -1126,7 +1143,9 @@ namespace boost {
             // no throw
             size_type max_size() const
             {
-                return this->node_alloc_.max_size();
+                // size < mlf_ * count
+                return float_to_size_t(ceil(
+                        max_bucket_count() * mlf_)) - 1;
             }
 
             // strong safety
@@ -1151,7 +1170,8 @@ namespace boost {
             // no throw
             size_type max_bucket_count() const
             {
-                return this->bucket_alloc_.max_size();
+                // -1 to account for the end marker.
+                return prev_prime(this->bucket_alloc_.max_size() - 1);
             }
 
         private:
@@ -1179,8 +1199,7 @@ namespace boost {
 
                 // From 6.3.1/13:
                 // Only resize when size >= mlf_ * count
-                max_load_ = static_cast<size_type>(
-                        ceil(mlf_ * this->bucket_count_));
+                max_load_ = float_to_size_t(ceil(mlf_ * this->bucket_count_));
             }
 
             // basic exception safety
@@ -1189,6 +1208,7 @@ namespace boost {
                 bool need_to_reserve = n >= max_load_;
                 // throws - basic:
                 if (need_to_reserve) rehash_impl(min_buckets_for_size(n)); 
+                BOOST_ASSERT(n < max_load_);
                 return need_to_reserve;
             }
 
@@ -1201,8 +1221,12 @@ namespace boost {
             }
 
             // no throw
+            //
+            // TODO: the argument is a hint. So don't use it if it's
+            // unreasonably small.
             void max_load_factor(float z)
             {
+                BOOST_ASSERT(z > 0);
                 mlf_ = z;
                 calculate_max_load();
             }
@@ -1357,11 +1381,18 @@ namespace boost {
                 {
                     // Effects only in this block:
 
+                    // Create the node before rehashing in case it throws.
+                    // throws, no side effects:
+                    node_constructor a(this->node_alloc_, this->bucket_alloc_);
+                    a.construct(value_type(k, mapped_type()));
+
                     if (reserve(size() + 1))    // basic/strong
                         bucket = get_bucket(k); // throws, strong
-                    return *this->create_node(  // throws, strong
-                            value_type(k, mapped_type()),
-                            bucket);
+
+                    link_ptr node = a.release();
+                    this->link_node(node, bucket);
+
+                    return *local_iterator_base(node);
                 }
             }
 
@@ -1423,9 +1454,9 @@ namespace boost {
                 // I'm relying on local_iterator_base not being invalidated by
                 // the rehash here.
                 if(position.not_finished())
-                    link_node(node, position);
+                    this->link_node(node, position);
                 else
-                    link_node(node, bucket);
+                    this->link_node(node, bucket);
 
                 return iterator_base(bucket, node);
             }
@@ -1446,7 +1477,7 @@ namespace boost {
                         get_bucket(extract_key(v)) : it.bucket_;
 
                     link_ptr node = a.release();
-                    link_node(node, it.local());
+                    this->link_node(node, it.local());
 
                     return iterator_base(base, node);
                 }
@@ -1489,7 +1520,7 @@ namespace boost {
                         bucket = this->buckets_ + this->index_from_hash(hash_value);
 
                     link_ptr node = a.release();
-                    link_node(node, bucket);
+                    this->link_node(node, bucket);
 
                     return std::pair<iterator_base, bool>(
                         iterator_base(bucket, node), true);           // throws, strong
