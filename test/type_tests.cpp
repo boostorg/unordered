@@ -5,6 +5,8 @@
 
 #include <boost/unordered_set.hpp>
 #include <boost/unordered_map.hpp>
+
+#include <string>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/iterator/iterator_traits.hpp>
 #include <boost/mpl/assert.hpp>
