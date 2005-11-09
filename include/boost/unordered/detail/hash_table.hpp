@@ -944,7 +944,7 @@ namespace boost {
             template <class I>
             hash_table(I i, I j, size_type n,
                     hasher const& hf, key_equal const& eq,
-                    node_allocator const& a)
+                    value_allocator const& a)
                 : data(initial_size(i, j, n), a),  // throws, cleans itself up
                     func1_(hf, eq),                // throws    "      "
                     func2_(hf, eq),                // throws    "      "
