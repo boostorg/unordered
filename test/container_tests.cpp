@@ -30,23 +30,32 @@ void container_tests(X*, T*)
     typedef typename X::difference_type difference_type;
     typedef typename X::size_type size_type;
 
-    BOOST_MPL_ASSERT((boost::is_same<typename X::value_type, T>));
+    typedef typename iterator::value_type iterator_value_type;
+    typedef typename const_iterator::value_type const_iterator_value_type;
+    typedef typename iterator::difference_type iterator_difference_type;
+    typedef typename const_iterator::difference_type const_iterator_difference_type;
+
+    typedef typename X::value_type value_type;
+    typedef typename X::reference reference;
+    typedef typename X::const_reference const_reference;
+
+    BOOST_MPL_ASSERT((boost::is_same<value_type, T>));
     // TODO: Actually 'lvalue of T'/'const lvalue of T'
-    BOOST_MPL_ASSERT((boost::is_same<typename X::reference, T&>));
-    BOOST_MPL_ASSERT((boost::is_same<typename X::const_reference, T const&>));
+    BOOST_MPL_ASSERT((boost::is_same<reference, T&>));
+    BOOST_MPL_ASSERT((boost::is_same<const_reference, T const&>));
 
     // TODO: Iterator checks.
-    BOOST_MPL_ASSERT((boost::is_same<typename iterator::value_type, T>));
+    BOOST_MPL_ASSERT((boost::is_same<iterator_value_type, T>));
     BOOST_MPL_ASSERT_NOT((boost::is_same<boost::BOOST_ITERATOR_CATEGORY<iterator>, std::output_iterator_tag>));
     BOOST_MPL_ASSERT((boost::is_convertible<iterator, const_iterator>));
 
-    BOOST_MPL_ASSERT((boost::is_same<typename const_iterator::value_type, T>));
-    BOOST_MPL_ASSERT_NOT((boost::is_same<boost::BOOST_ITERATOR_CATEGORY<typename X::const_iterator>, std::output_iterator_tag>));
+    BOOST_MPL_ASSERT((boost::is_same<const_iterator_value_type, T>));
+    BOOST_MPL_ASSERT_NOT((boost::is_same<boost::BOOST_ITERATOR_CATEGORY<const_iterator>, std::output_iterator_tag>));
 
     BOOST_MPL_ASSERT((boost::mpl::bool_<std::numeric_limits<difference_type>::is_signed>));
     BOOST_MPL_ASSERT((boost::mpl::bool_<std::numeric_limits<difference_type>::is_integer>));
-    BOOST_MPL_ASSERT((boost::is_same<typename iterator::difference_type, difference_type>));
-    BOOST_MPL_ASSERT((boost::is_same<typename const_iterator::difference_type, difference_type>));
+    BOOST_MPL_ASSERT((boost::is_same<iterator_difference_type, difference_type>));
+    BOOST_MPL_ASSERT((boost::is_same<const_iterator_difference_type, difference_type>));
     
     BOOST_MPL_ASSERT_NOT((boost::mpl::bool_<std::numeric_limits<size_type>::is_signed>));
     BOOST_MPL_ASSERT((boost::mpl::bool_<std::numeric_limits<size_type>::is_integer>));
@@ -68,6 +77,7 @@ void container_tests2(X& a)
     typedef typename X::const_iterator const_iterator;
     typedef typename X::difference_type difference_type;
     typedef typename X::size_type size_type;
+    typedef typename X::allocator_type allocator_type;
 
     test::unordered_equivalence_tester<X> equivalent(a);
 
@@ -169,7 +179,7 @@ void container_tests2(X& a)
 
     // TODO: 23.1/9 - Make sure this is checked for all constructors.
     {
-        check_return_type<typename X::allocator_type>::equals(a.get_allocator());
+        check_return_type<allocator_type>::equals(a.get_allocator());
     }
 
     // TODO: 23.1/11 - Exception safety:
