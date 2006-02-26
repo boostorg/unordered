@@ -108,8 +108,15 @@ namespace boost
          *  elements from [i,j) into it. a is used as the allocator.
          */
         template <class InputIterator>
+        unordered_map(InputIterator f, InputIterator l)
+            : base(f, l, boost::unordered_detail::default_initial_bucket_count,
+                hasher(), key_equal(), allocator_type())
+        {
+        }
+
+        template <class InputIterator>
         unordered_map(InputIterator f, InputIterator l,
-                size_type n = boost::unordered_detail::default_initial_bucket_count,
+                size_type n,
                 const hasher &hf = hasher(),
                 const key_equal &eql = key_equal(),
                 const allocator_type &a = allocator_type())
@@ -389,8 +396,15 @@ namespace boost
         }
 
         template <class InputIterator>
+        unordered_multimap(InputIterator f, InputIterator l)
+            : base(f, l, boost::unordered_detail::default_initial_bucket_count,
+                hasher(), key_equal(), allocator_type())
+        {
+        }
+
+        template <class InputIterator>
         unordered_multimap(InputIterator f, InputIterator l,
-                size_type n = boost::unordered_detail::default_initial_bucket_count,
+                size_type n,
                 const hasher &hf = hasher(),
                 const key_equal &eql = key_equal(),
                 const allocator_type &a = allocator_type())

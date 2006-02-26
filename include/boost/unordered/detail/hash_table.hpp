@@ -33,10 +33,11 @@
 #include <boost/type_traits/is_same.hpp>
 #include <boost/mpl/if.hpp>
 #include <boost/mpl/and.hpp>
+#include <boost/detail/workaround.hpp>
 
 #include <boost/mpl/aux_/config/eti.hpp>
 
-#if !defined(BOOST_MSVC) || BOOST_MSVC > 1200
+#if !BOOST_WORKAROUND(BOOST_MSVC, < 1300)
 #include <boost/compressed_pair.hpp>
 #endif
 
@@ -49,6 +50,12 @@
 #include <stdexcept>
 #endif
 
+#if BOOST_WORKAROUND(__BORLANDC__, <= 0x0551)
+#define BOOST_HASH_BORLAND_BOOL(x) (bool)(x)
+#else
+#define BOOST_HASH_BORLAND_BOOL(x) x
+#endif
+
 namespace boost {
     namespace unordered_detail {
         template <class T> struct type_wrapper {};
@@ -56,18 +63,16 @@ namespace boost {
         const static std::size_t default_initial_bucket_count = 50;
         inline std::size_t next_prime(std::size_t n);
 
-        // I bet this is already in boost somewhere.
-
         template <class T>
-        void hash_swap(T& x, T& y)
+        inline void hash_swap(T& x, T& y)
         {
             using namespace std;
             swap(x, y);
         }
 
-        std::size_t float_to_size_t(float f)
+        inline std::size_t float_to_size_t(float f)
         {
-            return f > (std::numeric_limits<std::size_t>::max)() ?
+            return f > static_cast<float>((std::numeric_limits<std::size_t>::max)()) ?
                 (std::numeric_limits<std::size_t>::max)() :
                 static_cast<std::size_t>(f);
         }
@@ -162,9 +167,12 @@ namespace boost {
 
                 bucket() : next_()
                 {
+#if BOOST_WORKAROUND(BOOST_MSVC, < 1300)
+                    unordered_detail::reset(next_);
+#endif
                 }
 
-                bucket(bucket const& x) : next_()
+                bucket(bucket const& x) : next_(x.next_)
                 {
                     // Only copy construct when allocating.
                     BOOST_ASSERT(!x.next_);
@@ -205,6 +213,9 @@ namespace boost {
                     : node_alloc_(n), bucket_alloc_(b), value_alloc_(n),
                     ptr_(), value_allocated_(false), bucket_allocated_(false)
                 {
+#if BOOST_WORKAROUND(BOOST_MSVC, < 1300)
+                unordered_detail::reset(ptr_);
+#endif
                 }
 
                 ~node_constructor()
@@ -224,7 +235,7 @@ namespace boost {
                 template <class V>
                 void construct(V const& v)
                 {
-                    assert(!ptr_);
+                    BOOST_ASSERT(!ptr_);
                     value_allocated_ = bucket_allocated_ = false;
 
                     ptr_ = node_alloc_.allocate(1);
@@ -242,9 +253,13 @@ namespace boost {
                 link_ptr release()
                 {
                     node_ptr p = ptr_;
-                    ptr_ = node_ptr();
+                    unordered_detail::reset(ptr_);
                     return bucket_alloc_.address(*p);
                 }
+
+            private:
+                node_constructor(node_constructor const&);
+                node_constructor& operator=(node_constructor const&);
             };
 #else
             class node_constructor
@@ -262,14 +277,19 @@ namespace boost {
                 link_ptr node_pointer_;
 
                 local_iterator_base()
-                    : node_pointer_() {}
+                    : node_pointer_()
+                {
+#if BOOST_WORKAROUND(BOOST_MSVC, < 1300)
+                    unordered_detail::reset(node_pointer_);
+#endif
+                }
 
                 explicit local_iterator_base(link_ptr n)
                     : node_pointer_(n) {}
 
                 bool not_finished() const
                 {
-                    return node_pointer_;
+                    return node_pointer_ ? true : false;
                 }
 
                 bool operator==(local_iterator_base const& x) const
@@ -318,7 +338,7 @@ namespace boost {
 
                 bool not_finished() const
                 {
-                    return *prev_ptr;
+                    return *prev_ptr ? true : false;
                 }
 
                 value_type& operator*() const
@@ -435,7 +455,9 @@ namespace boost {
 
             void add_end_marker()
             {
-                BOOST_ASSERT(buckets_ && !buckets_[bucket_count_].next_);
+                BOOST_ASSERT(BOOST_HASH_BORLAND_BOOL(buckets_) &&
+                    !buckets_[bucket_count_].next_);
+
 #if !defined(BOOST_UNORDERED_PARANOID)
                 buckets_[bucket_count_].next_ = buckets_ + bucket_count_;
 #else
@@ -454,8 +476,10 @@ namespace boost {
 
             void move_end_marker(hash_table_data& src)
             {
-                BOOST_ASSERT(buckets_ && !buckets_[bucket_count_].next_);
-                BOOST_ASSERT(src.buckets_ && src.buckets_[src.bucket_count_].next_);
+                BOOST_ASSERT(BOOST_HASH_BORLAND_BOOL(buckets_) &&
+                    !buckets_[bucket_count_].next_);
+                BOOST_ASSERT(BOOST_HASH_BORLAND_BOOL(src.buckets_) &&
+                    BOOST_HASH_BORLAND_BOOL(src.buckets_[src.bucket_count_].next_));
 
 #if !defined(BOOST_UNORDERED_PARANOID)
                 buckets_[bucket_count_].next_ = buckets_ + bucket_count_;
@@ -469,12 +493,13 @@ namespace boost {
                 }
 #endif
 
-                src.buckets_[src.bucket_count_].next_ = link_ptr();
+                unordered_detail::reset(src.buckets_[src.bucket_count_].next_);
             }
 
             void remove_end_marker()
             {
-                BOOST_ASSERT(buckets_ && buckets_[bucket_count_].next_);
+                BOOST_ASSERT(BOOST_HASH_BORLAND_BOOL(buckets_) &&
+                    BOOST_HASH_BORLAND_BOOL(buckets_[bucket_count_].next_));
 
 #if defined(BOOST_UNORDERED_PARANOID)
                 if(!is_pointer_allocator)
@@ -482,7 +507,7 @@ namespace boost {
                                 buckets_[bucket_count_].next_), 1);
 #endif
 
-                buckets_[bucket_count_].next_ = link_ptr();
+                unordered_detail::reset(buckets_[bucket_count_].next_);
             }
 
         private:
@@ -847,7 +872,7 @@ namespace boost {
 
             class functions
             {
-#if !defined(BOOST_MSVC) || BOOST_MSVC > 1200
+#if !BOOST_WORKAROUND(BOOST_MSVC, < 1300)
                 boost::compressed_pair<hasher, key_equal> functions_;
 #else
                 std::pair<hasher, key_equal> functions_;
@@ -860,7 +885,7 @@ namespace boost {
 
                 hasher const& hash_function() const
                 {
-#if !defined(BOOST_MSVC) || BOOST_MSVC > 1200
+#if !BOOST_WORKAROUND(BOOST_MSVC, < 1300)
                     return functions_.first();
 #else
                     return functions_.first;
@@ -869,7 +894,7 @@ namespace boost {
 
                 key_equal const& key_eq() const
                 {
-#if !defined(BOOST_MSVC) || BOOST_MSVC > 1200
+#if !BOOST_WORKAROUND(BOOST_MSVC, < 1300)
                     return functions_.second();
 #else
                     return functions_.second;
@@ -927,7 +952,7 @@ namespace boost {
             };
 
             template <class I>
-            std::size_t initial_size(I i, I j, size_type n,
+            std::size_t initial_size(I, I, size_type n,
                     boost::incrementable_traversal_tag)
             {
                 return n;
@@ -1110,8 +1135,9 @@ namespace boost {
 
             // accessors
 
+            // TODO: This creates an unnecessary copy.
             // no throw
-            node_allocator const& get_allocator() const
+            value_allocator get_allocator() const
             {
                 return this->node_alloc_;
             }
@@ -1336,10 +1362,8 @@ namespace boost {
             static void copy_buckets(data const& src, data& dst, functions const& f)
             {
                 BOOST_ASSERT(dst.size_ == 0);
-
                 // no throw:
                 bucket_ptr end = src.buckets_ + src.bucket_count_;
-
                 hasher const& hf = f.hash_function();
 
                 // no throw:
@@ -1565,16 +1589,29 @@ namespace boost {
 
         private:
 
-            // basic exception safety
+            // if hash function throws, or inserting > 1 element, basic exception safety
+            // strong otherwise
             template <class I>
             void insert_for_range(I i, I j,
                     boost::random_access_traversal_tag)
             {
-                reserve(size() + (j - i));                // basic/strong
-                for (; i != j; ++i) unchecked_insert(*i); // strong
+                if(EquivalentKeys) {
+                    std::size_t distance = j - i;
+                    if(distance == 1) {
+                        insert(*i);
+                    }
+                    else {
+                        reserve(size() + distance);               // basic/strong
+                        for (; i != j; ++i) unchecked_insert(*i); // strong
+                    }
+                }
+                else {
+                    for (; i != j; ++i) insert_unique(*i); // basic/strong
+                }
             }
 
-            // basic exception safety
+            // if hash function throws, or inserting > 1 element, basic exception safety
+            // strong otherwise
             template <class I>
             void insert_for_range(I i, I j,
                     boost::incrementable_traversal_tag)
@@ -1584,7 +1621,8 @@ namespace boost {
 
         public:
 
-            // basic exception safety
+            // if hash function throws, or inserting > 1 element, basic exception safety
+            // strong otherwise
             template <class InputIterator>
             void insert(InputIterator i, InputIterator j)
             {
@@ -1926,6 +1964,8 @@ namespace boost {
         };
     } // namespace boost::unordered_detail
 } // namespace boost
+
+#undef BOOST_HASH_BORLAND_BOOL
 
 #endif // BOOST_UNORDERED_DETAIL_HASH_TABLE_HPP_INCLUDED
 

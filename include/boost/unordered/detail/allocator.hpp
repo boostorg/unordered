@@ -39,6 +39,18 @@ namespace boost {
         };
 #endif
 
+#if !BOOST_WORKAROUND(BOOST_MSVC, < 1300)
+        template <class T>
+        inline void reset(T& x) { x  = T(); }
+#else
+        template <class T>
+        inline void reset_impl(T& x, ...) { x  = T(); }
+        template <class T>
+        inline void reset_impl(T*& x, int) { x  = 0; }
+        template <class T>
+        inline void reset(T& x) { reset_impl(x); }
+#endif
+
         // Work around for Microsoft's ETI bug.
         
         template <class Allocator> struct allocator_value_type
@@ -66,7 +78,7 @@ namespace boost {
             typedef typename Allocator::const_reference type;
         };
         
-        #if defined(BOOST_MPL_CFG_MSVC_ETI_BUG)
+#if defined(BOOST_MPL_CFG_MSVC_ETI_BUG)
 
         template <>
         struct allocator_value_type<int>
@@ -98,7 +110,7 @@ namespace boost {
             typedef int type;
         };
 
-        #endif
+#endif
 
         template <class Allocator>
         struct allocator_constructor
@@ -109,7 +121,12 @@ namespace boost {
             pointer ptr_;
 
             allocator_constructor(Allocator& a)
-                : alloc_(a), ptr_() {}
+                : alloc_(a), ptr_()
+            {
+#if BOOST_WORKAROUND(BOOST_MSVC, < 1300)
+                    unordered_detail::reset(ptr_);
+#endif
+            }
 
             ~allocator_constructor() {
                 if (ptr_) alloc_.deallocate(ptr_, 1);
@@ -117,10 +134,11 @@ namespace boost {
 
             template <class V>
             pointer construct(V const& v) {
+                BOOST_ASSERT(!ptr_);
                 pointer p = alloc_.allocate(1);
                 ptr_ = p;
                 alloc_.construct(p, v);
-                ptr_ = pointer();
+                reset(ptr_);
                 return p;
             }
 
@@ -128,7 +146,7 @@ namespace boost {
             pointer release()
             {
                 pointer p = ptr_;
-                ptr_ = pointer();
+                reset(ptr_);
                 return p;
             }
         };
@@ -144,7 +162,13 @@ namespace boost {
             std::size_t length_;
 
             allocator_array_constructor(Allocator& a)
-                : alloc_(a), ptr_(), constructed_(), length_(0) {}
+                : alloc_(a), ptr_(), constructed_(), length_(0)
+            {
+#if BOOST_WORKAROUND(BOOST_MSVC, < 1300)
+                unordered_detail::reset(constructed_);
+                unordered_detail::reset(ptr_);
+#endif
+            }
 
             ~allocator_array_constructor() {
                 if (ptr_) {
@@ -158,6 +182,7 @@ namespace boost {
             template <class V>
             void construct(V const& v, std::size_t l)
             {
+                BOOST_ASSERT(!ptr_);
                 length_ = l;
                 ptr_ = alloc_.allocate(length_);
                 pointer end = ptr_ + length_;
@@ -173,9 +198,12 @@ namespace boost {
             pointer release()
             {
                 pointer p(ptr_);
-                ptr_ = pointer();
+                reset(ptr_);
                 return p;
             }
+        private:
+            allocator_array_constructor(allocator_array_constructor const&);
+            allocator_array_constructor& operator=(allocator_array_constructor const&);
         };
     }
 }
