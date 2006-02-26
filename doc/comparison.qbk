@@ -1,0 +1,67 @@
+[section:comparison Comparison to Associative Containers]
+
+The unordered associative containers have a very similar interface to the
+associative containers. For example:
+
+    #include <boost/unordered_map.hpp>
+
+    ...
+
+    typedef ``[classref boost::unordered_map]``<std::string, int> map;
+    map x;
+    x["one"] = 1;
+    x["two"] = 2;
+    x["three"] = 3;
+
+    std::cout<<x["one"]<<"\n"; // Outputs '1'
+    std::cout<<x["missing"]<<"\n"; // Outputs '0' - the default value
+
+But a major difference is that the elements aren't ordered, so:
+
+    BOOST_FOREACH(map::value_type i, x) {
+        std::cout<<i.first<<","<<i.second<<"\n";
+    }
+
+might output:
+
+    two,2
+    one,1
+    three,3
+
+while if `std::set` was used it would be ordered lexicographically.
+
+The containers automatically grow as more elements are inserted, this can cause
+the order to change and iterators to be invalidated (unlike associative
+containers whose iterators are only invalidated when their elements are
+erased).
+
+So containers containing identical elements aren't guaranteed to
+contain them in the same order. For this reason equality and inequality
+operators (which in the STL are defined in terms of sequence equality)
+aren't available.
+
+[section Equality Predicate and Hash Functions]
+
+[/TODO: A better introduction to hash functions?]
+
+While the associative containers use an ordering relation to specify how the
+elements are stored, the unordered associative containers use an equality
+predicate and a hash function. For example [classref boost::unordered_set]
+is declared as:
+
+    template<typename Value,
+           typename Hash = ``[classref boost::hash]``<Value>, 
+           typename Pred = std::equal_to<Value>, 
+           typename Alloc = std::allocator<Value> > 
+    class ``[classref boost::unordered_set unordered_set]``;
+
+The hash function comes first as you might want to change the hash function
+but not the equality predicate, while if you were to change the behaviour
+of the equality predicate you would have to change the hash function to match
+it.
+
+For example, if you wanted to use
+
+[endsect]
+
+[endsect]

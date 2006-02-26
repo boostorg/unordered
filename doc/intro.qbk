@@ -1,0 +1,34 @@
+[def __tr1__ [@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1745.pdf
+    C++ Standard Library Technical Report]]
+[def __hash-function__ [@http://en.wikipedia.org/wiki/Hash_function
+    hash function]]
+
+[section:intro Introduction]
+
+For accessing data based on keys, the C++ standard library offers `std::set`,
+`std::map`, `std::multiset` and `std::multimap`. These are generally
+implemented using balanced binary trees so accessing data by key is
+consistently of logarithmic complexity. Which is generally okay, but not great.
+
+Also, they require their elements to be ordered, and to supply a 'less than'
+comparison object. For some data types this is impractacle, It might be slow
+to calculate, or even impossible.
+
+So the __tr1__ provides unordered associative containers. These will store data
+with no ordering, and typically allow for fast constant time access. Their
+worst case complexity is linear, but this is generally rare, and with
+care can be avoided. There are four containers to match the existing
+associate containers:
+[classref boost::unordered_set unordered_set],
+[classref boost::unordered_map unordered_map],
+[classref boost::unordered_multiset unordered_multiset] and
+[classref boost::unordered_multimap unordered_multimap].
+
+The fast lookup speeds are acheived using a __hash-function__. The basic idea
+is that a function is called for the key value, which is used to index the
+data. If this hash function is carefully chosen the different keys will usually
+get different indicies, so there will only be a very small number of keys for
+each index, so a key lookup won't have to look at many keys to find the correct
+one.
+
+[endsect]
