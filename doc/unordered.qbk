@@ -12,7 +12,13 @@
     ]
 ]
 
+[section Warning]
+This documentation is a work in progress, and is often incomplete, incoherent
+and, worst of all, incorrect. Don't take anything in it seriously.
+[endsect]
+
 [include:unordered intro.qbk]
 [include:unordered comparison.qbk]
+[include:unordered rationale.qbk]
 
 [xinclude ref.xml]

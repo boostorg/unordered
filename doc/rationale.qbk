@@ -1,0 +1,32 @@
+[def __wang__
+    [@http://www.concentric.net/~Ttwang/tech/inthash.htm
+    Thomas Wang's article on integer hash functions]]
+
+[section:rationale Implementation Rationale]
+
+From the start the intent of this library was to implement the unordred
+containers in TR1, so the interface was fixed. But there are still some
+implementation desicions to make. The priorities for the library are
+conformance to the standard and portability.
+
+[section Number of Buckets]
+
+There are two popular methods for choosing the number of buckets in a hash
+table. One is to have a prime number of buckets. This allows .... (TODO)
+
+The other is to always use a power of two. This has a potential efficiency
+advantage, since it avoids the costly modulus calculation. It also allows for ... (TODO)
+
+For a power of two hash table to work the hash values need to be
+evenly distributed for the subset of the bits it is going to use - and since
+the container can take an arbitrary hash function it must do this itself.
+For some methods for doing this see __wang__ (TODO: Other references?).
+Unfortunately, the most effective methods require the input to be an integer
+with a certain number of bits, while ``std::size_t`` can have an arbitrary
+range. This leaves the more expensive methods, such as Knuth's Multiplicative
+Method which don't tend to work as well as taking the modulous of a prime,
+have little efficiency advantage and don't work well for (TODO: what are they called?).
+
+[endsect]
+
+[endsect]
