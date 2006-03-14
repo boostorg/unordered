@@ -1,0 +1,144 @@
+[section:buckets The Data Structure]
+
+The containers are made up of a number of 'buckets', each of which can contain
+any number of elements. For example, the following 
+diagram shows an [classref boost::unordered_set unordered_set] with 7
+buckets containing 5 elements, `A`, `B`, `C`, `D` and `E`
+(this is just for illustrations, the containers have more buckets, even when
+empty).
+
+[$../diagrams/buckets.png]
+
+In order to decide which bucket to place an element in, the container
+applies `Hash` to the element (for maps it applies it to the element's `Key`
+part). This gives a `std::size_t`. `std::size_t` has a much greater range of
+values then the number of buckets, so that container applies another
+transformation to that value to choose a bucket (in the case of
+[classref boost::unordered_set] this is just the modulous of the number of
+buckets).
+
+If at a later date the container wants to find an element in the container
+it just has to apply the same process to the element (or key for maps) to
+discover which bucket to find it in. This means that you only have to look at
+the elements within a bucket when searching, and if the hash function has
+worked well an evenly distributed the elements among the buckets, this should
+be a small number.
+
+You can see in the diagram that `A` & `D` have been placed in the same bucket.
+This means that when looking in this bucket, up to 2 comparison have to be
+made, making searching slower. This is known as a collision. To keep things
+fast we try to keep these to a minimum.
+
+[table Methods for Accessing Buckets
+    [[Method] [Description]]
+
+    [
+        [``size_type bucket_count() const``]
+        [The number of buckets.]
+    ]
+    [
+        [``size_type max_bucket_count() const``]
+        [An upper bound on the number of buckets.]
+    ]
+    [
+        [``size_type bucket_size(size_type n) const``]
+        [The number of elements in bucket `n`.]
+    ]
+    [
+        [``
+            local_iterator begin(size_type n);
+            local_iterator end(size_type n);
+            const_local_iterator begin(size_type n) const;
+            const_local_iterator end(size_type n) const;
+        ``]
+        [Return begin and end iterators for bucket `n`.]
+    ]
+]
+
+[h2 Controlling the number of buckets]
+
+As more elements are added to an unordered associative container, the number
+of elements in the buckets will increase causing performance to get worse. To
+combat this the containers increase the bucket count as elements are inserted.
+
+The standard gives you two methods to influence the bucket count. First you can
+specify the minimum number of buckets in the constructor, and later, by calling
+`rehash`.
+
+The other method is the `max_load_factor` member function. This lets you
+/hint/ at the maximum load that the buckets should hold.
+The 'load factor' is the average number of elements per bucket,
+the container tries to keep this below the maximum load factor, which is
+initially set to 1.0.
+`max_load_factor` tells the container to change the maximum load factor,
+using your supplied hint as a suggestion.
+
+TR1 doesn't actually require the container to pay much attention to this
+value. The only time the load factor is required to be less than the maximum
+is following a call to `rehash`.
+
+It is not specified anywhere how other member functions affect the bucket count.
+But most implementations will invalidate the iterators whenever they change
+the bucket count - which is only allowed when an
+`insert` causes the load factor to be more than or equal to the maximum.
+But it is possible to implement the containers such that the iterators are
+never invalidated.
+
+(TODO: This might not be right. I'm not sure what is allowed for
+std::unordered_set and std::unordered_map when insert is called with enough
+elements to exceed the maximum, but the maximum isn't exceeded because
+the elements are already in the container)
+
+This all sounds quite gloomy, but it's not that bad. Most implementations
+will probably respect the maximum load factor hint. This implementation
+certainly does.
+
+[table Methods for Controlling Bucket Size
+    [[Method] [Description]]
+
+    [
+        [``float load_factor() const``]
+        [The average number of elements per bucket.]
+    ]
+    [
+        [``float max_load_factor() const``]
+        [Returns the current maximum load factor.]
+    ]
+    [
+        [``float max_load_factor(float z)``]
+        [Changes the container's maximum load factor, using `z` as a hint.]
+    ]
+    [
+        [``void rehash(size_type n)``]
+        [Changes the number of buckets so that there at least n buckets, and
+        so that the load factor is less than the maximum load factor.]
+    ]
+
+]
+
+[h2 Rehash Techniques]
+
+If the container has a load factor much smaller than the maximum, `rehash`
+might decrease the number of buckets, reducing the memory usage. This isn't
+guaranteed by the standard but this implementation will do it.
+
+When inserting many elements, it is a good idea to first call `rehash` to
+make sure you have enough buckets. This will get the expensive rehashing out
+of the way and let you store iterators, safe in the knowledge that they
+won't be invalidated. If you are inserting `n` elements into container `x`,
+you could first call:
+
+    x.rehash((x.size() + n) / x.max_load_factor() + 1);
+
+If you want to stop the table from ever rehashing due to an insert, you can
+set the maximum load factor to infinity (or perhaps a load factor that it'll
+never reach - say `x.max_size()`. As you can only give a 'hint' for the maximum
+load factor, this isn't guaranteed to work. But again, it'll work in this
+implementation.
+
+If you do this and want to make the container rehash, `rehash` will still work.
+But be careful that you only ever call it with a sufficient number of buckets
+- otherwise it's very likely that the container will decrease the bucket
+count to an overly small amount.
+
+[endsect]

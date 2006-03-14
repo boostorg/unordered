@@ -1,6 +1,4 @@
-
-<library-reference>
-  <section id="unordered.reference.specification">
+  <library-reference>
     <!--
       Header: <boost/unordered_set.hpp>
       -->
@@ -75,9 +73,7 @@
             </para>
             <para>The elements are organized into buckets. Keys with the same hash code are stored in the same bucket.
             </para>
-            <para>The number of buckets is automatically increased whenever an insert will make the load factor greater than the maximum load factor. It can also change as result of calling rehash.
-            </para>
-            <para>When the number of buckets change: iterators are invalidated, the elements can change order, and move to different buckets, but pointers and references to elements remain valid.
+            <para>The number of buckets can be automatically increased by a call to insert, or as the result of calling rehash.
             </para>
           </description>
           <typedef name="key_type">
@@ -319,7 +315,7 @@
                 </para>
               </throws>
               <notes>
-                <para>Will only rehash if the insert causes the load factor to be greater to or equal to the maximum load factor.
+                <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.
                 </para>
               </notes>
             </method>
@@ -360,7 +356,7 @@
               <notes>
                 <para>The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same value. 
                 </para>
-                <para>Will only rehash if the insert causes the load factor to be greater to or equal to the maximum load factor.
+                <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.
                 </para>
               </notes>
             </overloaded-method>
@@ -386,7 +382,7 @@
                 </para>
               </throws>
               <notes>
-                <para>Will only rehash if the insert causes the load factor to be greater to or equal to the maximum load factor.
+                <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.
                 </para>
               </notes>
             </method>
@@ -603,6 +599,11 @@
                   <code>n &lt; <methodname>bucket_count</methodname>()</code>
                 </para>
               </requires>
+              <returns>
+                <para>The number of elements in bucket 
+                  <code>n</code>.
+                </para>
+              </returns>
             </method>
             <method name="bucket" cv="const">
               <parameter name="k">
@@ -692,7 +693,7 @@
               </parameter>
               <type>float</type>
               <returns>
-                <para>Changes the container's maximum load factor,using 
+                <para>Changes the container's maximum load factor, using 
                   <code>z</code> as a hint.
                 </para>
               </returns>
@@ -704,13 +705,13 @@
               <type>void</type>
               <description>
                 <para>Changes the number of buckets so that there at least 
-                  <code>n</code> buckets, and so that the load factor is less thanthe maximum load factor.
+                  <code>n</code> buckets, and so that the load factor is less than the maximum load factor.
                 </para>
                 <para>Invalidates iterators, and changes the order of elements
                 </para>
               </description>
               <throws>
-                <para>The function has no effect if an exception is throw, unless it is thrown by the container’s hash function or comparison function.
+                <para>The function has no effect if an exception is thrown, unless it is thrown by the container’s hash function or comparison function.
                 </para>
               </throws>
             </method>
@@ -813,9 +814,7 @@
             </para>
             <para>The elements are organized into buckets. Keys with the same hash code are stored in the same bucket and elements with equivalent keys are stored next to each other.
             </para>
-            <para>The number of buckets is automatically increased whenever an insert will make the load factor greater than the maximum load factor. It can also change as result of calling rehash.
-            </para>
-            <para>When the number of buckets change: iterators are invalidated, the elements can change order, and move to different buckets, but pointers and references to elements remain valid.
+            <para>The number of buckets can be automatically increased by a call to insert, or as the result of calling rehash.
             </para>
           </description>
           <typedef name="key_type">
@@ -1055,7 +1054,7 @@
                 </para>
               </throws>
               <notes>
-                <para>Will only rehash if the insert causes the load factor to be greater to or equal to the maximum load factor.
+                <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.
                 </para>
               </notes>
             </method>
@@ -1096,7 +1095,7 @@
               <notes>
                 <para>The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same value. 
                 </para>
-                <para>Will only rehash if the insert causes the load factor to be greater to or equal to the maximum load factor.
+                <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.
                 </para>
               </notes>
             </overloaded-method>
@@ -1122,7 +1121,7 @@
                 </para>
               </throws>
               <notes>
-                <para>Will only rehash if the insert causes the load factor to be greater to or equal to the maximum load factor.
+                <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.
                 </para>
               </notes>
             </method>
@@ -1339,6 +1338,11 @@
                   <code>n &lt; <methodname>bucket_count</methodname>()</code>
                 </para>
               </requires>
+              <returns>
+                <para>The number of elements in bucket 
+                  <code>n</code>.
+                </para>
+              </returns>
             </method>
             <method name="bucket" cv="const">
               <parameter name="k">
@@ -1428,7 +1432,7 @@
               </parameter>
               <type>float</type>
               <returns>
-                <para>Changes the container's maximum load factor,using 
+                <para>Changes the container's maximum load factor, using 
                   <code>z</code> as a hint.
                 </para>
               </returns>
@@ -1440,13 +1444,13 @@
               <type>void</type>
               <description>
                 <para>Changes the number of buckets so that there at least 
-                  <code>n</code> buckets, and so that the load factor is less thanthe maximum load factor.
+                  <code>n</code> buckets, and so that the load factor is less than the maximum load factor.
                 </para>
                 <para>Invalidates iterators, and changes the order of elements
                 </para>
               </description>
               <throws>
-                <para>The function has no effect if an exception is throw, unless it is thrown by the container’s hash function or comparison function.
+                <para>The function has no effect if an exception is thrown, unless it is thrown by the container’s hash function or comparison function.
                 </para>
               </throws>
             </method>
@@ -1566,9 +1570,7 @@
             </para>
             <para>The elements are organized into buckets. Keys with the same hash code are stored in the same bucket.
             </para>
-            <para>The number of buckets is automatically increased whenever an insert will make the load factor greater than the maximum load factor. It can also change as result of calling rehash.
-            </para>
-            <para>When the number of buckets change: iterators are invalidated, the elements can change order, and move to different buckets, but pointers and references to elements remain valid.
+            <para>The number of buckets can be automatically increased by a call to insert, or as the result of calling rehash.
             </para>
           </description>
           <typedef name="key_type">
@@ -1813,7 +1815,7 @@
                 </para>
               </throws>
               <notes>
-                <para>Will only rehash if the insert causes the load factor to be greater to or equal to the maximum load factor.
+                <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.
                 </para>
               </notes>
             </method>
@@ -1854,7 +1856,7 @@
               <notes>
                 <para>The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same key. 
                 </para>
-                <para>Will only rehash if the insert causes the load factor to be greater to or equal to the maximum load factor.
+                <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.
                 </para>
               </notes>
             </overloaded-method>
@@ -1880,7 +1882,7 @@
                 </para>
               </throws>
               <notes>
-                <para>Will only rehash if the insert causes the load factor to be greater to or equal to the maximum load factor.
+                <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.
                 </para>
               </notes>
             </method>
@@ -2092,7 +2094,7 @@
                 </para>
               </throws>
               <notes>
-                <para>Will only rehash if the insert causes the load factor to be greater to or equal to the maximum load factor.
+                <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.
                 </para>
               </notes>
             </method>
@@ -2122,6 +2124,11 @@
                   <code>n &lt; <methodname>bucket_count</methodname>()</code>
                 </para>
               </requires>
+              <returns>
+                <para>The number of elements in bucket 
+                  <code>n</code>.
+                </para>
+              </returns>
             </method>
             <method name="bucket" cv="const">
               <parameter name="k">
@@ -2211,7 +2218,7 @@
               </parameter>
               <type>float</type>
               <returns>
-                <para>Changes the container's maximum load factor,using 
+                <para>Changes the container's maximum load factor, using 
                   <code>z</code> as a hint.
                 </para>
               </returns>
@@ -2223,13 +2230,13 @@
               <type>void</type>
               <description>
                 <para>Changes the number of buckets so that there at least 
-                  <code>n</code> buckets, and so that the load factor is less thanthe maximum load factor.
+                  <code>n</code> buckets, and so that the load factor is less than the maximum load factor.
                 </para>
                 <para>Invalidates iterators, and changes the order of elements
                 </para>
               </description>
               <throws>
-                <para>The function has no effect if an exception is throw, unless it is thrown by the container’s hash function or comparison function.
+                <para>The function has no effect if an exception is thrown, unless it is thrown by the container’s hash function or comparison function.
                 </para>
               </throws>
             </method>
@@ -2343,9 +2350,7 @@
             </para>
             <para>The elements are organized into buckets. Keys with the same hash code are stored in the same bucket and elements with equivalent keys are stored next to each other.
             </para>
-            <para>The number of buckets is automatically increased whenever an insert will make the load factor greater than the maximum load factor. It can also change as result of calling rehash.
-            </para>
-            <para>When the number of buckets change: iterators are invalidated, the elements can change order, and move to different buckets, but pointers and references to elements remain valid.
+            <para>The number of buckets can be automatically increased by a call to insert, or as the result of calling rehash.
             </para>
           </description>
           <typedef name="key_type">
@@ -2588,7 +2593,7 @@
                 </para>
               </throws>
               <notes>
-                <para>Will only rehash if the insert causes the load factor to be greater to or equal to the maximum load factor.
+                <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.
                 </para>
               </notes>
             </method>
@@ -2629,7 +2634,7 @@
               <notes>
                 <para>The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same key. 
                 </para>
-                <para>Will only rehash if the insert causes the load factor to be greater to or equal to the maximum load factor.
+                <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.
                 </para>
               </notes>
             </overloaded-method>
@@ -2655,7 +2660,7 @@
                 </para>
               </throws>
               <notes>
-                <para>Will only rehash if the insert causes the load factor to be greater to or equal to the maximum load factor.
+                <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.
                 </para>
               </notes>
             </method>
@@ -2872,6 +2877,11 @@
                   <code>n &lt; <methodname>bucket_count</methodname>()</code>
                 </para>
               </requires>
+              <returns>
+                <para>The number of elements in bucket 
+                  <code>n</code>.
+                </para>
+              </returns>
             </method>
             <method name="bucket" cv="const">
               <parameter name="k">
@@ -2961,7 +2971,7 @@
               </parameter>
               <type>float</type>
               <returns>
-                <para>Changes the container's maximum load factor,using 
+                <para>Changes the container's maximum load factor, using 
                   <code>z</code> as a hint.
                 </para>
               </returns>
@@ -2973,13 +2983,13 @@
               <type>void</type>
               <description>
                 <para>Changes the number of buckets so that there at least 
-                  <code>n</code> buckets, and so that the load factor is less thanthe maximum load factor.
+                  <code>n</code> buckets, and so that the load factor is less than the maximum load factor.
                 </para>
                 <para>Invalidates iterators, and changes the order of elements
                 </para>
               </description>
               <throws>
-                <para>The function has no effect if an exception is throw, unless it is thrown by the container’s hash function or comparison function.
+                <para>The function has no effect if an exception is thrown, unless it is thrown by the container’s hash function or comparison function.
                 </para>
               </throws>
             </method>
@@ -3018,5 +3028,4 @@
         </function>
       </namespace>
     </header>
-  </section>
-</library-reference>
+  </library-reference>

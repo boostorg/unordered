@@ -27,20 +27,25 @@ might output:
     two,2
     one,1
     three,3
+    missing,0
 
-while if `std::set` was used it would be ordered lexicographically.
+or the same elements in any other order. If `std::set` was used it would always
+be ordered lexicographically.
 
 The containers automatically grow as more elements are inserted, this can cause
 the order to change and iterators to be invalidated (unlike associative
 containers whose iterators are only invalidated when their elements are
 erased).
 
-So containers containing identical elements aren't guaranteed to
-contain them in the same order. For this reason equality and inequality
-operators (which in the STL are defined in terms of sequence equality)
-aren't available.
+In the STL, the comparion operators for containers are defined in terms
+of comparing the sequence of elements. As the elements' order is unpredictable
+this would be nonsensical, so the comparison operators aren't defined.
 
-[section Equality Predicate and Hash Functions]
+
+
+[endsect]
+
+[section Equality Predicates and Hash Functions]
 
 [/TODO: A better introduction to hash functions?]
 
@@ -61,7 +66,5 @@ of the equality predicate you would have to change the hash function to match
 it.
 
 For example, if you wanted to use
-
-[endsect]
 
 [endsect]

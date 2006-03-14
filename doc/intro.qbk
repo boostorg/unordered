@@ -1,5 +1,7 @@
 [def __tr1__ [@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1745.pdf
     C++ Standard Library Technical Report]]
+[def __hash-table__ [@http://en.wikipedia.org/wiki/Hash_table
+    hash table]]
 [def __hash-function__ [@http://en.wikipedia.org/wiki/Hash_function
     hash function]]
 
@@ -7,28 +9,69 @@
 
 For accessing data based on keys, the C++ standard library offers `std::set`,
 `std::map`, `std::multiset` and `std::multimap`. These are generally
-implemented using balanced binary trees so accessing data by key is
-consistently of logarithmic complexity. Which is generally okay, but not great.
+implemented using balanced binary trees so lookup time has
+logarithmic complexity. Which is generally okay, but in many cases a
+__hash-table__ can perform better, as accessing data has constant complexity,
+on average. The worst case complexity is linear, but that occurs rarely and
+with some care, can be avoided.
 
-Also, they require their elements to be ordered, and to supply a 'less than'
-comparison object. For some data types this is impractacle, It might be slow
-to calculate, or even impossible.
+Also, the existing containers require a 'less than' comparison object
+to order their elements. For some data types this is impracticle.
+It might be slow to calculate, or even impossible. On the other hand, in a hash
+table, then elements aren't ordered - but you need an equality function
+and a hash function for the key.
 
-So the __tr1__ provides unordered associative containers. These will store data
-with no ordering, and typically allow for fast constant time access. Their
-worst case complexity is linear, but this is generally rare, and with
-care can be avoided. There are four containers to match the existing
-associate containers:
-[classref boost::unordered_set unordered_set],
-[classref boost::unordered_map unordered_map],
-[classref boost::unordered_multiset unordered_multiset] and
-[classref boost::unordered_multimap unordered_multimap].
+So the __tr1__ provides the unordered associative containers, which are
+implemented using hash tables. There are four containers to match the existing
+associate containers. In the header <[headerref boost/unordered_set.hpp]>:
 
-The fast lookup speeds are acheived using a __hash-function__. The basic idea
-is that a function is called for the key value, which is used to index the
-data. If this hash function is carefully chosen the different keys will usually
-get different indicies, so there will only be a very small number of keys for
-each index, so a key lookup won't have to look at many keys to find the correct
-one.
+    template <
+        class Key,
+        class Hash = boost::hash<Key>, 
+        class Pred = std::equal_to<Key>, 
+        class Alloc = std::allocator<Key> > 
+    class ``[classref boost::unordered_set unordered_set]``;
+
+    template<
+        class Key,
+        class Hash = boost::hash<Key>, 
+        class Pred = std::equal_to<Key>, 
+        class Alloc = std::allocator<Key> > 
+    class ``[classref boost::unordered_multiset unordered_multiset]``;
+
+and in <[headerref boost/unordered_map.hpp]>:
+
+    template <
+        class Key, class T,
+        class Hash = boost::hash<Key>, 
+        class Pred = std::equal_to<Key>, 
+        class Alloc = std::allocator<Key> > 
+    class ``[classref boost::unordered_map unordered_map]``;
+
+    template<
+        class Key, class T,
+        class Hash = boost::hash<Key>, 
+        class Pred = std::equal_to<Key>, 
+        class Alloc = std::allocator<Key> > 
+    class ``[classref boost::unordered_multimap unordered_multimap]``;
+
+The containers are used in a similar manner to the normal associative
+containers:
+
+    #include <``[headerref boost/unordered_map.hpp]``>
+    #include <cassert>
+
+    int main()
+    {
+        boost::unordered_map<std::string, int> x;
+        x["one"] = 1;
+        x["two"] = 2;
+        x["three"] = 3;
+
+        assert(x["one"] == 1);
+        assert(x["missing"] == 0);
+    }
+
+But there are some major differences, which will be detailed later.
 
 [endsect]
