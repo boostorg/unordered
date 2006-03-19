@@ -9,7 +9,7 @@ containers in TR1, so the interface was fixed. But there are still some
 implementation desicions to make. The priorities for the library are
 conformance to the standard and portability.
 
-[section Number of Buckets]
+[h2 Number of Buckets]
 
 There are two popular methods for choosing the number of buckets in a hash
 table. One is to have a prime number of buckets. This allows .... (TODO)
@@ -26,7 +26,5 @@ with a certain number of bits, while ``std::size_t`` can have an arbitrary
 range. This leaves the more expensive methods, such as Knuth's Multiplicative
 Method which don't tend to work as well as taking the modulous of a prime,
 have little efficiency advantage and don't work well for (TODO: what are they called?).
-
-[endsect]
 
 [endsect]

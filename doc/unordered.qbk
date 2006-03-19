@@ -19,6 +19,7 @@ and, worst of all, incorrect. Don't take anything in it seriously.
 
 [include:unordered intro.qbk]
 [include:unordered buckets.qbk]
+[include:unordered hash_equality.qbk]
 [include:unordered comparison.qbk]
 [include:unordered rationale.qbk]
 

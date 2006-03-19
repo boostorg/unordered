@@ -72,6 +72,19 @@ containers:
         assert(x["missing"] == 0);
     }
 
-But there are some major differences, which will be detailed later.
+But since the elements aren't ordered, the output of:
+
+    BOOST_FOREACH(map::value_type i, x) {
+        std::cout<<i.first<<","<<i.second<<"\n";
+    }
+
+can be in any order. For example, it might be:
+
+    two,2
+    one,1
+    three,3
+    missing,0
+
+There are other differences, which will be detailed later.
 
 [endsect]

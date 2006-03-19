@@ -1,70 +1,26 @@
 [section:comparison Comparison to Associative Containers]
 
-The unordered associative containers have a very similar interface to the
-associative containers. For example:
-
-    #include <boost/unordered_map.hpp>
-
-    ...
-
-    typedef ``[classref boost::unordered_map]``<std::string, int> map;
-    map x;
-    x["one"] = 1;
-    x["two"] = 2;
-    x["three"] = 3;
-
-    std::cout<<x["one"]<<"\n"; // Outputs '1'
-    std::cout<<x["missing"]<<"\n"; // Outputs '0' - the default value
-
-But a major difference is that the elements aren't ordered, so:
-
-    BOOST_FOREACH(map::value_type i, x) {
-        std::cout<<i.first<<","<<i.second<<"\n";
-    }
-
-might output:
-
-    two,2
-    one,1
-    three,3
-    missing,0
-
-or the same elements in any other order. If `std::set` was used it would always
-be ordered lexicographically.
-
-The containers automatically grow as more elements are inserted, this can cause
-the order to change and iterators to be invalidated (unlike associative
-containers whose iterators are only invalidated when their elements are
-erased).
-
-In the STL, the comparion operators for containers are defined in terms
-of comparing the sequence of elements. As the elements' order is unpredictable
-this would be nonsensical, so the comparison operators aren't defined.
-
-
-
-[endsect]
-
-[section Equality Predicates and Hash Functions]
-
-[/TODO: A better introduction to hash functions?]
-
-While the associative containers use an ordering relation to specify how the
-elements are stored, the unordered associative containers use an equality
-predicate and a hash function. For example [classref boost::unordered_set]
-is declared as:
-
-    template<typename Value,
-           typename Hash = ``[classref boost::hash]``<Value>, 
-           typename Pred = std::equal_to<Value>, 
-           typename Alloc = std::allocator<Value> > 
-    class ``[classref boost::unordered_set unordered_set]``;
-
-The hash function comes first as you might want to change the hash function
-but not the equality predicate, while if you were to change the behaviour
-of the equality predicate you would have to change the hash function to match
-it.
-
-For example, if you wanted to use
+* The elements in an unordered container are organised into buckets, in an
+  unpredictable order. There are member functions to.... TODO
+* The unordered associative containers don't support the comparison operators.
+* Instead of being parameterized by an ordering relation `Compare`,
+  the unordered associative container are parameterized by a function object
+  `Hash` and an equivalence realtion `Pred`. The member types and accessor
+  member functions reflect this.
+* Because of this, equivalent keys for unordered container are defined in
+  terms of `Pred`, while for the associative containers it's defined in terms
+  of `Compare`.
+* Unordered associative containers' iterators can be invalidated by rehashing
+  or by inserting elements.
+* Unordered associative containers' iterators are of at least the forward
+  iterator category. Associative containers' iterators are bidirectional.
+* The unordered associative containers' constructors have extra parameters
+  for the number of buckets, the hash function and the equality predicate.
+* The unordered associative container don't have a `lower_bound` or
+  `upper_bound` method - they wouldn't make any sense since the elements
+  aren't ordered.
+* TODO: Complexity guarantees.
+* TODO: Behaviour when exceptions throw. The unordered containers seem
+  a lot stronger defined here?
 
 [endsect]
