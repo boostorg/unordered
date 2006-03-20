@@ -66,8 +66,12 @@ namespace boost {
         template <class T>
         inline void hash_swap(T& x, T& y)
         {
+#if defined(BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP)
+            std::swap(x,y);
+#else
             using namespace std;
             swap(x, y);
+#endif
         }
 
         inline std::size_t float_to_size_t(float f)
