@@ -129,9 +129,19 @@ namespace boost
 
         // iterators
 
+        iterator begin()
+        {
+            return iterator(base.begin());
+        }
+
         const_iterator begin() const
         {
             return const_iterator(base.begin());
+        }
+
+        iterator end()
+        {
+            return iterator(base.end());
         }
 
         const_iterator end() const
@@ -236,15 +246,26 @@ namespace boost
             return base.bucket(k);
         }
 
-        const_local_iterator begin(size_type n) const
+        local_iterator begin(size_type n)
         {
             return local_iterator(base.begin(n));
+        }
+
+        const_local_iterator begin(size_type n) const
+        {
+            return const_local_iterator(base.begin(n));
+        }
+
+        local_iterator end(size_type n)
+        {
+            return local_iterator(base.end(n));
         }
 
         const_local_iterator end(size_type n) const
         {
             return const_local_iterator(base.end(n));
         }
+
 
         // hash policy
 
@@ -377,9 +398,19 @@ namespace boost
 
         // iterators
 
+        iterator begin()
+        {
+            return iterator(base.begin());
+        }
+
         const_iterator begin() const
         {
             return const_iterator(base.begin());
+        }
+
+        iterator end()
+        {
+            return iterator(base.end());
         }
 
         const_iterator end() const
@@ -483,9 +514,19 @@ namespace boost
             return base.bucket(k);
         }
 
+        local_iterator begin(size_type n)
+        {
+            return local_iterator(base.begin(n));
+        }
+
         const_local_iterator begin(size_type n) const
         {
             return const_local_iterator(base.begin(n));
+        }
+
+        local_iterator end(size_type n)
+        {
+            return local_iterator(base.end(n));
         }
 
         const_local_iterator end(size_type n) const
