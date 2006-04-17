@@ -1,16 +1,10 @@
 
-// JTC1/SC22/WG21 N1456 Hash table implementation
-// http://std.dkuug.dk/jtc1/sc22/wg21/docs/papers/2003/n1456.html
-
-// boost/unordered_map.hpp
-
-// Copyright © 2003-2004 Jeremy B. Maitin-Shepard.
-// Copyright © 2005-2006 Daniel James.
+// Copyright (C) 2003-2004 Jeremy B. Maitin-Shepard.
+// Copyright (C) 2005-2006 Daniel James.
 
 // Use, modification, and distribution is subject to the Boost Software
 // License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy
 // at http://www.boost.org/LICENSE_1_0.txt)
-
 
 #ifndef BOOST_UNORDERED_MAP_HPP_INCLUDED
 #define BOOST_UNORDERED_MAP_HPP_INCLUDED
