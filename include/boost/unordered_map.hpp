@@ -5,7 +5,7 @@
 // boost/unordered_map.hpp
 
 // Copyright © 2003-2004 Jeremy B. Maitin-Shepard.
-// Copyright © 2005 Daniel James.
+// Copyright © 2005-2006 Daniel James.
 
 // Use, modification, and distribution is subject to the Boost Software
 // License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy
@@ -186,9 +186,14 @@ namespace boost
                     base.insert_unique(obj));
         }
 
-        iterator insert(const_iterator hint, const value_type& obj)
+        iterator insert(iterator hint, const value_type& obj)
         {
             return iterator(base.insert_unique(get(hint), obj));
+        }
+
+        const_iterator insert(const_iterator hint, const value_type& obj)
+        {
+            return const_iterator(base.insert_unique(get(hint), obj));
         }
 
         template <class InputIterator>
@@ -197,9 +202,14 @@ namespace boost
             base.insert(first, last);
         }
 
-        iterator erase(const_iterator position)
+        iterator erase(iterator position)
         {
             return iterator(base.erase(get(position)));
+        }
+
+        const_iterator erase(const_iterator position)
+        {
+            return const_iterator(base.erase(get(position)));
         }
 
         size_type erase(const key_type& k)
@@ -207,9 +217,14 @@ namespace boost
             return base.erase(k);
         }
 
-        iterator erase(const_iterator first, const_iterator last)
+        iterator erase(iterator first, iterator last)
         {
             return iterator(base.erase(get(first), get(last)));
+        }
+
+        const_iterator erase(const_iterator first, const_iterator last)
+        {
+            return const_iterator(base.erase(get(first), get(last)));
         }
 
         void clear()
@@ -473,9 +488,14 @@ namespace boost
             return iterator(base.insert_equivalent(obj));
         }
 
-        iterator insert(const_iterator hint, const value_type& obj)
+        iterator insert(iterator hint, const value_type& obj)
         {
             return iterator(base.insert_equivalent(get(hint), obj));
+        }
+
+        const_iterator insert(const_iterator hint, const value_type& obj)
+        {
+            return const_iterator(base.insert_equivalent(get(hint), obj));
         }
 
         template <class InputIterator>
@@ -484,9 +504,14 @@ namespace boost
             base.insert(first, last);
         }
 
-        iterator erase(const_iterator position)
+        iterator erase(iterator position)
         {
             return iterator(base.erase(get(position)));
+        }
+
+        const_iterator erase(const_iterator position)
+        {
+            return const_iterator(base.erase(get(position)));
         }
 
         size_type erase(const key_type& k)
@@ -494,9 +519,14 @@ namespace boost
             return base.erase(k);
         }
 
-        iterator erase(const_iterator first, const_iterator last)
+        iterator erase(iterator first, iterator last)
         {
             return iterator(base.erase(get(first), get(last)));
+        }
+
+        const_iterator erase(const_iterator first, const_iterator last)
+        {
+            return const_iterator(base.erase(get(first), get(last)));
         }
 
         void clear()

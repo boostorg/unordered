@@ -5,12 +5,11 @@
 // boost/unordered_set.hpp
 
 // Copyright © 2003-2004 Jeremy B. Maitin-Shepard.
-// Copyright © 2005 Daniel James.
+// Copyright © 2005-2006 Daniel James.
 
 // Use, modification, and distribution is subject to the Boost Software
 // License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy
 // at http://www.boost.org/LICENSE_1_0.txt)
-
 
 #ifndef BOOST_UNORDERED_SET_HPP_INCLUDED
 #define BOOST_UNORDERED_SET_HPP_INCLUDED
@@ -130,19 +129,9 @@ namespace boost
 
         // iterators
 
-        iterator begin()
-        {
-            return iterator(base.begin());
-        }
-
         const_iterator begin() const
         {
             return const_iterator(base.begin());
-        }
-
-        iterator end()
-        {
-            return iterator(base.end());
         }
 
         const_iterator end() const
@@ -158,9 +147,9 @@ namespace boost
                     base.insert_unique(obj));
         }
 
-        iterator insert(const_iterator hint, const value_type& obj)
+        const_iterator insert(const_iterator hint, const value_type& obj)
         {
-            return iterator(base.insert_unique(get(hint), obj));
+            return const_iterator(base.insert_unique(get(hint), obj));
         }
 
         template <class InputIterator>
@@ -169,9 +158,9 @@ namespace boost
             base.insert(first, last);
         }
 
-        iterator erase(const_iterator position)
+        const_iterator erase(const_iterator position)
         {
-            return iterator(base.erase(get(position)));
+            return const_iterator(base.erase(get(position)));
         }
 
         size_type erase(const key_type& k)
@@ -179,9 +168,9 @@ namespace boost
             return base.erase(k);
         }
 
-        iterator erase(const_iterator first, const_iterator last)
+        const_iterator erase(const_iterator first, const_iterator last)
         {
-            return iterator(base.erase(get(first), get(last)));
+            return const_iterator(base.erase(get(first), get(last)));
         }
 
         void clear()
@@ -208,11 +197,6 @@ namespace boost
 
         // lookup
 
-        iterator find(const key_type& k)
-        {
-            return iterator(base.find(k));
-        }
-
         const_iterator find(const key_type& k) const
         {
             return const_iterator(base.find(k));
@@ -221,13 +205,6 @@ namespace boost
         size_type count(const key_type& k) const
         {
             return base.count(k);
-        }
-
-        std::pair<iterator, iterator>
-            equal_range(const key_type& k)
-        {
-            return boost::unordered_detail::pair_cast<iterator, iterator>(
-                    base.equal_range(k));
         }
 
         std::pair<const_iterator, const_iterator>
@@ -259,19 +236,9 @@ namespace boost
             return base.bucket(k);
         }
 
-        local_iterator begin(size_type n)
-        {
-            return local_iterator(base.begin(n));
-        }
-
         const_local_iterator begin(size_type n) const
         {
             return local_iterator(base.begin(n));
-        }
-
-        local_iterator end(size_type n)
-        {
-            return local_iterator(base.end(n));
         }
 
         const_local_iterator end(size_type n) const
@@ -410,19 +377,9 @@ namespace boost
 
         // iterators
 
-        iterator begin()
-        {
-            return iterator(base.begin());
-        }
-
         const_iterator begin() const
         {
             return const_iterator(base.begin());
-        }
-
-        iterator end()
-        {
-            return iterator(base.end());
         }
 
         const_iterator end() const
@@ -437,9 +394,9 @@ namespace boost
             return iterator(base.insert_equivalent(obj));
         }
 
-        iterator insert(const_iterator hint, const value_type& obj)
+        const_iterator insert(const_iterator hint, const value_type& obj)
         {
-            return iterator(base.insert_equivalent(get(hint), obj));
+            return const_iterator(base.insert_equivalent(get(hint), obj));
         }
 
         template <class InputIterator>
@@ -448,9 +405,9 @@ namespace boost
             base.insert(first, last);
         }
 
-        iterator erase(const_iterator position)
+        const_iterator erase(const_iterator position)
         {
-            return iterator(base.erase(get(position)));
+            return const_iterator(base.erase(get(position)));
         }
 
         size_type erase(const key_type& k)
@@ -458,9 +415,9 @@ namespace boost
             return base.erase(k);
         }
 
-        iterator erase(const_iterator first, const_iterator last)
+        const_iterator erase(const_iterator first, const_iterator last)
         {
-            return iterator(base.erase(get(first), get(last)));
+            return const_iterator(base.erase(get(first), get(last)));
         }
 
         void clear()
@@ -487,11 +444,6 @@ namespace boost
 
         // lookup
 
-        iterator find(const key_type& k)
-        {
-            return iterator(base.find(k));
-        }
-
         const_iterator find(const key_type& k) const
         {
             return const_iterator(base.find(k));
@@ -500,13 +452,6 @@ namespace boost
         size_type count(const key_type& k) const
         {
             return base.count(k);
-        }
-
-        std::pair<iterator, iterator>
-            equal_range(const key_type& k)
-        {
-            return boost::unordered_detail::pair_cast<iterator, iterator>(
-                    base.equal_range(k));
         }
 
         std::pair<const_iterator, const_iterator>
@@ -538,19 +483,9 @@ namespace boost
             return base.bucket(k);
         }
 
-        local_iterator begin(size_type n)
-        {
-            return local_iterator(base.begin(n));
-        }
-
         const_local_iterator begin(size_type n) const
         {
             return const_local_iterator(base.begin(n));
-        }
-
-        local_iterator end(size_type n)
-        {
-            return local_iterator(base.end(n));
         }
 
         const_local_iterator end(size_type n) const
