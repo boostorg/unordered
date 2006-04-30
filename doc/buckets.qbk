@@ -89,6 +89,9 @@ std::unordered_set and std::unordered_map when insert is called with enough
 elements to exceed the maximum, but the maximum isn't exceeded because
 the elements are already in the container)
 
+(TODO: Ah, I forgot about local iterators - rehashing must invalidate ranges
+made up of local iterators, right?).
+
 This all sounds quite gloomy, but it's not that bad. Most implementations
 will probably respect the maximum load factor hint. This implementation
 certainly does.
@@ -134,7 +137,9 @@ If you want to stop the table from ever rehashing due to an insert, you can
 set the maximum load factor to infinity (or perhaps a load factor that it'll
 never reach - say `x.max_size()`. As you can only give a 'hint' for the maximum
 load factor, this isn't guaranteed to work. But again, it'll work in this
-implementation.
+implementation. (TODO: If an unordered container with infinite load factor
+is copied, bad things could happen. So maybe this advice should be removed. Or
+maybe the implementation should cope with that).
 
 If you do this and want to make the container rehash, `rehash` will still work.
 But be careful that you only ever call it with a sufficient number of buckets
