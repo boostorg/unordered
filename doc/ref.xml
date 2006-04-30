@@ -27,8 +27,8 @@
           <purpose>An unordered associative container that stores unique values.
           </purpose>
           <description>
-            <para>For the normative reference see section 6.3 of 
-              <ulink url="http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2005/n1836.pdf">TR1 [n1836].
+            <para>For the normative reference see chapter 23 of 
+              <ulink url="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2009.pdf">the working draft of the C++ standard [n2009].
               </ulink>
             </para>
             <para>
@@ -778,8 +778,8 @@
           <purpose>An unordered associative container that stores  values. The same key can be stored multiple times. 
           </purpose>
           <description>
-            <para>For the normative reference see section 6.3 of 
-              <ulink url="http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2005/n1836.pdf">TR1 [n1836].
+            <para>For the normative reference see chapter 23 of 
+              <ulink url="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2009.pdf">the working draft of the C++ standard [n2009].
               </ulink>
             </para>
             <para>
@@ -1537,8 +1537,8 @@
           <purpose>An unordered associative container that associates unique keys with another value.
           </purpose>
           <description>
-            <para>For the normative reference see section 6.3 of 
-              <ulink url="http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2005/n1836.pdf">TR1 [n1836].
+            <para>For the normative reference see chapter 23 of 
+              <ulink url="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2009.pdf">the working draft of the C++ standard [n2009].
               </ulink>
             </para>
             <para>
@@ -2327,8 +2327,8 @@
           <purpose>An unordered associative container that associates  keys with another value. The same key can be stored multiple times. 
           </purpose>
           <description>
-            <para>For the normative reference see section 6.3 of 
-              <ulink url="http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2005/n1836.pdf">TR1 [n1836].
+            <para>For the normative reference see chapter 23 of 
+              <ulink url="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2009.pdf">the working draft of the C++ standard [n2009].
               </ulink>
             </para>
             <para>

@@ -4,9 +4,9 @@
 
 [section:rationale Implementation Rationale]
 
-From the start the intent of this library was to implement the unordred
-containers in TR1, so the interface was fixed. But there are still some
-implementation desicions to make. The priorities for the library are
+From the start the intent of this library was to implement the unordered
+containers in the draft standard, so the interface was fixed. But there are
+still some implementation desicions to make. The priorities for the library are
 conformance to the standard and portability.
 
 [h2 Number of Buckets]

@@ -73,9 +73,9 @@ initially set to 1.0.
 `max_load_factor` tells the container to change the maximum load factor,
 using your supplied hint as a suggestion.
 
-TR1 doesn't actually require the container to pay much attention to this
-value. The only time the load factor is required to be less than the maximum
-is following a call to `rehash`.
+The draft standard doesn't actually require the container to pay much attention
+to this value. The only time the load factor is required to be less than the
+maximum is following a call to `rehash`.
 
 It is not specified anywhere how other member functions affect the bucket count.
 But most implementations will invalidate the iterators whenever they change

@@ -1,5 +1,8 @@
-[def __tr1__ [@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1745.pdf
+[def __tr1__ [@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2009.pdf
     C++ Standard Library Technical Report]]
+[def __draft__
+    [@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2009.pdf
+    Working Draft of the C++ Standard]]
 [def __hash-table__ [@http://en.wikipedia.org/wiki/Hash_table
     hash table]]
 [def __hash-function__ [@http://en.wikipedia.org/wiki/Hash_function
@@ -21,8 +24,9 @@ It might be slow to calculate, or even impossible. On the other hand, in a hash
 table, then elements aren't ordered - but you need an equality function
 and a hash function for the key.
 
-So the __tr1__ provides the unordered associative containers, which are
-implemented using hash tables. There are four containers to match the existing
+So the __tr1__ introduced the unordered associative containers, which are
+implemented using hash tables, and they have now been added to the __draft__.
+There are four containers to match the existing
 associate containers. In the header <[headerref boost/unordered_set.hpp]>:
 
     template <
