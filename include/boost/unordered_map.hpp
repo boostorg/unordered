@@ -172,6 +172,16 @@ namespace boost
             return const_iterator(base.end());
         }
 
+        const_iterator cbegin() const
+        {
+            return const_iterator(base.begin());
+        }
+
+        const_iterator cend() const
+        {
+            return const_iterator(base.end());
+        }
+
         // modifiers
 
         std::pair<iterator, bool> insert(const value_type& obj)
@@ -320,6 +330,18 @@ namespace boost
         {
             return const_local_iterator(base.end(n));
         }
+
+#if defined(BOOST_UNORDERED_LOCAL_CBEGIN)
+        const_local_iterator cbegin(size_type n) const
+        {
+            return const_local_iterator(base.begin(n));
+        }
+        
+        const_local_iterator cend(size_type n) const
+        {
+            return const_local_iterator(base.end(n));
+        }
+#endif
 
         // hash policy
 
@@ -475,6 +497,16 @@ namespace boost
             return const_iterator(base.end());
         }
 
+        const_iterator cbegin() const
+        {
+            return const_iterator(base.begin());
+        }
+
+        const_iterator cend() const
+        {
+            return const_iterator(base.end());
+        }
+
         // modifiers
 
         iterator insert(const value_type& obj)
@@ -617,6 +649,18 @@ namespace boost
         {
             return const_local_iterator(base.end(n));
         }
+
+#if defined(BOOST_UNORDERED_LOCAL_CBEGIN)
+        const_local_iterator cbegin(size_type n) const
+        {
+            return const_local_iterator(base.begin(n));
+        }
+
+        const_local_iterator cend(size_type n) const
+        {
+            return const_local_iterator(base.end(n));
+        }
+#endif
 
         // hash policy
 
