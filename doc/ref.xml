@@ -286,6 +286,16 @@
               <returns>An iterator which refers to the past-the-end value for the container.
               </returns>
             </overloaded-method>
+            <method name="cbegin" cv="const">
+              <type>const_iterator</type>
+              <returns>A constant iterator referring to the first element of the container, or if the container is empty the past-the-end value for the container.
+              </returns>
+            </method>
+            <method name="cend" cv="const">
+              <type>const_iterator</type>
+              <returns>A constant iterator which refers to the past-the-end value for the container.
+              </returns>
+            </method>
           </method-group>
           <method-group name="modifiers">
             <method name="size" cv="const">
@@ -1027,6 +1037,16 @@
               <returns>An iterator which refers to the past-the-end value for the container.
               </returns>
             </overloaded-method>
+            <method name="cbegin" cv="const">
+              <type>const_iterator</type>
+              <returns>A constant iterator referring to the first element of the container, or if the container is empty the past-the-end value for the container.
+              </returns>
+            </method>
+            <method name="cend" cv="const">
+              <type>const_iterator</type>
+              <returns>A constant iterator which refers to the past-the-end value for the container.
+              </returns>
+            </method>
           </method-group>
           <method-group name="modifiers">
             <method name="size" cv="const">
@@ -1786,6 +1806,16 @@
               <returns>An iterator which refers to the past-the-end value for the container.
               </returns>
             </overloaded-method>
+            <method name="cbegin" cv="const">
+              <type>const_iterator</type>
+              <returns>A constant iterator referring to the first element of the container, or if the container is empty the past-the-end value for the container.
+              </returns>
+            </method>
+            <method name="cend" cv="const">
+              <type>const_iterator</type>
+              <returns>A constant iterator which refers to the past-the-end value for the container.
+              </returns>
+            </method>
           </method-group>
           <method-group name="modifiers">
             <method name="size" cv="const">
@@ -2566,6 +2596,16 @@
               <returns>An iterator which refers to the past-the-end value for the container.
               </returns>
             </overloaded-method>
+            <method name="cbegin" cv="const">
+              <type>const_iterator</type>
+              <returns>A constant iterator referring to the first element of the container, or if the container is empty the past-the-end value for the container.
+              </returns>
+            </method>
+            <method name="cend" cv="const">
+              <type>const_iterator</type>
+              <returns>A constant iterator which refers to the past-the-end value for the container.
+              </returns>
+            </method>
           </method-group>
           <method-group name="modifiers">
             <method name="size" cv="const">
