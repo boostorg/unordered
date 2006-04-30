@@ -51,14 +51,16 @@ can change the order of the elements, insert can't be.
 [h3 [@http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#528
     528. TR1: issue 6.19 vs 6.3.4.3/2 (and 6.3.4.5/2)]]
 
-In the current implementation, for unordered_set and
-unordered_multiset, iterator and const_iterator have the same type and
-local_iterator and const_local_iterator also have the same type. This makes it
-impossible to implement the header exactly as described in the synopsis, as
+In the current implementation, for `unordered_set` and
+`unordered_multiset`, `iterator` and `const_iterator` have the same type and
+`local_iterator` and `const_local_iterator` also have the same type. This makes
+it impossible to implement the header exactly as described in the synopsis, as
 some member functions are overloaded by the same type.
-According to the proposed resolution,
-[:If they are the same type, those signatures that become otherwise indistinguishable collapse into a single signature.]
-So I'm following that - although this means that the header and documentation
-are currently inconsistent. This will be fixed before review submission.
+
+The proposed resolution is to add a new subsection to 17.4.4:
+[:An implementation shall not supply an overloaded function signature specified in any library clause if such a signature would be inherently ambiguous during overload resolution due to two library types referring to the same type.]
+So I don't supply the `iterator` overloads - although this means that the
+header and documentation are currently inconsistent.
+This will be fixed before review submission.
 
 [endsect]
