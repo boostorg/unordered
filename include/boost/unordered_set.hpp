@@ -35,9 +35,8 @@ namespace boost
     class unordered_set
     {
         // Named for the benefit of Doxygen.
-        typedef boost::unordered_detail::hash_types<
-            Value, Value, Hash,
-            Pred, Alloc, false
+        typedef boost::unordered_detail::hash_types_unique_keys<
+            Value, Value, Hash, Pred, Alloc
         > implementation_defined;
 
         typename implementation_defined::hash_table base;
@@ -159,12 +158,12 @@ namespace boost
         std::pair<iterator, bool> insert(const value_type& obj)
         {
             return boost::unordered_detail::pair_cast<iterator, bool>(
-                    base.insert_unique(obj));
+                    base.insert(obj));
         }
 
         const_iterator insert(const_iterator hint, const value_type& obj)
         {
-            return const_iterator(base.insert_unique(get(hint), obj));
+            return const_iterator(base.insert(get(hint), obj));
         }
 
         template <class InputIterator>
@@ -325,9 +324,8 @@ namespace boost
     class unordered_multiset
     {
         // Named for the benefit of Doxygen.
-        typedef boost::unordered_detail::hash_types<
-            Value, Value, Hash,
-            Pred, Alloc, true
+        typedef boost::unordered_detail::hash_types_equivalent_keys<
+            Value, Value, Hash, Pred, Alloc
         > implementation_defined;
 
         typename implementation_defined::hash_table base;
@@ -448,12 +446,12 @@ namespace boost
 
         iterator insert(const value_type& obj)
         {
-            return iterator(base.insert_equivalent(obj));
+            return iterator(base.insert(obj));
         }
 
         const_iterator insert(const_iterator hint, const value_type& obj)
         {
-            return const_iterator(base.insert_equivalent(get(hint), obj));
+            return const_iterator(base.insert(get(hint), obj));
         }
 
         template <class InputIterator>
