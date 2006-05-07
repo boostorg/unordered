@@ -119,9 +119,10 @@ namespace boost {
 
             Allocator& alloc_;
             pointer ptr_;
+            bool constructed_;
 
             allocator_constructor(Allocator& a)
-                : alloc_(a), ptr_()
+                : alloc_(a), ptr_(), constructed_(false)
             {
 #if BOOST_WORKAROUND(BOOST_MSVC, < 1300)
                     unordered_detail::reset(ptr_);
@@ -129,23 +130,25 @@ namespace boost {
             }
 
             ~allocator_constructor() {
-                if (ptr_) alloc_.deallocate(ptr_, 1);
+                if(ptr_) {
+                    if(constructed_) alloc_.destroy(ptr_);
+                    alloc_.deallocate(ptr_, 1);
+                }
             }
 
             template <class V>
-            pointer construct(V const& v) {
-                BOOST_ASSERT(!ptr_);
-                pointer p = alloc_.allocate(1);
-                ptr_ = p;
-                alloc_.construct(p, v);
-                reset(ptr_);
-                return p;
+            void construct(V const& v) {
+                BOOST_ASSERT(!ptr_ && !constructed_);
+                ptr_ = alloc_.allocate(1);
+                alloc_.construct(ptr_, v);
+                constructed_  = true;
             }
 
             // no throw
             pointer release()
             {
                 pointer p = ptr_;
+                constructed_ = false;
                 reset(ptr_);
                 return p;
             }
