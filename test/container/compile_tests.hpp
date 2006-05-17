@@ -1,3 +1,8 @@
+
+//  Copyright Daniel James 2005-2006. Use, modification, and distribution are
+//  subject to the Boost Software License, Version 1.0. (See accompanying
+//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
 #include <boost/concept_check.hpp>
 #include <boost/mpl/assert.hpp>
 #include <boost/mpl/bool.hpp>
@@ -101,8 +106,12 @@ void container_test(X& r, T& value)
     X const a_const;
     test::check_return_type<iterator>::equals(a.begin());
     test::check_return_type<const_iterator>::equals(a_const.begin());
+    test::check_return_type<const_iterator>::equals(a.cbegin());
+    test::check_return_type<const_iterator>::equals(a_const.cbegin());
     test::check_return_type<iterator>::equals(a.end());
     test::check_return_type<const_iterator>::equals(a_const.end());
+    test::check_return_type<const_iterator>::equals(a.cend());
+    test::check_return_type<const_iterator>::equals(a_const.cend());
 
     // No tests for ==, != since they're not required for unordered containers.
 
