@@ -173,6 +173,9 @@ namespace minimal
         bool operator>=(const_pointer const& x) const { return ptr_ >= x.ptr_; }
     };
 
+    // TODO: Issue 560 suggests that an allocator doesn't have to have
+    // a default constructor.
+    // http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#560
     template <class T>
     class allocator
     {
