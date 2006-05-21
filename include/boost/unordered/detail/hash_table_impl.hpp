@@ -1056,25 +1056,9 @@ namespace boost {
 
         private:
 
-            // From the compressed functions docs:
-            //
-            // "Finally, a word of caution for Visual C++ 6 users: if either
-            // argument is an empty type, then assigning to that member will
-            // produce memory corruption, unless the empty type has a "do
-            // nothing" assignment operator defined. This is due to a bug in
-            // the way VC6 generates implicit assignment operators."
-            //
-            // Nice.
-            //
-            // So use std::pair for Visual C++.
-
             class functions
             {
-#if !BOOST_WORKAROUND(BOOST_MSVC, < 1300)
-                boost::compressed_pair<hasher, key_equal> functions_;
-#else
                 std::pair<hasher, key_equal> functions_;
-#endif
 
             public:
 
@@ -1083,20 +1067,12 @@ namespace boost {
 
                 hasher const& hash_function() const
                 {
-#if !BOOST_WORKAROUND(BOOST_MSVC, < 1300)
-                    return functions_.first();
-#else
                     return functions_.first;
-#endif
                 }
 
                 key_equal const& key_eq() const
                 {
-#if !BOOST_WORKAROUND(BOOST_MSVC, < 1300)
-                    return functions_.second();
-#else
                     return functions_.second;
-#endif
                 }
             };
 
@@ -1429,8 +1405,9 @@ namespace boost {
             {
                 bool need_to_reserve = n >= max_load_;
                 // throws - basic:
-                if (need_to_reserve) rehash_impl(min_buckets_for_size(n)); 
-                BOOST_ASSERT(n < max_load_);
+                if (need_to_reserve) rehash_impl(min_buckets_for_size(n));
+                // TODO: Deal with this special case better:
+                BOOST_ASSERT(n < max_load_ || this->bucket_count_ == max_bucket_count());
                 return need_to_reserve;
             }
 
@@ -1443,13 +1420,10 @@ namespace boost {
             }
 
             // no throw
-            //
-            // TODO: the argument is a hint. So don't use it if it's
-            // unreasonably small.
             void max_load_factor(float z)
             {
                 BOOST_ASSERT(z > 0);
-                mlf_ = z;
+                mlf_ = (std::max)(z, minimum_max_load_factor);
                 calculate_max_load();
             }
 

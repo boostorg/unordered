@@ -35,10 +35,6 @@
 
 #include <boost/mpl/aux_/config/eti.hpp>
 
-#if !BOOST_WORKAROUND(BOOST_MSVC, < 1300)
-#include <boost/compressed_pair.hpp>
-#endif
-
 // See hash_table::swap() for details about this.
 #if !defined(BOOST_UNORDERED_SWAP_METHOD)
 #define BOOST_UNORDERED_SWAP_METHOD 3
@@ -65,6 +61,7 @@ namespace boost {
         template <class T> struct type_wrapper {};
 
         const static std::size_t default_initial_bucket_count = 50;
+        const static float minimum_max_load_factor = 1e-3;
         inline std::size_t next_prime(std::size_t n);
 
         template <class T>
@@ -73,7 +70,7 @@ namespace boost {
 #if defined(BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP)
             std::swap(x,y);
 #else
-            using namespace std;
+            using std::swap;
             swap(x, y);
 #endif
         }
