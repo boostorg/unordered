@@ -51,23 +51,30 @@ namespace test
             if(x1.count(key) != count)
                 BOOST_ERROR("Incorrect output of count.");
 
-            // Check that the keys are in the correct bucket and are adjacent in
-            // the bucket.
-            typename X::size_type bucket = x1.bucket(key);
-            typename X::const_local_iterator lit = x1.begin(bucket), lend = x1.end(bucket);
-            for(; lit != lend && !eq(get_key<X>(*lit), key); ++lit) continue;
-            if(lit == lend)
-                BOOST_ERROR("Unable to find element with a local_iterator");
-            unsigned int count2 = 0;
-            for(; lit != lend && eq(get_key<X>(*lit), key); ++lit) ++count2;
-            if(count != count2)
-                BOOST_ERROR("Element count doesn't match local_iterator.");
-            for(; lit != lend; ++lit) {
-                if(eq(get_key<X>(*lit), key)) {
-                    BOOST_ERROR("Non-adjacent element with equivalent key in bucket.");
-                    break;
-                }
-            }
+            // I'm not bothering with the following test for now, as the
+            // previous test is probably more enough to catch the kind of
+            // errors that this would catch (if an element was in the wrong
+            // bucket it not be found by the call to count, if elements are not
+            // adjacent then they would be caught when checking against
+            // found_.
+
+            // // Check that the keys are in the correct bucket and are
+            // // adjacent in the bucket.
+            // typename X::size_type bucket = x1.bucket(key);
+            // typename X::const_local_iterator lit = x1.begin(bucket), lend = x1.end(bucket);
+            // for(; lit != lend && !eq(get_key<X>(*lit), key); ++lit) continue;
+            // if(lit == lend)
+            //     BOOST_ERROR("Unable to find element with a local_iterator");
+            // unsigned int count2 = 0;
+            // for(; lit != lend && eq(get_key<X>(*lit), key); ++lit) ++count2;
+            // if(count != count2)
+            //     BOOST_ERROR("Element count doesn't match local_iterator.");
+            // for(; lit != lend; ++lit) {
+            //     if(eq(get_key<X>(*lit), key)) {
+            //         BOOST_ERROR("Non-adjacent element with equivalent key in bucket.");
+            //         break;
+            //     }
+            // }
         };
 
         // Finally, check that size matches up.

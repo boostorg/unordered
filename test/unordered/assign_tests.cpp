@@ -53,9 +53,11 @@ void assign_tests2(T* = 0)
     typename T::hasher hf;
     typename T::key_equal eq;
     typename T::hasher hf1(1);
-    typename T::key_equal eq1(1);
     typename T::hasher hf2(2);
+    typename T::key_equal eq1(1);
     typename T::key_equal eq2(2);
+    typename T::allocator_type al1(1);
+    typename T::allocator_type al2(2);
 
     std::cerr<<"assign_tests2.1\n";
     {
@@ -67,6 +69,19 @@ void assign_tests2(T* = 0)
         BOOST_TEST(test::equivalent(x2.hash_function(), hf1));
         BOOST_TEST(test::equivalent(x2.key_eq(), eq1));
         check_container(x2, v);
+    }
+
+    std::cerr<<"assign_tests2.2\n";
+    {
+        // TODO: Need to generate duplicates...
+        test::random_values<T> v1(100), v2(100);
+        T x1(v1.begin(), v1.end(), 0, hf1, eq1, al1);
+        T x2(v2.begin(), v2.end(), 0, hf2, eq2, al2);
+        x2 = x1;
+        BOOST_TEST(test::equivalent(x2.hash_function(), hf1));
+        BOOST_TEST(test::equivalent(x2.key_eq(), eq1));
+        BOOST_TEST(test::equivalent(x2.get_allocator(), al2));
+        check_container(x2, v1);
     }
 }
 

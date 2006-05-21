@@ -1,0 +1,29 @@
+
+#  Copyright Daniel James 2006. Use, modification, and distribution are
+#  subject to the Boost Software License, Version 1.0. (See accompanying
+#  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+import testing ;
+
+alias framework : /boost/test//boost_unit_test_framework/<optimization>speed ;
+
+project unordered-test/exception-tests
+    : requirements
+        <toolset>intel-linux:"<cxxflags>-strict_ansi -cxxlib-icc"
+    ;
+
+test-suite unordered-tests
+    :
+        [ run constructor_tests.cpp framework ]
+        [ run copy_tests.cpp framework ]
+        [ run assign_tests.cpp framework ]
+        [ run insert_tests.cpp framework ]
+        [ run erase_tests.cpp framework ]
+        [ run rehash_tests.cpp framework ]
+        [ run swap_tests.cpp framework : : :
+            <define>BOOST_UNORDERED_SWAP_METHOD=1 : swap_tests1 ]
+        [ run swap_tests.cpp framework : : :
+            <define>BOOST_UNORDERED_SWAP_METHOD=2 : swap_tests2 ]
+        [ run swap_tests.cpp framework : : :
+            <define>BOOST_UNORDERED_SWAP_METHOD=3 : swap_tests3 ]
+    ;

@@ -70,7 +70,7 @@ void erase_tests1(Container* = 0)
                 pos = boost::next(prev);
             }
             next = boost::next(pos);
-            typename Container::key_type key = test::get_key<Container>(*x.begin());
+            typename Container::key_type key = test::get_key<Container>(*pos);
             std::size_t count = x.count(key);
             BOOST_TEST(next == x.erase(pos));
             --size;
@@ -137,4 +137,6 @@ int main()
     erase_tests1((boost::unordered_map<test::object, test::object, test::hash, test::equal_to, test::allocator<test::object> >*) 0);
     std::cerr<<"\nErase unordered_multimap<test::object,..>.\n";
     erase_tests1((boost::unordered_multimap<test::object, test::object, test::hash, test::equal_to, test::allocator<test::object> >*) 0);
+
+    return boost::report_errors();
 }

@@ -15,76 +15,94 @@
 
 #include <iostream>
     
-template <class Container>
-void unique_insert_tests1(Container* = 0)
+template <class X>
+void unique_insert_tests1(X* = 0)
 {
     std::cerr<<"insert(value) tests for containers with unique keys.\n";
 
-    Container x;
-    test::ordered<Container> tracker = test::create_ordered(x);
+    X x;
+    test::ordered<X> tracker = test::create_ordered(x);
 
-    test::random_values<Container> v(1000);
-    for(typename test::random_values<Container>::iterator it = v.begin();
+    test::random_values<X> v(1000);
+    for(typename test::random_values<X>::iterator it = v.begin();
             it != v.end(); ++it)
     {
-        std::pair<typename Container::iterator, bool> r1 = x.insert(*it);
-        std::pair<typename test::ordered<Container>::iterator, bool> r2
+        typename X::size_type old_bucket_count = x.bucket_count();
+        float b = x.max_load_factor();
+
+        std::pair<typename X::iterator, bool> r1 = x.insert(*it);
+        std::pair<typename test::ordered<X>::iterator, bool> r2
             = tracker.insert(*it);
 
         BOOST_TEST(r1.second == r2.second);
         BOOST_TEST(*r1.first == *r2.first);
 
         tracker.compare_key(x, *it);
+
+        if(x.size() < b * old_bucket_count)
+            BOOST_TEST(x.bucket_count() == old_bucket_count);
     }
 
     test::check_equivalent_keys(x);
 }
 
-template <class Container>
-void equivalent_insert_tests1(Container* = 0)
+template <class X>
+void equivalent_insert_tests1(X* = 0)
 {
     std::cerr<<"insert(value) tests for containers with equivalent keys.\n";
 
-    Container x;
-    test::ordered<Container> tracker = test::create_ordered(x);
+    X x;
+    test::ordered<X> tracker = test::create_ordered(x);
 
-    test::random_values<Container> v(1000);
-    for(typename test::random_values<Container>::iterator it = v.begin();
+    test::random_values<X> v(1000);
+    for(typename test::random_values<X>::iterator it = v.begin();
             it != v.end(); ++it)
     {
-        typename Container::iterator r1 = x.insert(*it);
-        typename test::ordered<Container>::iterator r2 = tracker.insert(*it);
+        typename X::size_type old_bucket_count = x.bucket_count();
+        float b = x.max_load_factor();
+
+        typename X::iterator r1 = x.insert(*it);
+        typename test::ordered<X>::iterator r2 = tracker.insert(*it);
 
         BOOST_TEST(*r1 == *r2);
 
         tracker.compare_key(x, *it);
+
+        if(x.size() < b * old_bucket_count)
+            BOOST_TEST(x.bucket_count() == old_bucket_count);
     }
 
     test::check_equivalent_keys(x);
 }
 
-template <class Container>
-void insert_tests2(Container* = 0)
+template <class X>
+void insert_tests2(X* = 0)
 {
-    typedef typename test::ordered<Container> tracker_type;
-    typedef typename Container::iterator iterator;
-    typedef typename Container::const_iterator const_iterator;
+    typedef typename test::ordered<X> tracker_type;
+    typedef typename X::iterator iterator;
+    typedef typename X::const_iterator const_iterator;
     typedef typename tracker_type::iterator tracker_iterator;
 
     std::cerr<<"insert(begin(), value) tests.\n";
 
     {
-        Container x;
+        X x;
         tracker_type tracker = test::create_ordered(x);
 
-        test::random_values<Container> v(1000);
-        for(typename test::random_values<Container>::iterator it = v.begin();
+        test::random_values<X> v(1000);
+        for(typename test::random_values<X>::iterator it = v.begin();
                 it != v.end(); ++it)
         {
+            typename X::size_type old_bucket_count = x.bucket_count();
+            float b = x.max_load_factor();
+
             iterator r1 = x.insert(x.begin(), *it);
             tracker_iterator r2 = tracker.insert(tracker.begin(), *it);
             BOOST_TEST(*r1 == *r2);
             tracker.compare_key(x, *it);
+
+            if(x.size() < b * old_bucket_count)
+                BOOST_TEST(x.bucket_count() == old_bucket_count);
         }
 
         test::check_equivalent_keys(x);
@@ -93,18 +111,24 @@ void insert_tests2(Container* = 0)
     std::cerr<<"insert(end(), value) tests.\n";
 
     {
-        Container x;
-        Container const& x_const = x;
+        X x;
+        X const& x_const = x;
         tracker_type tracker = test::create_ordered(x);
 
-        test::random_values<Container> v(100);
-        for(typename test::random_values<Container>::iterator it = v.begin();
+        test::random_values<X> v(100);
+        for(typename test::random_values<X>::iterator it = v.begin();
                 it != v.end(); ++it)
         {
+            typename X::size_type old_bucket_count = x.bucket_count();
+            float b = x.max_load_factor();
+
             const_iterator r1 = x.insert(x_const.end(), *it);
             tracker_iterator r2 = tracker.insert(tracker.end(), *it);
             BOOST_TEST(*r1 == *r2);
             tracker.compare_key(x, *it);
+
+            if(x.size() < b * old_bucket_count)
+                BOOST_TEST(x.bucket_count() == old_bucket_count);
         }
 
         test::check_equivalent_keys(x);
@@ -113,18 +137,24 @@ void insert_tests2(Container* = 0)
     std::cerr<<"insert(pos, value) tests.\n";
 
     {
-        Container x;
+        X x;
         const_iterator pos = x.begin();
         tracker_type tracker = test::create_ordered(x);
 
-        test::random_values<Container> v(1000);
-        for(typename test::random_values<Container>::iterator it = v.begin();
+        test::random_values<X> v(1000);
+        for(typename test::random_values<X>::iterator it = v.begin();
                 it != v.end(); ++it)
         {
+            typename X::size_type old_bucket_count = x.bucket_count();
+            float b = x.max_load_factor();
+
             pos = x.insert(pos, *it);
             tracker_iterator r2 = tracker.insert(tracker.begin(), *it);
             BOOST_TEST(*pos == *r2);
             tracker.compare_key(x, *it);
+
+            if(x.size() < b * old_bucket_count)
+                BOOST_TEST(x.bucket_count() == old_bucket_count);
         }
 
         test::check_equivalent_keys(x);
@@ -133,16 +163,22 @@ void insert_tests2(Container* = 0)
     std::cerr<<"insert single item range tests.\n";
 
     {
-        Container x;
+        X x;
         tracker_type tracker = test::create_ordered(x);
 
-        test::random_values<Container> v(1000);
-        for(typename test::random_values<Container>::iterator it = v.begin();
+        test::random_values<X> v(1000);
+        for(typename test::random_values<X>::iterator it = v.begin();
                 it != v.end(); ++it)
         {
+            typename X::size_type old_bucket_count = x.bucket_count();
+            float b = x.max_load_factor();
+
             x.insert(it, boost::next(it));
             tracker.insert(*it);
             tracker.compare_key(x, *it);
+
+            if(x.size() < b * old_bucket_count)
+                BOOST_TEST(x.bucket_count() == old_bucket_count);
         }
 
         test::check_equivalent_keys(x);
@@ -151,15 +187,40 @@ void insert_tests2(Container* = 0)
     std::cerr<<"insert range tests.\n";
 
     {
-        Container x;
+        X x;
         const_iterator pos = x.begin();
 
-        test::random_values<Container> v(1000);
+        test::random_values<X> v(1000);
         x.insert(v.begin(), v.end());
         check_container(x, v);
 
         test::check_equivalent_keys(x);
     }
+}
+
+template <class X>
+void map_tests(X* = 0)
+{
+    X x;
+    test::ordered<X> tracker = test::create_ordered(x);
+
+    test::random_values<X> v(1000);
+    for(typename test::random_values<X>::iterator it = v.begin();
+            it != v.end(); ++it)
+    {
+        typename X::size_type old_bucket_count = x.bucket_count();
+        float b = x.max_load_factor();
+
+        x[it->first] = it->second;
+        tracker[it->first] = it->second;
+
+        tracker.compare_key(x, *it);
+
+        if(x.size() < b * old_bucket_count)
+            BOOST_TEST(x.bucket_count() == old_bucket_count);
+    }
+
+    test::check_equivalent_keys(x);   
 }
 
 int main()
@@ -183,6 +244,9 @@ int main()
     insert_tests2((boost::unordered_multiset<test::object, test::hash, test::equal_to, test::allocator<test::object> >*) 0);
     insert_tests2((boost::unordered_map<test::object, test::object, test::hash, test::equal_to, test::allocator<test::object> >*) 0);
     insert_tests2((boost::unordered_multimap<test::object, test::object, test::hash, test::equal_to, test::allocator<test::object> >*) 0);
+
+    map_tests((boost::unordered_map<int, int>*) 0);
+    map_tests((boost::unordered_map<test::object, test::object, test::hash, test::equal_to, test::allocator<test::object> >*) 0);
 
     return boost::report_errors();
 }

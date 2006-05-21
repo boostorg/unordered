@@ -147,6 +147,12 @@ namespace test
     template <class T>
     class allocator
     {
+# ifdef BOOST_NO_MEMBER_TEMPLATE_FRIENDS
+    public:
+# else
+        template <class> friend class allocator;
+# endif
+        int tag_;
     public:
         typedef std::size_t size_type;
         typedef std::ptrdiff_t difference_type;
@@ -158,9 +164,9 @@ namespace test
 
         template <class U> struct rebind { typedef allocator<U> other; };
 
-        explicit allocator(int t = 0) {}
-        template <class Y> allocator(allocator<Y> const& x) {}
-        allocator(allocator const&) {}
+        explicit allocator(int t = 0) : tag_(t) {}
+        template <class Y> allocator(allocator<Y> const& x) : tag_(x.tag_) {}
+        allocator(allocator const& x) : tag_(x.tag_) {}
         ~allocator() {}
 
         pointer address(reference r) { return pointer(&r); }
@@ -183,20 +189,20 @@ namespace test
         void construct(pointer p, T const& t) { new(p) T(t); }
         void destroy(pointer p) { p->~T(); }
 
-        size_type max_size() const { return 1000; }
+        size_type max_size() const {
+            return (std::numeric_limits<size_type>::max)();
+        }
+
+        friend bool operator==(allocator const& x, allocator const& y)
+        {
+            return x.tag_ == y.tag_;
+        }
+
+        friend bool operator!=(allocator const& x, allocator const& y)
+        {
+            return x.tag_ != y.tag_;
+        }
     };
-
-    template <class T>
-    inline bool operator==(allocator<T> const& x, allocator<T> const& y)
-    {
-        return true;
-    }
-
-    template <class T>
-    inline bool operator!=(allocator<T> const& x, allocator<T> const& y)
-    {
-        return false;
-    }
 }
 
 #endif

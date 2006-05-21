@@ -20,4 +20,10 @@ test-suite unordered-tests
         [ run insert_tests.cpp ]
         [ run erase_tests.cpp ]
         [ run find_tests.cpp ]
+        [ run bucket_tests.cpp ]
+        [ run load_factor_tests.cpp ]
+        [ run rehash_tests.cpp ]
+        [ run swap_tests.cpp : : : <define>BOOST_UNORDERED_SWAP_METHOD=1 : swap_tests1 ]
+        [ run swap_tests.cpp : : : <define>BOOST_UNORDERED_SWAP_METHOD=2 : swap_tests2 ]
+        [ run swap_tests.cpp : : : <define>BOOST_UNORDERED_SWAP_METHOD=3 : swap_tests3 ]
     ;
