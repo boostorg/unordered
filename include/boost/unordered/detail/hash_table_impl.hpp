@@ -1339,6 +1339,13 @@ namespace boost {
             }
 
             // no throw
+            //
+            // TODO: Is this a good value? The reason why I've set it to this
+            // as it's the largest value that all the functions can be
+            // implemented for (rehash's post conditions are impossible for
+            // larger sizes). But this can be significantly more that the
+            // allocator's max_size. Also, I should probably check again
+            // size_type's maximum value.
             size_type max_size() const
             {
                 // size < mlf_ * count
@@ -1546,7 +1553,6 @@ namespace boost {
                         bucket_ptr dst_bucket = dst.buckets_ +
                             dst.index_from_hash(hf(extract_key(*it)));
                         // throws, strong
-                        // dst.create_node(*it, dst_bucket);
                         dst.copy_group(it, dst_bucket);
                     }
                 }
@@ -1560,39 +1566,6 @@ namespace boost {
             // strong otherwise.
 
 #if BOOST_UNORDERED_HASH_EQUIVALENT
-
-        private:
-
-            // Insert node without checking if a resize is necessary.
-            // (equivalent key containers)
-
-            // strong exception safety.
-            iterator_base unchecked_insert(value_type const& v)
-            {
-                key_type const& k = extract_key(v);
-                bucket_ptr bucket = get_bucket(k);
-                local_iterator_base position = find_iterator(bucket, k);
-
-                // No effects until here, this is strong.
-                return this->create_node(v, bucket, position);
-            }
-
-            // strong exception safety
-            iterator_base unchecked_insert(iterator_base const& it,
-                    value_type const& v)
-            {
-                // The condition can throw, but no side effects.
-                if(it != this->end() && equal(extract_key(v), *it)) {
-                    // Strong exception safety:
-                    return this->create_node(v, it);
-                }
-                else {
-                    // Strong exception safety:
-                    return unchecked_insert(v);
-                }
-            }
-
-        public:
 
             // Insert (equivalent key containers)
 
@@ -1665,6 +1638,7 @@ namespace boost {
             // Insert from iterator range (equivalent key containers)
 
         private:
+
             // if hash function throws, or inserting > 1 element, basic exception safety
             // strong otherwise
             template <class I>
@@ -1677,7 +1651,14 @@ namespace boost {
                 else {
                     // Only require basic exception safety here
                     reserve(size() + distance);
-                    for (; i != j; ++i) unchecked_insert(*i);
+                    for (; i != j; ++i) {
+                        key_type const& k = extract_key(*i);
+                        bucket_ptr bucket = get_bucket(k);
+                        local_iterator_base position = find_iterator(bucket, k);
+
+                        // No effects until here, this is strong.
+                        this->create_node(*i, bucket, position);
+                    }
                 }
             }
 
@@ -1712,7 +1693,8 @@ namespace boost {
                             !boost::is_same<value_type, key_type>::value));
                 typedef BOOST_DEDUCED_TYPENAME value_type::second_type mapped_type;
 
-                bucket_ptr bucket = get_bucket(k);
+                size_type hash_value = hash_function()(k);
+                bucket_ptr bucket = this->buckets_ + this->index_from_hash(hash_value);
                 local_iterator_base pos = find_iterator(bucket, k);
 
                 if (pos.not_finished())
@@ -1728,11 +1710,8 @@ namespace boost {
 
                     // reserve has basic exception safety if the hash function
                     // throws, strong otherwise.
-                    if (reserve(size() + 1)) {
-                        // get_bucket can only throw if the hash function throws (in
-                        // which case basic exception safety is okay).
-                        bucket = get_bucket(k);
-                    }
+                    if (reserve(size() + 1))
+                        bucket = this->buckets_ + this->index_from_hash(hash_value);
 
                     // Nothing after this point can throw.
 
@@ -1752,8 +1731,7 @@ namespace boost {
                 // No side effects in this initial code
                 key_type const& k = extract_key(v);
                 size_type hash_value = hash_function()(k);
-                bucket_ptr bucket = this->buckets_
-                    + this->index_from_hash(hash_value);
+                bucket_ptr bucket = this->buckets_ + this->index_from_hash(hash_value);
                 local_iterator_base pos = find_iterator(bucket, k);
                 
                 if (pos.not_finished()) {
@@ -1799,6 +1777,18 @@ namespace boost {
 
             // Insert from iterators (unique keys)
 
+            template <class I>
+            std::size_t insert_size(I i, I j, boost::forward_traversal_tag)
+            {
+                return std::distance(i, j);
+            }
+
+            template <class I>
+            std::size_t insert_size(I i, I j, boost::incrementable_traversal_tag)
+            {
+                return 1;
+            }
+
             // if hash function throws, or inserting > 1 element, basic exception safety
             // strong otherwise
             template <class InputIterator>
@@ -1806,10 +1796,40 @@ namespace boost {
             {
                 // If only inserting 1 element, get the required
                 // safety since insert is only called once.
-                for (; i != j; ++i) insert(*i);
+                for (; i != j; ++i) {
+                    // No side effects in this initial code
+                    key_type const& k = extract_key(*i);
+                    size_type hash_value = hash_function()(k);
+                    bucket_ptr bucket = this->buckets_
+                        + this->index_from_hash(hash_value);
+                    local_iterator_base pos = find_iterator(bucket, k);
+                    
+                    if (!pos.not_finished()) {
+                        // Doesn't already exist, add to bucket.
+                        // Side effects only in this block.
+
+                        // Create the node before rehashing in case it throws an
+                        // exception (need strong safety in such a case).
+                        node_constructor a(this->node_alloc_, this->bucket_alloc_);
+                        value_type const& v(*i);
+                        a.construct(v);
+
+                        // reserve has basic exception safety if the hash function
+                        // throws, strong otherwise.
+                        if(size() + 1 >= max_load_) {
+                            BOOST_DEDUCED_TYPENAME boost::iterator_traversal<InputIterator>::type
+                                iterator_traversal_tag;
+
+                            reserve(size() + insert_size(i, j, iterator_traversal_tag));
+                            bucket = this->buckets_ + this->index_from_hash(hash_value);
+                        }
+
+                        // Nothing after this point can throw.
+                        this->link_node(a.release(), bucket);
+                    }
+                }
             }
 #endif
-
         public:
 
             // erase
