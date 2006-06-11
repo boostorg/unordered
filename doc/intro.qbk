@@ -1,4 +1,5 @@
-[def __tr1__ [@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2009.pdf
+[def __tr1__ 
+    [@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2009.pdf
     C++ Standard Library Technical Report]]
 [def __draft__
     [@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2009.pdf

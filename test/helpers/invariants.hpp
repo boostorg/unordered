@@ -80,7 +80,7 @@ namespace test
         // Finally, check that size matches up.
         if(x1.size() != size)
             BOOST_ERROR("x1.size() doesn't match actual size.");
-        if(static_cast<float>(size) / x1.bucket_count() != x1.load_factor())
+        if(static_cast<float>(size) / static_cast<float>(x1.bucket_count()) != x1.load_factor())
             BOOST_ERROR("x1.load_factor() doesn't match actual load_factor.");
     }
 }

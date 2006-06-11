@@ -14,8 +14,8 @@
 
 namespace test
 {
-    template <class T>
-    bool equivalent_impl(T const& x, T const& y) {
+    template <class T1, class T2>
+    bool equivalent_impl(T1 const& x, T2 const& y) {
         return x == y;
     }
 

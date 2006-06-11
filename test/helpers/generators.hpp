@@ -36,15 +36,19 @@ namespace test
 
     inline int generate(int const*)
     {
+        integer_generator_type gen;
+        boost::uniform_int<> dist(0, 1000);
         static boost::variate_generator<integer_generator_type, boost::uniform_int<> >
-            vg((integer_generator_type()), boost::uniform_int<>(0, 1000));
+            vg(gen, dist);
         return vg();
     }
 
     inline char generate(char const*)
     {
+        integer_generator_type gen;
+        boost::uniform_int<char> dist(32, 128);
         static boost::variate_generator<integer_generator_type, boost::uniform_int<char> >
-            vg((integer_generator_type()), boost::uniform_int<char>(32, 128));
+            vg(gen, dist);
         return vg();
     }
 
@@ -70,8 +74,10 @@ namespace test
 
     float generate(float const*)
     {
+        real_generator_type gen;
+        boost::uniform_real<float> dist;
         static boost::variate_generator<real_generator_type, boost::uniform_real<float> >
-            vg((real_generator_type()), boost::uniform_real<float>());
+            vg(gen, dist);
         return vg();
     }
 
