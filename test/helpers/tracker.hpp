@@ -16,6 +16,8 @@
 #include <algorithm>
 #include <boost/mpl/if.hpp>
 #include <boost/mpl/eval_if.hpp>
+#include <boost/mpl/identity.hpp>
+#include <boost/type_traits/is_same.hpp>
 #include "../objects/fwd.hpp"
 #include "./metafunctions.hpp"
 #include "./helpers.hpp"
@@ -24,15 +26,19 @@
 namespace test
 {
     template <class X>
-    struct equals_to_compare
+    struct equals_to_compare2
+        : public boost::mpl::identity<std::less<typename X::first_argument_type> >
     {
-        typedef std::less<typename X::first_argument_type> type;
     };
 
-    template <>
-    struct equals_to_compare<test::equal_to>
+    template <class X>
+    struct equals_to_compare
+        : public boost::mpl::eval_if<
+            boost::is_same<X, test::equal_to>,
+            boost::mpl::identity<test::less>,
+            equals_to_compare2<X>
+        >
     {
-        typedef test::less type;
     };
 
     template <class X1, class X2>
@@ -121,13 +127,22 @@ namespace test
                 (typename non_const_value_type<X>::type*) 0
                 );
         }
+
+        template <class It>
+        void insert_range(It begin, It end) {
+            while(begin != end) {
+                this->insert(*begin);
+                ++begin;
+            }
+        }
     };
 
     template <class Equals>
     typename equals_to_compare<Equals>::type create_compare(
-            Equals equals)
+            Equals const& equals)
     {
-        return typename equals_to_compare<Equals>::type();
+        typename equals_to_compare<Equals>::type x;
+        return x;
     }
 
     template <class X>
@@ -140,7 +155,7 @@ namespace test
     void check_container(X1 const& container, X2 const& values)
     {
         ordered<X1> tracker = create_ordered(container);
-        tracker.insert(values.begin(), values.end());
+        tracker.insert_range(values.begin(), values.end());
         tracker.compare(container);
     }
 }

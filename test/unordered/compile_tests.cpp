@@ -106,7 +106,7 @@ void unordered_test(X& ref, Key& k, T& t, Hash& hf, Pred& eq)
     X(10);
     X a3(10);
     X();
-    X a4();
+    X a4;
 
     typename X::value_type* i = 0;
     typename X::value_type* j = 0;

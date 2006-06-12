@@ -51,7 +51,7 @@
 #endif
 
 #if BOOST_WORKAROUND(BOOST_MSVC, < 1300)
-#define BOOST_HASH_MSVC_RESET_PTR(x) unordered_detail::reset(node_pointer_)
+#define BOOST_HASH_MSVC_RESET_PTR(x) unordered_detail::reset(x)
 #else
 #define BOOST_HASH_MSVC_RESET_PTR(x)
 #endif
@@ -61,7 +61,7 @@ namespace boost {
         template <class T> struct type_wrapper {};
 
         const static std::size_t default_initial_bucket_count = 50;
-        const static float minimum_max_load_factor = 1e-3;
+        const static float minimum_max_load_factor = 1e-3f;
         inline std::size_t next_prime(std::size_t n);
 
         template <class T>

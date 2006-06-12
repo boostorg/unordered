@@ -32,7 +32,7 @@ void rehash_test1(X* = 0)
 {
     test::random_values<X> v(1000);
     test::ordered<X> tracker;
-    tracker.insert(v.begin(), v.end());
+    tracker.insert_range(v.begin(), v.end());
     X x(v.begin(), v.end());
 
     x.rehash(0); BOOST_TEST(postcondition(x, 0));

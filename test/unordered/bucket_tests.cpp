@@ -39,7 +39,7 @@ void bucket_tests(X* = 0)
 
     for(size_type i = 0; i < x.bucket_count(); ++i) {
         BOOST_TEST(x.bucket_size(i) == (size_type) std::distance(x.begin(i), x.end(i)));
-        X const& x_ref(x);
+        X const& x_ref = x;
         BOOST_TEST(x.bucket_size(i) == (size_type) std::distance(x_ref.begin(i), x_ref.end(i)));
     }
 }

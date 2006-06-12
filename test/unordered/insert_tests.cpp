@@ -18,6 +18,10 @@
 template <class X>
 void unique_insert_tests1(X* = 0)
 {
+    typedef typename X::iterator iterator;
+    typedef test::ordered<X> ordered;
+    typedef typename test::ordered<X>::iterator ordered_iterator;
+
     std::cerr<<"insert(value) tests for containers with unique keys.\n";
 
     X x;
@@ -30,9 +34,8 @@ void unique_insert_tests1(X* = 0)
         typename X::size_type old_bucket_count = x.bucket_count();
         float b = x.max_load_factor();
 
-        std::pair<typename X::iterator, bool> r1 = x.insert(*it);
-        std::pair<typename test::ordered<X>::iterator, bool> r2
-            = tracker.insert(*it);
+        std::pair<iterator, bool> r1 = x.insert(*it);
+        std::pair<ordered_iterator, bool> r2 = tracker.insert(*it);
 
         BOOST_TEST(r1.second == r2.second);
         BOOST_TEST(*r1.first == *r2.first);
@@ -192,7 +195,7 @@ void insert_tests2(X* = 0)
 
         test::random_values<X> v(1000);
         x.insert(v.begin(), v.end());
-        check_container(x, v);
+        test::check_container(x, v);
 
         test::check_equivalent_keys(x);
     }

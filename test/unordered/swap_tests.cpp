@@ -3,6 +3,9 @@
 //  subject to the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+#include <boost/config.hpp>
+#include <algorithm>
+#include <iterator>
 #include <boost/unordered_set.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/detail/lightweight_test.hpp>
@@ -16,8 +19,8 @@ void swap_test_impl(X& x1, X& x2)
 {
     test::ordered<X> tracker1 = test::create_ordered(x1);
     test::ordered<X> tracker2 = test::create_ordered(x2);
-    tracker1.insert(x1.begin(), x1.end());
-    tracker2.insert(x2.begin(), x2.end());
+    tracker1.insert_range(x1.begin(), x1.end());
+    tracker2.insert_range(x2.begin(), x2.end());
     x1.swap(x2);
     tracker1.compare(x2);
     tracker2.compare(x1);

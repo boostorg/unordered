@@ -10,6 +10,7 @@
 #define BOOST_UNORDERED_TEST_HELPERS_INVARIANT_HEADER
 
 #include <set>
+#include <cmath>
 #include "./metafunctions.hpp"
 #include "./helpers.hpp"
 
@@ -80,7 +81,9 @@ namespace test
         // Finally, check that size matches up.
         if(x1.size() != size)
             BOOST_ERROR("x1.size() doesn't match actual size.");
-        if(static_cast<float>(size) / static_cast<float>(x1.bucket_count()) != x1.load_factor())
+        float load_factor = static_cast<float>(size) / static_cast<float>(x1.bucket_count());
+        using namespace std;
+        if(fabs(x1.load_factor() - load_factor) > x1.load_factor() / 64)
             BOOST_ERROR("x1.load_factor() doesn't match actual load_factor.");
     }
 }

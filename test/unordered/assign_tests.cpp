@@ -34,7 +34,7 @@ void assign_tests1(T* = 0)
         T x(v.begin(), v.end());
 
         test::ordered<T> tracker = test::create_ordered(x);
-        tracker.insert(v.begin(), v.end());
+        tracker.insert_range(v.begin(), v.end());
 
         x = x;
         tracker.compare(x);
@@ -68,7 +68,7 @@ void assign_tests2(T* = 0)
         x2 = x1;
         BOOST_TEST(test::equivalent(x2.hash_function(), hf1));
         BOOST_TEST(test::equivalent(x2.key_eq(), eq1));
-        check_container(x2, v);
+        test::check_container(x2, v);
     }
 
     std::cerr<<"assign_tests2.2\n";
@@ -81,7 +81,7 @@ void assign_tests2(T* = 0)
         BOOST_TEST(test::equivalent(x2.hash_function(), hf1));
         BOOST_TEST(test::equivalent(x2.key_eq(), eq1));
         BOOST_TEST(test::equivalent(x2.get_allocator(), al2));
-        check_container(x2, v1);
+        test::check_container(x2, v1);
     }
 }
 

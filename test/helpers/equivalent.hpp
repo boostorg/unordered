@@ -14,32 +14,35 @@
 
 namespace test
 {
+    struct base_type {} base;
+    struct derived_type : base_type {} derived;
+    
     template <class T1, class T2>
-    bool equivalent_impl(T1 const& x, T2 const& y) {
+    bool equivalent_impl(T1 const& x, T2 const& y, base_type) {
         return x == y;
     }
 
     template <class T>
-    bool equivalent_impl(boost::hash<T> const&, boost::hash<T> const&) {
+    bool equivalent_impl(boost::hash<T> const&, boost::hash<T> const&, derived_type) {
         return true;
     }
 
     template <class T>
-    bool equivalent_impl(std::equal_to<T> const&, std::equal_to<T> const&) {
+    bool equivalent_impl(std::equal_to<T> const&, std::equal_to<T> const&, derived_type) {
         return true;
     }
 
     template <class T1, class T2, class T3, class T4>
     bool equivalent_impl(std::pair<T1, T2> const& x1,
-            std::pair<T3, T4> const& x2) {
-        return equivalent_impl(x1.first, x2.first) &&
-            equivalent_impl(x1.second, x2.second);
+            std::pair<T3, T4> const& x2, derived_type) {
+        return equivalent_impl(x1.first, x2.first, derived) &&
+            equivalent_impl(x1.second, x2.second, derived);
     }
 
     struct equivalent_type {
         template <class T1, class T2>
         bool operator()(T1 const& x, T2 const& y) {
-            return equivalent_impl(x, y);
+            return equivalent_impl(x, y, derived);
         }
     };
 
@@ -74,8 +77,8 @@ namespace test
         bool operator()(Container const& x) const
         {
             if(!((size_ == x.size()) &&
-                (test::equivalent_impl(hasher_, x.hash_function())) &&
-                (test::equivalent_impl(key_equal_, x.key_eq())) &&
+                (test::equivalent(hasher_, x.hash_function())) &&
+                (test::equivalent(key_equal_, x.key_eq())) &&
                 (max_load_factor_ == x.max_load_factor()) &&
                 (values_.size() == x.size()))) return false;
 

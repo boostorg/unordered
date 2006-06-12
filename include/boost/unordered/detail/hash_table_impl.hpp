@@ -1811,7 +1811,7 @@ namespace boost {
                         // Create the node before rehashing in case it throws an
                         // exception (need strong safety in such a case).
                         node_constructor a(this->node_alloc_, this->bucket_alloc_);
-                        value_type const& v(*i);
+                        value_type const& v = *i;
                         a.construct(v);
 
                         // reserve has basic exception safety if the hash function

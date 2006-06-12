@@ -67,7 +67,7 @@ void constructor_tests1(T* = 0)
         BOOST_TEST(test::equivalent(x.hash_function(), hf));
         BOOST_TEST(test::equivalent(x.key_eq(), eq));
         BOOST_TEST(test::equivalent(x.get_allocator(), al));
-        check_container(x, v);
+        test::check_container(x, v);
     }
 
     std::cerr<<"Construct 6\n";
@@ -78,7 +78,7 @@ void constructor_tests1(T* = 0)
         BOOST_TEST(test::equivalent(x.hash_function(), hf));
         BOOST_TEST(test::equivalent(x.key_eq(), eq));
         BOOST_TEST(test::equivalent(x.get_allocator(), al));
-        check_container(x, v);
+        test::check_container(x, v);
     }
 
     std::cerr<<"Construct 7\n";
@@ -89,7 +89,7 @@ void constructor_tests1(T* = 0)
         BOOST_TEST(test::equivalent(x.hash_function(), hf));
         BOOST_TEST(test::equivalent(x.key_eq(), eq));
         BOOST_TEST(test::equivalent(x.get_allocator(), al));
-        check_container(x, v);
+        test::check_container(x, v);
     }
 
     std::cerr<<"Construct 8\n";
@@ -99,7 +99,7 @@ void constructor_tests1(T* = 0)
         BOOST_TEST(test::equivalent(x.hash_function(), hf));
         BOOST_TEST(test::equivalent(x.key_eq(), eq));
         BOOST_TEST(test::equivalent(x.get_allocator(), al));
-        check_container(x, v);
+        test::check_container(x, v);
     }
 
     std::cerr<<"Construct 9\n";
@@ -120,7 +120,7 @@ void constructor_tests1(T* = 0)
         BOOST_TEST(test::equivalent(x.hash_function(), hf));
         BOOST_TEST(test::equivalent(x.key_eq(), eq));
         BOOST_TEST(test::equivalent(x.get_allocator(), al));
-        check_container(x, v);
+        test::check_container(x, v);
     }
 }
 
@@ -163,7 +163,7 @@ void constructor_tests2(T* = 0)
         BOOST_TEST(test::equivalent(x.hash_function(), hf1));
         BOOST_TEST(test::equivalent(x.key_eq(), eq1));
         BOOST_TEST(test::equivalent(x.get_allocator(), al));
-        check_container(x, v);
+        test::check_container(x, v);
     }
 
     std::cerr<<"Construct 4\n";
@@ -174,7 +174,7 @@ void constructor_tests2(T* = 0)
         BOOST_TEST(test::equivalent(x.hash_function(), hf1));
         BOOST_TEST(test::equivalent(x.key_eq(), eq));
         BOOST_TEST(test::equivalent(x.get_allocator(), al));
-        check_container(x, v);
+        test::check_container(x, v);
     }
 
 
@@ -183,8 +183,8 @@ void constructor_tests2(T* = 0)
         test::random_values<T> v(100);
         T x(v.begin(), v.end(), 0, hf, eq, al1);
         T y(x.begin(), x.end(), 0, hf1, eq1, al2);
-        check_container(x, v);
-        check_container(y, x);
+        test::check_container(x, v);
+        test::check_container(y, x);
     }
 
     std::cerr<<"Construct 6\n";
@@ -192,8 +192,8 @@ void constructor_tests2(T* = 0)
         test::random_values<T> v(100);
         T x(v.begin(), v.end(), 0, hf1, eq1);
         T y(x.begin(), x.end(), 0, hf, eq);
-        check_container(x, v);
-        check_container(y, x);
+        test::check_container(x, v);
+        test::check_container(y, x);
     }
 
     std::cerr<<"Construct 7\n";
@@ -201,8 +201,8 @@ void constructor_tests2(T* = 0)
         test::random_values<T> v(100);
         T x(v.begin(), v.end(), 0, hf1, eq1);
         T y(x.begin(), x.end(), 0, hf2, eq2);
-        check_container(x, v);
-        check_container(y, x);
+        test::check_container(x, v);
+        test::check_container(y, x);
     }
 }
 

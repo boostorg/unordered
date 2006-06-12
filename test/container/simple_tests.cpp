@@ -58,7 +58,7 @@ void simple_test(X const& a)
 
     {
         X u;
-        X& r(u);
+        X& r = u;
         // TODO: I can't actually see a requirement for that assignment
         // returns a reference to itself (just that it returns a reference).
         BOOST_TEST(&(r = r) == &r);

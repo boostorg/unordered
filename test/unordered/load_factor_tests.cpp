@@ -46,9 +46,9 @@ void insert_test(X*, float mlf)
 template <class X>
 void load_factor_insert_tests(X* ptr = 0)
 {
-    insert_test(ptr, 1.0);
-    insert_test(ptr, 0.1);
-    insert_test(ptr, 100);
+    insert_test(ptr, 1.0f);
+    insert_test(ptr, 0.1f);
+    insert_test(ptr, 100.0f);
 
     insert_test(ptr, (std::numeric_limits<float>::min)());
 

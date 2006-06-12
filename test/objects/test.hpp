@@ -47,7 +47,7 @@ namespace test
 
 
         friend object generate(object const*) {
-            int* x;
+            int* x = 0;
             return object(generate(x), generate(x));
         }
 
@@ -339,10 +339,7 @@ namespace test
             return (std::numeric_limits<size_type>::max)();
         }
 
-        friend bool operator==(allocator const& x, allocator const& y)
-        {
-            return x.tag_ == y.tag_;
-        }
+        friend bool operator==(allocator const& x, allocator const& y);
 
         friend bool operator!=(allocator const& x, allocator const& y)
         {
@@ -350,5 +347,18 @@ namespace test
         }
     };
 }
+
+#if !defined(BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP)
+namespace test
+{
+#endif
+    template <class T>
+    bool operator==(test::allocator<T> const& x, test::allocator<T> const& y)
+    {
+        return x.tag_ == y.tag_;
+    }
+#if !defined(BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP)
+}
+#endif
 
 #endif
