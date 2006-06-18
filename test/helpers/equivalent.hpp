@@ -11,12 +11,10 @@
 #include <vector>
 #include <algorithm>
 #include "./metafunctions.hpp"
+#include "./fwd.hpp"
 
 namespace test
 {
-    struct base_type {} base;
-    struct derived_type : base_type {} derived;
-    
     template <class T1, class T2>
     bool equivalent_impl(T1 const& x, T2 const& y, base_type) {
         return x == y;

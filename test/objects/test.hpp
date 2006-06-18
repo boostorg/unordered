@@ -339,26 +339,21 @@ namespace test
             return (std::numeric_limits<size_type>::max)();
         }
 
-        friend bool operator==(allocator const& x, allocator const& y);
-
-        friend bool operator!=(allocator const& x, allocator const& y)
+        bool operator==(allocator const& x) const
         {
-            return x.tag_ != y.tag_;
+            return tag_ == x.tag_;
+        }
+
+        bool operator!=(allocator const& x) const
+        {
+            return tag_ != x.tag_;
         }
     };
-}
-
-#if !defined(BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP)
-namespace test
-{
-#endif
+    
     template <class T>
-    bool operator==(test::allocator<T> const& x, test::allocator<T> const& y)
-    {
-        return x.tag_ == y.tag_;
+    bool equivalent_impl(allocator<T> const& x, allocator<T> const& y, test::derived_type) {
+        return x == y;
     }
-#if !defined(BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP)
 }
-#endif
 
 #endif

@@ -1677,10 +1677,10 @@ namespace boost {
 
             // if hash function throws, or inserting > 1 element, basic exception safety
             // strong otherwise
-            template <class InputIterator>
-            void insert(InputIterator i, InputIterator j)
+            template <class I>
+            void insert(I i, I j)
             {
-                BOOST_DEDUCED_TYPENAME boost::iterator_traversal<InputIterator>::type
+                BOOST_DEDUCED_TYPENAME boost::iterator_traversal<I>::type
                     iterator_traversal_tag;
                 insert_for_range(i, j, iterator_traversal_tag);
             }
@@ -1789,6 +1789,14 @@ namespace boost {
                 return 1;
             }
 
+            template <class I>
+            std::size_t insert_size(I i, I j)
+            {
+                BOOST_DEDUCED_TYPENAME boost::iterator_traversal<I>::type
+                    iterator_traversal_tag;
+                return insert_size(i, j, iterator_traversal_tag);
+            };
+
             // if hash function throws, or inserting > 1 element, basic exception safety
             // strong otherwise
             template <class InputIterator>
@@ -1817,10 +1825,7 @@ namespace boost {
                         // reserve has basic exception safety if the hash function
                         // throws, strong otherwise.
                         if(size() + 1 >= max_load_) {
-                            BOOST_DEDUCED_TYPENAME boost::iterator_traversal<InputIterator>::type
-                                iterator_traversal_tag;
-
-                            reserve(size() + insert_size(i, j, iterator_traversal_tag));
+                            reserve(size() + insert_size(i, j));
                             bucket = this->buckets_ + this->index_from_hash(hash_value);
                         }
 

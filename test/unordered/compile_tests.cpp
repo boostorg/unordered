@@ -20,17 +20,18 @@ template <class T> void sink(T const&) {}
 template <class X, class Key>
 void unordered_set_test(X& r, Key const& k)
 {
-    BOOST_MPL_ASSERT((boost::is_same<
-                typename X::value_type,
-                typename X::key_type>));
+    typedef typename X::value_type value_type;
+    typedef typename X::key_type key_type;
+
+    BOOST_MPL_ASSERT((boost::is_same<value_type, key_type>));
 }
 
 template <class X, class Key, class T>
 void unordered_map_test(X& r, Key const& k, T const& t)
 {
-    BOOST_MPL_ASSERT((boost::is_same<
-                typename X::value_type,
-                std::pair<const typename X::key_type, T> >));
+    typedef typename X::value_type value_type;
+    typedef typename X::key_type key_type;
+    BOOST_MPL_ASSERT((boost::is_same<value_type, std::pair<key_type const, T> >));
 }
 
 template <class X, class T>
@@ -50,14 +51,35 @@ void unordered_equivalent_test(X& r, T const& t)
 template <class X, class Key, class T, class Hash, class Pred>
 void unordered_test(X& ref, Key& k, T& t, Hash& hf, Pred& eq)
 {
+    typedef typename X::key_type key_type;
+    typedef typename X::hasher hasher;
+    typedef typename X::key_equal key_equal;
+    typedef typename X::size_type size_type;
+
     typedef typename X::iterator iterator;
     typedef typename X::const_iterator const_iterator;
     typedef typename X::local_iterator local_iterator;
     typedef typename X::const_local_iterator const_local_iterator;
-    
-    typedef typename X::key_type key_type;
-    typedef typename X::hasher hasher;
-    typedef typename X::key_equal key_equal;
+
+    typedef typename boost::BOOST_ITERATOR_CATEGORY<iterator>::type iterator_category;
+    typedef typename boost::iterator_difference<iterator>::type iterator_difference;
+    typedef typename boost::iterator_pointer<iterator>::type iterator_pointer;
+    typedef typename boost::iterator_reference<iterator>::type iterator_reference;
+
+    typedef typename boost::BOOST_ITERATOR_CATEGORY<local_iterator>::type local_iterator_category;
+    typedef typename boost::iterator_difference<local_iterator>::type local_iterator_difference;
+    typedef typename boost::iterator_pointer<local_iterator>::type local_iterator_pointer;
+    typedef typename boost::iterator_reference<local_iterator>::type local_iterator_reference;
+
+    typedef typename boost::BOOST_ITERATOR_CATEGORY<const_iterator>::type const_iterator_category;
+    typedef typename boost::iterator_difference<const_iterator>::type const_iterator_difference;
+    typedef typename boost::iterator_pointer<const_iterator>::type const_iterator_pointer;
+    typedef typename boost::iterator_reference<const_iterator>::type const_iterator_reference;
+
+    typedef typename boost::BOOST_ITERATOR_CATEGORY<const_local_iterator>::type const_local_iterator_category;
+    typedef typename boost::iterator_difference<const_local_iterator>::type const_local_iterator_difference;
+    typedef typename boost::iterator_pointer<const_local_iterator>::type const_local_iterator_pointer;
+    typedef typename boost::iterator_reference<const_local_iterator>::type const_local_iterator_reference;
 
     BOOST_MPL_ASSERT((boost::is_same<Key, key_type>));
     boost::function_requires<boost::CopyConstructibleConcept<key_type> >();
@@ -72,32 +94,16 @@ void unordered_test(X& ref, Key& k, T& t, Hash& hf, Pred& eq)
     // tests.
 
     boost::function_requires<boost::InputIteratorConcept<local_iterator> >();
-    BOOST_MPL_ASSERT((boost::is_same<
-                typename boost::BOOST_ITERATOR_CATEGORY<local_iterator>::type,
-                typename boost::BOOST_ITERATOR_CATEGORY<iterator>::type >));
-    BOOST_MPL_ASSERT((boost::is_same<
-                typename boost::iterator_difference<local_iterator>::type,
-                typename boost::iterator_difference<iterator>::type >));
-    BOOST_MPL_ASSERT((boost::is_same<
-                typename boost::iterator_pointer<local_iterator>::type,
-                typename boost::iterator_pointer<iterator>::type >));
-    BOOST_MPL_ASSERT((boost::is_same<
-                typename boost::iterator_reference<local_iterator>::type,
-                typename boost::iterator_reference<iterator>::type >));
+    BOOST_MPL_ASSERT((boost::is_same<local_iterator_category, iterator_category>));
+    BOOST_MPL_ASSERT((boost::is_same<local_iterator_difference, iterator_difference>));
+    BOOST_MPL_ASSERT((boost::is_same<local_iterator_pointer, iterator_pointer>));
+    BOOST_MPL_ASSERT((boost::is_same<local_iterator_reference, iterator_reference>));
 
     boost::function_requires<boost::InputIteratorConcept<const_local_iterator> >();
-    BOOST_MPL_ASSERT((boost::is_same<
-                typename boost::BOOST_ITERATOR_CATEGORY<const_local_iterator>::type,
-                typename boost::BOOST_ITERATOR_CATEGORY<const_iterator>::type >));
-    BOOST_MPL_ASSERT((boost::is_same<
-                typename boost::iterator_difference<const_local_iterator>::type,
-                typename boost::iterator_difference<const_iterator>::type >));
-    BOOST_MPL_ASSERT((boost::is_same<
-                typename boost::iterator_pointer<const_local_iterator>::type,
-                typename boost::iterator_pointer<const_iterator>::type >));
-    BOOST_MPL_ASSERT((boost::is_same<
-                typename boost::iterator_reference<const_local_iterator>::type,
-                typename boost::iterator_reference<const_iterator>::type >));
+    BOOST_MPL_ASSERT((boost::is_same<const_local_iterator_category, const_iterator_category>));
+    BOOST_MPL_ASSERT((boost::is_same<const_local_iterator_difference, const_iterator_difference>));
+    BOOST_MPL_ASSERT((boost::is_same<const_local_iterator_pointer, const_iterator_pointer>));
+    BOOST_MPL_ASSERT((boost::is_same<const_local_iterator_reference, const_iterator_reference>));
 
     X(10, hf, eq);
     X a(10, hf, eq);
@@ -135,7 +141,7 @@ void unordered_test(X& ref, Key& k, T& t, Hash& hf, Pred& eq)
 
     // TODO: void return?
     a.insert(i, j);
-    test::check_return_type<typename X::size_type>::equals(a.erase(k));
+    test::check_return_type<size_type>::equals(a.erase(k));
 
     BOOST_TEST(a.empty());
     if(a.empty()) {
@@ -162,15 +168,15 @@ void unordered_test(X& ref, Key& k, T& t, Hash& hf, Pred& eq)
 
     test::check_return_type<iterator>::equals(a.find(k));
     test::check_return_type<const_iterator>::equals(b.find(k));
-    test::check_return_type<typename X::size_type>::equals(b.count(k));
+    test::check_return_type<size_type>::equals(b.count(k));
     test::check_return_type<std::pair<iterator, iterator> >::equals(
             a.equal_range(k));
     test::check_return_type<std::pair<const_iterator, const_iterator> >::equals(
             b.equal_range(k));
-    test::check_return_type<typename X::size_type>::equals(b.bucket_count());
-    test::check_return_type<typename X::size_type>::equals(b.max_bucket_count());
-    test::check_return_type<typename X::size_type>::equals(b.bucket(k));
-    test::check_return_type<typename X::size_type>::equals(b.bucket_size(0));
+    test::check_return_type<size_type>::equals(b.bucket_count());
+    test::check_return_type<size_type>::equals(b.max_bucket_count());
+    test::check_return_type<size_type>::equals(b.bucket(k));
+    test::check_return_type<size_type>::equals(b.bucket_size(0));
 
     test::check_return_type<local_iterator>::equals(a.begin(0));
     test::check_return_type<const_local_iterator>::equals(b.begin(0));
