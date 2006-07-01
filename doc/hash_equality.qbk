@@ -18,6 +18,118 @@ but not the equality predicate, while if you were to change the behaviour
 of the equality predicate you would have to change the hash function to match
 it.
 
-For example, if you wanted to use
+For example, if you wanted to use the
+[@http://www.isthe.com/chongo/tech/comp/fnv/ FNV-1 hash] you could write:
+
+    ``[classref boost::unordered_set]``<std::string, hash::fnv_1> words;
+
+An example implementation of FNV-1, and some other hash functions are supplied
+in the examples directory.
+
+Alternatively, you might wish to use a different equality function. If so, make
+sure you use a hash function that matches it. For example, a
+case-insensitive dictionary:
+
+    struct iequal_to
+        : std::binary_function<std::string, std::string, bool>
+    {
+        bool operator()(std::string const& x,
+            std::string const& y) const
+        {
+            return boost::algorithm::iequals(x, y);
+        }
+    };
+
+    struct ihash
+        : std::unary_function<std::string, bool>
+    {
+        bool operator()(std::string const& x) const
+        {
+            std::size_t seed = 0;
+
+            for(std::string::const_iterator it = x.begin();
+                it != x.end(); ++it)
+            {
+                boost::hash_combine(seed, std::tolower(*it));
+            }
+
+            return seed;
+        }
+    };
+
+    struct word_info {
+        // ...
+    };
+
+    boost::unordered_map<std::string, word_info, iequal_to, ihash>
+        idictionary;
+
+[h2 Custom Types]
+
+Similarly, a custom hash function can be used for custom types:
+
+    struct point {
+        int x;
+        int y;
+    };
+
+    bool operator==(point const& p1, point const& p2)
+    {
+        return p1.x == p2.x && p1.y == p2.y;
+    }
+
+    struct point_hash
+        : std::unary_function<point, std::size_t>
+    {
+        std::size_t operator()(point const& p) const
+        {
+            std::size_t seed = 0;
+            boost::hash_combine(seed, p.x);
+            boost::hash_combine(seed, p.y);
+            return seed;
+        }
+    }
+
+    boost::unordered_multiset<point, std::equal_to<point>, point_hash>
+        points;
+
+Although, customizing Boost.Hash is probably a better solution:
+
+    struct point {
+        int x;
+        int y;
+    };
+
+    bool operator==(point const& p1, point const& p2)
+    {
+        return p1.x == p2.x && p1.y == p2.y;
+    }
+
+    std::size_t hash_value(point const& x) {
+        std::size_t seed = 0;
+        boost::hash_combine(seed, p.x);
+        boost::hash_combine(seed, p.y);
+        return seed;
+    }
+
+    // Now the default functions work.
+    boost::unordered_multiset<point> points;
+
+See the Boost.Hash documentation for more detail on how to do this. Remember
+that it relies on extensions to the draft standard - so it won't work on other
+implementations of the unordered associative containers.
+
+[table Methods for accessing the hash and euqality functions.
+    [[Method] [Description]]
+
+    [
+        [``hasher hash_function() const``]
+        [Returns the container's hash function.]
+    ]
+    [
+        [``key_equal key_eq() const``]
+        [Returns the container's key equality function.]
+    ]
+]
 
 [endsect]

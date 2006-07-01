@@ -1,8 +1,9 @@
-[section:comparison Comparison to Associative Containers]
+[section:comparison Comparison with Associative Containers]
 
 * The elements in an unordered container are organised into buckets, in an
-  unpredictable order. There are member functions to.... TODO
-* The unordered associative containers don't support the comparison operators.
+  unpredictable order. There are member functions to access these buckets which
+  was described earlier.
+* The unordered associative containers don't support any comparison operators.
 * Instead of being parameterized by an ordering relation `Compare`,
   the unordered associative container are parameterized by a function object
   `Hash` and an equivalence realtion `Pred`. The member types and accessor

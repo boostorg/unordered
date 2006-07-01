@@ -1,28 +1,26 @@
 [section:buckets The Data Structure]
 
 The containers are made up of a number of 'buckets', each of which can contain
-any number of elements. For example, the following 
-diagram shows an [classref boost::unordered_set unordered_set] with 7
-buckets containing 5 elements, `A`, `B`, `C`, `D` and `E`
-(this is just for illustrations, the containers have more buckets, even when
-empty).
+any number of elements. For example, the following diagram shows an [classref
+boost::unordered_set unordered_set] with 7 buckets containing 5 elements, `A`,
+`B`, `C`, `D` and `E` (this is just for illustration, in practise containers
+will have more buckets).
 
 [$../diagrams/buckets.png]
 
-In order to decide which bucket to place an element in, the container
-applies `Hash` to the element (for maps it applies it to the element's `Key`
-part). This gives a `std::size_t`. `std::size_t` has a much greater range of
-values then the number of buckets, so that container applies another
-transformation to that value to choose a bucket (in the case of
-[classref boost::unordered_set] this is just the modulous of the number of
-buckets).
+In order to decide which bucket to place an element in, the container applies
+`Hash` to the element's key (for `unordered_set` and `unordered_multiset` the
+key is the whole element, but this refered to as the key so that the same
+terminology can be used for sets and maps). This gives a `std::size_t`.
+`std::size_t` has a much greater range of values then the number of buckets, so
+that container applies another transformation to that value to choose a bucket
+to place the element in.
 
-If at a later date the container wants to find an element in the container
-it just has to apply the same process to the element (or key for maps) to
-discover which bucket to find it in. This means that you only have to look at
-the elements within a bucket when searching, and if the hash function has
-worked well an evenly distributed the elements among the buckets, this should
-be a small number.
+If at a later date the container wants to find an element in the container it
+just has to apply the same process to the element's key to discover which
+bucket to find it in. This means that you only have to look at the elements
+within a single bucket. If the hash function has worked well the elements will
+be evenly distributed amongst the buckets.
 
 You can see in the diagram that `A` & `D` have been placed in the same bucket.
 This means that when looking in this bucket, up to 2 comparison have to be
@@ -45,6 +43,10 @@ fast we try to keep these to a minimum.
         [The number of elements in bucket `n`.]
     ]
     [
+        [``size_type bucket(key_type const& k) const``]
+        [Returns the index of the bucket which would contain k]
+    ]
+    [
         [``
             local_iterator begin(size_type n);
             local_iterator end(size_type n);
@@ -65,36 +67,34 @@ The standard gives you two methods to influence the bucket count. First you can
 specify the minimum number of buckets in the constructor, and later, by calling
 `rehash`.
 
-The other method is the `max_load_factor` member function. This lets you
-/hint/ at the maximum load that the buckets should hold.
-The 'load factor' is the average number of elements per bucket,
-the container tries to keep this below the maximum load factor, which is
-initially set to 1.0.
-`max_load_factor` tells the container to change the maximum load factor,
-using your supplied hint as a suggestion.
+The other method is the `max_load_factor` member function. The 'load factor'
+is the average number of elements per bucket, `max_load_factor` can be used
+to give a /hint/ of a value that the load factor should be kept below. The
+draft standard doesn't actually require the container to pay much attention
+to this value. The only time the load factor is /required/ to be less than the
+maximum is following a call to `rehash`. But most implementations will probably
+try to keep the number of elements below the max load factor, and set the
+maximum load factor something the same or near to your hint - unless your hint
+is unreasonably small.
 
-The draft standard doesn't actually require the container to pay much attention
-to this value. The only time the load factor is required to be less than the
-maximum is following a call to `rehash`.
+It is not specified anywhere how member functions other than `rehash` affect
+the bucket count, although `insert` is only allowed to invalidate iterators
+when the insertion causes the load factor to reach the maximum. Which will
+typically mean that insert will only change the number of buckets when an
+insert causes this.
 
-It is not specified anywhere how other member functions affect the bucket count.
-But most implementations will invalidate the iterators whenever they change
-the bucket count - which is only allowed when an
-`insert` causes the load factor to be more than or equal to the maximum.
-But it is possible to implement the containers such that the iterators are
-never invalidated.
+In a similar manner to using `reserve` for `vector`s, it can be a good idea
+to call `rehash` before inserting a large number of elements. This will get
+the expensive rehashing out of the way and let you store iterators, safe in
+the knowledge that they won't be invalidated. If you are inserting `n`
+elements into container `x`, you could first call:
 
-(TODO: This might not be right. I'm not sure what is allowed for
-std::unordered_set and std::unordered_map when insert is called with enough
-elements to exceed the maximum, but the maximum isn't exceeded because
-the elements are already in the container)
+    x.rehash((x.size() + n) / x.max_load_factor() + 1);
 
-(TODO: Ah, I forgot about local iterators - rehashing must invalidate ranges
-made up of local iterators, right?).
-
-This all sounds quite gloomy, but it's not that bad. Most implementations
-will probably respect the maximum load factor hint. This implementation
-certainly does.
+[blurb Note: `rehash`'s argument is the number of buckets, not the number of
+elements, which is why the new size is divided by the maximum load factor. The
+`+ 1` is required because the container is allowed to resize when the load
+factor is equal to the maximum load factor.]
 
 [table Methods for Controlling Bucket Size
     [[Method] [Description]]
@@ -119,19 +119,13 @@ certainly does.
 
 ]
 
-[h2 Rehash Techniques]
+[/ I'm not at all happy with this section. So I've commented it out.]
 
-If the container has a load factor much smaller than the maximum, `rehash`
+[/ h2 Rehash Techniques]
+
+[/If the container has a load factor much smaller than the maximum, `rehash`
 might decrease the number of buckets, reducing the memory usage. This isn't
 guaranteed by the standard but this implementation will do it.
-
-When inserting many elements, it is a good idea to first call `rehash` to
-make sure you have enough buckets. This will get the expensive rehashing out
-of the way and let you store iterators, safe in the knowledge that they
-won't be invalidated. If you are inserting `n` elements into container `x`,
-you could first call:
-
-    x.rehash((x.size() + n) / x.max_load_factor() + 1);
 
 If you want to stop the table from ever rehashing due to an insert, you can
 set the maximum load factor to infinity (or perhaps a load factor that it'll
@@ -144,6 +138,6 @@ maybe the implementation should cope with that).
 If you do this and want to make the container rehash, `rehash` will still work.
 But be careful that you only ever call it with a sufficient number of buckets
 - otherwise it's very likely that the container will decrease the bucket
-count to an overly small amount.
+count to an overly small amount.]
 
 [endsect]
