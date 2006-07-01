@@ -1,3 +1,8 @@
+
+// Copyright 2006 Daniel James.
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>
 #include "../objects/exception.hpp"

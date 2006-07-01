@@ -1,7 +1,7 @@
 
-//  Copyright Daniel James 2006. Use, modification, and distribution are
-//  subject to the Boost Software License, Version 1.0. (See accompanying
-//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Copyright 2006 Daniel James.
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 // This test creates the containers with members that meet their minimum
 // requirements. Makes sure everything compiles and is defined correctly.
