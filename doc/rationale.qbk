@@ -4,28 +4,76 @@
 
 [section:rationale Implementation Rationale]
 
-From the start the intent of this library was to implement the unordered
+The intent of this library is to implement the unordered
 containers in the draft standard, so the interface was fixed. But there are
-still some implementation desicions to make. The priorities for the library are
+still some implementation desicions to make. The priorities are
 conformance to the standard and portability.
+
+[h2 Data Structure]
+
+By specifying an interface for accessing the buckets of the container the
+standard pretty much requires that the hash table uses chained addressing.
+
+It would be conceivable to write a hash table that uses another method.
+For example, one could use open addressing,
+and use the lookup chain to act as a bucket but there are a few problems
+with this. Local iterators would be veryinefficient and may not be able to
+meet the complexity requirements. Indicating when an entry is the table is
+empty or deleted would be impossible without allocating extra storage -
+loosing one of the advantages of open addressing. And for containers with
+equivalent keys, making sure that they are adjacent would probably require a
+chain of some sort anyway.
+
+But most damaging is perhaps the
+restrictions on when iterators can be invalidated. Since open addressing
+degrades badly when there are a high number of collisions the implemenation
+might sometimes be unable to rehash when it is essential. To avoid such
+problems an implementation would need to set its maximum load factor to a
+fairly low value - but the standard requires that it is initially set to 1.0.
+
+And, of course, since the standard is written with a eye towards chained
+addressing, users will be suprised if the performance doesn't reflect that.
+
+So staying with chained addressing is inevitable.
+
+For containers with unique keys I use a single-linked list to store the
+buckets. There are other possible data structures which would allow for
+some operations to be faster (such as erasing and iteration) but the gains
+seem too small for the extra cost (in memory). The most commonly used
+operations (insertion and lookup) would not be improved.
+
+But for containers with equivalent keys, a single-linked list can degrade badly
+when a large number of elements with equivalent keys are inserted. I think it's
+reasonable to assume that users who chose to use `unordered_multiset` or
+`unordered_multimap`, did so because they are likely to insert elements with
+equivalent keys. So I have used an alternative data structure that doesn't
+degrade, at the expense of an extra pointer per node.
 
 [h2 Number of Buckets]
 
 There are two popular methods for choosing the number of buckets in a hash
-table. One is to have a prime number of buckets. This allows .... (TODO)
+table. One is to have a prime number of buckets, another is to use a power
+of 2.
 
-The other is to always use a power of two. This has a potential efficiency
-advantage, since it avoids the costly modulus calculation. It also allows for ... (TODO)
+Using a prime number of buckets, and choosing a bucket by using the modulous
+of the hash functions's result will usually give a good result. The downside
+is that the modulous operation is fairly expensive.
 
-For a power of two hash table to work the hash values need to be
-evenly distributed for the subset of the bits it is going to use - and since
-the container can take an arbitrary hash function it must do this itself.
-For some methods for doing this see __wang__ (TODO: Other references?).
-Unfortunately, the most effective methods require the input to be an integer
-with a certain number of bits, while ``std::size_t`` can have an arbitrary
-range. This leaves the more expensive methods, such as Knuth's Multiplicative
-Method which don't tend to work as well as taking the modulous of a prime,
-have little efficiency advantage and don't work well for (TODO: what are they called?).
+Using a power of 2 allows for much quicker selection of the bucket
+to use, but at the expense of loosing the upper bits of the hash value.
+For some specially designed hash functions it is possible to do this and
+still get a good result but as the containers can take arbitrary hash
+functions this can't be relied on.
+
+To avoid this a transformation could be applied to the hash function, for an
+example see __wang__.  Unfortunately, a transformation like Wang's requires
+knowledge of the number of bits in the hash value, so it isn't portable enough.
+This leaves more expensive methods, such as Knuth's Multiplicative Method
+(mentioned in Wang's article). These don't tend to work as well as taking the
+modulous of a prime, and can take enough time to loose the
+efficiency advantage of power of 2 hash tables.
+
+So, this implementation uses a prime number for the hash table size.
 
 [h2 Active Issues]
 
