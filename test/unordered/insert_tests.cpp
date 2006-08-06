@@ -12,6 +12,7 @@
 #include "../helpers/tracker.hpp"
 #include "../helpers/equivalent.hpp"
 #include "../helpers/invariants.hpp"
+#include "../helpers/input_iterator.hpp"
 
 #include <iostream>
     
@@ -195,6 +196,19 @@ void insert_tests2(X* = 0)
 
         test::random_values<X> v(1000);
         x.insert(v.begin(), v.end());
+        test::check_container(x, v);
+
+        test::check_equivalent_keys(x);
+    }
+
+    std::cerr<<"insert input iterator range tests.\n";
+
+    {
+        X x;
+        const_iterator pos = x.begin();
+
+        test::random_values<X> v(1000);
+        x.insert(test::input_iterator(v.begin()), test::input_iterator(v.end()));
         test::check_container(x, v);
 
         test::check_equivalent_keys(x);

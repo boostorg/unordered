@@ -12,6 +12,7 @@
 #include "../helpers/random_values.hpp"
 #include "../helpers/invariants.hpp"
 #include "../helpers/strong.hpp"
+#include "../helpers/input_iterator.hpp"
 
 #include <cmath>
 
@@ -31,7 +32,7 @@ struct insert_test_base : public test::exception_base
     void check(T const& x, strong_type const& strong) const {
         std::string scope(test::scope);
 
-        if(scope.find_first_of("hash::operator()") == std::string::npos)
+        if(scope.find("hash::operator()") == std::string::npos)
             strong.test(x);
         test::check_equivalent_keys(x);
     }

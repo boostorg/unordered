@@ -13,26 +13,26 @@ namespace test
     {
         typedef typename Container::key_type key_type;
 
-        static key_type get_key(key_type const& x)
+        static key_type const& get_key(key_type const& x)
         {
             return x;
         }
 
         template <class T>
-        static key_type get_key(std::pair<key_type, T> const& x, char = 0)
+        static key_type const& get_key(std::pair<key_type, T> const& x, char = 0)
         {
             return x.first;
         }
 
         template <class T>
-        static key_type get_key(std::pair<key_type const, T> const& x, unsigned char = 0)
+        static key_type const& get_key(std::pair<key_type const, T> const& x, unsigned char = 0)
         {
             return x.first;
         }
     };
     
     template <class Container, class T>
-    inline typename Container::key_type get_key(T const& x)
+    inline typename Container::key_type const& get_key(T const& x)
     {
         return get_key_impl<Container>::get_key(x);
     }

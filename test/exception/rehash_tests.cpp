@@ -33,9 +33,13 @@ struct rehash_test_base : public test::exception_base
     void check(T const& x, strong_type const& strong) const {
         std::string scope(test::scope);
 
-        if(scope.find_first_of("hash::operator()") == std::string::npos &&
-                scope.find_first_of("equal_to::operator()") == std::string::npos)
+        // TODO: Instead of checking for 'operator==', I should check against
+        // a scope stack.
+        if(scope.find("hash::operator()") == std::string::npos &&
+                scope.find("equal_to::operator()") == std::string::npos &&
+                scope != "operator==(object, object)")
             strong.test(x);
+
         test::check_equivalent_keys(x);
     }
 };
@@ -78,3 +82,4 @@ struct rehash_test4 : rehash_test_base<T>
 RUN_EXCEPTION_TESTS(
     (rehash_test0)(rehash_test1)(rehash_test2)(rehash_test3)(rehash_test4),
     CONTAINER_SEQ)
+

@@ -10,6 +10,7 @@
 #include "../helpers/random_values.hpp"
 #include "../helpers/tracker.hpp"
 #include "../helpers/equivalent.hpp"
+#include "../helpers/input_iterator.hpp"
 
 #include <iostream>
 
@@ -201,6 +202,15 @@ void constructor_tests2(T* = 0)
         test::random_values<T> v(100);
         T x(v.begin(), v.end(), 0, hf1, eq1);
         T y(x.begin(), x.end(), 0, hf2, eq2);
+        test::check_container(x, v);
+        test::check_container(y, x);
+    }
+
+    std::cerr<<"Construct 8 - from input iterator\n";
+    {
+        test::random_values<T> v(100);
+        T x(test::input_iterator(v.begin()), test::input_iterator(v.end()), 0, hf1, eq1);
+        T y(test::input_iterator(x.begin()), test::input_iterator(x.end()), 0, hf2, eq2);
         test::check_container(x, v);
         test::check_container(y, x);
     }

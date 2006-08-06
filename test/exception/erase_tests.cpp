@@ -25,7 +25,14 @@ struct erase_test_base : public test::exception_base
     }
 
     void check(T const& x) const {
-        // TODO: Check that exception was thrown by hash or predicate object?
+        std::string scope(test::scope);
+
+        // TODO: Instead of checking for 'operator==', I should check against
+        // a scope stack.
+        BOOST_CHECK(scope.find("hash::") != std::string::npos ||
+                scope.find("equal_to::") != std::string::npos ||
+                scope == "operator==(object, object)");
+
         test::check_equivalent_keys(x);
     }
 };

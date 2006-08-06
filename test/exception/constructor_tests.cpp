@@ -9,6 +9,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/exception_safety.hpp>
 #include "../helpers/random_values.hpp"
+#include "../helpers/input_iterator.hpp"
 
 struct objects
 {
@@ -111,9 +112,20 @@ struct range_construct_test5 : public range<T>, objects
     }
 };
 
-// TODO: Write a test using an input iterator.
+template <class T>
+struct input_range_construct_test : public range<T>, objects
+{
+    input_range_construct_test() : range<T>(60) {}
+
+    void run() const {
+        T x(test::input_iterator(this->values.begin()),
+                test::input_iterator(this->values.end()),
+                0, hash, equal_to, allocator);
+    }
+};
 
 RUN_EXCEPTION_TESTS(
     (construct_test1)(construct_test2)(construct_test3)(construct_test4)(construct_test5)
-    (range_construct_test1)(range_construct_test2)(range_construct_test3)(range_construct_test4)(range_construct_test5),
+    (range_construct_test1)(range_construct_test2)(range_construct_test3)(range_construct_test4)(range_construct_test5)
+    (input_range_construct_test),
     CONTAINER_SEQ)

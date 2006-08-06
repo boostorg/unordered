@@ -78,7 +78,6 @@ void erase_tests1(Container* = 0)
                 BOOST_TEST(next ==
                         (index == 0 ? x.begin() : boost::next(prev)));
             BOOST_TEST(x.count(key) == count - 1);
-            std::cerr<<x.count(key)<<"/"<<(count - 1)<<"\n";
             BOOST_TEST(x.size() == size);
         }
         BOOST_TEST(x.empty());
