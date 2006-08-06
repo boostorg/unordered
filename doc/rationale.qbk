@@ -9,27 +9,31 @@ containers in the draft standard, so the interface was fixed. But there are
 still some implementation desicions to make. The priorities are
 conformance to the standard and portability.
 
+The [@http://en.wikipedia.org/wiki/Hash_table wikipedia article on hash tables]
+has a good summary of the implementation issues for hash tables in general.
+
 [h2 Data Structure]
 
 By specifying an interface for accessing the buckets of the container the
 standard pretty much requires that the hash table uses chained addressing.
 
-It would be conceivable to write a hash table that uses another method.
-For example, one could use open addressing,
-and use the lookup chain to act as a bucket but there are a few problems
-with this. Local iterators would be veryinefficient and may not be able to
-meet the complexity requirements. Indicating when an entry is the table is
-empty or deleted would be impossible without allocating extra storage -
-loosing one of the advantages of open addressing. And for containers with
+It would be conceivable to write a hash table that uses another method.  For
+example, an it could use open addressing, and use the lookup chain to act as a
+bucket but there are a some serious problems with this. The biggest one is that
+the draft standard requires that pointers to elements aren't invalidated, so
+the elements couldn't be stored in one array, but instead will need a layer of
+indirection - loosing the efficiency and memory gains for small types.
+
+Local iterators would be very inefficient and may not be able to
+meet the complexity requirements. And for containers with
 equivalent keys, making sure that they are adjacent would probably require a
 chain of some sort anyway.
 
-But most damaging is perhaps the
-restrictions on when iterators can be invalidated. Since open addressing
-degrades badly when there are a high number of collisions the implemenation
-might sometimes be unable to rehash when it is essential. To avoid such
-problems an implementation would need to set its maximum load factor to a
-fairly low value - but the standard requires that it is initially set to 1.0.
+There are also the restrictions on when iterators can be invalidated. Since
+open addressing degrades badly when there are a high number of collisions the
+restrictions could prevent rehash when it's really needed. The maximum load
+factor could be set to a fairly low value to work around this - but the
+standard requires that it is initially set to 1.0.
 
 And, of course, since the standard is written with a eye towards chained
 addressing, users will be suprised if the performance doesn't reflect that.
@@ -57,7 +61,7 @@ of 2.
 
 Using a prime number of buckets, and choosing a bucket by using the modulous
 of the hash functions's result will usually give a good result. The downside
-is that the modulous operation is fairly expensive.
+is that the required modulous operation is fairly expensive.
 
 Using a power of 2 allows for much quicker selection of the bucket
 to use, but at the expense of loosing the upper bits of the hash value.
@@ -70,7 +74,7 @@ example see __wang__.  Unfortunately, a transformation like Wang's requires
 knowledge of the number of bits in the hash value, so it isn't portable enough.
 This leaves more expensive methods, such as Knuth's Multiplicative Method
 (mentioned in Wang's article). These don't tend to work as well as taking the
-modulous of a prime, and can take enough time to loose the
+modulous of a prime, and the extra computation required might negate
 efficiency advantage of power of 2 hash tables.
 
 So, this implementation uses a prime number for the hash table size.
@@ -87,14 +91,22 @@ Need to look into this one.
 
 In a fit of probably unwise enthusiasm, I implemented all the three versions
 with a macro (BOOST_UNORDERED_SWAP_METHOD) to pick which one is used. As
-suggested by Howard Hinnant, I set option 3 as the default. I'll probably remove
-the alternative implementations before review.
+suggested by Howard Hinnant, I set option 3 as the default. I'll probably
+remove the alternative implementations before review.
+
+There is currently a further issue - if the allocator's swap does throw there's
+no guarantee what state the allocators will be in. The only solution seems to
+be to double buffer the allocators.
 
 [h3 [@http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#518
     518. Are insert and erase stable for unordered_multiset and unordered_multimap?]]
 
-In this implementation, erase is stable but insert is not. As long as a rehash
-can change the order of the elements, insert can't be.
+In this implementation, erase is stable. All inserts are stable, except for
+inserting with a hint, which has slightly surprising behaviour. If the hint
+points to the first element in the correct equal range it inserts at the end of
+the range, for all other elements in the range it inserts immediately before
+the element. I am very tempted to change insert with a hint to just ignore the
+hint completely.
 
 [h3 [@http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#528
     528. TR1: issue 6.19 vs 6.3.4.3/2 (and 6.3.4.5/2)]]
