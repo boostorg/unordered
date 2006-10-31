@@ -19,39 +19,46 @@ standard pretty much requires that the hash table uses chained addressing.
 
 It would be conceivable to write a hash table that uses another method.  For
 example, an it could use open addressing, and use the lookup chain to act as a
-bucket but there are a some serious problems with this. The biggest one is that
-the draft standard requires that pointers to elements aren't invalidated, so
-the elements couldn't be stored in one array, but instead will need a layer of
-indirection - loosing the efficiency and memory gains for small types.
+bucket but there are a some serious problems with this: 
 
-Local iterators would be very inefficient and may not be able to
-meet the complexity requirements. And for containers with
-equivalent keys, making sure that they are adjacent would probably require a
-chain of some sort anyway.
+* The draft standard requires that pointers to elements aren't invalidated, so
+  the elements can't be stored in one array, but will need a layer of
+  indirection instead - loosing the efficiency and most of the memory gain,
+  the main advantages of open addressing.
 
-There are also the restrictions on when iterators can be invalidated. Since
-open addressing degrades badly when there are a high number of collisions the
-restrictions could prevent rehash when it's really needed. The maximum load
-factor could be set to a fairly low value to work around this - but the
-standard requires that it is initially set to 1.0.
+* Local iterators would be very inefficient and may not be able to
+  meet the complexity requirements.
+  
+* There are also the restrictions on when iterators can be invalidated. Since
+  open addressing degrades badly when there are a high number of collisions the
+  restrictions could prevent a rehash when it's really needed. The maximum load
+  factor could be set to a fairly low value to work around this - but the
+  standard requires that it is initially set to 1.0.
 
-And, of course, since the standard is written with a eye towards chained
-addressing, users will be suprised if the performance doesn't reflect that.
+* And since the standard is written with a eye towards chained
+  addressing, users will be suprised if the performance doesn't reflect that.
 
-So staying with chained addressing is inevitable.
+So chained addressing is used.
 
-For containers with unique keys I use a single-linked list to store the
-buckets. There are other possible data structures which would allow for
-some operations to be faster (such as erasing and iteration) but the gains
-seem too small for the extra cost (in memory). The most commonly used
-operations (insertion and lookup) would not be improved.
+For containers with unique keys I store the buckets in a single-linked list.
+There are other possible data structures (such as a double-linked list)
+that allow for some operations to be faster (such as erasing and iteration)
+but the possible gain seems small compared to the extra memory needed.
+The most commonly used operations (insertion and lookup) would not be improved
+at all.
 
-But for containers with equivalent keys, a single-linked list can degrade badly
+But for containers with equivalent keys a single-linked list can degrade badly
 when a large number of elements with equivalent keys are inserted. I think it's
-reasonable to assume that users who chose to use `unordered_multiset` or
-`unordered_multimap`, did so because they are likely to insert elements with
+reasonable to assume that users who choose to use `unordered_multiset` or
+`unordered_multimap` do so because they are likely to insert elements with
 equivalent keys. So I have used an alternative data structure that doesn't
 degrade, at the expense of an extra pointer per node.
+
+This works by adding storing a circular linked list for each group of equivalent
+nodes in reverse order. This allows quick navigation to the end of a group (since
+the first element points to the last) and can be quickly updated when elements
+are inserted or erased. The main disadvantage of this approach is some hairy code
+for erasing elements.
 
 [h2 Number of Buckets]
 
@@ -119,8 +126,12 @@ some member functions are overloaded by the same type.
 
 The proposed resolution is to add a new subsection to 17.4.4:
 [:An implementation shall not supply an overloaded function signature specified in any library clause if such a signature would be inherently ambiguous during overload resolution due to two library types referring to the same type.]
-So I don't supply the `iterator` overloads - although this means that the
-header and documentation are currently inconsistent.
-This will be fixed before review submission.
+So I don't supply the `iterator` overloads.
+
+[h3 [@http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#560
+    560. User-defined allocators without default constructor]]
+
+This implementation should work okay for an allocator without a default
+constructor, although I don't currently test for this.
 
 [endsect]

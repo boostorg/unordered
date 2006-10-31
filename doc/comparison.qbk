@@ -1,11 +1,5 @@
 [section:comparison Comparison with Associative Containers]
 
-TODO: This page probably contains too much information. Some of the comparisons
-can probably be paired down (especially the complexity stuff) and some of the
-extra details belong elsewhere.
-
-TODO: I've omitted some similarities - perhaps I should include them.
-
 [table Interface differences.
     [[Associative Containers] [Unordered Associative Containers]]
 
