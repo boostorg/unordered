@@ -11,6 +11,7 @@
 #include "../helpers/tracker.hpp"
 #include "../helpers/equivalent.hpp"
 #include "../helpers/input_iterator.hpp"
+#include "../helpers/invariants.hpp"
 
 #include <iostream>
 
@@ -29,6 +30,7 @@ void constructor_tests1(T* = 0)
         BOOST_TEST(test::equivalent(x.hash_function(), hf));
         BOOST_TEST(test::equivalent(x.key_eq(), eq));
         BOOST_TEST(test::equivalent(x.get_allocator(), al));
+        test::check_equivalent_keys(x);
     }
 
     std::cerr<<"Construct 2\n";
@@ -39,6 +41,7 @@ void constructor_tests1(T* = 0)
         BOOST_TEST(test::equivalent(x.hash_function(), hf));
         BOOST_TEST(test::equivalent(x.key_eq(), eq));
         BOOST_TEST(test::equivalent(x.get_allocator(), al));
+        test::check_equivalent_keys(x);
     }
 
     std::cerr<<"Construct 3\n";
@@ -49,6 +52,7 @@ void constructor_tests1(T* = 0)
         BOOST_TEST(test::equivalent(x.hash_function(), hf));
         BOOST_TEST(test::equivalent(x.key_eq(), eq));
         BOOST_TEST(test::equivalent(x.get_allocator(), al));
+        test::check_equivalent_keys(x);
     }
 
     std::cerr<<"Construct 4\n";
@@ -58,6 +62,7 @@ void constructor_tests1(T* = 0)
         BOOST_TEST(test::equivalent(x.hash_function(), hf));
         BOOST_TEST(test::equivalent(x.key_eq(), eq));
         BOOST_TEST(test::equivalent(x.get_allocator(), al));
+        test::check_equivalent_keys(x);
     }
 
     std::cerr<<"Construct 5\n";
@@ -69,6 +74,7 @@ void constructor_tests1(T* = 0)
         BOOST_TEST(test::equivalent(x.key_eq(), eq));
         BOOST_TEST(test::equivalent(x.get_allocator(), al));
         test::check_container(x, v);
+        test::check_equivalent_keys(x);
     }
 
     std::cerr<<"Construct 6\n";
@@ -80,6 +86,7 @@ void constructor_tests1(T* = 0)
         BOOST_TEST(test::equivalent(x.key_eq(), eq));
         BOOST_TEST(test::equivalent(x.get_allocator(), al));
         test::check_container(x, v);
+        test::check_equivalent_keys(x);
     }
 
     std::cerr<<"Construct 7\n";
@@ -91,6 +98,7 @@ void constructor_tests1(T* = 0)
         BOOST_TEST(test::equivalent(x.key_eq(), eq));
         BOOST_TEST(test::equivalent(x.get_allocator(), al));
         test::check_container(x, v);
+        test::check_equivalent_keys(x);
     }
 
     std::cerr<<"Construct 8\n";
@@ -101,6 +109,7 @@ void constructor_tests1(T* = 0)
         BOOST_TEST(test::equivalent(x.key_eq(), eq));
         BOOST_TEST(test::equivalent(x.get_allocator(), al));
         test::check_container(x, v);
+        test::check_equivalent_keys(x);
     }
 
     std::cerr<<"Construct 9\n";
@@ -111,6 +120,7 @@ void constructor_tests1(T* = 0)
         BOOST_TEST(test::equivalent(x.hash_function(), hf));
         BOOST_TEST(test::equivalent(x.key_eq(), eq));
         BOOST_TEST(test::equivalent(x.get_allocator(), al));
+        test::check_equivalent_keys(x);
     }
 
     std::cerr<<"Construct 10\n";
@@ -122,6 +132,7 @@ void constructor_tests1(T* = 0)
         BOOST_TEST(test::equivalent(x.key_eq(), eq));
         BOOST_TEST(test::equivalent(x.get_allocator(), al));
         test::check_container(x, v);
+        test::check_equivalent_keys(x);
     }
 }
 
@@ -145,6 +156,7 @@ void constructor_tests2(T* = 0)
         BOOST_TEST(test::equivalent(x.hash_function(), hf1));
         BOOST_TEST(test::equivalent(x.key_eq(), eq1));
         BOOST_TEST(test::equivalent(x.get_allocator(), al));
+        test::check_equivalent_keys(x);
     }
 
     std::cerr<<"Construct 2\n";
@@ -155,6 +167,7 @@ void constructor_tests2(T* = 0)
         BOOST_TEST(test::equivalent(x.hash_function(), hf1));
         BOOST_TEST(test::equivalent(x.key_eq(), eq));
         BOOST_TEST(test::equivalent(x.get_allocator(), al));
+        test::check_equivalent_keys(x);
     }
 
     std::cerr<<"Construct 3\n";
@@ -165,6 +178,7 @@ void constructor_tests2(T* = 0)
         BOOST_TEST(test::equivalent(x.key_eq(), eq1));
         BOOST_TEST(test::equivalent(x.get_allocator(), al));
         test::check_container(x, v);
+        test::check_equivalent_keys(x);
     }
 
     std::cerr<<"Construct 4\n";
@@ -176,6 +190,7 @@ void constructor_tests2(T* = 0)
         BOOST_TEST(test::equivalent(x.key_eq(), eq));
         BOOST_TEST(test::equivalent(x.get_allocator(), al));
         test::check_container(x, v);
+        test::check_equivalent_keys(x);
     }
 
 
@@ -186,6 +201,8 @@ void constructor_tests2(T* = 0)
         T y(x.begin(), x.end(), 0, hf1, eq1, al2);
         test::check_container(x, v);
         test::check_container(y, x);
+        test::check_equivalent_keys(x);
+        test::check_equivalent_keys(y);
     }
 
     std::cerr<<"Construct 6\n";
@@ -195,6 +212,8 @@ void constructor_tests2(T* = 0)
         T y(x.begin(), x.end(), 0, hf, eq);
         test::check_container(x, v);
         test::check_container(y, x);
+        test::check_equivalent_keys(x);
+        test::check_equivalent_keys(y);
     }
 
     std::cerr<<"Construct 7\n";
@@ -204,6 +223,8 @@ void constructor_tests2(T* = 0)
         T y(x.begin(), x.end(), 0, hf2, eq2);
         test::check_container(x, v);
         test::check_container(y, x);
+        test::check_equivalent_keys(x);
+        test::check_equivalent_keys(y);
     }
 
     std::cerr<<"Construct 8 - from input iterator\n";
@@ -213,7 +234,24 @@ void constructor_tests2(T* = 0)
         T y(test::input_iterator(x.begin()), test::input_iterator(x.end()), 0, hf2, eq2);
         test::check_container(x, v);
         test::check_container(y, x);
+        test::check_equivalent_keys(x);
+        test::check_equivalent_keys(y);
     }
+}
+
+template <class T>
+void map_constructor_test(T* = 0)
+{
+    std::cerr<<"map_constructor_test\n";
+
+    typedef std::list<std::pair<typename T::key_type, typename T::mapped_type> > list;
+    test::random_values<T> v(1000);
+    list l(v.begin(), v.end());
+
+    T x(l.begin(), l.end());
+
+    test::check_container(x, v);
+    test::check_equivalent_keys(x);
 }
 
 int main()
@@ -244,6 +282,11 @@ int main()
     constructor_tests2((boost::unordered_map<test::object, test::object, test::hash, test::equal_to, test::allocator<test::object> >*) 0);
     std::cerr<<"Test2 unordered_multimap<test::object, test::object>\n";
     constructor_tests2((boost::unordered_multimap<test::object, test::object, test::hash, test::equal_to, test::allocator<test::object> >*) 0);
+
+    std::cerr<<"Map Test unordered_map<test::object, test::object>\n";
+    map_constructor_test((boost::unordered_map<test::object, test::object, test::hash, test::equal_to, test::allocator<test::object> >*) 0);
+    std::cerr<<"Map Test unordered_multimap<test::object, test::object>\n";
+    map_constructor_test((boost::unordered_multimap<test::object, test::object, test::hash, test::equal_to, test::allocator<test::object> >*) 0);
 
     return boost::report_errors();
 }

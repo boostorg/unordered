@@ -10,25 +10,31 @@
 
 #include <string>
 #include <utility>
-
-#if 0
+#include <stdexcept>
 #include <boost/random/inversive_congruential.hpp>
 #include <boost/random/uniform_int.hpp>
 #include <boost/random/lagged_fibonacci.hpp>
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/variate_generator.hpp>
-#else
-#include <cstdlib>
-#endif
 
 #include "./fwd.hpp"
 
 namespace test
 {
-#if 0
     typedef boost::hellekalek1995 integer_generator_type;
     typedef boost::lagged_fibonacci607 real_generator_type;
-#endif
+
+    template <class T>
+    struct generator;
+
+    template <class T1, class T2> std::pair<T1, T2> generate(
+            std::pair<T1, T2> const*)
+    {
+        static generator<T1> g1;
+        static generator<T2> g2;
+
+        return std::pair<T1, T2>(g1(), g2());
+    }
 
     template <class T>
     struct generator
@@ -42,30 +48,20 @@ namespace test
 
     inline int generate(int const*)
     {
-#if 0
-        integer_generator_type gen;
-        boost::uniform_int<> dist(0, 1000);
+        static integer_generator_type gen;
+        static boost::uniform_int<> dist(0, 1000);
         static boost::variate_generator<integer_generator_type, boost::uniform_int<> >
             vg(gen, dist);
         return vg();
-#else
-        using namespace std;
-        return rand();
-#endif
     }
 
     inline char generate(char const*)
     {
-#if 0
-        integer_generator_type gen;
-        boost::uniform_int<char> dist(32, 127);
+        static integer_generator_type gen;
+        static boost::uniform_int<char> dist(32, 127);
         static boost::variate_generator<integer_generator_type, boost::uniform_int<char> >
             vg(gen, dist);
         return vg();
-#else
-        using namespace std;
-        return rand() % (128 - 32) + 32;
-#endif
     }
 
     inline std::string generate(std::string const*)
@@ -80,35 +76,16 @@ namespace test
         for(int i = 0; i < length; ++i)
             result += char_gen();
 
-        //std::generate_n(
-        //        std::back_inserter(result),
-        //        rand() % 10,
-        //        char_gen);
-
         return result;
     }
 
     float generate(float const*)
     {
-#if 0
-        real_generator_type gen;
-        boost::uniform_real<float> dist;
+        static real_generator_type gen;
+        static boost::uniform_real<float> dist;
         static boost::variate_generator<real_generator_type, boost::uniform_real<float> >
             vg(gen, dist);
         return vg();
-#else
-        using namespace std;
-        return (double) rand() / (double) RAND_MAX;
-#endif
-    }
-
-    template <class T1, class T2> std::pair<T1, T2> generate(
-            std::pair<T1, T2>  const*)
-    {
-        static generator<T1> g1;
-        static generator<T2> g2;
-
-        return std::pair<T1, T2>(g1(), g2());
     }
 }
 

@@ -19,6 +19,7 @@ test-suite unordered-tests
         [ run assign_tests.cpp ]
         [ run insert_tests.cpp ]
         [ run erase_tests.cpp ]
+        [ run erase_equiv_tests.cpp ]
         [ run find_tests.cpp ]
         [ run bucket_tests.cpp ]
         [ run load_factor_tests.cpp ]

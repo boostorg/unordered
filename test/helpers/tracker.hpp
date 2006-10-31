@@ -138,8 +138,7 @@ namespace test
     };
 
     template <class Equals>
-    typename equals_to_compare<Equals>::type create_compare(
-            Equals const& equals)
+    typename equals_to_compare<Equals>::type create_compare(Equals const&)
     {
         typename equals_to_compare<Equals>::type x;
         return x;

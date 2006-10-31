@@ -17,12 +17,6 @@
 #include <cstdlib>
 #include "../helpers/fwd.hpp"
 
-// TODO:
-// a) This can only be included in compile unit.
-// b) This stuff should be somewhere else.
-// but I'm feeling too lazy right now (although sadly not lazy enough to
-// avoid reinventing yet another wheel).
-
 #define RUN_EXCEPTION_TESTS(test_seq, param_seq) \
     BOOST_PP_SEQ_FOR_EACH_PRODUCT(RUN_EXCEPTION_TESTS_OP, (test_seq)(param_seq))
 
@@ -213,6 +207,11 @@ namespace exception
             }
         }
 
+        ~object() {
+            tag1_ = -1;
+            tag2_ = -1;
+        }
+
         object& operator=(object const& x)
         {
             SCOPE(object::operator=(object)) {
@@ -346,7 +345,7 @@ namespace exception
             return *this;
         }
 
-        std::size_t operator()(object const& x1, object const& x2) const {
+        bool operator()(object const& x1, object const& x2) const {
             SCOPE(equal_to::operator()(object, object)) {
                 EPOINT("Mock equal_to function.");
             }
@@ -376,10 +375,6 @@ namespace exception
         }
     };
 
-    // TODO: Need to track that same allocator is used to allocate, construct,
-    // deconstruct and destroy objects. Also, need to check that constructed
-    // objects are deconstructed (Boost.Test should take care of memory leaks
-    // for us).
     template <class T>
     class allocator
     {
@@ -394,14 +389,14 @@ namespace exception
 
         template <class U> struct rebind { typedef allocator<U> other; };
 
-        explicit allocator(int t = 0)
+        explicit allocator(int = 0)
         {
             SCOPE(allocator::allocator()) {
                 EPOINT("Mock allocator default constructor.");
             }
         }
 
-        template <class Y> allocator(allocator<Y> const& x)
+        template <class Y> allocator(allocator<Y> const&)
         {
             SCOPE(allocator::allocator()) {
                 EPOINT("Mock allocator template copy constructor.");
@@ -424,8 +419,11 @@ namespace exception
             return *this;
         }
 
+        // If address throws, then it can't be used in erase or the
+        // destructor, which is very limiting. I need to check up on
+        // this.
+
         pointer address(reference r) {
-            // TODO: Is this no throw? Major problems if it isn't.
             //SCOPE(allocator::address(reference)) {
             //    EPOINT("Mock allocator address function.");
             //}
@@ -433,7 +431,6 @@ namespace exception
         }
 
         const_pointer address(const_reference r)  {
-            // TODO: Is this no throw? Major problems if it isn't.
             //SCOPE(allocator::address(const_reference)) {
             //    EPOINT("Mock allocator const address function.");
             //}
@@ -469,7 +466,7 @@ namespace exception
             //return pointer(static_cast<T*>(::operator new(n * sizeof(T))));
         }
 
-        void deallocate(pointer p, size_type n)
+        void deallocate(pointer p, size_type)
         {
             //::operator delete((void*) p);
             if(p) {
@@ -495,13 +492,12 @@ namespace exception
         }
     };
 
+    // It's pretty much impossible to write a compliant swap when these
+    // two can throw. So they don't.
+
     template <class T>
-    inline bool operator==(allocator<T> const& x, allocator<T> const& y)
+    inline bool operator==(allocator<T> const&, allocator<T> const&)
     {
-        // TODO: I can't meet the exception requirements for swap if this
-        // throws. Does the standard specify that allocator comparisons can't
-        // throw?
-        //
         //SCOPE(operator==(allocator, allocator)) {
         //    EPOINT("Mock allocator equality operator.");
         //}

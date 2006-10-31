@@ -61,7 +61,6 @@ void assign_tests2(T* = 0)
 
     std::cerr<<"assign_tests2.1\n";
     {
-        // TODO: Need to generate duplicates...
         test::random_values<T> v(1000);
         T x1(v.begin(), v.end(), 0, hf1, eq1);
         T x2(0, hf2, eq2);
@@ -73,7 +72,6 @@ void assign_tests2(T* = 0)
 
     std::cerr<<"assign_tests2.2\n";
     {
-        // TODO: Need to generate duplicates...
         test::random_values<T> v1(100), v2(100);
         T x1(v1.begin(), v1.end(), 0, hf1, eq1, al1);
         T x2(v2.begin(), v2.end(), 0, hf2, eq2, al2);

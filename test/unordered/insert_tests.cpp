@@ -196,8 +196,8 @@ void insert_tests2(X* = 0)
 
         test::random_values<X> v(1000);
         x.insert(v.begin(), v.end());
-        test::check_container(x, v);
 
+        test::check_container(x, v);
         test::check_equivalent_keys(x);
     }
 
@@ -218,6 +218,8 @@ void insert_tests2(X* = 0)
 template <class X>
 void map_tests(X* = 0)
 {
+    std::cerr<<"map tests.\n";
+
     X x;
     test::ordered<X> tracker = test::create_ordered(x);
 
@@ -238,6 +240,20 @@ void map_tests(X* = 0)
     }
 
     test::check_equivalent_keys(x);   
+}
+
+template <class X>
+void associative_insert_range_test(X* = 0)
+{
+    std::cerr<<"associative_insert_range_test\n";
+
+    typedef std::list<std::pair<typename X::key_type, typename X::mapped_type> > list;
+    test::random_values<X> v(1000);
+    list l(v.begin(), v.end());
+
+    X x; x.insert(l.begin(), l.end());
+
+    test::check_equivalent_keys(x);
 }
 
 int main()
@@ -264,6 +280,9 @@ int main()
 
     map_tests((boost::unordered_map<int, int>*) 0);
     map_tests((boost::unordered_map<test::object, test::object, test::hash, test::equal_to, test::allocator<test::object> >*) 0);
+
+    associative_insert_range_test((boost::unordered_map<test::object, test::object, test::hash, test::equal_to, test::allocator<test::object> >*) 0);
+    associative_insert_range_test((boost::unordered_multimap<test::object, test::object, test::hash, test::equal_to, test::allocator<test::object> >*) 0);
 
     return boost::report_errors();
 }

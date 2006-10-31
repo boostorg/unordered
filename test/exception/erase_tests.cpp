@@ -27,8 +27,6 @@ struct erase_test_base : public test::exception_base
     void check(T const& x) const {
         std::string scope(test::scope);
 
-        // TODO: Instead of checking for 'operator==', I should check against
-        // a scope stack.
         BOOST_CHECK(scope.find("hash::") != std::string::npos ||
                 scope.find("equal_to::") != std::string::npos ||
                 scope == "operator==(object, object)");
@@ -51,11 +49,6 @@ struct erase_by_key_test1 : public erase_test_base<T>
         }
     }
 };
-
-// TODO: More tests...
-// Better test by key.
-// Test other erase signatures - generally they won't throw, but the standard
-// does allow them to. And test clear as well.
 
 RUN_EXCEPTION_TESTS(
     (erase_by_key_test1),

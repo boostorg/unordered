@@ -105,8 +105,6 @@ void erase_tests1(Container* = 0)
         BOOST_TEST(x.erase(x.begin(), x.end()) == x.begin());
     }
 
-    // TODO: More range erase tests.
-
     std::cerr<<"clear().\n";
     {
         test::random_values<Container> v(500);

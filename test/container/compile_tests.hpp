@@ -17,7 +17,7 @@ typedef long double comparison_type;
 template <class T> void sink(T const&) {}
 
 template <class X, class T>
-void container_test(X& r, T& value)
+void container_test(X& r, T&)
 {
     typedef typename X::iterator iterator;
     typedef typename X::const_iterator const_iterator;

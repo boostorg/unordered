@@ -47,19 +47,12 @@ namespace minimal
     {
     public:
         static hash create() { return hash(); }
-        // TODO: hash has to be default constructible for the default
-        // parameters. Maybe use an alternative version for testing
-        // other member functions.
-        //
-        // Or maybe it's required to be default constructible?
-        // The Container requirements include a default constructor.
         hash() {}
         hash(hash const&) {}
-        // TODO: Required to be assignable?
         hash& operator=(hash const&) { return *this; }
         ~hash() {}
 
-        std::size_t operator()(T const& x) const { return 0; }
+        std::size_t operator()(T const&) const { return 0; }
     };
 
     template <class T>
@@ -67,15 +60,8 @@ namespace minimal
     {
     public:
         static equal_to create() { return equal_to(); }
-        // TODO: equal_to has to be default constructible for the default
-        // parameters. Maybe use an alternative version for testing
-        // other member functions.
-        //
-        // Or maybe it's required to be default constructible?
-        // The Container requirements include a default constructor.
         equal_to() {}
         equal_to(equal_to const&) {}
-        // TODO: Required to be assignable?
         equal_to& operator=(equal_to const&) { return *this; }
         ~equal_to() {}
 
@@ -173,9 +159,6 @@ namespace minimal
         bool operator>=(const_pointer const& x) const { return ptr_ >= x.ptr_; }
     };
 
-    // TODO: Issue 560 suggests that an allocator doesn't have to have
-    // a default constructor.
-    // http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#560
     template <class T>
     class allocator
     {
@@ -207,7 +190,7 @@ namespace minimal
             return pointer(static_cast<T*>(::operator new(n * sizeof(T))));
         }
 
-        void deallocate(pointer p, size_type n)
+        void deallocate(pointer p, size_type)
         {
             ::operator delete((void*) p.ptr_);
         }
@@ -225,19 +208,19 @@ namespace minimal
     };
 
     template <class T>
-    inline bool operator==(allocator<T> const& x, allocator<T> const& y)
+    inline bool operator==(allocator<T> const&, allocator<T> const&)
     {
         return true;
     }
 
     template <class T>
-    inline bool operator!=(allocator<T> const& x, allocator<T> const& y)
+    inline bool operator!=(allocator<T> const&, allocator<T> const&)
     {
         return false;
     }
 
     template <class T>
-    void swap(allocator<T>& x, allocator<T>& y)
+    void swap(allocator<T>&, allocator<T>&)
     {
     }
 }

@@ -49,8 +49,10 @@ namespace test
             if(test::has_unique_keys<X>::value && count != 1)
                 BOOST_ERROR("Non-unique key.");
 
-            if(x1.count(key) != count)
+            if(x1.count(key) != count) {
                 BOOST_ERROR("Incorrect output of count.");
+                std::cerr<<x1.count(key)<<","<<count<<"\n";
+            }
 
             // I'm not bothering with the following test for now, as the
             // previous test is probably more enough to catch the kind of

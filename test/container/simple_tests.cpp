@@ -43,7 +43,6 @@ void simple_test(X const& a)
     }
 
     {
-        // TODO: Also test with a random container...
         X b(a);
         X c;
         BOOST_TEST(equivalent(b));
@@ -59,8 +58,6 @@ void simple_test(X const& a)
     {
         X u;
         X& r = u;
-        // TODO: I can't actually see a requirement for that assignment
-        // returns a reference to itself (just that it returns a reference).
         BOOST_TEST(&(r = r) == &r);
         BOOST_TEST(r.empty());
         BOOST_TEST(&(r = a) == &r);
@@ -74,8 +71,6 @@ void simple_test(X const& a)
                 (typename X::size_type) std::distance(a.begin(), a.end()));
     }
 
-    // TODO: Test max_size against allocator?
-
     {
         BOOST_TEST(a.empty() == (a.size() == 0));
     }
@@ -85,8 +80,6 @@ void simple_test(X const& a)
         X u;
         BOOST_TEST(u.begin() == u.end());
     }
-
-    // TODO: Test construction with allocator?
 }
 
 int main()

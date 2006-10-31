@@ -11,7 +11,6 @@
 
 namespace test
 {
-    // TODO: Make this a stricter input iterator.
     template <class Iterator>
     struct input_iterator_adaptor
         : boost::iterator_adaptor<

@@ -67,7 +67,6 @@ void copy_construct_tests2(T* ptr = 0)
     typename T::allocator_type al(1);
 
     {
-        // TODO: I could check how many buckets y has, it should be lower (QOI issue).
         T x(10000, hf, eq, al);
         T y(x);
         BOOST_TEST(y.empty());
@@ -79,7 +78,6 @@ void copy_construct_tests2(T* ptr = 0)
     }
 
     {
-        // TODO: Invariant checks are especially important here.
         test::random_values<T> v(1000);
 
         T x(v.begin(), v.end(), 0, hf, eq, al);

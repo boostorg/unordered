@@ -32,6 +32,11 @@ namespace test
     public:
         explicit object(int t1 = 0, int t2 = 0) : tag1_(t1), tag2_(t2) {}
 
+        ~object() {
+            tag1_ = -1;
+            tag2_ = -1;
+        }
+
         friend bool operator==(object const& x1, object const& x2) {
             return x1.tag1_ == x2.tag1_ && x1.tag2_ == x2.tag2_;
         }
@@ -222,7 +227,7 @@ namespace test
         void track_allocate(void *ptr, std::size_t n, std::size_t size, int tag)
         {
             if(n == 0) {
-                // TODO: This is unspecified - not undefined, so what to do?
+                BOOST_ERROR("Allocating 0 length array.");
             }
             else {
                 ++count_allocations;
@@ -238,7 +243,6 @@ namespace test
             if(pos == allocated_memory.end()) {
                 BOOST_ERROR("Deallocating unknown pointer.");
             } else {
-                // TODO: Not exception safe.
                 BOOST_TEST(pos->first.start == ptr);
                 BOOST_TEST(pos->first.end == (char*) ptr + n * size);
                 BOOST_TEST(pos->second.tag_ == tag);
@@ -249,21 +253,18 @@ namespace test
             if(count_allocations > 0) --count_allocations;
         }
 
-        void track_construct(void* ptr, std::size_t size, int tag)
+        void track_construct(void* ptr, std::size_t /*size*/, int tag)
         {
             std::map<memory_area, memory_track>::iterator pos
                 = allocated_memory.find(memory_area(ptr, ptr));
             if(pos == allocated_memory.end())
                 BOOST_ERROR("Constructing unknown pointer.");
             BOOST_TEST(pos->second.tag_ == tag);
-            //TODO: Track the number of allocations, and make sure the number
-            // of constructions doesn't exceed it. If you're feeling keen,
-            // perhaps track the individual objects in the array.
             ++count_constructions;
             ++pos->second.constructed_;
         }
 
-        void track_destroy(void* ptr, std::size_t size, int tag)
+        void track_destroy(void* ptr, std::size_t /*size*/, int tag)
         {
             std::map<memory_area, memory_track>::iterator pos
                 = allocated_memory.find(memory_area(ptr, ptr));
@@ -302,7 +303,6 @@ namespace test
         allocator(allocator const& x) : tag_(x.tag_) { detail::allocator_ref(); }
         ~allocator() { detail::allocator_unref(); }
 
-        // TODO: Shall I check these?
         pointer address(reference r) { return pointer(&r); }
         const_pointer address(const_reference r) { return const_pointer(&r); }
 

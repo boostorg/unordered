@@ -22,14 +22,6 @@ namespace test
         values_type values_;
     public:
         void store(X const& x) {
-            // TODO: Well, I shouldn't be disabling exceptions here. Instead
-            // the test runner should provide a method to the test which
-            // disables exceptions and calls this.
-            //
-            // Actually, the test runner could also keep track of how many times
-            // store is called in a run. Because it knows that in the next run
-            // the first n-1 stores are unnecessary - since no exceptions will
-            // be thrown for them.
             DISABLE_EXCEPTIONS;
             values_.clear();
             values_.reserve(x.size());
