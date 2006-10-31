@@ -115,6 +115,7 @@ namespace boost {
         template <class Allocator>
         struct allocator_constructor
         {
+            typedef typename Allocator::value_type value_type;
             typedef typename allocator_pointer<Allocator>::type pointer;
 
             Allocator& alloc_;
@@ -140,8 +141,20 @@ namespace boost {
             void construct(V const& v) {
                 BOOST_ASSERT(!ptr_ && !constructed_);
                 ptr_ = alloc_.allocate(1);
+                alloc_.construct(ptr_, value_type(v));
+                constructed_  = true;
+            }
+
+            void construct(value_type const& v) {
+                BOOST_ASSERT(!ptr_ && !constructed_);
+                ptr_ = alloc_.allocate(1);
                 alloc_.construct(ptr_, v);
                 constructed_  = true;
+            }
+
+            pointer get() const
+            {
+                return ptr_;
             }
 
             // no throw
