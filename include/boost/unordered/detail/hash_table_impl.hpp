@@ -33,7 +33,7 @@ namespace boost {
         {
         public:
             class node;
-            class node_base;
+            class node_links;
             class bucket;
             typedef std::size_t size_type;
 
@@ -43,8 +43,8 @@ namespace boost {
                 boost::unordered_detail::rebind_wrap<Alloc, node>::type
                 node_allocator;
             typedef BOOST_DEDUCED_TYPENAME
-                boost::unordered_detail::rebind_wrap<Alloc, node_base>::type
-                node_base_allocator;
+                boost::unordered_detail::rebind_wrap<Alloc, node_links>::type
+                node_links_allocator;
             typedef BOOST_DEDUCED_TYPENAME
                 boost::unordered_detail::rebind_wrap<Alloc, bucket>::type
                 bucket_allocator;
@@ -62,22 +62,22 @@ namespace boost {
             {
                 bucket& operator=(bucket const&);
             public:
-                bucket_ptr next_;
+                node_ptr first_;
 
-                bucket() : next_()
+                bucket() : first_()
                 {
-                    BOOST_HASH_MSVC_RESET_PTR(next_);
+                    BOOST_HASH_MSVC_RESET_PTR(first_);
                 }
 
-                bucket(bucket const& x) : next_(x.next_)
+                bucket(bucket const& x) : first_(x.first_)
                 {
                     // Only copy construct when allocating.
-                    BOOST_ASSERT(!x.next_);
+                    BOOST_ASSERT(!x.first_);
                 }
 
                 bool empty() const
                 {
-                    return !this->next_;
+                    return !this->first_;
                 }
             };
 
@@ -85,24 +85,31 @@ namespace boost {
             //
             // all no throw
 
-            class node_base : public bucket
+            class node_links
             {
-#if BOOST_UNORDERED_HASH_EQUIVALENT
             public:
-                node_base() : group_prev_()
+#if BOOST_UNORDERED_HASH_EQUIVALENT
+                node_links() : next_(), group_prev_()
                 {
+                    BOOST_HASH_MSVC_RESET_PTR(next_);
                     BOOST_HASH_MSVC_RESET_PTR(group_prev_);
                 }
 
-                bucket_ptr group_prev_;
+                node_ptr next_;
+                node_ptr group_prev_;
+#else
+                node_links() : next_()
+                {
+                    BOOST_HASH_MSVC_RESET_PTR(next_);
+                }
+
+                node_ptr next_;
 #endif
             };
 
-            class node : public node_base
+            struct node
             {
-            public:
-                node(value_type const& v) : node_base(), value_(v) {}
-
+                node_links links_;
                 value_type value_;
             };
 
@@ -115,85 +122,95 @@ namespace boost {
                 node_allocator node_alloc_;
                 bucket_allocator bucket_alloc_;
                 value_allocator value_alloc_;
-                node_base_allocator node_base_alloc_;
+                node_links_allocator node_links_alloc_;
 
-                allocators(node_allocator const& a)
+                allocators(value_allocator const& a)
                     : node_alloc_(a), bucket_alloc_(a),
-                    value_alloc_(a), node_base_alloc_(a)
+                    value_alloc_(a), node_links_alloc_(a)
                 {}
 
-                void destroy(bucket_ptr ptr)
+                void destroy(node_ptr n)
                 {
-                    node_ptr n(node_alloc_.address(static_cast<node&>(*ptr)));
                     value_alloc_.destroy(value_alloc_.address(n->value_));
-                    node_base_alloc_.destroy(node_base_alloc_.address(*n));
+                    node_links_alloc_.destroy(node_links_alloc_.address(n->links_));
                     node_alloc_.deallocate(n, 1);
+                }
+
+                void swap(allocators& x)
+                {
+                    hash_swap(node_alloc_, x.node_alloc_);
+                    hash_swap(bucket_alloc_, x.bucket_alloc_);
+                    hash_swap(value_alloc_, x.value_alloc_);
+                    hash_swap(node_links_alloc_, x.node_links_alloc_);
+                }
+
+                bool operator==(allocators const& x)
+                {
+                    return value_alloc_ == x.value_alloc_;
                 }
             };
 
             class node_constructor
             {
                 allocators& allocators_;
-                node_base_allocator node_base_alloc_;
-                value_allocator value_alloc_;
 
-                node_ptr ptr_;
+                node_ptr node_;
                 bool value_constructed_;
-                bool node_base_constructed_;
+                bool node_links_constructed_;
 
             public:
 
                 node_constructor(allocators& a)
-                    : allocators_(a), node_base_alloc_(a.node_alloc_),
-                    value_alloc_(a.node_alloc_),
-                    ptr_(), value_constructed_(false), node_base_constructed_(false)
+                    : allocators_(a),
+                    node_(), value_constructed_(false), node_links_constructed_(false)
                 {
-                    BOOST_HASH_MSVC_RESET_PTR(ptr_);
+                    BOOST_HASH_MSVC_RESET_PTR(node_);
                 }
 
                 ~node_constructor()
                 {
-                    if (ptr_) {
+                    if (node_) {
                         if (value_constructed_)
-                            value_alloc_.destroy(
-                                value_alloc_.address(ptr_->value_));
-                        if (node_base_constructed_)
-                            node_base_alloc_.destroy(
-                                node_base_alloc_.address(*ptr_));
+                            allocators_.value_alloc_.destroy(
+                                allocators_.value_alloc_.address(node_->value_));
+                        if (node_links_constructed_)
+                            allocators_.node_links_alloc_.destroy(
+                                allocators_.node_links_alloc_.address(node_->links_));
 
-                        allocators_.node_alloc_.deallocate(ptr_, 1);
+                        allocators_.node_alloc_.deallocate(node_, 1);
                     }
                 }
 
                 template <class V>
                 void construct(V const& v)
                 {
-                    BOOST_ASSERT(!ptr_);
-                    value_constructed_ = node_base_constructed_ = false;
+                    BOOST_ASSERT(!node_);
+                    value_constructed_ = node_links_constructed_ = false;
 
-                    ptr_ = allocators_.node_alloc_.allocate(1);
+                    node_ = allocators_.node_alloc_.allocate(1);
 
-                    node_base_alloc_.construct(node_base_alloc_.address(
-                            *ptr_), node_base());
-                    node_base_constructed_ = true;
+                    allocators_.node_links_alloc_.construct(
+                            allocators_.node_links_alloc_.address(node_->links_),
+                            node_links());
+                    node_links_constructed_ = true;
 
-                    value_alloc_.construct(value_alloc_.address(
-                            ptr_->value_), v);
+                    allocators_.value_alloc_.construct(
+                            allocators_.value_alloc_.address(node_->value_), v);
                     value_constructed_ = true;
                 }
 
                 node_ptr get() const
                 {
-                    BOOST_ASSERT(ptr_);
-                    return ptr_;
+                    BOOST_ASSERT(node_);
+                    return node_;
                 }
 
                 // no throw
-                bucket_ptr release()
+                node_ptr release()
                 {
-                    node_ptr p = ptr_;
-                    unordered_detail::reset(ptr_);
-                    return allocators_.bucket_alloc_.address(*p);
+                    node_ptr n = node_;
+                    unordered_detail::reset(node_);
+                    return n;
                 }
 
             private:
@@ -204,87 +221,75 @@ namespace boost {
             // Methods for navigating groups of elements with equal keys.
 
 #if BOOST_UNORDERED_HASH_EQUIVALENT
-            static bucket_ptr& prev_in_group(bucket_ptr p) {
-                return static_cast<node&>(*p).group_prev_;
+            static node_ptr& prev_in_group(node_ptr n) {
+                return n->links_.group_prev_;
             }
 
             // pre: Must be pointing to the first node in a group.
-            static bucket_ptr last_in_group(bucket_ptr p) {
-                BOOST_ASSERT(p && p != prev_in_group(p)->next_);
-                return prev_in_group(p);
+            static node_ptr last_in_group(node_ptr n) {
+                BOOST_ASSERT(n && n != prev_in_group(n)->links_.next_);
+                return prev_in_group(n);
             }
 
             // pre: Must be pointing to the first node in a group.
-            static bucket_ptr& next_group(bucket_ptr p) {
-                BOOST_ASSERT(p && p != prev_in_group(p)->next_);
-                return prev_in_group(p)->next_;
+            static node_ptr& next_group(node_ptr n) {
+                BOOST_ASSERT(n && n != prev_in_group(n)->links_.next_);
+                return prev_in_group(n)->links_.next_;
             }
 #else
-            static bucket_ptr last_in_group(bucket_ptr p) {
-                return p;
+            static node_ptr last_in_group(node_ptr n) {
+                return n;
             }
 
-            static bucket_ptr& next_group(bucket_ptr p) {
-                BOOST_ASSERT(p);
-                return p->next_;
+            static node_ptr& next_group(node_ptr n) {
+                BOOST_ASSERT(n);
+                return n->links_.next_;
             }
 #endif
-
-            // pre: Must be pointing to a node
-            static node& get_node(bucket_ptr p) {
-                BOOST_ASSERT(p);
-                return static_cast<node&>(*p);
-            }
-
-            // pre: Must be pointing to a node
-            static reference get_value(bucket_ptr p) {
-                BOOST_ASSERT(p);
-                return static_cast<node&>(*p).value_;
-            }
 
             class local_iterator_base
             {
             public:
-                bucket_ptr node_pointer_;
+                node_ptr node_;
 
                 local_iterator_base()
-                    : node_pointer_()
+                    : node_()
                 {
-                    BOOST_HASH_MSVC_RESET_PTR(node_pointer_);
+                    BOOST_HASH_MSVC_RESET_PTR(node_);
                 }
 
-                explicit local_iterator_base(bucket_ptr n)
-                    : node_pointer_(n) {}
+                explicit local_iterator_base(node_ptr n)
+                    : node_(n) {}
 
                 bool not_finished() const
                 {
-                    return node_pointer_ ? true : false;
+                    return node_ ? true : false;
                 }
 
                 bool operator==(local_iterator_base const& x) const
                 {
-                    return node_pointer_ == x.node_pointer_;
+                    return node_ == x.node_;
                 }
 
                 bool operator!=(local_iterator_base const& x) const
                 {
-                    return node_pointer_ != x.node_pointer_;
+                    return node_ != x.node_;
                 }
 
                 reference operator*() const
                 {
-                    return get_value(node_pointer_);
+                    return node_->value_;
                 }
 
                 void increment()
                 {
-                    BOOST_ASSERT(node_pointer_);
-                    node_pointer_ = node_pointer_->next_;
+                    BOOST_ASSERT(node_);
+                    node_ = node_->links_.next_;
                 }
 
                 void next_group()
                 {
-                    node_pointer_ = HASH_TABLE_DATA::next_group(node_pointer_);
+                    node_ = HASH_TABLE_DATA::next_group(node_);
                 }
             };
 
@@ -298,9 +303,9 @@ namespace boost {
                     : bucket_(), local_() {}
 
                 explicit iterator_base(bucket_ptr b)
-                    : bucket_(b), local_(b->next_) {}
+                    : bucket_(b), local_(b->first_) {}
 
-                iterator_base(bucket_ptr b, bucket_ptr n)
+                iterator_base(bucket_ptr b, node_ptr n)
                     : bucket_(b), local_(n) {}
 
                 iterator_base(bucket_ptr b, local_iterator_base const& it)
@@ -326,9 +331,16 @@ namespace boost {
                     BOOST_ASSERT(bucket_);
                     local_.increment();
 
-                    while (!local_.node_pointer_) {
-                        ++bucket_;
-                        local_ = local_iterator_base(bucket_->next_);
+                    if(!local_.node_) {
+                        do {
+                            ++bucket_;
+                        } while(!bucket_->first_);
+
+                        // If at the end of the buckets...
+                        if(bucket_->first_ == (bucket_ + 1)->first_)
+                            unordered_detail::reset(local_);
+                        else
+                            local_ = local_iterator_base(bucket_->first_);
                     }
                 }
             };
@@ -343,7 +355,7 @@ namespace boost {
 
             // Constructors/Deconstructor
 
-            HASH_TABLE_DATA(size_type n, node_allocator const& a)
+            HASH_TABLE_DATA(size_type n, value_allocator const& a)
               : allocators_(a),
                 buckets_(), bucket_count_(next_prime(n)),
                 cached_begin_bucket_(), size_(0)
@@ -353,21 +365,18 @@ namespace boost {
                 allocator_array_constructor<bucket_allocator>
                     constructor(allocators_.bucket_alloc_);
 
-                // Creates an extra bucket to act as a sentinel.
-                constructor.construct(bucket(), bucket_count_ + 1);
+                // Creates two extra buckets to act as sentinels.
+                constructor.construct(bucket(), bucket_count_ + 2);
 
                 cached_begin_bucket_ = constructor.get() + bucket_count_;
-
-                // Set up the sentinel.
-                cached_begin_bucket_->next_ = cached_begin_bucket_;
 
                 // Only release the buckets once everything is successfully
                 // done.
                 buckets_ = constructor.release();
             }
 
-            HASH_TABLE_DATA(HASH_TABLE_DATA const& h, size_type n)
-              : allocators_(h.allocators_),
+            HASH_TABLE_DATA(HASH_TABLE_DATA const& x, size_type n)
+              : allocators_(x.allocators_),
                 buckets_(), bucket_count_(next_prime(n)),
                 cached_begin_bucket_(), size_(0)
             {
@@ -376,13 +385,10 @@ namespace boost {
                 allocator_array_constructor<bucket_allocator>
                     constructor(allocators_.bucket_alloc_);
 
-                // Creates an extra bucket to act as a sentinel.
-                constructor.construct(bucket(), bucket_count_ + 1);
+                // Creates two extra buckets to act as sentinels.
+                constructor.construct(bucket(), bucket_count_ + 2);
 
                 cached_begin_bucket_ = constructor.get() + bucket_count_;
-
-                // Set up the sentinel
-                cached_begin_bucket_->next_ = cached_begin_bucket_;
 
                 // Only release the buckets once everything is successfully
                 // done.
@@ -400,10 +406,11 @@ namespace boost {
                         ++begin;
                     }
 
-                    for(size_type i2 = 0; i2 < bucket_count_ + 1; ++i2)
+                    // Destroy two extra buckets for the sentinels.
+                    for(size_type i2 = 0; i2 < bucket_count_ + 2; ++i2)
                         allocators_.bucket_alloc_.destroy(buckets_ + i2);
 
-                    allocators_.bucket_alloc_.deallocate(buckets_, bucket_count_ + 1);
+                    allocators_.bucket_alloc_.deallocate(buckets_, bucket_count_ + 2);
                 }
             }
 
@@ -444,12 +451,12 @@ namespace boost {
 
             iterator_base end() const
             {
-                return iterator_base(buckets_ + bucket_count_);
+                return iterator_base(buckets_ + bucket_count_, local_iterator_base());
             }
 
             local_iterator_base begin(size_type n) const
             {
-                return local_iterator_base(buckets_[n].next_);
+                return local_iterator_base(buckets_[n].first_);
             }
 
             local_iterator_base end(size_type) const
@@ -459,7 +466,7 @@ namespace boost {
 
             local_iterator_base begin(bucket_ptr b) const
             {
-                return local_iterator_base(b->next_);
+                return local_iterator_base(b->first_);
             }
 
             // Bucket Size
@@ -492,11 +499,11 @@ namespace boost {
             }
 
 #if BOOST_UNORDERED_HASH_EQUIVALENT
-            size_type group_count(local_iterator_base pos) const
+            size_type group_count(local_iterator_base first_node) const
             {
                 size_type count = 0;
-                bucket_ptr it = pos.node_pointer_;
-                bucket_ptr first = it;
+                node_ptr it = first_node.node_;
+                node_ptr first = it;
                 do {
                     ++count;
                     it = prev_in_group(it);
@@ -517,28 +524,28 @@ namespace boost {
             // no throw
 
 #if BOOST_UNORDERED_HASH_EQUIVALENT
-            bucket_ptr* get_for_erase(iterator_base r) const
+            node_ptr* get_for_erase(iterator_base r) const
             {
-                bucket_ptr pos = r.local_.node_pointer_;
+                node_ptr n = r.local_.node_;
 
                 // If the element isn't the first in its group, then
                 // the link to it will be found in the previous element
                 // in the group.
-                bucket_ptr* it = &prev_in_group(pos)->next_;
-                if(*it == pos) return it;
+                node_ptr* it = &prev_in_group(n)->links_.next_;
+                if(*it == n) return it;
 
-                // The element is the first in its group, so just
-                // need to check the first elements.
-                it = &r.bucket_->next_;
-                while(*it != pos) it = &HASH_TABLE_DATA::next_group(*it);
+                // The element is the first in its group, so iterate
+                // throught the groups, checking against the first element.
+                it = &r.bucket_->first_;
+                while(*it != n) it = &HASH_TABLE_DATA::next_group(*it);
                 return it;
             }
 #else
-            bucket_ptr* get_for_erase(iterator_base r) const
+            node_ptr* get_for_erase(iterator_base r) const
             {
-                bucket_ptr pos = r.local_.node_pointer_;
-                bucket_ptr* it = &r.bucket_->next_;
-                while(*it != pos) it = &(*it)->next_;
+                node_ptr n = r.local_.node_;
+                node_ptr* it = &r.bucket_->first_;
+                while(*it != n) it = &(*it)->links_.next_;
                 return it;
             }
 #endif
@@ -551,59 +558,68 @@ namespace boost {
             // no throw
 
 #if BOOST_UNORDERED_HASH_EQUIVALENT
-            void link_node(bucket_ptr n, local_iterator_base pos)
+            void link_node(node_ptr n, local_iterator_base pos)
             {
-                node& node_ref = get_node(n);
-                node& pos_ref = get_node(pos.node_pointer_);
-                node_ref.next_ = pos_ref.group_prev_->next_;
-                node_ref.group_prev_ = pos_ref.group_prev_;
-                pos_ref.group_prev_->next_ = n;
-                pos_ref.group_prev_ = n;
+                node_links& links = pos.node_->links_;
+
+                n->links_.next_ = links.group_prev_->links_.next_;
+                n->links_.group_prev_ = links.group_prev_;
+                links.group_prev_->links_.next_ = n;
+                links.group_prev_ = n;
                 ++size_;
             }
 
-            void link_node(bucket_ptr n, bucket_ptr base)
+            void link_node(node_ptr n, bucket_ptr base)
             {
-                node& node_ref = get_node(n);
-                node_ref.next_ = base->next_;
-                node_ref.group_prev_ = n;
-                base->next_ = n;
+                n->links_.next_ = base->first_;
+                n->links_.group_prev_ = n;
+                base->first_ = n;
                 ++size_;
-                if(base < cached_begin_bucket_) cached_begin_bucket_ = base;
+                if(base < cached_begin_bucket_) {
+                    cached_begin_bucket_ = base;
+                    buckets_[bucket_count_].first_ = cached_begin_bucket_->first_;
+                    buckets_[bucket_count_+1].first_ = cached_begin_bucket_->first_;
+                }
             }
 
-            void link_group(bucket_ptr n, bucket_ptr base, size_type count)
+            void link_group(node_ptr n, bucket_ptr base, size_type count)
             {
-                node& node_ref = get_node(n);
-                node& last_ref = get_node(node_ref.group_prev_);
-                last_ref.next_ = base->next_;
-                base->next_ = n;
+                n->links_.group_prev_->links_.next_ = base->first_;
+                base->first_ = n;
                 size_ += count;
-                if(base < cached_begin_bucket_) cached_begin_bucket_ = base;
+                if(base < cached_begin_bucket_) {
+                    cached_begin_bucket_ = base;
+                    buckets_[bucket_count_].first_ = cached_begin_bucket_->first_;
+                    buckets_[bucket_count_+1].first_ = cached_begin_bucket_->first_;
+                }
             }
 #else
-            void link_node(bucket_ptr n, bucket_ptr base)
+            void link_node(node_ptr n, bucket_ptr base)
             {
-                n->next_ = base->next_;
-                base->next_ = n;
+                n->links_.next_ = base->first_;
+                base->first_ = n;
                 ++size_;
-                if(base < cached_begin_bucket_) cached_begin_bucket_ = base;
+                if(base < cached_begin_bucket_) {
+                    cached_begin_bucket_ = base;
+                    buckets_[bucket_count_].first_ = cached_begin_bucket_->first_;
+                    buckets_[bucket_count_+1].first_ = cached_begin_bucket_->first_;
+                }
             }
 
-            void link_group(bucket_ptr n, bucket_ptr base, size_type)
+            void link_group(node_ptr n, bucket_ptr base, size_type)
             {
                 link_node(n, base);
             }
 #endif
 
 #if BOOST_UNORDERED_HASH_EQUIVALENT
-            void unlink_node(iterator_base x)
+            void unlink_node(iterator_base it)
             {
-                node& to_delete = get_node(x.local_.node_pointer_);
-                bucket_ptr next = to_delete.next_;
-                bucket_ptr* pos = get_for_erase(x);
+                node_ptr* pos = get_for_erase(it);
+                node_ptr n = *pos;
+                node_ptr next = n->links_.next_;
 
-                if(to_delete.group_prev_ == *pos) {
+                if(n->links_.group_prev_ == n) {
                     // The deleted node is the sole node in the group, so
                     // no need to unlink it from a goup.
                 }
@@ -611,52 +627,52 @@ namespace boost {
                 {
                     // The deleted node is not at the end of the group, so
                     // change the link from the next node.
-                    prev_in_group(next) = to_delete.group_prev_;
+                    prev_in_group(next) = n->links_.group_prev_;
                 }
                 else {
                     // The deleted node is at the end of the group, so the
                     // node in the group pointing to it is at the beginning
                     // of the group. Find that to change its pointer.
-                    bucket_ptr it = to_delete.group_prev_;
+                    node_ptr it = n->links_.group_prev_;
                     while(prev_in_group(it) != *pos) {
                         it = prev_in_group(it);
                     }
-                    prev_in_group(it) = to_delete.group_prev_;
+                    prev_in_group(it) = n->links_.group_prev_;
                 }
-                *pos = (*pos)->next_;
+                *pos = next;
                 --size_;
             }
 
-            size_type unlink_group(bucket_ptr* pos)
+            size_type unlink_group(node_ptr* pos)
             {
                 size_type count = group_count(local_iterator_base(*pos));
                 size_ -= count;
-                bucket_ptr last = last_in_group(*pos);
-                *pos = last->next_;
+                node_ptr last = last_in_group(*pos);
+                *pos = last->links_.next_;
                 return count;
             }
 #else
-            void unlink_node(iterator_base x)
+            void unlink_node(iterator_base n)
             {
-                bucket_ptr* pos = get_for_erase(x);
-                *pos = (*pos)->next_;
+                node_ptr* pos = get_for_erase(n);
+                *pos = (*pos)->links_.next_;
                 --size_;
             }
 
-            size_type unlink_group(bucket_ptr* pos)
+            size_type unlink_group(node_ptr* pos)
             {
-                *pos = (*pos)->next_;
+                *pos = (*pos)->links_.next_;
                 --size_;
                 return 1;
             }
 #endif
 
-            void unlink_nodes(iterator_base pos)
+            void unlink_nodes(iterator_base n)
             {
-                bucket_ptr* it = get_for_erase(pos);
+                node_ptr* it = get_for_erase(n);
                 split_group(*it);
                 unordered_detail::reset(*it);
-                size_ -= node_count(pos.local_);
+                size_ -= node_count(n.local_);
             }
 
             void unlink_nodes(iterator_base begin, iterator_base end)
@@ -665,9 +681,9 @@ namespace boost {
                 local_iterator_base local_end = end.local_;
 
                 size_ -= node_count(begin.local_, local_end);
-                bucket_ptr* it = get_for_erase(begin);
-                split_group(*it, local_end.node_pointer_);
-                *it = local_end.node_pointer_;
+                node_ptr* it = get_for_erase(begin);
+                split_group(*it, local_end.node_);
+                *it = local_end.node_;
             }
 
             void unlink_nodes(bucket_ptr base, iterator_base end)
@@ -675,10 +691,10 @@ namespace boost {
                 BOOST_ASSERT(base == end.bucket_);
 
                 local_iterator_base local_end = end.local_;
-                split_group(local_end.node_pointer_);
+                split_group(local_end.node_);
             
-                bucket_ptr ptr(base->next_);
-                base->next_ = local_end.node_pointer_;
+                node_ptr ptr(base->first_);
+                base->first_ = local_end.node_;
 
                 size_ -= node_count(local_iterator_base(ptr), local_end);
             }
@@ -687,49 +703,49 @@ namespace boost {
             // Break a ciruclar list into two, with split as the beginneing
             // of the second group (if split is at the beginning then don't
             // split).
-            bucket_ptr split_group(bucket_ptr split)
+            node_ptr split_group(node_ptr split)
             {
                 // If split is at the beginning of the group then there's
                 // nothing to split.
-                if(prev_in_group(split)->next_ != split)
-                    return bucket_ptr();
+                if(prev_in_group(split)->links_.next_ != split)
+                    return node_ptr();
 
                 // Find the start of the group.
-                bucket_ptr start = split;
+                node_ptr start = split;
                 do {
                     start = prev_in_group(start);
-                } while(prev_in_group(start)->next_ == start);
+                } while(prev_in_group(start)->links_.next_ == start);
 
-                bucket_ptr last = prev_in_group(start);
+                node_ptr last = prev_in_group(start);
                 prev_in_group(start) = prev_in_group(split);
                 prev_in_group(split) = last;
 
                 return start;
             }
 
-            void split_group(bucket_ptr split1, bucket_ptr split2)
+            void split_group(node_ptr split1, node_ptr split2)
             {
-                bucket_ptr begin1 = split_group(split1);
-                bucket_ptr begin2 = split_group(split2);
+                node_ptr begin1 = split_group(split1);
+                node_ptr begin2 = split_group(split2);
 
                 if(begin1 && split1 == begin2) {
-                    bucket_ptr end1 = prev_in_group(begin1);
+                    node_ptr end1 = prev_in_group(begin1);
                     prev_in_group(begin1) = prev_in_group(begin2);
                     prev_in_group(begin2) = end1;
                 }
             }
 #else
-            void split_group(bucket_ptr)
+            void split_group(node_ptr)
             {
             }
 
-            void split_group(bucket_ptr, bucket_ptr)
+            void split_group(node_ptr, node_ptr)
             {
             }
 #endif
 
             // throws, strong exception-safety:
-            bucket_ptr construct_node(value_type const& v)
+            node_ptr construct_node(value_type const& v)
             {
                 node_constructor a(allocators_);
                 a.construct(v);
@@ -745,7 +761,7 @@ namespace boost {
             iterator_base create_node(value_type const& v, bucket_ptr base)
             {
                 // throws, strong exception-safety:
-                bucket_ptr n = construct_node(v);
+                node_ptr n = construct_node(v);
 
                 // Rest is no throw
                 link_node(n, base);
@@ -756,7 +772,7 @@ namespace boost {
             iterator_base create_node(value_type const& v, iterator_base position)
             {
                 // throws, strong exception-safety:
-                bucket_ptr n = construct_node(v);
+                node_ptr n = construct_node(v);
 
                 // Rest is no throw
                 link_node(n, position.local_);
@@ -767,7 +783,7 @@ namespace boost {
                     bucket_ptr base, local_iterator_base position)
             {
                 // throws, strong exception-safety:
-                bucket_ptr n = construct_node(v);
+                node_ptr n = construct_node(v);
 
                 // Rest is no throw
                 if(position.not_finished())
@@ -797,38 +813,38 @@ namespace boost {
 
             // Delete Node
             //
-            // Remove a node, or a range of nodes, from a bucket, and destory
+            // Remove a node, or a range of nodes, from a bucket, and destroy
             // them.
             //
             // no throw
 
-            void delete_to_bucket_end(bucket_ptr ptr)
+            void delete_to_bucket_end(node_ptr begin)
             {
-                while(ptr) {
-                    bucket_ptr pos = ptr;
-                    ptr = ptr->next_;
-                    allocators_.destroy(pos);
+                while(begin) {
+                    node_ptr node = begin;
+                    begin = begin->links_.next_;
+                    allocators_.destroy(node);
                 }
             }
 
-            void delete_nodes(bucket_ptr begin, bucket_ptr end)
+            void delete_nodes(node_ptr begin, node_ptr end)
             {
                 while(begin != end) {
-                    bucket_ptr pos = begin;
-                    begin = begin->next_;
-                    allocators_.destroy(pos);
+                    node_ptr node = begin;
+                    begin = begin->links_.next_;
+                    allocators_.destroy(node);
                 }
             }
 
 #if BOOST_UNORDERED_HASH_EQUIVALENT
-            void delete_group(bucket_ptr pos)
+            void delete_group(node_ptr first_node)
             {
-                delete_nodes(pos, prev_in_group(pos)->next_);
+                delete_nodes(first_node, prev_in_group(first_node)->links_.next_);
             }
 #else
-            void delete_group(bucket_ptr pos)
+            void delete_group(node_ptr node)
             {
-                allocators_.destroy(pos);
+                allocators_.destroy(node);
             }
 #endif
 
@@ -840,9 +856,9 @@ namespace boost {
 
             void clear_bucket(bucket_ptr b)
             {
-                bucket_ptr ptr = b->next_;
-                unordered_detail::reset(b->next_);
-                delete_to_bucket_end(ptr);
+                node_ptr first_node = b->first_;
+                unordered_detail::reset(b->first_);
+                delete_to_bucket_end(first_node);
             }
 
             void clear()
@@ -872,7 +888,7 @@ namespace boost {
                 iterator_base next = r;
                 next.increment();
                 unlink_node(r);
-                allocators_.destroy(r.local_.node_pointer_);
+                allocators_.destroy(r.local_.node_);
                 // r has been invalidated but its bucket is still valid
                 recompute_begin_bucket(r.bucket_, next.bucket_);
                 return next;
@@ -886,7 +902,7 @@ namespace boost {
 
                     if (r1.bucket_ == r2.bucket_) {
                         unlink_nodes(r1, r2);
-                        delete_nodes(r1.local_.node_pointer_, r2.local_.node_pointer_);
+                        delete_nodes(r1.local_.node_, r2.local_.node_);
 
                         // No need to call recompute_begin_bucket because
                         // the nodes are only deleted from one bucket, which
@@ -897,17 +913,17 @@ namespace boost {
                         BOOST_ASSERT(r1.bucket_ < r2.bucket_);
 
                         unlink_nodes(r1);
-                        delete_to_bucket_end(r1.local_.node_pointer_);
+                        delete_to_bucket_end(r1.local_.node_);
 
                         for(bucket_ptr i = r1.bucket_ + 1; i != r2.bucket_; ++i) {
-                            size_ -= node_count(local_iterator_base(i->next_));
+                            size_ -= node_count(local_iterator_base(i->first_));
                             clear_bucket(i);
                         }
 
                         if(r2 != end()) {
-                            bucket_ptr first = r2.bucket_->next_;
+                            node_ptr first = r2.bucket_->first_;
                             unlink_nodes(r2.bucket_, r2);
-                            delete_nodes(first, r2.local_.node_pointer_);
+                            delete_nodes(first, r2.local_.node_);
                         }
 
                         // r1 has been invalidated but its bucket is still
@@ -926,18 +942,20 @@ namespace boost {
             //
             // no throw
 
-            void recompute_begin_bucket(bucket_ptr ptr)
+            void recompute_begin_bucket(bucket_ptr b)
             {
-                BOOST_ASSERT(!(ptr < cached_begin_bucket_));
+                BOOST_ASSERT(!(b < cached_begin_bucket_));
 
-                if(ptr == cached_begin_bucket_)
-                {
-                    if (size_ != 0) {
-                        while (cached_begin_bucket_->empty())
-                            ++cached_begin_bucket_;
-                    } else {
-                        cached_begin_bucket_ = buckets_ + bucket_count_;
-                    }
+                if (size_ == 0) {
+                    cached_begin_bucket_ = buckets_ + bucket_count_;
+                }
+                else if(b == cached_begin_bucket_ && b->empty()) {
+                    do {
+                        ++cached_begin_bucket_;
+                    } while (cached_begin_bucket_->empty());
+                    
+                    buckets_[bucket_count_].first_ = cached_begin_bucket_->first_;
+                    buckets_[bucket_count_+1].first_ = cached_begin_bucket_->first_;
                 }
             }
 
@@ -945,22 +963,28 @@ namespace boost {
             //
             // no throw
 
-            void recompute_begin_bucket(bucket_ptr i, bucket_ptr j)
+            void recompute_begin_bucket(bucket_ptr b1, bucket_ptr b2)
             {
-                BOOST_ASSERT(!(i < cached_begin_bucket_) && !(j < i));
-                BOOST_ASSERT(j == buckets_ + bucket_count_ || !j->empty());
+                BOOST_ASSERT(!(b1 < cached_begin_bucket_) && !(b2 < b1));
+                BOOST_ASSERT(b2 == buckets_ + bucket_count_ || !b2->empty());
 
-                if(i == cached_begin_bucket_ && i->empty())
-                    cached_begin_bucket_ = j;
+                if(size_ == 0) {
+                    cached_begin_bucket_ = b2;
+                } else if(b1 == cached_begin_bucket_ && b1->empty()) {                    
+                    cached_begin_bucket_ = b2;
+
+                    buckets_[bucket_count_].first_ = cached_begin_bucket_->first_;
+                    buckets_[bucket_count_+1].first_ = cached_begin_bucket_->first_;
+                }
             }
 
-            size_type erase_group(bucket_ptr* it, bucket_ptr bucket)
+            size_type erase_group(node_ptr* pos, bucket_ptr b)
             {
-                bucket_ptr pos = *it;
-                size_type count = unlink_group(it);
-                delete_group(pos);
+                node_ptr first_node = *pos;
+                size_type count = unlink_group(pos);
+                delete_group(first_node);
 
-                this->recompute_begin_bucket(bucket);
+                this->recompute_begin_bucket(b);
 
                 return count;
             }
@@ -990,6 +1014,7 @@ namespace boost {
 
             typedef typename data::node_constructor node_constructor;
             typedef typename data::bucket_ptr bucket_ptr;
+            typedef typename data::node_ptr node_ptr;
 
         public:
 
@@ -1047,6 +1072,9 @@ namespace boost {
         public:
 
             // Constructors
+            //
+            // In the constructors, if anything throws an exception,
+            // HASH_TABLE_DATA's destructor will clean up.
 
             HASH_TABLE(size_type n,
                     hasher const& hf, key_equal const& eq,
@@ -1086,11 +1114,11 @@ namespace boost {
             };
 
             template <class I>
-            size_type initial_size(I i, I j, size_type x)
+            size_type initial_size(I i, I j, size_type n)
             {
                 BOOST_DEDUCED_TYPENAME boost::iterator_traversal<I>::type
                     iterator_traversal_tag;
-                return initial_size(i, j, x, iterator_traversal_tag);
+                return initial_size(i, j, n, iterator_traversal_tag);
             };
 
             template <class I>
@@ -1189,8 +1217,7 @@ namespace boost {
                 functions_ptr new_func_this = copy_functions(x);       // throws
                 functions_ptr new_func_that = x.copy_functions(*this); // throws
 
-                if(this->allocators_.node_alloc_ == x.allocators_.node_alloc_ &&
-                        this->allocators_.bucket_alloc_ == x.allocators_.bucket_alloc_) {
+                if(this->allocators_ == x.allocators_) {
                     this->data::swap(x); // no throw
                 }
                 else {
@@ -1211,12 +1238,9 @@ namespace boost {
                     this->data::swap(new_this);
                     x.data::swap(new_that);
 #elif BOOST_UNORDERED_SWAP_METHOD == 3
-                    // Note: I'm not sure that these are guaranteed to be no
+                    // Note: I'm not sure that allocator swap is guaranteed to be no
                     // throw.
-                    hash_swap(this->allocators_.node_alloc_,
-                            x.allocators_.node_alloc_);
-                    hash_swap(this->allocators_.bucket_alloc_,
-                            x.allocators_.bucket_alloc_);
+                    this->allocators_.swap(x.allocators_);
                     this->data::swap(x);
 #else
 #error "Invalid swap method"
@@ -1263,7 +1287,7 @@ namespace boost {
             // no throw
             value_allocator get_allocator() const
             {
-                return this->allocators_.node_alloc_;
+                return this->allocators_.value_alloc_;
             }
 
             // no throw
@@ -1468,24 +1492,26 @@ namespace boost {
             static void move_buckets(data& src, data& dst, hasher const& hf)
             {
                 BOOST_ASSERT(dst.size_ == 0);
-                BOOST_ASSERT(src.allocators_.node_alloc_ == dst.allocators_.node_alloc_);
+
+                // I'm assuming that this can't throw...
+                BOOST_ASSERT(src.allocators_ == dst.allocators_);
 
                 bucket_ptr end = src.buckets_ + src.bucket_count_;
 
                 for(; src.cached_begin_bucket_ != end;
                         ++src.cached_begin_bucket_) {
                     bucket_ptr src_bucket = src.cached_begin_bucket_;
-                    while(src_bucket->next_) {
+                    while(src_bucket->first_) {
                         // Move the first group of equivalent nodes in
                         // src_bucket to dst.
 
                         // This next line throws iff the hash function throws.
                         bucket_ptr dst_bucket = dst.buckets_ +
                             dst.index_from_hash(
-                                hf(extract_key(get_value(src_bucket->next_))));
+                                hf(extract_key(src_bucket->first_->value_)));
 
-                        bucket_ptr n = src_bucket->next_;
-                        size_type count = src.unlink_group(&src_bucket->next_);
+                        node_ptr n = src_bucket->first_;
+                        size_type count = src.unlink_group(&src_bucket->first_);
                         dst.link_group(n, dst_bucket, count);
                     }
                 }
@@ -1548,7 +1574,7 @@ namespace boost {
 
                 // Nothing after the point can throw.
 
-                bucket_ptr n = a.release();
+                node_ptr n = a.release();
 
                 // I'm relying on local_iterator_base not being invalidated by
                 // the rehash here.
@@ -1585,7 +1611,7 @@ namespace boost {
 
                     // Nothing after this point can throw
 
-                    bucket_ptr n = a.release();
+                    node_ptr n = a.release();
                     this->link_node(n, it.local_);
 
                     return iterator_base(base, n);
@@ -1678,7 +1704,7 @@ namespace boost {
 
                     // Nothing after this point can throw.
 
-                    bucket_ptr n = a.release();
+                    node_ptr n = a.release();
                     this->link_node(n, bucket);
 
                     return *local_iterator_base(n);
@@ -1718,7 +1744,7 @@ namespace boost {
 
                     // Nothing after this point can throw.
 
-                    bucket_ptr n = a.release();
+                    node_ptr n = a.release();
                     this->link_node(n, bucket);
 
                     return std::pair<iterator_base, bool>(
@@ -1812,7 +1838,7 @@ namespace boost {
             {
                 // No side effects in initial section
                 bucket_ptr bucket = get_bucket(k);
-                bucket_ptr* it = find_for_erase(bucket, k);
+                node_ptr* it = find_for_erase(bucket, k);
 
                 // No throw.
                 return *it ? this->erase_group(it, bucket) : 0;
@@ -1856,7 +1882,7 @@ namespace boost {
                 local_iterator_base it = find_iterator(bucket, k);
                 if (it.not_finished()) {
                     iterator_base first(iterator_base(bucket, it));
-                    iterator_base second(iterator_base(bucket, last_in_group(it.node_pointer_)));
+                    iterator_base second(iterator_base(bucket, last_in_group(it.node_)));
                     second.increment();
                     return std::pair<iterator_base, iterator_base>(first, second);
                 }
@@ -1892,10 +1918,10 @@ namespace boost {
             }
 
             // strong exception safety, no side effects
-            bucket_ptr* find_for_erase(bucket_ptr bucket, key_type const& k) const
+            node_ptr* find_for_erase(bucket_ptr bucket, key_type const& k) const
             {
-                bucket_ptr* it = &bucket->next_;
-                while(*it && !equal(k, this->get_value(*it)))
+                node_ptr* it = &bucket->first_;
+                while(*it && !equal(k, (*it)->value_))
                     it = &this->next_group(*it);
 
                 return it;
@@ -2061,5 +2087,6 @@ namespace boost {
 #undef HASH_CONST_ITERATOR
 #undef HASH_LOCAL_ITERATOR
 #undef HASH_CONST_LOCAL_ITERATOR
+
 
 
