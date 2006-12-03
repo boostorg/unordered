@@ -154,6 +154,10 @@ namespace test
 
     namespace detail
     {
+        // This annoymous namespace won't cause ODR violations as I won't
+        // be linking multiple translation units together. I'll probably
+        // move this into a cpp file before a full release, but for now it's
+        // the most convenient way.
         namespace {
             struct memory_area {
                 void const* start;
@@ -186,7 +190,8 @@ namespace test
                 int tag_;
             };
 
-            std::map<memory_area, memory_track> allocated_memory;
+            typedef std::map<memory_area, memory_track> allocated_memory_type;
+            allocated_memory_type allocated_memory;
             unsigned int count_allocators = 0;
             unsigned int count_allocations = 0;
             unsigned int count_constructions = 0;
@@ -238,7 +243,7 @@ namespace test
 
         void track_deallocate(void* ptr, std::size_t n, std::size_t size, int tag)
         {
-            std::map<memory_area, memory_track>::iterator pos
+            allocated_memory_type::iterator pos
                 = allocated_memory.find(memory_area(ptr, ptr));
             if(pos == allocated_memory.end()) {
                 BOOST_ERROR("Deallocating unknown pointer.");
@@ -255,7 +260,7 @@ namespace test
 
         void track_construct(void* ptr, std::size_t /*size*/, int tag)
         {
-            std::map<memory_area, memory_track>::iterator pos
+            allocated_memory_type::iterator pos
                 = allocated_memory.find(memory_area(ptr, ptr));
             if(pos == allocated_memory.end())
                 BOOST_ERROR("Constructing unknown pointer.");
@@ -266,7 +271,7 @@ namespace test
 
         void track_destroy(void* ptr, std::size_t /*size*/, int tag)
         {
-            std::map<memory_area, memory_track>::iterator pos
+            allocated_memory_type::iterator pos
                 = allocated_memory.find(memory_area(ptr, ptr));
             if(pos == allocated_memory.end())
                 BOOST_ERROR("Destroying unknown pointer.");
@@ -349,7 +354,7 @@ namespace test
             return tag_ != x.tag_;
         }
     };
-    
+
     template <class T>
     bool equivalent_impl(allocator<T> const& x, allocator<T> const& y, test::derived_type) {
         return x == y;

@@ -74,11 +74,10 @@ void swap_tests2(X* ptr = 0)
         X x(v.begin(), v.end(), 0, hasher(1), key_equal(1));
         X y(0, hasher(2), key_equal(2));
         swap_test_impl(x, y);
-        swap_test_impl(x, y);
     }
 
     {
-        test::random_values<X> vx(1000), vy(1000);
+        test::random_values<X> vx(100), vy(50);
         X x(vx.begin(), vx.end(), 0, hasher(1), key_equal(1));
         X y(vy.begin(), vy.end(), 0, hasher(2), key_equal(2));
         swap_test_impl(x, y);
@@ -87,7 +86,7 @@ void swap_tests2(X* ptr = 0)
 
 #if BOOST_UNORDERED_SWAP_METHOD == 1
     {
-        test::random_values<X> vx(1000), vy(1000);
+        test::random_values<X> vx(100), vy(50);
         X x(vx.begin(), vx.end(), 0, hasher(), key_equal(), allocator_type(1));
         X y(vy.begin(), vy.end(), 0, hasher(), key_equal(), allocator_type(2));
         try {
@@ -97,15 +96,14 @@ void swap_tests2(X* ptr = 0)
     }
 #else
     {
-        test::random_values<X> vx(1000), vy(1000);
+        test::random_values<X> vx(50), vy(100);
         X x(vx.begin(), vx.end(), 0, hasher(), key_equal(), allocator_type(1));
         X y(vy.begin(), vy.end(), 0, hasher(), key_equal(), allocator_type(2));
-        swap_test_impl(x, y);
         swap_test_impl(x, y);
     }
 
     {
-        test::random_values<X> vx(1000), vy(1000);
+        test::random_values<X> vx(100), vy(100);
         X x(vx.begin(), vx.end(), 0, hasher(1), key_equal(1), allocator_type(1));
         X y(vy.begin(), vy.end(), 0, hasher(2), key_equal(2), allocator_type(2));
         swap_test_impl(x, y);
