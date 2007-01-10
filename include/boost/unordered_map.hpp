@@ -21,11 +21,6 @@
 
 namespace boost
 {
-    //! An unordered associative container that associates unique keys with another value.
-    /*! For full details see chapter 23 of the draft C++ standard.
-     *  http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2009.pdf
-     */
-
     template <class Key,
         class T,
         class Hash = hash<Key>,
@@ -33,27 +28,20 @@ namespace boost
         class Alloc = std::allocator<std::pair<const Key, T> > >
     class unordered_map
     {
-        // Named for the benefit of Doxygen.
         typedef boost::unordered_detail::hash_types_unique_keys<
             std::pair<const Key, T>, Key, Hash, Pred, Alloc
-        > implementation_defined;
+        > implementation;
 
-        typename implementation_defined::hash_table base;
+        typename implementation::hash_table base;
 
     public:
+
         // types
-        /*! Key must be Assignable and CopyConstructible.
-         */
+
         typedef Key key_type;
         typedef std::pair<const Key, T> value_type;
         typedef T mapped_type;
-        /*! Hash is a unary function object type such for hf of type hasher
-         *  hf(x) has type std::size_t.
-         */
         typedef Hash hasher;
-        /*! Pred is a binary predicate that takes two arguments of type Key.
-         *  Pred is an equivalence realtion
-         */
         typedef Pred key_equal;
 
         typedef Alloc allocator_type;
@@ -62,29 +50,16 @@ namespace boost
         typedef typename allocator_type::reference reference;
         typedef typename allocator_type::const_reference const_reference;
 
-        typedef typename implementation_defined::size_type size_type;
-        typedef typename implementation_defined::difference_type difference_type;
+        typedef typename implementation::size_type size_type;
+        typedef typename implementation::difference_type difference_type;
 
-        typedef typename implementation_defined::iterator iterator;
-        typedef typename implementation_defined::const_iterator const_iterator;
-
-        /*! A local_iterator object may be used to iterate through a single
-         *  bucket, but may not be used to iterate across buckets.
-         */
-        typedef typename implementation_defined::local_iterator local_iterator;
-
-        /*! A const_local_iterator object may be used to iterate through a single
-         * bucket, but may not be used to iterate across buckets.
-         */
-        typedef typename implementation_defined::const_local_iterator
-            const_local_iterator;
+        typedef typename implementation::iterator iterator;
+        typedef typename implementation::const_iterator const_iterator;
+        typedef typename implementation::local_iterator local_iterator;
+        typedef typename implementation::const_local_iterator const_local_iterator;
 
         // construct/destroy/copy
 
-        /*! Constructs an empty container with at least n buckets, using hf as
-         *  the hash function and eq as the key equality predicate. a is used
-         *  as the allocator.
-         */
         explicit unordered_map(
                 size_type n = boost::unordered_detail::default_initial_bucket_count,
                 const hasher &hf = hasher(),
@@ -94,10 +69,6 @@ namespace boost
         {
         }
 
-        /*! Constructs an empty container with at least n buckets, using hf as
-         *  the hash function and eq as the key equality predicate, and inserts
-         *  elements from [i,j) into it. a is used as the allocator.
-         */
         template <class InputIterator>
         unordered_map(InputIterator f, InputIterator l)
             : base(f, l, boost::unordered_detail::default_initial_bucket_count,
@@ -117,7 +88,7 @@ namespace boost
 
     private:
 
-        typename implementation_defined::iterator_base const&
+        typename implementation::iterator_base const&
             get(const_iterator const& it)
         {
             return boost::unordered_detail::iterator_access::get(it);
@@ -333,7 +304,7 @@ namespace boost
         {
             return const_local_iterator(base.begin(n));
         }
-        
+
         const_local_iterator cend(size_type n) const
         {
             return const_local_iterator(base.end(n));
@@ -370,11 +341,6 @@ namespace boost
         m1.swap(m2);
     }
 
-    //! An unordered associative container that associates equivalent keys with another value.
-    /*! For full details see chapter 23 of the draft C++ standard.
-     *  http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2009.pdf
-     */
-
     template <class Key,
         class T,
         class Hash = hash<Key>,
@@ -382,15 +348,16 @@ namespace boost
         class Alloc = std::allocator<std::pair<const Key, T> > >
     class unordered_multimap
     {
-        // Named for the benefit of Doxygen.
         typedef boost::unordered_detail::hash_types_equivalent_keys<
             std::pair<const Key, T>, Key, Hash, Pred, Alloc
-        > implementation_defined;
+        > implementation;
 
-        typename implementation_defined::hash_table base;
+        typename implementation::hash_table base;
 
         public:
+
         // types
+
         typedef Key key_type;
         typedef std::pair<const Key, T> value_type;
         typedef T mapped_type;
@@ -403,13 +370,13 @@ namespace boost
         typedef typename allocator_type::reference reference;
         typedef typename allocator_type::const_reference const_reference;
 
-        typedef typename implementation_defined::size_type size_type;
-        typedef typename implementation_defined::difference_type difference_type;
+        typedef typename implementation::size_type size_type;
+        typedef typename implementation::difference_type difference_type;
 
-        typedef typename implementation_defined::iterator iterator;
-        typedef typename implementation_defined::const_iterator const_iterator;
-        typedef typename implementation_defined::local_iterator local_iterator;
-        typedef typename implementation_defined::const_local_iterator const_local_iterator;
+        typedef typename implementation::iterator iterator;
+        typedef typename implementation::const_iterator const_iterator;
+        typedef typename implementation::local_iterator local_iterator;
+        typedef typename implementation::const_local_iterator const_local_iterator;
 
         // construct/destroy/copy
 
@@ -441,7 +408,7 @@ namespace boost
 
     private:
 
-        typename implementation_defined::iterator_base const&
+        typename implementation::iterator_base const&
             get(const_iterator const& it)
         {
             return boost::unordered_detail::iterator_access::get(it);
