@@ -1104,14 +1104,14 @@ namespace boost {
             {
                 // max load factor isn't set yet, but when it is, it'll be 1.0.
                 return (std::max)(static_cast<size_type>(std::distance(i, j)) + 1, n);
-            };
+            }
 
             template <class I>
             size_type initial_size(I, I, size_type n,
                     boost::incrementable_traversal_tag)
             {
                 return n;
-            };
+            }
 
             template <class I>
             size_type initial_size(I i, I j, size_type n)
@@ -1119,7 +1119,7 @@ namespace boost {
                 BOOST_DEDUCED_TYPENAME boost::iterator_traversal<I>::type
                     iterator_traversal_tag;
                 return initial_size(i, j, n, iterator_traversal_tag);
-            };
+            }
 
             template <class I>
             HASH_TABLE(I i, I j, size_type n,
@@ -1784,7 +1784,7 @@ namespace boost {
                 BOOST_DEDUCED_TYPENAME boost::iterator_traversal<I>::type
                     iterator_traversal_tag;
                 return insert_size(i, j, iterator_traversal_tag);
-            };
+            }
 
             // if hash function throws, or inserting > 1 element, basic exception safety
             // strong otherwise
