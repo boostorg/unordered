@@ -72,6 +72,16 @@ struct swap_base : public test::exception_base
         } catch (std::runtime_error) {}
     }
     void check(data_type const& d) const {
+        std::string scope(test::scope);
+
+#if BOOST_UNORDERED_SWAP_METHOD != 2
+        HASH_CHECK(
+                scope == "hash::operator(hash)" ||
+                scope == "hash::operator=(hash)" ||
+                scope == "equal_to::operator(equal_to)" ||
+                scope == "equal_to::operator=(equal_to)");
+#endif
+        
         test::check_equivalent_keys(d.x);
         test::check_equivalent_keys(d.y);
     }
