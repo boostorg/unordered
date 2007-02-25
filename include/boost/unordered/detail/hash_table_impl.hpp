@@ -1644,9 +1644,9 @@ namespace boost {
                         local_iterator_base position = find_iterator(bucket, k);
 
                         if(position.not_finished())
-                            link_node(a.release(), position);
+                            this->link_node(a.release(), position);
                         else
-                            link_node(a.release(), bucket);
+                            this->link_node(a.release(), bucket);
                     }
                 }
             }
@@ -1856,7 +1856,7 @@ namespace boost {
             size_type count(key_type const& k) const
             {
                 local_iterator_base it = find_iterator(k); // throws, strong
-                return it.not_finished() ? group_count(it) : 0;
+                return it.not_finished() ? this->group_count(it) : 0;
             }
 
             // find
@@ -1882,7 +1882,7 @@ namespace boost {
                 local_iterator_base it = find_iterator(bucket, k);
                 if (it.not_finished()) {
                     iterator_base first(iterator_base(bucket, it));
-                    iterator_base second(iterator_base(bucket, last_in_group(it.node_)));
+                    iterator_base second(iterator_base(bucket, this->last_in_group(it.node_)));
                     second.increment();
                     return std::pair<iterator_base, iterator_base>(first, second);
                 }
