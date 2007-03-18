@@ -1,3 +1,7 @@
+[/ Copyright 2006-2007 Daniel James.
+ / Distributed under the Boost Software License, Version 1.0. (See accompanying
+ / file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt) ]
+
 [section:buckets The Data Structure]
 
 The containers are made up of a number of 'buckets', each of which can contain
@@ -6,7 +10,7 @@ boost::unordered_set unordered_set] with 7 buckets containing 5 elements, `A`,
 `B`, `C`, `D` and `E` (this is just for illustration, in practise containers
 will have more buckets).
 
-[$../diagrams/buckets.png]
+[$../../libs/unordered/doc/diagrams/buckets.png]
 
 In order to decide which bucket to place an element in, the container applies
 `Hash` to the element's key (for `unordered_set` and `unordered_multiset` the

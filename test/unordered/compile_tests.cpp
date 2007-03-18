@@ -1,5 +1,5 @@
 
-// Copyright 2006 Daniel James.
+// Copyright 2006-2007 Daniel James.
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -18,7 +18,7 @@
 template <class T> void sink(T const&) {}
 
 template <class X, class Key>
-void unordered_set_test(X& r, Key const& k)
+void unordered_set_test(X&, Key const&)
 {
     typedef typename X::value_type value_type;
     typedef typename X::key_type key_type;
@@ -27,7 +27,7 @@ void unordered_set_test(X& r, Key const& k)
 }
 
 template <class X, class Key, class T>
-void unordered_map_test(X& r, Key const& k, T const& t)
+void unordered_map_test(X&, Key const&, T const&)
 {
     typedef typename X::value_type value_type;
     typedef typename X::key_type key_type;
@@ -49,7 +49,7 @@ void unordered_equivalent_test(X& r, T const& t)
 }
 
 template <class X, class Key, class T, class Hash, class Pred>
-void unordered_test(X& ref, Key& k, T& t, Hash& hf, Pred& eq)
+void unordered_test(X&, Key& k, T& t, Hash& hf, Pred& eq)
 {
     typedef typename X::key_type key_type;
     typedef typename X::hasher hasher;

@@ -1,5 +1,5 @@
 
-// Copyright 2006 Daniel James.
+// Copyright 2006-2007 Daniel James.
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -46,7 +46,7 @@ namespace minimal
     class hash
     {
     public:
-        static hash create() { return hash(); }
+        static hash create() { return hash<T>(); }
         hash() {}
         hash(hash const&) {}
         hash& operator=(hash const&) { return *this; }
@@ -59,13 +59,13 @@ namespace minimal
     class equal_to
     {
     public:
-        static equal_to create() { return equal_to(); }
+        static equal_to create() { return equal_to<T>(); }
         equal_to() {}
         equal_to(equal_to const&) {}
         equal_to& operator=(equal_to const&) { return *this; }
         ~equal_to() {}
 
-        bool operator()(T const& x, T const& y) const { return true; }
+        bool operator()(T const&, T const&) const { return true; }
     };
 
     template <class T> class pointer;
@@ -90,7 +90,7 @@ namespace minimal
         T* operator->() const { return ptr_; }
         pointer& operator++() { ++ptr_; return *this; }
         pointer operator++(int) { pointer tmp(*this); ++ptr_; return tmp; }
-        pointer operator+(int s) const { return pointer(ptr_ + s); }
+        pointer operator+(int s) const { return pointer<T>(ptr_ + s); }
         T& operator[](int s) const { return ptr_[s]; }
         bool operator!() const { return !ptr_; }
 

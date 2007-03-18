@@ -1,3 +1,7 @@
+[/ Copyright 2006-2007 Daniel James.
+ / Distributed under the Boost Software License, Version 1.0. (See accompanying
+ / file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt) ]
+
 [def __wang__
     [@http://www.concentric.net/~Ttwang/tech/inthash.htm
     Thomas Wang's article on integer hash functions]]
@@ -96,14 +100,11 @@ Need to look into this one.
 [h3 [@http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#431
     431. Swapping containers with unequal allocators]]
 
-In a fit of probably unwise enthusiasm, I implemented all the three versions
-with a macro (BOOST_UNORDERED_SWAP_METHOD) to pick which one is used. As
-suggested by Howard Hinnant, I set option 3 as the default. I'll probably
-remove the alternative implementations before review.
+I'm following Howard Hinnant's advice and implement option 3.
 
 There is currently a further issue - if the allocator's swap does throw there's
 no guarantee what state the allocators will be in. The only solution seems to
-be to double buffer the allocators.
+be to double buffer the allocators. But I'm assuming that it won't throw for now.
 
 [h3 [@http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#518
     518. Are insert and erase stable for unordered_multiset and unordered_multimap?]]

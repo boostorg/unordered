@@ -1,5 +1,5 @@
 
-// Copyright 2006 Daniel James.
+// Copyright 2006-2007 Daniel James.
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -660,6 +660,11 @@ namespace exception
                 EPOINT("Mock allocator max_size function.");
             }
             return (std::numeric_limits<std::size_t>::max)();
+        }
+
+        friend void swap(allocator<T>& x, allocator<T>& y)
+        {
+            std::swap(x.tag_, y.tag_);
         }
     };
 

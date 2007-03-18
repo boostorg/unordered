@@ -1,6 +1,6 @@
 
 // Copyright (C) 2003-2004 Jeremy B. Maitin-Shepard.
-// Copyright (C) 2005-2006 Daniel James
+// Copyright (C) 2005-2007 Daniel James
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -32,15 +32,6 @@
 #include <boost/detail/workaround.hpp>
 
 #include <boost/mpl/aux_/config/eti.hpp>
-
-// See hash_table::swap() for details about this.
-#if !defined(BOOST_UNORDERED_SWAP_METHOD)
-#define BOOST_UNORDERED_SWAP_METHOD 3
-#endif
-
-#if BOOST_UNORDERED_SWAP_METHOD == 1
-#include <stdexcept>
-#endif
 
 #if BOOST_WORKAROUND(__BORLANDC__, <= 0x0551)
 #define BOOST_HASH_BORLAND_BOOL(x) (bool)(x)

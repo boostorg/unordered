@@ -1,5 +1,5 @@
 
-# Copyright 2006 Daniel James.
+# Copyright 2006-2007 Daniel James.
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -22,9 +22,5 @@ test-suite unordered-tests
         [ run erase_tests.cpp framework ]
         [ run rehash_tests.cpp framework ]
         [ run swap_tests.cpp framework : : :
-            <define>BOOST_UNORDERED_SWAP_METHOD=1 : swap_tests1 ]
-        [ run swap_tests.cpp framework : : :
-            <define>BOOST_UNORDERED_SWAP_METHOD=2 : swap_tests2 ]
-        [ run swap_tests.cpp framework : : :
-            <define>BOOST_UNORDERED_SWAP_METHOD=3 : swap_tests3 ]
+            <define>BOOST_UNORDERED_SWAP_METHOD=3 ]
     ;

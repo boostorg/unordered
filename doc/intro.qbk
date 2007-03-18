@@ -1,3 +1,7 @@
+[/ Copyright 2006-2007 Daniel James.
+ / Distributed under the Boost Software License, Version 1.0. (See accompanying
+ / file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt) ]
+
 [def __tr1__ 
     [@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2009.pdf
     C++ Standard Library Technical Report]]
