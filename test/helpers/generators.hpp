@@ -3,7 +3,12 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-// A crude wrapper round Boost.Random to make life easier.
+// This uses std::rand to generate random values for tests.
+// Which is not good as different platforms will be running different tests.
+// It would be much better to use Boost.Random, but it doesn't
+// support all the compilers that I want to test on.
+// TODO: seed the random generator.
+// TODO: check that this is actually working...
 
 #if !defined(BOOST_UNORDERED_TEST_HELPERS_GENERATORS_HEADER)
 #define BOOST_UNORDERED_TEST_HELPERS_GENERATORS_HEADER
@@ -11,19 +16,12 @@
 #include <string>
 #include <utility>
 #include <stdexcept>
-#include <boost/random/inversive_congruential.hpp>
-#include <boost/random/uniform_int.hpp>
-#include <boost/random/lagged_fibonacci.hpp>
-#include <boost/random/uniform_real.hpp>
-#include <boost/random/variate_generator.hpp>
+#include <cstdlib>
 
 #include "./fwd.hpp"
 
 namespace test
 {
-    typedef boost::hellekalek1995 integer_generator_type;
-    typedef boost::lagged_fibonacci607 real_generator_type;
-
     template <class T>
     struct generator;
 
@@ -48,20 +46,14 @@ namespace test
 
     inline int generate(int const*)
     {
-        static integer_generator_type gen;
-        static boost::uniform_int<> dist(0, 1000);
-        static boost::variate_generator<integer_generator_type, boost::uniform_int<> >
-            vg(gen, dist);
-        return vg();
+        using namespace std;
+        return rand();
     }
 
     inline char generate(char const*)
     {
-        static integer_generator_type gen;
-        static boost::uniform_int<char> dist(32, 127);
-        static boost::variate_generator<integer_generator_type, boost::uniform_int<char> >
-            vg(gen, dist);
-        return vg();
+        using namespace std;
+        return (rand() >> 1) % (128-32) + 32;
     }
 
     inline std::string generate(std::string const*)
@@ -81,11 +73,7 @@ namespace test
 
     float generate(float const*)
     {
-        static real_generator_type gen;
-        static boost::uniform_real<float> dist;
-        static boost::variate_generator<real_generator_type, boost::uniform_real<float> >
-            vg(gen, dist);
-        return vg();
+        return (float) rand() / (float) RAND_MAX;
     }
 }
 
