@@ -16,8 +16,8 @@ namespace minimal
     class assignable;
     template <class T> class hash;
     template <class T> class equal_to;
-    template <class T> class pointer;
-    template <class T> class const_pointer;
+    template <class T> class ptr;
+    template <class T> class const_ptr;
     template <class T> class allocator;
 
     class copy_constructible
@@ -68,95 +68,95 @@ namespace minimal
         bool operator()(T const&, T const&) const { return true; }
     };
 
-    template <class T> class pointer;
-    template <class T> class const_pointer;
+    template <class T> class ptr;
+    template <class T> class const_ptr;
 
     template <class T>
-    class pointer
+    class ptr
     {
         friend class allocator<T>;
-        friend class const_pointer<T>;
+        friend class const_ptr<T>;
 
         T* ptr_;
 
-        pointer(T* ptr) : ptr_(ptr) {}
+        ptr(T* ptr) : ptr_(ptr) {}
     public:
-        pointer() : ptr_(0) {}
+        ptr() : ptr_(0) {}
 
-        typedef void (pointer::*bool_type)() const;
+        typedef void (ptr::*bool_type)() const;
         void this_type_does_not_support_comparisons() const {}
 
         T& operator*() const { return *ptr_; }
         T* operator->() const { return ptr_; }
-        pointer& operator++() { ++ptr_; return *this; }
-        pointer operator++(int) { pointer tmp(*this); ++ptr_; return tmp; }
-        pointer operator+(int s) const { return pointer<T>(ptr_ + s); }
+        ptr& operator++() { ++ptr_; return *this; }
+        ptr operator++(int) { ptr tmp(*this); ++ptr_; return tmp; }
+        ptr operator+(int s) const { return ptr<T>(ptr_ + s); }
         T& operator[](int s) const { return ptr_[s]; }
         bool operator!() const { return !ptr_; }
 
         operator bool_type() const {
             return ptr_ ?
-                &pointer::this_type_does_not_support_comparisons
+                &ptr::this_type_does_not_support_comparisons
                 : 0;
         }
 
-        bool operator==(pointer const& x) const { return ptr_ == x.ptr_; }
-        bool operator!=(pointer const& x) const { return ptr_ != x.ptr_; }
-        bool operator<(pointer const& x) const { return ptr_ < x.ptr_; }
-        bool operator>(pointer const& x) const { return ptr_ > x.ptr_; }
-        bool operator<=(pointer const& x) const { return ptr_ <= x.ptr_; }
-        bool operator>=(pointer const& x) const { return ptr_ >= x.ptr_; }
+        bool operator==(ptr const& x) const { return ptr_ == x.ptr_; }
+        bool operator!=(ptr const& x) const { return ptr_ != x.ptr_; }
+        bool operator<(ptr const& x) const { return ptr_ < x.ptr_; }
+        bool operator>(ptr const& x) const { return ptr_ > x.ptr_; }
+        bool operator<=(ptr const& x) const { return ptr_ <= x.ptr_; }
+        bool operator>=(ptr const& x) const { return ptr_ >= x.ptr_; }
 
-        bool operator==(const_pointer<T> const& x) const { return ptr_ == x.ptr_; }
-        bool operator!=(const_pointer<T> const& x) const { return ptr_ != x.ptr_; }
-        bool operator<(const_pointer<T> const& x) const { return ptr_ < x.ptr_; }
-        bool operator>(const_pointer<T> const& x) const { return ptr_ > x.ptr_; }
-        bool operator<=(const_pointer<T> const& x) const { return ptr_ <= x.ptr_; }
-        bool operator>=(const_pointer<T> const& x) const { return ptr_ >= x.ptr_; }
+        bool operator==(const_ptr<T> const& x) const { return ptr_ == x.ptr_; }
+        bool operator!=(const_ptr<T> const& x) const { return ptr_ != x.ptr_; }
+        bool operator<(const_ptr<T> const& x) const { return ptr_ < x.ptr_; }
+        bool operator>(const_ptr<T> const& x) const { return ptr_ > x.ptr_; }
+        bool operator<=(const_ptr<T> const& x) const { return ptr_ <= x.ptr_; }
+        bool operator>=(const_ptr<T> const& x) const { return ptr_ >= x.ptr_; }
     };
 
     template <class T>
-    class const_pointer
+    class const_ptr
     {
         friend class allocator<T>;
 
         T* ptr_;
 
-        const_pointer(T* ptr) : ptr_(ptr) {}
+        const_ptr(T* ptr) : ptr_(ptr) {}
     public:
-        const_pointer() : ptr_(0) {}
-        const_pointer(pointer<T> const& x) : ptr_(x.ptr_) {}
+        const_ptr() : ptr_(0) {}
+        const_ptr(ptr<T> const& x) : ptr_(x.ptr_) {}
 
-        typedef void (const_pointer::*bool_type)() const;
+        typedef void (const_ptr::*bool_type)() const;
         void this_type_does_not_support_comparisons() const {}
 
         T& operator*() const { return *ptr_; }
         T* operator->() const { return ptr_; }
-        const_pointer& operator++() { ++ptr_; return *this; }
-        const_pointer operator++(int) { const_pointer tmp(*this); ++ptr_; return tmp; }
-        const_pointer operator+(int s) const { return const_pointer(ptr_ + s); }
+        const_ptr& operator++() { ++ptr_; return *this; }
+        const_ptr operator++(int) { const_ptr tmp(*this); ++ptr_; return tmp; }
+        const_ptr operator+(int s) const { return const_ptr(ptr_ + s); }
         T& operator[](int s) const { return ptr_[s]; }
         bool operator!() const { return !ptr_; }
 
         operator bool_type() const {
             return ptr_ ?
-                &const_pointer::this_type_does_not_support_comparisons
+                &const_ptr::this_type_does_not_support_comparisons
                 : 0;
         }
 
-        bool operator==(pointer<T> const& x) const { return ptr_ == x.ptr_; }
-        bool operator!=(pointer<T> const& x) const { return ptr_ != x.ptr_; }
-        bool operator<(pointer<T> const& x) const { return ptr_ < x.ptr_; }
-        bool operator>(pointer<T> const& x) const { return ptr_ > x.ptr_; }
-        bool operator<=(pointer<T> const& x) const { return ptr_ <= x.ptr_; }
-        bool operator>=(pointer<T> const& x) const { return ptr_ >= x.ptr_; }
+        bool operator==(ptr<T> const& x) const { return ptr_ == x.ptr_; }
+        bool operator!=(ptr<T> const& x) const { return ptr_ != x.ptr_; }
+        bool operator<(ptr<T> const& x) const { return ptr_ < x.ptr_; }
+        bool operator>(ptr<T> const& x) const { return ptr_ > x.ptr_; }
+        bool operator<=(ptr<T> const& x) const { return ptr_ <= x.ptr_; }
+        bool operator>=(ptr<T> const& x) const { return ptr_ >= x.ptr_; }
 
-        bool operator==(const_pointer const& x) const { return ptr_ == x.ptr_; }
-        bool operator!=(const_pointer const& x) const { return ptr_ != x.ptr_; }
-        bool operator<(const_pointer const& x) const { return ptr_ < x.ptr_; }
-        bool operator>(const_pointer const& x) const { return ptr_ > x.ptr_; }
-        bool operator<=(const_pointer const& x) const { return ptr_ <= x.ptr_; }
-        bool operator>=(const_pointer const& x) const { return ptr_ >= x.ptr_; }
+        bool operator==(const_ptr const& x) const { return ptr_ == x.ptr_; }
+        bool operator!=(const_ptr const& x) const { return ptr_ != x.ptr_; }
+        bool operator<(const_ptr const& x) const { return ptr_ < x.ptr_; }
+        bool operator>(const_ptr const& x) const { return ptr_ > x.ptr_; }
+        bool operator<=(const_ptr const& x) const { return ptr_ <= x.ptr_; }
+        bool operator>=(const_ptr const& x) const { return ptr_ >= x.ptr_; }
     };
 
     template <class T>
@@ -165,8 +165,8 @@ namespace minimal
     public:
         typedef std::size_t size_type;
         typedef std::ptrdiff_t difference_type;
-        typedef pointer<T> pointer;
-        typedef const_pointer<T> const_pointer;
+        typedef ptr<T> pointer;
+        typedef const_ptr<T> const_pointer;
         typedef T& reference;
         typedef T const& const_reference;
         typedef T value_type;
