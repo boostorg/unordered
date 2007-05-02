@@ -701,7 +701,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 </para>
               </description>
               <throws>
-                <para>The function has no effect if an exception is thrown, unless it is thrown by the container’s hash function or comparison function.
+                <para>The function has no effect if an exception is thrown, unless it is thrown by the container's hash function or comparison function.
                 </para>
               </throws>
             </method>
@@ -1418,7 +1418,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 </para>
               </description>
               <throws>
-                <para>The function has no effect if an exception is thrown, unless it is thrown by the container’s hash function or comparison function.
+                <para>The function has no effect if an exception is thrown, unless it is thrown by the container's hash function or comparison function.
                 </para>
               </throws>
             </method>
@@ -2183,7 +2183,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 </para>
               </description>
               <throws>
-                <para>The function has no effect if an exception is thrown, unless it is thrown by the container’s hash function or comparison function.
+                <para>The function has no effect if an exception is thrown, unless it is thrown by the container's hash function or comparison function.
                 </para>
               </throws>
             </method>
@@ -2914,7 +2914,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 </para>
               </description>
               <throws>
-                <para>The function has no effect if an exception is thrown, unless it is thrown by the container’s hash function or comparison function.
+                <para>The function has no effect if an exception is thrown, unless it is thrown by the container's hash function or comparison function.
                 </para>
               </throws>
             </method>
