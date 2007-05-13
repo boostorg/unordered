@@ -1,9 +1,15 @@
+project boost/doc ;
+import boostbook : boostbook ;
 
-# Copyright 2005 Daniel James.
-# Distributed under the Boost Software License, Version 1.0. (See accompanying
-# file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+boostbook doc : src/boost.xml
+    :
 
-using quickbook ;
+     ## Build the various generated docs (Doxygen and QuickBook)...
 
-xml unordered : unordered.qbk ;
-boostbook standalone : unordered ;
+     <dependency>../libs/unordered/doc//unordered
+     <implicit-dependency>../libs/unordered/doc//unordered
+     #<dependency>../libs/functional/hash/doc//hash
+     #<implicit-dependency>../libs/functional/hash/doc//hash
+
+     <xsl:param>boost.libraries=../../libs/libraries.htm
+    ;
