@@ -16,9 +16,17 @@ private:
     count_copies& operator=(count_copies const&);
 };
 
+#if defined(BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP)
+namespace boost {
+#endif
+
 std::size_t hash_value(count_copies const& x) {
     return 0;
 }
+
+#if defined(BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP)
+}
+#endif
 
 bool operator==(count_copies const& x, count_copies const& y) {
     return true;

@@ -79,7 +79,7 @@ namespace minimal
 
         T* ptr_;
 
-        ptr(T* ptr) : ptr_(ptr) {}
+        ptr(T* x) : ptr_(x) {}
     public:
         ptr() : ptr_(0) {}
 

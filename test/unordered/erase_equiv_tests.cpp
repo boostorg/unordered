@@ -109,8 +109,10 @@ void two_equivalent_item_tests()
 template<class Range1, class Range2>
 bool compare(Range1 const& x, Range2 const& y)
 {
-    list a(x.begin(), x.end());
-    list b(y.begin(), y.end());
+    list a;
+    list b;
+    std::copy(x.begin(), x.end(), std::back_inserter(a));
+    std::copy(y.begin(), y.end(), std::back_inserter(b));
     a.sort();
     b.sort();
     return a == b;
@@ -119,7 +121,8 @@ bool compare(Range1 const& x, Range2 const& y)
 template <class Container>
 bool general_erase_range_test(Container& x, int start, int end)
 {
-    list l(x.begin(), x.end());
+    list l;
+    std::copy(x.begin(), x.end(), std::back_inserter(l));
     l.erase(boost::next(l.begin(), start), boost::next(l.begin(), end));
     x.erase(boost::next(x.begin(), start), boost::next(x.begin(), end));
     return compare(l, x);
@@ -131,7 +134,8 @@ void erase_subrange_tests(Container const& x)
     for(std::size_t length = 0; length < x.size(); ++length) {
         for(std::size_t position = 0; position < x.size() - length; ++position) {
             Container y(x);
-            list init(y.begin(), y.end());
+            list init;
+            std::copy(y.begin(), y.end(), std::back_inserter(init));
             if(!general_erase_range_test(y, position, position + length)) {
                 BOOST_ERROR("general_erase_range_test failed.");
                 std::cout<<"Erase: ["<<position<<","<<position + length<<")\n";
