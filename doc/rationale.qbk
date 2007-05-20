@@ -118,12 +118,7 @@ should probably change it to a slow swap.
 [h3 [@http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#518
     518. Are insert and erase stable for unordered_multiset and unordered_multimap?]]
 
-In this implementation, erase is stable. All inserts are stable, except for
-inserting with a hint, which has slightly surprising behaviour. If the hint
-points to the first element in the correct equal range it inserts at the end of
-the range, for all other elements in the range it inserts immediately before
-the element. I am very tempted to change insert with a hint to just ignore the
-hint completely.
+The current proposal is that insert and erase are stable - so they are here.
 
 [h3 [@http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#528
     528. TR1: issue 6.19 vs 6.3.4.3/2 (and 6.3.4.5/2)]]

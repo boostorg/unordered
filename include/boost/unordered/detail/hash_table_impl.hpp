@@ -1561,6 +1561,13 @@ namespace boost {
                     return insert(v);
                 }
                 else {
+                    // Find the first node in the group - so that the node
+                    // will be inserted at the end of the group.
+
+                    local_iterator_base start(it.local_);
+                    while(prev_in_group(start.node_)->next_ == start.node_)
+                        start.node_ = prev_in_group(start.node_);
+
                     // Create the node before rehashing in case it throws an
                     // exception (need strong safety in such a case).
                     node_constructor a(this->allocators_);
@@ -1574,7 +1581,7 @@ namespace boost {
                     // Nothing after this point can throw
 
                     link_ptr n = a.release();
-                    this->link_node(n, it.local_);
+                    this->link_node(n, start);
 
                     return iterator_base(base, n);
                 }

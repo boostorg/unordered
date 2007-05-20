@@ -18,6 +18,7 @@ test-suite unordered-tests
         [ run copy_tests.cpp ]
         [ run assign_tests.cpp ]
         [ run insert_tests.cpp ]
+        [ run insert_stable_tests.cpp ]
         [ run unnecessary_copy_tests.cpp ]
         [ run erase_tests.cpp ]
         [ run erase_equiv_tests.cpp ]
