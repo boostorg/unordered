@@ -118,7 +118,7 @@ should probably change it to a slow swap.
 [h3 [@http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#518
     518. Are insert and erase stable for unordered_multiset and unordered_multimap?]]
 
-The current proposal is that insert and erase are stable - so they are here.
+The current proposal is that insert, erase and rehash are stable - so they are here.
 
 [h3 [@http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#528
     528. TR1: issue 6.19 vs 6.3.4.3/2 (and 6.3.4.5/2)]]
