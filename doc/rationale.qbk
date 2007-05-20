@@ -133,10 +133,4 @@ The proposed resolution is to add a new subsection to 17.4.4:
 [:An implementation shall not supply an overloaded function signature specified in any library clause if such a signature would be inherently ambiguous during overload resolution due to two library types referring to the same type.]
 So I don't supply the `iterator` overloads.
 
-[h3 [@http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#560
-    560. User-defined allocators without default constructor]]
-
-This implementation should work okay for an allocator without a default
-constructor, although I don't currently test for this.
-
 [endsect]
