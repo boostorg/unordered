@@ -26,7 +26,6 @@ void constructor_tests1(T* = 0)
     {
         T x(0, hf, eq);
         BOOST_TEST(x.empty());
-        BOOST_TEST(x.bucket_count() >= 0);
         BOOST_TEST(test::equivalent(x.hash_function(), hf));
         BOOST_TEST(test::equivalent(x.key_eq(), eq));
         BOOST_TEST(test::equivalent(x.get_allocator(), al));
@@ -116,7 +115,6 @@ void constructor_tests1(T* = 0)
     {
         T x(0, hf, eq, al);
         BOOST_TEST(x.empty());
-        BOOST_TEST(x.bucket_count() >= 0);
         BOOST_TEST(test::equivalent(x.hash_function(), hf));
         BOOST_TEST(test::equivalent(x.key_eq(), eq));
         BOOST_TEST(test::equivalent(x.get_allocator(), al));
