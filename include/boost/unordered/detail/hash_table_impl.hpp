@@ -1565,8 +1565,8 @@ namespace boost {
                     // will be inserted at the end of the group.
 
                     local_iterator_base start(it.local_);
-                    while(prev_in_group(start.node_)->next_ == start.node_)
-                        start.node_ = prev_in_group(start.node_);
+                    while(this->prev_in_group(start.node_)->next_ == start.node_)
+                        start.node_ = this->prev_in_group(start.node_);
 
                     // Create the node before rehashing in case it throws an
                     // exception (need strong safety in such a case).
