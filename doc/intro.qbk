@@ -1,0 +1,113 @@
+[/ Copyright 2006-2007 Daniel James.
+ / Distributed under the Boost Software License, Version 1.0. (See accompanying
+ / file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt) ]
+
+[def __tr1__ 
+    [@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2009.pdf
+    C++ Standard Library Technical Report]]
+[def __boost-tr1__
+    [@http://www.boost.org/doc/html/boost_tr1.html
+    Boost.TR1]]
+[def __draft__
+    [@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2009.pdf
+    Working Draft of the C++ Standard]]
+[def __hash-table__ [@http://en.wikipedia.org/wiki/Hash_table
+    hash table]]
+[def __hash-function__ [@http://en.wikipedia.org/wiki/Hash_function
+    hash function]]
+
+[section:intro Introduction]
+
+For accessing data based on key lookup, the C++ standard library offers `std::set`,
+`std::map`, `std::multiset` and `std::multimap`. These are generally
+implemented using balanced binary trees so that lookup time has
+logarithmic complexity. That is generally okay, but in many cases a
+__hash-table__ can perform better, as accessing data has constant complexity,
+on average. The worst case complexity is linear, but that occurs rarely and
+with some care, can be avoided.
+
+Also, the existing containers require a 'less than' comparison object
+to order their elements. For some data types this is impossible to implement
+or isn't practicle. For a hash table you need an equality function
+and a hash function for the key.
+
+So the __tr1__ introduced the unordered associative containers, which are
+implemented using hash tables, and they have now been added to the __draft__.
+
+This library supplies a standards compliant implementation that is proposed for
+addition to boost. If accepted they should also be added to __boost-tr1__.
+
+`unordered_set` and `unordered_multiset` are defined in the header
+<[headerref boost/unordered_set.hpp]>
+
+    namespace boost {
+        template <
+            class Key,
+            class Hash = boost::hash<Key>, 
+            class Pred = std::equal_to<Key>, 
+            class Alloc = std::allocator<Key> > 
+        class ``[classref boost::unordered_set unordered_set]``;
+
+        template<
+            class Key,
+            class Hash = boost::hash<Key>, 
+            class Pred = std::equal_to<Key>, 
+            class Alloc = std::allocator<Key> > 
+        class ``[classref boost::unordered_multiset unordered_multiset]``;
+    }
+
+`unordered_map` and `unordered_multimap` are defined in the header
+<[headerref boost/unordered_map.hpp]>
+
+    namespace boost {
+        template <
+            class Key, class T,
+            class Hash = boost::hash<Key>,
+            class Pred = std::equal_to<Key>,
+            class Alloc = std::allocator<Key> >
+        class ``[classref boost::unordered_map unordered_map]``;
+
+        template<
+            class Key, class T,
+            class Hash = boost::hash<Key>,
+            class Pred = std::equal_to<Key>,
+            class Alloc = std::allocator<Key> >
+        class ``[classref boost::unordered_multimap unordered_multimap]``;
+    }
+
+If using Boost.TR1, these classes will be included from `<unordered_set>` and
+`<unordered_map>`, with the classes included in the `std::tr1` namespace.
+
+The containers are used in a similar manner to the normal associative
+containers:
+
+    #include <``[headerref boost/unordered_map.hpp]``>
+    #include <cassert>
+
+    int main()
+    {
+        boost::unordered_map<std::string, int> x;
+        x["one"] = 1;
+        x["two"] = 2;
+        x["three"] = 3;
+
+        assert(x["one"] == 1);
+        assert(x["missing"] == 0);
+    }
+
+But since the elements aren't ordered, the output of:
+
+    BOOST_FOREACH(map::value_type i, x) {
+        std::cout<<i.first<<","<<i.second<<"\n";
+    }
+
+can be in any order. For example, it might be:
+
+    two,2
+    one,1
+    three,3
+    missing,0
+
+There are other differences, which will be detailed later.
+
+[endsect]
