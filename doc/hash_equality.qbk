@@ -8,7 +8,7 @@
 
 While the associative containers use an ordering relation to specify how the
 elements are stored, the unordered associative containers use an equality
-predicate and a hash function. For example [classref boost::unordered_set]
+predicate and a hash function. For example, [classref boost::unordered_set]
 is declared as:
 
     template<typename Value,
@@ -20,9 +20,7 @@ is declared as:
 The hash function comes first as you might want to change the hash function
 but not the equality predicate, while if you were to change the behaviour
 of the equality predicate you would have to change the hash function to match
-it.
-
-For example, if you wanted to use the
+it.  So, if you wanted to use the
 [@http://www.isthe.com/chongo/tech/comp/fnv/ FNV-1 hash] you could write:
 
     ``[classref boost::unordered_set]``<std::string, hash::fnv_1> words;
@@ -31,7 +29,7 @@ An example implementation of FNV-1, and some other hash functions are supplied
 in the examples directory.
 
 Alternatively, you might wish to use a different equality function. If so, make
-sure you use a hash function that matches it. For example, a
+sure you use a hash function that matches it. So to implement a
 case-insensitive dictionary:
 
     struct iequal_to
@@ -66,7 +64,7 @@ case-insensitive dictionary:
     boost::unordered_map<std::string, word_info, ihash, iequal_to>
         idictionary;
 
-A more generic version of this example is available at:
+A more generic version is available at:
 [@../../libs/unordered/examples/case_insensitive.hpp /libs/unordered/examples/case_insensitive.hpp]
 
 [h2 Custom Types]
