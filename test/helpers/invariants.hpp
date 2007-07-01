@@ -13,6 +13,7 @@
 #include <cmath>
 #include "./metafunctions.hpp"
 #include "./helpers.hpp"
+#include "./allocator.hpp"
 
 namespace test
 {
@@ -23,7 +24,7 @@ namespace test
         typedef typename X::key_type key_type;
         // Boost.Test was reporting memory leaks for std::set on g++-3.3.
         // So I work around it by using malloc.
-        std::set<key_type, std::less<key_type>, test::exception::detail::malloc_allocator<key_type> > found_;
+        std::set<key_type, std::less<key_type>, test::malloc_allocator<key_type> > found_;
 
         typename X::const_iterator it = x1.begin(), end = x1.end();
         typename X::size_type size = 0;
@@ -32,9 +33,8 @@ namespace test
             // to test either that keys are unique or that equivalent keys are
             // adjacent. (6.3.1/6)
             key_type key = get_key<X>(*it);
-            if(found_.find(key) != found_.end())
+            if(!found_.insert(key).second)
                 BOOST_ERROR("Elements with equivalent keys aren't adjacent.");
-            found_.insert(key);
 
             // Iterate over equivalent keys, counting them.
             unsigned int count = 0;

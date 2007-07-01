@@ -14,8 +14,8 @@
 #include <boost/preprocessor/seq/elem.hpp>
 #include <boost/preprocessor/cat.hpp>
 #include <iostream>
-#include <cstdlib>
 #include "../helpers/fwd.hpp"
+#include "../helpers/allocator.hpp"
 #include <map>
 
 #define RUN_EXCEPTION_TESTS(test_seq, param_seq) \
@@ -185,43 +185,6 @@ namespace exception
         // the most convenient way.
         namespace
         {
-            template <class T>
-            struct malloc_allocator
-            {
-                typedef std::size_t size_type;
-                typedef std::ptrdiff_t difference_type;
-                typedef T* pointer;
-                typedef T const* const_pointer;
-                typedef T& reference;
-                typedef T const& const_reference;
-                typedef T value_type;
-
-                template <class U> struct rebind { typedef malloc_allocator<U> other; };
-
-                malloc_allocator() {}
-                template <class Y> malloc_allocator(malloc_allocator<Y> const& x) {}
-                malloc_allocator(malloc_allocator const& x) {}
-
-                pointer address(reference r) { return &r; }
-                const_pointer address(const_reference r) { return &r; }
-
-                pointer allocate(size_type n) {
-                    return static_cast<T*>(malloc(n * sizeof(T)));
-                }
-
-                pointer allocate(size_type n, const_pointer u) { return allocate(n); }
-                void deallocate(pointer p, size_type n) { free(p); }
-                void construct(pointer p, T const& t) { new(p) T(t); }
-                void destroy(pointer p) { p->~T(); }
-
-                size_type max_size() const {
-                    return (std::numeric_limits<size_type>::max)();
-                }
-
-                bool operator==(malloc_allocator const& x) const { return true; }
-                bool operator!=(malloc_allocator const& x) const { return false; }
-            };
-
             struct memory_area {
                 void const* start;
                 void const* end;
@@ -252,7 +215,7 @@ namespace exception
             };
 
             typedef std::map<memory_area, memory_track, std::less<memory_area>,
-                malloc_allocator<std::pair<memory_area const, memory_track> > >
+                test::malloc_allocator<std::pair<memory_area const, memory_track> > >
                 allocated_memory_type;
             allocated_memory_type allocated_memory;
             unsigned int count_allocators = 0;
