@@ -21,7 +21,9 @@ namespace test
     {
         typename X::key_equal eq = x1.key_eq();
         typedef typename X::key_type key_type;
-        std::set<key_type> found_;
+        // Boost.Test was reporting memory leaks for std::set on g++-3.3.
+        // So I work around it by using malloc.
+        std::set<key_type, std::less<key_type>, test::exception::detail::malloc_allocator<key_type> > found_;
 
         typename X::const_iterator it = x1.begin(), end = x1.end();
         typename X::size_type size = 0;
