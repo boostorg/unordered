@@ -47,6 +47,15 @@ namespace test
 
         bool operator==(malloc_allocator const& x) const { return true; }
         bool operator!=(malloc_allocator const& x) const { return false; }
+
+#if BOOST_WORKAROUND(BOOST_MSVC, < 1300)
+        template <class T> void deallocate(T* p, size_type) {
+            free(p);
+        }
+        char* _Charalloc(size_type n) {
+            return static_cast<char*>(malloc(n * sizeof(char)));
+        }
+#endif
     };
 }
 
