@@ -104,7 +104,7 @@ void two_equivalent_item_tests()
     }
 }
 
-// At this point I got bored and wrote more automated tests...
+// More automated tests...
 
 template<class Range1, class Range2>
 bool compare(Range1 const& x, Range2 const& y)
