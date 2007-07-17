@@ -273,6 +273,15 @@ int main()
     std::cerr<<"Test1 unordered_multimap<test::object, test::object>\n";
     constructor_tests1((boost::unordered_multimap<test::object, test::object, test::hash, test::equal_to, test::allocator<test::object> >*) 0);
 
+    std::cerr<<"Test1 unordered_set<test::equivalent_object>\n";
+    constructor_tests1((boost::unordered_set<test::equivalent_object, test::hash, test::equal_to, test::allocator<test::equivalent_object> >*) 0);
+    std::cerr<<"Test1 unordered_multiset<test::equivalent_object>\n";
+    constructor_tests1((boost::unordered_multiset<test::equivalent_object, test::hash, test::equal_to, test::allocator<test::equivalent_object> >*) 0);
+    std::cerr<<"Test1 unordered_map<test::equivalent_object, test::equivalent_object>\n";
+    constructor_tests1((boost::unordered_map<test::equivalent_object, test::equivalent_object, test::hash, test::equal_to, test::allocator<test::equivalent_object> >*) 0);
+    std::cerr<<"Test1 unordered_multimap<test::equivalent_object, test::equivalent_object>\n";
+    constructor_tests1((boost::unordered_multimap<test::equivalent_object, test::equivalent_object, test::hash, test::equal_to, test::allocator<test::equivalent_object> >*) 0);
+
     std::cerr<<"Test2 unordered_set<test::object>\n";
     constructor_tests2((boost::unordered_set<test::object, test::hash, test::equal_to, test::allocator<test::object> >*) 0);
     std::cerr<<"Test2 unordered_multiset<test::object>\n";
@@ -281,6 +290,15 @@ int main()
     constructor_tests2((boost::unordered_map<test::object, test::object, test::hash, test::equal_to, test::allocator<test::object> >*) 0);
     std::cerr<<"Test2 unordered_multimap<test::object, test::object>\n";
     constructor_tests2((boost::unordered_multimap<test::object, test::object, test::hash, test::equal_to, test::allocator<test::object> >*) 0);
+
+    std::cerr<<"Test2 unordered_set<test::equivalent_object>\n";
+    constructor_tests2((boost::unordered_set<test::equivalent_object, test::hash, test::equal_to, test::allocator<test::equivalent_object> >*) 0);
+    std::cerr<<"Test2 unordered_multiset<test::equivalent_object>\n";
+    constructor_tests2((boost::unordered_multiset<test::equivalent_object, test::hash, test::equal_to, test::allocator<test::equivalent_object> >*) 0);
+    std::cerr<<"Test2 unordered_map<test::equivalent_object, test::equivalent_object>\n";
+    constructor_tests2((boost::unordered_map<test::equivalent_object, test::equivalent_object, test::hash, test::equal_to, test::allocator<test::equivalent_object> >*) 0);
+    std::cerr<<"Test2 unordered_multimap<test::equivalent_object, test::equivalent_object>\n";
+    constructor_tests2((boost::unordered_multimap<test::equivalent_object, test::equivalent_object, test::hash, test::equal_to, test::allocator<test::equivalent_object> >*) 0);
 
     std::cerr<<"Map Test unordered_map<test::object, test::object>\n";
     map_constructor_test((boost::unordered_map<test::object, test::object, test::hash, test::equal_to, test::allocator<test::object> >*) 0);

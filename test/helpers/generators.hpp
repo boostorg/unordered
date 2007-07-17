@@ -56,6 +56,12 @@ namespace test
         return (rand() >> 1) % (128-32) + 32;
     }
 
+    inline signed char generate(signed char const*)
+    {
+        using namespace std;
+        return rand();
+    }
+
     inline std::string generate(std::string const*)
     {
         using namespace std;

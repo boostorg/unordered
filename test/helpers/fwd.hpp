@@ -12,6 +12,7 @@ namespace test
 {
     int generate(int const*);
     char generate(char const*);
+    signed char generate(signed char const*);
     std::string generate(std::string*);
     float generate(float const*);
     template <class T1, class T2>

@@ -624,12 +624,13 @@ namespace exception
             }
             return (std::numeric_limits<std::size_t>::max)();
         }
-
-        friend void swap(allocator<T>& x, allocator<T>& y)
-        {
-            std::swap(x.tag_, y.tag_);
-        }
     };
+
+    template <class T>
+    void swap(allocator<T>& x, allocator<T>& y)
+    {
+        std::swap(x.tag_, y.tag_);
+    }
 
     // It's pretty much impossible to write a compliant swap when these
     // two can throw. So they don't.

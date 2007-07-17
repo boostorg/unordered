@@ -49,8 +49,8 @@ typedef boost::unordered_multimap<int, int,
 typedef boost::unordered_multimap<int, int,
     collision2_hash, std::equal_to<int>,
     test::allocator<std::pair<int const, int> > > collide_map2;
-typedef collide_map::value_type pair;
-typedef std::list<pair> list;
+typedef collide_map::value_type collide_value;
+typedef std::list<collide_value> collide_list;
 
 
 void empty_range_tests()
@@ -63,8 +63,8 @@ void empty_range_tests()
 
 void single_item_tests()
 {
-    list init;
-    init.push_back(pair(1,1));
+    collide_list init;
+    init.push_back(collide_value(1,1));
 
     collide_map x(init.begin(), init.end());
     x.erase(x.begin(), x.begin());
@@ -77,9 +77,9 @@ void single_item_tests()
 
 void two_equivalent_item_tests()
 {
-    list init;
-    init.push_back(pair(1,1));
-    init.push_back(pair(1,2));
+    collide_list init;
+    init.push_back(collide_value(1,1));
+    init.push_back(collide_value(1,2));
 
     {
         collide_map x(init.begin(), init.end());
@@ -109,8 +109,8 @@ void two_equivalent_item_tests()
 template<class Range1, class Range2>
 bool compare(Range1 const& x, Range2 const& y)
 {
-    list a;
-    list b;
+    collide_list a;
+    collide_list b;
     std::copy(x.begin(), x.end(), std::back_inserter(a));
     std::copy(y.begin(), y.end(), std::back_inserter(b));
     a.sort();
@@ -121,7 +121,7 @@ bool compare(Range1 const& x, Range2 const& y)
 template <class Container>
 bool general_erase_range_test(Container& x, int start, int end)
 {
-    list l;
+    collide_list l;
     std::copy(x.begin(), x.end(), std::back_inserter(l));
     l.erase(boost::next(l.begin(), start), boost::next(l.begin(), end));
     x.erase(boost::next(x.begin(), start), boost::next(x.begin(), end));
@@ -134,7 +134,7 @@ void erase_subrange_tests(Container const& x)
     for(std::size_t length = 0; length < x.size(); ++length) {
         for(std::size_t position = 0; position < x.size() - length; ++position) {
             Container y(x);
-            list init;
+            collide_list init;
             std::copy(y.begin(), y.end(), std::back_inserter(init));
             if(!general_erase_range_test(y, position, position + length)) {
                 BOOST_ERROR("general_erase_range_test failed.");
@@ -153,7 +153,7 @@ void x_by_y_erase_range_tests(Container*, int values, int duplicates)
 
     for(int i = 0; i < values; ++i) {
         for(int j = 0; j < duplicates; ++j) {
-            y.insert(pair(i, j));
+            y.insert(collide_value(i, j));
         }
     }
 

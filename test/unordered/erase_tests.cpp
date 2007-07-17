@@ -135,5 +135,14 @@ int main()
     std::cerr<<"\nErase unordered_multimap<test::object,..>.\n";
     erase_tests1((boost::unordered_multimap<test::object, test::object, test::hash, test::equal_to, test::allocator<test::object> >*) 0);
 
+    std::cerr<<"\nErase unordered_set<test::equivalent_object,..>.\n";
+    erase_tests1((boost::unordered_set<test::equivalent_object, test::hash, test::equal_to, test::allocator<test::equivalent_object> >*) 0);
+    std::cerr<<"\nErase unordered_multiset<test::equivalent_object,..>.\n";
+    erase_tests1((boost::unordered_multiset<test::equivalent_object, test::hash, test::equal_to, test::allocator<test::equivalent_object> >*) 0);
+    std::cerr<<"\nErase unordered_map<test::equivalent_object,..>.\n";
+    erase_tests1((boost::unordered_map<test::equivalent_object, test::equivalent_object, test::hash, test::equal_to, test::allocator<test::equivalent_object> >*) 0);
+    std::cerr<<"\nErase unordered_multimap<test::equivalent_object,..>.\n";
+    erase_tests1((boost::unordered_multimap<test::equivalent_object, test::equivalent_object, test::hash, test::equal_to, test::allocator<test::equivalent_object> >*) 0);
+
     return boost::report_errors();
 }
