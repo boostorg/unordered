@@ -8,6 +8,7 @@ import testing ;
 project unordered-test/unordered
     : requirements
         <toolset>intel-linux:"<cxxflags>-strict_ansi -cxxlib-icc"
+        <toolset>gcc:<cxxflags>-Wsign-promo
     ;
 
 test-suite unordered-tests
