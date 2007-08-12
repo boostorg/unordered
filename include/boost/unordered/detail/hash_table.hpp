@@ -11,8 +11,6 @@
 # pragma once
 #endif
 
-#define BOOST_UNORDERED_PARANOID
-
 #include <boost/config.hpp>
 
 #include <cstddef>
