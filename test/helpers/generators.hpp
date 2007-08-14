@@ -59,7 +59,7 @@ namespace test
     inline signed char generate(signed char const*)
     {
         using namespace std;
-        return rand();
+        return static_cast<signed char>(rand());
     }
 
     inline std::string generate(std::string const*)

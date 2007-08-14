@@ -10,6 +10,11 @@
 #include <cstdlib>
 #include <boost/limits.hpp>
 
+#if defined(BOOST_MSVC)
+#pragma warning(push)
+#pragma warning(disable:4100) // unreferenced formal parameter
+#endif
+
 namespace test
 {
     template <class T>
@@ -26,8 +31,8 @@ namespace test
         template <class U> struct rebind { typedef malloc_allocator<U> other; };
 
         malloc_allocator() {}
-        template <class Y> malloc_allocator(malloc_allocator<Y> const& x) {}
-        malloc_allocator(malloc_allocator const& x) {}
+        template <class Y> malloc_allocator(malloc_allocator<Y> const&) {}
+        malloc_allocator(malloc_allocator const&) {}
 
         pointer address(reference r) { return &r; }
         const_pointer address(const_reference r) { return &r; }
@@ -37,7 +42,7 @@ namespace test
         }
 
         pointer allocate(size_type n, const_pointer u) { return allocate(n); }
-        void deallocate(pointer p, size_type n) { free(p); }
+        void deallocate(pointer p, size_type) { free(p); }
         void construct(pointer p, T const& t) { new(p) T(t); }
         void destroy(pointer p) { p->~T(); }
 
@@ -58,5 +63,10 @@ namespace test
 #endif
     };
 }
+
+#if defined(BOOST_MSVC)
+#pragma warning(pop)
+#pragma warning(disable:4100) // unreferenced formal parameter
+#endif
 
 #endif

@@ -11,7 +11,7 @@ struct count_copies
 {
     static int count;
     count_copies() { ++count; }
-    count_copies(count_copies const& x) { ++count; }
+    count_copies(count_copies const&) { ++count; }
 private:
     count_copies& operator=(count_copies const&);
 };
@@ -20,7 +20,7 @@ private:
 namespace boost {
 #endif
 
-std::size_t hash_value(count_copies const& x) {
+std::size_t hash_value(count_copies const&) {
     return 0;
 }
 
@@ -28,7 +28,7 @@ std::size_t hash_value(count_copies const& x) {
 }
 #endif
 
-bool operator==(count_copies const& x, count_copies const& y) {
+bool operator==(count_copies const&, count_copies const&) {
     return true;
 }
 

@@ -6,7 +6,17 @@
 #include <boost/unordered_set.hpp>
 #include <boost/unordered_map.hpp>
 
+#if defined(BOOST_MSVC)
+#pragma warning(push)
+#pragma warning(disable:4100) // unreferenced formal parameter
+#endif
+
 #include <boost/concept_check.hpp>
+
+#if defined(BOOST_MSVC)
+#pragma warning(pop)
+#endif
+
 #include <boost/mpl/assert.hpp>
 #include <boost/iterator/iterator_traits.hpp>
 #include "../helpers/check_return_type.hpp"

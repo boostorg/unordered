@@ -9,6 +9,7 @@ project unordered-test/container
     : requirements
         <toolset>intel-linux:"<cxxflags>-strict_ansi -cxxlib-icc"
         <toolset>gcc:<cxxflags>-Wsign-promo
+        <toolset>msvc:<cxxflags>/W4
     ;
 
 test-suite container-tests

@@ -8,6 +8,11 @@
 
 #include <cstddef>
 
+#if defined(BOOST_MSVC)
+#pragma warning(push)
+#pragma warning(disable:4100) // unreferenced formal parameter
+#endif
+
 namespace test
 {
 namespace minimal
@@ -225,5 +230,9 @@ namespace minimal
     }
 }
 }
+
+#if defined(BOOST_MSVC)
+#pragma warning(pop)
+#endif
 
 #endif

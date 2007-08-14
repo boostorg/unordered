@@ -9,6 +9,11 @@
 #include <boost/limits.hpp>
 #include "../helpers/random_values.hpp"
 
+#if defined(BOOST_MSVC)
+#pragma warning(push)
+#pragma warning(disable:4127) // conditional expression is constant
+#endif
+
 template <class X>
 void load_factor_tests(X* = 0)
 {
@@ -70,3 +75,8 @@ int main()
 
     return boost::report_errors();
 }
+
+#if defined(BOOST_MSVC)
+#pragma warning(pop)
+#pragma warning(disable:4127) // conditional expression is constant
+#endif

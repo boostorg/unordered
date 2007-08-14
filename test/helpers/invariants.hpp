@@ -15,6 +15,11 @@
 #include "./helpers.hpp"
 #include "./allocator.hpp"
 
+#if defined(BOOST_MSVC)
+#pragma warning(push)
+#pragma warning(disable:4127) // conditional expression is constant
+#endif
+
 namespace test
 {
     template <class X>
@@ -91,6 +96,10 @@ namespace test
             BOOST_ERROR("x1.load_factor() doesn't match actual load_factor.");
     }
 }
+
+#if defined(BOOST_MSVC)
+#pragma warning(pop)
+#endif
 
 #endif
 
