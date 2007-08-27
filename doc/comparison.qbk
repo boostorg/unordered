@@ -14,7 +14,9 @@
     ]
     [
         [`Compare` exposed by member typedef `key_compare`, accessed by member function `key_comp()`]
-        [`Hash` exposed by member typedef `hasher`, accessed by member function `hash_function()`.\n`Pred` by member typedef `key_equal` and member function `key_eq()`.]
+        [`Hash` exposed by member typedef `hasher`, accessed by member function `hash_function()`.
+
+         `Pred` by member typedef `key_equal` and member function `key_eq()`.]
     ]
     [
         [Member typedef `value_compare` supplies an ordering comparison for member elements, accessed by member function `value_comp()`.]

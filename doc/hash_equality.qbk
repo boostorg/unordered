@@ -32,37 +32,9 @@ Alternatively, you might wish to use a different equality function. If so, make
 sure you use a hash function that matches it. So to implement a
 case-insensitive dictionary:
 
-    struct iequal_to
-        : std::binary_function<std::string, std::string, bool>
-    {
-        bool operator()(std::string const& x,
-            std::string const& y) const
-        {
-            return boost::algorithm::iequals(x, y);
-        }
-    };
-
-    struct ihash
-        : std::unary_function<std::string, bool>
-    {
-        bool operator()(std::string const& x) const
-        {
-            std::size_t seed = 0;
-
-            for(std::string::const_iterator it = x.begin();
-                it != x.end(); ++it)
-            {
-                boost::hash_combine(seed, std::toupper(*it));
-            }
-
-            return seed;
-        }
-    };
-
-    struct word_info;
-
-    boost::unordered_map<std::string, word_info, ihash, iequal_to>
-        idictionary;
+[import src_code/insensitive.cpp] 
+[case_insensitive_functions] 
+[case_insensitive_dictionary] 
 
 A more generic version is available at:
 [@../../libs/unordered/examples/case_insensitive.hpp /libs/unordered/examples/case_insensitive.hpp]

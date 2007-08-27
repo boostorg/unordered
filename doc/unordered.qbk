@@ -3,7 +3,7 @@
  / file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt) ]
 
 [library Unordered Associative Containers
-    [quickbook 1.3]
+    [quickbook 1.4]
     [authors [Maitin-Shepard, Jeremy B.], [James, Daniel]]
     [copyright 2005 2007 Daniel James]
     [purpose std::tr1 compliant hash containers]
