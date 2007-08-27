@@ -1742,7 +1742,7 @@ namespace boost {
             }
 
             template <typename I>
-            size_type insert_size(I i, I j, boost::incrementable_traversal_tag)
+            size_type insert_size(I, I, boost::incrementable_traversal_tag)
             {
                 return 1;
             }
