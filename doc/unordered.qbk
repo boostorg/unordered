@@ -4,8 +4,9 @@
 
 [library Unordered Associative Containers
     [quickbook 1.4]
-    [authors [Maitin-Shepard, Jeremy B.], [James, Daniel]]
-    [copyright 2005 2007 Daniel James]
+    [authors [James, Daniel]]
+    [copyright 2003 2004 Jeremy B. Maitin-Shepard]
+    [copyright 2005 2006 2007 Daniel James]
     [purpose std::tr1 compliant hash containers]
     [id unordered]
     [dirname unordered]
