@@ -155,9 +155,9 @@ namespace boost
                     base.insert(obj));
         }
 
-        const_iterator insert(const_iterator hint, const value_type& obj)
+        iterator insert(const_iterator hint, const value_type& obj)
         {
-            return const_iterator(base.insert(get(hint), obj));
+            return iterator(base.insert(get(hint), obj));
         }
 
         template <class InputIterator>
@@ -166,9 +166,9 @@ namespace boost
             base.insert(first, last);
         }
 
-        const_iterator erase(const_iterator position)
+        iterator erase(const_iterator position)
         {
-            return const_iterator(base.erase(get(position)));
+            return iterator(base.erase(get(position)));
         }
 
         size_type erase(const key_type& k)
@@ -176,9 +176,9 @@ namespace boost
             return base.erase(k);
         }
 
-        const_iterator erase(const_iterator first, const_iterator last)
+        iterator erase(const_iterator first, const_iterator last)
         {
-            return const_iterator(base.erase(get(first), get(last)));
+            return iterator(base.erase(get(first), get(last)));
         }
 
         void clear()
@@ -439,9 +439,9 @@ namespace boost
             return iterator(base.insert(obj));
         }
 
-        const_iterator insert(const_iterator hint, const value_type& obj)
+        iterator insert(const_iterator hint, const value_type& obj)
         {
-            return const_iterator(base.insert(get(hint), obj));
+            return iterator(base.insert(get(hint), obj));
         }
 
         template <class InputIterator>
@@ -450,9 +450,9 @@ namespace boost
             base.insert(first, last);
         }
 
-        const_iterator erase(const_iterator position)
+        iterator erase(const_iterator position)
         {
-            return const_iterator(base.erase(get(position)));
+            return iterator(base.erase(get(position)));
         }
 
         size_type erase(const key_type& k)
@@ -460,9 +460,9 @@ namespace boost
             return base.erase(k);
         }
 
-        const_iterator erase(const_iterator first, const_iterator last)
+        iterator erase(const_iterator first, const_iterator last)
         {
-            return const_iterator(base.erase(get(first), get(last)));
+            return iterator(base.erase(get(first), get(last)));
         }
 
         void clear()

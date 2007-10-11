@@ -144,10 +144,8 @@ void unordered_test(X&, Key& k, T& t, Hash& hf, Pred& eq)
     test::check_return_type<hasher>::equals(b.hash_function());
     test::check_return_type<key_equal>::equals(b.key_eq());
 
-    iterator q = a.begin();
-    const_iterator r = a.begin();
+    const_iterator q = a.cbegin();
     test::check_return_type<iterator>::equals(a.insert(q, t));
-    test::check_return_type<const_iterator>::equals(a.insert(r, t));
 
     // TODO: void return?
     a.insert(i, j);
@@ -156,22 +154,12 @@ void unordered_test(X&, Key& k, T& t, Hash& hf, Pred& eq)
     BOOST_TEST(a.empty());
     if(a.empty()) {
         a.insert(t);
-        q = a.begin();
+        q = a.cbegin();
         test::check_return_type<iterator>::equals(a.erase(q));
     }
 
-    BOOST_TEST(a.empty());
-    if(a.empty()) {
-        a.insert(t);
-        r = a.begin();
-        test::check_return_type<const_iterator>::equals(a.erase(r));
-    }
-
-    iterator q1 = a.begin(), q2 = a.end();
+    const_iterator q1 = a.cbegin(), q2 = a.cend();
     test::check_return_type<iterator>::equals(a.erase(q1, q2));
-
-    const_iterator r1 = a.begin(), r2 = a.end();
-    test::check_return_type<const_iterator>::equals(a.erase(r1, r2));
 
     // TODO: void return?
     a.clear();

@@ -125,9 +125,9 @@ namespace minimal
     {
         friend class allocator<T>;
 
-        T* ptr_;
+        T const* ptr_;
 
-        const_ptr(T* ptr) : ptr_(ptr) {}
+        const_ptr(T const* ptr) : ptr_(ptr) {}
     public:
         const_ptr() : ptr_(0) {}
         const_ptr(ptr<T> const& x) : ptr_(x.ptr_) {}
@@ -135,12 +135,12 @@ namespace minimal
         typedef void (const_ptr::*bool_type)() const;
         void this_type_does_not_support_comparisons() const {}
 
-        T& operator*() const { return *ptr_; }
-        T* operator->() const { return ptr_; }
+        T const& operator*() const { return *ptr_; }
+        T const* operator->() const { return ptr_; }
         const_ptr& operator++() { ++ptr_; return *this; }
         const_ptr operator++(int) { const_ptr tmp(*this); ++ptr_; return tmp; }
         const_ptr operator+(int s) const { return const_ptr(ptr_ + s); }
-        T& operator[](int s) const { return ptr_[s]; }
+        T const& operator[](int s) const { return ptr_[s]; }
         bool operator!() const { return !ptr_; }
 
         operator bool_type() const {
