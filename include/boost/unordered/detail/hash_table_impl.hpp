@@ -876,9 +876,6 @@ namespace boost {
 
             // Erase
             //
-            // Return type of erase(const_iterator):
-            // http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2005/n1753.html#130
-            //
             // no throw
 
             iterator_base erase(iterator_base r)

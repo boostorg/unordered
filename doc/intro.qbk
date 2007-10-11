@@ -3,13 +3,13 @@
  / file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt) ]
 
 [def __tr1__ 
-    [@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2009.pdf
+    [@www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1836.pdf
     C++ Standard Library Technical Report]]
 [def __boost-tr1__
     [@http://www.boost.org/doc/html/boost_tr1.html
     Boost.TR1]]
 [def __draft__
-    [@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2009.pdf
+    [@http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2007/n2369.pdf
     Working Draft of the C++ Standard]]
 [def __hash-table__ [@http://en.wikipedia.org/wiki/Hash_table
     hash table]]
@@ -34,8 +34,10 @@ and a hash function for the key.
 So the __tr1__ introduced the unordered associative containers, which are
 implemented using hash tables, and they have now been added to the __draft__.
 
-This library supplies a standards compliant implementation that is proposed for
-addition to boost. If accepted they should also be added to __boost-tr1__.
+This library supplies an almost complete implementation of the specification in
+the __draft__, (it doesn't support `emplace` yet, see the [link
+unordered.rationale.future_developments Implementation Rationale] section for more
+details). If accepted the containers should also be added to __boost-tr1__.
 
 `unordered_set` and `unordered_multiset` are defined in the header
 <[headerref boost/unordered_set.hpp]>

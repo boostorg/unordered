@@ -5,6 +5,12 @@
 [def __wang__
     [@http://www.concentric.net/~Ttwang/tech/inthash.htm
     Thomas Wang's article on integer hash functions]]
+[def __n2345__
+    [@http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2007/n2345.pdf
+    the August 2008 version of the working draft standard]]
+[def __n2369__
+    [@http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2007/n2369.pdf
+    the August 2008 version of the working draft standard]]
 
 [section:rationale Implementation Rationale]
 
@@ -98,7 +104,7 @@ So, this implementation uses a prime number for the hash table size.
 This proposal suggests removing the `construct`, `destroy` and `address`
 member functions - all of which Boost.Unordered calls. It's near trivial
 to replace the calls with the appropriate code - and will simplify the
-implementation.
+implementation, as well as make supporting `emplace` easier.
 
 [h3 [@http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#431
     431. Swapping containers with unequal allocators]]
@@ -119,5 +125,15 @@ should probably change it to a slow swap.
     518. Are insert and erase stable for unordered_multiset and unordered_multimap?]]
 
 The current proposal is that insert, erase and rehash are stable - so they are here.
+
+[h2 Future Developments]
+
+[h3 Support for `emplace`]
+
+In __n2369__ a new member function, `emplace` was added to the containers to
+allow placement insert, as described in __n2345__. To fully implement this
+`std::forward` is required, along with new functions in `std::allocator` and
+new constructors in `std::pair`. But partial support is possible - especially
+if I don't use the `construct` member of allocators.
 
 [endsect]
