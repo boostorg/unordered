@@ -277,25 +277,14 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
               </notes>
             </method>
-            <overloaded-method name="insert">
-              <signature>
-                <parameter name="hint">
-                  <paramtype>iterator</paramtype>
-                </parameter>
-                <parameter name="obj">
-                  <paramtype>value_type const&amp;</paramtype>
-                </parameter>
-                <type>iterator</type>
-              </signature>
-              <signature>
-                <parameter name="hint">
-                  <paramtype>const_iterator</paramtype>
-                </parameter>
-                <parameter name="obj">
-                  <paramtype>value_type const&amp;</paramtype>
-                </parameter>
-                <type>const_iterator</type>
-              </signature>
+            <method name="insert">
+              <parameter name="hint">
+                <paramtype>const_iterator</paramtype>
+              </parameter>
+              <parameter name="obj">
+                <paramtype>value_type const&amp;</paramtype>
+              </parameter>
+              <type>iterator</type>
               <description>
                 <para>Inserts obj in the container if and only if there is no element in the container with an equivalent value.</para>
                 <para>hint is a suggestion to where the element should be inserted.</para>
@@ -309,9 +298,8 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <notes>
                 <para>The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same value. </para>
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
-                <para>In this implementation, <code>iterator</code> and <code>const_iterator</code> are the same type, so a single overload is defined to implement both signatures.</para>
               </notes>
-            </overloaded-method>
+            </method>
             <method name="insert">
               <template>
                 <template-type-parameter name="InputIterator">
@@ -334,19 +322,11 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
               </notes>
             </method>
-            <overloaded-method name="erase">
-              <signature>
-                <parameter name="position">
-                  <paramtype>iterator</paramtype>
-                </parameter>
-                <type>iterator</type>
-              </signature>
-              <signature>
-                <parameter name="position">
-                  <paramtype>const_iterator</paramtype>
-                </parameter>
-                <type>const_iterator</type>
-              </signature>
+            <method name="erase">
+              <parameter name="position">
+                <paramtype>const_iterator</paramtype>
+              </parameter>
+              <type>iterator</type>
               <description>
                 <para>Erase the element pointed to by <code>position</code>.</para>
               </description>
@@ -357,17 +337,12 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>Only throws an exception, if it is thrown by a call to <code>hasher</code> or <code>key_equal</code>.</para>
                 <para>They don't get called by the current implementation Boost.Unordered but other implementations may call them.</para>
               </throws>
-              <notes>
-                <para>In this implementation, <code>iterator</code> and <code>const_iterator</code> are the same type, so a single overload is defined to implement both signatures.</para>
-              </notes>
-            </overloaded-method>
-            <overloaded-method name="erase">
-              <signature>
-                <parameter name="k">
-                  <paramtype>key_type const&amp;</paramtype>
-                </parameter>
-                <type>size_type</type>
-              </signature>
+            </method>
+            <method name="erase">
+              <parameter name="k">
+                <paramtype>key_type const&amp;</paramtype>
+              </parameter>
+              <type>size_type</type>
               <description>
                 <para>Erase all elements with key equivalent to <code>k</code>.</para>
               </description>
@@ -377,26 +352,15 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <throws>
                 <para>Only throws an exception, if it is thrown by a call to <code>hasher</code> or <code>key_equal</code>.</para>
               </throws>
-            </overloaded-method>
-            <overloaded-method name="erase">
-              <signature>
-                <parameter name="first">
-                  <paramtype>iterator</paramtype>
-                </parameter>
-                <parameter name="last">
-                  <paramtype>iterator</paramtype>
-                </parameter>
-                <type>iterator</type>
-              </signature>
-              <signature>
-                <parameter name="first">
-                  <paramtype>const_iterator</paramtype>
-                </parameter>
-                <parameter name="last">
-                  <paramtype>const_iterator</paramtype>
-                </parameter>
-                <type>const_iterator</type>
-              </signature>
+            </method>
+            <method name="erase">
+              <parameter name="first">
+                <paramtype>const_iterator</paramtype>
+              </parameter>
+              <parameter name="last">
+                <paramtype>const_iterator</paramtype>
+              </parameter>
+              <type>iterator</type>
               <descritpion>
                 <para>Erases the elements in the range from <code>first</code> to <code>last</code>.</para>
               </descritpion>
@@ -407,7 +371,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>Only throws an exception, if it is thrown by a call to <code>hasher</code> or <code>key_equal</code>.</para>
                 <para>They don't get called by the current implementation Boost.Unordered but other implementations may call them.</para>
               </throws>
-            </overloaded-method>
+            </method>
             <method name="clear">
               <type>void</type>
               <description>
@@ -895,25 +859,14 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
               </notes>
             </method>
-            <overloaded-method name="insert">
-              <signature>
-                <parameter name="hint">
-                  <paramtype>iterator</paramtype>
-                </parameter>
-                <parameter name="obj">
-                  <paramtype>value_type const&amp;</paramtype>
-                </parameter>
-                <type>iterator</type>
-              </signature>
-              <signature>
-                <parameter name="hint">
-                  <paramtype>const_iterator</paramtype>
-                </parameter>
-                <parameter name="obj">
-                  <paramtype>value_type const&amp;</paramtype>
-                </parameter>
-                <type>const_iterator</type>
-              </signature>
+            <method name="insert">
+              <parameter name="hint">
+                <paramtype>const_iterator</paramtype>
+              </parameter>
+              <parameter name="obj">
+                <paramtype>value_type const&amp;</paramtype>
+              </parameter>
+              <type>iterator</type>
               <description>
                 <para>Inserts obj in the container.</para>
                 <para>hint is a suggestion to where the element should be inserted.</para>
@@ -928,7 +881,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same value. </para>
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
               </notes>
-            </overloaded-method>
+            </method>
             <method name="insert">
               <template>
                 <template-type-parameter name="InputIterator">
@@ -951,19 +904,11 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
               </notes>
             </method>
-            <overloaded-method name="erase">
-              <signature>
-                <parameter name="position">
-                  <paramtype>iterator</paramtype>
-                </parameter>
-                <type>iterator</type>
-              </signature>
-              <signature>
-                <parameter name="position">
-                  <paramtype>const_iterator</paramtype>
-                </parameter>
-                <type>const_iterator</type>
-              </signature>
+            <method name="erase">
+              <parameter name="position">
+                <paramtype>const_iterator</paramtype>
+              </parameter>
+              <type>iterator</type>
               <description>
                 <para>Erase the element pointed to by <code>position</code>.</para>
               </description>
@@ -974,16 +919,12 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>Only throws an exception, if it is thrown by a call to <code>hasher</code> or <code>key_equal</code>.</para>
                 <para>They don't get called by the current implementation Boost.Unordered but other implementations may call them.</para>
               </throws>
-              <notes>
-              </notes>
-            </overloaded-method>
-            <overloaded-method name="erase">
-              <signature>
-                <parameter name="k">
-                  <paramtype>key_type const&amp;</paramtype>
-                </parameter>
-                <type>size_type</type>
-              </signature>
+            </method>
+            <method name="erase">
+              <parameter name="k">
+                <paramtype>key_type const&amp;</paramtype>
+              </parameter>
+              <type>size_type</type>
               <description>
                 <para>Erase all elements with key equivalent to <code>k</code>.</para>
               </description>
@@ -993,26 +934,15 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <throws>
                 <para>Only throws an exception, if it is thrown by a call to <code>hasher</code> or <code>key_equal</code>.</para>
               </throws>
-            </overloaded-method>
-            <overloaded-method name="erase">
-              <signature>
-                <parameter name="first">
-                  <paramtype>iterator</paramtype>
-                </parameter>
-                <parameter name="last">
-                  <paramtype>iterator</paramtype>
-                </parameter>
-                <type>iterator</type>
-              </signature>
-              <signature>
-                <parameter name="first">
-                  <paramtype>const_iterator</paramtype>
-                </parameter>
-                <parameter name="last">
-                  <paramtype>const_iterator</paramtype>
-                </parameter>
-                <type>const_iterator</type>
-              </signature>
+            </method>
+            <method name="erase">
+              <parameter name="first">
+                <paramtype>const_iterator</paramtype>
+              </parameter>
+              <parameter name="last">
+                <paramtype>const_iterator</paramtype>
+              </parameter>
+              <type>iterator</type>
               <descritpion>
                 <para>Erases the elements in the range from <code>first</code> to <code>last</code>.</para>
               </descritpion>
@@ -1023,7 +953,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>Only throws an exception, if it is thrown by a call to <code>hasher</code> or <code>key_equal</code>.</para>
                 <para>They don't get called by the current implementation Boost.Unordered but other implementations may call them.</para>
               </throws>
-            </overloaded-method>
+            </method>
             <method name="clear">
               <type>void</type>
               <description>
@@ -1528,25 +1458,14 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
               </notes>
             </method>
-            <overloaded-method name="insert">
-              <signature>
-                <parameter name="hint">
-                  <paramtype>iterator</paramtype>
-                </parameter>
-                <parameter name="obj">
-                  <paramtype>value_type const&amp;</paramtype>
-                </parameter>
-                <type>iterator</type>
-              </signature>
-              <signature>
-                <parameter name="hint">
-                  <paramtype>const_iterator</paramtype>
-                </parameter>
-                <parameter name="obj">
-                  <paramtype>value_type const&amp;</paramtype>
-                </parameter>
-                <type>const_iterator</type>
-              </signature>
+            <method name="insert">
+              <parameter name="hint">
+                <paramtype>const_iterator</paramtype>
+              </parameter>
+              <parameter name="obj">
+                <paramtype>value_type const&amp;</paramtype>
+              </parameter>
+              <type>iterator</type>
               <description>
                 <para>Inserts obj in the container if and only if there is no element in the container with an equivalent key.</para>
                 <para>hint is a suggestion to where the element should be inserted.</para>
@@ -1560,9 +1479,8 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <notes>
                 <para>The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same key. </para>
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
-                <para>In this implementation, <code>iterator</code> and <code>const_iterator</code> are the same type, so a single overload is defined to implement both signatures.</para>
               </notes>
-            </overloaded-method>
+            </method>
             <method name="insert">
               <template>
                 <template-type-parameter name="InputIterator">
@@ -1585,19 +1503,11 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
               </notes>
             </method>
-            <overloaded-method name="erase">
-              <signature>
-                <parameter name="position">
-                  <paramtype>iterator</paramtype>
-                </parameter>
-                <type>iterator</type>
-              </signature>
-              <signature>
-                <parameter name="position">
-                  <paramtype>const_iterator</paramtype>
-                </parameter>
-                <type>const_iterator</type>
-              </signature>
+            <method name="erase">
+              <parameter name="position">
+                <paramtype>const_iterator</paramtype>
+              </parameter>
+              <type>iterator</type>
               <description>
                 <para>Erase the element pointed to by <code>position</code>.</para>
               </description>
@@ -1608,17 +1518,12 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>Only throws an exception, if it is thrown by a call to <code>hasher</code> or <code>key_equal</code>.</para>
                 <para>They don't get called by the current implementation Boost.Unordered but other implementations may call them.</para>
               </throws>
-              <notes>
-                <para>In this implementation, <code>iterator</code> and <code>const_iterator</code> are the same type, so a single overload is defined to implement both signatures.</para>
-              </notes>
-            </overloaded-method>
-            <overloaded-method name="erase">
-              <signature>
-                <parameter name="k">
-                  <paramtype>key_type const&amp;</paramtype>
-                </parameter>
-                <type>size_type</type>
-              </signature>
+            </method>
+            <method name="erase">
+              <parameter name="k">
+                <paramtype>key_type const&amp;</paramtype>
+              </parameter>
+              <type>size_type</type>
               <description>
                 <para>Erase all elements with key equivalent to <code>k</code>.</para>
               </description>
@@ -1628,26 +1533,15 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <throws>
                 <para>Only throws an exception, if it is thrown by a call to <code>hasher</code> or <code>key_equal</code>.</para>
               </throws>
-            </overloaded-method>
-            <overloaded-method name="erase">
-              <signature>
-                <parameter name="first">
-                  <paramtype>iterator</paramtype>
-                </parameter>
-                <parameter name="last">
-                  <paramtype>iterator</paramtype>
-                </parameter>
-                <type>iterator</type>
-              </signature>
-              <signature>
-                <parameter name="first">
-                  <paramtype>const_iterator</paramtype>
-                </parameter>
-                <parameter name="last">
-                  <paramtype>const_iterator</paramtype>
-                </parameter>
-                <type>const_iterator</type>
-              </signature>
+            </method>
+            <method name="erase">
+              <parameter name="first">
+                <paramtype>const_iterator</paramtype>
+              </parameter>
+              <parameter name="last">
+                <paramtype>const_iterator</paramtype>
+              </parameter>
+              <type>iterator</type>
               <descritpion>
                 <para>Erases the elements in the range from <code>first</code> to <code>last</code>.</para>
               </descritpion>
@@ -1658,7 +1552,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>Only throws an exception, if it is thrown by a call to <code>hasher</code> or <code>key_equal</code>.</para>
                 <para>They don't get called by the current implementation Boost.Unordered but other implementations may call them.</para>
               </throws>
-            </overloaded-method>
+            </method>
             <method name="clear">
               <type>void</type>
               <description>
@@ -2174,25 +2068,14 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
               </notes>
             </method>
-            <overloaded-method name="insert">
-              <signature>
-                <parameter name="hint">
-                  <paramtype>iterator</paramtype>
-                </parameter>
-                <parameter name="obj">
-                  <paramtype>value_type const&amp;</paramtype>
-                </parameter>
-                <type>iterator</type>
-              </signature>
-              <signature>
-                <parameter name="hint">
-                  <paramtype>const_iterator</paramtype>
-                </parameter>
-                <parameter name="obj">
-                  <paramtype>value_type const&amp;</paramtype>
-                </parameter>
-                <type>const_iterator</type>
-              </signature>
+            <method name="insert">
+              <parameter name="hint">
+                <paramtype>const_iterator</paramtype>
+              </parameter>
+              <parameter name="obj">
+                <paramtype>value_type const&amp;</paramtype>
+              </parameter>
+              <type>iterator</type>
               <description>
                 <para>Inserts obj in the container.</para>
                 <para>hint is a suggestion to where the element should be inserted.</para>
@@ -2207,7 +2090,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same key. </para>
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
               </notes>
-            </overloaded-method>
+            </method>
             <method name="insert">
               <template>
                 <template-type-parameter name="InputIterator">
@@ -2230,19 +2113,11 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
               </notes>
             </method>
-            <overloaded-method name="erase">
-              <signature>
-                <parameter name="position">
-                  <paramtype>iterator</paramtype>
-                </parameter>
-                <type>iterator</type>
-              </signature>
-              <signature>
-                <parameter name="position">
-                  <paramtype>const_iterator</paramtype>
-                </parameter>
-                <type>const_iterator</type>
-              </signature>
+            <method name="erase">
+              <parameter name="position">
+                <paramtype>const_iterator</paramtype>
+              </parameter>
+              <type>iterator</type>
               <description>
                 <para>Erase the element pointed to by <code>position</code>.</para>
               </description>
@@ -2253,16 +2128,12 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>Only throws an exception, if it is thrown by a call to <code>hasher</code> or <code>key_equal</code>.</para>
                 <para>They don't get called by the current implementation Boost.Unordered but other implementations may call them.</para>
               </throws>
-              <notes>
-              </notes>
-            </overloaded-method>
-            <overloaded-method name="erase">
-              <signature>
-                <parameter name="k">
-                  <paramtype>key_type const&amp;</paramtype>
-                </parameter>
-                <type>size_type</type>
-              </signature>
+            </method>
+            <method name="erase">
+              <parameter name="k">
+                <paramtype>key_type const&amp;</paramtype>
+              </parameter>
+              <type>size_type</type>
               <description>
                 <para>Erase all elements with key equivalent to <code>k</code>.</para>
               </description>
@@ -2272,26 +2143,15 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <throws>
                 <para>Only throws an exception, if it is thrown by a call to <code>hasher</code> or <code>key_equal</code>.</para>
               </throws>
-            </overloaded-method>
-            <overloaded-method name="erase">
-              <signature>
-                <parameter name="first">
-                  <paramtype>iterator</paramtype>
-                </parameter>
-                <parameter name="last">
-                  <paramtype>iterator</paramtype>
-                </parameter>
-                <type>iterator</type>
-              </signature>
-              <signature>
-                <parameter name="first">
-                  <paramtype>const_iterator</paramtype>
-                </parameter>
-                <parameter name="last">
-                  <paramtype>const_iterator</paramtype>
-                </parameter>
-                <type>const_iterator</type>
-              </signature>
+            </method>
+            <method name="erase">
+              <parameter name="first">
+                <paramtype>const_iterator</paramtype>
+              </parameter>
+              <parameter name="last">
+                <paramtype>const_iterator</paramtype>
+              </parameter>
+              <type>iterator</type>
               <descritpion>
                 <para>Erases the elements in the range from <code>first</code> to <code>last</code>.</para>
               </descritpion>
@@ -2302,7 +2162,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>Only throws an exception, if it is thrown by a call to <code>hasher</code> or <code>key_equal</code>.</para>
                 <para>They don't get called by the current implementation Boost.Unordered but other implementations may call them.</para>
               </throws>
-            </overloaded-method>
+            </method>
             <method name="clear">
               <type>void</type>
               <description>
