@@ -115,11 +115,10 @@ There is currently a further issue - if the allocator's swap does throw there's
 no guarantee what state the allocators will be in. The only solution seems to
 be to double buffer the allocators. But I'm assuming that it won't throw for now.
 
-Update: the comittee have now decided that swap should do a fast swap if the
-allocator is Swappable and a slow swap using copy construction otherwise. In
-the future I develop support for concepts and do this, but what should I do for
-the current implementation and, in the future, compilers without concepts? I
-should probably change it to a slow swap.
+Update: The comittee have now decided that `swap` should do a fast swap if the
+allocator is Swappable and a slow swap using copy construction otherwise. To
+make this distinction requires concepts. For now I'm sticking with the current
+implementation.
 
 [h3 [@http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#518
     518. Are insert and erase stable for unordered_multiset and unordered_multimap?]]
