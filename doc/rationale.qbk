@@ -105,6 +105,8 @@ This proposal suggests removing the `construct`, `destroy` and `address`
 member functions - all of which Boost.Unordered calls. It's near trivial
 to replace the calls with the appropriate code - and will simplify the
 implementation, as well as make supporting `emplace` easier.
+[@http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2007/n2339.htm
+N2339] opposed this change.
 
 [h3 [@http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#431
     431. Swapping containers with unequal allocators]]
