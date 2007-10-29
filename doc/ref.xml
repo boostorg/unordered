@@ -568,32 +568,34 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               </throws>
             </method>
           </method-group>
+          <free-function-group name="swap">
+            <function name="swap">
+              <template>
+                <template-type-parameter name="Value">
+                </template-type-parameter>
+                <template-type-parameter name="Hash">
+                </template-type-parameter>
+                <template-type-parameter name="Pred">
+                </template-type-parameter>
+                <template-type-parameter name="Alloc">
+                </template-type-parameter>
+              </template>
+              <parameter name="x">
+                <paramtype>unordered_set&lt;Key, T, Hash, Pred, Alloc&gt;&amp;</paramtype>
+              </parameter>
+              <parameter name="y">
+                <paramtype>unordered_set&lt;Key, T, Hash, Pred, Alloc&gt;&amp;</paramtype>
+              </parameter>
+              <type>void</type>
+              <effects>
+                <para><code>x.swap(y)</code></para>
+              </effects>
+              <throws>
+                <para>Doesn't throw an exception unless it is thrown by the copy constructor or copy assignment operator of <code>Hash</code> or <code>Pred</code>.</para>
+              </throws>
+            </function>
+          </free-function-group>
         </class>
-        <function name="swap">
-          <template>
-            <template-type-parameter name="Value">
-            </template-type-parameter>
-            <template-type-parameter name="Hash">
-            </template-type-parameter>
-            <template-type-parameter name="Pred">
-            </template-type-parameter>
-            <template-type-parameter name="Alloc">
-            </template-type-parameter>
-          </template>
-          <parameter name="x">
-            <paramtype>unordered_set&lt;Key, T, Hash, Pred, Alloc&gt;&amp;</paramtype>
-          </parameter>
-          <parameter name="y">
-            <paramtype>unordered_set&lt;Key, T, Hash, Pred, Alloc&gt;&amp;</paramtype>
-          </parameter>
-          <type>void</type>
-          <effects>
-            <para><code>x.swap(y)</code></para>
-          </effects>
-          <throws>
-            <para>Doesn't throw an exception unless it is thrown by the copy constructor or copy assignment operator of <code>Hash</code> or <code>Pred</code>.</para>
-          </throws>
-        </function>
 
         <!--
           boost::unordered_multiset
@@ -1150,32 +1152,34 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               </throws>
             </method>
           </method-group>
+          <free-function-group name="swap">
+            <function name="swap">
+              <template>
+                <template-type-parameter name="Value">
+                </template-type-parameter>
+                <template-type-parameter name="Hash">
+                </template-type-parameter>
+                <template-type-parameter name="Pred">
+                </template-type-parameter>
+                <template-type-parameter name="Alloc">
+                </template-type-parameter>
+              </template>
+              <parameter name="x">
+                <paramtype>unordered_multiset&lt;Key, T, Hash, Pred, Alloc&gt;&amp;</paramtype>
+              </parameter>
+              <parameter name="y">
+                <paramtype>unordered_multiset&lt;Key, T, Hash, Pred, Alloc&gt;&amp;</paramtype>
+              </parameter>
+              <type>void</type>
+              <effects>
+                <para><code>x.swap(y)</code></para>
+              </effects>
+              <throws>
+                <para>Doesn't throw an exception unless it is thrown by the copy constructor or copy assignment operator of <code>Hash</code> or <code>Pred</code>.</para>
+              </throws>
+            </function>
+          </free-function-group>
         </class>
-        <function name="swap">
-          <template>
-            <template-type-parameter name="Value">
-            </template-type-parameter>
-            <template-type-parameter name="Hash">
-            </template-type-parameter>
-            <template-type-parameter name="Pred">
-            </template-type-parameter>
-            <template-type-parameter name="Alloc">
-            </template-type-parameter>
-          </template>
-          <parameter name="x">
-            <paramtype>unordered_multiset&lt;Key, T, Hash, Pred, Alloc&gt;&amp;</paramtype>
-          </parameter>
-          <parameter name="y">
-            <paramtype>unordered_multiset&lt;Key, T, Hash, Pred, Alloc&gt;&amp;</paramtype>
-          </parameter>
-          <type>void</type>
-          <effects>
-            <para><code>x.swap(y)</code></para>
-          </effects>
-          <throws>
-            <para>Doesn't throw an exception unless it is thrown by the copy constructor or copy assignment operator of <code>Hash</code> or <code>Pred</code>.</para>
-          </throws>
-        </function>
       </namespace>
     </header>
     <!--
@@ -1767,34 +1771,36 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               </throws>
             </method>
           </method-group>
+          <free-function-group name="swap">
+            <function name="swap">
+              <template>
+                <template-type-parameter name="Key">
+                </template-type-parameter>
+                <template-type-parameter name="T">
+                </template-type-parameter>
+                <template-type-parameter name="Hash">
+                </template-type-parameter>
+                <template-type-parameter name="Pred">
+                </template-type-parameter>
+                <template-type-parameter name="Alloc">
+                </template-type-parameter>
+              </template>
+              <parameter name="x">
+                <paramtype>unordered_map&lt;Key, T, Hash, Pred, Alloc&gt;&amp;</paramtype>
+              </parameter>
+              <parameter name="y">
+                <paramtype>unordered_map&lt;Key, T, Hash, Pred, Alloc&gt;&amp;</paramtype>
+              </parameter>
+              <type>void</type>
+              <effects>
+                <para><code>x.swap(y)</code></para>
+              </effects>
+              <throws>
+                <para>Doesn't throw an exception unless it is thrown by the copy constructor or copy assignment operator of <code>Hash</code> or <code>Pred</code>.</para>
+              </throws>
+            </function>
+          </free-function-group>
         </class>
-        <function name="swap">
-          <template>
-            <template-type-parameter name="Key">
-            </template-type-parameter>
-            <template-type-parameter name="T">
-            </template-type-parameter>
-            <template-type-parameter name="Hash">
-            </template-type-parameter>
-            <template-type-parameter name="Pred">
-            </template-type-parameter>
-            <template-type-parameter name="Alloc">
-            </template-type-parameter>
-          </template>
-          <parameter name="x">
-            <paramtype>unordered_map&lt;Key, T, Hash, Pred, Alloc&gt;&amp;</paramtype>
-          </parameter>
-          <parameter name="y">
-            <paramtype>unordered_map&lt;Key, T, Hash, Pred, Alloc&gt;&amp;</paramtype>
-          </parameter>
-          <type>void</type>
-          <effects>
-            <para><code>x.swap(y)</code></para>
-          </effects>
-          <throws>
-            <para>Doesn't throw an exception unless it is thrown by the copy constructor or copy assignment operator of <code>Hash</code> or <code>Pred</code>.</para>
-          </throws>
-        </function>
 
         <!--
           boost::unordered_multimap
@@ -2359,34 +2365,36 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               </throws>
             </method>
           </method-group>
+          <free-function-group name="swap">
+            <function name="swap">
+              <template>
+                <template-type-parameter name="Key">
+                </template-type-parameter>
+                <template-type-parameter name="T">
+                </template-type-parameter>
+                <template-type-parameter name="Hash">
+                </template-type-parameter>
+                <template-type-parameter name="Pred">
+                </template-type-parameter>
+                <template-type-parameter name="Alloc">
+                </template-type-parameter>
+              </template>
+              <parameter name="x">
+                <paramtype>unordered_multimap&lt;Key, T, Hash, Pred, Alloc&gt;&amp;</paramtype>
+              </parameter>
+              <parameter name="y">
+                <paramtype>unordered_multimap&lt;Key, T, Hash, Pred, Alloc&gt;&amp;</paramtype>
+              </parameter>
+              <type>void</type>
+              <effects>
+                <para><code>x.swap(y)</code></para>
+              </effects>
+              <throws>
+                <para>Doesn't throw an exception unless it is thrown by the copy constructor or copy assignment operator of <code>Hash</code> or <code>Pred</code>.</para>
+              </throws>
+            </function>
+          </free-function-group>
         </class>
-        <function name="swap">
-          <template>
-            <template-type-parameter name="Key">
-            </template-type-parameter>
-            <template-type-parameter name="T">
-            </template-type-parameter>
-            <template-type-parameter name="Hash">
-            </template-type-parameter>
-            <template-type-parameter name="Pred">
-            </template-type-parameter>
-            <template-type-parameter name="Alloc">
-            </template-type-parameter>
-          </template>
-          <parameter name="x">
-            <paramtype>unordered_multimap&lt;Key, T, Hash, Pred, Alloc&gt;&amp;</paramtype>
-          </parameter>
-          <parameter name="y">
-            <paramtype>unordered_multimap&lt;Key, T, Hash, Pred, Alloc&gt;&amp;</paramtype>
-          </parameter>
-          <type>void</type>
-          <effects>
-            <para><code>x.swap(y)</code></para>
-          </effects>
-          <throws>
-            <para>Doesn't throw an exception unless it is thrown by the copy constructor or copy assignment operator of <code>Hash</code> or <code>Pred</code>.</para>
-          </throws>
-        </function>
       </namespace>
     </header>
   </library-reference>
