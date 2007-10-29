@@ -253,11 +253,6 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
             </method>
           </method-group>
           <method-group name="modifiers">
-            <method name="size" cv="const">
-              <type>size_type</type>
-              <returns><code>std::distance(<methodname>begin</methodname>(), <methodname>end</methodname>())</code>
-              </returns>
-            </method>
             <method name="insert">
               <parameter name="obj">
                 <paramtype>value_type const&amp;</paramtype>
@@ -838,11 +833,6 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
             </method>
           </method-group>
           <method-group name="modifiers">
-            <method name="size" cv="const">
-              <type>size_type</type>
-              <returns><code>std::distance(<methodname>begin</methodname>(), <methodname>end</methodname>())</code>
-              </returns>
-            </method>
             <method name="insert">
               <parameter name="obj">
                 <paramtype>value_type const&amp;</paramtype>
@@ -1438,11 +1428,6 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
             </method>
           </method-group>
           <method-group name="modifiers">
-            <method name="size" cv="const">
-              <type>size_type</type>
-              <returns><code>std::distance(<methodname>begin</methodname>(), <methodname>end</methodname>())</code>
-              </returns>
-            </method>
             <method name="insert">
               <parameter name="obj">
                 <paramtype>value_type const&amp;</paramtype>
@@ -2051,11 +2036,6 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
             </method>
           </method-group>
           <method-group name="modifiers">
-            <method name="size" cv="const">
-              <type>size_type</type>
-              <returns><code>std::distance(<methodname>begin</methodname>(), <methodname>end</methodname>())</code>
-              </returns>
-            </method>
             <method name="insert">
               <parameter name="obj">
                 <paramtype>value_type const&amp;</paramtype>
