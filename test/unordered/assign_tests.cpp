@@ -50,8 +50,6 @@ void assign_tests1(T* = 0)
 template <class T>
 void assign_tests2(T* = 0)
 {
-    typename T::hasher hf;
-    typename T::key_equal eq;
     typename T::hasher hf1(1);
     typename T::hasher hf2(2);
     typename T::key_equal eq1(1);

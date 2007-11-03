@@ -192,7 +192,6 @@ void insert_tests2(X* = 0)
 
     {
         X x;
-        const_iterator pos = x.begin();
 
         test::random_values<X> v(1000);
         x.insert(v.begin(), v.end());
@@ -205,7 +204,6 @@ void insert_tests2(X* = 0)
 
     {
         X x;
-        const_iterator pos = x.begin();
 
         test::random_values<X> v(1000);
         x.insert(test::input_iterator(v.begin()), test::input_iterator(v.end()));
