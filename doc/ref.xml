@@ -34,7 +34,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
           </purpose>
           <description>
             <para>For the normative reference see chapter 23 of 
-              <ulink url="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2369.pdf">the working draft of the C++ standard [n2369].</ulink></para>
+              <ulink url="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2461.pdf">the working draft of the C++ standard [n2461].</ulink></para>
             <para><emphasis role="bold">Template Parameters</emphasis>
               <informaltable>
                 <tgroup cols="2">
@@ -614,7 +614,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
           </purpose>
           <description>
             <para>For the normative reference see chapter 23 of 
-              <ulink url="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2369.pdf">the working draft of the C++ standard [n2369].</ulink></para>
+              <ulink url="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2461.pdf">the working draft of the C++ standard [n2461].</ulink></para>
             <para><emphasis role="bold">Template Parameters</emphasis>
               <informaltable>
                 <tgroup cols="2">
@@ -1203,7 +1203,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
           </purpose>
           <description>
             <para>For the normative reference see chapter 23 of 
-              <ulink url="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2369.pdf">the working draft of the C++ standard [n2369].</ulink></para>
+              <ulink url="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2461.pdf">the working draft of the C++ standard [n2461].</ulink></para>
             <para><emphasis role="bold">Template Parameters</emphasis>
               <informaltable>
                 <tgroup cols="2">
@@ -1811,7 +1811,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
           </purpose>
           <description>
             <para>For the normative reference see chapter 23 of 
-              <ulink url="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2369.pdf">the working draft of the C++ standard [n2369].</ulink></para>
+              <ulink url="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2461.pdf">the working draft of the C++ standard [n2461].</ulink></para>
             <para><emphasis role="bold">Template Parameters</emphasis>
               <informaltable>
                 <tgroup cols="2">
