@@ -5,7 +5,6 @@
 
 import testing ;
 
-#alias framework : /boost/test//boost_unit_test_framework/<optimization>speed ;
 alias framework : /boost/test//boost_unit_test_framework ;
 
 project unordered-test/exception-tests
