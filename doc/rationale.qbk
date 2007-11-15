@@ -16,7 +16,7 @@
 
 The intent of this library is to implement the unordered
 containers in the draft standard, so the interface was fixed. But there are
-still some implementation desicions to make. The priorities are
+still some implementation decisions to make. The priorities are
 conformance to the standard and portability.
 
 The [@http://en.wikipedia.org/wiki/Hash_table wikipedia article on hash tables]
@@ -46,7 +46,7 @@ bucket but there are a some serious problems with this:
   standard requires that it is initially set to 1.0.
 
 * And since the standard is written with a eye towards chained
-  addressing, users will be suprised if the performance doesn't reflect that.
+  addressing, users will be surprised if the performance doesn't reflect that.
 
 So chained addressing is used.
 
@@ -76,9 +76,9 @@ There are two popular methods for choosing the number of buckets in a hash
 table. One is to have a prime number of buckets, another is to use a power
 of 2.
 
-Using a prime number of buckets, and choosing a bucket by using the modulous
-of the hash functions's result will usually give a good result. The downside
-is that the required modulous operation is fairly expensive.
+Using a prime number of buckets, and choosing a bucket by using the modulus
+of the hash function's result will usually give a good result. The downside
+is that the required modulus operation is fairly expensive.
 
 Using a power of 2 allows for much quicker selection of the bucket
 to use, but at the expense of loosing the upper bits of the hash value.
@@ -91,7 +91,7 @@ example see __wang__.  Unfortunately, a transformation like Wang's requires
 knowledge of the number of bits in the hash value, so it isn't portable enough.
 This leaves more expensive methods, such as Knuth's Multiplicative Method
 (mentioned in Wang's article). These don't tend to work as well as taking the
-modulous of a prime, and the extra computation required might negate
+modulus of a prime, and the extra computation required might negate
 efficiency advantage of power of 2 hash tables.
 
 So, this implementation uses a prime number for the hash table size.
@@ -117,7 +117,7 @@ There is currently a further issue - if the allocator's swap does throw there's
 no guarantee what state the allocators will be in. The only solution seems to
 be to double buffer the allocators. But I'm assuming that it won't throw for now.
 
-Update: The comittee have now decided that `swap` should do a fast swap if the
+Update: The committee have now decided that `swap` should do a fast swap if the
 allocator is Swappable and a slow swap using copy construction otherwise. To
 make this distinction requires concepts. For now I'm sticking with the current
 implementation.

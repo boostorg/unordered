@@ -28,7 +28,7 @@ with some care, can be avoided.
 
 Also, the existing containers require a 'less than' comparison object
 to order their elements. For some data types this is impossible to implement
-or isn't practicle. For a hash table you need an equality function
+or isn't practical. For a hash table you need an equality function
 and a hash function for the key.
 
 So the __tr1__ introduced the unordered associative containers, which are

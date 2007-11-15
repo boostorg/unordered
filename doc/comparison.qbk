@@ -8,8 +8,8 @@
     [[Associative Containers] [Unordered Associative Containers]]
 
     [
-        [Parameterized by an ordering relation `Compare`]
-        [Parameterized by a function object `Hash` and an equivalence relation
+        [Parametrised by an ordering relation `Compare`]
+        [Parametrised by a function object `Hash` and an equivalence relation
             `Pred`]
     ]
     [
@@ -51,7 +51,7 @@
             element can be inserted into a different bucket.]
     ]
     [
-        [`iterator`, `const_iterator` are of the biderctional category.]
+        [`iterator`, `const_iterator` are of the bidirectional category.]
         [`iterator`, `const_iterator` are of at least the forward category.]
     ]
     [
@@ -108,7 +108,7 @@
     ]
     [
         [Insert a single element with a hint]
-        [Amortized constant if t elements inserted right after hint,
+        [Amortised constant if t elements inserted right after hint,
             logarithmic otherwise]
         [Average case constant, worst case linear (ie. the same as
             a normal insert).]
@@ -125,7 +125,7 @@
     ]
     [
         [Erase a single element by iterator]
-        [Amortized constant]
+        [Amortised constant]
         [Average case: O(1), Worst case: O(`size()`)]
     ]
     [

@@ -68,7 +68,7 @@ Similarly, a custom hash function can be used for custom types:
     boost::unordered_multiset<point, std::equal_to<point>, point_hash>
         points;
 
-Although, customizing Boost.Hash is probably a better solution:
+Although, customising Boost.Hash is probably a better solution:
 
     struct point {
         int x;

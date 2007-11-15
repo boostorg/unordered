@@ -14,7 +14,7 @@ will have more buckets).
 
 In order to decide which bucket to place an element in, the container applies
 the hash function, `Hash`, to the element's key (for `unordered_set` and
-`unordered_multiset` the key is the whole element, but is refered to as the key
+`unordered_multiset` the key is the whole element, but is referred to as the key
 so that the same terminology can be used for sets and maps). This returns a
 value of type `std::size_t`.  `std::size_t` has a much greater range of values
 then the number of buckets, so that container applies another transformation to
