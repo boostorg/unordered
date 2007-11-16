@@ -34,13 +34,13 @@ namespace hash_examples
     };
 
     struct ihash
-        : std::unary_function<std::string, bool>
+        : std::unary_function<std::string, std::size_t>
     {
         ihash() {}
         explicit ihash(std::locale const& l) : locale_(l) {}
 
         template <typename String>
-        bool operator()(String const& x) const
+        std::size_t operator()(String const& x) const
         {
             std::size_t seed = 0;
 
