@@ -18,6 +18,7 @@ namespace test
 namespace minimal
 {
     class copy_constructible;
+    class default_copy_constructible;
     class assignable;
     template <class T> class hash;
     template <class T> class equal_to;
@@ -34,6 +35,17 @@ namespace minimal
     private:
         copy_constructible& operator=(copy_constructible const&);
         copy_constructible() {}
+    };
+
+    class default_copy_constructible
+    {
+    public:
+        static default_copy_constructible create() { return default_copy_constructible(); }
+        default_copy_constructible() {}
+        default_copy_constructible(default_copy_constructible const&) {}
+        ~default_copy_constructible() {}
+    private:
+        default_copy_constructible& operator=(default_copy_constructible const&);
     };
 
     class assignable

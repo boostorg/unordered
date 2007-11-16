@@ -58,6 +58,19 @@ void unordered_equivalent_test(X& r, T const& t)
     test::check_return_type<iterator>::equals(r.insert(t));
 }
 
+template <class X, class Key, class T>
+void unordered_map_functions(X&, Key const& k, T const& t)
+{
+    typedef typename X::mapped_type mapped_type;
+
+    X a;
+    test::check_return_type<mapped_type>::equals_ref(a[k]);
+    test::check_return_type<mapped_type>::equals_ref(a.at(k));
+
+    X const b = a;
+    test::check_return_type<mapped_type const>::equals_ref(b.at(k));
+}
+
 template <class X, class Key, class T, class Hash, class Pred>
 void unordered_test(X&, Key& k, T& t, Hash& hf, Pred& eq)
 {
@@ -217,6 +230,7 @@ void test1()
     unordered_unique_test(map, map_value);
     unordered_map_test(map, value, value);
     unordered_test(map, value, map_value, hash, equal_to);
+    unordered_map_functions(map, value, value);
 
     std::cout<<"Test unordered_multimap.\n";
 
@@ -278,6 +292,18 @@ void test2()
     unordered_unique_test(map, map_value);
     unordered_map_test(map, assignable, copy_constructible);
     unordered_test(map, assignable, map_value, hash, equal_to);
+
+
+    boost::unordered_map<
+        test::minimal::assignable,
+        test::minimal::default_copy_constructible,
+        test::minimal::hash<test::minimal::assignable>,
+        test::minimal::equal_to<test::minimal::assignable>,
+        test::minimal::allocator<map_value_type> > map2;
+
+    test::minimal::default_copy_constructible default_copy_constructible;
+
+    unordered_map_functions(map2, assignable, default_copy_constructible);
 
     std::cout<<"Test unordered_multimap.\n";
 

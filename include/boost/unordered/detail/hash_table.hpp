@@ -17,6 +17,7 @@
 #include <cmath>
 #include <algorithm>
 #include <utility>
+#include <stdexcept>
 
 #include <boost/iterator.hpp>
 #include <boost/iterator/iterator_categories.hpp>

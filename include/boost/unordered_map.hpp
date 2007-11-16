@@ -211,6 +211,16 @@ namespace boost
             return base[k].second;
         }
 
+        mapped_type& at(const key_type& k)
+        {
+            return base.at(k).second;
+        }
+
+        mapped_type const& at(const key_type& k) const
+        {
+            return base.at(k).second;
+        }
+
         // lookup
 
         iterator find(const key_type& k)

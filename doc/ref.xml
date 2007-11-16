@@ -1641,6 +1641,22 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
               </notes>
             </method>
+            <overloaded-method name="at">
+              <signature><type>T&amp;</type>
+                <parameter name="k"><paramtype>key_type const&amp;</paramtype></parameter></signature>
+              <signature cv="const"><type>T const&amp;</type>
+                <parameter name="k"><paramtype>key_type const&amp;</paramtype></parameter></signature>
+              <returns>
+                <para>A reference to <code>x.second</code> where <code>x</code> is the (unique) element whose key is equivalent to <code>k</code>.</para>
+              </returns>
+              <throws>
+                <para>An exception object of type <code>out_of_range</code> if no such element is present.</para>
+              </throws>
+              <notes>
+                <para>This is not specified in the draft standard, but that is probably an oversight. The issue has been raised in 
+                  <ulink url="http://groups.google.com/group/comp.std.c++/browse_thread/thread/ab7c22a868fd370b">comp.std.c++</ulink>.</para>
+              </notes>
+            </overloaded-method>
           </method-group>
           <method-group name="bucket interface">
             <method name="bucket_count" cv="const">

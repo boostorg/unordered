@@ -1839,6 +1839,17 @@ namespace boost {
                     return this->end();
             }
 
+            value_type& at(key_type const& k) const
+            {
+                bucket_ptr bucket = get_bucket(k);
+                local_iterator_base it = find_iterator(bucket, k);
+
+                if (it.not_finished())
+                    return *it;
+                else
+                    throw std::out_of_range("Unable to find key in unordered_map.");
+            }
+
             // equal_range
             //
             // strong exception safety, no side effects
