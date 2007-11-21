@@ -3,7 +3,7 @@
  / file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt) ]
 
 [def __tr1__ 
-    [@www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1836.pdf
+    [@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1836.pdf
     C++ Standard Library Technical Report]]
 [def __boost-tr1__
     [@http://www.boost.org/doc/html/boost_tr1.html
