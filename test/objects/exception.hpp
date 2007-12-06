@@ -118,21 +118,21 @@ namespace test {
     };
 
     template <class T, class P1, class P2, class T2>
-    inline void call_with_increased_arity(void (T::*fn)() const, T2 const& obj,
+    inline void call_ignore_extra_parameters(void (T::*fn)() const, T2 const& obj,
             P1&, P2&)
     {
         (obj.*fn)();
     }
 
     template <class T, class P1, class P2, class T2>
-    inline void call_with_increased_arity(void (T::*fn)(P1&) const, T2 const& obj,
+    inline void call_ignore_extra_parameters(void (T::*fn)(P1&) const, T2 const& obj,
             P1& p1, P2&)
     {
         (obj.*fn)(p1);
     }
 
     template <class T, class P1, class P2, class T2>
-    inline void call_with_increased_arity(void (T::*fn)(P1&, P2&) const, T2 const& obj,
+    inline void call_ignore_extra_parameters(void (T::*fn)(P1&, P2&) const, T2 const& obj,
             P1& p1, P2& p2)
     {
         (obj.*fn)(p1, p2);
@@ -156,10 +156,10 @@ namespace test {
             strong.store(x);
             try {
                 ENABLE_EXCEPTIONS;
-                call_with_increased_arity(&Test::run, test_, x, strong);
+                call_ignore_extra_parameters(&Test::run, test_, x, strong);
             }
             catch(...) {
-                call_with_increased_arity(&Test::check, test_,
+                call_ignore_extra_parameters(&Test::check, test_,
                         constant(x), constant(strong));
                 throw;
             }
