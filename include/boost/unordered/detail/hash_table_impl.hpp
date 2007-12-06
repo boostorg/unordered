@@ -620,7 +620,7 @@ namespace boost {
 
                 if(n->group_prev_ == *pos) {
                     // The deleted node is the sole node in the group, so
-                    // no need to unlink it from a goup.
+                    // no need to unlink it from a group.
                 }
                 else if(BOOST_HASH_BORLAND_BOOL(next) && prev_in_group(next) == *pos)
                 {
@@ -630,8 +630,8 @@ namespace boost {
                 }
                 else {
                     // The deleted node is at the end of the group, so the
-                    // node in the group pointing to it is at the beginning
-                    // of the group. Find that to change its pointer.
+                    // first node in the group is pointing to it.
+                    // Find that to change its pointer.
                     link_ptr it = n->group_prev_;
                     while(prev_in_group(it) != *pos) {
                         it = prev_in_group(it);
@@ -699,7 +699,7 @@ namespace boost {
             }
 
 #if BOOST_UNORDERED_HASH_EQUIVALENT
-            // Break a ciruclar list into two, with split as the beginneing
+            // Break a ciruclar list into two, with split as the beginning
             // of the second group (if split is at the beginning then don't
             // split).
             link_ptr split_group(link_ptr split)
