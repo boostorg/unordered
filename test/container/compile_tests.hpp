@@ -50,9 +50,7 @@ void container_test(X& r, T&)
 
     // reference_type / const_reference_type
 
-    // TODO: 'lvalue of T'
     BOOST_MPL_ASSERT((boost::is_same<T&, reference>));
-    // TODO: 'const lvalue of T'
     BOOST_MPL_ASSERT((boost::is_same<T const&, const_reference>));
 
     // iterator
@@ -63,7 +61,6 @@ void container_test(X& r, T&)
 
     // const_iterator
 
-    // TODO: Test that it's a constant iterator?
     boost::function_requires<boost::InputIteratorConcept<const_iterator> >();
     BOOST_MPL_ASSERT((boost::is_same<T, const_iterator_value_type>));
 

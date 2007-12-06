@@ -113,8 +113,6 @@ void unordered_test(X&, Key& k, T& t, Hash& hf, Pred& eq)
 
     BOOST_MPL_ASSERT((boost::is_same<Pred, key_equal>));
     test::check_return_type<bool>::convertible(eq(k, k));
-    // TODO: Pred is an equivalence relation. Doesn't really matter for these
-    // tests.
 
     boost::function_requires<boost::InputIteratorConcept<local_iterator> >();
     BOOST_MPL_ASSERT((boost::is_same<local_iterator_category, iterator_category>));
@@ -160,7 +158,6 @@ void unordered_test(X&, Key& k, T& t, Hash& hf, Pred& eq)
     const_iterator q = a.cbegin();
     test::check_return_type<iterator>::equals(a.insert(q, t));
 
-    // TODO: void return?
     a.insert(i, j);
     test::check_return_type<size_type>::equals(a.erase(k));
 
@@ -174,7 +171,6 @@ void unordered_test(X&, Key& k, T& t, Hash& hf, Pred& eq)
     const_iterator q1 = a.cbegin(), q2 = a.cend();
     test::check_return_type<iterator>::equals(a.erase(q1, q2));
 
-    // TODO: void return?
     a.clear();
 
     test::check_return_type<iterator>::equals(a.find(k));
