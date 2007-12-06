@@ -15,6 +15,8 @@
 
 #include <iostream>
 
+test::seed_t seed(85638);
+
 template <class Container>
 void erase_tests1(Container* = 0)
 {

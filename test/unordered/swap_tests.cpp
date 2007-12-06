@@ -14,6 +14,8 @@
 #include "../helpers/tracker.hpp"
 #include "../helpers/invariants.hpp"
 
+test::seed_t seed(783472);
+
 template <class X>
 void swap_test_impl(X& x1, X& x2)
 {

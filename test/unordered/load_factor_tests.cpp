@@ -14,6 +14,8 @@
 #pragma warning(disable:4127) // conditional expression is constant
 #endif
 
+test::seed_t seed(783656);
+
 template <class X>
 void load_factor_tests(X* = 0)
 {

@@ -9,6 +9,8 @@
 #include "../helpers/random_values.hpp"
 #include "../helpers/tracker.hpp"
 
+test::seed_t seed(2974);
+
 template <class X>
 bool postcondition(X const& x, typename X::size_type n)
 {

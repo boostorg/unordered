@@ -16,6 +16,8 @@
 
 #include <iostream>
     
+test::seed_t seed(243432);
+
 template <class X>
 void unique_insert_tests1(X* = 0)
 {

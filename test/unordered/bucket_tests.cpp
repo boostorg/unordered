@@ -11,6 +11,8 @@
 #include "../helpers/random_values.hpp"
 #include "../helpers/helpers.hpp"
 
+test::seed_t seed(54635);
+
 template <class X>
 void bucket_tests(X* = 0)
 {

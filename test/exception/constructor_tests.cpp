@@ -11,6 +11,8 @@
 #include "../helpers/random_values.hpp"
 #include "../helpers/input_iterator.hpp"
 
+test::seed_t seed(91274);
+
 struct objects
 {
     test::exception::object obj;

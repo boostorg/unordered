@@ -11,6 +11,8 @@
 #include "../helpers/tracker.hpp"
 #include "../helpers/helpers.hpp"
 
+test::seed_t seed(78937);
+
 template <class X>
 void find_tests1(X*)
 {

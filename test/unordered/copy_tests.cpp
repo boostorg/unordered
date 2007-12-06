@@ -12,6 +12,8 @@
 #include "../helpers/equivalent.hpp"
 #include "../helpers/invariants.hpp"
 
+test::seed_t seed(9063);
+
 template <class T>
 void copy_construct_tests1(T* = 0)
 {

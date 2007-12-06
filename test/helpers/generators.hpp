@@ -7,8 +7,6 @@
 // Which is not good as different platforms will be running different tests.
 // It would be much better to use Boost.Random, but it doesn't
 // support all the compilers that I want to test on.
-// TODO: seed the random generator.
-// TODO: check that this is actually working...
 
 #if !defined(BOOST_UNORDERED_TEST_HELPERS_GENERATORS_HEADER)
 #define BOOST_UNORDERED_TEST_HELPERS_GENERATORS_HEADER
@@ -22,6 +20,13 @@
 
 namespace test
 {
+    struct seed_t {
+        seed_t(unsigned int x) {
+            using namespace std;
+            srand(x);
+        }
+    };
+    
     template <class T>
     struct generator;
 

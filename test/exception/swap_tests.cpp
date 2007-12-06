@@ -11,6 +11,8 @@
 #include "../helpers/random_values.hpp"
 #include "../helpers/invariants.hpp"
 
+test::seed_t seed(9387);
+
 template <class T>
 struct self_swap_base : public test::exception_base
 {

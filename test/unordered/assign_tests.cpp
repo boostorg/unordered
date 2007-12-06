@@ -13,6 +13,8 @@
 
 #include <iostream>
 
+test::seed_t seed(96785);
+
 template <class T>
 void assign_tests1(T* = 0)
 {

@@ -10,6 +10,8 @@
 #include <boost/test/exception_safety.hpp>
 #include "../helpers/random_values.hpp"
 
+test::seed_t seed(73041);
+
 template <class T>
 struct copy_test1 : public test::exception_base
 {
