@@ -4,8 +4,6 @@
 
 [section:hash_equality Equality Predicates and Hash Functions]
 
-[/TODO: A better introduction to hash functions?]
-
 While the associative containers use an ordering relation to specify how the
 elements are stored, the unordered associative containers use an equality
 predicate and a hash function. For example, [classref boost::unordered_set]

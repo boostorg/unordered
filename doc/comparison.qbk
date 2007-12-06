@@ -22,8 +22,6 @@
         [Member typedef `value_compare` supplies an ordering comparison for member elements, accessed by member function `value_comp()`.]
         [No equivalent. No idea why.]
     ]
-    [/TODO: Mention a range? This is meant to be differences but this doesn't
-        seem to be complete.]
     [
         [Constructors have optional extra parameters for the comparison object.]
         [Constructors have optional extra parameters for the initial minimum
@@ -92,7 +90,6 @@
     [
         [Construction of empty container]
         [constant]
-        [/TODO: Do I meet this?]
         [O(/n/) where /n/ is the minimum number of buckets.]
     ]
     [
