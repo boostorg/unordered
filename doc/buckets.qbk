@@ -124,25 +124,4 @@ factor is equal to the maximum load factor.]
 
 ]
 
-[/ I'm not at all happy with this section. So I've commented it out.]
-
-[/ h2 Rehash Techniques]
-
-[/If the container has a load factor much smaller than the maximum, `rehash`
-might decrease the number of buckets, reducing the memory usage. This isn't
-guaranteed by the standard but this implementation will do it.
-
-If you want to stop the table from ever rehashing due to an insert, you can
-set the maximum load factor to infinity (or perhaps a load factor that it'll
-never reach - say `x.max_size()`. As you can only give a 'hint' for the maximum
-load factor, this isn't guaranteed to work. But again, it'll work in this
-implementation. (TODO: If an unordered container with infinite load factor
-is copied, bad things could happen. So maybe this advice should be removed. Or
-maybe the implementation should cope with that).
-
-If you do this and want to make the container rehash, `rehash` will still work.
-But be careful that you only ever call it with a sufficient number of buckets
-- otherwise it's very likely that the container will decrease the bucket
-count to an overly small amount.]
-
 [endsect]
