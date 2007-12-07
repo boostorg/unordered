@@ -5,19 +5,19 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #if BOOST_UNORDERED_HASH_EQUIVALENT
-#define HASH_TABLE hash_table_equivalent_keys
-#define HASH_TABLE_DATA hash_table_data_equivalent_keys
-#define HASH_ITERATOR hash_iterator_equivalent_keys
-#define HASH_CONST_ITERATOR hash_const_iterator_equivalent_keys
-#define HASH_LOCAL_ITERATOR hash_local_iterator_equivalent_keys
-#define HASH_CONST_LOCAL_ITERATOR hash_const_local_iterator_equivalent_keys
+#define BOOST_UNORDERED_TABLE hash_table_equivalent_keys
+#define BOOST_UNORDERED_TABLE_DATA hash_table_data_equivalent_keys
+#define BOOST_UNORDERED_ITERATOR hash_iterator_equivalent_keys
+#define BOOST_UNORDERED_CONST_ITERATOR hash_const_iterator_equivalent_keys
+#define BOOST_UNORDERED_LOCAL_ITERATOR hash_local_iterator_equivalent_keys
+#define BOOST_UNORDERED_CONST_LOCAL_ITERATOR hash_const_local_iterator_equivalent_keys
 #else
-#define HASH_TABLE hash_table_unique_keys
-#define HASH_TABLE_DATA hash_table_data_unique_keys
-#define HASH_ITERATOR hash_iterator_unique_keys
-#define HASH_CONST_ITERATOR hash_const_iterator_unique_keys
-#define HASH_LOCAL_ITERATOR hash_local_iterator_unique_keys
-#define HASH_CONST_LOCAL_ITERATOR hash_const_local_iterator_unique_keys
+#define BOOST_UNORDERED_TABLE hash_table_unique_keys
+#define BOOST_UNORDERED_TABLE_DATA hash_table_data_unique_keys
+#define BOOST_UNORDERED_ITERATOR hash_iterator_unique_keys
+#define BOOST_UNORDERED_CONST_ITERATOR hash_const_iterator_unique_keys
+#define BOOST_UNORDERED_LOCAL_ITERATOR hash_local_iterator_unique_keys
+#define BOOST_UNORDERED_CONST_LOCAL_ITERATOR hash_const_local_iterator_unique_keys
 #endif
 
 namespace boost {
@@ -29,7 +29,7 @@ namespace boost {
         // Responsible for managing the hash buckets.
 
         template <typename Alloc>
-        class HASH_TABLE_DATA
+        class BOOST_UNORDERED_TABLE_DATA
         {
         public:
             struct node_base;
@@ -298,7 +298,7 @@ namespace boost {
 
                 void next_group()
                 {
-                    node_ = HASH_TABLE_DATA::next_group(node_);
+                    node_ = BOOST_UNORDERED_TABLE_DATA::next_group(node_);
                 }
             };
 
@@ -357,7 +357,7 @@ namespace boost {
 
             // Constructors/Deconstructor
 
-            HASH_TABLE_DATA(size_type n, value_allocator const& a)
+            BOOST_UNORDERED_TABLE_DATA(size_type n, value_allocator const& a)
               : allocators_(a),
                 buckets_(), bucket_count_(next_prime(n)),
                 cached_begin_bucket_(), size_(0)
@@ -380,7 +380,7 @@ namespace boost {
                 buckets_ = constructor.release();
             }
 
-            HASH_TABLE_DATA(HASH_TABLE_DATA const& x, size_type n)
+            BOOST_UNORDERED_TABLE_DATA(BOOST_UNORDERED_TABLE_DATA const& x, size_type n)
               : allocators_(x.allocators_),
                 buckets_(), bucket_count_(next_prime(n)),
                 cached_begin_bucket_(), size_(0)
@@ -404,7 +404,7 @@ namespace boost {
             }
 
             // no throw
-            ~HASH_TABLE_DATA()
+            ~BOOST_UNORDERED_TABLE_DATA()
             {
                 if(buckets_) {
                     bucket_ptr begin = cached_begin_bucket_;
@@ -424,13 +424,13 @@ namespace boost {
 
         private:
 
-            HASH_TABLE_DATA(HASH_TABLE_DATA const&);
-            HASH_TABLE_DATA& operator=(HASH_TABLE_DATA const&);
+            BOOST_UNORDERED_TABLE_DATA(BOOST_UNORDERED_TABLE_DATA const&);
+            BOOST_UNORDERED_TABLE_DATA& operator=(BOOST_UNORDERED_TABLE_DATA const&);
 
         public:
 
             // no throw
-            void swap(HASH_TABLE_DATA& other)
+            void swap(BOOST_UNORDERED_TABLE_DATA& other)
             {
                 std::swap(buckets_, other.buckets_);
                 std::swap(bucket_count_, other.bucket_count_);
@@ -545,7 +545,7 @@ namespace boost {
                 // The element is the first in its group, so iterate
                 // throught the groups, checking against the first element.
                 it = &r.bucket_->next_;
-                while(*it != n) it = &HASH_TABLE_DATA::next_group(*it);
+                while(*it != n) it = &BOOST_UNORDERED_TABLE_DATA::next_group(*it);
                 return it;
             }
 #else
@@ -980,7 +980,7 @@ namespace boost {
 
 #if defined(BOOST_MPL_CFG_MSVC_ETI_BUG)
         template <>
-        class HASH_TABLE_DATA<int>
+        class BOOST_UNORDERED_TABLE_DATA<int>
         {
         public:
             typedef int size_type;
@@ -995,10 +995,10 @@ namespace boost {
         template <typename ValueType, typename KeyType,
             typename Hash, typename Pred,
             typename Alloc>
-        class HASH_TABLE
-            : public HASH_TABLE_DATA<Alloc>
+        class BOOST_UNORDERED_TABLE
+            : public BOOST_UNORDERED_TABLE_DATA<Alloc>
         {
-            typedef HASH_TABLE_DATA<Alloc> data;
+            typedef BOOST_UNORDERED_TABLE_DATA<Alloc> data;
 
             typedef typename data::node_constructor node_constructor;
             typedef typename data::bucket_ptr bucket_ptr;
@@ -1048,7 +1048,7 @@ namespace boost {
             // buffering is used to copy them. func_ points to the currently
             // active function objects.
 
-            typedef functions HASH_TABLE::*functions_ptr;
+            typedef functions BOOST_UNORDERED_TABLE::*functions_ptr;
 
             functions func1_;
             functions func2_;
@@ -1062,15 +1062,15 @@ namespace boost {
             // Constructors
             //
             // In the constructors, if anything throws an exception,
-            // HASH_TABLE_DATA's destructor will clean up.
+            // BOOST_UNORDERED_TABLE_DATA's destructor will clean up.
 
-            HASH_TABLE(size_type n,
+            BOOST_UNORDERED_TABLE(size_type n,
                     hasher const& hf, key_equal const& eq,
                     value_allocator const& a)
                 : data(n, a),         // throws, cleans itself up
                 func1_(hf, eq),       // throws      "     "
                 func2_(hf, eq),       // throws      "     "
-                func_(&HASH_TABLE::func1_), // no throw
+                func_(&BOOST_UNORDERED_TABLE::func1_), // no throw
                 mlf_(1.0f)            // no throw
             {
                 calculate_max_load(); // no throw
@@ -1110,32 +1110,32 @@ namespace boost {
             }
 
             template <typename I>
-            HASH_TABLE(I i, I j, size_type n,
+            BOOST_UNORDERED_TABLE(I i, I j, size_type n,
                     hasher const& hf, key_equal const& eq,
                     value_allocator const& a)
                 : data(initial_size(i, j, n), a),  // throws, cleans itself up
                     func1_(hf, eq),                // throws    "      "
                     func2_(hf, eq),                // throws    "      "
-                    func_(&HASH_TABLE::func1_),    // no throw
+                    func_(&BOOST_UNORDERED_TABLE::func1_),    // no throw
                     mlf_(1.0f)                     // no throw
             {
                 calculate_max_load(); // no throw
 
-                // This can throw, but HASH_TABLE_DATA's destructor will clean up.
+                // This can throw, but BOOST_UNORDERED_TABLE_DATA's destructor will clean up.
                 insert(i, j);
             }
             // Copy Construct
 
-            HASH_TABLE(HASH_TABLE const& x)
+            BOOST_UNORDERED_TABLE(BOOST_UNORDERED_TABLE const& x)
                 : data(x, x.min_buckets_for_size(x.size())), // throws
                 func1_(x.current_functions()), // throws
                 func2_(x.current_functions()), // throws
-                func_(&HASH_TABLE::func1_), // no throw
+                func_(&BOOST_UNORDERED_TABLE::func1_), // no throw
                 mlf_(x.mlf_) // no throw
             {
                 calculate_max_load(); // no throw
 
-                // This can throw, but HASH_TABLE_DATA's destructor will clean
+                // This can throw, but BOOST_UNORDERED_TABLE_DATA's destructor will clean
                 // up.
                 copy_buckets(x, *this, current_functions());
             }
@@ -1147,7 +1147,7 @@ namespace boost {
             // throws the container is left with whatever was successfully
             // copied.
 
-            HASH_TABLE& operator=(HASH_TABLE const& x)
+            BOOST_UNORDERED_TABLE& operator=(BOOST_UNORDERED_TABLE const& x)
             {
                 if(this != &x)
                 {
@@ -1191,7 +1191,7 @@ namespace boost {
             //           but this doesn't seem to be guaranteed. Maybe I
             //           could double buffer the allocators).
 
-            void swap(HASH_TABLE& x)
+            void swap(BOOST_UNORDERED_TABLE& x)
             {
                 // This only effects the function objects that aren't in use
                 // so it is strongly exception safe, via. double buffering.
@@ -1231,11 +1231,11 @@ namespace boost {
             //
             // Strong exception safety (since only usued function objects are
             // changed).
-            functions_ptr copy_functions(HASH_TABLE const& x)
+            functions_ptr copy_functions(BOOST_UNORDERED_TABLE const& x)
             {
                 // no throw:
-                functions_ptr ptr = func_ == &HASH_TABLE::func1_
-                    ? &HASH_TABLE::func2_ : &HASH_TABLE::func1_;
+                functions_ptr ptr = func_ == &BOOST_UNORDERED_TABLE::func1_
+                    ? &BOOST_UNORDERED_TABLE::func2_ : &BOOST_UNORDERED_TABLE::func1_;
                 // throws, functions not in use, so strong
                 this->*ptr = x.current_functions();
                 return ptr;
@@ -1907,10 +1907,10 @@ namespace boost {
 
         // Iterators
         
-        template <typename Alloc> class HASH_ITERATOR;
-        template <typename Alloc> class HASH_CONST_ITERATOR;
-        template <typename Alloc> class HASH_LOCAL_ITERATOR;
-        template <typename Alloc> class HASH_CONST_LOCAL_ITERATOR;
+        template <typename Alloc> class BOOST_UNORDERED_ITERATOR;
+        template <typename Alloc> class BOOST_UNORDERED_CONST_ITERATOR;
+        template <typename Alloc> class BOOST_UNORDERED_LOCAL_ITERATOR;
+        template <typename Alloc> class BOOST_UNORDERED_CONST_LOCAL_ITERATOR;
         class iterator_access;
 
         // Local Iterators
@@ -1918,7 +1918,7 @@ namespace boost {
         // all no throw
 
         template <typename Alloc>
-        class HASH_LOCAL_ITERATOR
+        class BOOST_UNORDERED_LOCAL_ITERATOR
             : public boost::iterator <
                 std::forward_iterator_tag,
                 BOOST_DEDUCED_TYPENAME allocator_value_type<Alloc>::type,
@@ -1930,28 +1930,28 @@ namespace boost {
             typedef BOOST_DEDUCED_TYPENAME allocator_value_type<Alloc>::type value_type;
 
         private:
-            typedef BOOST_DEDUCED_TYPENAME HASH_TABLE_DATA<Alloc>::local_iterator_base base;
-            typedef HASH_CONST_LOCAL_ITERATOR<Alloc> const_local_iterator;
+            typedef BOOST_DEDUCED_TYPENAME BOOST_UNORDERED_TABLE_DATA<Alloc>::local_iterator_base base;
+            typedef BOOST_UNORDERED_CONST_LOCAL_ITERATOR<Alloc> const_local_iterator;
 
-            friend class HASH_CONST_LOCAL_ITERATOR<Alloc>;
+            friend class BOOST_UNORDERED_CONST_LOCAL_ITERATOR<Alloc>;
             base base_;
 
         public:
-            HASH_LOCAL_ITERATOR() : base_() {}
-            explicit HASH_LOCAL_ITERATOR(base x) : base_(x) {}
+            BOOST_UNORDERED_LOCAL_ITERATOR() : base_() {}
+            explicit BOOST_UNORDERED_LOCAL_ITERATOR(base x) : base_(x) {}
             BOOST_DEDUCED_TYPENAME allocator_reference<Alloc>::type operator*() const
                 { return *base_; }
             value_type* operator->() const { return &*base_; }
-            HASH_LOCAL_ITERATOR& operator++() { base_.increment(); return *this; }
-            HASH_LOCAL_ITERATOR operator++(int) { HASH_LOCAL_ITERATOR tmp(base_); base_.increment(); return tmp; }
-            bool operator==(HASH_LOCAL_ITERATOR x) const { return base_ == x.base_; }
+            BOOST_UNORDERED_LOCAL_ITERATOR& operator++() { base_.increment(); return *this; }
+            BOOST_UNORDERED_LOCAL_ITERATOR operator++(int) { BOOST_UNORDERED_LOCAL_ITERATOR tmp(base_); base_.increment(); return tmp; }
+            bool operator==(BOOST_UNORDERED_LOCAL_ITERATOR x) const { return base_ == x.base_; }
             bool operator==(const_local_iterator x) const { return base_ == x.base_; }
-            bool operator!=(HASH_LOCAL_ITERATOR x) const { return base_ != x.base_; }
+            bool operator!=(BOOST_UNORDERED_LOCAL_ITERATOR x) const { return base_ != x.base_; }
             bool operator!=(const_local_iterator x) const { return base_ != x.base_; }
         };
 
         template <typename Alloc>
-        class HASH_CONST_LOCAL_ITERATOR
+        class BOOST_UNORDERED_CONST_LOCAL_ITERATOR
             : public boost::iterator <
                 std::forward_iterator_tag,
                 BOOST_DEDUCED_TYPENAME allocator_value_type<Alloc>::type,
@@ -1963,24 +1963,24 @@ namespace boost {
             typedef BOOST_DEDUCED_TYPENAME allocator_value_type<Alloc>::type value_type;
 
         private:
-            typedef BOOST_DEDUCED_TYPENAME HASH_TABLE_DATA<Alloc>::local_iterator_base base;
-            typedef HASH_LOCAL_ITERATOR<Alloc> local_iterator;
-            friend class HASH_LOCAL_ITERATOR<Alloc>;
+            typedef BOOST_DEDUCED_TYPENAME BOOST_UNORDERED_TABLE_DATA<Alloc>::local_iterator_base base;
+            typedef BOOST_UNORDERED_LOCAL_ITERATOR<Alloc> local_iterator;
+            friend class BOOST_UNORDERED_LOCAL_ITERATOR<Alloc>;
             base base_;
 
         public:
-            HASH_CONST_LOCAL_ITERATOR() : base_() {}
-            explicit HASH_CONST_LOCAL_ITERATOR(base x) : base_(x) {}
-            HASH_CONST_LOCAL_ITERATOR(local_iterator x) : base_(x.base_) {}
+            BOOST_UNORDERED_CONST_LOCAL_ITERATOR() : base_() {}
+            explicit BOOST_UNORDERED_CONST_LOCAL_ITERATOR(base x) : base_(x) {}
+            BOOST_UNORDERED_CONST_LOCAL_ITERATOR(local_iterator x) : base_(x.base_) {}
             BOOST_DEDUCED_TYPENAME allocator_const_reference<Alloc>::type
                 operator*() const { return *base_; }
             value_type const* operator->() const { return &*base_; }
-            HASH_CONST_LOCAL_ITERATOR& operator++() { base_.increment(); return *this; }
-            HASH_CONST_LOCAL_ITERATOR operator++(int) { HASH_CONST_LOCAL_ITERATOR tmp(base_); base_.increment(); return tmp; }
+            BOOST_UNORDERED_CONST_LOCAL_ITERATOR& operator++() { base_.increment(); return *this; }
+            BOOST_UNORDERED_CONST_LOCAL_ITERATOR operator++(int) { BOOST_UNORDERED_CONST_LOCAL_ITERATOR tmp(base_); base_.increment(); return tmp; }
             bool operator==(local_iterator x) const { return base_ == x.base_; }
-            bool operator==(HASH_CONST_LOCAL_ITERATOR x) const { return base_ == x.base_; }
+            bool operator==(BOOST_UNORDERED_CONST_LOCAL_ITERATOR x) const { return base_ == x.base_; }
             bool operator!=(local_iterator x) const { return base_ != x.base_; }
-            bool operator!=(HASH_CONST_LOCAL_ITERATOR x) const { return base_ != x.base_; }
+            bool operator!=(BOOST_UNORDERED_CONST_LOCAL_ITERATOR x) const { return base_ != x.base_; }
         };
 
         // iterators
@@ -1989,7 +1989,7 @@ namespace boost {
 
 
         template <typename Alloc>
-        class HASH_ITERATOR
+        class BOOST_UNORDERED_ITERATOR
             : public boost::iterator <
                 std::forward_iterator_tag,
                 BOOST_DEDUCED_TYPENAME allocator_value_type<Alloc>::type,
@@ -2001,28 +2001,28 @@ namespace boost {
             typedef BOOST_DEDUCED_TYPENAME allocator_value_type<Alloc>::type value_type;
 
         private:
-            typedef BOOST_DEDUCED_TYPENAME HASH_TABLE_DATA<Alloc>::iterator_base base;
-            typedef HASH_CONST_ITERATOR<Alloc> const_iterator;
-            friend class HASH_CONST_ITERATOR<Alloc>;
+            typedef BOOST_DEDUCED_TYPENAME BOOST_UNORDERED_TABLE_DATA<Alloc>::iterator_base base;
+            typedef BOOST_UNORDERED_CONST_ITERATOR<Alloc> const_iterator;
+            friend class BOOST_UNORDERED_CONST_ITERATOR<Alloc>;
             base base_;
 
         public:
 
-            HASH_ITERATOR() : base_() {}
-            explicit HASH_ITERATOR(base const& x) : base_(x) {}
+            BOOST_UNORDERED_ITERATOR() : base_() {}
+            explicit BOOST_UNORDERED_ITERATOR(base const& x) : base_(x) {}
             BOOST_DEDUCED_TYPENAME allocator_reference<Alloc>::type
                 operator*() const { return *base_; }
             value_type* operator->() const { return &*base_; }
-            HASH_ITERATOR& operator++() { base_.increment(); return *this; }
-            HASH_ITERATOR operator++(int) { HASH_ITERATOR tmp(base_); base_.increment(); return tmp; }
-            bool operator==(HASH_ITERATOR const& x) const { return base_ == x.base_; }
+            BOOST_UNORDERED_ITERATOR& operator++() { base_.increment(); return *this; }
+            BOOST_UNORDERED_ITERATOR operator++(int) { BOOST_UNORDERED_ITERATOR tmp(base_); base_.increment(); return tmp; }
+            bool operator==(BOOST_UNORDERED_ITERATOR const& x) const { return base_ == x.base_; }
             bool operator==(const_iterator const& x) const { return base_ == x.base_; }
-            bool operator!=(HASH_ITERATOR const& x) const { return base_ != x.base_; }
+            bool operator!=(BOOST_UNORDERED_ITERATOR const& x) const { return base_ != x.base_; }
             bool operator!=(const_iterator const& x) const { return base_ != x.base_; }
         };
 
         template <typename Alloc>
-        class HASH_CONST_ITERATOR
+        class BOOST_UNORDERED_CONST_ITERATOR
             : public boost::iterator <
                 std::forward_iterator_tag,
                 BOOST_DEDUCED_TYPENAME allocator_value_type<Alloc>::type,
@@ -2034,34 +2034,34 @@ namespace boost {
             typedef BOOST_DEDUCED_TYPENAME allocator_value_type<Alloc>::type value_type;
 
         private:
-            typedef BOOST_DEDUCED_TYPENAME HASH_TABLE_DATA<Alloc>::iterator_base base;
-            typedef HASH_ITERATOR<Alloc> iterator;
-            friend class HASH_ITERATOR<Alloc>;
+            typedef BOOST_DEDUCED_TYPENAME BOOST_UNORDERED_TABLE_DATA<Alloc>::iterator_base base;
+            typedef BOOST_UNORDERED_ITERATOR<Alloc> iterator;
+            friend class BOOST_UNORDERED_ITERATOR<Alloc>;
             friend class iterator_access;
             base base_;
 
         public:
 
-            HASH_CONST_ITERATOR() : base_() {}
-            explicit HASH_CONST_ITERATOR(base const& x) : base_(x) {}
-            HASH_CONST_ITERATOR(iterator const& x) : base_(x.base_) {}
+            BOOST_UNORDERED_CONST_ITERATOR() : base_() {}
+            explicit BOOST_UNORDERED_CONST_ITERATOR(base const& x) : base_(x) {}
+            BOOST_UNORDERED_CONST_ITERATOR(iterator const& x) : base_(x.base_) {}
             BOOST_DEDUCED_TYPENAME allocator_const_reference<Alloc>::type
                 operator*() const { return *base_; }
             value_type const* operator->() const { return &*base_; }
-            HASH_CONST_ITERATOR& operator++() { base_.increment(); return *this; }
-            HASH_CONST_ITERATOR operator++(int) { HASH_CONST_ITERATOR tmp(base_); base_.increment(); return tmp; }
+            BOOST_UNORDERED_CONST_ITERATOR& operator++() { base_.increment(); return *this; }
+            BOOST_UNORDERED_CONST_ITERATOR operator++(int) { BOOST_UNORDERED_CONST_ITERATOR tmp(base_); base_.increment(); return tmp; }
             bool operator==(iterator const& x) const { return base_ == x.base_; }
-            bool operator==(HASH_CONST_ITERATOR const& x) const { return base_ == x.base_; }
+            bool operator==(BOOST_UNORDERED_CONST_ITERATOR const& x) const { return base_ == x.base_; }
             bool operator!=(iterator const& x) const { return base_ != x.base_; }
-            bool operator!=(HASH_CONST_ITERATOR const& x) const { return base_ != x.base_; }
+            bool operator!=(BOOST_UNORDERED_CONST_ITERATOR const& x) const { return base_ != x.base_; }
         };
     }
 }
 
-#undef HASH_TABLE
-#undef HASH_TABLE_DATA
-#undef HASH_ITERATOR
-#undef HASH_CONST_ITERATOR
-#undef HASH_LOCAL_ITERATOR
-#undef HASH_CONST_LOCAL_ITERATOR
+#undef BOOST_UNORDERED_TABLE
+#undef BOOST_UNORDERED_TABLE_DATA
+#undef BOOST_UNORDERED_ITERATOR
+#undef BOOST_UNORDERED_CONST_ITERATOR
+#undef BOOST_UNORDERED_LOCAL_ITERATOR
+#undef BOOST_UNORDERED_CONST_LOCAL_ITERATOR
 
