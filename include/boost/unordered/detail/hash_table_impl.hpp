@@ -532,7 +532,7 @@ namespace boost {
             // no throw
 
 #if BOOST_UNORDERED_HASH_EQUIVALENT
-            link_ptr* get_for_erase(iterator_base r) const
+            static link_ptr* get_for_erase(iterator_base r)
             {
                 link_ptr n = r.local_.node_;
 
@@ -549,7 +549,7 @@ namespace boost {
                 return it;
             }
 #else
-            link_ptr* get_for_erase(iterator_base r) const
+            static link_ptr* get_for_erase(iterator_base r)
             {
                 link_ptr n = r.local_.node_;
                 link_ptr* it = &r.bucket_->next_;
