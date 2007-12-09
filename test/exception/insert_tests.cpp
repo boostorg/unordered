@@ -73,11 +73,7 @@ struct insert_test2 : public insert_test_base<T>
 template <class T>
 struct insert_test3 : public insert_test_base<T>
 {
-    typedef typename insert_test_base<T>::strong_type strong_type;
-
-    void run(T& x, strong_type& strong) const {
-        // I don't think there's any need for this here.
-        //strong.store(x);
+    void run(T& x) const {
         x.insert(this->values.begin(), this->values.end());
     }
 
@@ -165,7 +161,52 @@ struct insert_test_rehash2 : public insert_test_rehash1<T>
     }
 };
 
+template <class T>
+struct insert_test_rehash3 : public insert_test_base<T>
+{
+    typename T::size_type mutable rehash_bucket_count, original_bucket_count;
+
+    insert_test_rehash3() : insert_test_base<T>(1000) {}
+
+    T init() const {
+        typedef typename T::size_type size_type;
+
+        T x;
+        x.max_load_factor(0.25);
+
+        original_bucket_count = x.bucket_count();
+        rehash_bucket_count = static_cast<size_type>(
+            std::ceil(original_bucket_count * x.max_load_factor())) - 1;
+
+        size_type initial_elements = rehash_bucket_count - 5;
+
+        BOOST_REQUIRE(initial_elements < this->values.size());
+        x.insert(this->values.begin(),
+                boost::next(this->values.begin(), initial_elements));
+        BOOST_REQUIRE(original_bucket_count == x.bucket_count());
+        return x;
+    }
+
+    void run(T& x) const {
+        typename T::size_type bucket_count = x.bucket_count();
+
+        x.insert(boost::next(this->values.begin(), x.size()),
+                boost::next(this->values.begin(), x.size() + 20));
+
+        // This isn't actually a failure, but it means the test isn't doing its
+        // job.
+        BOOST_REQUIRE(x.bucket_count() != bucket_count);
+    }
+
+    void check(T const& x) const {
+        if(x.size() < rehash_bucket_count) {
+            //BOOST_CHECK(x.bucket_count() == original_bucket_count);
+        }
+        test::check_equivalent_keys(x);
+    }
+};
+
 RUN_EXCEPTION_TESTS(
     (insert_test1)(insert_test2)(insert_test3)(insert_test4)
-    (insert_test_rehash1)(insert_test_rehash2),
+    (insert_test_rehash1)(insert_test_rehash2)(insert_test_rehash3),
     CONTAINER_SEQ)
