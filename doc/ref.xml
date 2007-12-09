@@ -329,8 +329,8 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>The iterator following <code>position</code> before the erasure.</para>
               </returns>
               <throws>
-                <para>Only throws an exception, if it is thrown by a call to <code>hasher</code> or <code>key_equal</code>.</para>
-                <para>They don't get called by the current implementation Boost.Unordered but other implementations may call them.</para>
+                <para>Only throws an exception if it is thrown by <code>hasher</code> or <code>key_equal</code>.</para>
+                <para>In this implementation, this overload doesn't call either function object's methods so it is no throw, but this might not be true in other implementations.</para>
               </throws>
             </method>
             <method name="erase">
@@ -345,7 +345,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>The number of elements erased.</para>
               </returns>
               <throws>
-                <para>Only throws an exception, if it is thrown by a call to <code>hasher</code> or <code>key_equal</code>.</para>
+                <para>Only throws an exception if it is thrown by <code>hasher</code> or <code>key_equal</code>.</para>
               </throws>
             </method>
             <method name="erase">
@@ -363,8 +363,8 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>The iterator following the erased elements - i.e. <code>last</code>.</para>
               </returns>
               <throws>
-                <para>Only throws an exception, if it is thrown by a call to <code>hasher</code> or <code>key_equal</code>.</para>
-                <para>They don't get called by the current implementation Boost.Unordered but other implementations may call them.</para>
+                <para>Only throws an exception if it is thrown by <code>hasher</code> or <code>key_equal</code>.</para>
+                <para>In this implementation, this overload doesn't call either function object's methods so it is no throw, but this might not be true in other implementations.</para>
               </throws>
             </method>
             <method name="clear">
@@ -908,8 +908,8 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>The iterator following <code>position</code> before the erasure.</para>
               </returns>
               <throws>
-                <para>Only throws an exception, if it is thrown by a call to <code>hasher</code> or <code>key_equal</code>.</para>
-                <para>They don't get called by the current implementation Boost.Unordered but other implementations may call them.</para>
+                <para>Only throws an exception if it is thrown by <code>hasher</code> or <code>key_equal</code>.</para>
+                <para>In this implementation, this overload doesn't call either function object's methods so it is no throw, but this might not be true in other implementations.</para>
               </throws>
             </method>
             <method name="erase">
@@ -924,7 +924,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>The number of elements erased.</para>
               </returns>
               <throws>
-                <para>Only throws an exception, if it is thrown by a call to <code>hasher</code> or <code>key_equal</code>.</para>
+                <para>Only throws an exception if it is thrown by <code>hasher</code> or <code>key_equal</code>.</para>
               </throws>
             </method>
             <method name="erase">
@@ -942,8 +942,8 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>The iterator following the erased elements - i.e. <code>last</code>.</para>
               </returns>
               <throws>
-                <para>Only throws an exception, if it is thrown by a call to <code>hasher</code> or <code>key_equal</code>.</para>
-                <para>They don't get called by the current implementation Boost.Unordered but other implementations may call them.</para>
+                <para>Only throws an exception if it is thrown by <code>hasher</code> or <code>key_equal</code>.</para>
+                <para>In this implementation, this overload doesn't call either function object's methods so it is no throw, but this might not be true in other implementations.</para>
               </throws>
             </method>
             <method name="clear">
@@ -1504,8 +1504,8 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>The iterator following <code>position</code> before the erasure.</para>
               </returns>
               <throws>
-                <para>Only throws an exception, if it is thrown by a call to <code>hasher</code> or <code>key_equal</code>.</para>
-                <para>They don't get called by the current implementation Boost.Unordered but other implementations may call them.</para>
+                <para>Only throws an exception if it is thrown by <code>hasher</code> or <code>key_equal</code>.</para>
+                <para>In this implementation, this overload doesn't call either function object's methods so it is no throw, but this might not be true in other implementations.</para>
               </throws>
             </method>
             <method name="erase">
@@ -1520,7 +1520,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>The number of elements erased.</para>
               </returns>
               <throws>
-                <para>Only throws an exception, if it is thrown by a call to <code>hasher</code> or <code>key_equal</code>.</para>
+                <para>Only throws an exception if it is thrown by <code>hasher</code> or <code>key_equal</code>.</para>
               </throws>
             </method>
             <method name="erase">
@@ -1538,8 +1538,8 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>The iterator following the erased elements - i.e. <code>last</code>.</para>
               </returns>
               <throws>
-                <para>Only throws an exception, if it is thrown by a call to <code>hasher</code> or <code>key_equal</code>.</para>
-                <para>They don't get called by the current implementation Boost.Unordered but other implementations may call them.</para>
+                <para>Only throws an exception if it is thrown by <code>hasher</code> or <code>key_equal</code>.</para>
+                <para>In this implementation, this overload doesn't call either function object's methods so it is no throw, but this might not be true in other implementations.</para>
               </throws>
             </method>
             <method name="clear">
@@ -2127,8 +2127,8 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>The iterator following <code>position</code> before the erasure.</para>
               </returns>
               <throws>
-                <para>Only throws an exception, if it is thrown by a call to <code>hasher</code> or <code>key_equal</code>.</para>
-                <para>They don't get called by the current implementation Boost.Unordered but other implementations may call them.</para>
+                <para>Only throws an exception if it is thrown by <code>hasher</code> or <code>key_equal</code>.</para>
+                <para>In this implementation, this overload doesn't call either function object's methods so it is no throw, but this might not be true in other implementations.</para>
               </throws>
             </method>
             <method name="erase">
@@ -2143,7 +2143,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>The number of elements erased.</para>
               </returns>
               <throws>
-                <para>Only throws an exception, if it is thrown by a call to <code>hasher</code> or <code>key_equal</code>.</para>
+                <para>Only throws an exception if it is thrown by <code>hasher</code> or <code>key_equal</code>.</para>
               </throws>
             </method>
             <method name="erase">
@@ -2161,8 +2161,8 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>The iterator following the erased elements - i.e. <code>last</code>.</para>
               </returns>
               <throws>
-                <para>Only throws an exception, if it is thrown by a call to <code>hasher</code> or <code>key_equal</code>.</para>
-                <para>They don't get called by the current implementation Boost.Unordered but other implementations may call them.</para>
+                <para>Only throws an exception if it is thrown by <code>hasher</code> or <code>key_equal</code>.</para>
+                <para>In this implementation, this overload doesn't call either function object's methods so it is no throw, but this might not be true in other implementations.</para>
               </throws>
             </method>
             <method name="clear">
