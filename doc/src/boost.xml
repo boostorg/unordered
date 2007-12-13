@@ -5,5 +5,5 @@
   <title>The Boost C++ Unordered Containers Library Documentation</title>
 
   <xi:include href="unordered.xml"/>
-  <!-- <xi:include href="hash.xml"/> -->
+  <xi:include href="hash.xml"/>
 </boostbook>
