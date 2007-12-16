@@ -149,7 +149,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <code><methodname>size</methodname>() == 0</code>
             </postconditions>
             <description>
-              <para>Constructs an empty container with at least n buckets, using hf as the hash function, eq as the key equality predicate, a as the allocatorand a maximum load factor of 1.0.</para>
+              <para>Constructs an empty container with at least n buckets, using hf as the hash function, eq as the key equality predicate, a as the allocator and a maximum load factor of 1.0.</para>
             </description>
           </constructor>
           <constructor>
@@ -263,7 +263,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               </description>
               <returns>
                 <para>The bool component of the return type is true if an insert took place.</para>
-                <para>If an insert took place, then the iterator points to the newly inserted element. Otherwise, it points to the elment with equivalent value.</para>
+                <para>If an insert took place, then the iterator points to the newly inserted element. Otherwise, it points to the element with equivalent value.</para>
               </returns>
               <throws>
                 <para>If an exception is thrown by an operation other than a call to <code>hasher</code> the function has no effect.</para>
@@ -285,7 +285,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>hint is a suggestion to where the element should be inserted.</para>
               </description>
               <returns>
-                <para>If an insert took place, then the iterator points to the newly inserted element. Otherwise, it points to the elment with equivalent value.</para>
+                <para>If an insert took place, then the iterator points to the newly inserted element. Otherwise, it points to the element with equivalent value.</para>
               </returns>
               <throws>
                 <para>If an exception is thrown by an operation other than a call to <code>hasher</code> the function has no effect.</para>
@@ -356,9 +356,9 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <paramtype>const_iterator</paramtype>
               </parameter>
               <type>iterator</type>
-              <descritpion>
+              <description>
                 <para>Erases the elements in the range from <code>first</code> to <code>last</code>.</para>
-              </descritpion>
+              </description>
               <returns>
                 <para>The iterator following the erased elements - i.e. <code>last</code>.</para>
               </returns>
@@ -729,7 +729,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <code><methodname>size</methodname>() == 0</code>
             </postconditions>
             <description>
-              <para>Constructs an empty container with at least n buckets, using hf as the hash function, eq as the key equality predicate, a as the allocatorand a maximum load factor of 1.0.</para>
+              <para>Constructs an empty container with at least n buckets, using hf as the hash function, eq as the key equality predicate, a as the allocator and a maximum load factor of 1.0.</para>
             </description>
           </constructor>
           <constructor>
@@ -935,9 +935,9 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <paramtype>const_iterator</paramtype>
               </parameter>
               <type>iterator</type>
-              <descritpion>
+              <description>
                 <para>Erases the elements in the range from <code>first</code> to <code>last</code>.</para>
-              </descritpion>
+              </description>
               <returns>
                 <para>The iterator following the erased elements - i.e. <code>last</code>.</para>
               </returns>
@@ -1324,7 +1324,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <code><methodname>size</methodname>() == 0</code>
             </postconditions>
             <description>
-              <para>Constructs an empty container with at least n buckets, using hf as the hash function, eq as the key equality predicate, a as the allocatorand a maximum load factor of 1.0.</para>
+              <para>Constructs an empty container with at least n buckets, using hf as the hash function, eq as the key equality predicate, a as the allocator and a maximum load factor of 1.0.</para>
             </description>
           </constructor>
           <constructor>
@@ -1438,7 +1438,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               </description>
               <returns>
                 <para>The bool component of the return type is true if an insert took place.</para>
-                <para>If an insert took place, then the iterator points to the newly inserted element. Otherwise, it points to the elment with equivalent key.</para>
+                <para>If an insert took place, then the iterator points to the newly inserted element. Otherwise, it points to the element with equivalent key.</para>
               </returns>
               <throws>
                 <para>If an exception is thrown by an operation other than a call to <code>hasher</code> the function has no effect.</para>
@@ -1460,7 +1460,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>hint is a suggestion to where the element should be inserted.</para>
               </description>
               <returns>
-                <para>If an insert took place, then the iterator points to the newly inserted element. Otherwise, it points to the elment with equivalent key.</para>
+                <para>If an insert took place, then the iterator points to the newly inserted element. Otherwise, it points to the element with equivalent key.</para>
               </returns>
               <throws>
                 <para>If an exception is thrown by an operation other than a call to <code>hasher</code> the function has no effect.</para>
@@ -1531,9 +1531,9 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <paramtype>const_iterator</paramtype>
               </parameter>
               <type>iterator</type>
-              <descritpion>
+              <description>
                 <para>Erases the elements in the range from <code>first</code> to <code>last</code>.</para>
-              </descritpion>
+              </description>
               <returns>
                 <para>The iterator following the erased elements - i.e. <code>last</code>.</para>
               </returns>
@@ -1948,7 +1948,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <code><methodname>size</methodname>() == 0</code>
             </postconditions>
             <description>
-              <para>Constructs an empty container with at least n buckets, using hf as the hash function, eq as the key equality predicate, a as the allocatorand a maximum load factor of 1.0.</para>
+              <para>Constructs an empty container with at least n buckets, using hf as the hash function, eq as the key equality predicate, a as the allocator and a maximum load factor of 1.0.</para>
             </description>
           </constructor>
           <constructor>
@@ -2154,9 +2154,9 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <paramtype>const_iterator</paramtype>
               </parameter>
               <type>iterator</type>
-              <descritpion>
+              <description>
                 <para>Erases the elements in the range from <code>first</code> to <code>last</code>.</para>
-              </descritpion>
+              </description>
               <returns>
                 <para>The iterator following the erased elements - i.e. <code>last</code>.</para>
               </returns>

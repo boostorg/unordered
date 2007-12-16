@@ -16,7 +16,7 @@ is declared as:
     class ``[classref boost::unordered_set unordered_set]``;
 
 The hash function comes first as you might want to change the hash function
-but not the equality predicate, while if you were to change the behaviour
+but not the equality predicate, while if you were to change the behavior
 of the equality predicate you would have to change the hash function to match
 it.  So, if you wanted to use the
 [@http://www.isthe.com/chongo/tech/comp/fnv/ FNV-1 hash] you could write:
@@ -45,7 +45,7 @@ Similarly, a custom hash function can be used for custom types:
 [import src_code/point1.cpp]
 [point_example1]
 
-Although, customising Boost.Hash is probably a better solution:
+Although, customizing Boost.Hash is probably a better solution:
 
 [import src_code/point2.cpp]
 [point_example2]

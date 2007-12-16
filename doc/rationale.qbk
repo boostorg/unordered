@@ -28,12 +28,12 @@ By specifying an interface for accessing the buckets of the container the
 standard pretty much requires that the hash table uses chained addressing.
 
 It would be conceivable to write a hash table that uses another method.  For
-example, an it could use open addressing, and use the lookup chain to act as a
+example, it could use open addressing, and use the lookup chain to act as a
 bucket but there are a some serious problems with this: 
 
 * The draft standard requires that pointers to elements aren't invalidated, so
   the elements can't be stored in one array, but will need a layer of
-  indirection instead - loosing the efficiency and most of the memory gain,
+  indirection instead - losing the efficiency and most of the memory gain,
   the main advantages of open addressing.
 
 * Local iterators would be very inefficient and may not be able to

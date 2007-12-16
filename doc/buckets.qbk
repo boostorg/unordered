@@ -7,7 +7,7 @@
 The containers are made up of a number of 'buckets', each of which can contain
 any number of elements. For example, the following diagram shows an [classref
 boost::unordered_set unordered_set] with 7 buckets containing 5 elements, `A`,
-`B`, `C`, `D` and `E` (this is just for illustration, in practise containers
+`B`, `C`, `D` and `E` (this is just for illustration, in practice containers
 will have more buckets).
 
 [$../../libs/unordered/doc/diagrams/buckets.png]

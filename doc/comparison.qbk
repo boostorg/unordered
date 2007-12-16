@@ -8,13 +8,13 @@
     [[Associative Containers] [Unordered Associative Containers]]
 
     [
-        [Parametrised by an ordering relation `Compare`]
-        [Parametrised by a function object `Hash` and an equivalence relation
+        [Parameterized by an ordering relation `Compare`]
+        [Parameterized by a function object `Hash` and an equivalence relation
             `Pred`]
     ]
     [
         [Keys can be compared using `key_compare` which is accessed by member function `key_comp()`,
-         values can be compared using `value_compare` whice is accessed by member function `value_comp()`.]
+         values can be compared using `value_compare` which is accessed by member function `value_comp()`.]
         [Keys can be hashed using `hasher` which is accessed by member function `hash_function()`,
          and checked for equality using `key_equal` which is accessed by member function `key_eq()`.
          There is no function object for compared or hashing values.]
@@ -102,7 +102,7 @@
     ]
     [
         [Insert a single element with a hint]
-        [Amortised constant if t elements inserted right after hint,
+        [Amortized constant if t elements inserted right after hint,
             logarithmic otherwise]
         [Average case constant, worst case linear (ie. the same as
             a normal insert).]
@@ -119,7 +119,7 @@
     ]
     [
         [Erase a single element by iterator]
-        [Amortised constant]
+        [Amortized constant]
         [Average case: O(1), Worst case: O(`size()`)]
     ]
     [
