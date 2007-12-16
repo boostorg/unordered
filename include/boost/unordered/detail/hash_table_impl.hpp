@@ -1164,32 +1164,17 @@ namespace boost {
 
             // Swap
             //
-            // Swap's behaviour when allocators aren't equal is in dispute, see
-            // this paper for full details:
-            //
-            // http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2004/n1599.html
-            //
-            // It lists 3 possible behaviours:
-            //
-            // 1 - If the allocators aren't equal then throw an exception.
-            // 2 - Reallocate the elements in the containers with the
-            //     appropriate allocators - messing up exception safety in
-            //     the process.
-            // 3 - Swap the allocators, hoping that the allocators have a
-            //     no-throw swap.
-            //
-            // The paper recommends #3.
+            // Swap's behaviour when allocators aren't equal is in dispute, for
+            // details see:
+            // 
+            // http://unordered.nfshost.com/doc/html/unordered/rationale.html#swapping_containers_with_unequal_allocators
             //
             // ----------------------------------------------------------------
             //
             // Strong exception safety (might change unused function objects)
             //
-            // Can throw if hash or predicate object's copy constructor throws.
-            // If allocators are unequal:
-            //     Can throw if allocator's swap throws
-            //          (I'm assuming that the allocator's swap doesn't throw
-            //           but this doesn't seem to be guaranteed. Maybe I
-            //           could double buffer the allocators).
+            // Can throw if hash or predicate object's copy constructor throws
+            // or if allocators are unequal.
 
             void swap(BOOST_UNORDERED_TABLE& x)
             {
@@ -1202,10 +1187,18 @@ namespace boost {
                     this->data::swap(x); // no throw
                 }
                 else {
-                    // Note: I'm not sure that allocator swap is guaranteed to be no
-                    // throw.
-                    this->allocators_.swap(x.allocators_);
-                    this->data::swap(x);
+                    // Create new buckets in separate HASH_TABLE_DATA objects
+                    // which will clean up if anything throws an exception.
+                    // (all can throw, but with no effect as these are new objects).
+                    data new_this(*this, x.min_buckets_for_size(x.size_));
+                    copy_buckets(x, new_this, this->*new_func_this);
+
+                    data new_that(x, min_buckets_for_size(this->size_));
+                    x.copy_buckets(*this, new_that, x.*new_func_that);
+
+                    // Start updating the data here, no throw from now on.
+                    this->data::swap(new_this);
+                    x.data::swap(new_that);
                 }
 
                 // We've made it, the rest is no throw.
