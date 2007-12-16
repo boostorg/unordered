@@ -128,7 +128,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <para>A const_local_iterator object can be used to iterate through a single bucket.</para>
             </description>
           </typedef>
-          <constructor>
+          <constructor specifiers="explicit">
             <parameter name="n">
               <paramtype>size_type</paramtype>
               <default><emphasis>implementation-defined</emphasis></default>
@@ -708,7 +708,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <para>A const_local_iterator object can be used to iterate through a single bucket.</para>
             </description>
           </typedef>
-          <constructor>
+          <constructor specifiers="explicit">
             <parameter name="n">
               <paramtype>size_type</paramtype>
               <default><emphasis>implementation-defined</emphasis></default>
@@ -1303,7 +1303,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <para>A const_local_iterator object can be used to iterate through a single bucket.</para>
             </description>
           </typedef>
-          <constructor>
+          <constructor specifiers="explicit">
             <parameter name="n">
               <paramtype>size_type</paramtype>
               <default><emphasis>implementation-defined</emphasis></default>
@@ -1927,7 +1927,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <para>A const_local_iterator object can be used to iterate through a single bucket.</para>
             </description>
           </typedef>
-          <constructor>
+          <constructor specifiers="explicit">
             <parameter name="n">
               <paramtype>size_type</paramtype>
               <default><emphasis>implementation-defined</emphasis></default>
