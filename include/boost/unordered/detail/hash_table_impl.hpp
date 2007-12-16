@@ -1928,7 +1928,7 @@ public:
 
             inline bool group_hash(local_iterator_base it, type_wrapper<key_type>*) const
             {
-                std::size_t seed = group_count(it);
+                std::size_t seed = this->group_count(it);
                 boost::hash_combine(seed, hash_function()(*it));
                 return seed;
             }
