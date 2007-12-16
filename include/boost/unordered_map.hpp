@@ -16,8 +16,8 @@
 #include <functional>
 #include <memory>
 
-#include <boost/unordered/detail/hash_table.hpp>
 #include <boost/functional/hash.hpp>
+#include <boost/unordered/detail/hash_table.hpp>
 
 namespace boost
 {
@@ -335,6 +335,11 @@ namespace boost
         {
             return !m1.base.equals(m2.base);
         }
+
+        friend std::size_t hash_value(unordered_map const& m)
+        {
+            return m.base.hash_value();
+        }
     }; // class template unordered_map
 
     template <class K, class T, class H, class P, class A>
@@ -641,6 +646,11 @@ namespace boost
         friend bool operator!=(unordered_multimap const& m1, unordered_multimap const& m2)
         {
             return !m1.base.equals(m2.base);
+        }
+
+        friend std::size_t hash_value(unordered_multimap const& m)
+        {
+            return m.base.hash_value();
         }
     }; // class template unordered_multimap
 

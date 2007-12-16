@@ -57,6 +57,10 @@ namespace minimal
         return false;
     }
 
+    std::size_t hash_value(copy_constructible_equality_comparable) {
+        return 1;
+    }
+
     class default_copy_constructible
     {
     public:

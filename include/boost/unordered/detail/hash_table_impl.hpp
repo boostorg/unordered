@@ -1926,6 +1926,41 @@ public:
                 return true;
             }
 
+            inline bool group_hash(local_iterator_base it, type_wrapper<key_type>*) const
+            {
+                std::size_t seed = group_count(it);
+                boost::hash_combine(seed, hash_function()(*it));
+                return seed;
+            }
+
+            inline bool group_hash(local_iterator_base it, void*) const
+            {
+                std::size_t seed = hash_function()(it->first);
+
+                local_iterator_base end = it;
+                end.next_group();
+
+                do {
+                    boost::hash_combine(seed, it->second);
+                } while(it != end);
+
+                return seed;
+            }
+
+            std::size_t hash_value() const
+            {
+                std::size_t seed = 0;
+
+                for(bucket_ptr i = this->cached_begin_bucket_,
+                        j = this->buckets_ + this->bucket_count_; i != j; ++i)
+                {
+                    for(local_iterator_base it(i->next_); it.not_finished(); it.next_group())
+                        seed ^= group_hash(it, (type_wrapper<value_type>*)0);
+                }
+
+                return seed;
+            }
+
         private:
 
             // strong exception safety, no side effects

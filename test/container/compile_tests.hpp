@@ -129,4 +129,9 @@ void equality_test(X& r, T&)
 
     test::check_return_type<bool>::equals(a == b);
     test::check_return_type<bool>::equals(a != b);
+#if defined(BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP)
+    test::check_return_type<std::size_t>::equals(boost::hash_value(a));
+#else
+    test::check_return_type<std::size_t>::equals(hash_value(a));
+#endif
 }
