@@ -98,33 +98,43 @@ So, this implementation uses a prime number for the hash table size.
 
 [h2 Active Issues and Proposals]
 
-[h3 [@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2257.html
-     Removing unused allocator functions]]
+[h3 Removing unused allocator functions]
 
-This proposal suggests removing the `construct`, `destroy` and `address`
-member functions - all of which Boost.Unordered calls. It's near trivial
-to replace the calls with the appropriate code - and will simplify the
-implementation, as well as make supporting `emplace` easier.
-[@http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2007/n2339.htm
-N2339] opposed this change.
+In
+[@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2257.html
+N2257, removing unused allocator functions],
+Matt Austern suggests removing the `construct`, `destroy` and `address` member
+functions - all of which Boost.Unordered calls. Changing this will simplify the
+implementation, as well as make supporting `emplace` easier, but means that the
+containers won't support allocators which require these methods to be called.
+Detlef Vollmann opposed this change in
+[@http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2007/n2339.htm N2339].
 
-[h3 [@http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#431
-    431. Swapping containers with unequal allocators]]
+[h3 Swapping containers with unequal allocators]
 
-I followed Howard Hinnant's advice and implemented option 3.
+It isn't clear how to swap containers when their allocators aren't equal.
+This is 
+[@http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#431
+Issue 431: Swapping containers with unequal allocators].
+Howard Hinnant wrote about this in
+[@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2004/n1599.html N1599]
+and suggested swapping both the allocators and the containers' contents.
 
 There is currently a further issue - if the allocator's swap does throw there's
 no guarantee what state the allocators will be in. The only solution seems to
-be to double buffer the allocators. But I'm assuming that it won't throw for now.
+be to double buffer the allocators. But I'm assuming that it won't throw for
+now.
 
 Update: The committee have now decided that `swap` should do a fast swap if the
 allocator is Swappable and a slow swap using copy construction otherwise. To
 make this distinction requires concepts. For now I'm sticking with the current
 implementation.
 
-[h3 [@http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#518
-    518. Are insert and erase stable for unordered_multiset and unordered_multimap?]]
+[h3 Are insert and erase stable for unordered_multiset and unordered_multimap?]
 
+It is not specified if `unordered_multiset` and `unordered_multimap` preserve the order
+of elements with equivalent keys (i.e. if they're stable under `insert` and `erase`).
+This is [@http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#518 issue 581].
 The current proposal is that insert, erase and rehash are stable - so they are here.
 
 [h2 Future Developments]
