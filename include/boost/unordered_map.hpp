@@ -325,6 +325,16 @@ namespace boost
         {
             base.rehash(n);
         }
+        
+        friend bool operator==(unordered_map const& m1, unordered_map const& m2)
+        {
+            return m1.base.equals(m2.base);
+        }
+
+        friend bool operator!=(unordered_map const& m1, unordered_map const& m2)
+        {
+            return !m1.base.equals(m2.base);
+        }
     }; // class template unordered_map
 
     template <class K, class T, class H, class P, class A>
@@ -621,6 +631,16 @@ namespace boost
         void rehash(size_type n)
         {
             base.rehash(n);
+        }
+
+        friend bool operator==(unordered_multimap const& m1, unordered_multimap const& m2)
+        {
+            return m1.base.equals(m2.base);
+        }
+
+        friend bool operator!=(unordered_multimap const& m1, unordered_multimap const& m2)
+        {
+            return !m1.base.equals(m2.base);
         }
     }; // class template unordered_multimap
 

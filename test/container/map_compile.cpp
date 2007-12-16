@@ -13,7 +13,7 @@
 #include "../objects/minimal.hpp"
 #include "./compile_tests.hpp"
 
-int main()
+void container_tests()
 {
     typedef std::pair<test::minimal::assignable const,
             test::minimal::copy_constructible> value_type;
@@ -40,6 +40,36 @@ int main()
         test::minimal::allocator<value_type> > multimap;
 
     container_test(multimap, value);
+}
 
+void equality_tests() {
+    typedef std::pair<test::minimal::assignable const,
+            test::minimal::copy_constructible_equality_comparable> value_type;
+    value_type value(
+            test::minimal::assignable::create(),
+            test::minimal::copy_constructible_equality_comparable::create());
+
+    boost::unordered_map<
+        test::minimal::assignable,
+        test::minimal::copy_constructible_equality_comparable,
+        test::minimal::hash<test::minimal::assignable>,
+        test::minimal::equal_to<test::minimal::assignable>,
+        test::minimal::allocator<value_type> > map;
+
+    equality_test(map, value);
+
+    boost::unordered_multimap<
+        test::minimal::assignable,
+        test::minimal::copy_constructible_equality_comparable,
+        test::minimal::hash<test::minimal::assignable>,
+        test::minimal::equal_to<test::minimal::assignable>,
+        test::minimal::allocator<value_type> > multimap;
+
+    equality_test(multimap, value);
+}
+
+int main() {
+    container_tests();
+    equality_tests();
     return boost::report_errors();
 }

@@ -290,6 +290,11 @@ namespace boost {
                     return get_value(node_);
                 }
 
+                value_type* operator->() const
+                {
+                    return &get_value(node_);
+                }
+
                 void increment()
                 {
                     BOOST_ASSERT(node_);
@@ -1860,6 +1865,65 @@ namespace boost {
                     return std::pair<iterator_base, iterator_base>(
                             this->end(), this->end());
                 }
+            }
+
+            //
+            // equals
+            //
+
+private:
+#if BOOST_UNORDERED_HASH_EQUIVALENT
+            inline bool group_equals(local_iterator_base it1,
+                    local_iterator_base it2, type_wrapper<key_type>*) const
+            {
+                return this->group_count(it1) == this->group_count(it2);
+            }
+
+            inline bool group_equals(local_iterator_base it1,
+                    local_iterator_base it2, void*) const
+            {
+                if(!it2.not_finished()) return false;
+                local_iterator_base end1 = it1, end2 = it2;
+                end1.next_group(); end2.next_group();
+                do {
+                    if(it1->second != it2->second) return false;
+                    it1.increment();
+                    it2.increment();
+                } while(it1 != end1 && it2 != end2);
+                return it1 == end1 && it2 == end2;
+            }
+#else
+            inline bool group_equals(local_iterator_base it1,
+                    local_iterator_base it2, type_wrapper<key_type>*) const
+            {
+                return true;
+            }
+
+            inline bool group_equals(local_iterator_base it1,
+                    local_iterator_base it2, void*) const
+            {
+                return it1->second == it2->second;
+            }
+#endif
+
+public:
+            bool equals(BOOST_UNORDERED_TABLE const& other) const
+            {
+                if(this->size() != other.size()) return false;
+
+                for(bucket_ptr i = this->cached_begin_bucket_,
+                        j = this->buckets_ + this->bucket_count_; i != j; ++i)
+                {
+                    for(local_iterator_base it(i->next_); it.not_finished(); it.next_group())
+                    {
+                        local_iterator_base other_pos = other.find_iterator(other.extract_key(*it));
+                        if(!other_pos.not_finished() ||
+                            !group_equals(it, other_pos, (type_wrapper<value_type>*)0))
+                            return false;
+                    }
+                }
+
+                return true;
             }
 
         private:

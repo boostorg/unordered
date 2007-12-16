@@ -25,6 +25,7 @@ int main()
         test::minimal::allocator<test::minimal::assignable> > set;
 
     container_test(set, assignable);
+    equality_test(set, assignable);
 
     std::cout<<"Test unordered_multiset.\n";
     boost::unordered_multiset<
@@ -34,6 +35,7 @@ int main()
         test::minimal::allocator<test::minimal::assignable> > multiset;
 
     container_test(multiset, assignable);
+    equality_test(multiset, assignable);
 
     return boost::report_errors();
 }

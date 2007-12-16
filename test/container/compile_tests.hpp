@@ -111,6 +111,7 @@ void container_test(X& r, T&)
     (&a1)->~X();
 
     X const a_const;
+
     test::check_return_type<iterator>::equals(a.begin());
     test::check_return_type<const_iterator>::equals(a_const.begin());
     test::check_return_type<const_iterator>::equals(a.cbegin());
@@ -119,12 +120,13 @@ void container_test(X& r, T&)
     test::check_return_type<const_iterator>::equals(a_const.end());
     test::check_return_type<const_iterator>::equals(a.cend());
     test::check_return_type<const_iterator>::equals(a_const.cend());
+}
 
-    // No tests for ==, != since they're not required for unordered containers.
+template <class X, class T>
+void equality_test(X& r, T&)
+{
+    X const a = r, b = r;
 
-    a.swap(b);
-    test::check_return_type<X>::equals_ref(r = a);
-    test::check_return_type<size_type>::equals(a.size());
-    test::check_return_type<size_type>::equals(a.max_size());
-    test::check_return_type<bool>::convertible(a.empty());
+    test::check_return_type<bool>::equals(a == b);
+    test::check_return_type<bool>::equals(a != b);
 }

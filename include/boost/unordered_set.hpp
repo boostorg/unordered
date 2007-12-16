@@ -295,6 +295,16 @@ namespace boost
         {
             base.rehash(n);
         }
+
+        friend bool operator==(unordered_set const& m1, unordered_set const& m2)
+        {
+            return m1.base.equals(m2.base);
+        }
+
+        friend bool operator!=(unordered_set const& m1, unordered_set const& m2)
+        {
+            return !m1.base.equals(m2.base);
+        }
     }; // class template unordered_set
 
     template <class T, class H, class P, class A>
@@ -576,6 +586,16 @@ namespace boost
         void rehash(size_type n)
         {
             base.rehash(n);
+        }
+
+        friend bool operator==(unordered_multiset const& m1, unordered_multiset const& m2)
+        {
+            return m1.base.equals(m2.base);
+        }
+
+        friend bool operator!=(unordered_multiset const& m1, unordered_multiset const& m2)
+        {
+            return !m1.base.equals(m2.base);
         }
     }; // class template unordered_multiset
 
