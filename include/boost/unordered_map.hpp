@@ -294,7 +294,6 @@ namespace boost
             return const_local_iterator(base.end(n));
         }
 
-#if defined(BOOST_UNORDERED_LOCAL_CBEGIN)
         const_local_iterator cbegin(size_type n) const
         {
             return const_local_iterator(base.begin(n));
@@ -304,7 +303,6 @@ namespace boost
         {
             return const_local_iterator(base.end(n));
         }
-#endif
 
         // hash policy
 
@@ -593,7 +591,6 @@ namespace boost
             return const_local_iterator(base.end(n));
         }
 
-#if defined(BOOST_UNORDERED_LOCAL_CBEGIN)
         const_local_iterator cbegin(size_type n) const
         {
             return const_local_iterator(base.begin(n));
@@ -603,7 +600,6 @@ namespace boost
         {
             return const_local_iterator(base.end(n));
         }
-#endif
 
         // hash policy
 

@@ -182,6 +182,12 @@ of elements with equivalent keys (i.e. if they're stable under `insert` and `era
 This is [@http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#518 issue 581].
 The current proposal is that insert, erase and rehash are stable - so they are here.
 
+[h3 const_local_iterator cbegin, cend missing from TR1]
+
+[@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2482.html#691
+Issue 691] is that `cbegin` and `cend` are missing for local iterators.
+The current resolution is that they'll be added, so I've added them.
+
 [h2 Future Developments]
 
 [h3 Support for `emplace`]
