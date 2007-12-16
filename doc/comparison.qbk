@@ -109,8 +109,8 @@
     ]
     [
         [Inserting a range of /N/ elements]
-        [/N/ log(`size()`+/N/)]
-        [Average case O(/N/), worst case O(/N/ * 'size()')]
+        [ /N/ log(`size()`+/N/) ]
+        [Average case O(/N/), worst case O(/N/ * `size()`)]
     ]
     [
         [Erase by key, `k`]
@@ -135,7 +135,7 @@
     [
         [Find]
         [logarithmic]
-        [Average case: O(/N/), Worst case: O(`size()`)]
+        [Average case: O(1), Worst case: O(`size()`)]
     ]
     [/ TODO: Average case is probably wrong. ]
     [
