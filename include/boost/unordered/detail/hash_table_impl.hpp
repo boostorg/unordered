@@ -1718,8 +1718,8 @@ namespace boost {
             template <typename InputIterator>
             void insert(InputIterator i, InputIterator j)
             {
-                // If only inserting 1 element, get the required
-                // safety since insert is only called once.
+                node_constructor a(this->allocators_);
+
                 for (; i != j; ++i) {
                     // No side effects in this initial code
                     size_type hash_value = hash_function()(extract_key(*i));
@@ -1733,7 +1733,6 @@ namespace boost {
 
                         // Create the node before rehashing in case it throws an
                         // exception (need strong safety in such a case).
-                        node_constructor a(this->allocators_);
                         value_type const& v = *i;
                         a.construct(v);
 
