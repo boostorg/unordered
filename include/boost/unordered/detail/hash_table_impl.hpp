@@ -424,9 +424,7 @@ namespace boost {
 
             link_ptr end(size_type) const
             {
-                link_ptr ptr = link_ptr();
-                BOOST_HASH_MSVC_RESET_PTR(ptr);
-                return ptr;
+                return unordered_detail::null_ptr<link_ptr>();
             }
 
             link_ptr begin(bucket_ptr b) const
@@ -658,11 +656,8 @@ namespace boost {
             {
                 // If split is at the beginning of the group then there's
                 // nothing to split.
-                if(prev_in_group(split)->next_ != split) {
-                    link_ptr ptr = link_ptr();
-                    BOOST_HASH_MSVC_RESET_PTR(ptr);
-                    return ptr;
-                }
+                if(prev_in_group(split)->next_ != split)
+                    return unordered_detail::null_ptr<link_ptr>();
 
                 // Find the start of the group.
                 link_ptr start = split;
