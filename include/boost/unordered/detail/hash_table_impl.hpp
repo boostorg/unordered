@@ -1561,9 +1561,9 @@ namespace boost {
                 else {
                     // Only require basic exception safety here
                     reserve_extra(size() + distance);
+                    node_constructor a(this->allocators_);
 
                     for (; i != j; ++i) {
-                        node_constructor a(this->allocators_);
                         a.construct(*i);
 
                         key_type const& k = extract_key(a.get()->value_);
