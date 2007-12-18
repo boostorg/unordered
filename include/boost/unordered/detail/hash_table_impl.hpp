@@ -53,8 +53,28 @@ namespace boost {
             typedef BOOST_DEDUCED_TYPENAME allocator_pointer<node_allocator>::type node_ptr;
             typedef BOOST_DEDUCED_TYPENAME allocator_pointer<bucket_allocator>::type bucket_ptr;
             typedef BOOST_DEDUCED_TYPENAME allocator_reference<value_allocator>::type reference;
-            typedef bucket_ptr link_ptr;
+            typedef BOOST_DEDUCED_TYPENAME allocator_reference<bucket_allocator>::type bucket_reference;
 
+#if 1
+            typedef bucket_ptr link_ptr;
+#else
+            // This alternative version of link_ptr is used to check that the
+            // implementation is type safe wrt bucket_ptr and link_ptr.
+            //
+            // It's a sort of strict typedef.
+
+            struct link_ptr {
+                link_ptr() : ptr_() { BOOST_HASH_MSVC_RESET_PTR(ptr_); }
+                explicit link_ptr(bucket_ptr p) : ptr_(p) {}
+                bucket_reference operator*() const { return *ptr_; }
+                bucket* operator->() const { return &*ptr_; }
+                operator bool() const { return ptr_; }
+                bool operator==(link_ptr const& x) const { return ptr_ == x.ptr_; }
+                bool operator!=(link_ptr const& x) const { return ptr_ != x.ptr_; }
+            private:
+                bucket_ptr ptr_;
+            };
+#endif
             // Hash Bucket
             //
             // all no throw
@@ -207,7 +227,7 @@ namespace boost {
                 {
                     node_ptr p = node_;
                     unordered_detail::reset(node_);
-                    return allocators_.bucket_alloc_.address(*p);
+                    return link_ptr(allocators_.bucket_alloc_.address(*p));
                 }
 
             private:
