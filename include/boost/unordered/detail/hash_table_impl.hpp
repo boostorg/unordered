@@ -238,40 +238,40 @@ namespace boost {
             // Methods for navigating groups of elements with equal keys.
 
 #if BOOST_UNORDERED_HASH_EQUIVALENT
-            static link_ptr& prev_in_group(link_ptr n) {
+            static inline link_ptr& prev_in_group(link_ptr n) {
                 return static_cast<node&>(*n).group_prev_;
             }
 
             // pre: Must be pointing to the first node in a group.
-            static link_ptr last_in_group(link_ptr n) {
+            static inline link_ptr last_in_group(link_ptr n) {
                 BOOST_ASSERT(BOOST_HASH_BORLAND_BOOL(n) && n != prev_in_group(n)->next_);
                 return prev_in_group(n);
             }
 
             // pre: Must be pointing to the first node in a group.
-            static link_ptr& next_group(link_ptr n) {
+            static inline link_ptr& next_group(link_ptr n) {
                 BOOST_ASSERT(BOOST_HASH_BORLAND_BOOL(n) && n != prev_in_group(n)->next_);
                 return prev_in_group(n)->next_;
             }
 #else
-            static link_ptr last_in_group(link_ptr n) {
+            static inline link_ptr last_in_group(link_ptr n) {
                 return n;
             }
 
-            static link_ptr& next_group(link_ptr n) {
+            static inline link_ptr& next_group(link_ptr n) {
                 BOOST_ASSERT(n);
                 return n->next_;
             }
 #endif
 
             // pre: Must be pointing to a node
-            static node& get_node(link_ptr p) {
+            static inline node& get_node(link_ptr p) {
                 BOOST_ASSERT(p);
                 return static_cast<node&>(*p);
             }
 
             // pre: Must be pointing to a node
-            static reference get_value(link_ptr p) {
+            static inline reference get_value(link_ptr p) {
                 BOOST_ASSERT(p);
                 return static_cast<node&>(*p).value_;
             }
@@ -481,7 +481,7 @@ namespace boost {
             }
 
 #if BOOST_UNORDERED_HASH_EQUIVALENT
-            size_type group_count(link_ptr it) const
+            static size_type group_count(link_ptr it)
             {
                 size_type count = 0;
                 link_ptr first = it;
@@ -492,7 +492,7 @@ namespace boost {
                 return count;
             }
 #else
-            size_type group_count(link_ptr) const
+            static size_type group_count(link_ptr)
             {
                 return 1;
             }
@@ -1783,7 +1783,7 @@ namespace boost {
             size_type count(key_type const& k) const
             {
                 link_ptr it = find_iterator(k); // throws, strong
-                return BOOST_HASH_BORLAND_BOOL(it) ? this->group_count(it) : 0;
+                return BOOST_HASH_BORLAND_BOOL(it) ? data::group_count(it) : 0;
             }
 
             // find
@@ -1836,13 +1836,13 @@ namespace boost {
 
 private:
 #if BOOST_UNORDERED_HASH_EQUIVALENT
-            inline bool group_equals(link_ptr it1, link_ptr it2,
-                    type_wrapper<key_type>*) const
+            static inline bool group_equals(link_ptr it1, link_ptr it2,
+                    type_wrapper<key_type>*)
             {
-                return this->group_count(it1) == this->group_count(it2);
+                return data::group_count(it1) == data::group_count(it2);
             }
 
-            inline bool group_equals(link_ptr it1, link_ptr it2, void*) const
+            static inline bool group_equals(link_ptr it1, link_ptr it2, void*)
             {
                 if(!BOOST_HASH_BORLAND_BOOL(it2)) return false;
                 link_ptr end1 = data::next_group(it1);
@@ -1855,13 +1855,13 @@ private:
                 return it1 == end1 && it2 == end2;
             }
 #else
-            inline bool group_equals(link_ptr it1, link_ptr it2,
-                    type_wrapper<key_type>*) const
+            static inline bool group_equals(link_ptr it1, link_ptr it2,
+                    type_wrapper<key_type>*)
             {
                 return true;
             }
 
-            inline bool group_equals(link_ptr it1, link_ptr it2, void*) const
+            static inline bool group_equals(link_ptr it1, link_ptr it2, void*)
             {
                 return data::get_value(it1).second == data::get_value(it2).second;
             }
@@ -1889,7 +1889,7 @@ public:
 
             inline bool group_hash(link_ptr it, type_wrapper<key_type>*) const
             {
-                std::size_t seed = this->group_count(it);
+                std::size_t seed = data::group_count(it);
                 boost::hash_combine(seed, hash_function()(data::get_value(it)));
                 return seed;
             }
