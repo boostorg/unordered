@@ -82,17 +82,21 @@ namespace boost {
 
         // no throw
         inline std::size_t next_prime(std::size_t n) {
+            std::size_t const* const prime_list_end = prime_list +
+                sizeof(prime_list) / sizeof(*prime_list);
             std::size_t const* bound =
-                std::lower_bound(prime_list,prime_list + 28, n);
-            if(bound == prime_list + 28)
+                std::lower_bound(prime_list,prime_list_end, n);
+            if(bound == prime_list_end)
                 bound--;
             return *bound;
         }
 
         // no throw
         inline std::size_t prev_prime(std::size_t n) {
+            std::size_t const* const prime_list_end = prime_list +
+                sizeof(prime_list) / sizeof(*prime_list);
             std::size_t const* bound =
-                std::upper_bound(prime_list,prime_list + 28, n);
+                std::upper_bound(prime_list,prime_list_end, n);
             if(bound != prime_list)
                 bound--;
             return *bound;

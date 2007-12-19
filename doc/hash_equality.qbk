@@ -16,7 +16,7 @@ is declared as:
     class ``[classref boost::unordered_set unordered_set]``;
 
 The hash function comes first as you might want to change the hash function
-but not the equality predicate, while if you were to change the behaviour
+but not the equality predicate, while if you were to change the behavior
 of the equality predicate you would have to change the hash function to match
 it.  So, if you wanted to use the
 [@http://www.isthe.com/chongo/tech/comp/fnv/ FNV-1 hash] you could write:
@@ -34,59 +34,21 @@ case-insensitive dictionary:
 [case_insensitive_functions] 
 [case_insensitive_dictionary] 
 
-A more generic version is available at:
+This is a simplified version of the example at:
 [@../../libs/unordered/examples/case_insensitive.hpp /libs/unordered/examples/case_insensitive.hpp]
+which supports other locales and string types.
 
 [h2 Custom Types]
 
 Similarly, a custom hash function can be used for custom types:
 
-    struct point {
-        int x;
-        int y;
-    };
+[import src_code/point1.cpp]
+[point_example1]
 
-    bool operator==(point const& p1, point const& p2)
-    {
-        return p1.x == p2.x && p1.y == p2.y;
-    }
+Although, customizing Boost.Hash is probably a better solution:
 
-    struct point_hash
-        : std::unary_function<point, std::size_t>
-    {
-        std::size_t operator()(point const& p) const
-        {
-            std::size_t seed = 0;
-            boost::hash_combine(seed, p.x);
-            boost::hash_combine(seed, p.y);
-            return seed;
-        }
-    }
-
-    boost::unordered_multiset<point, std::equal_to<point>, point_hash>
-        points;
-
-Although, customising Boost.Hash is probably a better solution:
-
-    struct point {
-        int x;
-        int y;
-    };
-
-    bool operator==(point const& p1, point const& p2)
-    {
-        return p1.x == p2.x && p1.y == p2.y;
-    }
-
-    std::size_t hash_value(point const& x) {
-        std::size_t seed = 0;
-        boost::hash_combine(seed, p.x);
-        boost::hash_combine(seed, p.y);
-        return seed;
-    }
-
-    // Now the default functions work.
-    boost::unordered_multiset<point> points;
+[import src_code/point2.cpp]
+[point_example2]
 
 See the Boost.Hash documentation for more detail on how to do this. Remember
 that it relies on extensions to the draft standard - so it won't work on other

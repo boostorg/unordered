@@ -7,8 +7,8 @@
 The containers are made up of a number of 'buckets', each of which can contain
 any number of elements. For example, the following diagram shows an [classref
 boost::unordered_set unordered_set] with 7 buckets containing 5 elements, `A`,
-`B`, `C`, `D` and `E` (this is just for illustration, in practise containers
-will have more buckets).
+`B`, `C`, `D` and `E` (this is just for illustration, containers will typically
+have more buckets).
 
 [$../../libs/unordered/doc/diagrams/buckets.png]
 
@@ -97,9 +97,10 @@ elements into container `x`, you could first call:
     x.rehash((x.size() + n) / x.max_load_factor() + 1);
 
 [blurb Note: `rehash`'s argument is the number of buckets, not the number of
-elements, which is why the new size is divided by the maximum load factor. The
-`+ 1` is required because the container is allowed to resize when the load
-factor is equal to the maximum load factor.]
+elements, which is why the new size is divided by the maximum load factor.  The
++ 1 guarantees there is no invalidation; without it, reallocation could occur
+if the number of bucket exactly divides the target size, since the container is
+allowed to rehash when the load factor is equal to the maximum load factor.]
 
 [table Methods for Controlling Bucket Size
     [[Method] [Description]]

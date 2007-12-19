@@ -45,14 +45,14 @@ details). If accepted the containers should also be added to __boost-tr1__.
     namespace boost {
         template <
             class Key,
-            class Hash = boost::hash<Key>, 
+            class Hash = ``[classref boost::hash]``<Key>, 
             class Pred = std::equal_to<Key>, 
             class Alloc = std::allocator<Key> > 
         class ``[classref boost::unordered_set unordered_set]``;
 
         template<
             class Key,
-            class Hash = boost::hash<Key>, 
+            class Hash = ``[classref boost::hash]``<Key>, 
             class Pred = std::equal_to<Key>, 
             class Alloc = std::allocator<Key> > 
         class ``[classref boost::unordered_multiset unordered_multiset]``;
@@ -63,15 +63,15 @@ details). If accepted the containers should also be added to __boost-tr1__.
 
     namespace boost {
         template <
-            class Key, class T,
-            class Hash = boost::hash<Key>,
+            class Key, class Mapped,
+            class Hash = ``[classref boost::hash]``<Key>,
             class Pred = std::equal_to<Key>,
             class Alloc = std::allocator<Key> >
         class ``[classref boost::unordered_map unordered_map]``;
 
         template<
-            class Key, class T,
-            class Hash = boost::hash<Key>,
+            class Key, class Mapped,
+            class Hash = ``[classref boost::hash]``<Key>,
             class Pred = std::equal_to<Key>,
             class Alloc = std::allocator<Key> >
         class ``[classref boost::unordered_multimap unordered_multimap]``;

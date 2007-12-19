@@ -217,7 +217,8 @@ namespace minimal
 
         size_type max_size() const { return 1000; }
 
-#if defined(BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP)
+#if defined(BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP) || \
+        BOOST_WORKAROUND(MSVC, <= 1300)
     public: allocator& operator=(allocator const&) { return *this;}
 #else
     private: allocator& operator=(allocator const&);

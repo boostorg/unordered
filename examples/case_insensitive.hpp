@@ -27,7 +27,7 @@ namespace hash_examples
         template <typename String1, typename String2>
         bool operator()(String1 const& x1, String2 const& x2) const
         {
-            return boost::algorithm::iequals(x1, x2);
+            return boost::algorithm::iequals(x1, x2, locale_);
         }
     private:
         std::locale locale_;

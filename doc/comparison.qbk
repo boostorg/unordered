@@ -8,19 +8,16 @@
     [[Associative Containers] [Unordered Associative Containers]]
 
     [
-        [Parametrised by an ordering relation `Compare`]
-        [Parametrised by a function object `Hash` and an equivalence relation
+        [Parameterized by an ordering relation `Compare`]
+        [Parameterized by a function object `Hash` and an equivalence relation
             `Pred`]
     ]
     [
-        [`Compare` exposed by member typedef `key_compare`, accessed by member function `key_comp()`]
-        [`Hash` exposed by member typedef `hasher`, accessed by member function `hash_function()`.
-
-         `Pred` by member typedef `key_equal` and member function `key_eq()`.]
-    ]
-    [
-        [Member typedef `value_compare` supplies an ordering comparison for member elements, accessed by member function `value_comp()`.]
-        [No equivalent. No idea why.]
+        [Keys can be compared using `key_compare` which is accessed by member function `key_comp()`,
+         values can be compared using `value_compare` which is accessed by member function `value_comp()`.]
+        [Keys can be hashed using `hasher` which is accessed by member function `hash_function()`,
+         and checked for equality using `key_equal` which is accessed by member function `key_eq()`.
+         There is no function object for compared or hashing values.]
     ]
     [
         [Constructors have optional extra parameters for the comparison object.]
@@ -105,15 +102,15 @@
     ]
     [
         [Insert a single element with a hint]
-        [Amortised constant if t elements inserted right after hint,
+        [Amortized constant if t elements inserted right after hint,
             logarithmic otherwise]
         [Average case constant, worst case linear (ie. the same as
             a normal insert).]
     ]
     [
         [Inserting a range of /N/ elements]
-        [/N/ log(`size()`+/N/)]
-        [Average case O(/N/), worst case O(/N/ * 'size()')]
+        [ /N/ log(`size()`+/N/) ]
+        [Average case O(/N/), worst case O(/N/ * `size()`)]
     ]
     [
         [Erase by key, `k`]
@@ -122,7 +119,7 @@
     ]
     [
         [Erase a single element by iterator]
-        [Amortised constant]
+        [Amortized constant]
         [Average case: O(1), Worst case: O(`size()`)]
     ]
     [
@@ -138,7 +135,7 @@
     [
         [Find]
         [logarithmic]
-        [Average case: O(/N/), Worst case: O(`size()`)]
+        [Average case: O(1), Worst case: O(`size()`)]
     ]
     [/ TODO: Average case is probably wrong. ]
     [
