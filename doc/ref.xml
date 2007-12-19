@@ -385,8 +385,12 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               </parameter>
               <type>void</type>
               <throws>
-                <para>Doesn't throw an exception unless it is thrown by the copy constructor or copy assignment operator of <code>key_equal</code> or <code>hasher</code>.</para>
+                <para>If the allocators are equal, doesn't throw an exception unless it is thrown by the copy constructor or copy assignment operator of <code>key_equal</code> or <code>hasher</code>.</para>
               </throws>
+              <notes>
+                <para>For a discussion of the behaviour when allocators aren't equal see 
+                  <link linkend="unordered.rationale.swapping_containers_with_unequal_allocators">the implementation details</link>.</para>
+              </notes>
             </method>
           </method-group>
           <method-group name="observers">
@@ -610,8 +614,12 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para><code>x.swap(y)</code></para>
               </effects>
               <throws>
-                <para>Doesn't throw an exception unless it is thrown by the copy constructor or copy assignment operator of <code>Hash</code> or <code>Pred</code>.</para>
+                <para>If the allocators are equal, doesn't throw an exception unless it is thrown by the copy constructor or copy assignment operator of <code>Hash</code> or <code>Pred</code>.</para>
               </throws>
+              <notes>
+                <para>For a discussion of the behaviour when allocators aren't equal see 
+                  <link linkend="unordered.rationale.swapping_containers_with_unequal_allocators">the implementation details</link>.</para>
+              </notes>
             </function>
           </free-function-group>
         </class>
@@ -988,8 +996,12 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               </parameter>
               <type>void</type>
               <throws>
-                <para>Doesn't throw an exception unless it is thrown by the copy constructor or copy assignment operator of <code>key_equal</code> or <code>hasher</code>.</para>
+                <para>If the allocators are equal, doesn't throw an exception unless it is thrown by the copy constructor or copy assignment operator of <code>key_equal</code> or <code>hasher</code>.</para>
               </throws>
+              <notes>
+                <para>For a discussion of the behaviour when allocators aren't equal see 
+                  <link linkend="unordered.rationale.swapping_containers_with_unequal_allocators">the implementation details</link>.</para>
+              </notes>
             </method>
           </method-group>
           <method-group name="observers">
@@ -1213,8 +1225,12 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para><code>x.swap(y)</code></para>
               </effects>
               <throws>
-                <para>Doesn't throw an exception unless it is thrown by the copy constructor or copy assignment operator of <code>Hash</code> or <code>Pred</code>.</para>
+                <para>If the allocators are equal, doesn't throw an exception unless it is thrown by the copy constructor or copy assignment operator of <code>Hash</code> or <code>Pred</code>.</para>
               </throws>
+              <notes>
+                <para>For a discussion of the behaviour when allocators aren't equal see 
+                  <link linkend="unordered.rationale.swapping_containers_with_unequal_allocators">the implementation details</link>.</para>
+              </notes>
             </function>
           </free-function-group>
         </class>
@@ -1608,8 +1624,12 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               </parameter>
               <type>void</type>
               <throws>
-                <para>Doesn't throw an exception unless it is thrown by the copy constructor or copy assignment operator of <code>key_equal</code> or <code>hasher</code>.</para>
+                <para>If the allocators are equal, doesn't throw an exception unless it is thrown by the copy constructor or copy assignment operator of <code>key_equal</code> or <code>hasher</code>.</para>
               </throws>
+              <notes>
+                <para>For a discussion of the behaviour when allocators aren't equal see 
+                  <link linkend="unordered.rationale.swapping_containers_with_unequal_allocators">the implementation details</link>.</para>
+              </notes>
             </method>
           </method-group>
           <method-group name="observers">
@@ -1869,8 +1889,12 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para><code>x.swap(y)</code></para>
               </effects>
               <throws>
-                <para>Doesn't throw an exception unless it is thrown by the copy constructor or copy assignment operator of <code>Hash</code> or <code>Pred</code>.</para>
+                <para>If the allocators are equal, doesn't throw an exception unless it is thrown by the copy constructor or copy assignment operator of <code>Hash</code> or <code>Pred</code>.</para>
               </throws>
+              <notes>
+                <para>For a discussion of the behaviour when allocators aren't equal see 
+                  <link linkend="unordered.rationale.swapping_containers_with_unequal_allocators">the implementation details</link>.</para>
+              </notes>
             </function>
           </free-function-group>
         </class>
@@ -2255,8 +2279,12 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               </parameter>
               <type>void</type>
               <throws>
-                <para>Doesn't throw an exception unless it is thrown by the copy constructor or copy assignment operator of <code>key_equal</code> or <code>hasher</code>.</para>
+                <para>If the allocators are equal, doesn't throw an exception unless it is thrown by the copy constructor or copy assignment operator of <code>key_equal</code> or <code>hasher</code>.</para>
               </throws>
+              <notes>
+                <para>For a discussion of the behaviour when allocators aren't equal see 
+                  <link linkend="unordered.rationale.swapping_containers_with_unequal_allocators">the implementation details</link>.</para>
+              </notes>
             </method>
           </method-group>
           <method-group name="observers">
@@ -2482,8 +2510,12 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para><code>x.swap(y)</code></para>
               </effects>
               <throws>
-                <para>Doesn't throw an exception unless it is thrown by the copy constructor or copy assignment operator of <code>Hash</code> or <code>Pred</code>.</para>
+                <para>If the allocators are equal, doesn't throw an exception unless it is thrown by the copy constructor or copy assignment operator of <code>Hash</code> or <code>Pred</code>.</para>
               </throws>
+              <notes>
+                <para>For a discussion of the behaviour when allocators aren't equal see 
+                  <link linkend="unordered.rationale.swapping_containers_with_unequal_allocators">the implementation details</link>.</para>
+              </notes>
             </function>
           </free-function-group>
         </class>

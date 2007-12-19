@@ -116,19 +116,64 @@ It isn't clear how to swap containers when their allocators aren't equal.
 This is 
 [@http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#431
 Issue 431: Swapping containers with unequal allocators].
+
 Howard Hinnant wrote about this in
 [@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2004/n1599.html N1599]
 and suggested swapping both the allocators and the containers' contents.
-
-There is currently a further issue - if the allocator's swap does throw there's
-no guarantee what state the allocators will be in. The only solution seems to
-be to double buffer the allocators. But I'm assuming that it won't throw for
-now.
-
-Update: The committee have now decided that `swap` should do a fast swap if the
+But the committee have now decided that `swap` should do a fast swap if the
 allocator is Swappable and a slow swap using copy construction otherwise. To
-make this distinction requires concepts. For now I'm sticking with the current
-implementation.
+make this distinction requires concepts.
+
+In
+[@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2387.pdf
+N2387, Omnibus Allocator Fix-up Proposals],
+Pablo Halpern suggests that there are actually two distinct allocator models,
+"Moves with Value" and "Scoped" which behave differently:
+
+[:
+When allocators are allowed to have state, it is necessary to have a model for
+determining from where an object obtains its allocator. We’ve identified two such
+models: the “Moves with Value” allocator model and the “Scoped” allocator model.
+
+In the “Moves with Value” allocator model, the copy constructor of an allocator-aware
+class will copy both the value and the allocator from its argument. This is the model
+specified in the C++03 standard. With this model, inserting an object into a container
+usually causes the new container item to copy the allocator from the object that was
+inserted. This model can be useful in special circumstances, e.g., if the items within a
+container use an allocator that is specially tuned to the item’s type.
+
+In the “Scoped” allocator model, the allocator used to construct an object is determined
+by the context of that object, much like a storage class. With this model, inserting an
+object into a container causes the new container item to use the same allocator as the
+container. To avoid allocators being used in the wrong context, the allocator is never
+copied during copy or move construction. Thus, it is possible using this model to use
+allocators based on short-lived resources without fear that an object will transfer its
+allocator to a copy that might outlive the (shared) allocator resource. This model is
+reasonably safe and generally useful on a large scale. There was strong support in the
+2005 Tremblant meeting for pursuing an allocator model that propagates allocators
+from container to contained objects.
+]
+
+With these models the choice becomes clearer:
+
+[:
+I introduced the “Moves with Value” allocator model and the
+“Scoped” allocator model. In the former case, the allocator is copied when the container
+is copy-constructed. In the latter case it is not. Swapping the allocators is the right thing
+to do if the containers conform to the “Moves with Value” allocator model and
+absolutely the wrong thing to do if the containers conform to the “Scoped” allocator
+model. With the two allocator models well-defined, the desired behavior becomes clear.
+]
+
+The proposal is that allocators are swapped if the allocator follows the
+"Moves with Value" model and the allocator is swappable. Otherwise a slow swap
+is used. Since containers currently only support the "Moves with Value" model
+this is consistent with the committee's current recommendation (although it
+suggests using a trait to detect if the allocator is swappable rather than a
+concept).
+
+Since there is currently neither have a swappable trait or concept for
+allocators this implementation always performs a slow swap.
 
 [h3 Are insert and erase stable for unordered_multiset and unordered_multimap?]
 
