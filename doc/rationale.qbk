@@ -7,7 +7,7 @@
     Thomas Wang's article on integer hash functions]]
 [def __n2345__
     [@http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2007/n2345.pdf
-    N2345, 'Placement Insert for Containers']]
+    N2345, 'Placement Instert for Containers']]
 [def __n2369__
     [@http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2007/n2369.pdf
     the August 2008 version of the working draft standard]]
@@ -28,12 +28,12 @@ By specifying an interface for accessing the buckets of the container the
 standard pretty much requires that the hash table uses chained addressing.
 
 It would be conceivable to write a hash table that uses another method.  For
-example, it could use open addressing, and use the lookup chain to act as a
+example, an it could use open addressing, and use the lookup chain to act as a
 bucket but there are a some serious problems with this: 
 
 * The draft standard requires that pointers to elements aren't invalidated, so
   the elements can't be stored in one array, but will need a layer of
-  indirection instead - losing the efficiency and most of the memory gain,
+  indirection instead - loosing the efficiency and most of the memory gain,
   the main advantages of open addressing.
 
 * Local iterators would be very inefficient and may not be able to
@@ -98,95 +98,34 @@ So, this implementation uses a prime number for the hash table size.
 
 [h2 Active Issues and Proposals]
 
-[h3 Removing unused allocator functions]
+[h3 [@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2257.html
+     Removing unused allocator functions]]
 
-In
-[@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2257.html
-N2257, removing unused allocator functions],
-Matt Austern suggests removing the `construct`, `destroy` and `address` member
-functions - all of which Boost.Unordered calls. Changing this will simplify the
-implementation, as well as make supporting `emplace` easier, but means that the
-containers won't support allocators which require these methods to be called.
-Detlef Vollmann opposed this change in
-[@http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2007/n2339.htm N2339].
+This proposal suggests removing the `construct`, `destroy` and `address`
+member functions - all of which Boost.Unordered calls. It's near trivial
+to replace the calls with the appropriate code - and will simplify the
+implementation, as well as make supporting `emplace` easier.
+[@http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2007/n2339.htm
+N2339] opposed this change.
 
-[h3 Swapping containers with unequal allocators]
+[h3 [@http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#431
+    431. Swapping containers with unequal allocators]]
 
-It isn't clear how to swap containers when their allocators aren't equal.
-This is 
-[@http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#431
-Issue 431: Swapping containers with unequal allocators].
+I followed Howard Hinnant's advice and implemented option 3.
 
-Howard Hinnant wrote about this in
-[@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2004/n1599.html N1599]
-and suggested swapping both the allocators and the containers' contents.
-But the committee have now decided that `swap` should do a fast swap if the
+There is currently a further issue - if the allocator's swap does throw there's
+no guarantee what state the allocators will be in. The only solution seems to
+be to double buffer the allocators. But I'm assuming that it won't throw for now.
+
+Update: The committee have now decided that `swap` should do a fast swap if the
 allocator is Swappable and a slow swap using copy construction otherwise. To
-make this distinction requires concepts.
+make this distinction requires concepts. For now I'm sticking with the current
+implementation.
 
-In
-[@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2387.pdf
-N2387, Omnibus Allocator Fix-up Proposals],
-Pablo Halpern suggests that there are actually two distinct allocator models,
-"Moves with Value" and "Scoped" which behave differently:
+[h3 [@http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#518
+    518. Are insert and erase stable for unordered_multiset and unordered_multimap?]]
 
-[:
-When allocators are allowed to have state, it is necessary to have a model for
-determining from where an object obtains its allocator. We’ve identified two such
-models: the “Moves with Value” allocator model and the “Scoped” allocator model.
-
-In the “Moves with Value” allocator model, the copy constructor of an allocator-aware
-class will copy both the value and the allocator from its argument. This is the model
-specified in the C++03 standard. With this model, inserting an object into a container
-usually causes the new container item to copy the allocator from the object that was
-inserted. This model can be useful in special circumstances, e.g., if the items within a
-container use an allocator that is specially tuned to the item’s type.
-
-In the “Scoped” allocator model, the allocator used to construct an object is determined
-by the context of that object, much like a storage class. With this model, inserting an
-object into a container causes the new container item to use the same allocator as the
-container. To avoid allocators being used in the wrong context, the allocator is never
-copied during copy or move construction. Thus, it is possible using this model to use
-allocators based on short-lived resources without fear that an object will transfer its
-allocator to a copy that might outlive the (shared) allocator resource. This model is
-reasonably safe and generally useful on a large scale. There was strong support in the
-2005 Tremblant meeting for pursuing an allocator model that propagates allocators
-from container to contained objects.
-]
-
-With these models the choice becomes clearer:
-
-[:
-I introduced the “Moves with Value” allocator model and the
-“Scoped” allocator model. In the former case, the allocator is copied when the container
-is copy-constructed. In the latter case it is not. Swapping the allocators is the right thing
-to do if the containers conform to the “Moves with Value” allocator model and
-absolutely the wrong thing to do if the containers conform to the “Scoped” allocator
-model. With the two allocator models well-defined, the desired behavior becomes clear.
-]
-
-The proposal is that allocators are swapped if the allocator follows the
-"Moves with Value" model and the allocator is swappable. Otherwise a slow swap
-is used. Since containers currently only support the "Moves with Value" model
-this is consistent with the committee's current recommendation (although it
-suggests using a trait to detect if the allocator is swappable rather than a
-concept).
-
-Since there is currently neither have a swappable trait or concept for
-allocators this implementation always performs a slow swap.
-
-[h3 Are insert and erase stable for unordered_multiset and unordered_multimap?]
-
-It is not specified if `unordered_multiset` and `unordered_multimap` preserve the order
-of elements with equivalent keys (i.e. if they're stable under `insert` and `erase`).
-This is [@http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#518 issue 581].
 The current proposal is that insert, erase and rehash are stable - so they are here.
-
-[h3 const_local_iterator cbegin, cend missing from TR1]
-
-[@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2482.html#691
-Issue 691] is that `cbegin` and `cend` are missing for local iterators.
-The current resolution is that they'll be added, so I've added them.
 
 [h2 Future Developments]
 

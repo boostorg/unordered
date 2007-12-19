@@ -14,7 +14,7 @@
         bool operator()(std::string const& x,
             std::string const& y) const
         {
-            return boost::algorithm::iequals(x, y, std::locale());
+            return boost::algorithm::iequals(x, y);
         }
     };
 
@@ -24,12 +24,11 @@
         std::size_t operator()(std::string const& x) const
         {
             std::size_t seed = 0;
-            std::locale locale;
 
             for(std::string::const_iterator it = x.begin();
                 it != x.end(); ++it)
             {
-                boost::hash_combine(seed, std::toupper(*it, locale));
+                boost::hash_combine(seed, std::toupper(*it));
             }
 
             return seed;

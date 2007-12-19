@@ -42,9 +42,6 @@ namespace boost {
 #if !BOOST_WORKAROUND(BOOST_MSVC, < 1300)
         template <class T>
         inline void reset(T& x) { x  = T(); }
-
-        template <class Ptr>
-        inline Ptr null_ptr() { return Ptr(); }
 #else
         template <class T>
         inline void reset_impl(T& x, ...) { x  = T(); }
@@ -52,9 +49,6 @@ namespace boost {
         inline void reset_impl(T*& x, int) { x  = 0; }
         template <class T>
         inline void reset(T& x) { reset_impl(x); }
-
-        template <class Ptr>
-        inline Ptr null_ptr() { Ptr x; reset(x); return x; }
 #endif
 
         // Work around for Microsoft's ETI bug.
