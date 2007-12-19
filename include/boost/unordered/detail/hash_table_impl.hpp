@@ -238,40 +238,40 @@ namespace boost {
             // Methods for navigating groups of elements with equal keys.
 
 #if BOOST_UNORDERED_HASH_EQUIVALENT
-            static link_ptr& prev_in_group(link_ptr n) {
+            static inline link_ptr& prev_in_group(link_ptr n) {
                 return static_cast<node&>(*n).group_prev_;
             }
 
             // pre: Must be pointing to the first node in a group.
-            static link_ptr last_in_group(link_ptr n) {
+            static inline link_ptr last_in_group(link_ptr n) {
                 BOOST_ASSERT(BOOST_HASH_BORLAND_BOOL(n) && n != prev_in_group(n)->next_);
                 return prev_in_group(n);
             }
 
             // pre: Must be pointing to the first node in a group.
-            static link_ptr& next_group(link_ptr n) {
+            static inline link_ptr& next_group(link_ptr n) {
                 BOOST_ASSERT(BOOST_HASH_BORLAND_BOOL(n) && n != prev_in_group(n)->next_);
                 return prev_in_group(n)->next_;
             }
 #else
-            static link_ptr last_in_group(link_ptr n) {
+            static inline link_ptr last_in_group(link_ptr n) {
                 return n;
             }
 
-            static link_ptr& next_group(link_ptr n) {
+            static inline link_ptr& next_group(link_ptr n) {
                 BOOST_ASSERT(n);
                 return n->next_;
             }
 #endif
 
             // pre: Must be pointing to a node
-            static node& get_node(link_ptr p) {
+            static inline node& get_node(link_ptr p) {
                 BOOST_ASSERT(p);
                 return static_cast<node&>(*p);
             }
 
             // pre: Must be pointing to a node
-            static reference get_value(link_ptr p) {
+            static inline reference get_value(link_ptr p) {
                 BOOST_ASSERT(p);
                 return static_cast<node&>(*p).value_;
             }
@@ -481,7 +481,7 @@ namespace boost {
             }
 
 #if BOOST_UNORDERED_HASH_EQUIVALENT
-            size_type group_count(link_ptr it) const
+            static size_type group_count(link_ptr it)
             {
                 size_type count = 0;
                 link_ptr first = it;
@@ -492,7 +492,7 @@ namespace boost {
                 return count;
             }
 #else
-            size_type group_count(link_ptr) const
+            static size_type group_count(link_ptr)
             {
                 return 1;
             }
@@ -1568,9 +1568,9 @@ namespace boost {
                 else {
                     // Only require basic exception safety here
                     reserve_extra(size() + distance);
+                    node_constructor a(this->allocators_);
 
                     for (; i != j; ++i) {
-                        node_constructor a(this->allocators_);
                         a.construct(*i);
 
                         key_type const& k = extract_key(a.get()->value_);
@@ -1725,8 +1725,8 @@ namespace boost {
             template <typename InputIterator>
             void insert(InputIterator i, InputIterator j)
             {
-                // If only inserting 1 element, get the required
-                // safety since insert is only called once.
+                node_constructor a(this->allocators_);
+
                 for (; i != j; ++i) {
                     // No side effects in this initial code
                     size_type hash_value = hash_function()(extract_key(*i));
@@ -1740,7 +1740,6 @@ namespace boost {
 
                         // Create the node before rehashing in case it throws an
                         // exception (need strong safety in such a case).
-                        node_constructor a(this->allocators_);
                         value_type const& v = *i;
                         a.construct(v);
 
@@ -1790,7 +1789,7 @@ namespace boost {
             size_type count(key_type const& k) const
             {
                 link_ptr it = find_iterator(k); // throws, strong
-                return BOOST_HASH_BORLAND_BOOL(it) ? this->group_count(it) : 0;
+                return BOOST_HASH_BORLAND_BOOL(it) ? data::group_count(it) : 0;
             }
 
             // find

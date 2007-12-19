@@ -7,7 +7,6 @@
 #define BOOST_UNORDERED_TEST_HELPERS_INPUT_ITERATOR_HEADER
 
 #include <boost/iterator_adaptors.hpp>
-#include <boost/shared_ptr.hpp>
 
 namespace test
 {
