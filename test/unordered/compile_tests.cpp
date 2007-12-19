@@ -190,6 +190,11 @@ void unordered_test(X&, Key& k, T& t, Hash& hf, Pred& eq)
     test::check_return_type<local_iterator>::equals(a.end(0));
     test::check_return_type<const_local_iterator>::equals(b.end(0));
 
+    test::check_return_type<const_local_iterator>::equals(a.cbegin(0));
+    test::check_return_type<const_local_iterator>::equals(b.cbegin(0));
+    test::check_return_type<const_local_iterator>::equals(a.cend(0));
+    test::check_return_type<const_local_iterator>::equals(b.cend(0));
+
     test::check_return_type<float>::equals(b.load_factor());
     test::check_return_type<float>::equals(b.max_load_factor());
     a.max_load_factor((float) 2.0);

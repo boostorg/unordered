@@ -526,6 +526,30 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>A local iterator pointing the 'one past the end' element in the bucket with index <code>n</code>.</para>
               </returns>
             </overloaded-method>
+            <method name="cbegin" cv="const">
+              <parameter name="n">
+                <paramtype>size_type</paramtype>
+              </parameter>
+              <type>const_local_iterator</type>
+              <requires>
+                <para><code>n</code> shall be in the range <code>[0, bucket_count())</code>.</para>
+              </requires>
+              <returns>
+                <para>A constant local iterator pointing the first element in the bucket with index <code>n</code>.</para>
+              </returns>
+            </method>
+            <method name="cend">
+              <parameter name="n">
+                <paramtype>size_type</paramtype>
+              </parameter>
+              <type>const_local_iterator</type>
+              <requires>
+                <para><code>n</code> shall be in the range <code>[0, bucket_count())</code>.</para>
+              </requires>
+              <returns>
+                <para>A constant local iterator pointing the 'one past the end' element in the bucket with index <code>n</code>.</para>
+              </returns>
+            </method>
           </method-group>
           <method-group name="hash policy">
             <method name="load_factor" cv="const">
@@ -1105,6 +1129,30 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>A local iterator pointing the 'one past the end' element in the bucket with index <code>n</code>.</para>
               </returns>
             </overloaded-method>
+            <method name="cbegin" cv="const">
+              <parameter name="n">
+                <paramtype>size_type</paramtype>
+              </parameter>
+              <type>const_local_iterator</type>
+              <requires>
+                <para><code>n</code> shall be in the range <code>[0, bucket_count())</code>.</para>
+              </requires>
+              <returns>
+                <para>A constant local iterator pointing the first element in the bucket with index <code>n</code>.</para>
+              </returns>
+            </method>
+            <method name="cend">
+              <parameter name="n">
+                <paramtype>size_type</paramtype>
+              </parameter>
+              <type>const_local_iterator</type>
+              <requires>
+                <para><code>n</code> shall be in the range <code>[0, bucket_count())</code>.</para>
+              </requires>
+              <returns>
+                <para>A constant local iterator pointing the 'one past the end' element in the bucket with index <code>n</code>.</para>
+              </returns>
+            </method>
           </method-group>
           <method-group name="hash policy">
             <method name="load_factor" cv="const">
@@ -1735,6 +1783,30 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>A local iterator pointing the 'one past the end' element in the bucket with index <code>n</code>.</para>
               </returns>
             </overloaded-method>
+            <method name="cbegin" cv="const">
+              <parameter name="n">
+                <paramtype>size_type</paramtype>
+              </parameter>
+              <type>const_local_iterator</type>
+              <requires>
+                <para><code>n</code> shall be in the range <code>[0, bucket_count())</code>.</para>
+              </requires>
+              <returns>
+                <para>A constant local iterator pointing the first element in the bucket with index <code>n</code>.</para>
+              </returns>
+            </method>
+            <method name="cend">
+              <parameter name="n">
+                <paramtype>size_type</paramtype>
+              </parameter>
+              <type>const_local_iterator</type>
+              <requires>
+                <para><code>n</code> shall be in the range <code>[0, bucket_count())</code>.</para>
+              </requires>
+              <returns>
+                <para>A constant local iterator pointing the 'one past the end' element in the bucket with index <code>n</code>.</para>
+              </returns>
+            </method>
           </method-group>
           <method-group name="hash policy">
             <method name="load_factor" cv="const">
@@ -2324,6 +2396,30 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>A local iterator pointing the 'one past the end' element in the bucket with index <code>n</code>.</para>
               </returns>
             </overloaded-method>
+            <method name="cbegin" cv="const">
+              <parameter name="n">
+                <paramtype>size_type</paramtype>
+              </parameter>
+              <type>const_local_iterator</type>
+              <requires>
+                <para><code>n</code> shall be in the range <code>[0, bucket_count())</code>.</para>
+              </requires>
+              <returns>
+                <para>A constant local iterator pointing the first element in the bucket with index <code>n</code>.</para>
+              </returns>
+            </method>
+            <method name="cend">
+              <parameter name="n">
+                <paramtype>size_type</paramtype>
+              </parameter>
+              <type>const_local_iterator</type>
+              <requires>
+                <para><code>n</code> shall be in the range <code>[0, bucket_count())</code>.</para>
+              </requires>
+              <returns>
+                <para>A constant local iterator pointing the 'one past the end' element in the bucket with index <code>n</code>.</para>
+              </returns>
+            </method>
           </method-group>
           <method-group name="hash policy">
             <method name="load_factor" cv="const">
