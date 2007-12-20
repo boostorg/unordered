@@ -154,10 +154,10 @@ namespace boost {
 
                 void swap(allocators& x)
                 {
-                    hash_swap(node_alloc_, x.node_alloc_);
-                    hash_swap(bucket_alloc_, x.bucket_alloc_);
-                    hash_swap(value_alloc_, x.value_alloc_);
-                    hash_swap(node_base_alloc_, x.node_base_alloc_);
+                    unordered_detail::hash_swap(node_alloc_, x.node_alloc_);
+                    unordered_detail::hash_swap(bucket_alloc_, x.bucket_alloc_);
+                    unordered_detail::hash_swap(value_alloc_, x.value_alloc_);
+                    unordered_detail::hash_swap(node_base_alloc_, x.node_base_alloc_);
                 }
 
                 bool operator==(allocators const& x)
@@ -831,7 +831,7 @@ namespace boost {
 
             void clear()
             {
-                bucket_ptr begin = buckets_;
+                bucket_ptr begin = cached_begin_bucket_;
                 bucket_ptr end = buckets_ + bucket_count_;
 
                 size_ = 0;
@@ -969,9 +969,9 @@ namespace boost {
         {
             typedef BOOST_UNORDERED_TABLE_DATA<Alloc> data;
 
-            typedef typename data::node_constructor node_constructor;
-            typedef typename data::bucket_ptr bucket_ptr;
-            typedef typename data::link_ptr link_ptr;
+            typedef BOOST_DEDUCED_TYPENAME data::node_constructor node_constructor;
+            typedef BOOST_DEDUCED_TYPENAME data::bucket_ptr bucket_ptr;
+            typedef BOOST_DEDUCED_TYPENAME data::link_ptr link_ptr;
 
         public:
 

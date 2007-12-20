@@ -61,27 +61,27 @@ namespace boost {
         
         template <class Allocator> struct allocator_value_type
         {
-            typedef typename Allocator::value_type type;
+            typedef BOOST_DEDUCED_TYPENAME Allocator::value_type type;
         };
 
         template <class Allocator> struct allocator_pointer
         {
-            typedef typename Allocator::pointer type;
+            typedef BOOST_DEDUCED_TYPENAME Allocator::pointer type;
         };
         
         template <class Allocator> struct allocator_const_pointer
         {
-            typedef typename Allocator::const_pointer type;
+            typedef BOOST_DEDUCED_TYPENAME Allocator::const_pointer type;
         };
         
         template <class Allocator> struct allocator_reference
         {
-            typedef typename Allocator::reference type;
+            typedef BOOST_DEDUCED_TYPENAME Allocator::reference type;
         };
         
         template <class Allocator> struct allocator_const_reference
         {
-            typedef typename Allocator::const_reference type;
+            typedef BOOST_DEDUCED_TYPENAME Allocator::const_reference type;
         };
         
 #if defined(BOOST_MPL_CFG_MSVC_ETI_BUG)
@@ -121,8 +121,8 @@ namespace boost {
         template <class Allocator>
         struct allocator_constructor
         {
-            typedef typename Allocator::value_type value_type;
-            typedef typename allocator_pointer<Allocator>::type pointer;
+            typedef BOOST_DEDUCED_TYPENAME allocator_value_type<Allocator>::type value_type;
+            typedef BOOST_DEDUCED_TYPENAME allocator_pointer<Allocator>::type pointer;
 
             Allocator& alloc_;
             pointer ptr_;
@@ -168,7 +168,7 @@ namespace boost {
             {
                 pointer p = ptr_;
                 constructed_ = false;
-                reset(ptr_);
+                unordered_detail::reset(ptr_);
                 return p;
             }
         };
@@ -176,7 +176,7 @@ namespace boost {
         template <class Allocator>
         struct allocator_array_constructor
         {
-            typedef typename allocator_pointer<Allocator>::type pointer;
+            typedef BOOST_DEDUCED_TYPENAME allocator_pointer<Allocator>::type pointer;
 
             Allocator& alloc_;
             pointer ptr_;
@@ -220,7 +220,7 @@ namespace boost {
             pointer release()
             {
                 pointer p(ptr_);
-                reset(ptr_);
+                unordered_detail::reset(ptr_);
                 return p;
             }
         private:
