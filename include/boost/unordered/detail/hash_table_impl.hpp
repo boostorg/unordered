@@ -314,7 +314,7 @@ namespace boost {
                     }
                 }
 
-                void incrementGroup()
+                void increment_group()
                 {
                     node_ = data::next_group(node_);
 
@@ -1822,7 +1822,7 @@ namespace boost {
                 if (BOOST_UNORDERED_BORLAND_BOOL(it)) {
                     iterator_base first(iterator_base(bucket, it));
                     iterator_base second(first);
-                    second.incrementGroup();
+                    second.increment_group();
                     return std::pair<iterator_base, iterator_base>(first, second);
                 }
                 else {
