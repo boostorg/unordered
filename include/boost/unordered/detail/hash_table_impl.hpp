@@ -434,7 +434,6 @@ namespace boost {
                 return buckets_ + static_cast<difference_type>(bucket_count_);
             }
 
-
             iterator_base begin() const
             {
                 return size_
@@ -449,7 +448,7 @@ namespace boost {
 
             link_ptr begin(size_type n) const
             {
-                return buckets_[n].next_;
+                return (buckets_ + static_cast<difference_type>(n))->next_;
             }
 
             link_ptr end(size_type) const
