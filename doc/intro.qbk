@@ -28,11 +28,12 @@ with some care, can be avoided.
 
 Also, the existing containers require a 'less than' comparison object
 to order their elements. For some data types this is impossible to implement
-or isn't practical. For a hash table you need an equality function
+or isn't practical. In contrast, a hash table only needs an equality function
 and a hash function for the key.
 
-So the __tr1__ introduced the unordered associative containers, which are
-implemented using hash tables, and they have now been added to the __draft__.
+With this in mind, the __tr1__ introduced the unordered associative containers,
+which are implemented using hash tables, and they have now been added to the
+__draft__.
 
 This library supplies an almost complete implementation of the specification in
 the __draft__, (it doesn't support `emplace` yet, see the [link
@@ -110,6 +111,7 @@ can be in any order. For example, it might be:
     three,3
     missing,0
 
-There are other differences, which will be detailed later.
+There are other differences, which are listed in the
+[link unordered.comparison Comparison with Associative Containers] section.
 
 [endsect]

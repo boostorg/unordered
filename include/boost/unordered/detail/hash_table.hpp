@@ -33,15 +33,15 @@
 #include <boost/mpl/aux_/config/eti.hpp>
 
 #if BOOST_WORKAROUND(__BORLANDC__, <= 0x0551)
-#define BOOST_HASH_BORLAND_BOOL(x) (bool)(x)
+#define BOOST_UNORDERED_BORLAND_BOOL(x) (bool)(x)
 #else
-#define BOOST_HASH_BORLAND_BOOL(x) x
+#define BOOST_UNORDERED_BORLAND_BOOL(x) x
 #endif
 
 #if BOOST_WORKAROUND(BOOST_MSVC, < 1300)
-#define BOOST_HASH_MSVC_RESET_PTR(x) unordered_detail::reset(x)
+#define BOOST_UNORDERED_MSVC_RESET_PTR(x) unordered_detail::reset(x)
 #else
-#define BOOST_HASH_MSVC_RESET_PTR(x)
+#define BOOST_UNORDERED_MSVC_RESET_PTR(x)
 #endif
 
 namespace boost {
@@ -112,13 +112,13 @@ namespace boost {
     }
 }
 
-#define BOOST_UNORDERED_HASH_EQUIVALENT 1
+#define BOOST_UNORDERED_EQUIVALENT_KEYS 1
 #include <boost/unordered/detail/hash_table_impl.hpp>
-#undef BOOST_UNORDERED_HASH_EQUIVALENT
+#undef BOOST_UNORDERED_EQUIVALENT_KEYS
 
-#define BOOST_UNORDERED_HASH_EQUIVALENT 0
+#define BOOST_UNORDERED_EQUIVALENT_KEYS 0
 #include <boost/unordered/detail/hash_table_impl.hpp>
-#undef BOOST_UNORDERED_HASH_EQUIVALENT
+#undef BOOST_UNORDERED_EQUIVALENT_KEYS
 
 namespace boost {
     namespace unordered_detail {
@@ -179,7 +179,7 @@ namespace boost {
     } // namespace boost::unordered_detail
 } // namespace boost
 
-#undef BOOST_HASH_BORLAND_BOOL
-#undef BOOST_HASH_MSVC_RESET_PTR
+#undef BOOST_UNORDERED_BORLAND_BOOL
+#undef BOOST_UNORDERED_MSVC_RESET_PTR
 
 #endif // BOOST_UNORDERED_DETAIL_HASH_TABLE_HPP_INCLUDED

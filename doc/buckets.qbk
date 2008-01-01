@@ -20,17 +20,16 @@ value of type `std::size_t`.  `std::size_t` has a much greater range of values
 then the number of buckets, so that container applies another transformation to
 that value to choose a bucket to place the element in.
 
-If at a later date the container wants to find an element in the container it
-just has to apply the same process to the element's key to discover which
-bucket it is in. If the hash function has worked well the elements will be
-evenly distributed amongst the buckets so it will only have to examine a small
-number of elements.
+Retreiving the elements for a given key is simple. The same process is applied
+to the key to find the correct bucket. Then the key is compared with the
+elements in the bucket to find any elements that match.  If the hash
+function has worked well the elements will be evenly distributed amongst the
+buckets so only a small number of elements will need to be examined.
 
 You can see in the diagram that `A` & `D` have been placed in the same bucket.
-This means that when looking for these elements, of another element that would
-be placed in the same bucket, up to 2 comparison have to be made, making
-searching slower. This is known as a collision. To keep things fast we try to
-keep these to a minimum.  
+When looking for elements in this bucket up to 2 comparisons are made, making
+the search slower. This is known as a collision. To keep things fast we try to
+keep collisions to a minimum.
 
 [table Methods for Accessing Buckets
     [[Method] [Description]]
@@ -57,6 +56,8 @@ keep these to a minimum.
             local_iterator end(size_type n);
             const_local_iterator begin(size_type n) const;
             const_local_iterator end(size_type n) const;
+            const_local_iterator cbegin(size_type n) const;
+            const_local_iterator cend(size_type n) const;
         ``]
         [Return begin and end iterators for bucket `n`.]
     ]
@@ -65,42 +66,31 @@ keep these to a minimum.
 [h2 Controlling the number of buckets]
 
 As more elements are added to an unordered associative container, the number
-of elements in the buckets will increase causing performance to get worse. To
-combat this the containers increase the bucket count as elements are inserted.
+of elements in the buckets will increase causing performance to degrade.
+To combat this the containers increase the bucket count as elements are inserted.
+You can also tell the container to change the bucket count (if required) by
+calling `rehash`.
 
-The standard gives you two methods to influence the bucket count. First you can
-specify the minimum number of buckets in the constructor, and later, by calling
-`rehash`.
+The standard leaves a lot of freedom to the implementor to decide how the
+number of buckets are chosen, but it does make some requirements based on the
+container's 'load factor', the average number of elements per bucket.
+Containers also have a 'maximum load factor' which they should try to keep the
+load factor below.
 
-The other method is the `max_load_factor` member function. The 'load factor'
-is the average number of elements per bucket, `max_load_factor` can be used
-to give a /hint/ of a value that the load factor should be kept below. The
-draft standard doesn't actually require the container to pay much attention
-to this value. The only time the load factor is /required/ to be less than the
-maximum is following a call to `rehash`. But most implementations will probably
-try to keep the number of elements below the max load factor, and set the
-maximum load factor something the same or near to your hint - unless your hint
-is unreasonably small.
+You can't control the bucket count directly but there are two ways to
+influence it:
 
-It is not specified anywhere how member functions other than `rehash` affect
-the bucket count, although `insert` is only allowed to invalidate iterators
-when the insertion causes the load factor to reach the maximum. Which will
-typically mean that insert will only change the number of buckets when an
-insert causes this.
+* Specify the minimum number of buckets when constructing a container or
+  when calling `rehash`.
+* Suggest a maximum load factor by calling `max_load_factor`.
 
-In a similar manner to using `reserve` for `vector`s, it can be a good idea
-to call `rehash` before inserting a large number of elements. This will get
-the expensive rehashing out of the way and let you store iterators, safe in
-the knowledge that they won't be invalidated. If you are inserting `n`
-elements into container `x`, you could first call:
-
-    x.rehash((x.size() + n) / x.max_load_factor() + 1);
-
-[blurb Note: `rehash`'s argument is the number of buckets, not the number of
-elements, which is why the new size is divided by the maximum load factor.  The
-+ 1 guarantees there is no invalidation; without it, reallocation could occur
-if the number of bucket exactly divides the target size, since the container is
-allowed to rehash when the load factor is equal to the maximum load factor.]
+`max_load_factor` doesn't let you set the maximum load factor yourself, it just
+lets you give a /hint/.  And even then, the draft standard doesn't actually
+require the container to pay much attention to this value. The only time the
+load factor is /required/ to be less than the maximum is following a call to
+`rehash`. But most implementations will try to keep the number of elements
+below the max load factor, and set the maximum load factor to be the same as
+or close to the hint - unless your hint is unreasonably small or large.
 
 [table Methods for Controlling Bucket Size
     [[Method] [Description]]
@@ -124,5 +114,25 @@ allowed to rehash when the load factor is equal to the maximum load factor.]
     ]
 
 ]
+
+It is not specified how member functions other than `rehash` affect
+the bucket count, although `insert` is only allowed to invalidate iterators
+when the insertion causes the load factor to be greater than or equal to the
+maximum load factor. For most implementations this means that insert will only
+change the number of buckets when this happens.
+
+In a similar manner to using `reserve` for `vector`s, it can be a good idea
+to call `rehash` before inserting a large number of elements. This will get
+the expensive rehashing out of the way and let you store iterators, safe in
+the knowledge that they won't be invalidated. If you are inserting `n`
+elements into container `x`, you could first call:
+
+    x.rehash((x.size() + n) / x.max_load_factor() + 1);
+
+[blurb Note: `rehash`'s argument is the minimum number of buckets, not the
+number of elements, which is why the new size is divided by the maximum load factor.  The
+`+ 1` guarantees there is no invalidation; without it, reallocation could occur
+if the number of bucket exactly divides the target size, since the container is
+allowed to rehash when the load factor is equal to the maximum load factor.]
 
 [endsect]

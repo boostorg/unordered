@@ -59,7 +59,7 @@ void unordered_equivalent_test(X& r, T const& t)
 }
 
 template <class X, class Key, class T>
-void unordered_map_functions(X&, Key const& k, T const& t)
+void unordered_map_functions(X&, Key const& k, T const&)
 {
     typedef typename X::mapped_type mapped_type;
 

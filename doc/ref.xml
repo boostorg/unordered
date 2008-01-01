@@ -1718,7 +1718,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>A reference to <code>x.second</code> where <code>x</code> is the (unique) element whose key is equivalent to <code>k</code>.</para>
               </returns>
               <throws>
-                <para>An exception object of type <code>out_of_range</code> if no such element is present.</para>
+                <para>An exception object of type <code>std::out_of_range</code> if no such element is present.</para>
               </throws>
               <notes>
                 <para>This is not specified in the draft standard, but that is probably an oversight. The issue has been raised in 

@@ -10,6 +10,7 @@ alias framework : /boost/test//boost_unit_test_framework ;
 project unordered-test/exception-tests
     : requirements
         <toolset>intel-linux:"<cxxflags>-strict_ansi -cxxlib-icc"
+        <toolset>gcc:<cxxflags>-Wsign-promo
     ;
 
 test-suite unordered-tests

@@ -16,6 +16,7 @@ mkdir $UNORDERED_DST/doc/html/images/
 cp $BOOST_ROOT/doc/html/*.css $UNORDERED_DST/doc/html/
 cp $BOOST_ROOT/doc/html/images/*.png $UNORDERED_DST/doc/html/images/
 
+rm -r $UNORDERED_DST/libs/functional
 rm -r $UNORDERED_DST/bin.v2
 rm $UNORDERED_DST/release.sh
 

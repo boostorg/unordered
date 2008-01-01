@@ -58,7 +58,7 @@ namespace test
     inline char generate(char const*)
     {
         using namespace std;
-        return (rand() >> 1) % (128-32) + 32;
+        return static_cast<char>((rand() >> 1) % (128-32) + 32);
     }
 
     inline signed char generate(signed char const*)
