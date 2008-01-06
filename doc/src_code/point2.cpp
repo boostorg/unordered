@@ -25,7 +25,7 @@
         return seed;
     }
 
-    // Now the default functions work.
+    // Now the default function objects work.
     boost::unordered_multiset<point> points;
 //]
 

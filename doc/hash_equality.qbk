@@ -30,11 +30,11 @@ Alternatively, you might wish to use a different equality function. If so, make
 sure you use a hash function that matches it. So to implement a
 case-insensitive dictionary:
 
-[import src_code/insensitive.cpp] 
-[case_insensitive_functions] 
-[case_insensitive_dictionary] 
+[import src_code/insensitive.cpp]
+[case_insensitive_functions]
+[case_insensitive_dictionary]
 
-This is a simplified version of the example at:
+This is a simplified version of the example at
 [@../../libs/unordered/examples/case_insensitive.hpp /libs/unordered/examples/case_insensitive.hpp]
 which supports other locales and string types.
 
@@ -45,14 +45,15 @@ Similarly, a custom hash function can be used for custom types:
 [import src_code/point1.cpp]
 [point_example1]
 
-Although, customizing [link hash Boost.Hash] is probably a better solution:
+Although, [link hash.custom extending boost::hash to support the type] is
+probably a better solution:
 
 [import src_code/point2.cpp]
 [point_example2]
 
-See the [link hash Boost.Hash] documentation for more detail on how to do this.
-Remember that it relies on extensions to the draft standard - so it won't work
-on other implementations of the unordered associative containers.
+See the [link hash.custom Boost.Hash documentation] for more detail on how to
+do this.  Remember that it relies on extensions to the draft standard - so it
+won't work on other implementations of the unordered associative containers.
 
 [table Methods for accessing the hash and equality functions.
     [[Method] [Description]]
