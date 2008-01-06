@@ -115,11 +115,15 @@ or close to the hint - unless your hint is unreasonably small or large.
 
 ]
 
+[h2 Iterator Invalidation]
+
 It is not specified how member functions other than `rehash` affect
 the bucket count, although `insert` is only allowed to invalidate iterators
 when the insertion causes the load factor to be greater than or equal to the
 maximum load factor. For most implementations this means that insert will only
-change the number of buckets when this happens.
+change the number of buckets when this happens. While iterators can be
+invalidated by calls to `insert` and `rehash`, pointers and references to the
+container's elements are never invalidated.
 
 In a similar manner to using `reserve` for `vector`s, it can be a good idea
 to call `rehash` before inserting a large number of elements. This will get

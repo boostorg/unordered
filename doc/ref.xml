@@ -270,6 +270,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               </throws>
               <notes>
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
+                <para>Pointers and references to elements are never invalidated.</para>
               </notes>
             </method>
             <method name="insert">
@@ -293,6 +294,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <notes>
                 <para>The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same value. </para>
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
+                <para>Pointers and references to elements are never invalidated.</para>
               </notes>
             </method>
             <method name="insert">
@@ -315,6 +317,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               </throws>
               <notes>
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
+                <para>Pointers and references to elements are never invalidated.</para>
               </notes>
             </method>
             <method name="erase">
@@ -584,7 +587,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <type>void</type>
               <description>
                 <para>Changes the number of buckets so that there at least <code>n</code> buckets, and so that the load factor is less than the maximum load factor.</para>
-                <para>Invalidates iterators, and changes the order of elements</para>
+                <para>Invalidates iterators, and changes the order of elements. Pointers and references to elements are not invalidated.</para>
               </description>
               <throws>
                 <para>The function has no effect if an exception is thrown, unless it is thrown by the container's hash function or comparison function.</para>
@@ -881,6 +884,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               </throws>
               <notes>
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
+                <para>Pointers and references to elements are never invalidated.</para>
               </notes>
             </method>
             <method name="insert">
@@ -904,6 +908,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <notes>
                 <para>The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same value. </para>
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
+                <para>Pointers and references to elements are never invalidated.</para>
               </notes>
             </method>
             <method name="insert">
@@ -926,6 +931,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               </throws>
               <notes>
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
+                <para>Pointers and references to elements are never invalidated.</para>
               </notes>
             </method>
             <method name="erase">
@@ -1195,7 +1201,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <type>void</type>
               <description>
                 <para>Changes the number of buckets so that there at least <code>n</code> buckets, and so that the load factor is less than the maximum load factor.</para>
-                <para>Invalidates iterators, and changes the order of elements</para>
+                <para>Invalidates iterators, and changes the order of elements. Pointers and references to elements are not invalidated.</para>
               </description>
               <throws>
                 <para>The function has no effect if an exception is thrown, unless it is thrown by the container's hash function or comparison function.</para>
@@ -1509,6 +1515,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               </throws>
               <notes>
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
+                <para>Pointers and references to elements are never invalidated.</para>
               </notes>
             </method>
             <method name="insert">
@@ -1532,6 +1539,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <notes>
                 <para>The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same key. </para>
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
+                <para>Pointers and references to elements are never invalidated.</para>
               </notes>
             </method>
             <method name="insert">
@@ -1554,6 +1562,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               </throws>
               <notes>
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
+                <para>Pointers and references to elements are never invalidated.</para>
               </notes>
             </method>
             <method name="erase">
@@ -1707,6 +1716,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               </throws>
               <notes>
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
+                <para>Pointers and references to elements are never invalidated.</para>
               </notes>
             </method>
             <overloaded-method name="at">
@@ -1857,7 +1867,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <type>void</type>
               <description>
                 <para>Changes the number of buckets so that there at least <code>n</code> buckets, and so that the load factor is less than the maximum load factor.</para>
-                <para>Invalidates iterators, and changes the order of elements</para>
+                <para>Invalidates iterators, and changes the order of elements. Pointers and references to elements are not invalidated.</para>
               </description>
               <throws>
                 <para>The function has no effect if an exception is thrown, unless it is thrown by the container's hash function or comparison function.</para>
@@ -2164,6 +2174,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               </throws>
               <notes>
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
+                <para>Pointers and references to elements are never invalidated.</para>
               </notes>
             </method>
             <method name="insert">
@@ -2187,6 +2198,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <notes>
                 <para>The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same key. </para>
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
+                <para>Pointers and references to elements are never invalidated.</para>
               </notes>
             </method>
             <method name="insert">
@@ -2209,6 +2221,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               </throws>
               <notes>
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
+                <para>Pointers and references to elements are never invalidated.</para>
               </notes>
             </method>
             <method name="erase">
@@ -2478,7 +2491,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <type>void</type>
               <description>
                 <para>Changes the number of buckets so that there at least <code>n</code> buckets, and so that the load factor is less than the maximum load factor.</para>
-                <para>Invalidates iterators, and changes the order of elements</para>
+                <para>Invalidates iterators, and changes the order of elements. Pointers and references to elements are not invalidated.</para>
               </description>
               <throws>
                 <para>The function has no effect if an exception is thrown, unless it is thrown by the container's hash function or comparison function.</para>

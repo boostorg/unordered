@@ -50,8 +50,11 @@
         [`iterator`, `const_iterator` are of at least the forward category.]
     ]
     [
-        [Inserts do not invalidate iterators or references to the container.]
-        [Inserts can invalidate iterators but not references to the container.]
+        [Iterators, pointers and references to the container's elements are
+            never invalidated.]
+        [[link unordered.buckets.iterator_invalidation Iterators can
+            be invalidated by calls to insert or rehash]. Pointers and
+            references to the container's elements are never invalidated.]
     ]
     [
         [Iterators iterate through the container in the order defined by
