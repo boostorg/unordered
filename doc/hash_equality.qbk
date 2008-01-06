@@ -45,14 +45,14 @@ Similarly, a custom hash function can be used for custom types:
 [import src_code/point1.cpp]
 [point_example1]
 
-Although, customizing Boost.Hash is probably a better solution:
+Although, customizing [link hash Boost.Hash] is probably a better solution:
 
 [import src_code/point2.cpp]
 [point_example2]
 
-See the Boost.Hash documentation for more detail on how to do this. Remember
-that it relies on extensions to the draft standard - so it won't work on other
-implementations of the unordered associative containers.
+See the [link hash Boost.Hash] documentation for more detail on how to do this.
+Remember that it relies on extensions to the draft standard - so it won't work
+on other implementations of the unordered associative containers.
 
 [table Methods for accessing the hash and equality functions.
     [[Method] [Description]]
