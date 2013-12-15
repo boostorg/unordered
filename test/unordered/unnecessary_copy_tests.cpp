@@ -119,6 +119,20 @@ namespace unnecessary_copy_tests
     }
 }
 
+// Boost.Move doesn't seem to work very well on this compiler.
+// For example for:
+//
+//     T x;
+//
+// It will default construct T, and then move it in.
+// For 'T const' it seems to copy.
+
+#if defined(__IBMCPP__) && __IBMCPP__ <= 1210
+#define EXTRA_CONSTRUCT_COST 1
+#else
+#define EXTRA_CONSTRUCT_COST 0
+#endif
+
 #define COPY_COUNT(n)                                                       \
     if(::unnecessary_copy_tests::count_copies::copies != n) {               \
         BOOST_ERROR("Wrong number of copies.");                             \
@@ -150,9 +164,13 @@ namespace unnecessary_copy_tests
         BOOST_ERROR("Wrong number of moves.");                              \
         std::cerr                                                           \
             << "Number of moves: "                                          \
-            << ::unnecessary_copy_tests::count_copies::copies               \
+            << ::unnecessary_copy_tests::count_copies::moves                \
             << " expecting: [" << a << ", " << b << "]" << std::endl;       \
     }
+#define COPY_COUNT_EXTRA(a, b)                                              \
+    COPY_COUNT_RANGE(a, a + b * EXTRA_CONSTRUCT_COST)
+#define MOVE_COUNT_EXTRA(a, b)                                              \
+    MOVE_COUNT_RANGE(a, a + b * EXTRA_CONSTRUCT_COST)
 
 namespace unnecessary_copy_tests
 {
@@ -229,7 +247,7 @@ namespace unnecessary_copy_tests
         reset();
         T x;
         BOOST_DEDUCED_TYPENAME T::value_type a;
-        COPY_COUNT(1); MOVE_COUNT(0);
+        COPY_COUNT(1); MOVE_COUNT_EXTRA(0, 1);
         x.emplace(boost::move(a));
 #if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
         COPY_COUNT(1); MOVE_COUNT(1);
@@ -263,10 +281,10 @@ namespace unnecessary_copy_tests
         T x;
         COPY_COUNT(0); MOVE_COUNT(0);
         BOOST_DEDUCED_TYPENAME T::value_type a;
-        COPY_COUNT(1); MOVE_COUNT(0);
+        COPY_COUNT(1); MOVE_COUNT_EXTRA(0, 1);
         x.emplace(boost::move(a));
 #if defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-        COPY_COUNT(2); MOVE_COUNT(0);
+        COPY_COUNT(2); MOVE_COUNT_EXTRA(0, 1);
 #else
         COPY_COUNT(1); MOVE_COUNT(1);
 #endif
@@ -380,7 +398,7 @@ namespace unnecessary_copy_tests
         // TODO: Run tests for pairs without const etc.
         std::pair<count_copies const, count_copies> a;
         x.emplace(a);
-        COPY_COUNT(4); MOVE_COUNT(0);
+        COPY_COUNT_EXTRA(4, 1); MOVE_COUNT_EXTRA(0, 1);
 
         //
         // 0 arguments
@@ -398,7 +416,7 @@ namespace unnecessary_copy_tests
         // Visual C++ 11 handles calling move for default arguments.
         COPY_COUNT(3); MOVE_COUNT(1);
 #   else
-        COPY_COUNT(2); MOVE_COUNT(0);
+        COPY_COUNT_EXTRA(2, 1); MOVE_COUNT_EXTRA(0, 1);
 #   endif
 #endif
 
