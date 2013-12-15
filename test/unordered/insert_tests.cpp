@@ -363,7 +363,6 @@ void equivalent_emplace_tests1(X*, test::random_generator generator)
 template <class X>
 void move_emplace_tests(X*, test::random_generator generator)
 {
-    typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
     typedef test::ordered<X> ordered;
 
     std::cerr<<"emplace(move(value)) tests for containers with unique keys.\n";
