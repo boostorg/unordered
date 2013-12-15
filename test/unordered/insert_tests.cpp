@@ -624,6 +624,8 @@ UNORDERED_AUTO_TEST(insert_initializer_list_set)
     BOOST_TEST(set2.find({8,7}) == set2.end());
 }
 
+#if !BOOST_WORKAROUND(BOOST_MSVC, == 1800)
+
 UNORDERED_AUTO_TEST(insert_initializer_list_multiset)
 {
     boost::unordered_multiset<std::string> multiset;
@@ -639,6 +641,8 @@ UNORDERED_AUTO_TEST(insert_initializer_list_multiset)
     BOOST_TEST_EQ(multiset.count("b"), 1u);
     BOOST_TEST_EQ(multiset.count("c"), 0u);
 }
+
+#endif
 
 UNORDERED_AUTO_TEST(insert_initializer_list_map)
 {
