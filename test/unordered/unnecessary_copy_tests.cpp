@@ -207,8 +207,24 @@ namespace unnecessary_copy_tests
     UNORDERED_TEST(unnecessary_copy_emplace_rvalue_test,
             ((set)(multiset)(map)(multimap)))
 
+#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
     template <class T>
-    void unnecessary_copy_emplace_move_test(T*)
+    void unnecessary_copy_emplace_std_move_test(T*)
+    {
+        reset();
+        T x;
+        BOOST_DEDUCED_TYPENAME T::value_type a;
+        COPY_COUNT(1); MOVE_COUNT(0);
+        x.emplace(std::move(a));
+        COPY_COUNT(1); MOVE_COUNT(1);
+    }
+
+    UNORDERED_TEST(unnecessary_copy_emplace_std_move_test,
+            ((set)(multiset)(map)(multimap)))
+#endif
+
+    template <class T>
+    void unnecessary_copy_emplace_boost_move_test(T*)
     {
         reset();
         T x;
@@ -223,7 +239,7 @@ namespace unnecessary_copy_tests
 #endif
     }
 
-    UNORDERED_TEST(unnecessary_copy_emplace_move_test,
+    UNORDERED_TEST(unnecessary_copy_emplace_boost_move_test,
             ((set)(multiset)(map)(multimap)))
 
     template <class T>
