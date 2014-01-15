@@ -442,7 +442,7 @@ namespace unnecessary_copy_tests
         COPY_COUNT(2); MOVE_COUNT(source_pair_cost);
 
 #if !(defined(__GNUC__) && __cplusplus < 199900L) && \
-    !(defined(BOOST_MSVC) && BOOST_MSVC < 1600)
+    !(defined(_MSC_VER) && _MSC_VER < 1600)
         count_copies part;
         reset();
         std::pair<count_copies const&, count_copies const&> a_ref(part, part);
