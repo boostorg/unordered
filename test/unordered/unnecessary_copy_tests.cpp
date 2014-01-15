@@ -441,9 +441,8 @@ namespace unnecessary_copy_tests
         x.emplace(source<std::pair<count_copies, count_copies> >());
         COPY_COUNT(2); MOVE_COUNT(source_pair_cost);
 
-#if (defined(__GNUC__) && __GNUC__ > 4) || \
-    (defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ > 2) || \
-    (defined(BOOST_MSVC) && BOOST_MSVC >= 1600 )
+#if !(defined(__GNUC__) && __cplusplus < 199900L) && \
+    !(defined(BOOST_MSVC) && BOOST_MSVC < 1600)
         count_copies part;
         reset();
         std::pair<count_copies const&, count_copies const&> a_ref(part, part);
@@ -510,8 +509,8 @@ namespace unnecessary_copy_tests
         COPY_COUNT(tuple_copy_cost);
         MOVE_COUNT(tuple_move_cost);
 
-#if defined(__GNUC__) && __GNUC__ > 4 || \
-    defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ >= 6
+#if !defined(BOOST_NO_CXX11_HDR_TUPLE) && \
+    !(defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ < 6)
         reset();
         x.emplace(boost::unordered::piecewise_construct,
                 std::forward_as_tuple(b.first),
