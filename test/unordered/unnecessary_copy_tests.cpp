@@ -510,7 +510,8 @@ namespace unnecessary_copy_tests
         MOVE_COUNT(tuple_move_cost);
 
 #if !defined(BOOST_NO_CXX11_HDR_TUPLE) && \
-    !(defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ < 6)
+    !(defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ < 6) && \
+    !(defined(BOOST_MSVC) && BOOST_MSVC < 1700)
         reset();
         x.emplace(boost::unordered::piecewise_construct,
                 std::forward_as_tuple(b.first),
