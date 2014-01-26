@@ -363,8 +363,6 @@ void equivalent_emplace_tests1(X*, test::random_generator generator)
 template <class X>
 void move_emplace_tests(X*, test::random_generator generator)
 {
-    typedef test::ordered<X> ordered;
-
     std::cerr<<"emplace(move(value)) tests for containers with unique keys.\n";
 
     X x;
@@ -666,8 +664,8 @@ UNORDERED_AUTO_TEST(insert_initializer_list_multimap)
 
 struct overloaded_constructor
 {
-    overloaded_constructor(int x1 = 1, int x2 = 2, int x3 = 3, int x4 = 4)
-      : x1(x1), x2(x2), x3(x3), x4(x4) {}
+    overloaded_constructor(int x1_ = 1, int x2_ = 2, int x3_ = 3, int x4_ = 4)
+      : x1(x1_), x2(x2_), x3(x3_), x4(x4_) {}
 
     int x1, x2, x3, x4;
     

@@ -11,8 +11,8 @@ project unordered-test/unordered
         <toolset>intel:<warnings>on
         # Would be nice to define -Wundef, but I'm getting warnings from
         # Boost.Preprocessor on trunk.
-        <toolset>gcc:<cxxflags>"-pedantic -Wstrict-aliasing -fstrict-aliasing -Wextra -Wsign-promo -Wunused-parameter -Wconversion -Wno-long-long -Wfloat-equal"
-        <toolset>darwin:<cxxflags>"-pedantic -Wstrict-aliasing -fstrict-aliasing -Wextra -Wsign-promo -Wunused-parameter -Wconversion -Wfloat-equal"
+        <toolset>gcc:<cxxflags>"-pedantic -Wstrict-aliasing -fstrict-aliasing -Wextra -Wsign-promo -Wunused-parameter -Wconversion -Wno-long-long -Wfloat-equal -Wshadow"
+        <toolset>darwin:<cxxflags>"-pedantic -Wstrict-aliasing -fstrict-aliasing -Wextra -Wsign-promo -Wunused-parameter -Wconversion -Wfloat-equal -Wshadow"
         #<toolset>gcc:<define>_GLIBCXX_DEBUG
         #<toolset>darwin:<define>_GLIBCXX_DEBUG
     ;

@@ -537,9 +537,9 @@ namespace boost { namespace unordered { namespace detail {
             node_pointer first_node = static_cast<node_pointer>(prev->next_);
             link_pointer end = first_node->group_prev_->next_;
 
-            std::size_t count = this->delete_nodes(prev, end);
+            std::size_t deleted_count = this->delete_nodes(prev, end);
             this->fix_bucket(bucket_index, prev);
-            return count;
+            return deleted_count;
         }
 
         iterator erase(c_iterator r)
@@ -558,21 +558,21 @@ namespace boost { namespace unordered { namespace detail {
             return iterator(r2.node_);
         }
 
-        link_pointer erase_nodes(node_pointer begin, node_pointer end)
+        link_pointer erase_nodes(node_pointer i, node_pointer j)
         {
-            std::size_t bucket_index = this->hash_to_bucket(begin->hash_);
+            std::size_t bucket_index = this->hash_to_bucket(i->hash_);
 
-            // Split the groups containing 'begin' and 'end'.
-            // And get the pointer to the node before begin while
+            // Split the groups containing 'i' and 'j'.
+            // And get the pointer to the node before i while
             // we're at it.
-            link_pointer prev = split_groups(begin, end);
+            link_pointer prev = split_groups(i, j);
 
-            // If we don't have a 'prev' it means that begin is at the
+            // If we don't have a 'prev' it means that i is at the
             // beginning of a block, so search through the blocks in the
             // same bucket.
             if (!prev) {
                 prev = this->get_previous_start(bucket_index);
-                while (prev->next_ != begin)
+                while (prev->next_ != i)
                     prev = static_cast<node_pointer>(prev->next_)->group_prev_;
             }
 
@@ -582,24 +582,24 @@ namespace boost { namespace unordered { namespace detail {
                     static_cast<node_pointer>(prev->next_)->group_prev_->next_;
                 this->delete_nodes(prev, group_end);
                 bucket_index = this->fix_bucket(bucket_index, prev);
-            } while(prev->next_ != end);
+            } while(prev->next_ != j);
 
             return prev;
         }
 
-        static link_pointer split_groups(node_pointer begin, node_pointer end)
+        static link_pointer split_groups(node_pointer i, node_pointer j)
         {
-            node_pointer prev = begin->group_prev_;
-            if (prev->next_ != begin) prev = node_pointer();
+            node_pointer prev = i->group_prev_;
+            if (prev->next_ != i) prev = node_pointer();
 
-            if (end) {
-                node_pointer first = end;
-                while (first != begin && first->group_prev_->next_ == first) {
+            if (j) {
+                node_pointer first = j;
+                while (first != i && first->group_prev_->next_ == first) {
                     first = first->group_prev_;
                 }
 
-                boost::swap(first->group_prev_, end->group_prev_);
-                if (first == begin) return prev;
+                boost::swap(first->group_prev_, j->group_prev_);
+                if (first == i) return prev;
             }
 
             if (prev) {
@@ -607,7 +607,7 @@ namespace boost { namespace unordered { namespace detail {
                 while (first->group_prev_->next_ == first) {
                     first = first->group_prev_;
                 }
-                boost::swap(first->group_prev_, begin->group_prev_);
+                boost::swap(first->group_prev_, i->group_prev_);
             }
 
             return prev;
