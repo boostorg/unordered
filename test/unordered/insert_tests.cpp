@@ -363,7 +363,6 @@ void equivalent_emplace_tests1(X*, test::random_generator generator)
 template <class X>
 void move_emplace_tests(X*, test::random_generator generator)
 {
-    typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
     typedef test::ordered<X> ordered;
 
     std::cerr<<"emplace(move(value)) tests for containers with unique keys.\n";
@@ -624,6 +623,8 @@ UNORDERED_AUTO_TEST(insert_initializer_list_set)
     BOOST_TEST(set2.find({8,7}) == set2.end());
 }
 
+#if !BOOST_WORKAROUND(BOOST_MSVC, == 1800)
+
 UNORDERED_AUTO_TEST(insert_initializer_list_multiset)
 {
     boost::unordered_multiset<std::string> multiset;
@@ -639,6 +640,8 @@ UNORDERED_AUTO_TEST(insert_initializer_list_multiset)
     BOOST_TEST_EQ(multiset.count("b"), 1u);
     BOOST_TEST_EQ(multiset.count("c"), 0u);
 }
+
+#endif
 
 UNORDERED_AUTO_TEST(insert_initializer_list_map)
 {
