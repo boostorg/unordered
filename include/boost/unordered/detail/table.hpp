@@ -262,9 +262,9 @@ namespace boost { namespace unordered { namespace detail {
             return prev ? iterator(prev->next_) : iterator();
         }
         
-        std::size_t hash_to_bucket(std::size_t hash) const
+        std::size_t hash_to_bucket(std::size_t hash_value) const
         {
-            return policy::to_bucket(bucket_count_, hash);
+            return policy::to_bucket(bucket_count_, hash_value);
         }
 
         float load_factor() const
@@ -400,8 +400,8 @@ namespace boost { namespace unordered { namespace detail {
         {
             if (x.size_) {
                 create_buckets(bucket_count_);
-                copy_nodes<node_allocator> copy(node_alloc());
-                table_impl::fill_buckets(x.begin(), *this, copy);
+                copy_nodes<node_allocator> node_creator(node_alloc());
+                table_impl::fill_buckets(x.begin(), *this, node_creator);
             }
         }
 
@@ -414,9 +414,9 @@ namespace boost { namespace unordered { namespace detail {
                 // TODO: Could pick new bucket size?
                 create_buckets(bucket_count_);
 
-                move_nodes<node_allocator> move(node_alloc());
+                move_nodes<node_allocator> node_creator(node_alloc());
                 node_holder<node_allocator> nodes(x);
-                table_impl::fill_buckets(nodes.begin(), *this, move);
+                table_impl::fill_buckets(nodes.begin(), *this, node_creator);
             }
         }
 
@@ -660,8 +660,8 @@ namespace boost { namespace unordered { namespace detail {
             // assign_nodes takes ownership of the container's elements,
             // assigning to them if possible, and deleting any that are
             // left over.
-            assign_nodes<table> assign(*this);
-            table_impl::fill_buckets(x.begin(), *this, assign);
+            assign_nodes<table> node_creator(*this);
+            table_impl::fill_buckets(x.begin(), *this, node_creator);
         }
 
         void assign(table const& x, true_type)
@@ -687,8 +687,8 @@ namespace boost { namespace unordered { namespace detail {
                 // Finally copy the elements.
                 if (x.size_) {
                     create_buckets(bucket_count_);
-                    copy_nodes<node_allocator> copy(node_alloc());
-                    table_impl::fill_buckets(x.begin(), *this, copy);
+                    copy_nodes<node_allocator> node_creator(node_alloc());
+                    table_impl::fill_buckets(x.begin(), *this, node_creator);
                 }
             }
         }
@@ -735,9 +735,9 @@ namespace boost { namespace unordered { namespace detail {
                 // move_assign_nodes takes ownership of the container's
                 // elements, assigning to them if possible, and deleting
                 // any that are left over.
-                move_assign_nodes<table> assign(*this);
+                move_assign_nodes<table> node_creator(*this);
                 node_holder<node_allocator> nodes(x);
-                table_impl::fill_buckets(nodes.begin(), *this, assign);
+                table_impl::fill_buckets(nodes.begin(), *this, node_creator);
             }
         }
         

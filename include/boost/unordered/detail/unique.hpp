@@ -530,9 +530,9 @@ namespace boost { namespace unordered { namespace detail {
 
             link_pointer end = static_cast<node_pointer>(prev->next_)->next_;
 
-            std::size_t count = this->delete_nodes(prev, end);
+            std::size_t deleted_count = this->delete_nodes(prev, end);
             this->fix_bucket(bucket_index, prev);
-            return count;
+            return deleted_count;
         }
 
         iterator erase(c_iterator r)
@@ -551,19 +551,19 @@ namespace boost { namespace unordered { namespace detail {
             return iterator(r2.node_);
         }
 
-        void erase_nodes(node_pointer begin, node_pointer end)
+        void erase_nodes(node_pointer i, node_pointer j)
         {
-            std::size_t bucket_index = this->hash_to_bucket(begin->hash_);
+            std::size_t bucket_index = this->hash_to_bucket(i->hash_);
 
-            // Find the node before begin.
+            // Find the node before i.
             link_pointer prev = this->get_previous_start(bucket_index);
-            while(prev->next_ != begin) prev = prev->next_;
+            while(prev->next_ != i) prev = prev->next_;
 
             // Delete the nodes.
             do {
                 this->delete_node(prev);
                 bucket_index = this->fix_bucket(bucket_index, prev);
-            } while (prev->next_ != end);
+            } while (prev->next_ != j);
         }
 
         ////////////////////////////////////////////////////////////////////////
