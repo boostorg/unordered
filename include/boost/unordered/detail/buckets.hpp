@@ -666,10 +666,50 @@ namespace boost { namespace unordered { namespace detail {
         typedef mix64_policy<std::size_t> type;
     };
 
+    template <typename T>
     struct pick_policy :
         pick_policy_impl<
             std::numeric_limits<std::size_t>::digits,
             std::numeric_limits<std::size_t>::radix> {};
+
+    // While the mix policy is generally faster, the prime policy is a lot
+    // faster when a large number consecutive integers are used, because
+    // there are no collisions. Since that is probably quite common, use
+    // prime policy for integeral types. But not the smaller ones, as they
+    // don't have enough unique values for this to be an issue.
+
+    template <>
+    struct pick_policy<int> {
+        typedef prime_policy<std::size_t> type;
+    };
+
+    template <>
+    struct pick_policy<unsigned int> {
+        typedef prime_policy<std::size_t> type;
+    };
+
+    template <>
+    struct pick_policy<long> {
+        typedef prime_policy<std::size_t> type;
+    };
+
+    template <>
+    struct pick_policy<unsigned long> {
+        typedef prime_policy<std::size_t> type;
+    };
+
+    // TODO: Maybe not if std::size_t is smaller than long long.
+#if !defined(BOOST_NO_LONG_LONG)
+    template <>
+    struct pick_policy<long long> {
+        typedef prime_policy<std::size_t> type;
+    };
+
+    template <>
+    struct pick_policy<unsigned long long> {
+        typedef prime_policy<std::size_t> type;
+    };
+#endif
 
     ////////////////////////////////////////////////////////////////////////////
     // Functions

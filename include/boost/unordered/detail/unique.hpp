@@ -139,7 +139,7 @@ namespace boost { namespace unordered { namespace detail {
         typedef boost::unordered::detail::table_impl<types> table;
         typedef boost::unordered::detail::set_extractor<value_type> extractor;
 
-        typedef boost::unordered::detail::pick_policy::type policy;
+        typedef boost::unordered::detail::pick_policy<T>::type policy;
     };
 
     template <typename A, typename K, typename M, typename H, typename P>
@@ -164,7 +164,7 @@ namespace boost { namespace unordered { namespace detail {
         typedef boost::unordered::detail::map_extractor<key_type, value_type>
             extractor;
 
-        typedef boost::unordered::detail::pick_policy::type policy;
+        typedef boost::unordered::detail::pick_policy<T>::type policy;
     };
 
     template <typename Types>
