@@ -5,6 +5,7 @@
     <boost-version>1.36.0</boost-version>
     <name>Unordered</name>
     <authors>Daniel James</authors>
+    <maintainers>Daniel James</maintainers>
     <description>Unordered associative containers.</description>
     <std-proposal>false</std-proposal>
     <std-tr1>true</std-tr1>
