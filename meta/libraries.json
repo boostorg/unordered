@@ -1,0 +1,13 @@
+{
+    "key": "unordered",
+    "boost-version": "1.36.0",
+    "name": "Unordered",
+    "authors": "Daniel James",
+    "maintainers": "Daniel James <dnljms -at- gmail.com>",
+    "description": "Unordered associative containers.",
+    "std-proposal": false,
+    "std-tr1": true,
+    "category": [
+        "Containers"
+    ]
+}
