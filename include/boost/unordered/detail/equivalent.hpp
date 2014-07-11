@@ -52,15 +52,16 @@ namespace boost { namespace unordered { namespace detail {
 
     template <typename T>
     struct grouped_ptr_node :
-        boost::unordered::detail::value_base<T>,
         boost::unordered::detail::ptr_bucket
     {
+        typedef T value_type;
         typedef boost::unordered::detail::ptr_bucket bucket_base;
         typedef grouped_ptr_node<T>* node_pointer;
         typedef ptr_bucket* link_pointer;
 
         node_pointer group_prev_;
         std::size_t hash_;
+        boost::unordered::detail::value_base<T> value_base_;
 
         grouped_ptr_node() :
             bucket_base(),
@@ -72,6 +73,10 @@ namespace boost { namespace unordered { namespace detail {
         {
             group_prev_ = self;
         }
+
+        void* address() { return value_base_.address(); }
+        value_type& value() { return value_base_.value(); }
+        value_type* value_ptr() { return value_base_.value_ptr(); }
 
     private:
         grouped_ptr_node& operator=(grouped_ptr_node const&);
