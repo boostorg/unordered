@@ -28,7 +28,9 @@ namespace boost { namespace unordered { namespace detail {
         boost::unordered::detail::value_base<T>
     {
         typedef typename ::boost::unordered::detail::rebind_wrap<
-            A, unique_node<A, T> >::type::pointer node_pointer;
+            A, unique_node<A, T> >::type allocator;
+        typedef typename ::boost::unordered::detail::
+            allocator_traits<allocator>::pointer node_pointer;
         typedef node_pointer link_pointer;
 
         link_pointer next_;
