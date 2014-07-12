@@ -1081,8 +1081,10 @@ namespace boost { namespace unordered { namespace detail {
 
         ~array_constructor() {
             if (ptr_) {
-                for(pointer p = ptr_; p != constructed_; ++p)
-                    traits::destroy(alloc_, boost::addressof(*p));
+                for(pointer p = ptr_; p != constructed_; ++p) {
+                    boost::unordered::detail::func::destroy(
+                            boost::addressof(*p));
+                }
 
                 traits::deallocate(alloc_, ptr_, length_);
             }
@@ -1095,8 +1097,9 @@ namespace boost { namespace unordered { namespace detail {
             length_ = l;
             ptr_ = traits::allocate(alloc_, length_);
             pointer end = ptr_ + static_cast<std::ptrdiff_t>(length_);
-            for(constructed_ = ptr_; constructed_ != end; ++constructed_)
-                traits::construct(alloc_, boost::addressof(*constructed_), v);
+            for(constructed_ = ptr_; constructed_ != end; ++constructed_) {
+                new ((void*) boost::addressof(*constructed_)) V(v);
+            }
         }
 
         pointer get() const
