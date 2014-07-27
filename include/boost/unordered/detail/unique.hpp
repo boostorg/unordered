@@ -28,7 +28,9 @@ namespace boost { namespace unordered { namespace detail {
         boost::unordered::detail::value_base<T>
     {
         typedef typename ::boost::unordered::detail::rebind_wrap<
-            A, unique_node<A, T> >::type::pointer node_pointer;
+            A, unique_node<A, T> >::type allocator;
+        typedef typename ::boost::unordered::detail::
+            allocator_traits<allocator>::pointer node_pointer;
         typedef node_pointer link_pointer;
 
         link_pointer next_;
@@ -49,14 +51,15 @@ namespace boost { namespace unordered { namespace detail {
 
     template <typename T>
     struct ptr_node :
-        boost::unordered::detail::value_base<T>,
         boost::unordered::detail::ptr_bucket
     {
+        typedef T value_type;
         typedef boost::unordered::detail::ptr_bucket bucket_base;
         typedef ptr_node<T>* node_pointer;
         typedef ptr_bucket* link_pointer;
 
         std::size_t hash_;
+        boost::unordered::detail::value_base<T> value_base_;
 
         ptr_node() :
             bucket_base(),
@@ -66,6 +69,10 @@ namespace boost { namespace unordered { namespace detail {
         void init(node_pointer)
         {
         }
+
+        void* address() { return value_base_.address(); }
+        value_type& value() { return value_base_.value(); }
+        value_type* value_ptr() { return value_base_.value_ptr(); }
 
     private:
         ptr_node& operator=(ptr_node const&);

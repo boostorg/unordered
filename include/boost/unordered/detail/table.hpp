@@ -523,8 +523,7 @@ namespace boost { namespace unordered { namespace detail {
 
             boost::unordered::detail::func::destroy_value_impl(node_alloc(),
                 n->value_ptr());
-            node_allocator_traits::destroy(node_alloc(),
-                    boost::addressof(*n));
+            boost::unordered::detail::func::destroy(boost::addressof(*n));
             node_allocator_traits::deallocate(node_alloc(), n, 1);
             --size_;
         }
@@ -551,7 +550,7 @@ namespace boost { namespace unordered { namespace detail {
                 if (bucket::extra_node) {
                     node_pointer n = static_cast<node_pointer>(
                             get_bucket(bucket_count_)->next_);
-                    node_allocator_traits::destroy(node_alloc(),
+                    boost::unordered::detail::func::destroy(
                             boost::addressof(*n));
                     node_allocator_traits::deallocate(node_alloc(), n, 1);
                 }
@@ -588,7 +587,7 @@ namespace boost { namespace unordered { namespace detail {
             bucket_pointer end = get_bucket(bucket_count_ + 1);
             for(bucket_pointer it = buckets_; it != end; ++it)
             {
-                bucket_allocator_traits::destroy(bucket_alloc(),
+                boost::unordered::detail::func::destroy(
                     boost::addressof(*it));
             }
 

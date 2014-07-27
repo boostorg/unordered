@@ -239,5 +239,8 @@ C++11 support has resulted in some breaking changes:
 
 * Avoid some warnings ([ticket 8851], [ticket 8874]).
 * Avoid exposing some detail functions via. ADL on the iterators.
+* Follow the standard by only using the allocators' construct and destroy
+  methods to construct and destroy stored elements. Don't use them for internal
+  data like pointers.
 
 [endsect]
