@@ -243,4 +243,9 @@ C++11 support has resulted in some breaking changes:
   methods to construct and destroy stored elements. Don't use them for internal
   data like pointers.
 
+[h2 Boost 1.56.0]
+
+* Removed some Visual C++ 6 workarounds.
+* Ongoing work on improving `hash_combine`.
+
 [endsect]
