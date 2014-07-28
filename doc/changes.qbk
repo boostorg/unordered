@@ -245,7 +245,11 @@ C++11 support has resulted in some breaking changes:
 
 [h2 Boost 1.56.0]
 
-* Removed some Visual C++ 6 workarounds.
-* Ongoing work on improving `hash_combine`.
+* Fix some shadowed variable warnings ([ticket 9377]).
+* Fix allocator use in documentation ([ticket 9719]).
+* Always use prime number of buckets for integers. Fixes performance
+  regression when inserting consecutive integers, although makes other
+  uses slower ([ticket 9282]).
+* Only construct elements using allocators, as specified in C++11 standard.
 
 [endsect]
