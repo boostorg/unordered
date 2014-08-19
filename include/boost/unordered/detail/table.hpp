@@ -1,6 +1,6 @@
 
 // Copyright (C) 2003-2004 Jeremy B. Maitin-Shepard.
-// Copyright (C) 2005-2011 Daniel James
+// Copyright (C) 2005-2011, 2014 Daniel James
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -12,10 +12,23 @@
 #pragma once
 #endif
 
-#include <boost/unordered/detail/buckets.hpp>
-#include <boost/unordered/detail/util.hpp>
+#include <boost/unordered/detail/allocate.hpp>
+#include <boost/preprocessor/seq/size.hpp>
+#include <boost/preprocessor/seq/enum.hpp>
 #include <boost/type_traits/aligned_storage.hpp>
 #include <boost/type_traits/alignment_of.hpp>
+#include <boost/type_traits/is_nothrow_move_constructible.hpp>
+#include <boost/type_traits/is_nothrow_move_assignable.hpp>
+#include <boost/type_traits/is_convertible.hpp>
+#include <boost/type_traits/is_empty.hpp>
+#include <boost/iterator/iterator_categories.hpp>
+#include <boost/utility/enable_if.hpp>
+#include <boost/detail/select_type.hpp>
+#include <boost/move/move.hpp>
+#include <boost/swap.hpp>
+#include <boost/assert.hpp>
+#include <boost/limits.hpp>
+#include <boost/iterator.hpp>
 #include <cmath>
 
 #if defined(BOOST_MSVC)
@@ -36,6 +49,1146 @@
 #endif
 
 namespace boost { namespace unordered { namespace detail {
+
+    static const float minimum_max_load_factor = 1e-3f;
+    static const std::size_t default_bucket_count = 11;
+    struct move_tag {};
+    struct empty_emplace {};
+
+    namespace func {
+        template <class T>
+        inline void ignore_unused_variable_warning(T const&) {}
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // iterator SFINAE
+
+    template <typename I>
+    struct is_forward :
+        boost::is_convertible<
+            typename boost::iterator_traversal<I>::type,
+            boost::forward_traversal_tag>
+    {};
+
+    template <typename I, typename ReturnType>
+    struct enable_if_forward :
+        boost::enable_if_c<
+            boost::unordered::detail::is_forward<I>::value,
+            ReturnType>
+    {};
+
+    template <typename I, typename ReturnType>
+    struct disable_if_forward :
+        boost::disable_if_c<
+            boost::unordered::detail::is_forward<I>::value,
+            ReturnType>
+    {};
+
+    ////////////////////////////////////////////////////////////////////////////
+    // primes
+
+#define BOOST_UNORDERED_PRIMES \
+    (17ul)(29ul)(37ul)(53ul)(67ul)(79ul) \
+    (97ul)(131ul)(193ul)(257ul)(389ul)(521ul)(769ul) \
+    (1031ul)(1543ul)(2053ul)(3079ul)(6151ul)(12289ul)(24593ul) \
+    (49157ul)(98317ul)(196613ul)(393241ul)(786433ul) \
+    (1572869ul)(3145739ul)(6291469ul)(12582917ul)(25165843ul) \
+    (50331653ul)(100663319ul)(201326611ul)(402653189ul)(805306457ul) \
+    (1610612741ul)(3221225473ul)(4294967291ul)
+
+    template<class T> struct prime_list_template
+    {
+        static std::size_t const value[];
+
+#if !defined(SUNPRO_CC)
+        static std::ptrdiff_t const length;
+#else
+        static std::ptrdiff_t const length
+            = BOOST_PP_SEQ_SIZE(BOOST_UNORDERED_PRIMES);
+#endif
+    };
+
+    template<class T>
+    std::size_t const prime_list_template<T>::value[] = {
+        BOOST_PP_SEQ_ENUM(BOOST_UNORDERED_PRIMES)
+    };
+
+#if !defined(SUNPRO_CC)
+    template<class T>
+    std::ptrdiff_t const prime_list_template<T>::length
+        = BOOST_PP_SEQ_SIZE(BOOST_UNORDERED_PRIMES);
+#endif
+
+#undef BOOST_UNORDERED_PRIMES
+
+    typedef prime_list_template<std::size_t> prime_list;
+
+    // no throw
+    inline std::size_t next_prime(std::size_t num) {
+        std::size_t const* const prime_list_begin = prime_list::value;
+        std::size_t const* const prime_list_end = prime_list_begin +
+            prime_list::length;
+        std::size_t const* bound =
+            std::lower_bound(prime_list_begin, prime_list_end, num);
+        if(bound == prime_list_end)
+            bound--;
+        return *bound;
+    }
+
+    // no throw
+    inline std::size_t prev_prime(std::size_t num) {
+        std::size_t const* const prime_list_begin = prime_list::value;
+        std::size_t const* const prime_list_end = prime_list_begin +
+            prime_list::length;
+        std::size_t const* bound =
+            std::upper_bound(prime_list_begin,prime_list_end, num);
+        if(bound != prime_list_begin)
+            bound--;
+        return *bound;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // insert_size/initial_size
+
+#if !defined(BOOST_NO_STD_DISTANCE)
+
+    using ::std::distance;
+
+#else
+
+    template <class ForwardIterator>
+    inline std::size_t distance(ForwardIterator i, ForwardIterator j) {
+        std::size_t x;
+        std::distance(i, j, x);
+        return x;
+    }
+
+#endif
+
+    template <class I>
+    inline typename
+        boost::unordered::detail::enable_if_forward<I, std::size_t>::type
+        insert_size(I i, I j)
+    {
+        return std::distance(i, j);
+    }
+
+    template <class I>
+    inline typename
+        boost::unordered::detail::disable_if_forward<I, std::size_t>::type
+        insert_size(I, I)
+    {
+        return 1;
+    }
+
+    template <class I>
+    inline std::size_t initial_size(I i, I j,
+        std::size_t num_buckets =
+            boost::unordered::detail::default_bucket_count)
+    {
+        // TODO: Why +1?
+        return (std::max)(
+            boost::unordered::detail::insert_size(i, j) + 1,
+            num_buckets);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // compressed
+
+    template <typename T, int Index>
+    struct compressed_base : private T
+    {
+        compressed_base(T const& x) : T(x) {}
+        compressed_base(T& x, move_tag) : T(boost::move(x)) {}
+
+        T& get() { return *this; }
+        T const& get() const { return *this; }
+    };
+
+    template <typename T, int Index>
+    struct uncompressed_base
+    {
+        uncompressed_base(T const& x) : value_(x) {}
+        uncompressed_base(T& x, move_tag) : value_(boost::move(x)) {}
+
+        T& get() { return value_; }
+        T const& get() const { return value_; }
+    private:
+        T value_;
+    };
+
+    template <typename T, int Index>
+    struct generate_base
+      : boost::detail::if_true<
+            boost::is_empty<T>::value
+        >:: BOOST_NESTED_TEMPLATE then<
+            boost::unordered::detail::compressed_base<T, Index>,
+            boost::unordered::detail::uncompressed_base<T, Index>
+        >
+    {};
+
+    template <typename T1, typename T2>
+    struct compressed
+      : private boost::unordered::detail::generate_base<T1, 1>::type,
+        private boost::unordered::detail::generate_base<T2, 2>::type
+    {
+        typedef typename generate_base<T1, 1>::type base1;
+        typedef typename generate_base<T2, 2>::type base2;
+
+        typedef T1 first_type;
+        typedef T2 second_type;
+
+        first_type& first() {
+            return static_cast<base1*>(this)->get();
+        }
+
+        first_type const& first() const {
+            return static_cast<base1 const*>(this)->get();
+        }
+
+        second_type& second() {
+            return static_cast<base2*>(this)->get();
+        }
+
+        second_type const& second() const {
+            return static_cast<base2 const*>(this)->get();
+        }
+
+        template <typename First, typename Second>
+        compressed(First const& x1, Second const& x2)
+            : base1(x1), base2(x2) {}
+
+        compressed(compressed const& x)
+            : base1(x.first()), base2(x.second()) {}
+
+        compressed(compressed& x, move_tag m)
+            : base1(x.first(), m), base2(x.second(), m) {}
+
+        void assign(compressed const& x)
+        {
+            first() = x.first();
+            second() = x.second();
+        }
+
+        void move_assign(compressed& x)
+        {
+            first() = boost::move(x.first());
+            second() = boost::move(x.second());
+        }
+
+        void swap(compressed& x)
+        {
+            boost::swap(first(), x.first());
+            boost::swap(second(), x.second());
+        }
+
+    private:
+        // Prevent assignment just to make use of assign or
+        // move_assign explicit.
+        compressed& operator=(compressed const&);
+    };
+}}}
+
+namespace boost { namespace unordered { namespace detail {
+
+    template <typename Types> struct table;
+    template <typename NodePointer> struct bucket;
+    struct ptr_bucket;
+    template <typename Types> struct table_impl;
+    template <typename Types> struct grouped_table_impl;
+
+}}}
+
+// The 'iterator_detail' namespace was a misguided attempt at avoiding ADL
+// in the detail namespace. It didn't work because the template parameters
+// were in detail. I'm not changing it at the moment to be safe. I might
+// do in the future if I change the iterator types.
+namespace boost { namespace unordered { namespace iterator_detail {
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Iterators
+    //
+    // all no throw
+
+    template <typename Node> struct iterator;
+    template <typename Node, typename ConstNodePointer> struct c_iterator;
+    template <typename Node, typename Policy> struct l_iterator;
+    template <typename Node, typename ConstNodePointer, typename Policy>
+        struct cl_iterator;
+
+    // Local Iterators
+    //
+    // all no throw
+
+    template <typename Node, typename Policy>
+    struct l_iterator
+        : public boost::iterator<
+            std::forward_iterator_tag,
+            typename Node::value_type,
+            std::ptrdiff_t,
+            typename Node::node_pointer,
+            typename Node::value_type&>
+    {
+#if !defined(BOOST_NO_MEMBER_TEMPLATE_FRIENDS)
+        template <typename Node2, typename ConstNodePointer, typename Policy2>
+        friend struct boost::unordered::iterator_detail::cl_iterator;
+    private:
+#endif
+        typedef typename Node::node_pointer node_pointer;
+        typedef boost::unordered::iterator_detail::iterator<Node> iterator;
+        node_pointer ptr_;
+        std::size_t bucket_;
+        std::size_t bucket_count_;
+
+    public:
+
+        typedef typename Node::value_type value_type;
+
+        l_iterator() BOOST_NOEXCEPT : ptr_() {}
+
+        l_iterator(iterator x, std::size_t b, std::size_t c) BOOST_NOEXCEPT
+            : ptr_(x.node_), bucket_(b), bucket_count_(c) {}
+
+        value_type& operator*() const {
+            return ptr_->value();
+        }
+
+        value_type* operator->() const {
+            return ptr_->value_ptr();
+        }
+
+        l_iterator& operator++() {
+            ptr_ = static_cast<node_pointer>(ptr_->next_);
+            if (ptr_ && Policy::to_bucket(bucket_count_, ptr_->hash_)
+                    != bucket_)
+                ptr_ = node_pointer();
+            return *this;
+        }
+
+        l_iterator operator++(int) {
+            l_iterator tmp(*this);
+            ++(*this);
+            return tmp;
+        }
+
+        bool operator==(l_iterator x) const BOOST_NOEXCEPT {
+            return ptr_ == x.ptr_;
+        }
+
+        bool operator!=(l_iterator x) const BOOST_NOEXCEPT {
+            return ptr_ != x.ptr_;
+        }
+    };
+
+    template <typename Node, typename ConstNodePointer, typename Policy>
+    struct cl_iterator
+        : public boost::iterator<
+            std::forward_iterator_tag,
+            typename Node::value_type,
+            std::ptrdiff_t,
+            ConstNodePointer,
+            typename Node::value_type const&>
+    {
+        friend struct boost::unordered::iterator_detail::l_iterator
+            <Node, Policy>;
+    private:
+
+        typedef typename Node::node_pointer node_pointer;
+        typedef boost::unordered::iterator_detail::iterator<Node> iterator;
+        node_pointer ptr_;
+        std::size_t bucket_;
+        std::size_t bucket_count_;
+
+    public:
+
+        typedef typename Node::value_type value_type;
+
+        cl_iterator() BOOST_NOEXCEPT : ptr_() {}
+
+        cl_iterator(iterator x, std::size_t b, std::size_t c) BOOST_NOEXCEPT :
+            ptr_(x.node_), bucket_(b), bucket_count_(c) {}
+
+        cl_iterator(boost::unordered::iterator_detail::l_iterator<
+                Node, Policy> const& x) BOOST_NOEXCEPT :
+            ptr_(x.ptr_), bucket_(x.bucket_), bucket_count_(x.bucket_count_)
+        {}
+
+        value_type const& operator*() const {
+            return ptr_->value();
+        }
+
+        value_type const* operator->() const {
+            return ptr_->value_ptr();
+        }
+
+        cl_iterator& operator++() {
+            ptr_ = static_cast<node_pointer>(ptr_->next_);
+            if (ptr_ && Policy::to_bucket(bucket_count_, ptr_->hash_)
+                    != bucket_)
+                ptr_ = node_pointer();
+            return *this;
+        }
+
+        cl_iterator operator++(int) {
+            cl_iterator tmp(*this);
+            ++(*this);
+            return tmp;
+        }
+
+        friend bool operator==(cl_iterator const& x, cl_iterator const& y)
+            BOOST_NOEXCEPT
+        {
+            return x.ptr_ == y.ptr_;
+        }
+
+        friend bool operator!=(cl_iterator const& x, cl_iterator const& y)
+            BOOST_NOEXCEPT
+        {
+            return x.ptr_ != y.ptr_;
+        }
+    };
+
+    template <typename Node>
+    struct iterator
+        : public boost::iterator<
+            std::forward_iterator_tag,
+            typename Node::value_type,
+            std::ptrdiff_t,
+            typename Node::node_pointer,
+            typename Node::value_type&>
+    {
+#if !defined(BOOST_NO_MEMBER_TEMPLATE_FRIENDS)
+        template <typename, typename>
+        friend struct boost::unordered::iterator_detail::c_iterator;
+        template <typename, typename>
+        friend struct boost::unordered::iterator_detail::l_iterator;
+        template <typename, typename, typename>
+        friend struct boost::unordered::iterator_detail::cl_iterator;
+        template <typename>
+        friend struct boost::unordered::detail::table;
+        template <typename>
+        friend struct boost::unordered::detail::table_impl;
+        template <typename>
+        friend struct boost::unordered::detail::grouped_table_impl;
+    private:
+#endif
+        typedef typename Node::node_pointer node_pointer;
+        node_pointer node_;
+
+    public:
+
+        typedef typename Node::value_type value_type;
+
+        iterator() BOOST_NOEXCEPT : node_() {}
+
+        explicit iterator(typename Node::link_pointer x) BOOST_NOEXCEPT :
+            node_(static_cast<node_pointer>(x)) {}
+
+        value_type& operator*() const {
+            return node_->value();
+        }
+
+        value_type* operator->() const {
+            return &node_->value();
+        }
+
+        iterator& operator++() {
+            node_ = static_cast<node_pointer>(node_->next_);
+            return *this;
+        }
+
+        iterator operator++(int) {
+            iterator tmp(node_);
+            node_ = static_cast<node_pointer>(node_->next_);
+            return tmp;
+        }
+
+        bool operator==(iterator const& x) const BOOST_NOEXCEPT {
+            return node_ == x.node_;
+        }
+
+        bool operator!=(iterator const& x) const BOOST_NOEXCEPT {
+            return node_ != x.node_;
+        }
+    };
+
+    template <typename Node, typename ConstNodePointer>
+    struct c_iterator
+        : public boost::iterator<
+            std::forward_iterator_tag,
+            typename Node::value_type,
+            std::ptrdiff_t,
+            ConstNodePointer,
+            typename Node::value_type const&>
+    {
+        friend struct boost::unordered::iterator_detail::iterator<Node>;
+
+#if !defined(BOOST_NO_MEMBER_TEMPLATE_FRIENDS)
+        template <typename>
+        friend struct boost::unordered::detail::table;
+        template <typename>
+        friend struct boost::unordered::detail::table_impl;
+        template <typename>
+        friend struct boost::unordered::detail::grouped_table_impl;
+
+    private:
+#endif
+        typedef typename Node::node_pointer node_pointer;
+        typedef boost::unordered::iterator_detail::iterator<Node> iterator;
+        node_pointer node_;
+
+    public:
+
+        typedef typename Node::value_type value_type;
+
+        c_iterator() BOOST_NOEXCEPT : node_() {}
+
+        explicit c_iterator(typename Node::link_pointer x) BOOST_NOEXCEPT :
+            node_(static_cast<node_pointer>(x)) {}
+
+        c_iterator(iterator const& x) BOOST_NOEXCEPT : node_(x.node_) {}
+
+        value_type const& operator*() const {
+            return node_->value();
+        }
+
+        value_type const* operator->() const {
+            return &node_->value();
+        }
+
+        c_iterator& operator++() {
+            node_ = static_cast<node_pointer>(node_->next_);
+            return *this;
+        }
+
+        c_iterator operator++(int) {
+            c_iterator tmp(node_);
+            node_ = static_cast<node_pointer>(node_->next_);
+            return tmp;
+        }
+
+        friend bool operator==(c_iterator const& x, c_iterator const& y)
+            BOOST_NOEXCEPT
+        {
+            return x.node_ == y.node_;
+        }
+
+        friend bool operator!=(c_iterator const& x, c_iterator const& y)
+            BOOST_NOEXCEPT
+        {
+            return x.node_ != y.node_;
+        }
+    };
+}}}
+
+namespace boost { namespace unordered { namespace detail {
+
+    ///////////////////////////////////////////////////////////////////
+    //
+    // Node construction
+
+    template <typename NodeAlloc>
+    struct node_constructor
+    {
+    private:
+
+        typedef NodeAlloc node_allocator;
+        typedef boost::unordered::detail::allocator_traits<NodeAlloc>
+            node_allocator_traits;
+        typedef typename node_allocator_traits::value_type node;
+        typedef typename node_allocator_traits::pointer node_pointer;
+        typedef typename node::value_type value_type;
+
+    protected:
+
+        node_allocator& alloc_;
+        node_pointer node_;
+        bool node_constructed_;
+        bool value_constructed_;
+
+    public:
+
+        node_constructor(node_allocator& n) :
+            alloc_(n),
+            node_(),
+            node_constructed_(false),
+            value_constructed_(false)
+        {
+        }
+
+        ~node_constructor();
+
+        void construct();
+
+        template <BOOST_UNORDERED_EMPLACE_TEMPLATE>
+        void construct_with_value(BOOST_UNORDERED_EMPLACE_ARGS)
+        {
+            construct();
+            boost::unordered::detail::func::construct_value_impl(
+                alloc_, node_->value_ptr(), BOOST_UNORDERED_EMPLACE_FORWARD);
+            value_constructed_ = true;
+        }
+
+        template <typename A0>
+        void construct_with_value2(BOOST_FWD_REF(A0) a0)
+        {
+            construct();
+            boost::unordered::detail::func::construct_value_impl(
+                alloc_, node_->value_ptr(),
+                BOOST_UNORDERED_EMPLACE_ARGS1(boost::forward<A0>(a0)));
+            value_constructed_ = true;
+        }
+
+        value_type const& value() const {
+            BOOST_ASSERT(node_ && node_constructed_ && value_constructed_);
+            return node_->value();
+        }
+
+        // no throw
+        node_pointer release()
+        {
+            BOOST_ASSERT(node_ && node_constructed_);
+            node_pointer p = node_;
+            node_ = node_pointer();
+            return p;
+        }
+
+    private:
+        node_constructor(node_constructor const&);
+        node_constructor& operator=(node_constructor const&);
+    };
+
+    template <typename Alloc>
+    node_constructor<Alloc>::~node_constructor()
+    {
+        if (node_) {
+            if (value_constructed_) {
+                boost::unordered::detail::func::destroy_value_impl(alloc_,
+                    node_->value_ptr());
+            }
+
+            if (node_constructed_) {
+                boost::unordered::detail::func::destroy(
+                    boost::addressof(*node_));
+            }
+
+            node_allocator_traits::deallocate(alloc_, node_, 1);
+        }
+    }
+
+    template <typename Alloc>
+    void node_constructor<Alloc>::construct()
+    {
+        if(!node_) {
+            node_constructed_ = false;
+            value_constructed_ = false;
+
+            node_ = node_allocator_traits::allocate(alloc_, 1);
+
+            new ((void*) boost::addressof(*node_)) node();
+            node_->init(node_);
+            node_constructed_ = true;
+        }
+        else {
+            BOOST_ASSERT(node_constructed_);
+
+            if (value_constructed_)
+            {
+                boost::unordered::detail::func::destroy_value_impl(alloc_,
+                    node_->value_ptr());
+                value_constructed_ = false;
+            }
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////
+    //
+    // Node Holder
+    //
+    // Temporary store for nodes. Deletes any that aren't used.
+
+    template <typename NodeAlloc>
+    struct node_holder : private node_constructor<NodeAlloc>
+    {
+    private:
+        typedef node_constructor<NodeAlloc> base;
+
+        typedef NodeAlloc node_allocator;
+        typedef boost::unordered::detail::allocator_traits<NodeAlloc>
+            node_allocator_traits;
+        typedef typename node_allocator_traits::value_type node;
+        typedef typename node_allocator_traits::pointer node_pointer;
+        typedef typename node::value_type value_type;
+        typedef typename node::link_pointer link_pointer;
+        typedef boost::unordered::iterator_detail::iterator<node> iterator;
+
+        node_pointer nodes_;
+
+    public:
+
+        template <typename Table>
+        explicit node_holder(Table& b) :
+            base(b.node_alloc()),
+            nodes_()
+        {
+            if (b.size_) {
+                typename Table::link_pointer prev = b.get_previous_start();
+                nodes_ = static_cast<node_pointer>(prev->next_);
+                prev->next_ = link_pointer();
+                b.size_ = 0;
+            }
+        }
+
+        ~node_holder();
+
+        void node_for_assignment()
+        {
+            if (!this->node_ && nodes_) {
+                this->node_ = nodes_;
+                nodes_ = static_cast<node_pointer>(nodes_->next_);
+                this->node_->init(this->node_);
+                this->node_->next_ = link_pointer();
+
+                this->node_constructed_ = true;
+                this->value_constructed_ = true;
+            }
+        }
+
+        template <typename T>
+        inline void assign_impl(T const& v) {
+            if (this->node_ && this->value_constructed_) {
+                this->node_->value() = v;
+            }
+            else {
+                this->construct_with_value2(v);
+            }
+        }
+
+        template <typename T1, typename T2>
+        inline void assign_impl(std::pair<T1 const, T2> const& v) {
+            this->construct_with_value2(v);
+        }
+
+        template <typename T>
+        inline void move_assign_impl(T& v) {
+            if (this->node_ && this->value_constructed_) {
+                this->node_->value() = boost::move(v);
+            }
+            else {
+                this->construct_with_value2(boost::move(v));
+            }
+        }
+
+        template <typename T1, typename T2>
+        inline void move_assign_impl(std::pair<T1 const, T2>& v) {
+            this->construct_with_value2(boost::move(v));
+        }
+
+        node_pointer copy_of(value_type const& v)
+        {
+            node_for_assignment();
+            assign_impl(v);
+            return base::release();
+        }
+
+        node_pointer move_copy_of(value_type& v)
+        {
+            node_for_assignment();
+            move_assign_impl(v);
+            return base::release();
+        }
+
+        iterator begin() const
+        {
+            return iterator(nodes_);
+        }
+    };
+
+    template <typename Alloc>
+    node_holder<Alloc>::~node_holder()
+    {
+        while (nodes_) {
+            node_pointer p = nodes_;
+            nodes_ = static_cast<node_pointer>(p->next_);
+
+            boost::unordered::detail::func::destroy_value_impl(this->alloc_,
+                p->value_ptr());
+            boost::unordered::detail::func::destroy(boost::addressof(*p));
+            node_allocator_traits::deallocate(this->alloc_, p, 1);
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////
+    //
+    // Bucket
+
+    template <typename NodePointer>
+    struct bucket
+    {
+        typedef NodePointer link_pointer;
+        link_pointer next_;
+
+        bucket() : next_() {}
+
+        link_pointer first_from_start()
+        {
+            return next_;
+        }
+
+        enum { extra_node = true };
+    };
+
+    struct ptr_bucket
+    {
+        typedef ptr_bucket* link_pointer;
+        link_pointer next_;
+
+        ptr_bucket() : next_(0) {}
+
+        link_pointer first_from_start()
+        {
+            return this;
+        }
+
+        enum { extra_node = false };
+    };
+
+    ///////////////////////////////////////////////////////////////////
+    //
+    // Hash Policy
+
+    template <typename SizeT>
+    struct prime_policy
+    {
+        template <typename Hash, typename T>
+        static inline SizeT apply_hash(Hash const& hf, T const& x) {
+            return hf(x);
+        }
+
+        static inline SizeT to_bucket(SizeT bucket_count, SizeT hash) {
+            return hash % bucket_count;
+        }
+
+        static inline SizeT new_bucket_count(SizeT min) {
+            return boost::unordered::detail::next_prime(min);
+        }
+
+        static inline SizeT prev_bucket_count(SizeT max) {
+            return boost::unordered::detail::prev_prime(max);
+        }
+    };
+
+    template <typename SizeT>
+    struct mix64_policy
+    {
+        template <typename Hash, typename T>
+        static inline SizeT apply_hash(Hash const& hf, T const& x) {
+            SizeT key = hf(x);
+            key = (~key) + (key << 21); // key = (key << 21) - key - 1;
+            key = key ^ (key >> 24);
+            key = (key + (key << 3)) + (key << 8); // key * 265
+            key = key ^ (key >> 14);
+            key = (key + (key << 2)) + (key << 4); // key * 21
+            key = key ^ (key >> 28);
+            key = key + (key << 31);
+            return key;
+        }
+
+        static inline SizeT to_bucket(SizeT bucket_count, SizeT hash) {
+            return hash & (bucket_count - 1);
+        }
+
+        static inline SizeT new_bucket_count(SizeT min) {
+            if (min <= 4) return 4;
+            --min;
+            min |= min >> 1;
+            min |= min >> 2;
+            min |= min >> 4;
+            min |= min >> 8;
+            min |= min >> 16;
+            min |= min >> 32;
+            return min + 1;
+        }
+
+        static inline SizeT prev_bucket_count(SizeT max) {
+            max |= max >> 1;
+            max |= max >> 2;
+            max |= max >> 4;
+            max |= max >> 8;
+            max |= max >> 16;
+            max |= max >> 32;
+            return (max >> 1) + 1;
+        }
+    };
+
+    template <int digits, int radix>
+    struct pick_policy_impl {
+        typedef prime_policy<std::size_t> type;
+    };
+
+    template <>
+    struct pick_policy_impl<64, 2> {
+        typedef mix64_policy<std::size_t> type;
+    };
+
+    template <typename T>
+    struct pick_policy :
+        pick_policy_impl<
+            std::numeric_limits<std::size_t>::digits,
+            std::numeric_limits<std::size_t>::radix> {};
+
+    // While the mix policy is generally faster, the prime policy is a lot
+    // faster when a large number consecutive integers are used, because
+    // there are no collisions. Since that is probably quite common, use
+    // prime policy for integeral types. But not the smaller ones, as they
+    // don't have enough unique values for this to be an issue.
+
+    template <>
+    struct pick_policy<int> {
+        typedef prime_policy<std::size_t> type;
+    };
+
+    template <>
+    struct pick_policy<unsigned int> {
+        typedef prime_policy<std::size_t> type;
+    };
+
+    template <>
+    struct pick_policy<long> {
+        typedef prime_policy<std::size_t> type;
+    };
+
+    template <>
+    struct pick_policy<unsigned long> {
+        typedef prime_policy<std::size_t> type;
+    };
+
+    // TODO: Maybe not if std::size_t is smaller than long long.
+#if !defined(BOOST_NO_LONG_LONG)
+    template <>
+    struct pick_policy<long long> {
+        typedef prime_policy<std::size_t> type;
+    };
+
+    template <>
+    struct pick_policy<unsigned long long> {
+        typedef prime_policy<std::size_t> type;
+    };
+#endif
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Functions
+
+    // Assigning and swapping the equality and hash function objects
+    // needs strong exception safety. To implement that normally we'd
+    // require one of them to be known to not throw and the other to
+    // guarantee strong exception safety. Unfortunately they both only
+    // have basic exception safety. So to acheive strong exception
+    // safety we have storage space for two copies, and assign the new
+    // copies to the unused space. Then switch to using that to use
+    // them. This is implemented in 'set_hash_functions' which
+    // atomically assigns the new function objects in a strongly
+    // exception safe manner.
+
+    template <class H, class P, bool NoThrowMoveAssign>
+    class set_hash_functions;
+
+    template <class H, class P>
+    class functions
+    {
+    public:
+        static const bool nothrow_move_assignable =
+                boost::is_nothrow_move_assignable<H>::value &&
+                boost::is_nothrow_move_assignable<P>::value;
+        static const bool nothrow_move_constructible =
+                boost::is_nothrow_move_constructible<H>::value &&
+                boost::is_nothrow_move_constructible<P>::value;
+
+    private:
+        friend class boost::unordered::detail::set_hash_functions<H, P,
+               nothrow_move_assignable>;
+        functions& operator=(functions const&);
+
+        typedef compressed<H, P> function_pair;
+
+        typedef typename boost::aligned_storage<
+            sizeof(function_pair),
+            boost::alignment_of<function_pair>::value>::type aligned_function;
+
+        bool current_; // The currently active functions.
+        aligned_function funcs_[2];
+
+        function_pair const& current() const {
+            return *static_cast<function_pair const*>(
+                static_cast<void const*>(&funcs_[current_]));
+        }
+
+        function_pair& current() {
+            return *static_cast<function_pair*>(
+                static_cast<void*>(&funcs_[current_]));
+        }
+
+        void construct(bool which, H const& hf, P const& eq)
+        {
+            new((void*) &funcs_[which]) function_pair(hf, eq);
+        }
+
+        void construct(bool which, function_pair const& f,
+                boost::unordered::detail::false_type =
+                    boost::unordered::detail::false_type())
+        {
+            new((void*) &funcs_[which]) function_pair(f);
+        }
+
+        void construct(bool which, function_pair& f,
+                boost::unordered::detail::true_type)
+        {
+            new((void*) &funcs_[which]) function_pair(f,
+                boost::unordered::detail::move_tag());
+        }
+
+        void destroy(bool which)
+        {
+            boost::unordered::detail::func::destroy((function_pair*)(&funcs_[which]));
+        }
+
+    public:
+
+        typedef boost::unordered::detail::set_hash_functions<H, P,
+                nothrow_move_assignable> set_hash_functions;
+
+        functions(H const& hf, P const& eq)
+            : current_(false)
+        {
+            construct(current_, hf, eq);
+        }
+
+        functions(functions const& bf)
+            : current_(false)
+        {
+            construct(current_, bf.current());
+        }
+
+        functions(functions& bf, boost::unordered::detail::move_tag)
+            : current_(false)
+        {
+            construct(current_, bf.current(),
+                boost::unordered::detail::integral_constant<bool,
+                    nothrow_move_constructible>());
+        }
+
+        ~functions() {
+            this->destroy(current_);
+        }
+
+        H const& hash_function() const {
+            return current().first();
+        }
+
+        P const& key_eq() const {
+            return current().second();
+        }
+    };
+
+    template <class H, class P>
+    class set_hash_functions<H, P, false>
+    {
+        set_hash_functions(set_hash_functions const&);
+        set_hash_functions& operator=(set_hash_functions const&);
+
+        typedef functions<H, P> functions_type;
+
+        functions_type& functions_;
+        bool tmp_functions_;
+
+    public:
+
+        set_hash_functions(functions_type& f, H const& h, P const& p)
+          : functions_(f),
+            tmp_functions_(!f.current_)
+        {
+            f.construct(tmp_functions_, h, p);
+        }
+
+        set_hash_functions(functions_type& f, functions_type const& other)
+          : functions_(f),
+            tmp_functions_(!f.current_)
+        {
+            f.construct(tmp_functions_, other.current());
+        }
+
+        ~set_hash_functions()
+        {
+            functions_.destroy(tmp_functions_);
+        }
+
+        void commit()
+        {
+            functions_.current_ = tmp_functions_;
+            tmp_functions_ = !tmp_functions_;
+        }
+    };
+
+    template <class H, class P>
+    class set_hash_functions<H, P, true>
+    {
+        set_hash_functions(set_hash_functions const&);
+        set_hash_functions& operator=(set_hash_functions const&);
+
+        typedef functions<H, P> functions_type;
+
+        functions_type& functions_;
+        H hash_;
+        P pred_;
+
+    public:
+
+        set_hash_functions(functions_type& f, H const& h, P const& p) :
+            functions_(f),
+            hash_(h),
+            pred_(p) {}
+
+        set_hash_functions(functions_type& f, functions_type const& other) :
+            functions_(f),
+            hash_(other.hash_function()),
+            pred_(other.key_eq()) {}
+
+        void commit()
+        {
+            functions_.current().first() = boost::move(hash_);
+            functions_.current().second() = boost::move(pred_);
+        }
+    };
+
+    ////////////////////////////////////////////////////////////////////////////
+    // rvalue parameters when type can't be a BOOST_RV_REF(T) parameter
+    // e.g. for int
+
+#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+#   define BOOST_UNORDERED_RV_REF(T) BOOST_RV_REF(T)
+#else
+    struct please_ignore_this_overload {
+        typedef please_ignore_this_overload type;
+    };
+
+    template <typename T>
+    struct rv_ref_impl {
+        typedef BOOST_RV_REF(T) type;
+    };
+
+    template <typename T>
+    struct rv_ref :
+        boost::detail::if_true<
+            boost::is_class<T>::value
+        >::BOOST_NESTED_TEMPLATE then <
+            boost::unordered::detail::rv_ref_impl<T>,
+            please_ignore_this_overload
+        >::type
+    {};
+
+#   define BOOST_UNORDERED_RV_REF(T) \
+        typename boost::unordered::detail::rv_ref<T>::type
+#endif
 
     ////////////////////////////////////////////////////////////////////////////
     // convert double to std::size_t
