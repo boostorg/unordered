@@ -554,3 +554,23 @@ void unordered_movable_test(X& x, Key& k, T& /* t */, Hash& hf, Pred& eq)
     sink(a8);
     sink(a10);
 }
+
+template <class X, class T>
+void unordered_set_member_test(X& x, T& t)
+{
+    X x1(x);
+    x1.insert(t);
+    x1.begin()->dummy_member();
+    x1.cbegin()->dummy_member();
+}
+
+template <class X, class T>
+void unordered_map_member_test(X& x, T& t)
+{
+    X x1(x);
+    x1.insert(t);
+    x1.begin()->first.dummy_member();
+    x1.cbegin()->first.dummy_member();
+    x1.begin()->second.dummy_member();
+    x1.cbegin()->second.dummy_member();
+}

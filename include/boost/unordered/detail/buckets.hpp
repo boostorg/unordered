@@ -223,7 +223,7 @@ namespace boost { namespace unordered { namespace iterator_detail {
         }
 
         value_type* operator->() const {
-            return &node_->value();
+            return node_->value_ptr();
         }
 
         iterator& operator++() {
@@ -287,7 +287,7 @@ namespace boost { namespace unordered { namespace iterator_detail {
         }
 
         value_type const* operator->() const {
-            return &node_->value();
+            return node_->value_ptr();
         }
 
         c_iterator& operator++() {

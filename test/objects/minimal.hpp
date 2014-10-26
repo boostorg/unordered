@@ -48,6 +48,7 @@ namespace minimal
     public:
         destructible(constructor_param const&) {}
         ~destructible() {}
+        void dummy_member() const {}
     private:
         destructible(destructible const&);
         destructible& operator=(destructible const&);
@@ -59,6 +60,7 @@ namespace minimal
         copy_constructible(constructor_param const&) {}
         copy_constructible(copy_constructible const&) {}
         ~copy_constructible() {}
+        void dummy_member() const {}
     private:
         copy_constructible& operator=(copy_constructible const&);
         copy_constructible() {}
@@ -78,6 +80,7 @@ namespace minimal
         {
         }
 
+        void dummy_member() const {}
     private:
         copy_constructible_equality_comparable& operator=(
             copy_constructible_equality_comparable const&);
@@ -121,6 +124,7 @@ namespace minimal
         {
         }
 
+        void dummy_member() const {}
     private:
         ampersand_operator_used operator&() const {
             return ampersand_operator_used(); }
@@ -133,11 +137,10 @@ namespace minimal
         assignable(assignable const&) {}
         assignable& operator=(assignable const&) { return *this; }
         ~assignable() {}
-
+        void dummy_member() const {}
     private:
         assignable() {}
-        // TODO: This messes up a concept check in the tests.
-        //ampersand_operator_used operator&() const { return ampersand_operator_used(); }
+        ampersand_operator_used operator&() const { return ampersand_operator_used(); }
     };
 
     struct movable_init {};
@@ -153,6 +156,7 @@ namespace minimal
         movable1(BOOST_RV_REF(movable1)) {}
         movable1& operator=(BOOST_RV_REF(movable1)) { return *this; }
         ~movable1() {}
+        void dummy_member() const {}
     };
 
 #if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
@@ -164,6 +168,7 @@ namespace minimal
         movable2(movable2&&) {}
         ~movable2() {}
         movable2& operator=(movable2&&) { return *this; }
+        void dummy_member() const {}
     private:
         movable2() {}
         movable2(movable2 const&);
@@ -289,8 +294,7 @@ namespace minimal
         bool operator<=(ptr const& x) const { return ptr_ <= x.ptr_; }
         bool operator>=(ptr const& x) const { return ptr_ >= x.ptr_; }
     private:
-        // TODO:
-        //ampersand_operator_used operator&() const { return ampersand_operator_used(); }
+        ampersand_operator_used operator&() const { return ampersand_operator_used(); }
     };
 
     template <class T>
@@ -326,8 +330,7 @@ namespace minimal
         bool operator<=(const_ptr const& x) const { return ptr_ <= x.ptr_; }
         bool operator>=(const_ptr const& x) const { return ptr_ >= x.ptr_; }
     private:
-        // TODO:
-        //ampersand_operator_used operator&() const { return ampersand_operator_used(); }
+        ampersand_operator_used operator&() const { return ampersand_operator_used(); }
     };
 
     template <class T>
