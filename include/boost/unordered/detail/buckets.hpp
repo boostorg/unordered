@@ -69,7 +69,7 @@ namespace boost { namespace unordered { namespace iterator_detail {
     private:
 #endif
         typedef typename Node::node_pointer node_pointer;
-        typedef boost::unordered::iterator_detail::iterator<Node> iterator;
+        typedef boost::unordered::iterator_detail::iterator<Node> n_iterator;
         node_pointer ptr_;
         std::size_t bucket_;
         std::size_t bucket_count_;
@@ -80,7 +80,7 @@ namespace boost { namespace unordered { namespace iterator_detail {
 
         l_iterator() BOOST_NOEXCEPT : ptr_() {}
 
-        l_iterator(iterator x, std::size_t b, std::size_t c) BOOST_NOEXCEPT
+        l_iterator(n_iterator x, std::size_t b, std::size_t c) BOOST_NOEXCEPT
             : ptr_(x.node_), bucket_(b), bucket_count_(c) {}
 
         value_type& operator*() const {
@@ -128,7 +128,7 @@ namespace boost { namespace unordered { namespace iterator_detail {
     private:
 
         typedef typename Node::node_pointer node_pointer;
-        typedef boost::unordered::iterator_detail::iterator<Node> iterator;
+        typedef boost::unordered::iterator_detail::iterator<Node> n_iterator;
         node_pointer ptr_;
         std::size_t bucket_;
         std::size_t bucket_count_;
@@ -139,7 +139,7 @@ namespace boost { namespace unordered { namespace iterator_detail {
 
         cl_iterator() BOOST_NOEXCEPT : ptr_() {}
 
-        cl_iterator(iterator x, std::size_t b, std::size_t c) BOOST_NOEXCEPT :
+        cl_iterator(n_iterator x, std::size_t b, std::size_t c) BOOST_NOEXCEPT :
             ptr_(x.node_), bucket_(b), bucket_count_(c) {}
 
         cl_iterator(boost::unordered::iterator_detail::l_iterator<
@@ -268,7 +268,7 @@ namespace boost { namespace unordered { namespace iterator_detail {
     private:
 #endif
         typedef typename Node::node_pointer node_pointer;
-        typedef boost::unordered::iterator_detail::iterator<Node> iterator;
+        typedef boost::unordered::iterator_detail::iterator<Node> n_iterator;
         node_pointer node_;
 
     public:
@@ -280,7 +280,7 @@ namespace boost { namespace unordered { namespace iterator_detail {
         explicit c_iterator(typename Node::link_pointer x) BOOST_NOEXCEPT :
             node_(static_cast<node_pointer>(x)) {}
 
-        c_iterator(iterator const& x) BOOST_NOEXCEPT : node_(x.node_) {}
+        c_iterator(n_iterator const& x) BOOST_NOEXCEPT : node_(x.node_) {}
 
         value_type const& operator*() const {
             return node_->value();
