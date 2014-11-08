@@ -258,4 +258,10 @@ C++11 support has resulted in some breaking changes:
 * Fix Coverity warning
   ([@https://github.com/boostorg/unordered/pull/2 GitHub #2]).
 
+[h2 Boost 1.58.0]
+
+* Remove unnecessary template parameter from const iterators.
+* Rename private `iterator` typedef in some iterator classes, as it
+  confuses some traits classes.
+
 [endsect]
