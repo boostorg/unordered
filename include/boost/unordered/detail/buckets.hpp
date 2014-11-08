@@ -45,9 +45,9 @@ namespace boost { namespace unordered { namespace iterator_detail {
     // all no throw
 
     template <typename Node> struct iterator;
-    template <typename Node, typename ConstNodePointer> struct c_iterator;
+    template <typename Node> struct c_iterator;
     template <typename Node, typename Policy> struct l_iterator;
-    template <typename Node, typename ConstNodePointer, typename Policy>
+    template <typename Node, typename Policy>
         struct cl_iterator;
 
     // Local Iterators
@@ -64,7 +64,7 @@ namespace boost { namespace unordered { namespace iterator_detail {
             typename Node::value_type&>
     {
 #if !defined(BOOST_NO_MEMBER_TEMPLATE_FRIENDS)
-        template <typename Node2, typename ConstNodePointer, typename Policy2>
+        template <typename Node2, typename Policy2>
         friend struct boost::unordered::iterator_detail::cl_iterator;
     private:
 #endif
@@ -114,7 +114,7 @@ namespace boost { namespace unordered { namespace iterator_detail {
         }
     };
 
-    template <typename Node, typename ConstNodePointer, typename Policy>
+    template <typename Node, typename Policy>
     struct cl_iterator
         : public boost::iterator<
             std::forward_iterator_tag,
@@ -246,7 +246,7 @@ namespace boost { namespace unordered { namespace iterator_detail {
         }
     };
 
-    template <typename Node, typename ConstNodePointer>
+    template <typename Node>
     struct c_iterator
         : public boost::iterator<
             std::forward_iterator_tag,

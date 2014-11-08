@@ -191,11 +191,11 @@ namespace boost { namespace unordered { namespace detail {
         typedef boost::unordered::iterator_detail::
             iterator<node> iterator;
         typedef boost::unordered::iterator_detail::
-            c_iterator<node, const_node_pointer> c_iterator;
+            c_iterator<node> c_iterator;
         typedef boost::unordered::iterator_detail::
             l_iterator<node, policy> l_iterator;
         typedef boost::unordered::iterator_detail::
-            cl_iterator<node, const_node_pointer, policy> cl_iterator;
+            cl_iterator<node, policy> cl_iterator;
 
         ////////////////////////////////////////////////////////////////////////
         // Members
