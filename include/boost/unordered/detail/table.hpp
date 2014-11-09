@@ -500,9 +500,11 @@ namespace boost { namespace unordered { namespace detail {
             op2.commit();
         }
 
+        // Only call with nodes allocated with the currect allocator, or
+        // one that is equal to it. (Can't assert because other's
+        // allocators might have already been moved).
         void move_buckets_from(table& other)
         {
-            BOOST_ASSERT(node_alloc() == other.node_alloc());
             BOOST_ASSERT(!buckets_);
             buckets_ = other.buckets_;
             bucket_count_ = other.bucket_count_;
