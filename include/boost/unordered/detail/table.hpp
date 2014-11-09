@@ -712,15 +712,25 @@ namespace boost { namespace unordered { namespace detail {
         void move_assign(table& x, true_type)
         {
             delete_buckets();
+            set_hash_functions new_func_this(*this, x);
             allocators_.move_assign(x.allocators_);
-            move_assign_no_alloc(x);
+            // No throw from here.
+            mlf_ = x.mlf_;
+            max_load_ = x.max_load_;
+            move_buckets_from(x);
+            new_func_this.commit();
         }
 
         void move_assign(table& x, false_type)
         {
             if (node_alloc() == x.node_alloc()) {
                 delete_buckets();
-                move_assign_no_alloc(x);
+                set_hash_functions new_func_this(*this, x);
+                // No throw from here.
+                mlf_ = x.mlf_;
+                max_load_ = x.max_load_;
+                move_buckets_from(x);
+                new_func_this.commit();
             }
             else {
                 set_hash_functions new_func_this(*this, x);
@@ -744,16 +754,6 @@ namespace boost { namespace unordered { namespace detail {
                 node_holder<node_allocator> nodes(x);
                 table_impl::fill_buckets(nodes.begin(), *this, node_creator);
             }
-        }
-        
-        void move_assign_no_alloc(table& x)
-        {
-            set_hash_functions new_func_this(*this, x);
-            // No throw from here.
-            mlf_ = x.mlf_;
-            max_load_ = x.max_load_;
-            move_buckets_from(x);
-            new_func_this.commit();
         }
 
         // Accessors

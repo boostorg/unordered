@@ -265,5 +265,6 @@ C++11 support has resulted in some breaking changes:
   confuses some traits classes.
 * Fix move assignment with stateful, propagate_on_container_move_assign
   allocators ([ticket 10777]).
+* Fix rare exception safety issue in move assignment.
 
 [endsect]
