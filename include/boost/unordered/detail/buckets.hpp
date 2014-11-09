@@ -192,11 +192,11 @@ namespace boost { namespace unordered { namespace iterator_detail {
             typename Node::value_type&>
     {
 #if !defined(BOOST_NO_MEMBER_TEMPLATE_FRIENDS)
-        template <typename, typename>
+        template <typename>
         friend struct boost::unordered::iterator_detail::c_iterator;
         template <typename, typename>
         friend struct boost::unordered::iterator_detail::l_iterator;
-        template <typename, typename, typename>
+        template <typename, typename>
         friend struct boost::unordered::iterator_detail::cl_iterator;
         template <typename>
         friend struct boost::unordered::detail::table;
