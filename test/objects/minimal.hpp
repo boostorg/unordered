@@ -20,9 +20,9 @@
 #endif
 
 #if !BOOST_WORKAROUND(BOOST_MSVC, == 1500)
-#define BOOST_UNORDERED_PRIVATE_AMPERSAND private
+#define BOOST_UNORDERED_CHECK_ADDR_OPERATOR_NOT_USED 1
 #else
-#define BOOST_UNORDERED_PRIVATE_AMPERSAND public
+#define BOOST_UNORDERED_CHECK_ADDR_OPERATOR_NOT_USED 0
 #endif
 
 namespace test
@@ -93,9 +93,10 @@ namespace minimal
         copy_constructible_equality_comparable& operator=(
             copy_constructible_equality_comparable const&);
         copy_constructible_equality_comparable() {}
-    BOOST_UNORDERED_PRIVATE_AMPERSAND:
+#if BOOST_UNORDERED_CHECK_ADDR_OPERATOR_NOT_USED
         ampersand_operator_used operator&() const {
             return ampersand_operator_used(); }
+#endif
     };
 
     bool operator==(
@@ -136,9 +137,10 @@ namespace minimal
 
         void dummy_member() const {}
 
-    BOOST_UNORDERED_PRIVATE_AMPERSAND:
+#if BOOST_UNORDERED_CHECK_ADDR_OPERATOR_NOT_USED
         ampersand_operator_used operator&() const {
             return ampersand_operator_used(); }
+#endif
     };
 
     class assignable
@@ -151,9 +153,10 @@ namespace minimal
         void dummy_member() const {}
     private:
         assignable() {}
-    BOOST_UNORDERED_PRIVATE_AMPERSAND:
+#if BOOST_UNORDERED_CHECK_ADDR_OPERATOR_NOT_USED
         ampersand_operator_used operator&() const {
             return ampersand_operator_used(); }
+#endif
     };
 
     struct movable_init {};
@@ -202,9 +205,10 @@ namespace minimal
         ~hash() {}
 
         std::size_t operator()(T const&) const { return 0; }
-    BOOST_UNORDERED_PRIVATE_AMPERSAND:
+#if BOOST_UNORDERED_CHECK_ADDR_OPERATOR_NOT_USED
         ampersand_operator_used operator&() const {
             return ampersand_operator_used(); }
+#endif
     };
 
     template <class T>
@@ -218,9 +222,10 @@ namespace minimal
         ~equal_to() {}
 
         bool operator()(T const&, T const&) const { return true; }
-    BOOST_UNORDERED_PRIVATE_AMPERSAND:
+#if BOOST_UNORDERED_CHECK_ADDR_OPERATOR_NOT_USED
         ampersand_operator_used operator&() const {
             return ampersand_operator_used(); }
+#endif
     };
 
     template <class T> class ptr;
@@ -308,9 +313,10 @@ namespace minimal
         bool operator>(ptr const& x) const { return ptr_ > x.ptr_; }
         bool operator<=(ptr const& x) const { return ptr_ <= x.ptr_; }
         bool operator>=(ptr const& x) const { return ptr_ >= x.ptr_; }
-    BOOST_UNORDERED_PRIVATE_AMPERSAND:
+#if BOOST_UNORDERED_CHECK_ADDR_OPERATOR_NOT_USED
         ampersand_operator_used operator&() const {
             return ampersand_operator_used(); }
+#endif
     };
 
     template <class T>
@@ -345,9 +351,10 @@ namespace minimal
         bool operator>(const_ptr const& x) const { return ptr_ > x.ptr_; }
         bool operator<=(const_ptr const& x) const { return ptr_ <= x.ptr_; }
         bool operator>=(const_ptr const& x) const { return ptr_ >= x.ptr_; }
-    BOOST_UNORDERED_PRIVATE_AMPERSAND:
+#if BOOST_UNORDERED_CHECK_ADDR_OPERATOR_NOT_USED
         ampersand_operator_used operator&() const {
             return ampersand_operator_used(); }
+#endif
     };
 
     template <class T>
@@ -407,9 +414,10 @@ namespace minimal
 #else
     private: allocator& operator=(allocator const&);
 #endif
-    BOOST_UNORDERED_PRIVATE_AMPERSAND:
+#if BOOST_UNORDERED_CHECK_ADDR_OPERATOR_NOT_USED
         ampersand_operator_used operator&() const {
             return ampersand_operator_used(); }
+#endif
     };
 
     template <class T>
