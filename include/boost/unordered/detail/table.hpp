@@ -343,7 +343,7 @@ namespace boost { namespace unordered { namespace detail {
             return policy::new_bucket_count(
                 boost::unordered::detail::double_to_size(floor(
                     static_cast<double>(size) /
-                    static_cast<double>(mlf_))) + 1);
+                    static_cast<double>(mlf_)) + 1));
         }
 
         ////////////////////////////////////////////////////////////////////////
