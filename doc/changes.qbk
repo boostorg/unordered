@@ -266,5 +266,7 @@ C++11 support has resulted in some breaking changes:
 * Fix move assignment with stateful, propagate_on_container_move_assign
   allocators ([ticket 10777]).
 * Fix rare exception safety issue in move assignment.
+* Fix potential overflow when calculating number of buckets to allocate
+  ([@https://github.com/boostorg/unordered/pull/4 GitHub #4]).
 
 [endsect]
