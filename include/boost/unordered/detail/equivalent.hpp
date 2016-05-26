@@ -482,7 +482,7 @@ namespace boost { namespace unordered { namespace detail {
         {
             if(i == j) return;
 
-            std::size_t distance = boost::unordered::detail::distance(i, j);
+            std::size_t distance = std::distance(i, j);
             if(distance == 1) {
                 node_constructor a(this->node_alloc());
                 a.construct_with_value2(*i);

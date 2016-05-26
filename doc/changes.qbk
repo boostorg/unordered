@@ -272,5 +272,6 @@ C++11 support has resulted in some breaking changes:
 [h2 Boost 1.62.0]
 
 * Remove use of deprecated `boost::iterator`.
+* Remove `BOOST_NO_STD_DISTANCE` workaround.
 
 [endsect]
