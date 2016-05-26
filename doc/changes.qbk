@@ -273,5 +273,6 @@ C++11 support has resulted in some breaking changes:
 
 * Remove use of deprecated `boost::iterator`.
 * Remove `BOOST_NO_STD_DISTANCE` workaround.
+* Remove `BOOST_UNORDERED_DEPRECATED_EQUALITY` warning.
 
 [endsect]
