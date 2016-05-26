@@ -11,8 +11,8 @@
 #if !defined(UNORDERED_TEST_LIST_HEADER)
 #define UNORDERED_TEST_LIST_HEADER
 
-#include <boost/iterator.hpp>
 #include <boost/limits.hpp>
+#include <iterator>
 #include <functional>
 
 namespace test
@@ -83,7 +83,7 @@ namespace test
 
         template <typename T>
         class list_iterator
-            : public boost::iterator<
+            : public std::iterator<
                 std::forward_iterator_tag, T,
                   int, T*, T&>
         {
@@ -109,7 +109,7 @@ namespace test
 
         template <typename T>
         class list_const_iterator
-            : public boost::iterator<
+            : public std::iterator<
                 std::forward_iterator_tag, T,
                   int, T const*, T const&>
         {
