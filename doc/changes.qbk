@@ -274,5 +274,7 @@ C++11 support has resulted in some breaking changes:
 * Remove use of deprecated `boost::iterator`.
 * Remove `BOOST_NO_STD_DISTANCE` workaround.
 * Remove `BOOST_UNORDERED_DEPRECATED_EQUALITY` warning.
+* Simpler implementation of assignment, fixes an exception safety issue
+  for `unordered_multiset` and `unordered_multimap`. Might be a little slower.
 
 [endsect]
