@@ -484,8 +484,8 @@ namespace boost { namespace unordered { namespace detail {
         // if hash function throws, or inserting > 1 element, basic exception
         // safety. Strong otherwise
         template <class I>
-        typename boost::unordered::detail::enable_if_forward<I, void>::type
-            insert_range(I i, I j)
+        void insert_range(I i, I j, typename
+            boost::unordered::detail::enable_if_forward<I, void*>::type = 0)
         {
             if(i == j) return;
 
@@ -508,8 +508,8 @@ namespace boost { namespace unordered { namespace detail {
         }
 
         template <class I>
-        typename boost::unordered::detail::disable_if_forward<I, void>::type
-            insert_range(I i, I j)
+        void insert_range(I i, I j, typename
+            boost::unordered::detail::disable_if_forward<I, void*>::type = 0)
         {
             node_constructor a(this->node_alloc());
             for (; i != j; ++i) {
