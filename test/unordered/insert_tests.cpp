@@ -9,7 +9,6 @@
 #include "../helpers/postfix.hpp"
 
 #include "../helpers/test.hpp"
-#include <boost/predef.h>
 #include <boost/next_prior.hpp>
 #include "../objects/test.hpp"
 #include "../helpers/random_values.hpp"
@@ -599,7 +598,7 @@ UNORDERED_AUTO_TEST(insert_initializer_list_set)
 
     boost::unordered_set<initialize_from_two_ints> set2;
 
-#if BOOST_COMP_GNUC && BOOST_COMP_GNUC < BOOST_VERSION_NUMBER(4,5,0)
+#if defined(__GNUC__) && (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 5))
     set2.insert({{1, 2}});
 #else
     set2.insert({1, 2});

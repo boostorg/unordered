@@ -311,7 +311,13 @@ namespace boost { namespace unordered { namespace detail {
                 node_constructor& a,
                 std::size_t key_hash)
         {
-            node_pointer n = a.release();
+            return add_node(a.release(), key_hash);
+        }
+
+        inline iterator add_node(
+                node_pointer n,
+                std::size_t key_hash)
+        {
             n->hash_ = key_hash;
     
             bucket_pointer b = this->get_bucket(this->hash_to_bucket(key_hash));
@@ -577,19 +583,10 @@ namespace boost { namespace unordered { namespace detail {
         // fill_buckets
 
         template <class NodeCreator>
-        static void fill_buckets(iterator n, table& dst,
-            NodeCreator& creator)
+        void fill_buckets(iterator n, NodeCreator& creator)
         {
-            link_pointer prev = dst.get_previous_start();
-
-            while (n.node_) {
-                node_pointer node = creator.create(*n);
-                node->hash_ = n.node_->hash_;
-                prev->next_ = node;
-                ++dst.size_;
-                ++n;
-
-                prev = place_in_bucket(dst, prev);
+            for (; n.node_; ++n) {
+                this->add_node(creator.create(*n), n.node_->hash_);
             }
         }
 

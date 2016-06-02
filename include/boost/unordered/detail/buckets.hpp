@@ -21,7 +21,7 @@
 #include <boost/swap.hpp>
 #include <boost/assert.hpp>
 #include <boost/limits.hpp>
-#include <boost/iterator.hpp>
+#include <iterator>
 
 namespace boost { namespace unordered { namespace detail {
 
@@ -56,7 +56,7 @@ namespace boost { namespace unordered { namespace iterator_detail {
 
     template <typename Node, typename Policy>
     struct l_iterator
-        : public boost::iterator<
+        : public std::iterator<
             std::forward_iterator_tag,
             typename Node::value_type,
             std::ptrdiff_t,
@@ -116,7 +116,7 @@ namespace boost { namespace unordered { namespace iterator_detail {
 
     template <typename Node, typename Policy>
     struct cl_iterator
-        : public boost::iterator<
+        : public std::iterator<
             std::forward_iterator_tag,
             typename Node::value_type,
             std::ptrdiff_t,
@@ -184,7 +184,7 @@ namespace boost { namespace unordered { namespace iterator_detail {
 
     template <typename Node>
     struct iterator
-        : public boost::iterator<
+        : public std::iterator<
             std::forward_iterator_tag,
             typename Node::value_type,
             std::ptrdiff_t,
@@ -248,7 +248,7 @@ namespace boost { namespace unordered { namespace iterator_detail {
 
     template <typename Node>
     struct c_iterator
-        : public boost::iterator<
+        : public std::iterator<
             std::forward_iterator_tag,
             typename Node::value_type,
             std::ptrdiff_t,

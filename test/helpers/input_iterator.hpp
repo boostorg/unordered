@@ -7,8 +7,8 @@
 #define BOOST_UNORDERED_TEST_HELPERS_INPUT_ITERATOR_HEADER
 
 #include <boost/config.hpp>
-#include <boost/iterator.hpp>
 #include <boost/iterator/iterator_traits.hpp>
+#include <iterator>
 
 namespace test
 {
@@ -28,7 +28,7 @@ namespace test
 
     template <class Iterator>
     struct input_iterator_adaptor
-        : public boost::iterator<
+        : public std::iterator<
             std::input_iterator_tag,
             BOOST_DEDUCED_TYPENAME boost::iterator_value<Iterator>::type,
             std::ptrdiff_t,
@@ -72,7 +72,7 @@ namespace test
 
     template <class Iterator>
     struct copy_iterator_adaptor
-        : public boost::iterator<
+        : public std::iterator<
             BOOST_DEDUCED_TYPENAME boost::iterator_category<Iterator>::type,
             BOOST_DEDUCED_TYPENAME boost::iterator_value<Iterator>::type,
             BOOST_DEDUCED_TYPENAME boost::iterator_difference<Iterator>::type,

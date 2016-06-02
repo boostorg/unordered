@@ -38,21 +38,18 @@ struct self_assign_test2 : self_assign_base<T>
 template <class T>
 struct assign_base : public test::exception_base
 {
-    const test::random_values<T> x_values, y_values;
+    test::random_values<T> x_values, y_values;
     T x,y;
 
     typedef BOOST_DEDUCED_TYPENAME T::hasher hasher;
     typedef BOOST_DEDUCED_TYPENAME T::key_equal key_equal;
     typedef BOOST_DEDUCED_TYPENAME T::allocator_type allocator_type;
 
-    assign_base(unsigned int count1, unsigned int count2, int tag1, int tag2,
-        float mlf1 = 1.0, float mlf2 = 1.0) :
-        x_values(count1),
-        y_values(count2),
-        x(x_values.begin(), x_values.end(), 0, hasher(tag1), key_equal(tag1),
-            allocator_type(tag1)),
-        y(y_values.begin(), y_values.end(), 0, hasher(tag2), key_equal(tag2),
-            allocator_type(tag2))
+    assign_base(int tag1, int tag2, float mlf1 = 1.0, float mlf2 = 1.0) :
+        x_values(),
+        y_values(),
+        x(0, hasher(tag1), key_equal(tag1), allocator_type(tag1)),
+        y(0, hasher(tag2), key_equal(tag2), allocator_type(tag2))
     {
         x.max_load_factor(mlf1);
         y.max_load_factor(mlf2);
@@ -66,47 +63,80 @@ struct assign_base : public test::exception_base
         test::check_equivalent_keys(x1);
 
         // If the container is empty at the point of the exception, the
-        // internal structure is hidden, this exposes it.
-        T& y = const_cast<T&>(x1);
+        // internal structure is hidden, this exposes it, at the cost of
+        // messing up the data.
         if (x_values.size()) {
-            y.emplace(*x_values.begin());
-            test::check_equivalent_keys(y);
+            T& x2 = const_cast<T&>(x1);
+            x2.emplace(*x_values.begin());
+            test::check_equivalent_keys(x2);
         }
     }
 };
 
 template <class T>
-struct assign_test1 : assign_base<T>
+struct assign_values : assign_base<T>
 {
-    assign_test1() : assign_base<T>(0, 0, 0, 0) {}
+    assign_values(unsigned int count1, unsigned int count2,
+            int tag1, int tag2, float mlf1 = 1.0, float mlf2 = 1.0) :
+        assign_base<T>(tag1, tag2, mlf1, mlf2)
+    {
+        this->x_values.fill(count1);
+        this->y_values.fill(count2);
+        this->x.insert(this->x_values.begin(), this->x_values.end());
+        this->y.insert(this->y_values.begin(), this->y_values.end());
+    }
 };
 
 template <class T>
-struct assign_test2 : assign_base<T>
+struct assign_test1 : assign_values<T>
 {
-    assign_test2() : assign_base<T>(60, 0, 0, 0) {}    
+    assign_test1() : assign_values<T>(0, 0, 0, 0) {}
 };
 
 template <class T>
-struct assign_test3 : assign_base<T>
+struct assign_test2 : assign_values<T>
 {
-    assign_test3() : assign_base<T>(0, 60, 0, 0) {}    
+    assign_test2() : assign_values<T>(60, 0, 0, 0) {}
 };
 
 template <class T>
-struct assign_test4 : assign_base<T>
+struct assign_test3 : assign_values<T>
 {
-    assign_test4() : assign_base<T>(10, 10, 1, 2) {}
+    assign_test3() : assign_values<T>(0, 60, 0, 0) {}
 };
 
 template <class T>
-struct assign_test5 : assign_base<T>
+struct assign_test4 : assign_values<T>
 {
-    assign_test5() : assign_base<T>(5, 60, 0, 0, 1.0, 0.1) {}
+    assign_test4() : assign_values<T>(10, 10, 1, 2) {}
+};
+
+template <class T>
+struct assign_test5 : assign_values<T>
+{
+    assign_test5() : assign_values<T>(5, 60, 0, 0, 1.0f, 0.1f) {}
+};
+
+template <class T>
+struct equivalent_test1 : assign_base<T>
+{
+    equivalent_test1() :
+        assign_base<T>(0, 0)
+    {
+        test::random_values<T> x_values2(10);
+        this->x_values.insert(x_values2.begin(), x_values2.end());
+        this->x_values.insert(x_values2.begin(), x_values2.end());
+        test::random_values<T> y_values2(10);
+        this->y_values.insert(y_values2.begin(), y_values2.end());
+        this->y_values.insert(y_values2.begin(), y_values2.end());
+        this->x.insert(this->x_values.begin(), this->x_values.end());
+        this->y.insert(this->y_values.begin(), this->y_values.end());
+    }
 };
 
 EXCEPTION_TESTS(
     (self_assign_test1)(self_assign_test2)
-    (assign_test1)(assign_test2)(assign_test3)(assign_test4)(assign_test5),
+    (assign_test1)(assign_test2)(assign_test3)(assign_test4)(assign_test5)
+    (equivalent_test1),
     CONTAINER_SEQ)
 RUN_TESTS()

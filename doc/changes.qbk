@@ -269,4 +269,12 @@ C++11 support has resulted in some breaking changes:
 * Fix potential overflow when calculating number of buckets to allocate
   ([@https://github.com/boostorg/unordered/pull/4 GitHub #4]).
 
+[h2 Boost 1.62.0]
+
+* Remove use of deprecated `boost::iterator`.
+* Remove `BOOST_NO_STD_DISTANCE` workaround.
+* Remove `BOOST_UNORDERED_DEPRECATED_EQUALITY` warning.
+* Simpler implementation of assignment, fixes an exception safety issue
+  for `unordered_multiset` and `unordered_multimap`. Might be a little slower.
+
 [endsect]

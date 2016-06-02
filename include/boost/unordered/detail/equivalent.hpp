@@ -385,7 +385,14 @@ namespace boost { namespace unordered { namespace detail {
                 std::size_t key_hash,
                 iterator pos)
         {
-            node_pointer n = a.release();
+            return add_node(a.release(), key_hash, pos);
+        }
+
+        inline iterator add_node(
+                node_pointer n,
+                std::size_t key_hash,
+                iterator pos)
+        {
             n->hash_ = key_hash;
             if (pos.node_) {
                 this->add_after_node(n, pos.node_);
@@ -482,7 +489,7 @@ namespace boost { namespace unordered { namespace detail {
         {
             if(i == j) return;
 
-            std::size_t distance = boost::unordered::detail::distance(i, j);
+            std::size_t distance = std::distance(i, j);
             if(distance == 1) {
                 node_constructor a(this->node_alloc());
                 a.construct_with_value2(*i);
@@ -622,30 +629,17 @@ namespace boost { namespace unordered { namespace detail {
         // fill_buckets
 
         template <class NodeCreator>
-        static void fill_buckets(iterator n, table& dst,
-            NodeCreator& creator)
+        void fill_buckets(iterator n, NodeCreator& creator)
         {
-            link_pointer prev = dst.get_previous_start();
-
             while (n.node_) {
                 std::size_t key_hash = n.node_->hash_;
                 iterator group_end(n.node_->group_prev_->next_);
 
-                node_pointer first_node = creator.create(*n);
-                node_pointer end = first_node;
-                first_node->hash_ = key_hash;
-                prev->next_ = first_node;
-                ++dst.size_;
-
+                iterator pos = this->add_node(creator.create(*n), key_hash, iterator());
                 for (++n; n != group_end; ++n)
                 {
-                    end = creator.create(*n);
-                    end->hash_ = key_hash;
-                    add_after_node(end, first_node);
-                    ++dst.size_;
+                    this->add_node(creator.create(*n), key_hash, pos);
                 }
-
-                prev = place_in_bucket(dst, prev, end);
             }
         }
 

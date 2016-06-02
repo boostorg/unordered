@@ -23,18 +23,6 @@
 #pragma warning(disable:4127) // conditional expression is constant
 #endif
 
-#if defined(BOOST_UNORDERED_DEPRECATED_EQUALITY)
-
-#if defined(__EDG__)
-#elif defined(_MSC_VER) || defined(__BORLANDC__) || defined(__DMC__)
-#pragma message("Warning: BOOST_UNORDERED_DEPRECATED_EQUALITY is no longer supported.")
-#elif defined(__GNUC__) || defined(__HP_aCC) || \
-    defined(__SUNPRO_CC) || defined(__IBMCPP__)
-#warning "BOOST_UNORDERED_DEPRECATED_EQUALITY is no longer supported."
-#endif
-
-#endif
-
 namespace boost { namespace unordered { namespace detail {
 
     ////////////////////////////////////////////////////////////////////////////
@@ -405,7 +393,7 @@ namespace boost { namespace unordered { namespace detail {
             if (x.size_) {
                 create_buckets(bucket_count_);
                 copy_nodes<node_allocator> node_creator(node_alloc());
-                table_impl::fill_buckets(x.begin(), *this, node_creator);
+                static_cast<table_impl*>(this)->fill_buckets(x.begin(), node_creator);
             }
         }
 
@@ -420,7 +408,7 @@ namespace boost { namespace unordered { namespace detail {
 
                 move_nodes<node_allocator> node_creator(node_alloc());
                 node_holder<node_allocator> nodes(x);
-                table_impl::fill_buckets(nodes.begin(), *this, node_creator);
+                static_cast<table_impl*>(this)->fill_buckets(nodes.begin(), node_creator);
             }
         }
 
@@ -666,7 +654,7 @@ namespace boost { namespace unordered { namespace detail {
             // assigning to them if possible, and deleting any that are
             // left over.
             assign_nodes<table> node_creator(*this);
-            table_impl::fill_buckets(x.begin(), *this, node_creator);
+            static_cast<table_impl*>(this)->fill_buckets(x.begin(), node_creator);
         }
 
         void assign(table const& x, true_type)
@@ -693,7 +681,7 @@ namespace boost { namespace unordered { namespace detail {
                 if (x.size_) {
                     create_buckets(bucket_count_);
                     copy_nodes<node_allocator> node_creator(node_alloc());
-                    table_impl::fill_buckets(x.begin(), *this, node_creator);
+                    static_cast<table_impl*>(this)->fill_buckets(x.begin(), node_creator);
                 }
             }
         }
@@ -752,7 +740,7 @@ namespace boost { namespace unordered { namespace detail {
                 // any that are left over.
                 move_assign_nodes<table> node_creator(*this);
                 node_holder<node_allocator> nodes(x);
-                table_impl::fill_buckets(nodes.begin(), *this, node_creator);
+                static_cast<table_impl*>(this)->fill_buckets(nodes.begin(), node_creator);
             }
         }
 
