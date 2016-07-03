@@ -3,8 +3,6 @@
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-project unordered-test ;
-
 import testing ;
 
 project unordered-test/unordered
@@ -16,6 +14,9 @@ project unordered-test/unordered
         <toolset>gcc:<cxxflags>"-pedantic -Wstrict-aliasing -fstrict-aliasing -Wextra -Wsign-promo -Wunused-parameter -Wconversion -Wfloat-equal -Wshadow -Wno-long-long"
         <toolset>darwin:<cxxflags>"-pedantic -Wstrict-aliasing -fstrict-aliasing -Wextra -Wsign-promo -Wunused-parameter -Wconversion -Wfloat-equal -Wshadow"
     ;
+
+#alias framework : /boost/test//boost_unit_test_framework ;
+alias framework : ;
 
 test-suite unordered
     :
@@ -64,4 +65,14 @@ test-suite unordered
             : bmove_assign ]
     ;
 
-build-project exception ;
+test-suite unordered-exception
+    :
+        [ run exception/constructor_exception_tests.cpp framework ]
+        [ run exception/copy_exception_tests.cpp framework ]
+        [ run exception/assign_exception_tests.cpp framework ]
+        [ run exception/insert_exception_tests.cpp framework ]
+        [ run exception/erase_exception_tests.cpp framework ]
+        [ run exception/rehash_exception_tests.cpp framework ]
+        [ run exception/swap_exception_tests.cpp framework : : :
+            <define>BOOST_UNORDERED_SWAP_METHOD=2 ]
+    ;
