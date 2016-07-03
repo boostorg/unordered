@@ -27,9 +27,9 @@ matrix:
 
 before_script:
     - |
-        echo "using gcc : : g++-4.8 ;" > ~/user-config.jam
+        echo "using gcc : : g++-4.8 --std=c++03 ;" > ~/user-config.jam
         echo "using gcc : std11 : g++-4.8 --std=c++11 ;" >> ~/user-config.jam
-        echo "using clang : : clang++ ;" >> ~/user-config.jam
+        echo "using clang : : clang++ --std=c++03 " >> ~/user-config.jam
         echo "using clang : std11 : clang++ --std=c++11 ;" >> ~/user-config.jam
     - cat ~/user-config.jam
     - touch Jamroot.jam
