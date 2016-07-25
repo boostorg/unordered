@@ -95,12 +95,16 @@ void erase_tests1(Container*, test::random_generator generator)
             BOOST_DEDUCED_TYPENAME Container::key_type
                 key = test::get_key<Container>(*pos);
             std::size_t count = x.count(key);
+            BOOST_TEST(count > 0);
             BOOST_TEST(next == x.erase(pos));
             --size;
             if(size > 0)
                 BOOST_TEST(index == 0 ? next == x.begin() :
                         next == boost::next(prev));
             BOOST_TEST(x.count(key) == count - 1);
+            if (x.count(key) != count - 1) {
+                std::cerr << count << " => " << x.count(key) << std::endl;
+            }
             BOOST_TEST(x.size() == size);
             if (++iterations % 20 == 0) test::check_equivalent_keys(x);
         }
@@ -180,12 +184,16 @@ void erase_tests1(Container*, test::random_generator generator)
             BOOST_DEDUCED_TYPENAME Container::key_type
                 key = test::get_key<Container>(*pos);
             std::size_t count = x.count(key);
+            BOOST_TEST(count > 0);
             x.quick_erase(pos);
             --size;
             if(size > 0)
                 BOOST_TEST(index == 0 ? next == x.begin() :
                         next == boost::next(prev));
             BOOST_TEST(x.count(key) == count - 1);
+            if (x.count(key) != count - 1) {
+                std::cerr << count << " => " << x.count(key) << std::endl;
+            }
             BOOST_TEST(x.size() == size);
             if (++iterations % 20 == 0) test::check_equivalent_keys(x);
         }
