@@ -148,6 +148,7 @@ void unordered_destructible_test(X&)
     X* ptr = new X();
     X& a1 = *ptr;
     (&a1)->~X();
+    ::operator delete((void*)(&a1));
 
     X a,b;
     X const a_const;
