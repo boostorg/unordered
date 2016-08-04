@@ -41,4 +41,4 @@ before_script:
     - touch Jamroot.jam
 
 script:
-    - cd test && bjam -q ${BJAM_TOOLSET} include=${TRAVIS_BUILD_DIR}/include
+    - cd test && bjam ${BJAM_TOOLSET} include=${TRAVIS_BUILD_DIR}/include
