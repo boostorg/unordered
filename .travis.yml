@@ -24,8 +24,10 @@ matrix:
         env: BJAM_TOOLSET=clang
       - compiler: clang
         env: BJAM_TOOLSET=clang-std11
-      - compiler: clang
-        env: BJAM_TOOLSET=clang-mem
+      # Unfortunately the memory sanitizer was just finding issues with
+      # the standard containers for this toolset. So not very useful right now.
+      #- compiler: clang
+      #  env: BJAM_TOOLSET=clang-mem
       - compiler: clang
         env: BJAM_TOOLSET=clang-mem_std11
 
