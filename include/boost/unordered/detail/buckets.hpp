@@ -14,14 +14,6 @@
 
 #include <boost/unordered/detail/util.hpp>
 #include <boost/unordered/detail/allocate.hpp>
-#include <boost/type_traits/aligned_storage.hpp>
-#include <boost/type_traits/alignment_of.hpp>
-#include <boost/type_traits/is_nothrow_move_constructible.hpp>
-#include <boost/type_traits/is_nothrow_move_assignable.hpp>
-#include <boost/swap.hpp>
-#include <boost/assert.hpp>
-#include <boost/limits.hpp>
-#include <iterator>
 
 namespace boost { namespace unordered { namespace detail {
 

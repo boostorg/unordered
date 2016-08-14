@@ -14,6 +14,7 @@
 #pragma once
 #endif
 
+// Some of these includes are required for other detail headers.
 #include <boost/unordered/detail/fwd.hpp>
 #include <boost/move/move.hpp>
 #include <boost/preprocessor/cat.hpp>
@@ -25,12 +26,20 @@
 #include <boost/preprocessor/repetition/repeat_from_to.hpp>
 #include <boost/type_traits/is_class.hpp>
 #include <boost/type_traits/add_lvalue_reference.hpp>
+#include <boost/type_traits/aligned_storage.hpp>
+#include <boost/type_traits/alignment_of.hpp>
+#include <boost/type_traits/is_nothrow_move_constructible.hpp>
+#include <boost/type_traits/is_nothrow_move_assignable.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/utility/addressof.hpp>
 #include <boost/detail/select_type.hpp>
+#include <boost/swap.hpp>
 #include <boost/assert.hpp>
+#include <boost/limits.hpp>
+#include <iterator>
 #include <utility>
+#include <cmath>
 
 #if !defined(BOOST_NO_CXX11_HDR_TUPLE)
 #include <tuple>
