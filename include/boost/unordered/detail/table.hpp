@@ -13,7 +13,6 @@
 #endif
 
 #include <boost/unordered/detail/buckets.hpp>
-#include <boost/unordered/detail/util.hpp>
 #include <boost/type_traits/aligned_storage.hpp>
 #include <boost/type_traits/alignment_of.hpp>
 #include <cmath>

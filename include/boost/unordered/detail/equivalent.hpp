@@ -12,7 +12,6 @@
 #pragma once
 #endif
 
-#include <boost/unordered/detail/table.hpp>
 #include <boost/unordered/detail/extract_key.hpp>
 
 namespace boost { namespace unordered { namespace detail {

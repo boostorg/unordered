@@ -6,7 +6,6 @@
 #include <boost/unordered/unordered_map_fwd.hpp>
 #include <boost/unordered/detail/equivalent.hpp>
 #include <boost/unordered/detail/unique.hpp>
-#include <boost/unordered/detail/util.hpp>
 
 namespace boost { namespace unordered { namespace detail {
     template <typename A, typename K, typename M, typename H, typename P>
