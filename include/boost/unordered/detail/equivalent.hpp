@@ -382,14 +382,6 @@ namespace boost { namespace unordered { namespace detail {
         }
 
         inline iterator add_node(
-                node_tmp& a,
-                std::size_t key_hash,
-                iterator pos)
-        {
-            return add_node(a.release(), key_hash, pos);
-        }
-
-        inline iterator add_node(
                 node_pointer n,
                 std::size_t key_hash,
                 iterator pos)
@@ -442,14 +434,15 @@ namespace boost { namespace unordered { namespace detail {
             // reserve has basic exception safety if the hash function
             // throws, strong otherwise.
             this->reserve_for_insert(this->size_ + 1);
-            return this->add_node(a, key_hash, position);
+            return this->add_node(a.release(), key_hash, position);
         }
 
         void emplace_impl_no_rehash(node_tmp& a)
         {
             key_type const& k = this->get_key(a.value());
             std::size_t key_hash = this->hash(k);
-            this->add_node(a, key_hash, this->find_node(key_hash, k));
+            iterator position = this->find_node(key_hash, k);
+            this->add_node(a.release(), key_hash, position);
         }
 
 #if defined(BOOST_NO_CXX11_RVALUE_REFERENCES)

@@ -309,13 +309,6 @@ namespace boost { namespace unordered { namespace detail {
         // Emplace/Insert
 
         inline iterator add_node(
-                node_tmp& a,
-                std::size_t key_hash)
-        {
-            return add_node(a.release(), key_hash);
-        }
-
-        inline iterator add_node(
                 node_pointer n,
                 std::size_t key_hash)
         {
@@ -351,7 +344,7 @@ namespace boost { namespace unordered { namespace detail {
         {
             node_tmp b(n, this->node_alloc());
             this->reserve_for_insert(this->size_ + 1);
-            return this->add_node(b, key_hash);
+            return this->add_node(b.release(), key_hash);
         }
 
         value_type& operator[](key_type const& k)
@@ -437,7 +430,7 @@ namespace boost { namespace unordered { namespace detail {
             // reserve has basic exception safety if the hash function
             // throws, strong otherwise.
             this->reserve_for_insert(this->size_ + 1);
-            return emplace_return(this->add_node(b, key_hash), true);
+            return emplace_return(this->add_node(b.release(), key_hash), true);
         }
 
         ////////////////////////////////////////////////////////////////////////
@@ -487,7 +480,7 @@ namespace boost { namespace unordered { namespace detail {
                         boost::unordered::detail::insert_size(i, j));
     
                 // Nothing after this point can throw.
-                this->add_node(b, key_hash);
+                this->add_node(b.release(), key_hash);
             }
         }
 
@@ -513,7 +506,7 @@ namespace boost { namespace unordered { namespace detail {
                     // reserve has basic exception safety if the hash function
                     // throws, strong otherwise.
                     this->reserve_for_insert(this->size_ + 1);
-                    this->add_node(b, key_hash);
+                    this->add_node(b.release(), key_hash);
                 }
             } while(++i != j);
         }
