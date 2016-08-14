@@ -582,11 +582,39 @@ namespace boost { namespace unordered { namespace detail {
         ////////////////////////////////////////////////////////////////////////
         // fill_buckets
 
-        template <class NodeCreator>
-        void fill_buckets(iterator n, NodeCreator& creator)
+        void copy_buckets(table const& src) {
+            node_constructor constructor(this->node_alloc());
+            this->create_buckets(this->bucket_count_);
+
+            for(iterator n = src.begin(); n.node_; ++n) {
+                constructor.construct_with_value2(*n);
+                this->add_node(constructor, n.node_->hash_);
+            }
+        }
+
+        void move_buckets(table& src) {
+            node_constructor constructor(this->node_alloc());
+            this->create_buckets(this->bucket_count_);
+
+            for(iterator n = src.begin(); n.node_; ++n) {
+                constructor.construct_with_value2(boost::move(*n));
+                this->add_node(constructor, n.node_->hash_);
+            }
+        }
+
+        void assign_buckets(table const& src)
         {
-            for (; n.node_; ++n) {
-                this->add_node(creator.create(*n), n.node_->hash_);
+            node_holder<node_allocator> holder(*this);
+            for(iterator n = src.begin(); n.node_; ++n) {
+                this->add_node(holder.copy_of(*n), n.node_->hash_);
+            }
+        }
+
+        void move_assign_buckets(table& src)
+        {
+            node_holder<node_allocator> holder(*this);
+            for(iterator n = src.begin(); n.node_; ++n) {
+                this->add_node(holder.move_copy_of(*n), n.node_->hash_);
             }
         }
 
