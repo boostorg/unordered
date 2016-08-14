@@ -24,12 +24,6 @@ matrix:
         env: BJAM_TOOLSET=clang
       - compiler: clang
         env: BJAM_TOOLSET=clang-std11
-      # Unfortunately the memory sanitizer was just finding issues with
-      # the standard containers for this toolset. So not very useful right now.
-      #- compiler: clang
-      #  env: BJAM_TOOLSET=clang-mem
-      - compiler: clang
-        env: BJAM_TOOLSET=clang-mem_std11
 
 before_script:
     - |
@@ -37,8 +31,6 @@ before_script:
         echo "using gcc : std11 : g++-4.8 --std=c++11 -fsanitize=address ;" >> ~/user-config.jam
         echo "using clang : : clang++ --std=c++03 -fsanitize=address ;" >> ~/user-config.jam
         echo "using clang : std11 : clang++ --std=c++11 -fsanitize=address ;" >> ~/user-config.jam
-        echo "using clang : mem : clang++ --std=c++03 -fsanitize=memory ;" >> ~/user-config.jam
-        echo "using clang : mem_std11 : clang++ --std=c++11 -fsanitize=memory ;" >> ~/user-config.jam
     - cat ~/user-config.jam
     - touch Jamroot.jam
 
