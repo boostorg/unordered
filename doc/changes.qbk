@@ -276,5 +276,7 @@ C++11 support has resulted in some breaking changes:
 * Remove `BOOST_UNORDERED_DEPRECATED_EQUALITY` warning.
 * Simpler implementation of assignment, fixes an exception safety issue
   for `unordered_multiset` and `unordered_multimap`. Might be a little slower.
+* Stop using return value SFINAE which some older compilers have issues
+  with.
 
 [endsect]
