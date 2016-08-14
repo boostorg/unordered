@@ -347,21 +347,21 @@ namespace boost { namespace unordered { namespace detail {
             return iterator(n);
         }
 
+        inline iterator resize_and_add_node(node_pointer n, std::size_t key_hash)
+        {
+            node_tmp b(n, this->node_alloc());
+            this->reserve_for_insert(this->size_ + 1);
+            return this->add_node(b, key_hash);
+        }
+
         value_type& operator[](key_type const& k)
         {
             std::size_t key_hash = this->hash(k);
             iterator pos = this->find_node(key_hash, k);
-    
             if (pos.node_) return *pos;
-    
-            // Create the node before rehashing in case it throws an
-            // exception (need strong safety in such a case).
-            node_tmp b(
+            return *this->resize_and_add_node(
                 boost::unordered::detail::func::construct_pair(this->node_alloc(), k),
-                this->node_alloc());
-    
-            this->reserve_for_insert(this->size_ + 1);
-            return *add_node(b, key_hash);
+                key_hash);
         }
 
 #if defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
@@ -411,20 +411,12 @@ namespace boost { namespace unordered { namespace detail {
         {
             std::size_t key_hash = this->hash(k);
             iterator pos = this->find_node(key_hash, k);
-    
             if (pos.node_) return emplace_return(pos, false);
-    
-            // Create the node before rehashing in case it throws an
-            // exception (need strong safety in such a case).
-            node_tmp b(
+            pos = this->resize_and_add_node(
                 boost::unordered::detail::func::construct_value_generic(
                     this->node_alloc(), BOOST_UNORDERED_EMPLACE_FORWARD),
-                this->node_alloc());
-    
-            // reserve has basic exception safety if the hash function
-            // throws, strong otherwise.
-            this->reserve_for_insert(this->size_ + 1);
-            return emplace_return(this->add_node(b, key_hash), true);
+                key_hash);
+            return emplace_return(pos, true);
         }
 
         template <BOOST_UNORDERED_EMPLACE_TEMPLATE>
