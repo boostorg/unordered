@@ -111,6 +111,8 @@ namespace boost { namespace unordered { namespace detail {
             bucket_pointer;
         typedef boost::unordered::detail::node_constructor<node_allocator>
             node_constructor;
+        typedef boost::unordered::detail::node_tmp<node_allocator>
+            node_tmp;
 
         typedef boost::unordered::iterator_detail::
             iterator<node> iterator;
@@ -366,7 +368,7 @@ namespace boost { namespace unordered { namespace detail {
             else if (bucket::extra_node)
             {
                 node_constructor a(node_alloc());
-                a.construct();
+                a.create_node();
 
                 (constructor.get() +
                     static_cast<std::ptrdiff_t>(new_count))->next_ =

@@ -190,6 +190,7 @@ namespace boost { namespace unordered { namespace detail {
         typedef typename table::key_equal key_equal;
         typedef typename table::key_type key_type;
         typedef typename table::node_constructor node_constructor;
+        typedef typename table::node_tmp node_tmp;
         typedef typename table::extractor extractor;
         typedef typename table::iterator iterator;
         typedef typename table::c_iterator c_iterator;
@@ -308,7 +309,7 @@ namespace boost { namespace unordered { namespace detail {
         // Emplace/Insert
 
         inline iterator add_node(
-                node_constructor& a,
+                node_tmp& a,
                 std::size_t key_hash)
         {
             return add_node(a.release(), key_hash);
@@ -356,13 +357,12 @@ namespace boost { namespace unordered { namespace detail {
             // Create the node before rehashing in case it throws an
             // exception (need strong safety in such a case).
             node_constructor a(this->node_alloc());
-            a.construct_with_value(BOOST_UNORDERED_EMPLACE_ARGS3(
-                boost::unordered::piecewise_construct,
-                boost::make_tuple(k),
-                boost::make_tuple()));
+            a.create_node();
+            node_tmp b(boost::unordered::detail::func::construct_pair(a, k),
+                a.alloc_);
     
             this->reserve_for_insert(this->size_ + 1);
-            return *add_node(a, key_hash);
+            return *add_node(b, key_hash);
         }
 
 #if defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
@@ -418,26 +418,33 @@ namespace boost { namespace unordered { namespace detail {
             // Create the node before rehashing in case it throws an
             // exception (need strong safety in such a case).
             node_constructor a(this->node_alloc());
-            a.construct_with_value(BOOST_UNORDERED_EMPLACE_FORWARD);
+            a.create_node();
+            node_tmp b(
+                boost::unordered::detail::func::construct_value_generic(
+                    a, BOOST_UNORDERED_EMPLACE_FORWARD),
+                a.alloc_);
     
             // reserve has basic exception safety if the hash function
             // throws, strong otherwise.
             this->reserve_for_insert(this->size_ + 1);
-            return emplace_return(this->add_node(a, key_hash), true);
+            return emplace_return(this->add_node(b, key_hash), true);
         }
 
-        emplace_return emplace_impl_with_node(node_constructor& a)
+        emplace_return emplace_impl_with_node(node_constructor& a, node_tmp& b)
         {
-            key_type const& k = this->get_key(a.value());
+            key_type const& k = this->get_key(b.value());
             std::size_t key_hash = this->hash(k);
             iterator pos = this->find_node(key_hash, k);
 
-            if (pos.node_) return emplace_return(pos, false);
+            if (pos.node_) {
+                a.reclaim(b.release());
+                return emplace_return(pos, false);
+            }
 
             // reserve has basic exception safety if the hash function
             // throws, strong otherwise.
             this->reserve_for_insert(this->size_ + 1);
-            return emplace_return(this->add_node(a, key_hash), true);
+            return emplace_return(this->add_node(b, key_hash), true);
         }
 
         template <BOOST_UNORDERED_EMPLACE_TEMPLATE>
@@ -446,8 +453,12 @@ namespace boost { namespace unordered { namespace detail {
             // Don't have a key, so construct the node first in order
             // to be able to lookup the position.
             node_constructor a(this->node_alloc());
-            a.construct_with_value(BOOST_UNORDERED_EMPLACE_FORWARD);
-            return emplace_impl_with_node(a);
+            a.create_node();
+            node_tmp b(
+                boost::unordered::detail::func::construct_value_generic(
+                    a, BOOST_UNORDERED_EMPLACE_FORWARD),
+                a.alloc_);
+            return emplace_impl_with_node(a, b);
         }
 
         ////////////////////////////////////////////////////////////////////////
@@ -492,13 +503,16 @@ namespace boost { namespace unordered { namespace detail {
             iterator pos = this->find_node(key_hash, k);
     
             if (!pos.node_) {
-                a.construct_with_value2(*i);
+                a.create_node();
+                node_tmp b(
+                    boost::unordered::detail::func::construct_value(a, *i),
+                    a.alloc_);
                 if(this->size_ + 1 > this->max_load_)
                     this->reserve_for_insert(this->size_ +
                         boost::unordered::detail::insert_size(i, j));
     
                 // Nothing after this point can throw.
-                this->add_node(a, key_hash);
+                this->add_node(b, key_hash);
             }
         }
 
@@ -508,8 +522,11 @@ namespace boost { namespace unordered { namespace detail {
             node_constructor a(this->node_alloc());
 
             do {
-                a.construct_with_value2(*i);
-                emplace_impl_with_node(a);
+                if (!a.node_) { a.create_node(); }
+                node_tmp b(
+                    boost::unordered::detail::func::construct_value(a, *i),
+                    a.alloc_);
+                emplace_impl_with_node(a, b);
             } while(++i != j);
         }
 
@@ -587,8 +604,10 @@ namespace boost { namespace unordered { namespace detail {
             this->create_buckets(this->bucket_count_);
 
             for(iterator n = src.begin(); n.node_; ++n) {
-                constructor.construct_with_value2(*n);
-                this->add_node(constructor, n.node_->hash_);
+                constructor.create_node();
+                this->add_node(
+                    boost::unordered::detail::func::construct_value(
+                        constructor, *n), n.node_->hash_);
             }
         }
 
@@ -597,8 +616,10 @@ namespace boost { namespace unordered { namespace detail {
             this->create_buckets(this->bucket_count_);
 
             for(iterator n = src.begin(); n.node_; ++n) {
-                constructor.construct_with_value2(boost::move(*n));
-                this->add_node(constructor, n.node_->hash_);
+                constructor.create_node();
+                this->add_node(
+                    boost::unordered::detail::func::construct_value(
+                        constructor, boost::move(*n)), n.node_->hash_);
             }
         }
 

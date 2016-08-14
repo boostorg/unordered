@@ -195,6 +195,7 @@ namespace boost { namespace unordered { namespace detail {
         typedef typename table::key_equal key_equal;
         typedef typename table::key_type key_type;
         typedef typename table::node_constructor node_constructor;
+        typedef typename table::node_tmp node_tmp;
         typedef typename table::extractor extractor;
         typedef typename table::iterator iterator;
         typedef typename table::c_iterator c_iterator;
@@ -381,7 +382,7 @@ namespace boost { namespace unordered { namespace detail {
         }
 
         inline iterator add_node(
-                node_constructor& a,
+                node_tmp& a,
                 std::size_t key_hash,
                 iterator pos)
         {
@@ -432,7 +433,7 @@ namespace boost { namespace unordered { namespace detail {
             return iterator(n);
         }
 
-        iterator emplace_impl(node_constructor& a)
+        iterator emplace_impl(node_tmp& a)
         {
             key_type const& k = this->get_key(a.value());
             std::size_t key_hash = this->hash(k);
@@ -444,7 +445,7 @@ namespace boost { namespace unordered { namespace detail {
             return this->add_node(a, key_hash, position);
         }
 
-        void emplace_impl_no_rehash(node_constructor& a)
+        void emplace_impl_no_rehash(node_tmp& a)
         {
             key_type const& k = this->get_key(a.value());
             std::size_t key_hash = this->hash(k);
@@ -473,9 +474,12 @@ namespace boost { namespace unordered { namespace detail {
         iterator emplace(BOOST_UNORDERED_EMPLACE_ARGS)
         {
             node_constructor a(this->node_alloc());
-            a.construct_with_value(BOOST_UNORDERED_EMPLACE_FORWARD);
+            a.create_node();
+            node_tmp b(
+                boost::unordered::detail::func::construct_value_generic(a, BOOST_UNORDERED_EMPLACE_FORWARD),
+                a.alloc_);
 
-            return iterator(emplace_impl(a));
+            return iterator(emplace_impl(b));
         }
 
         ////////////////////////////////////////////////////////////////////////
@@ -492,8 +496,12 @@ namespace boost { namespace unordered { namespace detail {
             std::size_t distance = std::distance(i, j);
             if(distance == 1) {
                 node_constructor a(this->node_alloc());
-                a.construct_with_value2(*i);
-                emplace_impl(a);
+                a.create_node();
+                node_tmp b(
+                    boost::unordered::detail::func::construct_value(a, *i),
+                    a.alloc_);
+
+                emplace_impl(b);
             }
             else {
                 // Only require basic exception safety here
@@ -501,8 +509,11 @@ namespace boost { namespace unordered { namespace detail {
 
                 node_constructor a(this->node_alloc());
                 for (; i != j; ++i) {
-                    a.construct_with_value2(*i);
-                    emplace_impl_no_rehash(a);
+                    a.create_node();
+                    node_tmp b(
+                        boost::unordered::detail::func::construct_value(a, *i),
+                        a.alloc_);
+                    emplace_impl_no_rehash(b);
                 }
             }
         }
@@ -513,8 +524,11 @@ namespace boost { namespace unordered { namespace detail {
         {
             node_constructor a(this->node_alloc());
             for (; i != j; ++i) {
-                a.construct_with_value2(*i);
-                emplace_impl(a);
+                a.create_node();
+                node_tmp b(
+                    boost::unordered::detail::func::construct_value(a, *i),
+                    a.alloc_);
+                emplace_impl(b);
             }
         }
 
@@ -635,12 +649,16 @@ namespace boost { namespace unordered { namespace detail {
             for (iterator n = src.begin(); n.node_;) {
                 std::size_t key_hash = n.node_->hash_;
                 iterator group_end(n.node_->group_prev_->next_);
-                constructor.construct_with_value2(*n);
-                iterator pos = this->add_node(constructor, key_hash, iterator());
+                constructor.create_node();
+                iterator pos = this->add_node(
+                    boost::unordered::detail::func::construct_value(
+                        constructor, *n), key_hash, iterator());
                 for (++n; n != group_end; ++n)
                 {
-                    constructor.construct_with_value2(*n);
-                    this->add_node(constructor, key_hash, pos);
+                    constructor.create_node();
+                    this->add_node(
+                        boost::unordered::detail::func::construct_value(
+                            constructor, *n), key_hash, pos);
                 }
             }
         }
@@ -652,12 +670,16 @@ namespace boost { namespace unordered { namespace detail {
             for (iterator n = src.begin(); n.node_;) {
                 std::size_t key_hash = n.node_->hash_;
                 iterator group_end(n.node_->group_prev_->next_);
-                constructor.construct_with_value2(boost::move(*n));
-                iterator pos = this->add_node(constructor, key_hash, iterator());
+                constructor.create_node();
+                iterator pos = this->add_node(
+                    boost::unordered::detail::func::construct_value(
+                        constructor, boost::move(*n)), key_hash, iterator());
                 for (++n; n != group_end; ++n)
                 {
-                    constructor.construct_with_value2(boost::move(*n));
-                    this->add_node(constructor, key_hash, pos);
+                    constructor.create_node();
+                    this->add_node(
+                        boost::unordered::detail::func::construct_value(
+                            constructor, boost::move(*n)), key_hash, pos);
                 }
             }
         }
