@@ -404,12 +404,17 @@ namespace boost { namespace unordered { namespace detail {
         {
             std::size_t key_hash = this->hash(k);
             iterator pos = this->find_node(key_hash, k);
-            if (pos.node_) return emplace_return(pos, false);
-            pos = this->resize_and_add_node(
-                boost::unordered::detail::func::construct_value_generic(
-                    this->node_alloc(), BOOST_UNORDERED_EMPLACE_FORWARD),
-                key_hash);
-            return emplace_return(pos, true);
+            if (pos.node_) {
+                return emplace_return(pos, false);
+            }
+            else {
+                return emplace_return(
+                    this->resize_and_add_node(
+                        boost::unordered::detail::func::construct_value_generic(
+                            this->node_alloc(), BOOST_UNORDERED_EMPLACE_FORWARD),
+                        key_hash),
+                    true);
+            }
         }
 
         template <BOOST_UNORDERED_EMPLACE_TEMPLATE>
@@ -424,9 +429,14 @@ namespace boost { namespace unordered { namespace detail {
             key_type const& k = this->get_key(b.node_->value());
             std::size_t key_hash = this->hash(k);
             iterator pos = this->find_node(key_hash, k);
-            if (pos.node_) { return emplace_return(pos, false); }
-            this->reserve_for_insert(this->size_ + 1);
-            return emplace_return(this->add_node(b.release(), key_hash), true);
+            if (pos.node_) {
+                return emplace_return(pos, false);
+            }
+            else {
+                return emplace_return(
+                    this->resize_and_add_node(b.release(), key_hash),
+                    true);
+            }
         }
 
         ////////////////////////////////////////////////////////////////////////
