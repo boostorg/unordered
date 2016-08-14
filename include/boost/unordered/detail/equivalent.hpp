@@ -428,13 +428,9 @@ namespace boost { namespace unordered { namespace detail {
         iterator emplace_impl(node_pointer n)
         {
             node_tmp a(n, this->node_alloc());
-
-            key_type const& k = this->get_key(a.value());
+            key_type const& k = this->get_key(a.node_->value());
             std::size_t key_hash = this->hash(k);
             iterator position = this->find_node(key_hash, k);
-
-            // reserve has basic exception safety if the hash function
-            // throws, strong otherwise.
             this->reserve_for_insert(this->size_ + 1);
             return this->add_node(a.release(), key_hash, position);
         }
@@ -442,7 +438,7 @@ namespace boost { namespace unordered { namespace detail {
         void emplace_impl_no_rehash(node_pointer n)
         {
             node_tmp a(n, this->node_alloc());
-            key_type const& k = this->get_key(a.value());
+            key_type const& k = this->get_key(a.node_->value());
             std::size_t key_hash = this->hash(k);
             iterator position = this->find_node(key_hash, k);
             this->add_node(a.release(), key_hash, position);

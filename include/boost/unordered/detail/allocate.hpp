@@ -1145,32 +1145,20 @@ namespace boost { namespace unordered { namespace detail {
     template <typename NodeAlloc>
     struct node_tmp
     {
-    private:
-
-        typedef NodeAlloc node_allocator;
         typedef boost::unordered::detail::allocator_traits<NodeAlloc>
             node_allocator_traits;
-        typedef typename node_allocator_traits::value_type node;
         typedef typename node_allocator_traits::pointer node_pointer;
-        typedef typename node::value_type value_type;
 
-    public:
-
-        node_allocator& alloc_;
+        NodeAlloc& alloc_;
         node_pointer node_;
 
-        explicit node_tmp(node_pointer n, node_allocator& a):
+        explicit node_tmp(node_pointer n, NodeAlloc& a):
             alloc_(a),
             node_(n)
         {
         }
 
         ~node_tmp();
-
-        value_type const& value() const {
-            BOOST_ASSERT(node_ );
-            return node_->value();
-        }
 
         // no throw
         node_pointer release()

@@ -421,14 +421,10 @@ namespace boost { namespace unordered { namespace detail {
                 boost::unordered::detail::func::construct_value_generic(
                     this->node_alloc(), BOOST_UNORDERED_EMPLACE_FORWARD),
                 this->node_alloc());
-            key_type const& k = this->get_key(b.value());
+            key_type const& k = this->get_key(b.node_->value());
             std::size_t key_hash = this->hash(k);
             iterator pos = this->find_node(key_hash, k);
-
             if (pos.node_) { return emplace_return(pos, false); }
-
-            // reserve has basic exception safety if the hash function
-            // throws, strong otherwise.
             this->reserve_for_insert(this->size_ + 1);
             return emplace_return(this->add_node(b.release(), key_hash), true);
         }
@@ -478,8 +474,6 @@ namespace boost { namespace unordered { namespace detail {
                 if(this->size_ + 1 > this->max_load_)
                     this->reserve_for_insert(this->size_ +
                         boost::unordered::detail::insert_size(i, j));
-    
-                // Nothing after this point can throw.
                 this->add_node(b.release(), key_hash);
             }
         }
@@ -495,7 +489,7 @@ namespace boost { namespace unordered { namespace detail {
                     a.alloc_, a.node_->value_ptr(), *i);
                 node_tmp b(a.release(), a.alloc_);
 
-                key_type const& k = this->get_key(b.value());
+                key_type const& k = this->get_key(b.node_->value());
                 std::size_t key_hash = this->hash(k);
                 iterator pos = this->find_node(key_hash, k);
 
