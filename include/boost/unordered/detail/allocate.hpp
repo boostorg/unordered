@@ -1061,6 +1061,141 @@ BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(10, boost::)
 
 #endif // BOOST_NO_CXX11_VARIADIC_TEMPLATES
 
+}}}}
+
+namespace boost { namespace unordered { namespace detail {
+
+    ///////////////////////////////////////////////////////////////////
+    //
+    // Node construction
+
+    template <typename NodeAlloc>
+    struct node_constructor
+    {
+        typedef NodeAlloc node_allocator;
+        typedef boost::unordered::detail::allocator_traits<NodeAlloc>
+            node_allocator_traits;
+        typedef typename node_allocator_traits::value_type node;
+        typedef typename node_allocator_traits::pointer node_pointer;
+        typedef typename node::value_type value_type;
+
+        node_allocator& alloc_;
+        node_pointer node_;
+        bool node_constructed_;
+
+        node_constructor(node_allocator& n) :
+            alloc_(n),
+            node_(),
+            node_constructed_(false)
+        {
+        }
+
+        ~node_constructor();
+
+        void create_node();
+
+        // no throw
+        node_pointer release()
+        {
+            BOOST_ASSERT(node_ && node_constructed_);
+            node_pointer p = node_;
+            node_ = node_pointer();
+            return p;
+        }
+
+        void reclaim(node_pointer p) {
+            BOOST_ASSERT(!node_);
+            node_ = p;
+            node_constructed_ = true;
+            boost::unordered::detail::func::destroy_value_impl(alloc_,
+                node_->value_ptr());
+        }
+
+    private:
+        node_constructor(node_constructor const&);
+        node_constructor& operator=(node_constructor const&);
+    };
+
+    template <typename Alloc>
+    node_constructor<Alloc>::~node_constructor()
+    {
+        if (node_) {
+            if (node_constructed_) {
+                boost::unordered::detail::func::destroy(
+                    boost::addressof(*node_));
+            }
+
+            node_allocator_traits::deallocate(alloc_, node_, 1);
+        }
+    }
+
+    template <typename Alloc>
+    void node_constructor<Alloc>::create_node()
+    {
+        BOOST_ASSERT(!node_);
+        node_constructed_ = false;
+
+        node_ = node_allocator_traits::allocate(alloc_, 1);
+
+        new ((void*) boost::addressof(*node_)) node();
+        node_->init(node_);
+        node_constructed_ = true;
+    }
+
+    template <typename NodeAlloc>
+    struct node_tmp
+    {
+    private:
+
+        typedef NodeAlloc node_allocator;
+        typedef boost::unordered::detail::allocator_traits<NodeAlloc>
+            node_allocator_traits;
+        typedef typename node_allocator_traits::value_type node;
+        typedef typename node_allocator_traits::pointer node_pointer;
+        typedef typename node::value_type value_type;
+
+    public:
+
+        node_allocator& alloc_;
+        node_pointer node_;
+
+        explicit node_tmp(node_pointer n, node_allocator& a):
+            alloc_(a),
+            node_(n)
+        {
+        }
+
+        ~node_tmp();
+
+        value_type const& value() const {
+            BOOST_ASSERT(node_ );
+            return node_->value();
+        }
+
+        // no throw
+        node_pointer release()
+        {
+            node_pointer p = node_;
+            node_ = node_pointer();
+            return p;
+        }
+    };
+
+    template <typename Alloc>
+    node_tmp<Alloc>::~node_tmp()
+    {
+        if (node_) {
+            boost::unordered::detail::func::destroy_value_impl(alloc_,
+                node_->value_ptr());
+            boost::unordered::detail::func::destroy(
+                boost::addressof(*node_));
+            node_allocator_traits::deallocate(alloc_, node_, 1);
+        }
+    }
+}}}
+
+namespace boost { namespace unordered { namespace detail { namespace func {
+
     // Some nicer construct_value functions, might try to
     // improve implementation later.
 
