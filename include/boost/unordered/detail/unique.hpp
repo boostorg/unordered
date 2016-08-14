@@ -356,10 +356,9 @@ namespace boost { namespace unordered { namespace detail {
     
             // Create the node before rehashing in case it throws an
             // exception (need strong safety in such a case).
-            node_constructor a(this->node_alloc());
-            a.create_node();
-            node_tmp b(boost::unordered::detail::func::construct_pair(a, k),
-                a.alloc_);
+            node_tmp b(
+                boost::unordered::detail::func::construct_pair(this->node_alloc(), k),
+                this->node_alloc());
     
             this->reserve_for_insert(this->size_ + 1);
             return *add_node(b, key_hash);
@@ -417,30 +416,11 @@ namespace boost { namespace unordered { namespace detail {
     
             // Create the node before rehashing in case it throws an
             // exception (need strong safety in such a case).
-            node_constructor a(this->node_alloc());
-            a.create_node();
             node_tmp b(
                 boost::unordered::detail::func::construct_value_generic(
-                    a, BOOST_UNORDERED_EMPLACE_FORWARD),
-                a.alloc_);
+                    this->node_alloc(), BOOST_UNORDERED_EMPLACE_FORWARD),
+                this->node_alloc());
     
-            // reserve has basic exception safety if the hash function
-            // throws, strong otherwise.
-            this->reserve_for_insert(this->size_ + 1);
-            return emplace_return(this->add_node(b, key_hash), true);
-        }
-
-        emplace_return emplace_impl_with_node(node_constructor& a, node_tmp& b)
-        {
-            key_type const& k = this->get_key(b.value());
-            std::size_t key_hash = this->hash(k);
-            iterator pos = this->find_node(key_hash, k);
-
-            if (pos.node_) {
-                a.reclaim(b.release());
-                return emplace_return(pos, false);
-            }
-
             // reserve has basic exception safety if the hash function
             // throws, strong otherwise.
             this->reserve_for_insert(this->size_ + 1);
@@ -452,13 +432,20 @@ namespace boost { namespace unordered { namespace detail {
         {
             // Don't have a key, so construct the node first in order
             // to be able to lookup the position.
-            node_constructor a(this->node_alloc());
-            a.create_node();
             node_tmp b(
                 boost::unordered::detail::func::construct_value_generic(
-                    a, BOOST_UNORDERED_EMPLACE_FORWARD),
-                a.alloc_);
-            return emplace_impl_with_node(a, b);
+                    this->node_alloc(), BOOST_UNORDERED_EMPLACE_FORWARD),
+                this->node_alloc());
+            key_type const& k = this->get_key(b.value());
+            std::size_t key_hash = this->hash(k);
+            iterator pos = this->find_node(key_hash, k);
+
+            if (pos.node_) { return emplace_return(pos, false); }
+
+            // reserve has basic exception safety if the hash function
+            // throws, strong otherwise.
+            this->reserve_for_insert(this->size_ + 1);
+            return emplace_return(this->add_node(b, key_hash), true);
         }
 
         ////////////////////////////////////////////////////////////////////////
@@ -477,9 +464,7 @@ namespace boost { namespace unordered { namespace detail {
         template <class InputIt>
         void insert_range_impl(key_type const& k, InputIt i, InputIt j)
         {
-            node_constructor a(this->node_alloc());
-
-            insert_range_impl2(a, k, i, j);
+            insert_range_impl2(k, i, j);
 
             while(++i != j) {
                 // Note: can't use get_key as '*i' might not be value_type - it
@@ -490,23 +475,21 @@ namespace boost { namespace unordered { namespace detail {
                 // key here. Could be more efficient if '*i' is expensive. Could
                 // be less efficient if copying the full value_type is
                 // expensive.
-                insert_range_impl2(a, extractor::extract(*i), i, j);
+                insert_range_impl2(extractor::extract(*i), i, j);
             }
         }
 
         template <class InputIt>
-        void insert_range_impl2(node_constructor& a, key_type const& k,
-            InputIt i, InputIt j)
+        void insert_range_impl2(key_type const& k, InputIt i, InputIt j)
         {
             // No side effects in this initial code
             std::size_t key_hash = this->hash(k);
             iterator pos = this->find_node(key_hash, k);
     
             if (!pos.node_) {
-                a.create_node();
                 node_tmp b(
-                    boost::unordered::detail::func::construct_value(a, *i),
-                    a.alloc_);
+                    boost::unordered::detail::func::construct_value(this->node_alloc(), *i),
+                    this->node_alloc());
                 if(this->size_ + 1 > this->max_load_)
                     this->reserve_for_insert(this->size_ +
                         boost::unordered::detail::insert_size(i, j));
@@ -523,10 +506,23 @@ namespace boost { namespace unordered { namespace detail {
 
             do {
                 if (!a.node_) { a.create_node(); }
-                node_tmp b(
-                    boost::unordered::detail::func::construct_value(a, *i),
-                    a.alloc_);
-                emplace_impl_with_node(a, b);
+                boost::unordered::detail::func::call_construct(
+                    a.alloc_, a.node_->value_ptr(), *i);
+                node_tmp b(a.release(), a.alloc_);
+
+                key_type const& k = this->get_key(b.value());
+                std::size_t key_hash = this->hash(k);
+                iterator pos = this->find_node(key_hash, k);
+
+                if (pos.node_) {
+                    a.reclaim(b.release());
+                }
+                else {
+                    // reserve has basic exception safety if the hash function
+                    // throws, strong otherwise.
+                    this->reserve_for_insert(this->size_ + 1);
+                    this->add_node(b, key_hash);
+                }
             } while(++i != j);
         }
 
@@ -600,26 +596,22 @@ namespace boost { namespace unordered { namespace detail {
         // fill_buckets
 
         void copy_buckets(table const& src) {
-            node_constructor constructor(this->node_alloc());
             this->create_buckets(this->bucket_count_);
 
             for(iterator n = src.begin(); n.node_; ++n) {
-                constructor.create_node();
                 this->add_node(
                     boost::unordered::detail::func::construct_value(
-                        constructor, *n), n.node_->hash_);
+                     this->node_alloc(), *n), n.node_->hash_);
             }
         }
 
-        void move_buckets(table& src) {
-            node_constructor constructor(this->node_alloc());
+        void move_buckets(table const& src) {
             this->create_buckets(this->bucket_count_);
 
             for(iterator n = src.begin(); n.node_; ++n) {
-                constructor.create_node();
                 this->add_node(
                     boost::unordered::detail::func::construct_value(
-                        constructor, boost::move(*n)), n.node_->hash_);
+                        this->node_alloc(), boost::move(*n)), n.node_->hash_);
             }
         }
 

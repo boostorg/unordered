@@ -1199,40 +1199,55 @@ namespace boost { namespace unordered { namespace detail { namespace func {
     // Some nicer construct_value functions, might try to
     // improve implementation later.
 
-    template <typename AllocAndPointer, BOOST_UNORDERED_EMPLACE_TEMPLATE>
-    inline typename AllocAndPointer::node_pointer construct_value_generic(AllocAndPointer& a, BOOST_UNORDERED_EMPLACE_ARGS) {
-        construct_value_impl(a.alloc_, a.node_->value_ptr(),
+    template <typename Alloc, BOOST_UNORDERED_EMPLACE_TEMPLATE>
+    inline typename boost::unordered::detail::allocator_traits<Alloc>::pointer
+    construct_value_generic(Alloc& alloc, BOOST_UNORDERED_EMPLACE_ARGS)
+    {
+        node_constructor<Alloc> a(alloc);
+        a.create_node();
+        construct_value_impl(alloc, a.node_->value_ptr(),
                 BOOST_UNORDERED_EMPLACE_FORWARD);
         return a.release();
     }
 
-    template <typename AllocAndPointer, typename U>
-    inline typename AllocAndPointer::node_pointer construct_value(AllocAndPointer& a, BOOST_FWD_REF(U) x) {
+    template <typename Alloc, typename U>
+    inline typename boost::unordered::detail::allocator_traits<Alloc>::pointer
+    construct_value(Alloc& alloc, BOOST_FWD_REF(U) x)
+    {
+        node_constructor<Alloc> a(alloc);
+        a.create_node();
         boost::unordered::detail::func::call_construct(
-                a.alloc_, a.node_->value_ptr(), boost::forward<U>(x));
+                alloc, a.node_->value_ptr(), boost::forward<U>(x));
         return a.release();
     }
 
     // TODO: When possible, it might be better to use std::pair's
     // constructor for std::piece_construct with std::tuple.
-    template <typename AllocAndPointer, typename Key>
-    inline typename AllocAndPointer::node_pointer construct_pair(AllocAndPointer& a, BOOST_FWD_REF(Key) k) {
+    template <typename Alloc, typename Key>
+    inline typename boost::unordered::detail::allocator_traits<Alloc>::pointer
+    construct_pair(Alloc& alloc, BOOST_FWD_REF(Key) k)
+    {
+        node_constructor<Alloc> a(alloc);
+        a.create_node();
         boost::unordered::detail::func::call_construct(
-                a.alloc_, boost::addressof(a.node_->value_ptr()->first),
+                alloc, boost::addressof(a.node_->value_ptr()->first),
                 boost::forward<Key>(k));
         boost::unordered::detail::func::call_construct(
-                a.alloc_, boost::addressof(a.node_->value_ptr()->second));
+                alloc, boost::addressof(a.node_->value_ptr()->second));
         return a.release();
     }
 
-    template <typename AllocAndPointer, typename Key, typename Mapped>
-    inline typename AllocAndPointer::node_pointer construct_pair(AllocAndPointer& a,
-            BOOST_FWD_REF(Key) k, BOOST_FWD_REF(Mapped) m) {
+    template <typename Alloc, typename Key, typename Mapped>
+    inline typename boost::unordered::detail::allocator_traits<Alloc>::pointer
+    construct_pair(Alloc& alloc, BOOST_FWD_REF(Key) k, BOOST_FWD_REF(Mapped) m)
+    {
+        node_constructor<Alloc> a(alloc);
+        a.create_node();
         boost::unordered::detail::func::call_construct(
-                a.alloc_, boost::addressof(a.node_->value_ptr()->first),
+                alloc, boost::addressof(a.node_->value_ptr()->first),
                 boost::forward<Key>(k));
         boost::unordered::detail::func::call_construct(
-                a.alloc_, boost::addressof(a.node_->value_ptr()->second),
+                alloc, boost::addressof(a.node_->value_ptr()->second),
                 boost::forward<Mapped>(m));
         return a.release();
     }

@@ -374,7 +374,9 @@ namespace boost { namespace unordered { namespace detail {
             }
             else {
                 constructor_.create_node();
-                return boost::unordered::detail::func::construct_value(constructor_, v);
+                boost::unordered::detail::func::call_construct(
+                    constructor_.alloc_, constructor_.node_->value_ptr(), v);
+                return constructor_.release();
             }
         }
 
@@ -386,7 +388,9 @@ namespace boost { namespace unordered { namespace detail {
             else {
                 constructor_.create_node();
             }
-            return boost::unordered::detail::func::construct_value(constructor_, v);
+            boost::unordered::detail::func::call_construct(
+                constructor_.alloc_, constructor_.node_->value_ptr(), v);
+            return constructor_.release();
         }
 
         template <typename T>
@@ -398,8 +402,10 @@ namespace boost { namespace unordered { namespace detail {
             }
             else {
                 constructor_.create_node();
-                return boost::unordered::detail::func::construct_value(
-                    constructor_, boost::move(v));
+                boost::unordered::detail::func::call_construct(
+                    constructor_.alloc_, constructor_.node_->value_ptr(),
+                    boost::move(v));
+                return constructor_.release();
             }
         }
 
@@ -411,8 +417,10 @@ namespace boost { namespace unordered { namespace detail {
             else {
                 constructor_.create_node();
             }
-            return boost::unordered::detail::func::construct_value(
-                constructor_, boost::move(v));
+            boost::unordered::detail::func::call_construct(
+                constructor_.alloc_, constructor_.node_->value_ptr(),
+                boost::move(v));
+            return constructor_.release();
         }
 
         iterator begin() const
