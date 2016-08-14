@@ -345,34 +345,53 @@ namespace boost { namespace unordered { namespace detail {
 
         void create_buckets(std::size_t new_count)
         {
-            boost::unordered::detail::array_constructor<bucket_allocator>
-                constructor(bucket_alloc());
-    
-            // Creates an extra bucket to act as the start node.
-            constructor.construct(bucket(), new_count + 1);
+            std::size_t length = new_count + 1;
+            bucket_pointer new_buckets = bucket_allocator_traits::allocate(
+                    bucket_alloc(), length);
+            bucket_pointer constructed = new_buckets;
 
-            if (buckets_)
-            {
-                // Copy the nodes to the new buckets, including the dummy
-                // node if there is one.
-                (constructor.get() +
-                    static_cast<std::ptrdiff_t>(new_count))->next_ =
-                        (buckets_ + static_cast<std::ptrdiff_t>(
-                            bucket_count_))->next_;
-                destroy_buckets();
-            }
-            else if (bucket::extra_node)
-            {
-                node_constructor a(node_alloc());
-                a.create_node();
+            BOOST_TRY {
+                bucket_pointer end = new_buckets
+                    + static_cast<std::ptrdiff_t>(length);
+                for(; constructed != end; ++constructed) {
+                    new ((void*) boost::addressof(*constructed)) bucket();
+                }
 
-                (constructor.get() +
-                    static_cast<std::ptrdiff_t>(new_count))->next_ =
-                        a.release();
+                if (buckets_)
+                {
+                    // Copy the nodes to the new buckets, including the dummy
+                    // node if there is one.
+                    (new_buckets +
+                        static_cast<std::ptrdiff_t>(new_count))->next_ =
+                            (buckets_ + static_cast<std::ptrdiff_t>(
+                                bucket_count_))->next_;
+                    destroy_buckets();
+                }
+                else if (bucket::extra_node)
+                {
+                    node_constructor a(node_alloc());
+                    a.create_node();
+
+                    (new_buckets +
+                        static_cast<std::ptrdiff_t>(new_count))->next_ =
+                            a.release();
+                }
             }
+            BOOST_CATCH(...) {
+                for(bucket_pointer p = new_buckets; p != constructed; ++p) {
+                    boost::unordered::detail::func::destroy(
+                            boost::addressof(*p));
+                }
+
+                bucket_allocator_traits::deallocate(bucket_alloc(),
+                        new_buckets, length);
+
+                BOOST_RETHROW;
+            }
+            BOOST_CATCH_END
 
             bucket_count_ = new_count;
-            buckets_ = constructor.release();
+            buckets_ = new_buckets;
             recalculate_max_load();
         }
 

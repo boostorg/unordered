@@ -31,6 +31,7 @@
 #include <boost/tuple/tuple.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/utility/addressof.hpp>
+#include <boost/detail/no_exceptions_support.hpp>
 #include <boost/detail/select_type.hpp>
 #include <boost/swap.hpp>
 #include <boost/assert.hpp>
@@ -1247,76 +1248,6 @@ namespace boost { namespace unordered { namespace detail { namespace func {
         return a.release();
     }
 }}}}
-
-namespace boost { namespace unordered { namespace detail {
-
-    ////////////////////////////////////////////////////////////////////////////
-    //
-    // array_constructor
-    //
-    // Allocate and construct an array in an exception safe manner, and
-    // clean up if an exception is thrown before the container takes charge
-    // of it.
-
-    template <typename Allocator>
-    struct array_constructor
-    {
-        typedef boost::unordered::detail::allocator_traits<Allocator> traits;
-        typedef typename traits::pointer pointer;
-
-        Allocator& alloc_;
-        pointer ptr_;
-        pointer constructed_;
-        std::size_t length_;
-
-        array_constructor(Allocator& a)
-            : alloc_(a), ptr_(), constructed_(), length_(0)
-        {
-            constructed_ = pointer();
-            ptr_ = pointer();
-        }
-
-        ~array_constructor() {
-            if (ptr_) {
-                for(pointer p = ptr_; p != constructed_; ++p) {
-                    boost::unordered::detail::func::destroy(
-                            boost::addressof(*p));
-                }
-
-                traits::deallocate(alloc_, ptr_, length_);
-            }
-        }
-
-        template <typename V>
-        void construct(V const& v, std::size_t l)
-        {
-            BOOST_ASSERT(!ptr_);
-            length_ = l;
-            ptr_ = traits::allocate(alloc_, length_);
-            pointer end = ptr_ + static_cast<std::ptrdiff_t>(length_);
-            for(constructed_ = ptr_; constructed_ != end; ++constructed_) {
-                new ((void*) boost::addressof(*constructed_)) V(v);
-            }
-        }
-
-        pointer get() const
-        {
-            return ptr_;
-        }
-
-        pointer release()
-        {
-            pointer p(ptr_);
-            ptr_ = pointer();
-            return p;
-        }
-
-    private:
-
-        array_constructor(array_constructor const&);
-        array_constructor& operator=(array_constructor const&);
-    };
-}}}
 
 #if defined(BOOST_MSVC)
 #pragma warning(pop)
