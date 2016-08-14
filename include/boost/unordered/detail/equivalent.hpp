@@ -425,8 +425,10 @@ namespace boost { namespace unordered { namespace detail {
             return iterator(n);
         }
 
-        iterator emplace_impl(node_tmp& a)
+        iterator emplace_impl(node_pointer n)
         {
+            node_tmp a(n, this->node_alloc());
+
             key_type const& k = this->get_key(a.value());
             std::size_t key_hash = this->hash(k);
             iterator position = this->find_node(key_hash, k);
@@ -437,8 +439,9 @@ namespace boost { namespace unordered { namespace detail {
             return this->add_node(a.release(), key_hash, position);
         }
 
-        void emplace_impl_no_rehash(node_tmp& a)
+        void emplace_impl_no_rehash(node_pointer n)
         {
+            node_tmp a(n, this->node_alloc());
             key_type const& k = this->get_key(a.value());
             std::size_t key_hash = this->hash(k);
             iterator position = this->find_node(key_hash, k);
@@ -466,12 +469,9 @@ namespace boost { namespace unordered { namespace detail {
         template <BOOST_UNORDERED_EMPLACE_TEMPLATE>
         iterator emplace(BOOST_UNORDERED_EMPLACE_ARGS)
         {
-            node_tmp b(
+            return iterator(emplace_impl(
                 boost::unordered::detail::func::construct_value_generic(
-                    this->node_alloc(), BOOST_UNORDERED_EMPLACE_FORWARD),
-                this->node_alloc());
-
-            return iterator(emplace_impl(b));
+                    this->node_alloc(), BOOST_UNORDERED_EMPLACE_FORWARD)));
         }
 
         ////////////////////////////////////////////////////////////////////////
@@ -487,22 +487,18 @@ namespace boost { namespace unordered { namespace detail {
 
             std::size_t distance = std::distance(i, j);
             if(distance == 1) {
-                node_tmp b(
+                emplace_impl(
                     boost::unordered::detail::func::construct_value(
-                        this->node_alloc(), *i),
-                    this->node_alloc());
-                emplace_impl(b);
+                        this->node_alloc(), *i));
             }
             else {
                 // Only require basic exception safety here
                 this->reserve_for_insert(this->size_ + distance);
 
                 for (; i != j; ++i) {
-                    node_tmp b(
+                    emplace_impl_no_rehash(
                         boost::unordered::detail::func::construct_value(
-                            this->node_alloc(), *i),
-                        this->node_alloc());
-                    emplace_impl_no_rehash(b);
+                            this->node_alloc(), *i));
                 }
             }
         }
@@ -512,11 +508,9 @@ namespace boost { namespace unordered { namespace detail {
             boost::unordered::detail::disable_if_forward<I, void*>::type = 0)
         {
             for (; i != j; ++i) {
-                node_tmp b(
+                emplace_impl(
                     boost::unordered::detail::func::construct_value(
-                        this->node_alloc(), *i),
-                    this->node_alloc());
-                emplace_impl(b);
+                        this->node_alloc(), *i));
             }
         }
 
