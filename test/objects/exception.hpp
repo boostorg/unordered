@@ -314,7 +314,7 @@ namespace exception
             //return pointer(static_cast<T*>(::operator new(n * sizeof(T))));
         }
 
-        pointer allocate(size_type n, void const* u)
+        pointer allocate(size_type n, void const*)
         {
             T* ptr = 0;
             UNORDERED_SCOPE(allocator::allocate(size_type, const_pointer)) {
@@ -494,7 +494,7 @@ namespace exception
             //return pointer(static_cast<T*>(::operator new(n * sizeof(T))));
         }
 
-        pointer allocate(size_type n, void const* u)
+        pointer allocate(size_type n, void const*)
         {
             T* ptr = 0;
             UNORDERED_SCOPE(allocator2::allocate(size_type, const_pointer)) {

@@ -22,9 +22,9 @@
     T const* address(T const& r) { return &r; }                             \
     T* allocate(std::size_t n)                                              \
     { return static_cast<T*>(::operator new(n * sizeof(T))); }              \
-    T* allocate(std::size_t n, void const* u)                               \
+    T* allocate(std::size_t n, void const*)                                 \
     { return static_cast<T*>(::operator new(n * sizeof(T))); }              \
-    void deallocate(T* p, std::size_t n) { ::operator delete((void*) p); }  \
+    void deallocate(T* p, std::size_t) { ::operator delete((void*) p); }    \
     void construct(T* p, T const& t) { new(p) T(t); }                       \
     void destroy(T* p) { p->~T(); }                                         \
     std::size_t max_size() const                                            \
@@ -44,9 +44,9 @@
     const_pointer address(T const& r) { return &r; }                        \
     pointer allocate(std::size_t n)                                         \
     { return pointer(::operator new(n * sizeof(T))); }                      \
-    pointer allocate(std::size_t n, void const* u)                          \
+    pointer allocate(std::size_t n, void const*)                            \
     { return pointer(::operator new(n * sizeof(T))); }                      \
-    void deallocate(pointer p, std::size_t n)                               \
+    void deallocate(pointer p, std::size_t)                                 \
     { ::operator delete((void*) p); }                                       \
     void construct(T* p, T const& t) { new(p) T(t); }                       \
     void destroy(T* p) { p->~T(); }                                         \

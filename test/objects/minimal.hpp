@@ -386,7 +386,7 @@ namespace minimal
         }
 
         template <class Y>
-        pointer allocate(size_type n, const_ptr<Y> u)
+        pointer allocate(size_type n, const_ptr<Y>)
         {
             return pointer(static_cast<T*>(::operator new(n * sizeof(T))));
         }
@@ -462,7 +462,7 @@ namespace minimal
         }
 
         template <class Y>
-        T* allocate(std::size_t n, const_ptr<Y> u) {
+        T* allocate(std::size_t n, const_ptr<Y>) {
             return static_cast<T*>(::operator new(n * sizeof(T)));
         }
 

@@ -148,7 +148,7 @@ namespace test
             return ptr;
         }
 
-        pointer allocate(size_type n, void const* u)
+        pointer allocate(size_type n, void const*)
         {
             pointer ptr(static_cast<T*>(::operator new(n * sizeof(T))));
             detail::tracker.track_allocate((void*) ptr, n, sizeof(T), tag_);
