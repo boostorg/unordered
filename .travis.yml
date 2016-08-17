@@ -11,7 +11,6 @@ language: c++
 addons:
     apt:
         packages:
-            - libboost-dev
             - libboost-tools-dev
 
 matrix:
@@ -26,13 +25,19 @@ matrix:
         env: BJAM_TOOLSET=clang-std11
 
 before_script:
+    - cd ${TRAVIS_BUILD_DIR}
+    - touch Jamroot.jam
+    - cd $HOME
     - |
         echo "using gcc : : g++-4.8 -Werror --std=c++03 -fsanitize=address ;" > ~/user-config.jam
         echo "using gcc : std11 : g++-4.8 -Werror --std=c++11 -fsanitize=address ;" >> ~/user-config.jam
         echo "using clang : : clang++ -Werror --std=c++03 -fsanitize=address ;" >> ~/user-config.jam
         echo "using clang : std11 : clang++ -Werror --std=c++11 -fsanitize=address ;" >> ~/user-config.jam
     - cat ~/user-config.jam
-    - touch Jamroot.jam
+    - wget -O boost_1_61_0.tar.bz2 https://sourceforge.net/projects/boost/files/boost/1.61.0/boost_1_61_0.tar.bz2/download
+    - tar -xjf boost_1_61_0.tar.bz2
+    - rm -r boost_1_61_0/boost/unordered
 
 script:
-    - cd test && bjam ${BJAM_TOOLSET} include=${TRAVIS_BUILD_DIR}/include
+    - cd ${TRAVIS_BUILD_DIR}/test
+    - bjam ${BJAM_TOOLSET} include=${HOME}/boost_1_61_0 include=${TRAVIS_BUILD_DIR}/include
