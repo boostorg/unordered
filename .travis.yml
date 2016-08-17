@@ -27,10 +27,10 @@ matrix:
 
 before_script:
     - |
-        echo "using gcc : : g++-4.8 --std=c++03 -fsanitize=address ;" > ~/user-config.jam
-        echo "using gcc : std11 : g++-4.8 --std=c++11 -fsanitize=address ;" >> ~/user-config.jam
-        echo "using clang : : clang++ --std=c++03 -fsanitize=address ;" >> ~/user-config.jam
-        echo "using clang : std11 : clang++ --std=c++11 -fsanitize=address ;" >> ~/user-config.jam
+        echo "using gcc : : g++-4.8 -Werror --std=c++03 -fsanitize=address ;" > ~/user-config.jam
+        echo "using gcc : std11 : g++-4.8 -Werror --std=c++11 -fsanitize=address ;" >> ~/user-config.jam
+        echo "using clang : : clang++ -Werror --std=c++03 -fsanitize=address ;" >> ~/user-config.jam
+        echo "using clang : std11 : clang++ -Werror --std=c++11 -fsanitize=address ;" >> ~/user-config.jam
     - cat ~/user-config.jam
     - touch Jamroot.jam
 

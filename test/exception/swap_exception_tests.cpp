@@ -66,8 +66,8 @@ struct swap_base : public test::exception_base
     {}
 
     struct data_type {
-        data_type(T const& x, T const& y)
-            : x(x), y(y) {}
+        data_type(T const& x_, T const& y_)
+            : x(x_), y(y_) {}
 
         T x, y;
     };

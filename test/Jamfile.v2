@@ -13,6 +13,7 @@ project unordered-test/unordered
         # Boost.Preprocessor on trunk.
         <toolset>gcc:<cxxflags>"-pedantic -Wstrict-aliasing -fstrict-aliasing -Wextra -Wsign-promo -Wunused-parameter -Wconversion -Wfloat-equal -Wshadow -Wno-long-long"
         <toolset>darwin:<cxxflags>"-pedantic -Wstrict-aliasing -fstrict-aliasing -Wextra -Wsign-promo -Wunused-parameter -Wconversion -Wfloat-equal -Wshadow"
+        <toolset>clang:<cxxflags>"-pedantic -Wextra -Wno-long-long"
     ;
 
 #alias framework : /boost/test//boost_unit_test_framework ;

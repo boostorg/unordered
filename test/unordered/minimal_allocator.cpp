@@ -18,7 +18,7 @@ struct SimpleAllocator
     {
     }
 
-    template <class T> SimpleAllocator(const SimpleAllocator<T>& other)
+    template <class T> SimpleAllocator(const SimpleAllocator<T>&)
     {
     }
 
