@@ -316,12 +316,27 @@ namespace boost { namespace unordered { namespace detail {
             BOOST_ASSERT(false);
             return emplace_return(this->begin(), false);
         }
+
+        iterator emplace_hint(c_iterator,
+            boost::unordered::detail::emplace_args1<
+                boost::unordered::detail::please_ignore_this_overload> const&)
+        {
+            BOOST_ASSERT(false);
+            return this->begin();
+        }
 #   else
         emplace_return emplace(
                 boost::unordered::detail::please_ignore_this_overload const&)
         {
             BOOST_ASSERT(false);
             return emplace_return(this->begin(), false);
+        }
+
+        iterator emplace_hint(c_iterator,
+                boost::unordered::detail::please_ignore_this_overload const&)
+        {
+            BOOST_ASSERT(false);
+            return this->begin();
         }
 #   endif
 #endif
@@ -340,6 +355,21 @@ namespace boost { namespace unordered { namespace detail {
 #endif
         }
 
+        template <BOOST_UNORDERED_EMPLACE_TEMPLATE>
+        iterator emplace_hint(c_iterator hint,
+            BOOST_UNORDERED_EMPLACE_ARGS)
+        {
+#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+            return emplace_hint_impl(hint,
+                extractor::extract(BOOST_UNORDERED_EMPLACE_FORWARD),
+                BOOST_UNORDERED_EMPLACE_FORWARD);
+#else
+            return emplace_hint_impl(hint,
+                extractor::extract(args.a0, args.a1),
+                BOOST_UNORDERED_EMPLACE_FORWARD);
+#endif
+        }
+
 #if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
         template <typename A0>
         emplace_return emplace(
@@ -347,7 +377,26 @@ namespace boost { namespace unordered { namespace detail {
         {
             return emplace_impl(extractor::extract(args.a0), args);
         }
+
+        template <typename A0>
+        iterator emplace_hint(c_iterator hint,
+                boost::unordered::detail::emplace_args1<A0> const& args)
+        {
+            return emplace_hint_impl(hint, extractor::extract(args.a0), args);
+        }
 #endif
+
+        template <BOOST_UNORDERED_EMPLACE_TEMPLATE>
+        iterator emplace_hint_impl(c_iterator hint, key_type const& k,
+            BOOST_UNORDERED_EMPLACE_ARGS)
+        {
+            if (hint.node_ && this->key_eq()(k, this->get_key(*hint))) {
+                return iterator(hint.node_);
+            }
+            else {
+                return emplace_impl(k, BOOST_UNORDERED_EMPLACE_FORWARD).first;
+            }
+        }
 
         template <BOOST_UNORDERED_EMPLACE_TEMPLATE>
         emplace_return emplace_impl(key_type const& k,
@@ -369,10 +418,30 @@ namespace boost { namespace unordered { namespace detail {
         }
 
         template <BOOST_UNORDERED_EMPLACE_TEMPLATE>
+        iterator emplace_hint_impl(c_iterator hint, no_key,
+            BOOST_UNORDERED_EMPLACE_ARGS)
+        {
+            node_tmp b(
+                boost::unordered::detail::func::construct_value_generic(
+                    this->node_alloc(), BOOST_UNORDERED_EMPLACE_FORWARD),
+                this->node_alloc());
+            key_type const& k = this->get_key(b.node_->value());
+            if (hint.node_ && this->key_eq()(k, this->get_key(*hint))) {
+                return iterator(hint.node_);
+            }
+            std::size_t key_hash = this->hash(k);
+            iterator pos = this->find_node(key_hash, k);
+            if (pos.node_) {
+                return pos;
+            }
+            else {
+                return this->resize_and_add_node(b.release(), key_hash);
+            }
+        }
+
+        template <BOOST_UNORDERED_EMPLACE_TEMPLATE>
         emplace_return emplace_impl(no_key, BOOST_UNORDERED_EMPLACE_ARGS)
         {
-            // Don't have a key, so construct the node first in order
-            // to be able to lookup the position.
             node_tmp b(
                 boost::unordered::detail::func::construct_value_generic(
                     this->node_alloc(), BOOST_UNORDERED_EMPLACE_FORWARD),

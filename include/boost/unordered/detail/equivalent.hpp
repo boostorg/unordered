@@ -321,7 +321,10 @@ namespace boost { namespace unordered { namespace detail {
 
         // Emplace/Insert
 
-        static inline void add_after_node(
+        // Add node 'n' to the group containing 'pos'.
+        // If 'pos' is the first node in group, add to the end of the group,
+        // otherwise add before 'pos'.
+        static inline void add_to_node_group(
                 node_pointer n,
                 node_pointer pos)
         {
@@ -338,7 +341,7 @@ namespace boost { namespace unordered { namespace detail {
         {
             n->hash_ = key_hash;
             if (pos.node_) {
-                this->add_after_node(n, pos.node_);
+                this->add_to_node_group(n, pos.node_);
                 if (n->next_) {
                     std::size_t next_bucket = this->hash_to_bucket(
                         static_cast<node_pointer>(n->next_)->hash_);
@@ -375,6 +378,24 @@ namespace boost { namespace unordered { namespace detail {
             return iterator(n);
         }
 
+        inline iterator add_using_hint(
+                node_pointer n,
+                node_pointer hint)
+        {
+            n->hash_ = hint->hash_;
+            this->add_to_node_group(n, hint);
+            if (n->next_ != hint && n->next_) {
+                std::size_t next_bucket = this->hash_to_bucket(
+                    static_cast<node_pointer>(n->next_)->hash_);
+                if (next_bucket != this->hash_to_bucket(n->hash_)) {
+                    this->get_bucket(next_bucket)->next_ = n;
+                }
+            }
+            ++this->size_;
+            return iterator(n);
+        }
+
+
 #if defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
 #   if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
         iterator emplace(boost::unordered::detail::emplace_args1<
@@ -383,8 +404,22 @@ namespace boost { namespace unordered { namespace detail {
             BOOST_ASSERT(false);
             return iterator();
         }
+
+        iterator emplace_hint(c_iterator, boost::unordered::detail::emplace_args1<
+                boost::unordered::detail::please_ignore_this_overload> const&)
+        {
+            BOOST_ASSERT(false);
+            return iterator();
+        }
 #   else
         iterator emplace(
+                boost::unordered::detail::please_ignore_this_overload const&)
+        {
+            BOOST_ASSERT(false);
+            return iterator();
+        }
+
+        iterator emplace_hint(c_iterator,
                 boost::unordered::detail::please_ignore_this_overload const&)
         {
             BOOST_ASSERT(false);
@@ -401,6 +436,14 @@ namespace boost { namespace unordered { namespace detail {
                     this->node_alloc(), BOOST_UNORDERED_EMPLACE_FORWARD)));
         }
 
+        template <BOOST_UNORDERED_EMPLACE_TEMPLATE>
+        iterator emplace_hint(c_iterator hint, BOOST_UNORDERED_EMPLACE_ARGS)
+        {
+            return iterator(emplace_hint_impl(hint,
+                boost::unordered::detail::func::construct_value_generic(
+                    this->node_alloc(), BOOST_UNORDERED_EMPLACE_FORWARD)));
+        }
+
         iterator emplace_impl(node_pointer n)
         {
             node_tmp a(n, this->node_alloc());
@@ -409,6 +452,22 @@ namespace boost { namespace unordered { namespace detail {
             iterator position = this->find_node(key_hash, k);
             this->reserve_for_insert(this->size_ + 1);
             return this->add_node(a.release(), key_hash, position);
+        }
+
+        iterator emplace_hint_impl(c_iterator hint, node_pointer n)
+        {
+            node_tmp a(n, this->node_alloc());
+            key_type const& k = this->get_key(a.node_->value());
+            if (hint.node_ && this->key_eq()(k, this->get_key(*hint))) {
+                this->reserve_for_insert(this->size_ + 1);
+                return this->add_using_hint(a.release(), hint.node_);
+            }
+            else {
+                std::size_t key_hash = this->hash(k);
+                iterator position = this->find_node(key_hash, k);
+                this->reserve_for_insert(this->size_ + 1);
+                return this->add_node(a.release(), key_hash, position);
+            }
         }
 
         void emplace_impl_no_rehash(node_pointer n)
