@@ -375,25 +375,6 @@ namespace boost { namespace unordered { namespace detail {
             return iterator(n);
         }
 
-        iterator emplace_impl(node_pointer n)
-        {
-            node_tmp a(n, this->node_alloc());
-            key_type const& k = this->get_key(a.node_->value());
-            std::size_t key_hash = this->hash(k);
-            iterator position = this->find_node(key_hash, k);
-            this->reserve_for_insert(this->size_ + 1);
-            return this->add_node(a.release(), key_hash, position);
-        }
-
-        void emplace_impl_no_rehash(node_pointer n)
-        {
-            node_tmp a(n, this->node_alloc());
-            key_type const& k = this->get_key(a.node_->value());
-            std::size_t key_hash = this->hash(k);
-            iterator position = this->find_node(key_hash, k);
-            this->add_node(a.release(), key_hash, position);
-        }
-
 #if defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
 #   if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
         iterator emplace(boost::unordered::detail::emplace_args1<
@@ -418,6 +399,25 @@ namespace boost { namespace unordered { namespace detail {
             return iterator(emplace_impl(
                 boost::unordered::detail::func::construct_value_generic(
                     this->node_alloc(), BOOST_UNORDERED_EMPLACE_FORWARD)));
+        }
+
+        iterator emplace_impl(node_pointer n)
+        {
+            node_tmp a(n, this->node_alloc());
+            key_type const& k = this->get_key(a.node_->value());
+            std::size_t key_hash = this->hash(k);
+            iterator position = this->find_node(key_hash, k);
+            this->reserve_for_insert(this->size_ + 1);
+            return this->add_node(a.release(), key_hash, position);
+        }
+
+        void emplace_impl_no_rehash(node_pointer n)
+        {
+            node_tmp a(n, this->node_alloc());
+            key_type const& k = this->get_key(a.node_->value());
+            std::size_t key_hash = this->hash(k);
+            iterator position = this->find_node(key_hash, k);
+            this->add_node(a.release(), key_hash, position);
         }
 
         ////////////////////////////////////////////////////////////////////////
