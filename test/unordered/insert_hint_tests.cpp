@@ -21,8 +21,8 @@ UNORDERED_AUTO_TEST(insert_hint_empty) {
     typedef boost::unordered_multiset<int> container;
     container x;
     x.insert(x.cbegin(), 10);
-    BOOST_TEST_EQ(x.size(), 1);
-    BOOST_TEST_EQ(x.count(10), 1);
+    BOOST_TEST_EQ(x.size(), 1u);
+    BOOST_TEST_EQ(x.count(10), 1u);
     test::check_equivalent_keys(x);
 }
 
@@ -30,8 +30,8 @@ UNORDERED_AUTO_TEST(insert_hint_empty2) {
     typedef boost::unordered_multimap<std::string, int> container;
     container x;
     x.emplace_hint(x.cbegin(), "hello", 50);
-    BOOST_TEST_EQ(x.size(), 1);
-    BOOST_TEST_EQ(x.count("hello"), 1);
+    BOOST_TEST_EQ(x.size(), 1u);
+    BOOST_TEST_EQ(x.count("hello"), 1u);
     BOOST_TEST_EQ(x.find("hello")->second, 50);
     test::check_equivalent_keys(x);
 }
@@ -41,8 +41,8 @@ UNORDERED_AUTO_TEST(insert_hint_single) {
     container x;
     x.insert("equal");
     x.insert(x.cbegin(), "equal");
-    BOOST_TEST_EQ(x.size(), 2);
-    BOOST_TEST_EQ(x.count("equal"), 2);
+    BOOST_TEST_EQ(x.size(), 2u);
+    BOOST_TEST_EQ(x.count("equal"), 2u);
     test::check_equivalent_keys(x);
 }
 
@@ -51,8 +51,8 @@ UNORDERED_AUTO_TEST(insert_hint_single2) {
     container x;
     x.emplace(10, "one");
     x.emplace_hint(x.cbegin(), 10, "two");
-    BOOST_TEST_EQ(x.size(), 2);
-    BOOST_TEST_EQ(x.count(10), 2);
+    BOOST_TEST_EQ(x.size(), 2u);
+    BOOST_TEST_EQ(x.count(10), 2u);
 
     container::iterator it = x.find(10);
     std::string v0 = (it++)->second;
@@ -80,8 +80,8 @@ UNORDERED_AUTO_TEST(insert_hint_multiple) {
 
             x.insert(position, "multiple");
 
-            BOOST_TEST_EQ(x.size(), size + 1);
-            BOOST_TEST_EQ(x.count("multiple"), size + 1);
+            BOOST_TEST_EQ(x.size(), size + 1u);
+            BOOST_TEST_EQ(x.count("multiple"), size + 1u);
             test::check_equivalent_keys(x);
         }
     }
@@ -91,8 +91,8 @@ UNORDERED_AUTO_TEST(insert_hint_unique) {
     typedef boost::unordered_set<int> container;
     container x;
     x.insert(x.cbegin(), 10);
-    BOOST_TEST_EQ(x.size(), 1);
-    BOOST_TEST_EQ(x.count(10), 1);
+    BOOST_TEST_EQ(x.size(), 1u);
+    BOOST_TEST_EQ(x.count(10), 1u);
     test::check_equivalent_keys(x);
 }
 
@@ -102,14 +102,14 @@ UNORDERED_AUTO_TEST(insert_hint_unique_single) {
     x.insert(10);
 
     x.insert(x.cbegin(), 10);
-    BOOST_TEST_EQ(x.size(), 1);
-    BOOST_TEST(x.count(10) == 1);
+    BOOST_TEST_EQ(x.size(), 1u);
+    BOOST_TEST_EQ(x.count(10), 1u);
     test::check_equivalent_keys(x);
 
     x.insert(x.cbegin(), 20);
-    BOOST_TEST(x.size() == 2);
-    BOOST_TEST(x.count(10) == 1);
-    BOOST_TEST(x.count(20) == 1);
+    BOOST_TEST_EQ(x.size(), 2u);
+    BOOST_TEST_EQ(x.count(10), 1u);
+    BOOST_TEST_EQ(x.count(20), 1u);
     test::check_equivalent_keys(x);
 }
 
