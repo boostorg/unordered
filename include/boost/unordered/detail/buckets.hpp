@@ -583,12 +583,12 @@ namespace boost { namespace unordered { namespace detail {
     // TODO: Maybe not if std::size_t is smaller than long long.
 #if !defined(BOOST_NO_LONG_LONG)
     template <>
-    struct pick_policy<long long> {
+    struct pick_policy<boost::long_long_type> {
         typedef prime_policy<std::size_t> type;
     };
 
     template <>
-    struct pick_policy<unsigned long long> {
+    struct pick_policy<boost::ulong_long_type> {
         typedef prime_policy<std::size_t> type;
     };
 #endif
