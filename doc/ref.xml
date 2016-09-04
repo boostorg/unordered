@@ -299,6 +299,21 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               </para>
             </requires>
           </method>
+          <method name="operator=">
+            <parameter>
+              <paramtype>initializer_list&lt;value_type&gt;</paramtype>
+            </parameter>
+            <type>unordered_set&amp;</type>
+            <description>
+              <para>Assign from values in initializer list. All existing elements are either overwritten by the new elements or destroyed.</para>
+            </description>
+            <requires>
+              <para>
+                <code>value_type</code> is <code>CopyInsertable<code> into the container and
+                <code>CopyAssignable</code>.
+              </para>
+            </requires>
+          </method>
           <method name="get_allocator" cv="const">
             <type>allocator_type</type>
           </method>
@@ -537,7 +552,31 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               </parameter>
               <type>void</type>
               <description>
-                <para>Inserts a range of elements into the container. Elements are inserted if and only if there is no element in the container with an equivalent value.</para>
+                <para>Inserts a range of elements into the container.
+                Elements are inserted if and only if there is no element in the container with an equivalent value.
+                </para>
+              </description>
+              <requires>
+                <para><code>value_type</code> is <code>EmplaceConstructible</code> into
+                  <code>X</code> from <code>*first</code>.</para>
+              </requires>
+              <throws>
+                <para>When inserting a single element, if an exception is thrown by an operation other than a call to <code>hasher</code> the function has no effect.</para>
+              </throws>
+              <notes>
+                <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
+                <para>Pointers and references to elements are never invalidated.</para>
+              </notes>
+            </method>
+            <method name="insert">
+              <parameter name="il">
+                <paramtype>initializer_list&lt;value_type&gt;</paramtype>
+              </parameter>
+              <type>void</type>
+              <description>
+                <para>Inserts a range of elements into the container.
+                                Elements are inserted if and only if there is no element in the container with an equivalent value.
+                                </para>
               </description>
               <requires>
                 <para><code>value_type</code> is <code>EmplaceConstructible</code> into
@@ -1334,6 +1373,21 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               </para>
             </requires>
           </method>
+          <method name="operator=">
+            <parameter>
+              <paramtype>initializer_list&lt;value_type&gt;</paramtype>
+            </parameter>
+            <type>unordered_multiset&amp;</type>
+            <description>
+              <para>Assign from values in initializer list. All existing elements are either overwritten by the new elements or destroyed.</para>
+            </description>
+            <requires>
+              <para>
+                <code>value_type</code> is <code>CopyInsertable<code> into the container and
+                <code>CopyAssignable</code>.
+              </para>
+            </requires>
+          </method>
           <method name="get_allocator" cv="const">
             <type>allocator_type</type>
           </method>
@@ -1569,7 +1623,29 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               </parameter>
               <type>void</type>
               <description>
-                <para>Inserts a range of elements into the container. Elements are inserted if and only if there is no element in the container with an equivalent value.</para>
+                <para>Inserts a range of elements into the container.
+                </para>
+              </description>
+              <requires>
+                <para><code>value_type</code> is <code>EmplaceConstructible</code> into
+                  <code>X</code> from <code>*first</code>.</para>
+              </requires>
+              <throws>
+                <para>When inserting a single element, if an exception is thrown by an operation other than a call to <code>hasher</code> the function has no effect.</para>
+              </throws>
+              <notes>
+                <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
+                <para>Pointers and references to elements are never invalidated.</para>
+              </notes>
+            </method>
+            <method name="insert">
+              <parameter name="il">
+                <paramtype>initializer_list&lt;value_type&gt;</paramtype>
+              </parameter>
+              <type>void</type>
+              <description>
+                <para>Inserts a range of elements into the container.
+                                </para>
               </description>
               <requires>
                 <para><code>value_type</code> is <code>EmplaceConstructible</code> into
@@ -2380,6 +2456,21 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               </para>
             </requires>
           </method>
+          <method name="operator=">
+            <parameter>
+              <paramtype>initializer_list&lt;value_type&gt;</paramtype>
+            </parameter>
+            <type>unordered_map&amp;</type>
+            <description>
+              <para>Assign from values in initializer list. All existing elements are either overwritten by the new elements or destroyed.</para>
+            </description>
+            <requires>
+              <para>
+                <code>value_type</code> is <code>CopyInsertable<code> into the container and
+                <code>CopyAssignable</code>.
+              </para>
+            </requires>
+          </method>
           <method name="get_allocator" cv="const">
             <type>allocator_type</type>
           </method>
@@ -2618,7 +2709,31 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               </parameter>
               <type>void</type>
               <description>
-                <para>Inserts a range of elements into the container. Elements are inserted if and only if there is no element in the container with an equivalent key.</para>
+                <para>Inserts a range of elements into the container.
+                Elements are inserted if and only if there is no element in the container with an equivalent key.
+                </para>
+              </description>
+              <requires>
+                <para><code>value_type</code> is <code>EmplaceConstructible</code> into
+                  <code>X</code> from <code>*first</code>.</para>
+              </requires>
+              <throws>
+                <para>When inserting a single element, if an exception is thrown by an operation other than a call to <code>hasher</code> the function has no effect.</para>
+              </throws>
+              <notes>
+                <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
+                <para>Pointers and references to elements are never invalidated.</para>
+              </notes>
+            </method>
+            <method name="insert">
+              <parameter name="il">
+                <paramtype>initializer_list&lt;value_type&gt;</paramtype>
+              </parameter>
+              <type>void</type>
+              <description>
+                <para>Inserts a range of elements into the container.
+                                Elements are inserted if and only if there is no element in the container with an equivalent key.
+                                </para>
               </description>
               <requires>
                 <para><code>value_type</code> is <code>EmplaceConstructible</code> into
@@ -3462,6 +3577,21 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               </para>
             </requires>
           </method>
+          <method name="operator=">
+            <parameter>
+              <paramtype>initializer_list&lt;value_type&gt;</paramtype>
+            </parameter>
+            <type>unordered_multimap&amp;</type>
+            <description>
+              <para>Assign from values in initializer list. All existing elements are either overwritten by the new elements or destroyed.</para>
+            </description>
+            <requires>
+              <para>
+                <code>value_type</code> is <code>CopyInsertable<code> into the container and
+                <code>CopyAssignable</code>.
+              </para>
+            </requires>
+          </method>
           <method name="get_allocator" cv="const">
             <type>allocator_type</type>
           </method>
@@ -3697,7 +3827,29 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               </parameter>
               <type>void</type>
               <description>
-                <para>Inserts a range of elements into the container. Elements are inserted if and only if there is no element in the container with an equivalent key.</para>
+                <para>Inserts a range of elements into the container.
+                </para>
+              </description>
+              <requires>
+                <para><code>value_type</code> is <code>EmplaceConstructible</code> into
+                  <code>X</code> from <code>*first</code>.</para>
+              </requires>
+              <throws>
+                <para>When inserting a single element, if an exception is thrown by an operation other than a call to <code>hasher</code> the function has no effect.</para>
+              </throws>
+              <notes>
+                <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
+                <para>Pointers and references to elements are never invalidated.</para>
+              </notes>
+            </method>
+            <method name="insert">
+              <parameter name="il">
+                <paramtype>initializer_list&lt;value_type&gt;</paramtype>
+              </parameter>
+              <type>void</type>
+              <description>
+                <para>Inserts a range of elements into the container.
+                                </para>
               </description>
               <requires>
                 <para><code>value_type</code> is <code>EmplaceConstructible</code> into

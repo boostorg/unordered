@@ -476,6 +476,9 @@ void unordered_copyable_test(X& x, Key& k, T& t, Hash& hf, Pred& eq)
     test::check_return_type<iterator>::equals(a.emplace_hint(q, t));
 
     a.insert(i, j);
+#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
+    a.insert({t});
+#endif
 
     X a10;
     a10.insert(t);
