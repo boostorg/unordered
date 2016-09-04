@@ -299,6 +299,21 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               </para>
             </requires>
           </method>
+          <method name="operator=">
+            <parameter>
+              <paramtype>initializer_list&lt;value_type&gt;</paramtype>
+            </parameter>
+            <type>unordered_set&amp;</type>
+            <description>
+              <para>Assign from values in initializer list. All existing elements are either overwritten by the new elements or destroyed.</para>
+            </description>
+            <requires>
+              <para>
+                <code>value_type</code> is <code>CopyInsertable<code> into the container and
+                <code>CopyAssignable</code>.
+              </para>
+            </requires>
+          </method>
           <method name="get_allocator" cv="const">
             <type>allocator_type</type>
           </method>
@@ -1333,6 +1348,21 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
             <requires>
               <para>
                 <code>value_type</code> is move constructible.
+              </para>
+            </requires>
+          </method>
+          <method name="operator=">
+            <parameter>
+              <paramtype>initializer_list&lt;value_type&gt;</paramtype>
+            </parameter>
+            <type>unordered_multiset&amp;</type>
+            <description>
+              <para>Assign from values in initializer list. All existing elements are either overwritten by the new elements or destroyed.</para>
+            </description>
+            <requires>
+              <para>
+                <code>value_type</code> is <code>CopyInsertable<code> into the container and
+                <code>CopyAssignable</code>.
               </para>
             </requires>
           </method>
@@ -2380,6 +2410,21 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
             <requires>
               <para>
                 <code>value_type</code> is move constructible.
+              </para>
+            </requires>
+          </method>
+          <method name="operator=">
+            <parameter>
+              <paramtype>initializer_list&lt;value_type&gt;</paramtype>
+            </parameter>
+            <type>unordered_map&amp;</type>
+            <description>
+              <para>Assign from values in initializer list. All existing elements are either overwritten by the new elements or destroyed.</para>
+            </description>
+            <requires>
+              <para>
+                <code>value_type</code> is <code>CopyInsertable<code> into the container and
+                <code>CopyAssignable</code>.
               </para>
             </requires>
           </method>
@@ -3464,6 +3509,21 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
             <requires>
               <para>
                 <code>value_type</code> is move constructible.
+              </para>
+            </requires>
+          </method>
+          <method name="operator=">
+            <parameter>
+              <paramtype>initializer_list&lt;value_type&gt;</paramtype>
+            </parameter>
+            <type>unordered_multimap&amp;</type>
+            <description>
+              <para>Assign from values in initializer list. All existing elements are either overwritten by the new elements or destroyed.</para>
+            </description>
+            <requires>
+              <para>
+                <code>value_type</code> is <code>CopyInsertable<code> into the container and
+                <code>CopyAssignable</code>.
               </para>
             </requires>
           </method>

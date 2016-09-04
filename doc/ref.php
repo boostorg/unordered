@@ -358,6 +358,21 @@ EOL;
               </para>
             </requires>
           </method>
+          <method name="operator=">
+            <parameter>
+              <paramtype>initializer_list&lt;value_type&gt;</paramtype>
+            </parameter>
+            <type><?php echo $name; ?>&amp;</type>
+            <description>
+              <para>Assign from values in initializer list. All existing elements are either overwritten by the new elements or destroyed.</para>
+            </description>
+            <requires>
+              <para>
+                <code>value_type</code> is <code>CopyInsertable<code> into the container and
+                <code>CopyAssignable</code>.
+              </para>
+            </requires>
+          </method>
           <method name="get_allocator" cv="const">
             <type>allocator_type</type>
           </method>
