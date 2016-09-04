@@ -309,7 +309,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
             </description>
             <requires>
               <para>
-                <code>value_type</code> is <code>CopyInsertable<code> into the container and
+                <code>value_type</code> is <code>CopyInsertable</code> into the container and
                 <code>CopyAssignable</code>.
               </para>
             </requires>
@@ -1383,7 +1383,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
             </description>
             <requires>
               <para>
-                <code>value_type</code> is <code>CopyInsertable<code> into the container and
+                <code>value_type</code> is <code>CopyInsertable</code> into the container and
                 <code>CopyAssignable</code>.
               </para>
             </requires>
@@ -2466,7 +2466,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
             </description>
             <requires>
               <para>
-                <code>value_type</code> is <code>CopyInsertable<code> into the container and
+                <code>value_type</code> is <code>CopyInsertable</code> into the container and
                 <code>CopyAssignable</code>.
               </para>
             </requires>
@@ -3587,7 +3587,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
             </description>
             <requires>
               <para>
-                <code>value_type</code> is <code>CopyInsertable<code> into the container and
+                <code>value_type</code> is <code>CopyInsertable</code> into the container and
                 <code>CopyAssignable</code>.
               </para>
             </requires>
