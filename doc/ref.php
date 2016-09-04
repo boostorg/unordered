@@ -640,7 +640,11 @@ EOL;
               </parameter>
               <type>void</type>
               <description>
-                <para>Inserts a range of elements into the container. Elements are inserted if and only if there is no element in the container with an equivalent <?php echo $key_name; ?>.</para>
+                <para>Inserts a range of elements into the container.
+<?php if (!$equivalent_keys): ?>
+                Elements are inserted if and only if there is no element in the container with an equivalent <?php echo $key_name; ?>.
+<?php endif; ?>
+                </para>
               </description>
               <requires>
                 <para><code>value_type</code> is <code>EmplaceConstructible</code> into

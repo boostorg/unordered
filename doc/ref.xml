@@ -537,7 +537,9 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               </parameter>
               <type>void</type>
               <description>
-                <para>Inserts a range of elements into the container. Elements are inserted if and only if there is no element in the container with an equivalent value.</para>
+                <para>Inserts a range of elements into the container.
+                Elements are inserted if and only if there is no element in the container with an equivalent value.
+                </para>
               </description>
               <requires>
                 <para><code>value_type</code> is <code>EmplaceConstructible</code> into
@@ -1569,7 +1571,8 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               </parameter>
               <type>void</type>
               <description>
-                <para>Inserts a range of elements into the container. Elements are inserted if and only if there is no element in the container with an equivalent value.</para>
+                <para>Inserts a range of elements into the container.
+                </para>
               </description>
               <requires>
                 <para><code>value_type</code> is <code>EmplaceConstructible</code> into
@@ -2618,7 +2621,9 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               </parameter>
               <type>void</type>
               <description>
-                <para>Inserts a range of elements into the container. Elements are inserted if and only if there is no element in the container with an equivalent key.</para>
+                <para>Inserts a range of elements into the container.
+                Elements are inserted if and only if there is no element in the container with an equivalent key.
+                </para>
               </description>
               <requires>
                 <para><code>value_type</code> is <code>EmplaceConstructible</code> into
@@ -3697,7 +3702,8 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               </parameter>
               <type>void</type>
               <description>
-                <para>Inserts a range of elements into the container. Elements are inserted if and only if there is no element in the container with an equivalent key.</para>
+                <para>Inserts a range of elements into the container.
+                </para>
               </description>
               <requires>
                 <para><code>value_type</code> is <code>EmplaceConstructible</code> into
