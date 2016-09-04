@@ -673,6 +673,30 @@ EOL;
                 <para>Pointers and references to elements are never invalidated.</para>
               </notes>
             </method>
+            <method name="insert">
+              <parameter name="il">
+                <paramtype>initializer_list&lt;value_type&gt;</paramtype>
+              </parameter>
+              <type>void</type>
+              <description>
+                <para>Inserts a range of elements into the container.
+                <?php if (!$equivalent_keys): ?>
+                Elements are inserted if and only if there is no element in the container with an equivalent <?php echo $key_name; ?>.
+                <?php endif; ?>
+                </para>
+              </description>
+              <requires>
+                <para><code>value_type</code> is <code>EmplaceConstructible</code> into
+                  <code>X</code> from <code>*first</code>.</para>
+              </requires>
+              <throws>
+                <para>When inserting a single element, if an exception is thrown by an operation other than a call to <code>hasher</code> the function has no effect.</para>
+              </throws>
+              <notes>
+                <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
+                <para>Pointers and references to elements are never invalidated.</para>
+              </notes>
+            </method>
             <method name="erase">
               <parameter name="position">
                 <paramtype>const_iterator</paramtype>
