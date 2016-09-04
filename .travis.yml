@@ -12,6 +12,7 @@ addons:
     apt:
         packages:
             - libboost-tools-dev
+            - libxml2-utils
 
 matrix:
     include:
@@ -41,3 +42,4 @@ before_script:
 script:
     - cd ${TRAVIS_BUILD_DIR}/test
     - bjam ${BJAM_TOOLSET} include=${HOME}/boost_1_61_0 include=${TRAVIS_BUILD_DIR}/include
+    - xmllint --noout ${TRAVIS_BUILD_DIR}/doc/ref.xml
