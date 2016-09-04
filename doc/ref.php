@@ -368,7 +368,7 @@ EOL;
             </description>
             <requires>
               <para>
-                <code>value_type</code> is <code>CopyInsertable<code> into the container and
+                <code>value_type</code> is <code>CopyInsertable</code> into the container and
                 <code>CopyAssignable</code>.
               </para>
             </requires>
