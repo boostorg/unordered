@@ -13,7 +13,6 @@
 #include <map>
 #include <iterator>
 #include <algorithm>
-#include <boost/type_traits/is_same.hpp>
 #include "../objects/fwd.hpp"
 #include "./metafunctions.hpp"
 #include "./helpers.hpp"
@@ -60,38 +59,46 @@ namespace test
                     values2.begin(), test::equivalent));
     }
 
-    template <typename X>
+    template <typename X,
+             bool is_set = test::is_set<X>::value,
+             bool has_unique_keys = test::has_unique_keys<X>::value>
     struct ordered_base;
 
-    template <class V, class H, class P, class A>
-    struct ordered_base<boost::unordered_set<V, H, P, A> >
+    template <typename X>
+    struct ordered_base<X, true, true>
     {
-        typedef std::set<V,
-            BOOST_DEDUCED_TYPENAME equals_to_compare<P>::type>
+        typedef std::set<
+            BOOST_DEDUCED_TYPENAME X::value_type,
+            BOOST_DEDUCED_TYPENAME equals_to_compare<BOOST_DEDUCED_TYPENAME X::key_equal>::type>
             type;
     };
 
-    template <class V, class H, class P, class A>
-    struct ordered_base<boost::unordered_multiset<V, H, P, A> >
+    template <typename X>
+    struct ordered_base<X, true, false>
     {
-        typedef std::multiset<V,
-            BOOST_DEDUCED_TYPENAME equals_to_compare<P>::type>
+        typedef std::multiset<
+            BOOST_DEDUCED_TYPENAME X::value_type,
+            BOOST_DEDUCED_TYPENAME equals_to_compare<BOOST_DEDUCED_TYPENAME X::key_equal>::type>
             type;
     };
 
-    template <class K, class M, class H, class P, class A>
-    struct ordered_base<boost::unordered_map<K, M, H, P, A> >
+    template <typename X>
+    struct ordered_base<X, false, true>
     {
-        typedef std::map<K, M,
-            BOOST_DEDUCED_TYPENAME equals_to_compare<P>::type>
+        typedef std::map<
+            BOOST_DEDUCED_TYPENAME X::key_type,
+            BOOST_DEDUCED_TYPENAME X::mapped_type,
+            BOOST_DEDUCED_TYPENAME equals_to_compare<BOOST_DEDUCED_TYPENAME X::key_equal>::type>
             type;
     };
 
-    template <class K, class M, class H, class P, class A>
-    struct ordered_base<boost::unordered_multimap<K, M, H, P, A> >
+    template <typename X>
+    struct ordered_base<X, false, false>
     {
-        typedef std::multimap<K, M,
-            BOOST_DEDUCED_TYPENAME equals_to_compare<P>::type>
+        typedef std::multimap<
+            BOOST_DEDUCED_TYPENAME X::key_type,
+            BOOST_DEDUCED_TYPENAME X::mapped_type,
+            BOOST_DEDUCED_TYPENAME equals_to_compare<BOOST_DEDUCED_TYPENAME X::key_equal>::type>
             type;
     };
 
