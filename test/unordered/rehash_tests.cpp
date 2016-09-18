@@ -22,7 +22,7 @@ test::seed_t initialize_seed(2974);
 template <class X>
 bool postcondition(X const& x, BOOST_DEDUCED_TYPENAME X::size_type n)
 {
-    return static_cast<double>(x.bucket_count()) >
+    return static_cast<double>(x.bucket_count()) >=
         static_cast<double>(x.size()) / x.max_load_factor() &&
         x.bucket_count() >= n;
 }
@@ -149,9 +149,6 @@ void reserve_test1(X*, test::random_generator generator)
             X x;
             x.max_load_factor(random_mlf ?
                 static_cast<float>(std::rand() % 1000) / 500.0f + 0.5f : 1.0f);
-            // For the current standard this should reserve i+1, I've
-            // submitted a defect report and will assume it's a defect
-            // for now.
             x.reserve(test::has_unique_keys<X>::value ? i : v.size());
 
             // Insert an element before the range insert, otherwise there are

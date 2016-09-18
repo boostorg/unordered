@@ -130,6 +130,7 @@ struct insert_test_rehash1 : public insert_test_base<T>
 
         T x;
         x.max_load_factor(0.25);
+        // TODO: This doesn't really work is bucket_count is 0
         size_type bucket_count = x.bucket_count();
         size_type initial_elements = static_cast<size_type>(
             ceil(bucket_count * (double) x.max_load_factor()) - 1);

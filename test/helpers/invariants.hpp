@@ -91,7 +91,7 @@ namespace test
 
         // Check the load factor.
 
-        float load_factor =
+        float load_factor = size == 0 ? 0 :
             static_cast<float>(size) / static_cast<float>(x1.bucket_count());
         using namespace std;
         if(fabs(x1.load_factor() - load_factor) > x1.load_factor() / 64)
