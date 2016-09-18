@@ -128,6 +128,7 @@ void insert_tests2(X*, test::random_generator generator)
                 BOOST_TEST(x.bucket_count() == old_bucket_count);
         }
 
+        tracker.compare(x);
         test::check_equivalent_keys(x);
     }
 
@@ -157,6 +158,7 @@ void insert_tests2(X*, test::random_generator generator)
                 BOOST_TEST(x.bucket_count() == old_bucket_count);
         }
 
+        tracker.compare(x);
         test::check_equivalent_keys(x);
     }
 
@@ -186,6 +188,7 @@ void insert_tests2(X*, test::random_generator generator)
                 BOOST_TEST(x.bucket_count() == old_bucket_count);
         }
 
+        tracker.compare(x);
         test::check_equivalent_keys(x);
     }
 
@@ -213,6 +216,7 @@ void insert_tests2(X*, test::random_generator generator)
                 BOOST_TEST(x.bucket_count() == old_bucket_count);
         }
 
+        tracker.compare(x);
         test::check_equivalent_keys(x);
     }
 
@@ -292,6 +296,42 @@ void insert_tests2(X*, test::random_generator generator)
 
         test::check_equivalent_keys(x);
     }
+
+    std::cerr<<"insert various ranges.\n";
+
+    {
+        for (int i = 0; i < 100; ++i) {
+            X x;
+            test::ordered<X> tracker = test::create_ordered(x);
+
+            test::random_values<X> v(1000, generator);
+
+            for(BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator
+                    it = v.begin(); it != v.end();)
+            {
+                BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count = x.bucket_count();
+                float b = x.max_load_factor();
+
+                BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator
+                    next = it;
+                for (int j = rand() % 20; j > 0; ++j) {
+                    ++next;
+                    if (next == v.end()) { break; }
+                }
+
+                x.insert(it, next);
+                tracker.insert(it, next);
+                it = next;
+
+                tracker.compare(x); // Slow, but I can't see any other way.
+
+                if(static_cast<double>(x.size()) <= b * static_cast<double>(old_bucket_count))
+                    BOOST_TEST(x.bucket_count() == old_bucket_count);
+            }
+
+            test::check_equivalent_keys(x);
+        }
+    }
 }
 
 template <class X>
@@ -327,6 +367,7 @@ void unique_emplace_tests1(X*, test::random_generator generator)
             BOOST_TEST(x.bucket_count() == old_bucket_count);
     }
 
+    tracker.compare(x);
     test::check_equivalent_keys(x);
 }
 
@@ -357,6 +398,7 @@ void equivalent_emplace_tests1(X*, test::random_generator generator)
             BOOST_TEST(x.bucket_count() == old_bucket_count);
     }
 
+    tracker.compare(x);
     test::check_equivalent_keys(x);
 }
 
@@ -386,8 +428,8 @@ void move_emplace_tests(X*, test::random_generator generator)
             BOOST_TEST(x.bucket_count() == old_bucket_count);
     }
 
-    test::check_equivalent_keys(x);
     tracker.compare(x);
+    test::check_equivalent_keys(x);
 }
 
 template <class X>
@@ -449,6 +491,7 @@ void map_tests(X*, test::random_generator generator)
             BOOST_TEST(x.bucket_count() == old_bucket_count);
     }
 
+    tracker.compare(x);
     test::check_equivalent_keys(x);   
 }
 

@@ -16,7 +16,7 @@
 #include "../helpers/equivalent.hpp"
 #include "../helpers/helpers.hpp"
 #include "../helpers/invariants.hpp"
-
+#include <vector>
 #include <iostream>
 
 namespace erase_tests
@@ -27,6 +27,9 @@ test::seed_t initialize_seed(85638);
 template <class Container>
 void erase_tests1(Container*, test::random_generator generator)
 {
+    typedef BOOST_DEDUCED_TYPENAME Container::iterator iterator;
+    typedef BOOST_DEDUCED_TYPENAME Container::const_iterator c_iterator;
+
     std::cerr<<"Erase by key.\n";
     {
         test::check_instances check_;
@@ -60,8 +63,7 @@ void erase_tests1(Container*, test::random_generator generator)
             BOOST_DEDUCED_TYPENAME Container::key_type
                 key = test::get_key<Container>(*x.begin());
             std::size_t count = x.count(key);
-            BOOST_DEDUCED_TYPENAME Container::iterator
-                pos = x.erase(x.begin());
+            iterator pos = x.erase(x.begin());
             --size;
             BOOST_TEST(pos == x.begin());
             BOOST_TEST(x.count(key) == count - 1);
@@ -83,7 +85,7 @@ void erase_tests1(Container*, test::random_generator generator)
         {
             using namespace std;
             int index = rand() % (int) x.size();
-            BOOST_DEDUCED_TYPENAME Container::const_iterator prev, pos, next;
+            c_iterator prev, pos, next;
             if(index == 0) {
                 prev = pos = x.begin();
             }
@@ -136,6 +138,45 @@ void erase_tests1(Container*, test::random_generator generator)
 
         BOOST_TEST(x.erase(x.begin(), x.end()) == x.begin());
         test::check_equivalent_keys(x);
+    }
+
+    std::cerr<<"erase(random ranges).\n";
+    {
+        test::check_instances check_;
+        Container x;
+
+        for (int i = 0; i < 100; ++i) {
+            test::random_values<Container> v(1000, generator);
+            x.insert(v.begin(), v.end());
+
+            // Note that erase only invalidates the erased iterators.
+            std::vector<c_iterator> iterators;
+            for(c_iterator it = x.cbegin(); it != x.cend(); ++it) {
+                iterators.push_back(it);
+            }
+            iterators.push_back(x.cend());
+
+            while(iterators.size() > 1) {
+                int start = rand() % (int) iterators.size();
+                int length = rand() % (int) (iterators.size() - start);
+                x.erase(iterators[start], iterators[start + length]);
+                iterators.erase(
+                        boost::next(iterators.begin(), start),
+                        boost::next(iterators.begin(), start + length));
+
+                BOOST_TEST(x.size() == iterators.size() - 1);
+                BOOST_DEDUCED_TYPENAME std::vector<c_iterator>::const_iterator
+                    i2 = iterators.begin();
+                for(c_iterator i1 = x.cbegin(); i1 != x.cend(); ++i1) {
+                    BOOST_TEST(i1 == *i2);
+                    ++i2;
+                }
+                BOOST_TEST(x.cend() == *i2);
+
+                test::check_equivalent_keys(x);
+            }
+            BOOST_TEST(x.empty());
+        }
     }
 
     std::cerr<<"quick_erase(begin()).\n";
