@@ -24,7 +24,11 @@
     void BOOST_PP_CAT(x, _type)::run()                                      \
 
 #define RUN_TESTS() int main(int, char**)                                   \
-    { ::test::test_list::run_tests(); return boost::report_errors(); }      \
+    {                                                                       \
+        ::test::write_compiler_info();                                      \
+        ::test::test_list::run_tests();                                     \
+        return boost::report_errors();                                      \
+    }
 
 namespace test {
     struct registered_test_base {
@@ -65,6 +69,21 @@ namespace test {
                 std::cout<<std::flush;
             }
         }
+    }
+
+    inline void write_compiler_info() {
+#if defined(BOOST_GCC_CXX11)
+        char const* cpp11 = "true";
+#else
+        char const* cpp11 = "false";
+#endif
+
+        std::cout
+            << "Compiler: " << BOOST_COMPILER << "\n"
+            << "Library: " << BOOST_STDLIB << "\n"
+            << "C++11: " << cpp11 << "\n"
+            << "\n"
+            << std::flush;
     }
 }
 
