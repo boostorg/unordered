@@ -477,7 +477,15 @@ void unordered_copyable_test(X& x, Key& k, T& t, Hash& hf, Pred& eq)
 
     a.insert(i, j);
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
+    std::initializer_list<T> list = {t};
+    a.insert(list);
+    a.insert({t,t,t});
+
+#if !defined(BOOST_MSVC) || BOOST_MSVC >= 1800
+    a.insert({});
     a.insert({t});
+    a.insert({t,t});
+#endif
 #endif
 
     X a10;
