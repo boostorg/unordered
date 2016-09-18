@@ -481,7 +481,7 @@ void unordered_copyable_test(X& x, Key& k, T& t, Hash& hf, Pred& eq)
     a.insert(list);
     a.insert({t,t,t});
 
-#if !defined(BOOST_MSVC) || BOOST_MSVC >= 1800
+#if !BOOST_WORKAROUND(BOOST_MSVC, < 1900)
     a.insert({});
     a.insert({t});
     a.insert({t,t});
