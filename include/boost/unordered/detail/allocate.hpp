@@ -120,19 +120,12 @@ namespace boost { namespace unordered { namespace detail {
     typedef BOOST_FWD_REF(BOOST_PP_CAT(A, n)) BOOST_PP_CAT(Arg, n);         \
     BOOST_PP_CAT(Arg, n) BOOST_PP_CAT(a, n);
 
-#define BOOST_UNORDERED_EARGS_INIT(z, n, _)                                 \
-    BOOST_PP_CAT(a, n)(                                                     \
-        boost::forward<BOOST_PP_CAT(A,n)>(BOOST_PP_CAT(b, n)))
-
 #else
 
 #define BOOST_UNORDERED_EARGS_MEMBER(z, n, _)                               \
     typedef typename boost::add_lvalue_reference<BOOST_PP_CAT(A, n)>::type  \
         BOOST_PP_CAT(Arg, n);                                               \
     BOOST_PP_CAT(Arg, n) BOOST_PP_CAT(a, n);
-
-#define BOOST_UNORDERED_EARGS_INIT(z, n, _)                                 \
-    BOOST_PP_CAT(a, n)(BOOST_PP_CAT(b, n))
 
 #endif
 
@@ -141,9 +134,7 @@ struct emplace_args1
 {
     BOOST_UNORDERED_EARGS_MEMBER(1, 0, _)
 
-    emplace_args1(Arg0 b0) :
-        BOOST_UNORDERED_EARGS_INIT(1, 0, _)
-    {}
+    emplace_args1(Arg0 b0) : a0(b0) {}
 };
 
 template <typename A0>
@@ -160,10 +151,7 @@ struct emplace_args2
     BOOST_UNORDERED_EARGS_MEMBER(1, 0, _)
     BOOST_UNORDERED_EARGS_MEMBER(1, 1, _)
 
-    emplace_args2(Arg0 b0, Arg1 b1) :
-        BOOST_UNORDERED_EARGS_INIT(1, 0, _),
-        BOOST_UNORDERED_EARGS_INIT(1, 1, _)
-    {}
+    emplace_args2(Arg0 b0, Arg1 b1) : a0(b0), a1(b1) {}
 };
 
 template <typename A0, typename A1>
@@ -182,11 +170,7 @@ struct emplace_args3
     BOOST_UNORDERED_EARGS_MEMBER(1, 1, _)
     BOOST_UNORDERED_EARGS_MEMBER(1, 2, _)
 
-    emplace_args3(Arg0 b0, Arg1 b1, Arg2 b2) :
-        BOOST_UNORDERED_EARGS_INIT(1, 0, _),
-        BOOST_UNORDERED_EARGS_INIT(1, 1, _),
-        BOOST_UNORDERED_EARGS_INIT(1, 2, _)
-    {}
+    emplace_args3(Arg0 b0, Arg1 b1, Arg2 b2) : a0(b0), a1(b1), a2(b2) {}
 };
 
 template <typename A0, typename A1, typename A2>
@@ -204,6 +188,9 @@ inline emplace_args3<A0, A1, A2> create_emplace_args(
 
 #define BOOST_UNORDERED_CALL_FORWARD(z, i, a) \
     boost::forward<BOOST_PP_CAT(A,i)>(BOOST_PP_CAT(a,i))
+
+#define BOOST_UNORDERED_EARGS_INIT(z, n, _)                                 \
+BOOST_PP_CAT(a, n)(BOOST_PP_CAT(b, n))
 
 #define BOOST_UNORDERED_EARGS(z, n, _)                                      \
     template <BOOST_PP_ENUM_PARAMS_Z(z, n, typename A)>                     \
