@@ -96,19 +96,108 @@ namespace boost { namespace unordered { namespace detail {
 
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
-#define BOOST_UNORDERED_EMPLACE_TEMPLATE typename... Args
-#define BOOST_UNORDERED_EMPLACE_ARGS BOOST_FWD_REF(Args)... args
-#define BOOST_UNORDERED_EMPLACE_FORWARD boost::forward<Args>(args)...
-
 #define BOOST_UNORDERED_EMPLACE_ARGS1(a0) a0
 #define BOOST_UNORDERED_EMPLACE_ARGS2(a0, a1) a0, a1
 #define BOOST_UNORDERED_EMPLACE_ARGS3(a0, a1, a2) a0, a1, a2
 
+#define BOOST_UNORDERED_EMPLACE_TEMPLATE typename... Args
+#define BOOST_UNORDERED_EMPLACE_ARGS BOOST_FWD_REF(Args)... args
+#define BOOST_UNORDERED_EMPLACE_FORWARD boost::forward<Args>(args)...
+
 #else
+
+#define BOOST_UNORDERED_EMPLACE_ARGS1 create_emplace_args
+#define BOOST_UNORDERED_EMPLACE_ARGS2 create_emplace_args
+#define BOOST_UNORDERED_EMPLACE_ARGS3 create_emplace_args
 
 #define BOOST_UNORDERED_EMPLACE_TEMPLATE typename Args
 #define BOOST_UNORDERED_EMPLACE_ARGS Args const& args
 #define BOOST_UNORDERED_EMPLACE_FORWARD args
+
+#if defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+
+#define BOOST_UNORDERED_EARGS_MEMBER(z, n, _)                               \
+    typedef BOOST_FWD_REF(BOOST_PP_CAT(A, n)) BOOST_PP_CAT(Arg, n);         \
+    BOOST_PP_CAT(Arg, n) BOOST_PP_CAT(a, n);
+
+#define BOOST_UNORDERED_EARGS_INIT(z, n, _)                                 \
+    BOOST_PP_CAT(a, n)(                                                     \
+        boost::forward<BOOST_PP_CAT(A,n)>(BOOST_PP_CAT(b, n)))
+
+#else
+
+#define BOOST_UNORDERED_EARGS_MEMBER(z, n, _)                               \
+    typedef typename boost::add_lvalue_reference<BOOST_PP_CAT(A, n)>::type  \
+        BOOST_PP_CAT(Arg, n);                                               \
+    BOOST_PP_CAT(Arg, n) BOOST_PP_CAT(a, n);
+
+#define BOOST_UNORDERED_EARGS_INIT(z, n, _)                                 \
+    BOOST_PP_CAT(a, n)(BOOST_PP_CAT(b, n))
+
+#endif
+
+template <typename A0>
+struct emplace_args1
+{
+    BOOST_UNORDERED_EARGS_MEMBER(1, 0, _)
+
+    emplace_args1(Arg0 b0) :
+        BOOST_UNORDERED_EARGS_INIT(1, 0, _)
+    {}
+};
+
+template <typename A0>
+inline emplace_args1<A0> create_emplace_args(
+        BOOST_FWD_REF(A0) b0)
+{
+    emplace_args1<A0> e(b0);
+    return e;
+}
+
+template <typename A0, typename A1>
+struct emplace_args2
+{
+    BOOST_UNORDERED_EARGS_MEMBER(1, 0, _)
+    BOOST_UNORDERED_EARGS_MEMBER(1, 1, _)
+
+    emplace_args2(Arg0 b0, Arg1 b1) :
+        BOOST_UNORDERED_EARGS_INIT(1, 0, _),
+        BOOST_UNORDERED_EARGS_INIT(1, 1, _)
+    {}
+};
+
+template <typename A0, typename A1>
+inline emplace_args2<A0, A1> create_emplace_args(
+        BOOST_FWD_REF(A0) b0,
+        BOOST_FWD_REF(A1) b1)
+{
+    emplace_args2<A0, A1> e(b0, b1);
+    return e;
+}
+
+template <typename A0, typename A1, typename A2>
+struct emplace_args3
+{
+    BOOST_UNORDERED_EARGS_MEMBER(1, 0, _)
+    BOOST_UNORDERED_EARGS_MEMBER(1, 1, _)
+    BOOST_UNORDERED_EARGS_MEMBER(1, 2, _)
+
+    emplace_args3(Arg0 b0, Arg1 b1, Arg2 b2) :
+        BOOST_UNORDERED_EARGS_INIT(1, 0, _),
+        BOOST_UNORDERED_EARGS_INIT(1, 1, _),
+        BOOST_UNORDERED_EARGS_INIT(1, 2, _)
+    {}
+};
+
+template <typename A0, typename A1, typename A2>
+inline emplace_args3<A0, A1, A2> create_emplace_args(
+        BOOST_FWD_REF(A0) b0,
+        BOOST_FWD_REF(A1) b1,
+        BOOST_FWD_REF(A2) b2)
+{
+    emplace_args3<A0, A1, A2> e(b0, b1, b2);
+    return e;
+}
 
 #define BOOST_UNORDERED_FWD_PARAM(z, n, a) \
     BOOST_FWD_REF(BOOST_PP_CAT(A, n)) BOOST_PP_CAT(a, n)
@@ -141,33 +230,7 @@ namespace boost { namespace unordered { namespace detail {
         return e;                                                           \
     }
 
-#define BOOST_UNORDERED_EMPLACE_ARGS1 create_emplace_args
-#define BOOST_UNORDERED_EMPLACE_ARGS2 create_emplace_args
-#define BOOST_UNORDERED_EMPLACE_ARGS3 create_emplace_args
-
-#if defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-
-#define BOOST_UNORDERED_EARGS_MEMBER(z, n, _)                               \
-    typedef BOOST_FWD_REF(BOOST_PP_CAT(A, n)) BOOST_PP_CAT(Arg, n);         \
-    BOOST_PP_CAT(Arg, n) BOOST_PP_CAT(a, n);
-
-#define BOOST_UNORDERED_EARGS_INIT(z, n, _)                                 \
-    BOOST_PP_CAT(a, n)(                                                     \
-        boost::forward<BOOST_PP_CAT(A,n)>(BOOST_PP_CAT(b, n)))
-
-#else
-
-#define BOOST_UNORDERED_EARGS_MEMBER(z, n, _)                               \
-    typedef typename boost::add_lvalue_reference<BOOST_PP_CAT(A, n)>::type  \
-        BOOST_PP_CAT(Arg, n);                                               \
-    BOOST_PP_CAT(Arg, n) BOOST_PP_CAT(a, n);
-
-#define BOOST_UNORDERED_EARGS_INIT(z, n, _)                                 \
-    BOOST_PP_CAT(a, n)(BOOST_PP_CAT(b, n))
-
-#endif
-
-BOOST_PP_REPEAT_FROM_TO(1, BOOST_UNORDERED_EMPLACE_LIMIT, BOOST_UNORDERED_EARGS,
+BOOST_PP_REPEAT_FROM_TO(4, BOOST_UNORDERED_EMPLACE_LIMIT, BOOST_UNORDERED_EARGS,
     _)
 
 #undef BOOST_UNORDERED_DEFINE_EMPLACE_ARGS
