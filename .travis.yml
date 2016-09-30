@@ -13,6 +13,7 @@ addons:
         packages:
             - libboost-tools-dev
             - libxml2-utils
+            - g++-multilib
 
 matrix:
     include:
@@ -20,10 +21,18 @@ matrix:
         env: BJAM_TOOLSET=gcc
       - compiler: gcc
         env: BJAM_TOOLSET=gcc-std11
-      - compiler: clang
-        env: BJAM_TOOLSET=clang
+      #- compiler: gcc
+      #  env: BJAM_TOOLSET=gcc-m32
+      - compiler: gcc
+        env: BJAM_TOOLSET=gcc-std11m32
+      #- compiler: clang
+      #  env: BJAM_TOOLSET=clang
       - compiler: clang
         env: BJAM_TOOLSET=clang-std11
+      - compiler: clang
+        env: BJAM_TOOLSET=clang-m32
+      #- compiler: clang
+      #  env: BJAM_TOOLSET=clang-std11m32
 
 before_script:
     - cd ${TRAVIS_BUILD_DIR}
@@ -32,8 +41,13 @@ before_script:
     - |
         echo "using gcc : : g++-4.8 -Werror --std=c++03 -fsanitize=address ;" > ~/user-config.jam
         echo "using gcc : std11 : g++-4.8 -Werror --std=c++11 -fsanitize=address ;" >> ~/user-config.jam
+        echo "using gcc : m32 : g++-4.8 -m32 -Werror -fsanitize=address ;" >> ~/user-config.jam
+        echo "using gcc : std11m32 : g++-4.8 -m32 -Werror --std=c++11 -fsanitize=address ;" >> ~/user-config.jam
         echo "using clang : : clang++ -Werror --std=c++03 -fsanitize=address ;" >> ~/user-config.jam
         echo "using clang : std11 : clang++ -Werror --std=c++11 -fsanitize=address ;" >> ~/user-config.jam
+        # sanitized=address not available for 32-bit clang on travis.
+        echo "using clang : m32 : clang++ -m32 -Werror --std=c++03 ;" >> ~/user-config.jam
+        echo "using clang : std11m32 : clang++ -m32 -Werror --std=c++11 ;" >> ~/user-config.jam
     - cat ~/user-config.jam
     - wget -O boost_1_61_0.tar.bz2 https://sourceforge.net/projects/boost/files/boost/1.61.0/boost_1_61_0.tar.bz2/download
     - tar -xjf boost_1_61_0.tar.bz2
