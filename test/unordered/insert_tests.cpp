@@ -443,17 +443,17 @@ void default_emplace_tests(X*, test::random_generator)
     x.emplace();
     BOOST_TEST(x.size() == 1);
     x.emplace();
-    BOOST_TEST(x.size() == is_unique ? 1: 2);
+    BOOST_TEST(x.size() == (is_unique ? 1: 2));
     x.emplace();
-    BOOST_TEST(x.size() == is_unique ? 1: 3);
+    BOOST_TEST(x.size() == (is_unique ? 1: 3));
     
     typename X::value_type y;
-    BOOST_TEST(x.count(test::get_key<X>(y)) ==  is_unique ? 1: 3);
+    BOOST_TEST(x.count(test::get_key<X>(y)) == (is_unique ? 1: 3));
     BOOST_TEST(*x.equal_range(test::get_key<X>(y)).first == y);
 
     x.emplace(y);
-    BOOST_TEST(x.size() ==  is_unique ? 1: 4);
-    BOOST_TEST(x.count(test::get_key<X>(y)) ==  is_unique ? 1: 4);
+    BOOST_TEST(x.size() == (is_unique ? 1: 4));
+    BOOST_TEST(x.count(test::get_key<X>(y)) == (is_unique ? 1: 4));
     BOOST_TEST(*x.equal_range(test::get_key<X>(y)).first == y);
     
     x.clear();
@@ -461,9 +461,9 @@ void default_emplace_tests(X*, test::random_generator)
     x.emplace(y);
     BOOST_TEST(x.size() == 1);
     x.emplace(y);
-    BOOST_TEST(x.size() == is_unique ? 1: 2);
+    BOOST_TEST(x.size() == (is_unique ? 1: 2));
     
-    BOOST_TEST(x.count(test::get_key<X>(y)) == is_unique ? 1: 2);
+    BOOST_TEST(x.count(test::get_key<X>(y)) == (is_unique ? 1: 2));
     BOOST_TEST(*x.equal_range(test::get_key<X>(y)).first == y);
 }
 
