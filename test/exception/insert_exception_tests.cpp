@@ -133,7 +133,7 @@ struct insert_test_rehash1 : public insert_test_base<T>
         // TODO: This doesn't really work is bucket_count is 0
         size_type bucket_count = x.bucket_count();
         size_type initial_elements = static_cast<size_type>(
-            ceil(bucket_count * (double) x.max_load_factor()) - 1);
+            ceil((double) bucket_count * (double) x.max_load_factor()) - 1);
         BOOST_TEST(initial_elements < this->values.size());
         x.insert(this->values.begin(),
                 boost::next(this->values.begin(), initial_elements));
@@ -202,7 +202,7 @@ struct insert_test_rehash3 : public insert_test_base<T>
 
         original_bucket_count = x.bucket_count();
         rehash_bucket_count = static_cast<size_type>(
-            ceil(original_bucket_count * (double) x.max_load_factor())) - 1;
+            ceil((double) original_bucket_count * (double) x.max_load_factor())) - 1;
 
         size_type initial_elements =
             rehash_bucket_count > 5 ? rehash_bucket_count - 5 : 1;
