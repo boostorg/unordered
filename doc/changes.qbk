@@ -282,5 +282,16 @@ C++11 support has resulted in some breaking changes:
 [h2 Boost 1.63.0]
 
 * Check hint iterator in `insert`/`emplace_hint`.
+* Fix some warnings, mostly in the tests.
+* Manually write out `emplace_args` for small numbers of arguments -
+  should make template error messages a little more bearable.
+* Remove superfluous use of `boost::forward` in emplace arguments,
+  which fixes emplacing string literals in old versions of Visual C++.
+* Fix an exception safety issue in assignment. If bucket allocation
+  throws an exception, it can overwrite the hash and equality functions while
+  leaving the existing elements in place. This would mean that the function
+  objects wouldn't match the container elements, so elements might be in the
+  wrong bucket and equivalent elements would be incorrectly handled.
+* Various reference documentation improvements.
 
 [endsect]
