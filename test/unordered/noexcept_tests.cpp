@@ -70,8 +70,10 @@ namespace noexcept_tests
 
         hash_nothrow_move() { test_throw("Constructor"); }
         hash_nothrow_move(hash_nothrow_move const&) { test_throw("Copy"); }
-        hash_nothrow_move& operator=(hash_nothrow_move const&)
+        hash_nothrow_move& operator=(BOOST_COPY_ASSIGN_REF(hash_nothrow_move))
         { test_throw("Assign"); return *this; }
+        hash_nothrow_move& operator=(BOOST_RV_REF(hash_nothrow_move))
+        { test_throw("Move Assign"); return *this; }
         std::size_t operator()(int x) const
         { test_throw("Operator"); return static_cast<base const&>(*this)(x); }
     };
@@ -87,8 +89,10 @@ namespace noexcept_tests
         equal_to_nothrow_move() { test_throw("Constructor"); }
         equal_to_nothrow_move(equal_to_nothrow_move const&)
         { test_throw("Copy"); }
-        equal_to_nothrow_move& operator=(equal_to_nothrow_move const&)
+        equal_to_nothrow_move& operator=(BOOST_COPY_ASSIGN_REF(equal_to_nothrow_move))
         { test_throw("Assign"); return *this; }
+        equal_to_nothrow_move& operator=(BOOST_RV_REF(equal_to_nothrow_move))
+        { test_throw("Move Assign"); return *this; }
         std::size_t operator()(int x, int y) const
         { test_throw("Operator"); return static_cast<base const&>(*this)(x, y); }
     };
