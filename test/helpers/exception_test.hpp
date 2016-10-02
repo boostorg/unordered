@@ -111,16 +111,28 @@ namespace test {
         exceptions_enable(exceptions_enable const&);
 
         bool old_value_;
+        bool released_;
     public:
         exceptions_enable(bool enable)
-            : old_value_(exceptions_enabled)
+            : old_value_(exceptions_enabled), released_(false)
         {
             exceptions_enabled = enable;
         }
 
         ~exceptions_enable()
         {
-            exceptions_enabled = old_value_;
+            if (!released_) {
+                exceptions_enabled = old_value_;
+                released_ = true;
+            }
+        }
+
+        void release()
+        {
+            if (!released_) {
+                exceptions_enabled = old_value_;
+                released_ = true;
+            }
         }
     };
 
