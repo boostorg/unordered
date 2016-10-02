@@ -246,7 +246,12 @@ EOL;
               <default>allocator_type()</default>
             </parameter>
             <description>
-              <para>Constructs an empty container with at least n buckets, using hf as the hash function, eq as the key equality predicate, a as the allocator and a maximum load factor of 1.0 and inserts the elements from [f, l) into it.</para>
+              <para>Constructs an empty container with at least <code>n</code> buckets,
+              using <code>hf</code> as the hash function,
+              <code>eq</code> as the key equality predicate,
+              <code>a</code> as the allocator and a maximum load factor of 1.0
+              and inserts the elements from [f, l) into it.
+              </para>
             </description>
             <requires>
               <para>If the defaults are used, <code>hasher</code>, <code>key_equal</code> and
@@ -309,6 +314,168 @@ EOL;
             <description>
                 <para>Constructs an container, copying <code>x</code>'s contained elements, hash function, predicate, maximum load factor, but using allocator <code>a</code>.</para>
             </description>
+          </constructor>
+          <constructor>
+            <parameter name="x">
+              <paramtype><?php echo $name; ?> &amp;&amp;</paramtype>
+            </parameter>
+            <parameter name="a">
+              <paramtype>Allocator const&amp;</paramtype>
+            </parameter>
+            <description>
+              <para>Construct a container moving <code>x</code>'s contained elements, and having the hash function, predicate and maximum load factor, but using allocate <code>a</code>.</para>
+            </description>
+            <notes>
+              <para>This is implemented using Boost.Move.</para>
+            </notes>
+            <requires>
+              <para>
+                <code>value_type</code> is move insertable.
+              </para>
+            </requires>
+          </constructor>
+          <constructor>
+            <parameter name="il">
+              <paramtype>initializer_list&lt;value_type&gt;</paramtype>
+            </parameter>
+            <parameter name="n">
+              <paramtype>size_type</paramtype>
+              <default><emphasis>implementation-defined</emphasis></default>
+            </parameter>
+            <parameter name="hf">
+              <paramtype>hasher const&amp;</paramtype>
+              <default>hasher()</default>
+            </parameter>
+            <parameter name="eq">
+              <paramtype>key_equal const&amp;</paramtype>
+              <default>key_equal()</default>
+            </parameter>
+            <parameter name="a">
+              <paramtype>allocator_type const&amp;</paramtype>
+              <default>allocator_type()</default>
+            </parameter>
+            <description>
+              <para>Constructs an empty container with at least <code>n</code> buckets,
+                using <code>hf</code> as the hash function,
+                <code>eq</code> as the key equality predicate,
+                <code>a</code> as the allocator and a maximum load factor of 1.0
+                and inserts the elements from <code>il</code> into it.
+              </para>
+            </description>
+            <requires>
+              <para>If the defaults are used, <code>hasher</code>, <code>key_equal</code> and
+                <code>allocator_type</code> need to be <code>DefaultConstructible</code>.
+              </para>
+            </requires>
+          </constructor>
+          <constructor>
+            <parameter name="n">
+              <paramtype>size_type</paramtype>
+            </parameter>
+            <parameter name="a">
+              <paramtype>allocator_type const&amp;</paramtype>
+            </parameter>
+            <postconditions>
+              <code><methodname>size</methodname>() == 0</code>
+            </postconditions>
+            <description>
+              <para>Constructs an empty container with at least <code>n</code> buckets,
+              using <code>hf</code> as the hash function,
+              the default hash function and key equality predicate,
+              <code>a</code> as the allocator and a maximum load factor of 1.0.</para>
+            </description>
+            <requires>
+              <para><code>hasher</code> and <code>key_equal</code> need to be <code>DefaultConstructible</code>.
+              </para>
+            </requires>
+          </constructor>
+          <constructor>
+            <parameter name="n">
+              <paramtype>size_type</paramtype>
+            </parameter>
+            <parameter name="hf">
+              <paramtype>hasher const&amp;</paramtype>
+            </parameter>
+            <parameter name="a">
+              <paramtype>allocator_type const&amp;</paramtype>
+            </parameter>
+            <postconditions>
+              <code><methodname>size</methodname>() == 0</code>
+            </postconditions>
+            <description>
+              <para>Constructs an empty container with at least <code>n</code> buckets,
+              using <code>hf</code> as the hash function,
+              the default key equality predicate,
+              <code>a</code> as the allocator and a maximum load factor of 1.0.</para>
+            </description>
+            <requires>
+              <para><code>key_equal</code> needs to be <code>DefaultConstructible</code>.
+              </para>
+            </requires>
+          </constructor>
+          <constructor>
+            <template>
+              <template-type-parameter name="InputIterator">
+              </template-type-parameter>
+            </template>
+            <parameter name="f">
+              <paramtype>InputIterator</paramtype>
+            </parameter>
+            <parameter name="l">
+              <paramtype>InputIterator</paramtype>
+            </parameter>
+            <parameter name="n">
+              <paramtype>size_type</paramtype>
+            </parameter>
+            <parameter name="a">
+              <paramtype>allocator_type const&amp;</paramtype>
+            </parameter>
+            <description>
+              <para>Constructs an empty container with at least <code>n</code> buckets,
+              using  <code>a</code> as the allocator, with the
+              default hash function and key equality predicate
+              and a maximum load factor of 1.0
+              and inserts the elements from [f, l) into it.
+              </para>
+            </description>
+            <requires>
+              <para><code>hasher</code>, <code>key_equal</code> need to be <code>DefaultConstructible</code>.
+              </para>
+            </requires>
+          </constructor>
+          <constructor>
+            <template>
+              <template-type-parameter name="InputIterator">
+              </template-type-parameter>
+            </template>
+            <parameter name="f">
+              <paramtype>InputIterator</paramtype>
+            </parameter>
+            <parameter name="l">
+              <paramtype>InputIterator</paramtype>
+            </parameter>
+            <parameter name="n">
+              <paramtype>size_type</paramtype>
+            </parameter>
+            <parameter name="hf">
+              <paramtype>hasher const&amp;</paramtype>
+            </parameter>
+            <parameter name="a">
+              <paramtype>allocator_type const&amp;</paramtype>
+            </parameter>
+            <description>
+              <para>Constructs an empty container with at least <code>n</code> buckets,
+              using <code>hf</code> as the hash function,
+              <code>a</code> as the allocator, with the
+              default key equality predicate
+              and a maximum load factor of 1.0
+              and inserts the elements from [f, l) into it.
+              </para>
+            </description>
+            <requires>
+              <para><code>key_equal</code> needs to be <code>DefaultConstructible</code>.
+              </para>
+            </requires>
           </constructor>
           <destructor>
             <notes>

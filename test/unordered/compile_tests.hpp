@@ -111,6 +111,7 @@ void container_test(X& r, T const&)
     sink(X(a));
     X u2(a);
     X u3 = a;
+    X u4(rvalue(a_const));
 
     a.swap(b);
     boost::swap(a, b);
@@ -120,12 +121,24 @@ void container_test(X& r, T const&)
 
     typedef BOOST_DEDUCED_TYPENAME X::allocator_type allocator_type;
     test::check_return_type<allocator_type>::equals(a_const.get_allocator());
+
+    allocator_type m = a.get_allocator();
+    sink(X(m));
+    X c(m);
+    sink(X(a_const, m));
+    X c2(a_const, m);
+    sink(X(rvalue(a_const), m));
+    X c3(rvalue(a_const), m);
     
     // Avoid unused variable warnings:
 
     sink(u);
     sink(u2);
     sink(u3);
+    sink(u4);
+    sink(c);
+    sink(c2);
+    sink(c3);
 }
 
 template <class X>
@@ -449,14 +462,15 @@ void unordered_copyable_test(X& x, Key& k, T& t, Hash& hf, Pred& eq)
 
     typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
     typedef BOOST_DEDUCED_TYPENAME X::const_iterator const_iterator;
+    typedef BOOST_DEDUCED_TYPENAME X::allocator_type allocator_type;
 
     X a;
+    allocator_type m = a.get_allocator();
 
     BOOST_DEDUCED_TYPENAME X::value_type* i = 0;
     BOOST_DEDUCED_TYPENAME X::value_type* j = 0;
 
     X(i, j, 10, hf, eq);
-
     X a5(i, j, 10, hf, eq);
     X(i, j, 10, hf);
     X a6(i, j, 10, hf);
@@ -464,6 +478,22 @@ void unordered_copyable_test(X& x, Key& k, T& t, Hash& hf, Pred& eq)
     X a7(i, j, 10);
     X(i, j);
     X a8(i, j);
+
+    X(i, j, 10, hf, m);
+    X(i, j, 10, m);
+    //X(i, j, m);
+
+#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
+    std::size_t min_buckets = 10;
+    X({t});
+    X({t}, min_buckets);
+    X({t}, min_buckets, hf);
+    X({t}, min_buckets, hf, eq);
+    //X({t}, m);
+    X({t}, min_buckets, m);
+    X({t}, min_buckets, hf, m);
+    X({t}, min_buckets, hf, eq, m);
+#endif
 
     X const b;
     sink(X(b));
