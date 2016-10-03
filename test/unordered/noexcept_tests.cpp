@@ -84,9 +84,11 @@ namespace noexcept_tests
 
         // Copied from boost::is_nothrow_move_constructible implementation
         // to make sure this does actually detect it when expected.
-#ifdef BOOST_IS_NOTHROW_MOVE_CONSTRUCT
-        BOOST_TEST(have_is_nothrow_move);
-#elif !defined(BOOST_NO_CXX11_NOEXCEPT) && !defined(BOOST_NO_SFINAE_EXPR) && !BOOST_WORKAROUND(BOOST_GCC_VERSION, < 40800)
+        //
+        // The type trait is also available when BOOST_IS_NOTHROW_MOVE_CONSTRUCT
+        // is defined (for some versions of Visual C++?) but detects 'throw()',
+        // not noexcept.
+#if !defined(BOOST_NO_CXX11_NOEXCEPT) && !defined(BOOST_NO_SFINAE_EXPR) && !BOOST_WORKAROUND(BOOST_GCC_VERSION, < 40800)
         BOOST_TEST(have_is_nothrow_move);
 #endif
     }
