@@ -18,11 +18,17 @@
 #include "../helpers/invariants.hpp"
 #include <vector>
 #include <iostream>
+#include <cstdlib>
 
 namespace erase_tests
 {
 
 test::seed_t initialize_seed(85638);
+
+int random_value(int max) {
+    using namespace std;
+    return rand() % max;
+}
 
 template <class Container>
 void erase_tests1(Container*, test::random_generator generator)
@@ -83,8 +89,7 @@ void erase_tests1(Container*, test::random_generator generator)
         int iterations = 0;
         while(size > 0 && !x.empty())
         {
-            using namespace std;
-            int index = rand() % (int) x.size();
+            int index = random_value((int) x.size());
             c_iterator prev, pos, next;
             if(index == 0) {
                 prev = pos = x.begin();
@@ -157,8 +162,8 @@ void erase_tests1(Container*, test::random_generator generator)
             iterators.push_back(x.cend());
 
             while(iterators.size() > 1) {
-                int start = rand() % (int) iterators.size();
-                int length = rand() % (int) (iterators.size() - start);
+                int start = random_value((int) iterators.size());
+                int length = random_value((int) (iterators.size() - start));
                 x.erase(iterators[start], iterators[start + length]);
                 iterators.erase(
                         boost::next(iterators.begin(), start),
@@ -211,8 +216,7 @@ void erase_tests1(Container*, test::random_generator generator)
         int iterations = 0;
         while(size > 0 && !x.empty())
         {
-            using namespace std;
-            int index = rand() % (int) x.size();
+            int index = random_value((int) x.size());
             BOOST_DEDUCED_TYPENAME Container::const_iterator prev, pos, next;
             if(index == 0) {
                 prev = pos = x.begin();

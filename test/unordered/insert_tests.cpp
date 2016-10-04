@@ -24,6 +24,11 @@ namespace insert_tests {
     
 test::seed_t initialize_seed(243432);
 
+int random_value(int max) {
+    using namespace std;
+    return rand() % max;
+}
+
 template <class X>
 void unique_insert_tests1(X*, test::random_generator generator)
 {
@@ -314,7 +319,7 @@ void insert_tests2(X*, test::random_generator generator)
 
                 BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator
                     next = it;
-                for (int j = rand() % 20; j > 0; ++j) {
+                for (int j = random_value(20); j > 0; ++j) {
                     ++next;
                     if (next == v.end()) { break; }
                 }
