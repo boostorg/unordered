@@ -627,7 +627,7 @@ struct initialize_from_two_ints
 
     friend std::size_t hash_value(initialize_from_two_ints const& x)
     {
-        return x.a + x.b;
+        return static_cast<std::size_t>(x.a + x.b);
     }
 
     bool operator==(initialize_from_two_ints const& x) const
