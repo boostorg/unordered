@@ -49,11 +49,12 @@ before_script:
         echo "using clang : m32 : clang++ -m32 -Werror --std=c++03 ;" >> ~/user-config.jam
         echo "using clang : std11m32 : clang++ -m32 -Werror --std=c++11 ;" >> ~/user-config.jam
     - cat ~/user-config.jam
-    - wget -O boost_1_61_0.tar.bz2 https://sourceforge.net/projects/boost/files/boost/1.61.0/boost_1_61_0.tar.bz2/download
-    - tar -xjf boost_1_61_0.tar.bz2
-    - rm -r boost_1_61_0/boost/unordered
+    - wget -O boost.tar.bz2 https://sourceforge.net/projects/boost/files/boost/snapshots/master/boost_1_62_0.tar.bz2/download
+    - tar -xjf boost.tar.bz2
+    - mv boost_1_62_0 boost
+    - rm -r boost/boost/unordered
 
 script:
     - cd ${TRAVIS_BUILD_DIR}/test
-    - bjam ${BJAM_TOOLSET} include=${HOME}/boost_1_61_0 include=${TRAVIS_BUILD_DIR}/include
+    - bjam ${BJAM_TOOLSET} include=${HOME}/boost include=${TRAVIS_BUILD_DIR}/include
     - xmllint --noout ${TRAVIS_BUILD_DIR}/doc/ref.xml
