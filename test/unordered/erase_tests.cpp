@@ -25,9 +25,9 @@ namespace erase_tests
 
 test::seed_t initialize_seed(85638);
 
-int random_value(int max) {
+std::size_t random_value(std::size_t max) {
     using namespace std;
-    return rand() % max;
+    return static_cast<std::size_t>(rand()) % max;
 }
 
 template <class Container>
@@ -35,6 +35,7 @@ void erase_tests1(Container*, test::random_generator generator)
 {
     typedef BOOST_DEDUCED_TYPENAME Container::iterator iterator;
     typedef BOOST_DEDUCED_TYPENAME Container::const_iterator c_iterator;
+    typedef BOOST_DEDUCED_TYPENAME Container::difference_type difference_type;
 
     std::cerr<<"Erase by key.\n";
     {
@@ -89,7 +90,7 @@ void erase_tests1(Container*, test::random_generator generator)
         int iterations = 0;
         while(size > 0 && !x.empty())
         {
-            int index = random_value((int) x.size());
+            std::size_t index = random_value(x.size());
             c_iterator prev, pos, next;
             if(index == 0) {
                 prev = pos = x.begin();
@@ -162,12 +163,14 @@ void erase_tests1(Container*, test::random_generator generator)
             iterators.push_back(x.cend());
 
             while(iterators.size() > 1) {
-                int start = random_value((int) iterators.size());
-                int length = random_value((int) (iterators.size() - start));
+                std::size_t start = random_value(iterators.size());
+                std::size_t length = random_value(iterators.size() - start);
                 x.erase(iterators[start], iterators[start + length]);
                 iterators.erase(
-                        boost::next(iterators.begin(), start),
-                        boost::next(iterators.begin(), start + length));
+                        boost::next(iterators.begin(),
+                            static_cast<difference_type>(start)),
+                        boost::next(iterators.begin(),
+                            static_cast<difference_type>(start + length)));
 
                 BOOST_TEST(x.size() == iterators.size() - 1);
                 BOOST_DEDUCED_TYPENAME std::vector<c_iterator>::const_iterator
@@ -216,7 +219,7 @@ void erase_tests1(Container*, test::random_generator generator)
         int iterations = 0;
         while(size > 0 && !x.empty())
         {
-            int index = random_value((int) x.size());
+            std::size_t index = random_value(x.size());
             BOOST_DEDUCED_TYPENAME Container::const_iterator prev, pos, next;
             if(index == 0) {
                 prev = pos = x.begin();

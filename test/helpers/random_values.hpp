@@ -105,13 +105,13 @@ namespace test
     {
         random_values() {}
 
-        explicit random_values(int count, test::random_generator const& generator =
+        explicit random_values(std::size_t count, test::random_generator const& generator =
             test::default_generator)
         {
             fill(count, generator);
         }
 
-        void fill(int count, test::random_generator const& generator =
+        void fill(std::size_t count, test::random_generator const& generator =
                 test::default_generator)
         {
             test::unordered_generator<X> gen(generator);

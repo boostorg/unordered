@@ -43,19 +43,19 @@ void write_container(Container const& x)
 // Make everything collide - for testing erase in a single bucket.
 struct collision_hash
 {
-    int operator()(int) const { return 0; }
+    std::size_t operator()(int) const { return 0; }
 };
 
 // For testing erase in 2 buckets.
 struct collision2_hash
 {
-    int operator()(int x) const { return x & 1; }
+    std::size_t operator()(int x) const { return static_cast<std::size_t>(x & 1); }
 };
 
 // For testing erase in lots of buckets.
 struct collision3_hash
 {
-    int operator()(int x) const { return x; }
+    std::size_t operator()(int x) const { return static_cast<std::size_t>(x); }
 };
 
 typedef boost::unordered_multimap<int, int,

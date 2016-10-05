@@ -89,8 +89,9 @@ void container_test(X& r, T const&)
 
     // size_type can represent any non-negative value type of difference_type
     // I'm not sure about either of these tests...
-    size_type max_diff((std::numeric_limits<difference_type>::max)());
-    difference_type converted_diff(max_diff);
+    size_type max_diff = static_cast<size_type>(
+            (std::numeric_limits<difference_type>::max)());
+    difference_type converted_diff(static_cast<difference_type>(max_diff));
     BOOST_TEST((std::numeric_limits<difference_type>::max)()
             == converted_diff);
 

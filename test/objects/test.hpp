@@ -182,29 +182,42 @@ namespace test
         explicit hash(int t = 0) : type_(t) {}
 
         std::size_t operator()(object const& x) const {
+            int result;
             switch(type_) {
             case 1:
-                return x.tag1_;
+                result = x.tag1_;
             case 2:
-                return x.tag2_;
+                result = x.tag2_;
             default:
-                return x.tag1_ + x.tag2_; 
+                result = x.tag1_ + x.tag2_; 
             }
+            return static_cast<std::size_t>(result);
         }
 
         std::size_t operator()(movable const& x) const {
+            int result;
             switch(type_) {
             case 1:
-                return x.tag1_;
+                result = x.tag1_;
             case 2:
-                return x.tag2_;
+                result = x.tag2_;
             default:
-                return x.tag1_ + x.tag2_; 
+                result = x.tag1_ + x.tag2_; 
             }
+            return static_cast<std::size_t>(result);
         }
 
         std::size_t operator()(int x) const {
-            return x;
+            int result;
+            switch(type_) {
+            case 1:
+                result = x;
+            case 2:
+                result = x * 7;
+            default:
+                result = x * 256; 
+            }
+            return static_cast<std::size_t>(result);
         }
 
         friend bool operator==(hash const& x1, hash const& x2) {

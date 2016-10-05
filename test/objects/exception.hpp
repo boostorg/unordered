@@ -146,14 +146,16 @@ namespace exception
                 UNORDERED_EPOINT("Mock hash function.");
             }
 
+            int result;
             switch(tag_) {
             case 1:
-                return x.tag1_;
+                result = x.tag1_;
             case 2:
-                return x.tag2_;
+                result = x.tag2_;
             default:
-                return x.tag1_ + x.tag2_; 
+                result = x.tag1_ + x.tag2_; 
             }
+            return static_cast<std::size_t>(result);
         }
 
         friend bool operator==(hash const& x1, hash const& x2) {

@@ -139,7 +139,7 @@ void reserve_test1(X*, test::random_generator generator)
 {
     for (int random_mlf = 0; random_mlf < 2; ++random_mlf)
     {
-        for (int i = 1; i < 2000; i += i < 50 ? 1 : 13)
+        for (std::size_t i = 1; i < 2000; i += i < 50 ? 1 : 13)
         {
             test::random_values<X> v(i, generator);
 
@@ -171,7 +171,7 @@ void reserve_test2(X*, test::random_generator generator)
 {
     for (int random_mlf = 0; random_mlf < 2; ++random_mlf)
     {
-        for (int i = 0; i < 2000; i += i < 50 ? 1 : 13)
+        for (std::size_t i = 0; i < 2000; i += i < 50 ? 1 : 13)
         {
             test::random_values<X> v(i, generator);
 

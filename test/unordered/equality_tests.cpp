@@ -25,9 +25,11 @@ namespace equality_tests
             return x % 1000 == y % 1000;
         }
 
-        int operator()(int x) const
+        std::size_t operator()(int x) const
         {
-            return alt_hash_ ? x % 250 : (x + 5) % 250;
+            return alt_hash_ ?
+                static_cast<std::size_t>(x % 250) :
+                static_cast<std::size_t>((x + 5) % 250);
         }
     };
 

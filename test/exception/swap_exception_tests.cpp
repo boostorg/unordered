@@ -17,7 +17,7 @@ template <class T>
 struct self_swap_base : public test::exception_base
 {
     test::random_values<T> values;
-    self_swap_base(int count = 0) : values(count) {}
+    self_swap_base(std::size_t count = 0) : values(count) {}
 
     typedef T data_type;
     T init() const { return T(values.begin(), values.end()); }

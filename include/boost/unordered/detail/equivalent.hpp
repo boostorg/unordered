@@ -490,7 +490,7 @@ namespace boost { namespace unordered { namespace detail {
         {
             if(i == j) return;
 
-            std::size_t distance = std::distance(i, j);
+            std::size_t distance = static_cast<std::size_t>(std::distance(i, j));
             if(distance == 1) {
                 emplace_impl(
                     boost::unordered::detail::func::construct_value(
