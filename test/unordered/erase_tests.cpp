@@ -25,11 +25,6 @@ namespace erase_tests
 
 test::seed_t initialize_seed(85638);
 
-std::size_t random_value(std::size_t max) {
-    using namespace std;
-    return static_cast<std::size_t>(rand()) % max;
-}
-
 template <class Container>
 void erase_tests1(Container*, test::random_generator generator)
 {
@@ -90,7 +85,7 @@ void erase_tests1(Container*, test::random_generator generator)
         int iterations = 0;
         while(size > 0 && !x.empty())
         {
-            std::size_t index = random_value(x.size());
+            std::size_t index = test::random_value(x.size());
             c_iterator prev, pos, next;
             if(index == 0) {
                 prev = pos = x.begin();
@@ -163,8 +158,8 @@ void erase_tests1(Container*, test::random_generator generator)
             iterators.push_back(x.cend());
 
             while(iterators.size() > 1) {
-                std::size_t start = random_value(iterators.size());
-                std::size_t length = random_value(iterators.size() - start);
+                std::size_t start = test::random_value(iterators.size());
+                std::size_t length = test::random_value(iterators.size() - start);
                 x.erase(iterators[start], iterators[start + length]);
                 iterators.erase(
                         boost::next(iterators.begin(),
@@ -219,7 +214,7 @@ void erase_tests1(Container*, test::random_generator generator)
         int iterations = 0;
         while(size > 0 && !x.empty())
         {
-            std::size_t index = random_value(x.size());
+            std::size_t index = test::random_value(x.size());
             BOOST_DEDUCED_TYPENAME Container::const_iterator prev, pos, next;
             if(index == 0) {
                 prev = pos = x.begin();
@@ -278,10 +273,11 @@ boost::unordered_multimap<test::object, test::object,
 
 using test::default_generator;
 using test::generate_collisions;
+using test::limited_range;
 
 UNORDERED_TEST(erase_tests1,
     ((test_set)(test_multiset)(test_map)(test_multimap))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 
 }

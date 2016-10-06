@@ -155,14 +155,15 @@ boost::unordered_multimap<test::object, test::object,
 
 using test::default_generator;
 using test::generate_collisions;
+using test::limited_range;
 
 UNORDERED_TEST(find_tests1,
     ((test_set)(test_multiset)(test_map)(test_multimap))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 UNORDERED_TEST(find_compatible_keys_test,
     ((test_set)(test_multiset)(test_map)(test_multimap))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 
 }

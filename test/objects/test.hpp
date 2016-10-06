@@ -25,9 +25,9 @@ namespace test
     class equal_to;
     template <class T> class allocator1;
     template <class T> class allocator2;
-    object generate(object const*);
-    movable generate(movable const*);
-    implicitly_convertible generate(implicitly_convertible const*);
+    object generate(object const*, random_generator);
+    movable generate(movable const*, random_generator);
+    implicitly_convertible generate(implicitly_convertible const*, random_generator);
 
     inline void ignore_variable(void const*) {}
 
@@ -58,9 +58,9 @@ namespace test
                 (x1.tag1_ == x2.tag1_ && x1.tag2_ < x2.tag2_);
         }
 
-        friend object generate(object const*) {
+        friend object generate(object const*, random_generator g) {
             int* x = 0;
-            return object(generate(x), generate(x));
+            return object(generate(x, g), generate(x, g));
         }
 
         friend std::ostream& operator<<(std::ostream& out, object const& o)
@@ -133,9 +133,9 @@ namespace test
                 (x1.tag1_ == x2.tag1_ && x1.tag2_ < x2.tag2_);
         }
 
-        friend movable generate(movable const*) {
+        friend movable generate(movable const*, random_generator g) {
             int* x = 0;
-            return movable(generate(x), generate(x));
+            return movable(generate(x, g), generate(x, g));
         }
 
         friend std::ostream& operator<<(std::ostream& out, movable const& o)
@@ -163,9 +163,9 @@ namespace test
             return movable(tag1_, tag2_);
         }
 
-        friend implicitly_convertible generate(implicitly_convertible const*) {
+        friend implicitly_convertible generate(implicitly_convertible const*, random_generator g) {
             int* x = 0;
-            return implicitly_convertible(generate(x), generate(x));
+            return implicitly_convertible(generate(x, g), generate(x, g));
         }
 
         friend std::ostream& operator<<(std::ostream& out, implicitly_convertible const& o)

@@ -24,11 +24,6 @@ namespace insert_tests {
     
 test::seed_t initialize_seed(243432);
 
-std::size_t random_value(std::size_t max) {
-    using namespace std;
-    return static_cast<std::size_t>(rand()) % max;
-}
-
 template <class X>
 void unique_insert_tests1(X*, test::random_generator generator)
 {
@@ -319,7 +314,7 @@ void insert_tests2(X*, test::random_generator generator)
 
                 BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator
                     next = it;
-                for (std::size_t j = random_value(20); j > 0; ++j) {
+                for (std::size_t j = test::random_value(20); j > 0; ++j) {
                     ++next;
                     if (next == v.end()) { break; }
                 }
@@ -566,57 +561,58 @@ boost::unordered_multimap<test::object, test::object,
 
 using test::default_generator;
 using test::generate_collisions;
+using test::limited_range;
 
 UNORDERED_TEST(unique_insert_tests1,
     ((test_set_std_alloc)(test_set)(test_map))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 
 UNORDERED_TEST(equivalent_insert_tests1,
     ((test_multimap_std_alloc)(test_multiset)(test_multimap))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 
 UNORDERED_TEST(insert_tests2,
     ((test_multimap_std_alloc)(test_set)(test_multiset)(test_map)(test_multimap))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 
 UNORDERED_TEST(unique_emplace_tests1,
     ((test_set_std_alloc)(test_set)(test_map))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 
 UNORDERED_TEST(equivalent_emplace_tests1,
     ((test_multimap_std_alloc)(test_multiset)(test_multimap))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 
 UNORDERED_TEST(move_emplace_tests,
     ((test_set_std_alloc)(test_multimap_std_alloc)(test_set)(test_map)
         (test_multiset)(test_multimap))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 
 UNORDERED_TEST(default_emplace_tests,
     ((test_set_std_alloc)(test_multimap_std_alloc)(test_set)(test_map)
         (test_multiset)(test_multimap))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 
 UNORDERED_TEST(map_tests,
     ((test_map))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 
 UNORDERED_TEST(map_insert_range_test1,
     ((test_multimap_std_alloc)(test_map)(test_multimap))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 
 UNORDERED_TEST(map_insert_range_test2,
     ((test_multimap_std_alloc)(test_map)(test_multimap))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)

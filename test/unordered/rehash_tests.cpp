@@ -208,21 +208,22 @@ boost::unordered_multimap<int, int>* int_multimap_ptr;
 
 using test::default_generator;
 using test::generate_collisions;
+using test::limited_range;
 
 UNORDERED_TEST(rehash_empty_test1,
     ((int_set_ptr)(test_multiset_ptr)(test_map_ptr)(int_multimap_ptr))
 )
 UNORDERED_TEST(rehash_empty_test2,
     ((int_set_ptr)(test_multiset_ptr)(test_map_ptr)(int_multimap_ptr))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 UNORDERED_TEST(rehash_empty_test3,
     ((int_set_ptr)(test_multiset_ptr)(test_map_ptr)(int_multimap_ptr))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 UNORDERED_TEST(rehash_test1,
     ((int_set_ptr)(test_multiset_ptr)(test_map_ptr)(int_multimap_ptr))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 UNORDERED_TEST(reserve_empty_test1,
     ((int_set_ptr)(test_multiset_ptr)(test_map_ptr)(int_multimap_ptr))
@@ -232,11 +233,11 @@ UNORDERED_TEST(reserve_empty_test2,
 )
 UNORDERED_TEST(reserve_test1,
     ((int_set_ptr)(test_multiset_ptr)(test_map_ptr)(int_multimap_ptr))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 UNORDERED_TEST(reserve_test2,
     ((int_set_ptr)(test_multiset_ptr)(test_map_ptr)(int_multimap_ptr))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 
 }

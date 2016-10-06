@@ -14,11 +14,6 @@
 
 namespace test
 {
-    typedef enum {
-        default_generator,
-        generate_collisions
-    } random_generator;
-
     template <class X>
     struct unordered_generator_set
     {
@@ -32,16 +27,15 @@ namespace test
         template <class T>
         void fill(T& x, std::size_t len) {
             value_type* value_ptr = 0;
-            int* int_ptr = 0;
             len += x.size();
 
             for (std::size_t i = 0; i < len; ++i) {
-                value_type value = generate(value_ptr);
+                value_type value = generate(value_ptr, type_);
 
-                int count = type_ == generate_collisions ?
-                    1 + (generate(int_ptr) % 5) : 1;
+                std::size_t count = type_ == generate_collisions ?
+                    random_value(5) + 1 : 1;
 
-                for(int j = 0; j < count; ++j) {
+                for(std::size_t j = 0; j < count; ++j) {
                     x.push_back(value);
                 }
             }
@@ -63,17 +57,16 @@ namespace test
         void fill(T& x, std::size_t len) {
             key_type* key_ptr = 0;
             mapped_type* mapped_ptr = 0;
-            int* int_ptr = 0;
 
             for (std::size_t i = 0; i < len; ++i) {
-                key_type key = generate(key_ptr);
+                key_type key = generate(key_ptr, type_);
 
-                int count = type_ == generate_collisions ?
-                    1 + (generate(int_ptr) % 5) : 1;
+                std::size_t count = type_ == generate_collisions ?
+                    random_value(5) + 1 : 1;
 
-                for(int j = 0; j < count; ++j) {
+                for(std::size_t j = 0; j < count; ++j) {
                     x.push_back(std::pair<key_type const, mapped_type>(
-                        key, generate(mapped_ptr)));
+                        key, generate(mapped_ptr, type_)));
                 }
             }
         }
