@@ -186,8 +186,10 @@ namespace test
             switch(type_) {
             case 1:
                 result = x.tag1_;
+                break;
             case 2:
                 result = x.tag2_;
+                break;
             default:
                 result = x.tag1_ + x.tag2_; 
             }
@@ -199,8 +201,10 @@ namespace test
             switch(type_) {
             case 1:
                 result = x.tag1_;
+                break;
             case 2:
                 result = x.tag2_;
+                break;
             default:
                 result = x.tag1_ + x.tag2_; 
             }
@@ -212,8 +216,10 @@ namespace test
             switch(type_) {
             case 1:
                 result = x;
+                break;
             case 2:
                 result = x * 7;
+                break;
             default:
                 result = x * 256; 
             }
