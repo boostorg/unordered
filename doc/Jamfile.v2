@@ -57,3 +57,12 @@ boostbook standalone : unordered :
     <format>pdf:<xsl:param>boost.url.prefix=http://www.boost.org/doc/libs/release/libs/unordered/doc/html
     ;
 
+###############################################################################
+alias boostdoc
+    : unordered
+    :
+    :
+    : ;
+explicit boostdoc ;
+alias boostrelease ;
+explicit boostrelease ;
