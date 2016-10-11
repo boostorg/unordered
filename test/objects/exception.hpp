@@ -150,8 +150,10 @@ namespace exception
             switch(tag_) {
             case 1:
                 result = x.tag1_;
+                break;
             case 2:
                 result = x.tag2_;
+                break;
             default:
                 result = x.tag1_ + x.tag2_; 
             }

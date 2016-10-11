@@ -91,7 +91,8 @@ void erase_tests1(Container*, test::random_generator generator)
                 prev = pos = x.begin();
             }
             else {
-                prev = boost::next(x.begin(), index - 1);
+                prev = boost::next(x.begin(),
+                        static_cast<difference_type>(index - 1));
                 pos = boost::next(prev);
             }
             next = boost::next(pos);
@@ -220,7 +221,8 @@ void erase_tests1(Container*, test::random_generator generator)
                 prev = pos = x.begin();
             }
             else {
-                prev = boost::next(x.begin(), index - 1);
+                prev = boost::next(x.begin(),
+                        static_cast<difference_type>(index - 1));
                 pos = boost::next(prev);
             }
             next = boost::next(pos);
