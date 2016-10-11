@@ -13,10 +13,10 @@
 #include "../helpers/test.hpp"
 #include "../helpers/list.hpp"
 #include "../helpers/invariants.hpp"
+#include "../helpers/helpers.hpp"
 #include <set>
 #include <iostream>
 #include <iterator>
-#include <boost/next_prior.hpp>
 #include "../objects/test.hpp"
 
 #if BOOST_WORKAROUND(BOOST_MSVC, < 1400)
@@ -111,8 +111,8 @@ UNORDERED_AUTO_TEST(two_equivalent_item_tests)
 
     {
         collide_map x(init.begin(), init.end());
-        int value = boost::next(x.begin())->second;
-        x.erase(x.begin(), boost::next(x.begin()));
+        int value = test::next(x.begin())->second;
+        x.erase(x.begin(), test::next(x.begin()));
         BOOST_TEST(x.count(1) == 1 && x.size() == 1 &&
             x.begin()->first == 1 && x.begin()->second == value);
         test::check_equivalent_keys(x);
@@ -121,7 +121,7 @@ UNORDERED_AUTO_TEST(two_equivalent_item_tests)
     {
         collide_map x(init.begin(), init.end());
         int value = x.begin()->second;
-        x.erase(boost::next(x.begin()), x.end());
+        x.erase(test::next(x.begin()), x.end());
         BOOST_TEST(x.count(1) == 1 && x.size() == 1 &&
                 x.begin()->first == 1 && x.begin()->second == value);
         test::check_equivalent_keys(x);
@@ -143,13 +143,10 @@ bool compare(Range1 const& x, Range2 const& y)
 template <class Container>
 bool general_erase_range_test(Container& x, std::size_t start, std::size_t end)
 {
-    typedef BOOST_DEDUCED_TYPENAME Container::difference_type difference_type;
-    difference_type start2 = start, end2 = end;
-
     collide_list l(x.begin(), x.end());
 
-    l.erase(boost::next(l.begin(), start2), boost::next(l.begin(), end2));
-    x.erase(boost::next(x.begin(), start2), boost::next(x.begin(), end2));
+    l.erase(test::next(l.begin(), start), test::next(l.begin(), end));
+    x.erase(test::next(x.begin(), start), test::next(x.begin(), end));
 
     test::check_equivalent_keys(x);
     return compare(l, x);

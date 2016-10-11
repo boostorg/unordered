@@ -8,7 +8,7 @@
 #include "../helpers/random_values.hpp"
 #include "../helpers/invariants.hpp"
 #include "../helpers/strong.hpp"
-#include <boost/utility.hpp>
+#include "../helpers/helpers.hpp"
 #include <cmath>
 
 test::seed_t initialize_seed(747373);
@@ -112,7 +112,7 @@ struct insert_test4 : public insert_test_base<T>
             it != end; ++it)
         {
             strong.store(x, test::detail::tracker.count_allocations);
-            x.insert(it, boost::next(it));
+            x.insert(it, test::next(it));
         }
     }
 };
@@ -136,7 +136,7 @@ struct insert_test_rehash1 : public insert_test_base<T>
             ceil((double) bucket_count * (double) x.max_load_factor()) - 1);
         BOOST_TEST(initial_elements < this->values.size());
         x.insert(this->values.begin(),
-                this->values.begin() + initial_elements);
+                test::next(this->values.begin(), initial_elements));
         BOOST_TEST(bucket_count == x.bucket_count());
         return x;
     }
@@ -147,7 +147,8 @@ struct insert_test_rehash1 : public insert_test_base<T>
         BOOST_DEDUCED_TYPENAME T::const_iterator pos = x.cbegin();
 
         for(BOOST_DEDUCED_TYPENAME test::random_values<T>::const_iterator
-            it = this->values.begin() + x.size(), end = this->values.end();
+            it = test::next(this->values.begin(), x.size()),
+                end = this->values.end();
             it != end && count < 10; ++it, ++count)
         {
             strong.store(x, test::detail::tracker.count_allocations);
@@ -170,7 +171,7 @@ struct insert_test_rehash2 : public insert_test_rehash1<T>
         int count = 0;
 
         for(BOOST_DEDUCED_TYPENAME test::random_values<T>::const_iterator
-            it = this->values.begin(), x.size()),
+            it = test::next(this->values.begin(), x.size()),
                 end = this->values.end();
             it != end && count < 10; ++it, ++count)
         {
@@ -207,7 +208,8 @@ struct insert_test_rehash3 : public insert_test_base<T>
             rehash_bucket_count > 5 ? rehash_bucket_count - 5 : 1;
 
         BOOST_TEST(initial_elements < this->values.size());
-        x.insert(this->values.begin(), this->values.begin() + initial_elements);
+        x.insert(this->values.begin(),
+                test::next(this->values.begin(), initial_elements));
         BOOST_TEST(original_bucket_count == x.bucket_count());
         return x;
     }
@@ -215,8 +217,8 @@ struct insert_test_rehash3 : public insert_test_base<T>
     void run(T& x) const {
         BOOST_DEDUCED_TYPENAME T::size_type bucket_count = x.bucket_count();
 
-        x.insert(this->values.begin() + x.size(),
-                this->values.begin() + x.size() + 20);
+        x.insert(test::next(this->values.begin(), x.size()),
+                test::next(this->values.begin(), x.size() + 20));
 
         // This isn't actually a failure, but it means the test isn't doing its
         // job.

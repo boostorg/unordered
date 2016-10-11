@@ -9,7 +9,6 @@
 #include "../helpers/postfix.hpp"
 
 #include "../helpers/test.hpp"
-#include <boost/next_prior.hpp>
 #include "../objects/test.hpp"
 #include "../helpers/random_values.hpp"
 #include "../helpers/tracker.hpp"
@@ -30,7 +29,6 @@ void erase_tests1(Container*, test::random_generator generator)
 {
     typedef BOOST_DEDUCED_TYPENAME Container::iterator iterator;
     typedef BOOST_DEDUCED_TYPENAME Container::const_iterator c_iterator;
-    typedef BOOST_DEDUCED_TYPENAME Container::difference_type difference_type;
 
     std::cerr<<"Erase by key.\n";
     {
@@ -91,11 +89,10 @@ void erase_tests1(Container*, test::random_generator generator)
                 prev = pos = x.begin();
             }
             else {
-                prev = boost::next(x.begin(),
-                        static_cast<difference_type>(index - 1));
-                pos = boost::next(prev);
+                prev = test::next(x.begin(), index - 1);
+                pos = test::next(prev);
             }
-            next = boost::next(pos);
+            next = test::next(pos);
             BOOST_DEDUCED_TYPENAME Container::key_type
                 key = test::get_key<Container>(*pos);
             std::size_t count = x.count(key);
@@ -104,7 +101,7 @@ void erase_tests1(Container*, test::random_generator generator)
             --size;
             if(size > 0)
                 BOOST_TEST(index == 0 ? next == x.begin() :
-                        next == boost::next(prev));
+                        next == test::next(prev));
             BOOST_TEST(x.count(key) == count - 1);
             if (x.count(key) != count - 1) {
                 std::cerr << count << " => " << x.count(key) << std::endl;
@@ -163,10 +160,8 @@ void erase_tests1(Container*, test::random_generator generator)
                 std::size_t length = test::random_value(iterators.size() - start);
                 x.erase(iterators[start], iterators[start + length]);
                 iterators.erase(
-                        boost::next(iterators.begin(),
-                            static_cast<difference_type>(start)),
-                        boost::next(iterators.begin(),
-                            static_cast<difference_type>(start + length)));
+                        test::next(iterators.begin(), start),
+                        test::next(iterators.begin(), start + length));
 
                 BOOST_TEST(x.size() == iterators.size() - 1);
                 BOOST_DEDUCED_TYPENAME std::vector<c_iterator>::const_iterator
@@ -221,11 +216,10 @@ void erase_tests1(Container*, test::random_generator generator)
                 prev = pos = x.begin();
             }
             else {
-                prev = boost::next(x.begin(),
-                        static_cast<difference_type>(index - 1));
-                pos = boost::next(prev);
+                prev = test::next(x.begin(), index - 1);
+                pos = test::next(prev);
             }
-            next = boost::next(pos);
+            next = test::next(pos);
             BOOST_DEDUCED_TYPENAME Container::key_type
                 key = test::get_key<Container>(*pos);
             std::size_t count = x.count(key);
@@ -234,7 +228,7 @@ void erase_tests1(Container*, test::random_generator generator)
             --size;
             if(size > 0)
                 BOOST_TEST(index == 0 ? next == x.begin() :
-                        next == boost::next(prev));
+                        next == test::next(prev));
             BOOST_TEST(x.count(key) == count - 1);
             if (x.count(key) != count - 1) {
                 std::cerr << count << " => " << x.count(key) << std::endl;

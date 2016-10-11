@@ -38,6 +38,26 @@ namespace test
     {
         return get_key_impl<Container>::get_key(x);
     }
+
+    // test::next
+    //
+    // Increments an iterator by 1 or a given value.
+    // Like boost::next, but simpler and slower.
+
+    template <typename Iterator>
+    Iterator next(Iterator it)
+    {
+        return ++it;
+    }
+
+    template <typename Iterator, typename IntType>
+    Iterator next(Iterator it, IntType x)
+    {
+        for(; x > 0; --x) {
+            ++it;
+        }
+        return it;
+    }
 }
 
 #endif

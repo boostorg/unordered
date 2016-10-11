@@ -9,7 +9,6 @@
 #include "../helpers/postfix.hpp"
 
 #include "../helpers/test.hpp"
-#include <boost/next_prior.hpp>
 #include "../objects/test.hpp"
 #include "../helpers/random_values.hpp"
 #include "../helpers/tracker.hpp"
@@ -208,7 +207,7 @@ void insert_tests2(X*, test::random_generator generator)
                 old_bucket_count = x.bucket_count();
             float b = x.max_load_factor();
 
-            x.insert(it, boost::next(it));
+            x.insert(it, test::next(it));
             tracker.insert(*it);
             tracker.compare_key(x, *it);
 
