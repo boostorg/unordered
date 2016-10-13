@@ -42,15 +42,14 @@ namespace test
     }
 
     struct equivalent_type {
+        equivalent_type() {}
+
         template <class T1, class T2>
         bool operator()(T1 const& x, T2 const& y) const {
             return equivalent_impl(x, y, derived);
         }
     };
 
-    // This should't be a problem as I'm only using a single compile unit
-    // in each test (this is actually require by the minimal test
-    // framework).
     const equivalent_type equivalent;
 
     template <class Container>
