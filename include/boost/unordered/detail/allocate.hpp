@@ -237,9 +237,8 @@ BOOST_PP_REPEAT_FROM_TO(4, BOOST_UNORDERED_EMPLACE_LIMIT, BOOST_UNORDERED_EARGS,
 // 2 = boost::container::allocator_traits
 
 #if !defined(BOOST_UNORDERED_USE_ALLOCATOR_TRAITS)
-#   if defined(__GXX_EXPERIMENTAL_CXX0X__) && \
-            (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7))
-#       define BOOST_UNORDERED_USE_ALLOCATOR_TRAITS 0
+#   if !defined(BOOST_NO_CXX11_ALLOCATOR)
+#       define BOOST_UNORDERED_USE_ALLOCATOR_TRAITS 1
 #   elif defined(BOOST_MSVC)
 #       if BOOST_MSVC < 1400
             // Use container's allocator_traits for older versions of Visual

@@ -27,6 +27,9 @@ test-suite unordered
         [ run unordered/minimal_allocator.cpp ]
         [ run unordered/compile_set.cpp ]
         [ run unordered/compile_map.cpp ]
+        [ run unordered/compile_map.cpp : :
+            : <define>BOOST_UNORDERED_USE_ALLOCATOR=0
+            : compile_map_unordered_allocator ]
         [ run unordered/noexcept_tests.cpp ]
         [ run unordered/link_test_1.cpp unordered/link_test_2.cpp ]
         [ run unordered/incomplete_test.cpp ]
