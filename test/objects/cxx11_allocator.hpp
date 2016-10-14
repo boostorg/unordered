@@ -201,9 +201,9 @@ namespace test
         public move_allocator_base<Flags>,
         Flags
     {
-        template <typename U> struct rebind {
-            typedef cxx11_allocator<U, Flags> other;
-        };
+        //template <typename U> struct rebind {
+        //    typedef cxx11_allocator<U, Flags> other;
+        //};
 
         explicit cxx11_allocator(int t = 0)
             : cxx11_allocator_base<T>(t)

@@ -412,11 +412,69 @@ namespace boost { namespace unordered { namespace detail {
 
 namespace boost { namespace unordered { namespace detail {
 
-    // TODO: Does this match std::allocator_traits<Alloc>::rebind_alloc<T>?
+    template <typename Alloc, typename T>
+    struct rebind_alloc;
+
+#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+
+    template <template<typename, typename...> class Alloc,
+        typename U, typename T, typename... Args>
+    struct rebind_alloc<Alloc<U, Args...>, T>
+    {
+        typedef Alloc<T, Args...> type;
+    };
+
+#else
+
+    template <
+        template<typename> class Alloc,
+        typename U, typename T>
+    struct rebind_alloc<Alloc<U>, T>
+    {
+        typedef Alloc<T> type;
+    };
+
+    template <
+        template<typename, typename> class Alloc,
+        typename U, typename T,
+        typename A0>
+    struct rebind_alloc<Alloc<U, A0>, T>
+    {
+        typedef Alloc<T, A0> type;
+    };
+
+    template <
+        template<typename, typename, typename> class Alloc,
+        typename U, typename T,
+        typename A0, typename A1>
+    struct rebind_alloc<Alloc<U, A0, A1>, T>
+    {
+        typedef Alloc<T, A0, A1> type;
+    };
+
+#endif
+
     template <typename Alloc, typename T>
     struct rebind_wrap
     {
-        typedef typename Alloc::BOOST_NESTED_TEMPLATE rebind<T>::other type;
+        template <typename X>
+        static choice1::type test(choice1,
+            typename X::BOOST_NESTED_TEMPLATE rebind<T>::other* = 0);
+        template <typename X>
+        static choice2::type test(choice2, void* = 0);
+
+        enum { value = (1 == sizeof(test<Alloc>(choose()))) };
+
+        struct fallback {
+            template <typename U>
+            struct rebind {
+                typedef typename rebind_alloc<Alloc, T>::type other;
+            };
+        };
+
+        typedef typename boost::detail::if_true<value>::
+            BOOST_NESTED_TEMPLATE then<Alloc, fallback>
+            ::type::BOOST_NESTED_TEMPLATE rebind<T>::other type;
     };
 
 #   if defined(BOOST_MSVC) && BOOST_MSVC <= 1400
@@ -606,7 +664,14 @@ namespace boost { namespace unordered { namespace detail {
         typedef BOOST_UNORDERED_DEFAULT_TYPE(Alloc, size_type, std::size_t)
             size_type;
 
-        // TODO: rebind_alloc and rebind_traits
+#if !defined(BOOST_NO_CXX11_TEMPLATE_ALIASES)
+        template <typename T>
+        using rebind_alloc = typename rebind_wrap<Alloc, T>::type;
+
+        template <typename T>
+        using rebind_traits =
+            boost::unordered::detail::allocator_traits<rebind_alloc<T> >;
+#endif
 
         static pointer allocate(Alloc& a, size_type n)
             { return a.allocate(n); }
