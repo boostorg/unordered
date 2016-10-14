@@ -198,13 +198,14 @@ boost::unordered_multimap<test::object, test::object,
 
 using test::default_generator;
 using test::generate_collisions;
+using test::limited_range;
 
 UNORDERED_TEST(copy_construct_tests1, (
         (test_set)(test_multiset)(test_map)(test_multimap)
         (test_set_select_copy)(test_multiset_select_copy)(test_map_select_copy)(test_multimap_select_copy)
         (test_set_no_select_copy)(test_multiset_no_select_copy)(test_map_no_select_copy)(test_multimap_no_select_copy)
     )
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 
 UNORDERED_TEST(copy_construct_tests2, (
@@ -212,7 +213,7 @@ UNORDERED_TEST(copy_construct_tests2, (
         (test_set_select_copy)(test_multiset_select_copy)(test_map_select_copy)(test_multimap_select_copy)
         (test_set_no_select_copy)(test_multiset_no_select_copy)(test_map_no_select_copy)(test_multimap_no_select_copy)
     )
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 
 }

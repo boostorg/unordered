@@ -9,7 +9,6 @@
 #include "../helpers/postfix.hpp"
 
 #include "../helpers/test.hpp"
-#include <boost/next_prior.hpp>
 #include "../objects/test.hpp"
 #include "../helpers/random_values.hpp"
 #include "../helpers/tracker.hpp"
@@ -55,7 +54,7 @@ void unique_insert_tests1(X*, test::random_generator generator)
 
         tracker.compare_key(x, *it);
 
-        if(static_cast<double>(x.size()) < b * static_cast<double>(old_bucket_count))
+        if(static_cast<double>(x.size()) <= b * static_cast<double>(old_bucket_count))
             BOOST_TEST(x.bucket_count() == old_bucket_count);
     }
 
@@ -88,7 +87,7 @@ void equivalent_insert_tests1(X*, test::random_generator generator)
 
         tracker.compare_key(x, *it);
 
-        if(static_cast<double>(x.size()) < b * static_cast<double>(old_bucket_count))
+        if(static_cast<double>(x.size()) <= b * static_cast<double>(old_bucket_count))
             BOOST_TEST(x.bucket_count() == old_bucket_count);
     }
 
@@ -124,10 +123,11 @@ void insert_tests2(X*, test::random_generator generator)
             BOOST_TEST(*r1 == *r2);
             tracker.compare_key(x, *it);
 
-            if(static_cast<double>(x.size()) < b * static_cast<double>(old_bucket_count))
+            if(static_cast<double>(x.size()) <= b * static_cast<double>(old_bucket_count))
                 BOOST_TEST(x.bucket_count() == old_bucket_count);
         }
 
+        tracker.compare(x);
         test::check_equivalent_keys(x);
     }
 
@@ -153,10 +153,11 @@ void insert_tests2(X*, test::random_generator generator)
             BOOST_TEST(*r1 == *r2);
             tracker.compare_key(x, *it);
 
-            if(static_cast<double>(x.size()) < b * static_cast<double>(old_bucket_count))
+            if(static_cast<double>(x.size()) <= b * static_cast<double>(old_bucket_count))
                 BOOST_TEST(x.bucket_count() == old_bucket_count);
         }
 
+        tracker.compare(x);
         test::check_equivalent_keys(x);
     }
 
@@ -182,10 +183,11 @@ void insert_tests2(X*, test::random_generator generator)
             BOOST_TEST(*pos == *r2);
             tracker.compare_key(x, *it);
 
-            if(static_cast<double>(x.size()) < b * static_cast<double>(old_bucket_count))
+            if(static_cast<double>(x.size()) <= b * static_cast<double>(old_bucket_count))
                 BOOST_TEST(x.bucket_count() == old_bucket_count);
         }
 
+        tracker.compare(x);
         test::check_equivalent_keys(x);
     }
 
@@ -205,14 +207,15 @@ void insert_tests2(X*, test::random_generator generator)
                 old_bucket_count = x.bucket_count();
             float b = x.max_load_factor();
 
-            x.insert(it, boost::next(it));
+            x.insert(it, test::next(it));
             tracker.insert(*it);
             tracker.compare_key(x, *it);
 
-            if(static_cast<double>(x.size()) < b * static_cast<double>(old_bucket_count))
+            if(static_cast<double>(x.size()) <= b * static_cast<double>(old_bucket_count))
                 BOOST_TEST(x.bucket_count() == old_bucket_count);
         }
 
+        tracker.compare(x);
         test::check_equivalent_keys(x);
     }
 
@@ -292,6 +295,42 @@ void insert_tests2(X*, test::random_generator generator)
 
         test::check_equivalent_keys(x);
     }
+
+    std::cerr<<"insert various ranges.\n";
+
+    {
+        for (int i = 0; i < 100; ++i) {
+            X x;
+            test::ordered<X> tracker = test::create_ordered(x);
+
+            test::random_values<X> v(1000, generator);
+
+            for(BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator
+                    it = v.begin(); it != v.end();)
+            {
+                BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count = x.bucket_count();
+                float b = x.max_load_factor();
+
+                BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator
+                    next = it;
+                for (std::size_t j = test::random_value(20); j > 0; ++j) {
+                    ++next;
+                    if (next == v.end()) { break; }
+                }
+
+                x.insert(it, next);
+                tracker.insert(it, next);
+                it = next;
+
+                tracker.compare(x); // Slow, but I can't see any other way.
+
+                if(static_cast<double>(x.size()) <= b * static_cast<double>(old_bucket_count))
+                    BOOST_TEST(x.bucket_count() == old_bucket_count);
+            }
+
+            test::check_equivalent_keys(x);
+        }
+    }
 }
 
 template <class X>
@@ -323,10 +362,11 @@ void unique_emplace_tests1(X*, test::random_generator generator)
 
         tracker.compare_key(x, *it);
 
-        if(static_cast<double>(x.size()) < b * static_cast<double>(old_bucket_count))
+        if(static_cast<double>(x.size()) <= b * static_cast<double>(old_bucket_count))
             BOOST_TEST(x.bucket_count() == old_bucket_count);
     }
 
+    tracker.compare(x);
     test::check_equivalent_keys(x);
 }
 
@@ -353,10 +393,11 @@ void equivalent_emplace_tests1(X*, test::random_generator generator)
 
         tracker.compare_key(x, *it);
 
-        if(static_cast<double>(x.size()) < b * static_cast<double>(old_bucket_count))
+        if(static_cast<double>(x.size()) <= b * static_cast<double>(old_bucket_count))
             BOOST_TEST(x.bucket_count() == old_bucket_count);
     }
 
+    tracker.compare(x);
     test::check_equivalent_keys(x);
 }
 
@@ -382,12 +423,12 @@ void move_emplace_tests(X*, test::random_generator generator)
         tracker.insert(*it);
         tracker.compare_key(x, *it);
 
-        if(static_cast<double>(x.size()) < b * static_cast<double>(old_bucket_count))
+        if(static_cast<double>(x.size()) <= b * static_cast<double>(old_bucket_count))
             BOOST_TEST(x.bucket_count() == old_bucket_count);
     }
 
-    test::check_equivalent_keys(x);
     tracker.compare(x);
+    test::check_equivalent_keys(x);
 }
 
 template <class X>
@@ -401,17 +442,17 @@ void default_emplace_tests(X*, test::random_generator)
     x.emplace();
     BOOST_TEST(x.size() == 1);
     x.emplace();
-    BOOST_TEST(x.size() == is_unique ? 1: 2);
+    BOOST_TEST(x.size() == (is_unique ? 1u : 2u));
     x.emplace();
-    BOOST_TEST(x.size() == is_unique ? 1: 3);
+    BOOST_TEST(x.size() == (is_unique ? 1u : 3u));
     
     typename X::value_type y;
-    BOOST_TEST(x.count(test::get_key<X>(y)) ==  is_unique ? 1: 3);
+    BOOST_TEST(x.count(test::get_key<X>(y)) == (is_unique ? 1u : 3u));
     BOOST_TEST(*x.equal_range(test::get_key<X>(y)).first == y);
 
     x.emplace(y);
-    BOOST_TEST(x.size() ==  is_unique ? 1: 4);
-    BOOST_TEST(x.count(test::get_key<X>(y)) ==  is_unique ? 1: 4);
+    BOOST_TEST(x.size() == (is_unique ? 1u : 4u));
+    BOOST_TEST(x.count(test::get_key<X>(y)) == (is_unique ? 1u : 4u));
     BOOST_TEST(*x.equal_range(test::get_key<X>(y)).first == y);
     
     x.clear();
@@ -419,9 +460,9 @@ void default_emplace_tests(X*, test::random_generator)
     x.emplace(y);
     BOOST_TEST(x.size() == 1);
     x.emplace(y);
-    BOOST_TEST(x.size() == is_unique ? 1: 2);
+    BOOST_TEST(x.size() == (is_unique ? 1u : 2u));
     
-    BOOST_TEST(x.count(test::get_key<X>(y)) == is_unique ? 1: 2);
+    BOOST_TEST(x.count(test::get_key<X>(y)) == (is_unique ? 1u : 2u));
     BOOST_TEST(*x.equal_range(test::get_key<X>(y)).first == y);
 }
 
@@ -445,10 +486,11 @@ void map_tests(X*, test::random_generator generator)
 
         tracker.compare_key(x, *it);
 
-        if(static_cast<double>(x.size()) < b * static_cast<double>(old_bucket_count))
+        if(static_cast<double>(x.size()) <= b * static_cast<double>(old_bucket_count))
             BOOST_TEST(x.bucket_count() == old_bucket_count);
     }
 
+    tracker.compare(x);
     test::check_equivalent_keys(x);   
 }
 
@@ -518,57 +560,58 @@ boost::unordered_multimap<test::object, test::object,
 
 using test::default_generator;
 using test::generate_collisions;
+using test::limited_range;
 
 UNORDERED_TEST(unique_insert_tests1,
     ((test_set_std_alloc)(test_set)(test_map))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 
 UNORDERED_TEST(equivalent_insert_tests1,
     ((test_multimap_std_alloc)(test_multiset)(test_multimap))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 
 UNORDERED_TEST(insert_tests2,
     ((test_multimap_std_alloc)(test_set)(test_multiset)(test_map)(test_multimap))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 
 UNORDERED_TEST(unique_emplace_tests1,
     ((test_set_std_alloc)(test_set)(test_map))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 
 UNORDERED_TEST(equivalent_emplace_tests1,
     ((test_multimap_std_alloc)(test_multiset)(test_multimap))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 
 UNORDERED_TEST(move_emplace_tests,
     ((test_set_std_alloc)(test_multimap_std_alloc)(test_set)(test_map)
         (test_multiset)(test_multimap))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 
 UNORDERED_TEST(default_emplace_tests,
     ((test_set_std_alloc)(test_multimap_std_alloc)(test_set)(test_map)
         (test_multiset)(test_multimap))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 
 UNORDERED_TEST(map_tests,
     ((test_map))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 
 UNORDERED_TEST(map_insert_range_test1,
     ((test_multimap_std_alloc)(test_map)(test_multimap))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 
 UNORDERED_TEST(map_insert_range_test2,
     ((test_multimap_std_alloc)(test_map)(test_multimap))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
@@ -579,7 +622,7 @@ struct initialize_from_two_ints
 
     friend std::size_t hash_value(initialize_from_two_ints const& x)
     {
-        return x.a + x.b;
+        return static_cast<std::size_t>(x.a + x.b);
     }
 
     bool operator==(initialize_from_two_ints const& x) const

@@ -206,6 +206,7 @@ bool is_propagate(T*)
 
 using test::default_generator;
 using test::generate_collisions;
+using test::limited_range;
 
 UNORDERED_AUTO_TEST(check_traits)
 {
@@ -220,7 +221,7 @@ UNORDERED_TEST(swap_tests1, (
         (test_set_prop_swap)(test_multiset_prop_swap)(test_map_prop_swap)(test_multimap_prop_swap)
         (test_set_no_prop_swap)(test_multiset_no_prop_swap)(test_map_no_prop_swap)(test_multimap_no_prop_swap)
     )
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 
 UNORDERED_TEST(swap_tests2, (
@@ -228,7 +229,7 @@ UNORDERED_TEST(swap_tests2, (
         (test_set_prop_swap)(test_multiset_prop_swap)(test_map_prop_swap)(test_multimap_prop_swap)
         (test_set_no_prop_swap)(test_multiset_no_prop_swap)(test_map_no_prop_swap)(test_multimap_no_prop_swap)
     )
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 
 }

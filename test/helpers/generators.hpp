@@ -27,25 +27,32 @@ namespace test
         }
     };
 
-    inline int generate(int const*)
-    {
+    std::size_t random_value(std::size_t max) {
         using namespace std;
-        return rand();
+        return static_cast<std::size_t>(rand()) % max;
     }
 
-    inline char generate(char const*)
+    inline int generate(int const*, random_generator g)
+    {
+        using namespace std;
+        int value = rand();
+        if (g == limited_range) { value = value % 100; }
+        return value;
+    }
+
+    inline char generate(char const*, random_generator)
     {
         using namespace std;
         return static_cast<char>((rand() >> 1) % (128-32) + 32);
     }
 
-    inline signed char generate(signed char const*)
+    inline signed char generate(signed char const*, random_generator)
     {
         using namespace std;
         return static_cast<signed char>(rand());
     }
 
-    inline std::string generate(std::string const*)
+    inline std::string generate(std::string const*, random_generator g)
     {
         using namespace std;
 
@@ -53,17 +60,30 @@ namespace test
 
         std::string result;
 
-        int length = rand() % 10;
-        for(int i = 0; i < length; ++i)
-            result += generate(char_ptr);
+        if (g == limited_range) {
+            std::size_t length = test::random_value(2) + 2;
+
+            char const* strings[] = { "'vZh(3~ms", "%m", "_Y%U", "N'Y", "4,J_J" };
+            for (std::size_t i = 0; i < length; ++i) {
+                result += strings[random_value(sizeof(strings) / sizeof(strings[0]))];
+            }
+        }
+        else {
+            std::size_t length = test::random_value(10) + 1;
+            for (std::size_t i = 0; i < length; ++i) {
+                result += generate(char_ptr, g);
+            }
+        }
 
         return result;
     }
 
-    float generate(float const*)
+    float generate(float const*, random_generator g)
     {
         using namespace std;
-        return (float) rand() / (float) RAND_MAX;
+        int x = 0;
+        int value = generate(&x, g);
+        return (float) value / (float) RAND_MAX;
     }
 }
 

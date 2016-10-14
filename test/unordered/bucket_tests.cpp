@@ -34,8 +34,10 @@ void tests(X*, test::random_generator generator)
 
     X x(v.begin(), v.end());
 
-    BOOST_TEST(x.bucket_count() < x.max_bucket_count());
-    std::cerr<<x.bucket_count()<<"<"<<x.max_bucket_count()<<"\n";
+    BOOST_TEST(x.bucket_count() <= x.max_bucket_count());
+    if (!(x.bucket_count() <= x.max_bucket_count())) {
+       std::cerr<<x.bucket_count()<<"<="<<x.max_bucket_count()<<"\n";
+    }
 
     for(BOOST_DEDUCED_TYPENAME test::random_values<X>::const_iterator
             it = v.begin(), end = v.end(); it != end; ++it)
@@ -43,7 +45,7 @@ void tests(X*, test::random_generator generator)
         size_type bucket = x.bucket(test::get_key<X>(*it));
 
         BOOST_TEST(bucket < x.bucket_count());
-        if(bucket < x.max_bucket_count()) {
+        if(bucket < x.bucket_count()) {
             // lit? lend?? I need a new naming scheme.
             const_local_iterator lit = x.begin(bucket), lend = x.end(bucket);
             while(lit != lend
@@ -87,10 +89,11 @@ boost::unordered_multimap<test::object, test::object,
 
 using test::default_generator;
 using test::generate_collisions;
+using test::limited_range;
 
 UNORDERED_TEST(tests,
     ((test_multimap_std_alloc)(test_set)(test_multiset)(test_map)(test_multimap))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 
 }

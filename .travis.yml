@@ -11,8 +11,9 @@ language: c++
 addons:
     apt:
         packages:
-            - libboost-dev
             - libboost-tools-dev
+            - libxml2-utils
+            - g++-multilib
 
 matrix:
     include:
@@ -20,19 +21,40 @@ matrix:
         env: BJAM_TOOLSET=gcc
       - compiler: gcc
         env: BJAM_TOOLSET=gcc-std11
-      - compiler: clang
-        env: BJAM_TOOLSET=clang
+      #- compiler: gcc
+      #  env: BJAM_TOOLSET=gcc-m32
+      - compiler: gcc
+        env: BJAM_TOOLSET=gcc-std11m32
+      #- compiler: clang
+      #  env: BJAM_TOOLSET=clang
       - compiler: clang
         env: BJAM_TOOLSET=clang-std11
+      - compiler: clang
+        env: BJAM_TOOLSET=clang-m32
+      #- compiler: clang
+      #  env: BJAM_TOOLSET=clang-std11m32
 
 before_script:
+    - cd ${TRAVIS_BUILD_DIR}
+    - touch Jamroot.jam
+    - cd $HOME
     - |
         echo "using gcc : : g++-4.8 -Werror --std=c++03 -fsanitize=address ;" > ~/user-config.jam
         echo "using gcc : std11 : g++-4.8 -Werror --std=c++11 -fsanitize=address ;" >> ~/user-config.jam
+        echo "using gcc : m32 : g++-4.8 -m32 -Werror -fsanitize=address ;" >> ~/user-config.jam
+        echo "using gcc : std11m32 : g++-4.8 -m32 -Werror --std=c++11 -fsanitize=address ;" >> ~/user-config.jam
         echo "using clang : : clang++ -Werror --std=c++03 -fsanitize=address ;" >> ~/user-config.jam
         echo "using clang : std11 : clang++ -Werror --std=c++11 -fsanitize=address ;" >> ~/user-config.jam
+        # sanitized=address not available for 32-bit clang on travis.
+        echo "using clang : m32 : clang++ -m32 -Werror --std=c++03 ;" >> ~/user-config.jam
+        echo "using clang : std11m32 : clang++ -m32 -Werror --std=c++11 ;" >> ~/user-config.jam
     - cat ~/user-config.jam
-    - touch Jamroot.jam
+    - wget -O boost.tar.bz2 https://sourceforge.net/projects/boost/files/boost/snapshots/master/boost_1_62_0.tar.bz2/download
+    - tar -xjf boost.tar.bz2
+    - mv boost_1_62_0 boost
+    - rm -r boost/boost/unordered
 
 script:
-    - cd test && bjam ${BJAM_TOOLSET} include=${TRAVIS_BUILD_DIR}/include
+    - cd ${TRAVIS_BUILD_DIR}/test
+    - bjam ${BJAM_TOOLSET} include=${HOME}/boost include=${TRAVIS_BUILD_DIR}/include
+    - xmllint --noout ${TRAVIS_BUILD_DIR}/doc/ref.xml

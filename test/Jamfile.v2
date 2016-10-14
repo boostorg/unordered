@@ -11,9 +11,9 @@ project unordered-test/unordered
         <toolset>intel:<warnings>on
         # Would be nice to define -Wundef, but I'm getting warnings from
         # Boost.Preprocessor on trunk.
-        <toolset>gcc:<cxxflags>"-pedantic -Wstrict-aliasing -fstrict-aliasing -Wextra -Wsign-promo -Wunused-parameter -Wconversion -Wfloat-equal -Wshadow -Wno-long-long"
+        <toolset>gcc:<cxxflags>"-pedantic -Wstrict-aliasing -fstrict-aliasing -Wextra -Wsign-promo -Wunused-parameter -Wconversion -Wfloat-equal -Wshadow"
         <toolset>darwin:<cxxflags>"-pedantic -Wstrict-aliasing -fstrict-aliasing -Wextra -Wsign-promo -Wunused-parameter -Wconversion -Wfloat-equal -Wshadow"
-        <toolset>clang:<cxxflags>"-pedantic -Wextra -Wno-long-long"
+        <toolset>clang:<cxxflags>"-pedantic -Wstrict-aliasing -fstrict-aliasing -Wextra -Wsign-promo -Wunused-parameter -Wsign-conversion -Wconversion -Wfloat-equal -Wshadow"
     ;
 
 #alias framework : /boost/test//boost_unit_test_framework ;
@@ -38,6 +38,7 @@ test-suite unordered
         [ run unordered/assign_tests.cpp ]
         [ run unordered/insert_tests.cpp ]
         [ run unordered/insert_stable_tests.cpp ]
+        [ run unordered/insert_hint_tests.cpp ]
         [ run unordered/unnecessary_copy_tests.cpp ]
         [ run unordered/erase_tests.cpp ]
         [ run unordered/erase_equiv_tests.cpp ]
@@ -71,6 +72,7 @@ test-suite unordered-exception
         [ run exception/constructor_exception_tests.cpp framework ]
         [ run exception/copy_exception_tests.cpp framework ]
         [ run exception/assign_exception_tests.cpp framework ]
+        [ run exception/move_assign_exception_tests.cpp framework ]
         [ run exception/insert_exception_tests.cpp framework ]
         [ run exception/erase_exception_tests.cpp framework ]
         [ run exception/rehash_exception_tests.cpp framework ]

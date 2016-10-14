@@ -8,7 +8,7 @@
 #include "../helpers/random_values.hpp"
 #include "../helpers/invariants.hpp"
 #include "../helpers/strong.hpp"
-#include <boost/utility.hpp>
+#include "../helpers/helpers.hpp"
 #include <cmath>
 
 test::seed_t initialize_seed(747373);
@@ -17,7 +17,7 @@ template <class T>
 struct insert_test_base : public test::exception_base
 {
     test::random_values<T> values;
-    insert_test_base(unsigned int count = 5) : values(count) {}
+    insert_test_base(unsigned int count = 5) : values(count, test::limited_range) {}
 
     typedef T data_type;
     typedef test::strong<T> strong_type;
@@ -112,7 +112,7 @@ struct insert_test4 : public insert_test_base<T>
             it != end; ++it)
         {
             strong.store(x, test::detail::tracker.count_allocations);
-            x.insert(it, boost::next(it));
+            x.insert(it, test::next(it));
         }
     }
 };
@@ -130,12 +130,13 @@ struct insert_test_rehash1 : public insert_test_base<T>
 
         T x;
         x.max_load_factor(0.25);
+        // TODO: This doesn't really work is bucket_count is 0
         size_type bucket_count = x.bucket_count();
         size_type initial_elements = static_cast<size_type>(
-            ceil(bucket_count * (double) x.max_load_factor()) - 1);
+            ceil((double) bucket_count * (double) x.max_load_factor()) - 1);
         BOOST_TEST(initial_elements < this->values.size());
         x.insert(this->values.begin(),
-                boost::next(this->values.begin(), initial_elements));
+                test::next(this->values.begin(), initial_elements));
         BOOST_TEST(bucket_count == x.bucket_count());
         return x;
     }
@@ -146,7 +147,7 @@ struct insert_test_rehash1 : public insert_test_base<T>
         BOOST_DEDUCED_TYPENAME T::const_iterator pos = x.cbegin();
 
         for(BOOST_DEDUCED_TYPENAME test::random_values<T>::const_iterator
-            it = boost::next(this->values.begin(), x.size()),
+            it = test::next(this->values.begin(), x.size()),
                 end = this->values.end();
             it != end && count < 10; ++it, ++count)
         {
@@ -170,7 +171,7 @@ struct insert_test_rehash2 : public insert_test_rehash1<T>
         int count = 0;
 
         for(BOOST_DEDUCED_TYPENAME test::random_values<T>::const_iterator
-            it = boost::next(this->values.begin(), x.size()),
+            it = test::next(this->values.begin(), x.size()),
                 end = this->values.end();
             it != end && count < 10; ++it, ++count)
         {
@@ -201,14 +202,14 @@ struct insert_test_rehash3 : public insert_test_base<T>
 
         original_bucket_count = x.bucket_count();
         rehash_bucket_count = static_cast<size_type>(
-            ceil(original_bucket_count * (double) x.max_load_factor())) - 1;
+            ceil((double) original_bucket_count * (double) x.max_load_factor())) - 1;
 
         size_type initial_elements =
             rehash_bucket_count > 5 ? rehash_bucket_count - 5 : 1;
 
         BOOST_TEST(initial_elements < this->values.size());
         x.insert(this->values.begin(),
-                boost::next(this->values.begin(), initial_elements));
+                test::next(this->values.begin(), initial_elements));
         BOOST_TEST(original_bucket_count == x.bucket_count());
         return x;
     }
@@ -216,8 +217,8 @@ struct insert_test_rehash3 : public insert_test_base<T>
     void run(T& x) const {
         BOOST_DEDUCED_TYPENAME T::size_type bucket_count = x.bucket_count();
 
-        x.insert(boost::next(this->values.begin(), x.size()),
-                boost::next(this->values.begin(), x.size() + 20));
+        x.insert(test::next(this->values.begin(), x.size()),
+                test::next(this->values.begin(), x.size() + 20));
 
         // This isn't actually a failure, but it means the test isn't doing its
         // job.

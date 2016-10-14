@@ -89,8 +89,9 @@ void container_test(X& r, T const&)
 
     // size_type can represent any non-negative value type of difference_type
     // I'm not sure about either of these tests...
-    size_type max_diff((std::numeric_limits<difference_type>::max)());
-    difference_type converted_diff(max_diff);
+    size_type max_diff = static_cast<size_type>(
+            (std::numeric_limits<difference_type>::max)());
+    difference_type converted_diff(static_cast<difference_type>(max_diff));
     BOOST_TEST((std::numeric_limits<difference_type>::max)()
             == converted_diff);
 
@@ -476,6 +477,17 @@ void unordered_copyable_test(X& x, Key& k, T& t, Hash& hf, Pred& eq)
     test::check_return_type<iterator>::equals(a.emplace_hint(q, t));
 
     a.insert(i, j);
+#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
+    std::initializer_list<T> list = {t};
+    a.insert(list);
+    a.insert({t,t,t});
+
+#if !BOOST_WORKAROUND(BOOST_MSVC, < 1900)
+    a.insert({});
+    a.insert({t});
+    a.insert({t,t});
+#endif
+#endif
 
     X a10;
     a10.insert(t);

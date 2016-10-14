@@ -51,7 +51,7 @@ void insert_test(X*, float mlf, test::random_generator generator)
         BOOST_DEDUCED_TYPENAME X::size_type old_size = x.size(),
                  old_bucket_count = x.bucket_count();
         x.insert(*it);
-        if(static_cast<double>(old_size + 1) < b * static_cast<double>(old_bucket_count))
+        if(static_cast<double>(old_size + 1) <= b * static_cast<double>(old_bucket_count))
             BOOST_TEST(x.bucket_count() == old_bucket_count);
     }
 }
@@ -78,6 +78,7 @@ boost::unordered_multimap<int, int>* int_multimap_ptr;
 
 using test::default_generator;
 using test::generate_collisions;
+using test::limited_range;
 
 UNORDERED_TEST(set_load_factor_tests,
     ((int_set_ptr)(int_multiset_ptr)(int_map_ptr)(int_multimap_ptr))
@@ -85,7 +86,7 @@ UNORDERED_TEST(set_load_factor_tests,
 
 UNORDERED_TEST(load_factor_insert_tests,
     ((int_set_ptr)(int_multiset_ptr)(int_map_ptr)(int_multimap_ptr))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 
 }

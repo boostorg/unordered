@@ -22,7 +22,7 @@ test::seed_t initialize_seed(2974);
 template <class X>
 bool postcondition(X const& x, BOOST_DEDUCED_TYPENAME X::size_type n)
 {
-    return static_cast<double>(x.bucket_count()) >
+    return static_cast<double>(x.bucket_count()) >=
         static_cast<double>(x.size()) / x.max_load_factor() &&
         x.bucket_count() >= n;
 }
@@ -139,7 +139,7 @@ void reserve_test1(X*, test::random_generator generator)
 {
     for (int random_mlf = 0; random_mlf < 2; ++random_mlf)
     {
-        for (int i = 1; i < 2000; i += i < 50 ? 1 : 13)
+        for (std::size_t i = 1; i < 2000; i += i < 50 ? 1 : 13)
         {
             test::random_values<X> v(i, generator);
 
@@ -149,9 +149,6 @@ void reserve_test1(X*, test::random_generator generator)
             X x;
             x.max_load_factor(random_mlf ?
                 static_cast<float>(std::rand() % 1000) / 500.0f + 0.5f : 1.0f);
-            // For the current standard this should reserve i+1, I've
-            // submitted a defect report and will assume it's a defect
-            // for now.
             x.reserve(test::has_unique_keys<X>::value ? i : v.size());
 
             // Insert an element before the range insert, otherwise there are
@@ -174,7 +171,7 @@ void reserve_test2(X*, test::random_generator generator)
 {
     for (int random_mlf = 0; random_mlf < 2; ++random_mlf)
     {
-        for (int i = 0; i < 2000; i += i < 50 ? 1 : 13)
+        for (std::size_t i = 0; i < 2000; i += i < 50 ? 1 : 13)
         {
             test::random_values<X> v(i, generator);
 
@@ -211,21 +208,22 @@ boost::unordered_multimap<int, int>* int_multimap_ptr;
 
 using test::default_generator;
 using test::generate_collisions;
+using test::limited_range;
 
 UNORDERED_TEST(rehash_empty_test1,
     ((int_set_ptr)(test_multiset_ptr)(test_map_ptr)(int_multimap_ptr))
 )
 UNORDERED_TEST(rehash_empty_test2,
     ((int_set_ptr)(test_multiset_ptr)(test_map_ptr)(int_multimap_ptr))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 UNORDERED_TEST(rehash_empty_test3,
     ((int_set_ptr)(test_multiset_ptr)(test_map_ptr)(int_multimap_ptr))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 UNORDERED_TEST(rehash_test1,
     ((int_set_ptr)(test_multiset_ptr)(test_map_ptr)(int_multimap_ptr))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 UNORDERED_TEST(reserve_empty_test1,
     ((int_set_ptr)(test_multiset_ptr)(test_map_ptr)(int_multimap_ptr))
@@ -235,11 +233,11 @@ UNORDERED_TEST(reserve_empty_test2,
 )
 UNORDERED_TEST(reserve_test1,
     ((int_set_ptr)(test_multiset_ptr)(test_map_ptr)(int_multimap_ptr))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 UNORDERED_TEST(reserve_test2,
     ((int_set_ptr)(test_multiset_ptr)(test_map_ptr)(int_multimap_ptr))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 
 }

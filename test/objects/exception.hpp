@@ -23,7 +23,7 @@ namespace exception
     class hash;
     class equal_to;
     template <class T> class allocator;
-    object generate(object const*);
+    object generate(object const*, random_generator);
 
     struct true_type
     {
@@ -101,9 +101,9 @@ namespace exception
                 (x1.tag1_ == x2.tag1_ && x1.tag2_ < x2.tag2_);
         }
 
-        friend object generate(object const*) {
+        friend object generate(object const*, random_generator g) {
             int* x = 0;
-            return object(::test::generate(x), ::test::generate(x));
+            return object(::test::generate(x, g), ::test::generate(x, g));
         }
 
         friend std::ostream& operator<<(std::ostream& out, object const& o)
@@ -146,14 +146,18 @@ namespace exception
                 UNORDERED_EPOINT("Mock hash function.");
             }
 
+            int result;
             switch(tag_) {
             case 1:
-                return x.tag1_;
+                result = x.tag1_;
+                break;
             case 2:
-                return x.tag2_;
+                result = x.tag2_;
+                break;
             default:
-                return x.tag1_ + x.tag2_; 
+                result = x.tag1_ + x.tag2_; 
             }
+            return static_cast<std::size_t>(result);
         }
 
         friend bool operator==(hash const& x1, hash const& x2) {
@@ -588,8 +592,9 @@ namespace exception
 #if defined(BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP)
 namespace test
 {
-    test::exception::object generate(test::exception::object const* x) {
-        return test::exception::generate(x);
+    test::exception::object generate(test::exception::object const* x,
+        random_generator g) {
+        return test::exception::generate(x, g);
     }
 }
 #endif

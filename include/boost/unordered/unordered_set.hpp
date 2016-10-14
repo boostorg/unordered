@@ -237,9 +237,9 @@ namespace unordered
         }
 
         template <class... Args>
-        iterator emplace_hint(const_iterator, BOOST_FWD_REF(Args)... args)
+        iterator emplace_hint(const_iterator hint, BOOST_FWD_REF(Args)... args)
         {
-            return table_.emplace(boost::forward<Args>(args)...).first;
+            return table_.emplace_hint(hint, boost::forward<Args>(args)...);
         }
 #else
 
@@ -278,12 +278,12 @@ namespace unordered
         }
 
         template <typename A0>
-        iterator emplace_hint(const_iterator, BOOST_FWD_REF(A0) a0)
+        iterator emplace_hint(const_iterator hint, BOOST_FWD_REF(A0) a0)
         {
-            return table_.emplace(
+            return table_.emplace_hint(hint,
                 boost::unordered::detail::create_emplace_args(
                     boost::forward<A0>(a0))
-            ).first;
+            );
         }
 
         template <typename A0, typename A1>
@@ -299,15 +299,15 @@ namespace unordered
         }
 
         template <typename A0, typename A1>
-        iterator emplace_hint(const_iterator,
+        iterator emplace_hint(const_iterator hint,
             BOOST_FWD_REF(A0) a0,
             BOOST_FWD_REF(A1) a1)
         {
-            return table_.emplace(
+            return table_.emplace_hint(hint,
                 boost::unordered::detail::create_emplace_args(
                     boost::forward<A0>(a0),
                     boost::forward<A1>(a1))
-            ).first;
+            );
         }
 
         template <typename A0, typename A1, typename A2>
@@ -325,17 +325,17 @@ namespace unordered
         }
 
         template <typename A0, typename A1, typename A2>
-        iterator emplace_hint(const_iterator,
+        iterator emplace_hint(const_iterator hint,
             BOOST_FWD_REF(A0) a0,
             BOOST_FWD_REF(A1) a1,
             BOOST_FWD_REF(A2) a2)
         {
-            return table_.emplace(
+            return table_.emplace_hint(hint,
                 boost::unordered::detail::create_emplace_args(
                     boost::forward<A0>(a0),
                     boost::forward<A1>(a1),
                     boost::forward<A2>(a2))
-            ).first;
+            );
         }
 
 #define BOOST_UNORDERED_EMPLACE(z, n, _)                                    \
@@ -357,15 +357,15 @@ namespace unordered
                 BOOST_PP_ENUM_PARAMS_Z(z, n, typename A)                    \
             >                                                               \
             iterator emplace_hint(                                          \
-                    const_iterator,                                         \
+                    const_iterator hint,                                    \
                     BOOST_PP_ENUM_##z(n, BOOST_UNORDERED_FWD_PARAM, a)      \
             )                                                               \
             {                                                               \
-                return table_.emplace(                                      \
+                return table_.emplace_hint(hint,                            \
                     boost::unordered::detail::create_emplace_args(          \
                         BOOST_PP_ENUM_##z(n, BOOST_UNORDERED_CALL_FORWARD,  \
                             a)                                              \
-                )).first;                                                   \
+                ));                                                         \
             }
 
         BOOST_PP_REPEAT_FROM_TO(4, BOOST_UNORDERED_EMPLACE_LIMIT,
@@ -707,9 +707,9 @@ namespace unordered
         }
 
         template <class... Args>
-        iterator emplace_hint(const_iterator, BOOST_FWD_REF(Args)... args)
+        iterator emplace_hint(const_iterator hint, BOOST_FWD_REF(Args)... args)
         {
-            return table_.emplace(boost::forward<Args>(args)...);
+            return table_.emplace_hint(hint, boost::forward<Args>(args)...);
         }
 #else
 
@@ -748,9 +748,9 @@ namespace unordered
         }
 
         template <typename A0>
-        iterator emplace_hint(const_iterator, BOOST_FWD_REF(A0) a0)
+        iterator emplace_hint(const_iterator hint, BOOST_FWD_REF(A0) a0)
         {
-            return table_.emplace(
+            return table_.emplace_hint(hint,
                 boost::unordered::detail::create_emplace_args(
                     boost::forward<A0>(a0))
             );
@@ -769,11 +769,11 @@ namespace unordered
         }
 
         template <typename A0, typename A1>
-        iterator emplace_hint(const_iterator,
+        iterator emplace_hint(const_iterator hint,
             BOOST_FWD_REF(A0) a0,
             BOOST_FWD_REF(A1) a1)
         {
-            return table_.emplace(
+            return table_.emplace_hint(hint,
                 boost::unordered::detail::create_emplace_args(
                     boost::forward<A0>(a0),
                     boost::forward<A1>(a1))
@@ -795,12 +795,12 @@ namespace unordered
         }
 
         template <typename A0, typename A1, typename A2>
-        iterator emplace_hint(const_iterator,
+        iterator emplace_hint(const_iterator hint,
             BOOST_FWD_REF(A0) a0,
             BOOST_FWD_REF(A1) a1,
             BOOST_FWD_REF(A2) a2)
         {
-            return table_.emplace(
+            return table_.emplace_hint(hint,
                 boost::unordered::detail::create_emplace_args(
                     boost::forward<A0>(a0),
                     boost::forward<A1>(a1),
@@ -827,11 +827,11 @@ namespace unordered
                 BOOST_PP_ENUM_PARAMS_Z(z, n, typename A)                    \
             >                                                               \
             iterator emplace_hint(                                          \
-                    const_iterator,                                         \
+                    const_iterator hint,                                    \
                     BOOST_PP_ENUM_##z(n, BOOST_UNORDERED_FWD_PARAM, a)      \
             )                                                               \
             {                                                               \
-                return table_.emplace(                                      \
+                return table_.emplace_hint(hint,                            \
                     boost::unordered::detail::create_emplace_args(          \
                         BOOST_PP_ENUM_##z(n, BOOST_UNORDERED_CALL_FORWARD,  \
                             a)                                              \

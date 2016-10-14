@@ -115,7 +115,7 @@ namespace unnecessary_copy_tests
 #endif
 {
     std::size_t hash_value(unnecessary_copy_tests::count_copies const& x) {
-        return x.tag_;
+        return static_cast<std::size_t>(x.tag_);
     }
 }
 

@@ -37,15 +37,15 @@ void find_tests1(X*, test::random_generator generator)
                 tracker.begin(); it1 != tracker.end(); ++it1)
         {
             BOOST_DEDUCED_TYPENAME X::key_type key = test::get_key<X>(*it1);
-            iterator pos = x.find(key);
             BOOST_DEDUCED_TYPENAME X::const_iterator
                 const_pos = x_const.find(key);
-            BOOST_TEST(pos != x.end());
-            BOOST_TEST(pos != x.end() &&
-                    x.key_eq()(key, test::get_key<X>(*pos)));
+            iterator pos = x.find(key);
             BOOST_TEST(const_pos != x_const.end());
             BOOST_TEST(const_pos != x_const.end() &&
                     x_const.key_eq()(key, test::get_key<X>(*const_pos)));
+            BOOST_TEST(pos != x.end());
+            BOOST_TEST(pos != x.end() &&
+                    x.key_eq()(key, test::get_key<X>(*pos)));
 
             BOOST_TEST(x.count(key) == tracker.count(key));
 
@@ -155,14 +155,15 @@ boost::unordered_multimap<test::object, test::object,
 
 using test::default_generator;
 using test::generate_collisions;
+using test::limited_range;
 
 UNORDERED_TEST(find_tests1,
     ((test_set)(test_multiset)(test_map)(test_multimap))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 UNORDERED_TEST(find_compatible_keys_test,
     ((test_set)(test_multiset)(test_map)(test_multimap))
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 
 }

@@ -236,6 +236,7 @@ boost::unordered_multimap<test::object, test::object,
 
 using test::default_generator;
 using test::generate_collisions;
+using test::limited_range;
 
 template <typename T>
 bool is_propagate(T*)
@@ -256,7 +257,7 @@ UNORDERED_TEST(assign_tests1, (
         (test_set_prop_assign)(test_multiset_prop_assign)(test_map_prop_assign)(test_multimap_prop_assign)
         (test_set_no_prop_assign)(test_multiset_no_prop_assign)(test_map_no_prop_assign)(test_multimap_no_prop_assign)
     )
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 
 UNORDERED_TEST(assign_tests2, (
@@ -264,7 +265,7 @@ UNORDERED_TEST(assign_tests2, (
         (test_set_prop_assign)(test_multiset_prop_assign)(test_map_prop_assign)(test_multimap_prop_assign)
         (test_set_no_prop_assign)(test_multiset_no_prop_assign)(test_map_no_prop_assign)(test_multimap_no_prop_assign)
     )
-    ((default_generator)(generate_collisions))
+    ((default_generator)(generate_collisions)(limited_range))
 )
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
