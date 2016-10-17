@@ -703,7 +703,7 @@ namespace boost { namespace unordered { namespace detail {
                 ::value>::type
             construct(Alloc&, T* p, BOOST_FWD_REF(Args)... x)
         {
-            new ((void*) p) T(boost::forward<Args>(x)...);
+            new (static_cast<void*>(p)) T(boost::forward<Args>(x)...);
         }
 
         template <typename T>
@@ -737,7 +737,7 @@ namespace boost { namespace unordered { namespace detail {
                 boost::unordered::detail::has_construct<Alloc, T>::value>::type
             construct(Alloc&, T* p, T const& x)
         {
-            new ((void*) p) T(x);
+            new (static_cast<void*>(p)) T(x);
         }
 
         template <typename T>
@@ -779,7 +779,7 @@ namespace boost { namespace unordered { namespace detail {
                 boost::is_same<T, value_type>::value,
                 void*>::type = 0)
         {
-            new ((void*) p) T(x);
+            new (static_cast<void*>(p)) T(x);
         }
 
         template <typename T>
@@ -1331,6 +1331,14 @@ namespace boost { namespace unordered { namespace detail { namespace func {
         return a.release();
     }
 
+    // This is a bit nasty, when constructing the individual members
+    // of a std::pair, need to cast away 'const'. For modern compilers,
+    // should be able to use std::piecewise_construct instead.
+    template <typename T> T* const_cast_pointer(T* x) { return x; }
+    template <typename T> T* const_cast_pointer(T const* x) {
+        return const_cast<T*>(x);
+    }
+
     // TODO: When possible, it might be better to use std::pair's
     // constructor for std::piece_construct with std::tuple.
     template <typename Alloc, typename Key>
@@ -1339,11 +1347,13 @@ namespace boost { namespace unordered { namespace detail { namespace func {
     {
         node_constructor<Alloc> a(alloc);
         a.create_node();
-        boost::unordered::detail::func::call_construct(
-                alloc, boost::addressof(a.node_->value_ptr()->first),
+        boost::unordered::detail::func::call_construct(alloc,
+                boost::unordered::detail::func::const_cast_pointer(
+                    boost::addressof(a.node_->value_ptr()->first)),
                 boost::forward<Key>(k));
-        boost::unordered::detail::func::call_construct(
-                alloc, boost::addressof(a.node_->value_ptr()->second));
+        boost::unordered::detail::func::call_construct(alloc,
+                boost::unordered::detail::func::const_cast_pointer(
+                    boost::addressof(a.node_->value_ptr()->second)));
         return a.release();
     }
 
@@ -1353,11 +1363,13 @@ namespace boost { namespace unordered { namespace detail { namespace func {
     {
         node_constructor<Alloc> a(alloc);
         a.create_node();
-        boost::unordered::detail::func::call_construct(
-                alloc, boost::addressof(a.node_->value_ptr()->first),
+        boost::unordered::detail::func::call_construct(alloc,
+                boost::unordered::detail::func::const_cast_pointer(
+                    boost::addressof(a.node_->value_ptr()->first)),
                 boost::forward<Key>(k));
-        boost::unordered::detail::func::call_construct(
-                alloc, boost::addressof(a.node_->value_ptr()->second),
+        boost::unordered::detail::func::call_construct(alloc,
+                boost::unordered::detail::func::const_cast_pointer(
+                    boost::addressof(a.node_->value_ptr()->second)),
                 boost::forward<Mapped>(m));
         return a.release();
     }
