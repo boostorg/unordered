@@ -360,21 +360,6 @@ namespace boost { namespace unordered { namespace detail {
         template <typename T>
         inline node_pointer copy_of(T const& v) {
             if (nodes_) {
-                node_tmp<NodeAlloc> a(pop_node(), constructor_.alloc_);
-                a.node_->value() = v;
-                return a.release();
-            }
-            else {
-                constructor_.create_node();
-                boost::unordered::detail::func::call_construct(
-                    constructor_.alloc_, constructor_.node_->value_ptr(), v);
-                return constructor_.release();
-            }
-        }
-
-        template <typename T1, typename T2>
-        inline node_pointer copy_of(std::pair<T1 const, T2> const& v) {
-            if (nodes_) {
                 constructor_.reclaim(pop_node());
             }
             else {
@@ -387,22 +372,6 @@ namespace boost { namespace unordered { namespace detail {
 
         template <typename T>
         inline node_pointer move_copy_of(T& v) {
-            if (nodes_) {
-                node_tmp<NodeAlloc> a(pop_node(), constructor_.alloc_);
-                a.node_->value() = boost::move(v);
-                return a.release();
-            }
-            else {
-                constructor_.create_node();
-                boost::unordered::detail::func::call_construct(
-                    constructor_.alloc_, constructor_.node_->value_ptr(),
-                    boost::move(v));
-                return constructor_.release();
-            }
-        }
-
-        template <typename T1, typename T2>
-        inline node_pointer move_copy_of(std::pair<T1 const, T2>& v) {
             if (nodes_) {
                 constructor_.reclaim(pop_node());
             }

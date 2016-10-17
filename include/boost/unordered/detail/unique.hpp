@@ -106,9 +106,11 @@ namespace boost { namespace unordered { namespace detail {
     template <typename A, typename T>
     struct pick_node
     {
+        typedef typename boost::remove_const<T>::type nonconst;
+
         typedef boost::unordered::detail::allocator_traits<
             typename boost::unordered::detail::rebind_wrap<A,
-                boost::unordered::detail::ptr_node<T> >::type
+                boost::unordered::detail::ptr_node<nonconst> >::type
         > tentative_node_traits;
 
         typedef boost::unordered::detail::allocator_traits<
@@ -116,7 +118,7 @@ namespace boost { namespace unordered { namespace detail {
                 boost::unordered::detail::ptr_bucket >::type
         > tentative_bucket_traits;
 
-        typedef pick_node2<A, T,
+        typedef pick_node2<A, nonconst,
             typename tentative_node_traits::pointer,
             typename tentative_bucket_traits::pointer> pick;
 
