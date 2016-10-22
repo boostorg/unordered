@@ -313,7 +313,7 @@ namespace boost { namespace unordered { namespace detail {
             }
             else {
                 return this->resize_and_add_node(
-                    boost::unordered::detail::func::construct_pair(this->node_alloc(), k),
+                    boost::unordered::detail::func::construct_node_pair(this->node_alloc(), k),
                     key_hash)->value();
             }
         }
@@ -420,7 +420,7 @@ namespace boost { namespace unordered { namespace detail {
             else {
                 return emplace_return(
                     iterator(this->resize_and_add_node(
-                        boost::unordered::detail::func::construct_value_generic(
+                        boost::unordered::detail::func::construct_node_from_args(
                             this->node_alloc(), BOOST_UNORDERED_EMPLACE_FORWARD),
                         key_hash)),
                     true);
@@ -432,7 +432,7 @@ namespace boost { namespace unordered { namespace detail {
             BOOST_UNORDERED_EMPLACE_ARGS)
         {
             node_tmp b(
-                boost::unordered::detail::func::construct_value_generic(
+                boost::unordered::detail::func::construct_node_from_args(
                     this->node_alloc(), BOOST_UNORDERED_EMPLACE_FORWARD),
                 this->node_alloc());
             key_type const& k = this->get_key(b.node_->value());
@@ -453,7 +453,7 @@ namespace boost { namespace unordered { namespace detail {
         emplace_return emplace_impl(no_key, BOOST_UNORDERED_EMPLACE_ARGS)
         {
             node_tmp b(
-                boost::unordered::detail::func::construct_value_generic(
+                boost::unordered::detail::func::construct_node_from_args(
                     this->node_alloc(), BOOST_UNORDERED_EMPLACE_FORWARD),
                 this->node_alloc());
             key_type const& k = this->get_key(b.node_->value());
@@ -509,7 +509,7 @@ namespace boost { namespace unordered { namespace detail {
     
             if (!pos) {
                 node_tmp b(
-                    boost::unordered::detail::func::construct_value(this->node_alloc(), *i),
+                    boost::unordered::detail::func::construct_node(this->node_alloc(), *i),
                     this->node_alloc());
                 if(this->size_ + 1 > this->max_load_)
                     this->reserve_for_insert(this->size_ +
@@ -617,7 +617,7 @@ namespace boost { namespace unordered { namespace detail {
 
             for(node_pointer n = src.begin(); n; n = next_node(n)) {
                 this->add_node(
-                    boost::unordered::detail::func::construct_value(
+                    boost::unordered::detail::func::construct_node(
                      this->node_alloc(), n->value()), n->hash_);
             }
         }
@@ -627,7 +627,7 @@ namespace boost { namespace unordered { namespace detail {
 
             for(node_pointer n = src.begin(); n; n = next_node(n)) {
                 this->add_node(
-                    boost::unordered::detail::func::construct_value(
+                    boost::unordered::detail::func::construct_node(
                         this->node_alloc(), boost::move(n->value())), n->hash_);
             }
         }

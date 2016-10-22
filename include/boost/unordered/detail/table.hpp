@@ -464,7 +464,7 @@ namespace boost { namespace unordered { namespace detail {
             node_pointer n = static_cast<node_pointer>(prev->next_);
             prev->next_ = n->next_;
 
-            boost::unordered::detail::func::destroy_value_impl(node_alloc(),
+            boost::unordered::detail::func::call_destroy(node_alloc(),
                 n->value_ptr());
             boost::unordered::detail::func::destroy(boost::addressof(*n));
             node_allocator_traits::deallocate(node_alloc(), n, 1);
