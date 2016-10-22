@@ -67,9 +67,9 @@ namespace unordered
         typedef std::ptrdiff_t difference_type;
 
         typedef typename table::cl_iterator const_local_iterator;
-        typedef typename table::cl_iterator local_iterator;
+        typedef typename table::l_iterator local_iterator;
         typedef typename table::c_iterator const_iterator;
-        typedef typename table::c_iterator iterator;
+        typedef typename table::iterator iterator;
 
     private:
 
@@ -536,9 +536,9 @@ namespace unordered
         typedef std::ptrdiff_t difference_type;
 
         typedef typename table::cl_iterator const_local_iterator;
-        typedef typename table::cl_iterator local_iterator;
+        typedef typename table::l_iterator local_iterator;
         typedef typename table::c_iterator const_iterator;
-        typedef typename table::c_iterator iterator;
+        typedef typename table::iterator iterator;
 
     private:
 
