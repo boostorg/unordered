@@ -434,6 +434,7 @@ void move_emplace_tests(X*, test::random_generator generator)
 template <class X>
 void default_emplace_tests(X*, test::random_generator)
 {
+#if !BOOST_WORKAROUND(__SUNPRO_CC, BOOST_TESTED_AT(0x5100))
     std::cerr<<"emplace() tests.\n";
     bool is_unique = test::has_unique_keys<X>::value;
 
@@ -464,6 +465,7 @@ void default_emplace_tests(X*, test::random_generator)
     
     BOOST_TEST(x.count(test::get_key<X>(y)) == (is_unique ? 1u : 2u));
     BOOST_TEST(*x.equal_range(test::get_key<X>(y)).first == y);
+#endif
 }
 
 template <class X>
