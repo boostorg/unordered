@@ -247,6 +247,9 @@ void unordered_map_test(X& r, Key const& k, T const& v)
     r.emplace(k, v);
     r.emplace(k_lvalue, v_lvalue);
     r.emplace(rvalue(k), rvalue(v));
+
+    r.emplace(boost::unordered::piecewise_construct,
+            boost::make_tuple(k), boost::make_tuple(v));
 }
 
 template <class X>

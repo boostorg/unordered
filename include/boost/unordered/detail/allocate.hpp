@@ -88,6 +88,16 @@ namespace boost { namespace unordered { namespace detail {
         convert_from_anything(T const&);
     };
 
+    namespace func {
+        // This is a bit nasty, when constructing the individual members
+        // of a std::pair, need to cast away 'const'. For modern compilers,
+        // should be able to use std::piecewise_construct instead.
+        template <typename T> T* const_cast_pointer(T* x) { return x; }
+        template <typename T> T* const_cast_pointer(T const* x) {
+            return const_cast<T*>(x);
+        }
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // emplace_args
     //
@@ -1104,9 +1114,13 @@ BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(10, boost::)
             BOOST_FWD_REF(A0), BOOST_FWD_REF(A1) a1, BOOST_FWD_REF(A2) a2)
     {
         boost::unordered::detail::func::construct_from_tuple(alloc,
-            boost::addressof(address->first), boost::forward<A1>(a1));
+            boost::unordered::detail::func::const_cast_pointer(
+                boost::addressof(address->first)),
+            boost::forward<A1>(a1));
         boost::unordered::detail::func::construct_from_tuple(alloc,
-            boost::addressof(address->second), boost::forward<A2>(a2));
+            boost::unordered::detail::func::const_cast_pointer(
+                boost::addressof(address->second)),
+            boost::forward<A2>(a2));
     }
 
 #else // BOOST_NO_CXX11_VARIADIC_TEMPLATES
@@ -1176,9 +1190,13 @@ BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(10, boost::)
             typename enable_if<use_piecewise<A0>, void*>::type = 0)
     {
         boost::unordered::detail::func::construct_from_tuple(alloc,
-            boost::addressof(address->first), args.a1);
+            boost::unordered::detail::func::const_cast_pointer(
+                boost::addressof(address->first)),
+            args.a1);
         boost::unordered::detail::func::construct_from_tuple(alloc,
-            boost::addressof(address->second), args.a2);
+            boost::unordered::detail::func::const_cast_pointer(
+                boost::addressof(address->second)),
+            args.a2);
     }
 
 #endif // BOOST_NO_CXX11_VARIADIC_TEMPLATES
@@ -1329,14 +1347,6 @@ namespace boost { namespace unordered { namespace detail { namespace func {
         boost::unordered::detail::func::call_construct(
                 alloc, a.node_->value_ptr(), boost::forward<U>(x));
         return a.release();
-    }
-
-    // This is a bit nasty, when constructing the individual members
-    // of a std::pair, need to cast away 'const'. For modern compilers,
-    // should be able to use std::piecewise_construct instead.
-    template <typename T> T* const_cast_pointer(T* x) { return x; }
-    template <typename T> T* const_cast_pointer(T const* x) {
-        return const_cast<T*>(x);
     }
 
     // TODO: When possible, it might be better to use std::pair's
