@@ -61,7 +61,6 @@ namespace boost { namespace unordered { namespace iterator_detail {
     private:
 #endif
         typedef typename Node::node_pointer node_pointer;
-        typedef boost::unordered::iterator_detail::iterator<Node> n_iterator;
         node_pointer ptr_;
         std::size_t bucket_;
         std::size_t bucket_count_;
@@ -72,8 +71,8 @@ namespace boost { namespace unordered { namespace iterator_detail {
 
         l_iterator() BOOST_NOEXCEPT : ptr_() {}
 
-        l_iterator(n_iterator x, std::size_t b, std::size_t c) BOOST_NOEXCEPT
-            : ptr_(x.node_), bucket_(b), bucket_count_(c) {}
+        l_iterator(node_pointer n, std::size_t b, std::size_t c) BOOST_NOEXCEPT
+            : ptr_(n), bucket_(b), bucket_count_(c) {}
 
         value_type& operator*() const {
             return ptr_->value();
@@ -120,7 +119,6 @@ namespace boost { namespace unordered { namespace iterator_detail {
     private:
 
         typedef typename Node::node_pointer node_pointer;
-        typedef boost::unordered::iterator_detail::iterator<Node> n_iterator;
         node_pointer ptr_;
         std::size_t bucket_;
         std::size_t bucket_count_;
@@ -131,8 +129,8 @@ namespace boost { namespace unordered { namespace iterator_detail {
 
         cl_iterator() BOOST_NOEXCEPT : ptr_() {}
 
-        cl_iterator(n_iterator x, std::size_t b, std::size_t c) BOOST_NOEXCEPT :
-            ptr_(x.node_), bucket_(b), bucket_count_(c) {}
+        cl_iterator(node_pointer n, std::size_t b, std::size_t c) BOOST_NOEXCEPT :
+            ptr_(n), bucket_(b), bucket_count_(c) {}
 
         cl_iterator(boost::unordered::iterator_detail::l_iterator<
                 Node, Policy> const& x) BOOST_NOEXCEPT :
@@ -186,10 +184,6 @@ namespace boost { namespace unordered { namespace iterator_detail {
 #if !defined(BOOST_NO_MEMBER_TEMPLATE_FRIENDS)
         template <typename>
         friend struct boost::unordered::iterator_detail::c_iterator;
-        template <typename, typename>
-        friend struct boost::unordered::iterator_detail::l_iterator;
-        template <typename, typename>
-        friend struct boost::unordered::iterator_detail::cl_iterator;
         template <typename>
         friend struct boost::unordered::detail::table;
         template <typename>
