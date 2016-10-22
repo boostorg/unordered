@@ -728,17 +728,6 @@ namespace boost { namespace unordered { namespace detail {
                 find_node_impl(hash(k), k, this->key_eq());
         }
 
-        node_pointer find_matching_node(iterator n) const
-        {
-            // TODO: Does this apply to C++11?
-            //
-            // For some stupid reason, I decided to support equality comparison
-            // when different hash functions are used. So I can't use the hash
-            // value from the node here.
-    
-            return find_node(get_key(*n));
-        }
-
         // Reserve and rehash
 
         void reserve_for_insert(std::size_t);

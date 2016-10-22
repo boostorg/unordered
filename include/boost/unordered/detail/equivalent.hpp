@@ -259,10 +259,10 @@ namespace boost { namespace unordered { namespace detail {
     
             for(iterator n1(this->begin()); n1.node_;)
             {
-                iterator n2(other.find_matching_node(n1));
-                if (!n2.node_) return false;
-                iterator end1(next_group(n1.node_));
-                iterator end2(next_group(n2.node_));
+                node_pointer n2 = other.find_node(other.get_key(n1->value()));
+                if (!n2) return false;
+                node_pointer end1 = next_group(n1);
+                node_pointer end2 = next_group(n2);
                 if (!group_equals(n1, end1, n2, end2)) return false;
                 n1 = end1;    
             }

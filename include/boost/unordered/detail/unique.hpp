@@ -254,7 +254,7 @@ namespace boost { namespace unordered { namespace detail {
     
             for(iterator n1(this->begin()); n1.node_; ++n1)
             {
-                node_pointer n2 = other.find_matching_node(n1);
+                node_pointer n2 = other.find_node(other.get_key(n1->value()));
 
                 if (!n2 || *n1 != n2->value())
                     return false;
