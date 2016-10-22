@@ -257,7 +257,7 @@ namespace boost { namespace unordered { namespace detail {
         {
             if(this->size_ != other.size_) return false;
     
-            for(iterator n1(this->begin()); n1.node_;)
+            for(node_pointer n1 = this->begin(); n1;)
             {
                 node_pointer n2 = other.find_node(other.get_key(n1->value()));
                 if (!n2) return false;
@@ -270,24 +270,24 @@ namespace boost { namespace unordered { namespace detail {
             return true;
         }
 
-        static bool group_equals(iterator n1, iterator end1,
-                iterator n2, iterator end2)
+        static bool group_equals(node_pointer n1, node_pointer end1,
+                node_pointer n2, node_pointer end2)
         {
             for(;;)
             {
-                if (*n1 != *n2) break;
+                if (n1->value() != n2->value()) break;
 
-                ++n1;
-                ++n2;
+                n1 = next_node(n1);
+                n2 = next_node(n2);
             
                 if (n1 == end1) return n2 == end2;
                 if (n2 == end2) return false;
             }
             
-            for(iterator n1a = n1, n2a = n2;;)
+            for(node_pointer n1a = n1, n2a = n2;;)
             {
-                ++n1a;
-                ++n2a;
+                n1a = next_node(n1a);
+                n2a = next_node(n2a);
 
                 if (n1a == end1)
                 {
@@ -298,35 +298,34 @@ namespace boost { namespace unordered { namespace detail {
                 if (n2a == end2) return false;
             }
 
-            iterator start = n1;
-            for(;n1 != end1; ++n1)
+            node_pointer start = n1;
+            for(;n1 != end1; n1 = next_node(n1))
             {
-                value_type const& v = *n1;
-                if (find(start, n1, v)) continue;
-                std::size_t matches = count_equal(n2, end2, v);
-                if (!matches) return false;
-                iterator next = n1;
-                ++next;
-                if (matches != 1 + count_equal(next, end1, v)) return false;
+                value_type const& v = n1->value();
+                if (!find(start, n1, v)) {
+                    std::size_t matches = count_equal(n2, end2, v);
+                    if (!matches) return false;
+                    if (matches != 1 + count_equal(next_node(n1), end1, v)) return false;
+                }
             }
             
             return true;
         }
 
-        static bool find(iterator n, iterator end, value_type const& v)
+        static bool find(node_pointer n, node_pointer end, value_type const& v)
         {
-            for(;n != end; ++n)
-                if (*n == v)
+            for(;n != end; n = next_node(n))
+                if (n->value() == v)
                     return true;
             return false;
         }
 
-        static std::size_t count_equal(iterator n, iterator end,
+        static std::size_t count_equal(node_pointer n, node_pointer end,
             value_type const& v)
         {
             std::size_t count = 0;
-            for(;n != end; ++n)
-                if (*n == v) ++count;
+            for(;n != end; n = next_node(n))
+                if (n->value() == v) ++count;
             return count;
         }
 

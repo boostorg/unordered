@@ -252,11 +252,11 @@ namespace boost { namespace unordered { namespace detail {
         {
             if(this->size_ != other.size_) return false;
     
-            for(iterator n1(this->begin()); n1.node_; ++n1)
+            for(node_pointer n1 = this->begin(); n1; n1 = next_node(n1))
             {
                 node_pointer n2 = other.find_node(other.get_key(n1->value()));
 
-                if (!n2 || *n1 != n2->value())
+                if (!n2 || n1->value() != n2->value())
                     return false;
             }
     
