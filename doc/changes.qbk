@@ -295,5 +295,6 @@ C++11 support has resulted in some breaking changes:
 * Various reference documentation improvements.
 * Better allocator support ([ticket 12459]).
 * Make the no argument constructors implicit.
+* Implement missing allocator aware constructors.
 
 [endsect]
