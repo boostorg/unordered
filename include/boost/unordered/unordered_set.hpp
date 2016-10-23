@@ -79,8 +79,9 @@ namespace unordered
 
         // constructors
 
+        unordered_set();
         explicit unordered_set(
-                size_type = boost::unordered::detail::default_bucket_count,
+                size_type,
                 const hasher& = hasher(),
                 const key_equal& = key_equal(),
                 const allocator_type& = allocator_type());
@@ -548,8 +549,9 @@ namespace unordered
 
         // constructors
 
+        unordered_multiset();
         explicit unordered_multiset(
-                size_type = boost::unordered::detail::default_bucket_count,
+                size_type,
                 const hasher& = hasher(),
                 const key_equal& = key_equal(),
                 const allocator_type& = allocator_type());
@@ -977,6 +979,13 @@ namespace unordered
 ////////////////////////////////////////////////////////////////////////////////
 
     template <class T, class H, class P, class A>
+    unordered_set<T,H,P,A>::unordered_set()
+      : table_(boost::unordered::detail::default_bucket_count, hasher(),
+            key_equal(), allocator_type())
+    {
+    }
+
+    template <class T, class H, class P, class A>
     unordered_set<T,H,P,A>::unordered_set(
             size_type n, const hasher &hf, const key_equal &eql,
             const allocator_type &a)
@@ -1259,6 +1268,13 @@ namespace unordered
     }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+    template <class T, class H, class P, class A>
+    unordered_multiset<T,H,P,A>::unordered_multiset()
+      : table_(boost::unordered::detail::default_bucket_count, hasher(),
+            key_equal(), allocator_type())
+    {
+    }
 
     template <class T, class H, class P, class A>
     unordered_multiset<T,H,P,A>::unordered_multiset(

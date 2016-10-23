@@ -294,5 +294,6 @@ C++11 support has resulted in some breaking changes:
   wrong bucket and equivalent elements would be incorrectly handled.
 * Various reference documentation improvements.
 * Better allocator support ([ticket 12459]).
+* Make the no argument constructors implicit.
 
 [endsect]

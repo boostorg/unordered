@@ -189,10 +189,22 @@ EOL;
               <para>A const_local_iterator object can be used to iterate through a single bucket.</para>
             </description>
           </typedef>
+          <constructor>
+            <postconditions>
+              <code><methodname>size</methodname>() == 0</code>
+            </postconditions>
+            <description>
+              <para>Constructs an empty container using hasher() as the hash function, key_equal() as the key equality predicate, allocator_type() as the allocator and a maximum load factor of 1.0.</para>
+            </description>
+            <requires>
+              <para>If the defaults are used, <code>hasher</code>, <code>key_equal</code> and
+                <code>allocator_type</code> need to be <code>DefaultConstructible</code>.
+              </para>
+            </requires>
+          </constructor>
           <constructor specifiers="explicit">
             <parameter name="n">
               <paramtype>size_type</paramtype>
-              <default><emphasis>implementation-defined</emphasis></default>
             </parameter>
             <parameter name="hf">
               <paramtype>hasher const&amp;</paramtype>

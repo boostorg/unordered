@@ -101,7 +101,18 @@ void container_test(X& r, T const&)
         static_cast<comparison_type>(
             (std::numeric_limits<difference_type>::max)()));
 
+    // Constructors
+
     // I don't test the runtime post-conditions here.
+
+#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
+    // It isn't specified in the container requirements that the no argument
+    // constructor is implicit, but it is defined that way in the concrete
+    // container specification.
+    X u_implicit = {};
+    sink(u_implicit);
+#endif
+
     X u;
     BOOST_TEST(u.size() == 0);
     BOOST_TEST(X().size() == 0);

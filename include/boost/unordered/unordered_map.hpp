@@ -82,8 +82,10 @@ namespace unordered
 
         // constructors
 
+        unordered_map();
+
         explicit unordered_map(
-                size_type = boost::unordered::detail::default_bucket_count,
+                size_type,
                 const hasher& = hasher(),
                 const key_equal& = key_equal(),
                 const allocator_type& = allocator_type());
@@ -565,8 +567,9 @@ namespace unordered
 
         // constructors
 
+        unordered_multimap();
         explicit unordered_multimap(
-                size_type = boost::unordered::detail::default_bucket_count,
+                size_type,
                 const hasher& = hasher(),
                 const key_equal& = key_equal(),
                 const allocator_type& = allocator_type());
@@ -1003,6 +1006,13 @@ namespace unordered
 ////////////////////////////////////////////////////////////////////////////////
 
     template <class K, class T, class H, class P, class A>
+    unordered_map<K,T,H,P,A>::unordered_map()
+      : table_(boost::unordered::detail::default_bucket_count, hasher(),
+            key_equal(), allocator_type())
+    {
+    }
+
+    template <class K, class T, class H, class P, class A>
     unordered_map<K,T,H,P,A>::unordered_map(
             size_type n, const hasher &hf, const key_equal &eql,
             const allocator_type &a)
@@ -1334,6 +1344,13 @@ namespace unordered
     }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+    template <class K, class T, class H, class P, class A>
+    unordered_multimap<K,T,H,P,A>::unordered_multimap()
+      : table_(boost::unordered::detail::default_bucket_count, hasher(),
+            key_equal(), allocator_type())
+    {
+    }
 
     template <class K, class T, class H, class P, class A>
     unordered_multimap<K,T,H,P,A>::unordered_multimap(
