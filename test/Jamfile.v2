@@ -14,6 +14,7 @@ project unordered-test/unordered
         <toolset>gcc:<cxxflags>"-pedantic -Wstrict-aliasing -fstrict-aliasing -Wextra -Wsign-promo -Wunused-parameter -Wconversion -Wfloat-equal -Wshadow"
         <toolset>darwin:<cxxflags>"-pedantic -Wstrict-aliasing -fstrict-aliasing -Wextra -Wsign-promo -Wunused-parameter -Wconversion -Wfloat-equal -Wshadow"
         <toolset>clang:<cxxflags>"-pedantic -Wstrict-aliasing -fstrict-aliasing -Wextra -Wsign-promo -Wunused-parameter -Wsign-conversion -Wconversion -Wfloat-equal -Wshadow"
+        <toolset>msvc:<cxxflags>"/wd4494"
     ;
 
 #alias framework : /boost/test//boost_unit_test_framework ;
