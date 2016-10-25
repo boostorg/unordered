@@ -437,7 +437,7 @@ void unordered_test(X& x, Key& k, Hash& hf, Pred& eq)
     X a2a(10, hf, m);
     X(10, m);
     X a3a(10, m);
-    sink(X(m));
+    (X(m));
     X a4a(m);
 
     test::check_return_type<size_type>::equals(a.erase(k));
