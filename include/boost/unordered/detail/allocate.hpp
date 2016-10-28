@@ -325,7 +325,7 @@ namespace boost { namespace unordered { namespace detail {
 
 #if !defined(BOOST_NO_SFINAE_EXPR)
 
-    template <typename T, unsigned int> struct expr_test;
+    template <typename T, long unsigned int> struct expr_test;
     template <typename T> struct expr_test<T, sizeof(char)> : T {};
 
 #   define BOOST_UNORDERED_CHECK_EXPRESSION(count, result, expression)      \
