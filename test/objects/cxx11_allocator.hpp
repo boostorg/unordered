@@ -201,9 +201,11 @@ namespace test
         public move_allocator_base<Flags>,
         Flags
     {
+#if BOOST_WORKAROUND(BOOST_GCC_VERSION, < 402000)
         template <typename U> struct rebind {
             typedef cxx11_allocator<U, Flags> other;
         };
+#endif
 
         explicit cxx11_allocator(int t = 0)
             : cxx11_allocator_base<T>(t)
@@ -251,9 +253,11 @@ namespace test
             return tmp;
         }
 
+#if BOOST_WORKAROUND(BOOST_GCC_VERSION, < 402000)
         template <typename U> struct rebind {
             typedef cxx11_allocator<U, Flags> other;
         };
+#endif
 
         explicit cxx11_allocator(int t = 0)
             : cxx11_allocator_base<T>(t)

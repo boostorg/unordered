@@ -24,15 +24,15 @@ template class boost::unordered_map<
     std::equal_to<int>,
     test::minimal::allocator<std::pair<int const, int> > >;
 template class boost::unordered_multimap<
-    int,
-    int,
+    int const,
+    int const,
     boost::hash<int>,
     std::equal_to<int>,
     test::minimal::allocator<std::pair<int const, int> > >;
 
 template class boost::unordered_map<
-    test::minimal::assignable,
-    test::minimal::default_assignable,
+    test::minimal::assignable const,
+    test::minimal::default_assignable const,
     test::minimal::hash<test::minimal::assignable>,
     test::minimal::equal_to<test::minimal::assignable>,
     test::minimal::allocator<test::minimal::assignable> >;

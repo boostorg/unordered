@@ -23,13 +23,13 @@ template class boost::unordered_set<
     std::equal_to<int>,
     test::minimal::allocator<int> >;
 template class boost::unordered_multiset<
-    int,
+    int const,
     boost::hash<int>,
     std::equal_to<int>,
     test::minimal::allocator<int> >;
 
 template class boost::unordered_set<
-    test::minimal::assignable,
+    test::minimal::assignable const,
     test::minimal::hash<test::minimal::assignable>,
     test::minimal::equal_to<test::minimal::assignable>,
     test::minimal::allocator<test::minimal::assignable> >;

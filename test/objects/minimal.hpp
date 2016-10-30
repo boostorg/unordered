@@ -447,7 +447,7 @@ namespace minimal
     {
     public:
         typedef T value_type;
-        template <class U> struct rebind { typedef cxx11_allocator<U> other; };
+        //template <class U> struct rebind { typedef cxx11_allocator<U> other; };
 
         cxx11_allocator() {}
         template <class Y> cxx11_allocator(cxx11_allocator<Y> const&) {}

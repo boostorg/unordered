@@ -88,6 +88,16 @@ namespace boost { namespace unordered { namespace detail {
         convert_from_anything(T const&);
     };
 
+    namespace func {
+        // This is a bit nasty, when constructing the individual members
+        // of a std::pair, need to cast away 'const'. For modern compilers,
+        // should be able to use std::piecewise_construct instead.
+        template <typename T> T* const_cast_pointer(T* x) { return x; }
+        template <typename T> T* const_cast_pointer(T const* x) {
+            return const_cast<T*>(x);
+        }
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // emplace_args
     //
@@ -237,9 +247,8 @@ BOOST_PP_REPEAT_FROM_TO(4, BOOST_UNORDERED_EMPLACE_LIMIT, BOOST_UNORDERED_EARGS,
 // 2 = boost::container::allocator_traits
 
 #if !defined(BOOST_UNORDERED_USE_ALLOCATOR_TRAITS)
-#   if defined(__GXX_EXPERIMENTAL_CXX0X__) && \
-            (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7))
-#       define BOOST_UNORDERED_USE_ALLOCATOR_TRAITS 0
+#   if !defined(BOOST_NO_CXX11_ALLOCATOR)
+#       define BOOST_UNORDERED_USE_ALLOCATOR_TRAITS 1
 #   elif defined(BOOST_MSVC)
 #       if BOOST_MSVC < 1400
             // Use container's allocator_traits for older versions of Visual
@@ -316,7 +325,7 @@ namespace boost { namespace unordered { namespace detail {
 
 #if !defined(BOOST_NO_SFINAE_EXPR)
 
-    template <typename T, unsigned int> struct expr_test;
+    template <typename T, long unsigned int> struct expr_test;
     template <typename T> struct expr_test<T, sizeof(char)> : T {};
 
 #   define BOOST_UNORDERED_CHECK_EXPRESSION(count, result, expression)      \
@@ -412,11 +421,69 @@ namespace boost { namespace unordered { namespace detail {
 
 namespace boost { namespace unordered { namespace detail {
 
-    // TODO: Does this match std::allocator_traits<Alloc>::rebind_alloc<T>?
+    template <typename Alloc, typename T>
+    struct rebind_alloc;
+
+#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+
+    template <template<typename, typename...> class Alloc,
+        typename U, typename T, typename... Args>
+    struct rebind_alloc<Alloc<U, Args...>, T>
+    {
+        typedef Alloc<T, Args...> type;
+    };
+
+#else
+
+    template <
+        template<typename> class Alloc,
+        typename U, typename T>
+    struct rebind_alloc<Alloc<U>, T>
+    {
+        typedef Alloc<T> type;
+    };
+
+    template <
+        template<typename, typename> class Alloc,
+        typename U, typename T,
+        typename A0>
+    struct rebind_alloc<Alloc<U, A0>, T>
+    {
+        typedef Alloc<T, A0> type;
+    };
+
+    template <
+        template<typename, typename, typename> class Alloc,
+        typename U, typename T,
+        typename A0, typename A1>
+    struct rebind_alloc<Alloc<U, A0, A1>, T>
+    {
+        typedef Alloc<T, A0, A1> type;
+    };
+
+#endif
+
     template <typename Alloc, typename T>
     struct rebind_wrap
     {
-        typedef typename Alloc::BOOST_NESTED_TEMPLATE rebind<T>::other type;
+        template <typename X>
+        static choice1::type test(choice1,
+            typename X::BOOST_NESTED_TEMPLATE rebind<T>::other* = 0);
+        template <typename X>
+        static choice2::type test(choice2, void* = 0);
+
+        enum { value = (1 == sizeof(test<Alloc>(choose()))) };
+
+        struct fallback {
+            template <typename U>
+            struct rebind {
+                typedef typename rebind_alloc<Alloc, T>::type other;
+            };
+        };
+
+        typedef typename boost::detail::if_true<value>::
+            BOOST_NESTED_TEMPLATE then<Alloc, fallback>
+            ::type::BOOST_NESTED_TEMPLATE rebind<T>::other type;
     };
 
 #   if defined(BOOST_MSVC) && BOOST_MSVC <= 1400
@@ -606,7 +673,14 @@ namespace boost { namespace unordered { namespace detail {
         typedef BOOST_UNORDERED_DEFAULT_TYPE(Alloc, size_type, std::size_t)
             size_type;
 
-        // TODO: rebind_alloc and rebind_traits
+#if !defined(BOOST_NO_CXX11_TEMPLATE_ALIASES)
+        template <typename T>
+        using rebind_alloc = typename rebind_wrap<Alloc, T>::type;
+
+        template <typename T>
+        using rebind_traits =
+            boost::unordered::detail::allocator_traits<rebind_alloc<T> >;
+#endif
 
         static pointer allocate(Alloc& a, size_type n)
             { return a.allocate(n); }
@@ -639,7 +713,7 @@ namespace boost { namespace unordered { namespace detail {
                 ::value>::type
             construct(Alloc&, T* p, BOOST_FWD_REF(Args)... x)
         {
-            new ((void*) p) T(boost::forward<Args>(x)...);
+            new (static_cast<void*>(p)) T(boost::forward<Args>(x)...);
         }
 
         template <typename T>
@@ -673,7 +747,7 @@ namespace boost { namespace unordered { namespace detail {
                 boost::unordered::detail::has_construct<Alloc, T>::value>::type
             construct(Alloc&, T* p, T const& x)
         {
-            new ((void*) p) T(x);
+            new (static_cast<void*>(p)) T(x);
         }
 
         template <typename T>
@@ -715,7 +789,7 @@ namespace boost { namespace unordered { namespace detail {
                 boost::is_same<T, value_type>::value,
                 void*>::type = 0)
         {
-            new ((void*) p) T(x);
+            new (static_cast<void*>(p)) T(x);
         }
 
         template <typename T>
@@ -843,7 +917,7 @@ namespace boost { namespace unordered { namespace detail { namespace func {
     }
 
     template <typename Alloc, typename T>
-    inline void destroy_value_impl(Alloc& alloc, T* x) {
+    inline void call_destroy(Alloc& alloc, T* x) {
         boost::unordered::detail::allocator_traits<Alloc>::destroy(alloc, x);
     }
 
@@ -858,7 +932,7 @@ namespace boost { namespace unordered { namespace detail { namespace func {
     }
 
     template <typename Alloc, typename T>
-    inline void destroy_value_impl(Alloc&, T* x) {
+    inline void call_destroy(Alloc&, T* x) {
         boost::unordered::detail::func::destroy(x);
     }
 
@@ -880,7 +954,7 @@ namespace boost { namespace unordered { namespace detail { namespace func {
     }
 
     template <typename Alloc, typename T>
-    inline void destroy_value_impl(Alloc&, T* x) {
+    inline void call_destroy(Alloc&, T* x) {
         boost::unordered::detail::func::destroy(x);
     }
 
@@ -1021,7 +1095,7 @@ BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(10, boost::)
     // For the standard pair constructor.
 
     template <typename Alloc, typename T, typename... Args>
-    inline void construct_value_impl(Alloc& alloc, T* address,
+    inline void construct_from_args(Alloc& alloc, T* address,
         BOOST_FWD_REF(Args)... args)
     {
         boost::unordered::detail::func::call_construct(alloc,
@@ -1036,32 +1110,36 @@ BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(10, boost::)
     template <typename Alloc, typename A, typename B,
         typename A0, typename A1, typename A2>
     inline typename enable_if<use_piecewise<A0>, void>::type
-        construct_value_impl(Alloc& alloc, std::pair<A, B>* address,
+        construct_from_args(Alloc& alloc, std::pair<A, B>* address,
             BOOST_FWD_REF(A0), BOOST_FWD_REF(A1) a1, BOOST_FWD_REF(A2) a2)
     {
         boost::unordered::detail::func::construct_from_tuple(alloc,
-            boost::addressof(address->first), boost::forward<A1>(a1));
+            boost::unordered::detail::func::const_cast_pointer(
+                boost::addressof(address->first)),
+            boost::forward<A1>(a1));
         boost::unordered::detail::func::construct_from_tuple(alloc,
-            boost::addressof(address->second), boost::forward<A2>(a2));
+            boost::unordered::detail::func::const_cast_pointer(
+                boost::addressof(address->second)),
+            boost::forward<A2>(a2));
     }
 
 #else // BOOST_NO_CXX11_VARIADIC_TEMPLATES
 
-////////////////////////////////////////////////////////////////////////////////
-// Construct from emplace_args
+    ////////////////////////////////////////////////////////////////////////////
+    // Construct from emplace_args
 
     // Explicitly write out first three overloads for the sake of sane
     // error messages.
 
     template <typename Alloc, typename T, typename A0>
-    inline void construct_value_impl(Alloc&, T* address,
+    inline void construct_from_args(Alloc&, T* address,
             emplace_args1<A0> const& args)
     {
         new((void*) address) T(boost::forward<A0>(args.a0));
     }
 
     template <typename Alloc, typename T, typename A0, typename A1>
-    inline void construct_value_impl(Alloc&, T* address,
+    inline void construct_from_args(Alloc&, T* address,
             emplace_args2<A0, A1> const& args)
     {
         new((void*) address) T(
@@ -1071,7 +1149,7 @@ BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(10, boost::)
     }
 
     template <typename Alloc, typename T, typename A0, typename A1, typename A2>
-    inline void construct_value_impl(Alloc&, T* address,
+    inline void construct_from_args(Alloc&, T* address,
             emplace_args3<A0, A1, A2> const& args)
     {
         new((void*) address) T(
@@ -1088,7 +1166,7 @@ BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(10, boost::)
         typename Alloc, typename T,                                         \
         BOOST_PP_ENUM_PARAMS_Z(z, num_params, typename A)                   \
     >                                                                       \
-    inline void construct_value_impl(Alloc&, T* address,                    \
+    inline void construct_from_args(Alloc&, T* address,                     \
         boost::unordered::detail::BOOST_PP_CAT(emplace_args,num_params) <   \
             BOOST_PP_ENUM_PARAMS_Z(z, num_params, A)                        \
         > const& args)                                                      \
@@ -1107,14 +1185,18 @@ BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(10, boost::)
 
     template <typename Alloc, typename A, typename B,
         typename A0, typename A1, typename A2>
-    inline void construct_value_impl(Alloc& alloc, std::pair<A, B>* address,
+    inline void construct_from_args(Alloc& alloc, std::pair<A, B>* address,
             boost::unordered::detail::emplace_args3<A0, A1, A2> const& args,
             typename enable_if<use_piecewise<A0>, void*>::type = 0)
     {
         boost::unordered::detail::func::construct_from_tuple(alloc,
-            boost::addressof(address->first), args.a1);
+            boost::unordered::detail::func::const_cast_pointer(
+                boost::addressof(address->first)),
+            args.a1);
         boost::unordered::detail::func::construct_from_tuple(alloc,
-            boost::addressof(address->second), args.a2);
+            boost::unordered::detail::func::const_cast_pointer(
+                boost::addressof(address->second)),
+            args.a2);
     }
 
 #endif // BOOST_NO_CXX11_VARIADIC_TEMPLATES
@@ -1165,7 +1247,7 @@ namespace boost { namespace unordered { namespace detail {
             BOOST_ASSERT(!node_);
             node_ = p;
             node_constructed_ = true;
-            boost::unordered::detail::func::destroy_value_impl(alloc_,
+            boost::unordered::detail::func::call_destroy(alloc_,
                 node_->value_ptr());
         }
 
@@ -1231,7 +1313,7 @@ namespace boost { namespace unordered { namespace detail {
     node_tmp<Alloc>::~node_tmp()
     {
         if (node_) {
-            boost::unordered::detail::func::destroy_value_impl(alloc_,
+            boost::unordered::detail::func::call_destroy(alloc_,
                 node_->value_ptr());
             boost::unordered::detail::func::destroy(
                 boost::addressof(*node_));
@@ -1242,23 +1324,23 @@ namespace boost { namespace unordered { namespace detail {
 
 namespace boost { namespace unordered { namespace detail { namespace func {
 
-    // Some nicer construct_value functions, might try to
+    // Some nicer construct_node functions, might try to
     // improve implementation later.
 
     template <typename Alloc, BOOST_UNORDERED_EMPLACE_TEMPLATE>
     inline typename boost::unordered::detail::allocator_traits<Alloc>::pointer
-    construct_value_generic(Alloc& alloc, BOOST_UNORDERED_EMPLACE_ARGS)
+    construct_node_from_args(Alloc& alloc, BOOST_UNORDERED_EMPLACE_ARGS)
     {
         node_constructor<Alloc> a(alloc);
         a.create_node();
-        construct_value_impl(alloc, a.node_->value_ptr(),
+        construct_from_args(alloc, a.node_->value_ptr(),
                 BOOST_UNORDERED_EMPLACE_FORWARD);
         return a.release();
     }
 
     template <typename Alloc, typename U>
     inline typename boost::unordered::detail::allocator_traits<Alloc>::pointer
-    construct_value(Alloc& alloc, BOOST_FWD_REF(U) x)
+    construct_node(Alloc& alloc, BOOST_FWD_REF(U) x)
     {
         node_constructor<Alloc> a(alloc);
         a.create_node();
@@ -1271,29 +1353,33 @@ namespace boost { namespace unordered { namespace detail { namespace func {
     // constructor for std::piece_construct with std::tuple.
     template <typename Alloc, typename Key>
     inline typename boost::unordered::detail::allocator_traits<Alloc>::pointer
-    construct_pair(Alloc& alloc, BOOST_FWD_REF(Key) k)
+    construct_node_pair(Alloc& alloc, BOOST_FWD_REF(Key) k)
     {
         node_constructor<Alloc> a(alloc);
         a.create_node();
-        boost::unordered::detail::func::call_construct(
-                alloc, boost::addressof(a.node_->value_ptr()->first),
+        boost::unordered::detail::func::call_construct(alloc,
+                boost::unordered::detail::func::const_cast_pointer(
+                    boost::addressof(a.node_->value_ptr()->first)),
                 boost::forward<Key>(k));
-        boost::unordered::detail::func::call_construct(
-                alloc, boost::addressof(a.node_->value_ptr()->second));
+        boost::unordered::detail::func::call_construct(alloc,
+                boost::unordered::detail::func::const_cast_pointer(
+                    boost::addressof(a.node_->value_ptr()->second)));
         return a.release();
     }
 
     template <typename Alloc, typename Key, typename Mapped>
     inline typename boost::unordered::detail::allocator_traits<Alloc>::pointer
-    construct_pair(Alloc& alloc, BOOST_FWD_REF(Key) k, BOOST_FWD_REF(Mapped) m)
+    construct_node_pair(Alloc& alloc, BOOST_FWD_REF(Key) k, BOOST_FWD_REF(Mapped) m)
     {
         node_constructor<Alloc> a(alloc);
         a.create_node();
-        boost::unordered::detail::func::call_construct(
-                alloc, boost::addressof(a.node_->value_ptr()->first),
+        boost::unordered::detail::func::call_construct(alloc,
+                boost::unordered::detail::func::const_cast_pointer(
+                    boost::addressof(a.node_->value_ptr()->first)),
                 boost::forward<Key>(k));
-        boost::unordered::detail::func::call_construct(
-                alloc, boost::addressof(a.node_->value_ptr()->second),
+        boost::unordered::detail::func::call_construct(alloc,
+                boost::unordered::detail::func::const_cast_pointer(
+                    boost::addressof(a.node_->value_ptr()->second)),
                 boost::forward<Mapped>(m));
         return a.release();
     }
