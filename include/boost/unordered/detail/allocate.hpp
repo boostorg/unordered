@@ -52,7 +52,8 @@
                               // will be default-initialized.
 #endif
 
-#define BOOST_UNORDERED_EMPLACE_LIMIT 10
+// Maximum number of arguments supported by emplace + 1.
+#define BOOST_UNORDERED_EMPLACE_LIMIT 11
 
 namespace boost { namespace unordered { namespace detail {
 
