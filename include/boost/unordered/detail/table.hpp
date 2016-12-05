@@ -589,7 +589,10 @@ namespace boost { namespace unordered { namespace detail {
             mlf_ = x.mlf_;
             recalculate_max_load();
 
-            if (!size_ && !x.size_) return;
+            if (!size_ && !x.size_) {
+                new_func_this.commit();
+                return;
+            }
 
             if (x.size_ >= max_load_) {
                 create_buckets(min_buckets_for_size(x.size_));

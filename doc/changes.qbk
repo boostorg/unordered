@@ -296,5 +296,11 @@ C++11 support has resulted in some breaking changes:
 * Better allocator support ([ticket 12459]).
 * Make the no argument constructors implicit.
 * Implement missing allocator aware constructors.
+* Fix assigning the hash/key equality functions for empty containers.
+* Remove unary/binary_function from the examples in the documentation.
+  They are removed in C++17.
+* Support 10 constructor arguments in emplace. It was meant to support up to 10
+  arguments, but an off by one error in the preprocessor code meant it only
+  supports up to 10.
 
 [endsect]
