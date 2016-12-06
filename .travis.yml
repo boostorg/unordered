@@ -49,9 +49,9 @@ before_script:
         echo "using clang : m32 : clang++ -m32 -Werror --std=c++03 ;" >> ~/user-config.jam
         echo "using clang : std11m32 : clang++ -m32 -Werror --std=c++11 ;" >> ~/user-config.jam
     - cat ~/user-config.jam
-    - wget -O boost.tar.bz2 https://sourceforge.net/projects/boost/files/boost/snapshots/master/boost_1_62_0.tar.bz2/download
+    - wget -O boost.tar.bz2 https://sourceforge.net/projects/boost/files/boost/snapshots/master/boost_1_63_0.tar.bz2/download
     - tar -xjf boost.tar.bz2
-    - mv boost_1_62_0 boost
+    - mv boost_1_63_0 boost
     - rm -r boost/boost/unordered
 
 script:
