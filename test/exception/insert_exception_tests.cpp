@@ -243,6 +243,62 @@ struct insert_test_rehash3 : public insert_test_base<T>
 #define ALL_TESTS BASIC_TESTS
 #endif
 
-
 EXCEPTION_TESTS(ALL_TESTS, CONTAINER_SEQ)
+
+template <class T>
+struct pair_emplace_test1 : public insert_test_base<T>
+{
+    typedef BOOST_DEDUCED_TYPENAME insert_test_base<T>::strong_type strong_type;
+
+    void run(T& x, strong_type& strong) const {
+        for(BOOST_DEDUCED_TYPENAME test::random_values<T>::const_iterator
+            it = this->values.begin(), end = this->values.end();
+            it != end; ++it)
+        {
+            strong.store(x, test::detail::tracker.count_allocations);
+            x.emplace(boost::unordered::piecewise_construct,
+                boost::make_tuple(it->first),
+                boost::make_tuple(it->second));
+        }
+    }
+};
+
+template <class T>
+struct pair_emplace_test2 : public insert_test_base<T>
+{
+    typedef BOOST_DEDUCED_TYPENAME insert_test_base<T>::strong_type strong_type;
+
+    void run(T& x, strong_type& strong) const {
+        for(BOOST_DEDUCED_TYPENAME test::random_values<T>::const_iterator
+            it = this->values.begin(), end = this->values.end();
+            it != end; ++it)
+        {
+            strong.store(x, test::detail::tracker.count_allocations);
+            x.emplace(boost::unordered::piecewise_construct,
+                boost::make_tuple(it->first),
+                boost::make_tuple(it->second.tag1_, it->second.tag2_));
+        }
+    }
+};
+
+EXCEPTION_TESTS((pair_emplace_test1)(pair_emplace_test2), CONTAINER_PAIR_SEQ)
+
+template <class T>
+struct index_insert_test1 : public insert_test_base<T>
+{
+    typedef BOOST_DEDUCED_TYPENAME insert_test_base<T>::strong_type strong_type;
+
+    void run(T& x, strong_type& strong) const {
+        for(BOOST_DEDUCED_TYPENAME test::random_values<T>::const_iterator
+            it = this->values.begin(), end = this->values.end();
+            it != end; ++it)
+        {
+            strong.store(x, test::detail::tracker.count_allocations);
+            x[it->first];
+        }
+    }
+};
+
+EXCEPTION_TESTS((index_insert_test1), (test_map))
+
 RUN_TESTS()

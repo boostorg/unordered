@@ -1118,10 +1118,19 @@ BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(10, boost::)
             boost::unordered::detail::func::const_cast_pointer(
                 boost::addressof(address->first)),
             boost::forward<A1>(a1));
-        boost::unordered::detail::func::construct_from_tuple(alloc,
-            boost::unordered::detail::func::const_cast_pointer(
-                boost::addressof(address->second)),
-            boost::forward<A2>(a2));
+        BOOST_TRY {
+            boost::unordered::detail::func::construct_from_tuple(alloc,
+                boost::unordered::detail::func::const_cast_pointer(
+                    boost::addressof(address->second)),
+                boost::forward<A2>(a2));
+        }
+        BOOST_CATCH(...) {
+            boost::unordered::detail::func::call_destroy(alloc,
+                boost::unordered::detail::func::const_cast_pointer(
+                    boost::addressof(address->first)));
+            BOOST_RETHROW;
+        }
+        BOOST_CATCH_END
     }
 
 #else // BOOST_NO_CXX11_VARIADIC_TEMPLATES
@@ -1194,10 +1203,19 @@ BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(10, boost::)
             boost::unordered::detail::func::const_cast_pointer(
                 boost::addressof(address->first)),
             args.a1);
-        boost::unordered::detail::func::construct_from_tuple(alloc,
-            boost::unordered::detail::func::const_cast_pointer(
-                boost::addressof(address->second)),
-            args.a2);
+        BOOST_TRY {
+            boost::unordered::detail::func::construct_from_tuple(alloc,
+                boost::unordered::detail::func::const_cast_pointer(
+                    boost::addressof(address->second)),
+                args.a2);
+        }
+        BOOST_CATCH(...) {
+            boost::unordered::detail::func::call_destroy(alloc,
+                boost::unordered::detail::func::const_cast_pointer(
+                    boost::addressof(address->first)));
+            BOOST_RETHROW;
+        }
+        BOOST_CATCH_END
     }
 
 #endif // BOOST_NO_CXX11_VARIADIC_TEMPLATES
@@ -1362,9 +1380,18 @@ namespace boost { namespace unordered { namespace detail { namespace func {
                 boost::unordered::detail::func::const_cast_pointer(
                     boost::addressof(a.node_->value_ptr()->first)),
                 boost::forward<Key>(k));
-        boost::unordered::detail::func::call_construct(alloc,
+        BOOST_TRY {
+            boost::unordered::detail::func::call_construct(alloc,
+                    boost::unordered::detail::func::const_cast_pointer(
+                        boost::addressof(a.node_->value_ptr()->second)));
+        }
+        BOOST_CATCH(...) {
+            boost::unordered::detail::func::call_destroy(alloc,
                 boost::unordered::detail::func::const_cast_pointer(
-                    boost::addressof(a.node_->value_ptr()->second)));
+                    boost::addressof(a.node_->value_ptr()->first)));
+            BOOST_RETHROW;
+        }
+        BOOST_CATCH_END
         return a.release();
     }
 
@@ -1378,10 +1405,19 @@ namespace boost { namespace unordered { namespace detail { namespace func {
                 boost::unordered::detail::func::const_cast_pointer(
                     boost::addressof(a.node_->value_ptr()->first)),
                 boost::forward<Key>(k));
-        boost::unordered::detail::func::call_construct(alloc,
+        BOOST_TRY {
+            boost::unordered::detail::func::call_construct(alloc,
+                    boost::unordered::detail::func::const_cast_pointer(
+                        boost::addressof(a.node_->value_ptr()->second)),
+                    boost::forward<Mapped>(m));
+        }
+        BOOST_CATCH(...) {
+            boost::unordered::detail::func::call_destroy(alloc,
                 boost::unordered::detail::func::const_cast_pointer(
-                    boost::addressof(a.node_->value_ptr()->second)),
-                boost::forward<Mapped>(m));
+                    boost::addressof(a.node_->value_ptr()->first)));
+            BOOST_RETHROW;
+        }
+        BOOST_CATCH_END
         return a.release();
     }
 }}}}
