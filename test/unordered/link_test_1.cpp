@@ -10,10 +10,8 @@
 #include "../helpers/postfix.hpp"
 // clang-format on
 
-void foo(boost::unordered_set<int>&,
-        boost::unordered_map<int, int>&,
-        boost::unordered_multiset<int>&,
-        boost::unordered_multimap<int, int>&);
+void foo(boost::unordered_set<int>&, boost::unordered_map<int, int>&,
+    boost::unordered_multiset<int>&, boost::unordered_multimap<int, int>&);
 
 int main()
 {
@@ -23,6 +21,6 @@ int main()
     boost::unordered_multimap<int, int> x4;
 
     foo(x1, x2, x3, x4);
-    
+
     return 0;
 }
