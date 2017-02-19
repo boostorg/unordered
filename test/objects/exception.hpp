@@ -13,6 +13,7 @@
 #include <boost/limits.hpp>
 #include <new>
 #include "../helpers/fwd.hpp"
+#include "../helpers/count.hpp"
 #include "../helpers/memory.hpp"
 
 namespace test
@@ -24,6 +25,7 @@ namespace exception
     class equal_to;
     template <class T> class allocator;
     object generate(object const*, random_generator);
+    std::pair<object, object> generate(std::pair<object, object> const*, random_generator);
 
     struct true_type
     {
@@ -35,7 +37,7 @@ namespace exception
         enum { value = false };
     };
 
-    class object
+    class object : private counted_object
     {
     public:
         int tag1_, tag2_;
@@ -55,7 +57,7 @@ namespace exception
         }
 
         object(object const& x)
-             : tag1_(x.tag1_), tag2_(x.tag2_)
+             : counted_object(x), tag1_(x.tag1_), tag2_(x.tag2_)
         {
             UNORDERED_SCOPE(object::object(object)) {
                 UNORDERED_EPOINT("Mock object copy constructor.");
@@ -106,6 +108,13 @@ namespace exception
             return object(::test::generate(x, g), ::test::generate(x, g));
         }
 
+        friend std::pair<object, object> generate(std::pair<object, object> const*, random_generator g) {
+            int* x = 0;
+            return std::make_pair(
+                object(::test::generate(x, g), ::test::generate(x, g)),
+                object(::test::generate(x, g), ::test::generate(x, g)));
+        }
+
         friend std::ostream& operator<<(std::ostream& out, object const& o)
         {
             return out<<"("<<o.tag1_<<","<<o.tag2_<<")";
@@ -146,6 +155,18 @@ namespace exception
                 UNORDERED_EPOINT("Mock hash function.");
             }
 
+            return hash_impl(x);
+        }
+
+        std::size_t operator()(std::pair<object, object> const& x) const {
+            UNORDERED_SCOPE(hash::operator()(std::pair<object, object>)) {
+                UNORDERED_EPOINT("Mock hash pair function.");
+            }
+
+            return hash_impl(x.first) * 193ul + hash_impl(x.second) * 97ul + 29ul;
+        }
+
+        std::size_t hash_impl(object const& x) const {
             int result;
             switch(tag_) {
             case 1:
@@ -209,6 +230,18 @@ namespace exception
                 UNORDERED_EPOINT("Mock equal_to function.");
             }
 
+            return equal_impl(x1, x2);
+        }
+
+        bool operator()(std::pair<object, object> const& x1, std::pair<object, object> const& x2) const {
+            UNORDERED_SCOPE(equal_to::operator()(std::pair<object, object>, std::pair<object, object>)) {
+                UNORDERED_EPOINT("Mock equal_to function.");
+            }
+
+            return equal_impl(x1.first, x2.first) && equal_impl(x1.second, x2.second);
+        }
+
+        bool equal_impl(object const& x1, object const& x2) const {
             switch(tag_) {
             case 1:
                 return x1.tag1_ == x2.tag1_;
@@ -593,6 +626,11 @@ namespace exception
 namespace test
 {
     test::exception::object generate(test::exception::object const* x,
+        random_generator g) {
+        return test::exception::generate(x, g);
+    }
+
+    std::pair<test::exception::object, test::exception::object> generate(std::pair<test::exception::object, test::exception::object> const* x,
         random_generator g) {
         return test::exception::generate(x, g);
     }

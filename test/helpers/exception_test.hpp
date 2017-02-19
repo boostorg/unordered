@@ -7,6 +7,7 @@
 #define BOOST_UNORDERED_EXCEPTION_TEST_HEADER
 
 #include "./test.hpp"
+#include "./count.hpp"
 
 #include <boost/preprocessor/seq/for_each_product.hpp>
 #include <boost/preprocessor/seq/elem.hpp>
@@ -187,6 +188,7 @@ namespace test {
         test_runner(Test const& t) : test_(t), exception_in_check_(false) {}
         void run() {
             DISABLE_EXCEPTIONS;
+            test::check_instances check;
             test::scope = "";
             BOOST_DEDUCED_TYPENAME Test::data_type x(test_.init());
             BOOST_DEDUCED_TYPENAME Test::strong_type strong;
