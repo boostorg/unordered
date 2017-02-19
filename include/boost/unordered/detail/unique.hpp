@@ -7,14 +7,7 @@
 #ifndef BOOST_UNORDERED_DETAIL_UNIQUE_HPP_INCLUDED
 #define BOOST_UNORDERED_DETAIL_UNIQUE_HPP_INCLUDED
 
-#include <boost/config.hpp>
-#if defined(BOOST_HAS_PRAGMA_ONCE)
-#pragma once
-#endif
-
 #include <boost/unordered/detail/extract_key.hpp>
-#include <boost/throw_exception.hpp>
-#include <stdexcept>
 
 namespace boost { namespace unordered { namespace detail {
 
