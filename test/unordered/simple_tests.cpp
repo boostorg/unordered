@@ -5,10 +5,12 @@
 
 // This test checks the runtime requirements of containers.
 
+// clang-format off
 #include "../helpers/prefix.hpp"
 #include <boost/unordered_set.hpp>
 #include <boost/unordered_map.hpp>
 #include "../helpers/postfix.hpp"
+// clang-format on
 
 #include "../helpers/test.hpp"
 #include <cstdlib>

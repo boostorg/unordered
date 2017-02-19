@@ -6,9 +6,11 @@
 // The code for erasing elements from containers with equivalent keys is very
 // hairy with several tricky edge cases - so explicitly test each one.
 
+// clang-format off
 #include "../helpers/prefix.hpp"
 #include <boost/unordered_map.hpp>
 #include "../helpers/postfix.hpp"
+// clang-format on
 
 #include "../helpers/test.hpp"
 #include "../helpers/list.hpp"

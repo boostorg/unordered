@@ -3,9 +3,11 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+// clang-format off
 #include "../helpers/prefix.hpp"
 #include <boost/unordered/unordered_map_fwd.hpp>
 #include "../helpers/postfix.hpp"
+// clang-format on
 
 template <typename T>
 void call_swap(boost::unordered_map<T,T>& x,

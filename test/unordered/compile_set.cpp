@@ -6,9 +6,11 @@
 // This test creates the containers with members that meet their minimum
 // requirements. Makes sure everything compiles and is defined correctly.
 
+// clang-format off
 #include "../helpers/prefix.hpp"
 #include <boost/unordered_set.hpp>
 #include "../helpers/postfix.hpp"
+// clang-format on
 
 #include <iostream>
 #include "../helpers/test.hpp"
