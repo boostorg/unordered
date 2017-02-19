@@ -4,7 +4,7 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/unordered/unordered_map_fwd.hpp>
-#include <boost/unordered/detail/equivalent.hpp>
+#include <boost/unordered/detail/implementation.hpp>
 
 namespace boost { namespace unordered { namespace detail {
     template <typename A, typename K, typename M, typename H, typename P>
