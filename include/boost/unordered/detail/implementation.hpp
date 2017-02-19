@@ -89,6 +89,7 @@ namespace boost { namespace unordered { namespace detail {
     ////////////////////////////////////////////////////////////////////////////
     // primes
 
+// clang-format off
 #define BOOST_UNORDERED_PRIMES \
     (17ul)(29ul)(37ul)(53ul)(67ul)(79ul) \
     (97ul)(131ul)(193ul)(257ul)(389ul)(521ul)(769ul) \
@@ -97,6 +98,7 @@ namespace boost { namespace unordered { namespace detail {
     (1572869ul)(3145739ul)(6291469ul)(12582917ul)(25165843ul) \
     (50331653ul)(100663319ul)(201326611ul)(402653189ul)(805306457ul) \
     (1610612741ul)(3221225473ul)(4294967291ul)
+// clang-format on
 
     template<class T> struct prime_list_template
     {
