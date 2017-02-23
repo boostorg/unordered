@@ -29,7 +29,7 @@ template <typename A, typename K, typename M, typename H, typename P> struct map
     typedef typename pick::link_pointer link_pointer;
 
     typedef boost::unordered::detail::table_impl<types> table;
-    typedef boost::unordered::detail::map_extractor<K, value_type> extractor;
+    typedef boost::unordered::detail::map_extractor<value_type> extractor;
 
     typedef typename boost::unordered::detail::pick_policy<K>::type policy;
 
@@ -62,7 +62,7 @@ struct multimap
     typedef typename pick::link_pointer link_pointer;
 
     typedef boost::unordered::detail::grouped_table_impl<types> table;
-    typedef boost::unordered::detail::map_extractor<K, value_type> extractor;
+    typedef boost::unordered::detail::map_extractor<value_type> extractor;
 
     typedef typename boost::unordered::detail::pick_policy<K>::type policy;
 
