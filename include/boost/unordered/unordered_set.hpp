@@ -47,12 +47,12 @@ template <class T, class H, class P, class A> class unordered_set
 
   private:
     typedef boost::unordered::detail::set<A, T, H, P> types;
-    typedef typename types::traits allocator_traits;
+    typedef typename types::value_allocator_traits value_allocator_traits;
     typedef typename types::table table;
 
   public:
-    typedef typename allocator_traits::pointer pointer;
-    typedef typename allocator_traits::const_pointer const_pointer;
+    typedef typename value_allocator_traits::pointer pointer;
+    typedef typename value_allocator_traits::const_pointer const_pointer;
 
     typedef value_type& reference;
     typedef value_type const& const_reference;
@@ -447,12 +447,12 @@ template <class T, class H, class P, class A> class unordered_multiset
 
   private:
     typedef boost::unordered::detail::multiset<A, T, H, P> types;
-    typedef typename types::traits allocator_traits;
+    typedef typename types::value_allocator_traits value_allocator_traits;
     typedef typename types::table table;
 
   public:
-    typedef typename allocator_traits::pointer pointer;
-    typedef typename allocator_traits::const_pointer const_pointer;
+    typedef typename value_allocator_traits::pointer pointer;
+    typedef typename value_allocator_traits::const_pointer const_pointer;
 
     typedef value_type& reference;
     typedef value_type const& const_reference;
