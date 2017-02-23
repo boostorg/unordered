@@ -5,18 +5,19 @@
 
 // This test checks the runtime requirements of containers.
 
+// clang-format off
 #include "../helpers/prefix.hpp"
 #include <boost/unordered_set.hpp>
 #include <boost/unordered_map.hpp>
 #include "../helpers/postfix.hpp"
+// clang-format on
 
 #include "../helpers/test.hpp"
 #include <cstdlib>
 #include <algorithm>
 #include "../helpers/equivalent.hpp"
 
-template <class X>
-void simple_test(X const& a)
+template <class X> void simple_test(X const& a)
 {
     test::unordered_equivalence_tester<X> equivalent(a);
 
@@ -72,9 +73,8 @@ void simple_test(X const& a)
     }
 
     {
-        BOOST_TEST(a.size() ==
-            static_cast<BOOST_DEDUCED_TYPENAME X::size_type>(
-                std::distance(a.begin(), a.end())));
+        BOOST_TEST(a.size() == static_cast<BOOST_DEDUCED_TYPENAME X::size_type>(
+                                   std::distance(a.begin(), a.end())));
     }
 
     {
@@ -93,38 +93,40 @@ UNORDERED_AUTO_TEST(simple_tests)
     using namespace std;
     srand(14878);
 
-    std::cout<<"Test unordered_set.\n";
+    std::cout << "Test unordered_set.\n";
     boost::unordered_set<int> set;
     simple_test(set);
 
-    set.insert(1); set.insert(2); set.insert(1456);
+    set.insert(1);
+    set.insert(2);
+    set.insert(1456);
     simple_test(set);
 
-    std::cout<<"Test unordered_multiset.\n";
+    std::cout << "Test unordered_multiset.\n";
     boost::unordered_multiset<int> multiset;
     simple_test(multiset);
-    
-    for(int i1 = 0; i1 < 1000; ++i1) {
+
+    for (int i1 = 0; i1 < 1000; ++i1) {
         int count = rand() % 10, index = rand();
-        for(int j = 0; j < count; ++j)
+        for (int j = 0; j < count; ++j)
             multiset.insert(index);
     }
     simple_test(multiset);
-    
-    std::cout<<"Test unordered_map.\n";
+
+    std::cout << "Test unordered_map.\n";
     boost::unordered_map<int, int> map;
 
-    for(int i2 = 0; i2 < 1000; ++i2) {
+    for (int i2 = 0; i2 < 1000; ++i2) {
         map.insert(std::pair<const int, int>(rand(), rand()));
     }
     simple_test(map);
 
-    std::cout<<"Test unordered_multimap.\n";
+    std::cout << "Test unordered_multimap.\n";
     boost::unordered_multimap<int, int> multimap;
 
-    for(int i3 = 0; i3 < 1000; ++i3) {
+    for (int i3 = 0; i3 < 1000; ++i3) {
         int count = rand() % 10, index = rand();
-        for(int j = 0; j < count; ++j)
+        for (int j = 0; j < count; ++j)
             multimap.insert(std::pair<const int, int>(index, rand()));
     }
     simple_test(multimap);

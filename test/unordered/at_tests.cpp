@@ -3,16 +3,19 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+// clang-format off
 #include "../helpers/prefix.hpp"
 #include <boost/unordered_map.hpp>
 #include "../helpers/postfix.hpp"
+// clang-format on
 
 #include "../helpers/test.hpp"
 #include <string>
 
 namespace at_tests {
 
-UNORDERED_AUTO_TEST(at_tests) {
+UNORDERED_AUTO_TEST(at_tests)
+{
     BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Create Map" << std::endl;
 
     boost::unordered_map<std::string, int> x;
@@ -32,13 +35,11 @@ UNORDERED_AUTO_TEST(at_tests) {
     try {
         x.at("three");
         BOOST_ERROR("Should have thrown.");
-    }
-    catch(std::out_of_range) {
+    } catch (std::out_of_range) {
     }
 
     BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Finished" << std::endl;
 }
-
 }
 
 RUN_TESTS()
