@@ -13,10 +13,8 @@
 #include <boost/assert.hpp>
 #include <boost/detail/no_exceptions_support.hpp>
 #include <boost/detail/select_type.hpp>
-#include <boost/detail/select_type.hpp>
 #include <boost/iterator/iterator_categories.hpp>
 #include <boost/limits.hpp>
-#include <boost/move/move.hpp>
 #include <boost/move/move.hpp>
 #include <boost/preprocessor/cat.hpp>
 #include <boost/preprocessor/repetition/enum.hpp>
@@ -25,7 +23,6 @@
 #include <boost/preprocessor/repetition/repeat_from_to.hpp>
 #include <boost/preprocessor/seq/enum.hpp>
 #include <boost/preprocessor/seq/size.hpp>
-#include <boost/swap.hpp>
 #include <boost/swap.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -39,7 +36,6 @@
 #include <boost/type_traits/is_nothrow_move_constructible.hpp>
 #include <boost/unordered/detail/fwd.hpp>
 #include <boost/utility/addressof.hpp>
-#include <boost/utility/enable_if.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <cmath>
 #include <iterator>
