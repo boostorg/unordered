@@ -2653,12 +2653,14 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
 
         using namespace std;
 
-        // From 6.3.1/13:
-        // size < mlf_ * count
-        // => count > size / mlf_
+        // From insert/emplace requirements:
+        //
+        // size <= mlf_ * count
+        // => count >= size / mlf_
         //
         // Or from rehash post-condition:
-        // count > size / mlf_
+        //
+        // count >= size / mlf_
 
         return policy::new_bucket_count(
             boost::unordered::detail::double_to_size(
@@ -3100,10 +3102,7 @@ inline void table<Types>::reserve_for_insert(std::size_t size)
 {
     if (!buckets_) {
         create_buckets((std::max)(bucket_count_, min_buckets_for_size(size)));
-    }
-    // According to the standard this should be 'size >= max_load_',
-    // but I think this is better, defect report filed.
-    else if (size > max_load_) {
+    } else if (size > max_load_) {
         std::size_t num_buckets =
             min_buckets_for_size((std::max)(size, size_ + (size_ >> 1)));
 
