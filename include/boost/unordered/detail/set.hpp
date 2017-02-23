@@ -16,7 +16,7 @@ template <typename A, typename T, typename H, typename P> struct set
     typedef T value_type;
     typedef H hasher;
     typedef P key_equal;
-    typedef T key_type;
+    typedef T const const_key_type;
 
     typedef typename ::boost::unordered::detail::rebind_wrap<A,
         value_type>::type value_allocator;
@@ -48,7 +48,7 @@ template <typename A, typename T, typename H, typename P> struct multiset
     typedef T value_type;
     typedef H hasher;
     typedef P key_equal;
-    typedef T key_type;
+    typedef T const const_key_type;
 
     typedef typename ::boost::unordered::detail::rebind_wrap<A,
         value_type>::type value_allocator;
