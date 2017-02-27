@@ -637,6 +637,171 @@ template <class X> void map_tests2(X*, test::random_generator generator)
     }
 }
 
+template <class X> void try_emplace_tests(X*, test::random_generator generator)
+{
+    std::cerr << "try_emplace(key, value)\n";
+
+    typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
+
+    {
+        test::check_instances check_;
+
+        X x;
+        test::ordered<X> tracker = test::create_ordered(x);
+
+        test::random_values<X> v(1000, generator);
+        for (BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator it =
+                 v.begin();
+             it != v.end(); ++it) {
+            BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count =
+                x.bucket_count();
+            float b = x.max_load_factor();
+
+            iterator pos = x.find(it->first);
+            bool found = pos != x.end();
+
+            std::pair<typename X::iterator, bool> r =
+                x.try_emplace(it->first, it->second);
+            if (found) {
+                BOOST_TEST(pos == r.first);
+                BOOST_TEST(!r.second);
+            } else {
+                BOOST_TEST(r.second);
+            }
+            BOOST_TEST_EQ(r.first->first, it->first);
+            BOOST_TEST_EQ(r.first->second, it->second);
+
+            tracker.insert(*it);
+            tracker.compare_key(x, *it);
+
+            if (static_cast<double>(x.size()) <
+                b * static_cast<double>(old_bucket_count))
+                BOOST_TEST(x.bucket_count() == old_bucket_count);
+        }
+
+        test::check_equivalent_keys(x);
+    }
+
+    std::cerr << "try_emplace(begin(), key, value)\n";
+
+    typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
+
+    {
+        test::check_instances check_;
+
+        X x;
+        test::ordered<X> tracker = test::create_ordered(x);
+
+        test::random_values<X> v(1000, generator);
+        for (BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator it =
+                 v.begin();
+             it != v.end(); ++it) {
+            BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count =
+                x.bucket_count();
+            float b = x.max_load_factor();
+
+            iterator pos = x.find(it->first);
+            bool found = pos != x.end();
+
+            typename X::iterator r =
+                x.try_emplace(r.begin(), it->first, it->second);
+            if (found) {
+                BOOST_TEST(pos == r);
+            }
+            BOOST_TEST_EQ(r->first, it->first);
+            BOOST_TEST_EQ(r->second, it->second);
+
+            tracker.insert(*it);
+            tracker.compare_key(x, *it);
+
+            if (static_cast<double>(x.size()) <
+                b * static_cast<double>(old_bucket_count))
+                BOOST_TEST(x.bucket_count() == old_bucket_count);
+        }
+
+        test::check_equivalent_keys(x);
+    }
+
+    std::cerr << "try_emplace(end(), key, value)\n";
+
+    typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
+
+    {
+        test::check_instances check_;
+
+        X x;
+        test::ordered<X> tracker = test::create_ordered(x);
+
+        test::random_values<X> v(1000, generator);
+        for (BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator it =
+                 v.begin();
+             it != v.end(); ++it) {
+            BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count =
+                x.bucket_count();
+            float b = x.max_load_factor();
+
+            iterator pos = x.find(it->first);
+            bool found = pos != x.end();
+
+            typename X::iterator r =
+                x.try_emplace(r.end(), it->first, it->second);
+            if (found) {
+                BOOST_TEST(pos == r);
+            }
+            BOOST_TEST_EQ(r->first, it->first);
+            BOOST_TEST_EQ(r->second, it->second);
+
+            tracker.insert(*it);
+            tracker.compare_key(x, *it);
+
+            if (static_cast<double>(x.size()) <
+                b * static_cast<double>(old_bucket_count))
+                BOOST_TEST(x.bucket_count() == old_bucket_count);
+        }
+
+        test::check_equivalent_keys(x);
+    }
+
+    std::cerr << "try_emplace(pos, key, value)\n";
+
+    typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
+
+    {
+        test::check_instances check_;
+
+        X x;
+        test::ordered<X> tracker = test::create_ordered(x);
+
+        test::random_values<X> v(1000, generator);
+        for (BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator it =
+                 v.begin();
+             it != v.end(); ++it) {
+            BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count =
+                x.bucket_count();
+            float b = x.max_load_factor();
+
+            iterator pos = x.find(it->first);
+            bool found = pos != x.end();
+
+            typename X::iterator r = x.try_emplace(pos, it->first, it->second);
+            if (found) {
+                BOOST_TEST(pos == r);
+            }
+            BOOST_TEST_EQ(r->first, it->first);
+            BOOST_TEST_EQ(r->second, it->second);
+
+            tracker.insert(*it);
+            tracker.compare_key(x, *it);
+
+            if (static_cast<double>(x.size()) <
+                b * static_cast<double>(old_bucket_count))
+                BOOST_TEST(x.bucket_count() == old_bucket_count);
+        }
+
+        test::check_equivalent_keys(x);
+    }
+}
+
 // Some tests for when the range's value type doesn't match the container's
 // value type.
 
@@ -876,6 +1041,10 @@ UNORDERED_AUTO_TEST(map_emplace_test)
     x.emplace(2, 3);
     BOOST_TEST(
         x.find(2) != x.end() && x.find(2)->second == overloaded_constructor(3));
+
+    x.try_emplace(5);
+    BOOST_TEST(
+        x.find(5) != x.end() && x.find(5)->second == overloaded_constructor());
 }
 
 UNORDERED_AUTO_TEST(set_emplace_test)
@@ -954,6 +1123,23 @@ UNORDERED_AUTO_TEST(map_emplace_test2)
     BOOST_TEST(x.find(overloaded_constructor(9, 3, 1)) != x.end() &&
                x.find(overloaded_constructor(9, 3, 1))->second ==
                    overloaded_constructor(10));
+
+    x.clear();
+
+    x.try_emplace(overloaded_constructor());
+    BOOST_TEST(
+        x.find(overloaded_constructor()) != x.end() &&
+        x.find(overloaded_constructor())->second == overloaded_constructor());
+
+    x.try_emplace(1);
+    BOOST_TEST(
+        x.find(overloaded_constructor(1)) != x.end() &&
+        x.find(overloaded_constructor(1))->second == overloaded_constructor());
+
+    x.try_emplace(overloaded_constructor(2, 3), 4, 5, 6);
+    BOOST_TEST(x.find(overloaded_constructor(2, 3)) != x.end() &&
+               x.find(overloaded_constructor(2, 3))->second ==
+                   overloaded_constructor(4, 5, 6));
 }
 
 UNORDERED_AUTO_TEST(set_emplace_test2)

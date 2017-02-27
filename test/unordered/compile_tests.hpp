@@ -310,9 +310,20 @@ void unordered_map_functions(X&, Key const& k, T const& v)
     test::check_return_type<mapped_type>::equals_ref(a[k]);
     test::check_return_type<mapped_type>::equals_ref(a.at(k));
     test::check_return_type<std::pair<iterator, bool> >::equals(
+        a.try_emplace(k, v));
+    test::check_return_type<std::pair<iterator, bool> >::equals(
+        a.try_emplace(rvalue(k), v));
+    test::check_return_type<iterator>::equals(a.try_emplace(a.begin(), k, v));
+    test::check_return_type<iterator>::equals(
+        a.try_emplace(a.begin(), rvalue(k), v));
+    test::check_return_type<std::pair<iterator, bool> >::equals(
         a.insert_or_assign(k, v));
+    test::check_return_type<std::pair<iterator, bool> >::equals(
+        a.insert_or_assign(rvalue(k), v));
     test::check_return_type<iterator>::equals(
         a.insert_or_assign(a.begin(), k, v));
+    test::check_return_type<iterator>::equals(
+        a.insert_or_assign(a.begin(), rvalue(k), v));
 
     X const b = a;
     test::check_return_type<mapped_type const>::equals_ref(b.at(k));

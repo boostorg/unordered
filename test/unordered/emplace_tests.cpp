@@ -465,6 +465,55 @@ UNORDERED_AUTO_TEST(emplace_multimap)
     BOOST_TEST_EQ(check_.instances(), 20);
     BOOST_TEST_EQ(check_.constructions(), 20);
 }
+
+UNORDERED_AUTO_TEST(try_emplace)
+{
+    test::check_instances check_;
+
+    typedef boost::unordered_map<int, emplace_value> container;
+    typedef container::iterator iterator;
+    typedef std::pair<iterator, bool> return_type;
+    container x(10);
+    return_type r1, r2, r3;
+
+    int k1 = 3;
+    emplace_value m1(414, "grr");
+    r1 = x.try_emplace(3, 414, "grr");
+    BOOST_TEST(r1.second);
+    BOOST_TEST(r1.first->first == k1);
+    BOOST_TEST(r1.first->second == m1);
+    BOOST_TEST_EQ(x.size(), 1u);
+    BOOST_TEST_EQ(check_.instances(), 2);
+    BOOST_TEST_EQ(check_.constructions(), 2);
+
+    int k2 = 10;
+    emplace_value m2(25, "", 'z');
+    r2 = x.try_emplace(10, 25, std::string(""), 'z');
+    BOOST_TEST(r2.second);
+    BOOST_TEST(r2.first->first == k2);
+    BOOST_TEST(r2.first->second == m2);
+    BOOST_TEST_EQ(x.size(), 2u);
+    BOOST_TEST_EQ(check_.instances(), 4);
+    BOOST_TEST_EQ(check_.constructions(), 4);
+
+    BOOST_TEST(x.find(k1)->second == m1);
+    BOOST_TEST(x.find(k2)->second == m2);
+
+    r3 = x.try_emplace(k2, 68, "jfeoj", 'p', 49309, 2323);
+    BOOST_TEST(!r3.second);
+    BOOST_TEST(r3.first == r2.first);
+    BOOST_TEST(r3.first->second == m2);
+    BOOST_TEST_EQ(x.size(), 2u);
+    BOOST_TEST_EQ(check_.instances(), 4);
+    BOOST_TEST_EQ(check_.constructions(), 4);
+
+    BOOST_TEST(r2.first == x.try_emplace(r2.first, k2, 808709, "what"));
+    BOOST_TEST(
+        r2.first ==
+        x.try_emplace(r2.first, k2, 10, "xxx", 'a', 4, 5, 6, 7, 8, 9, 10));
+    BOOST_TEST(r2.first->second == m2);
+    BOOST_TEST_EQ(x.size(), 2u);
+}
 }
 
 RUN_TESTS()
