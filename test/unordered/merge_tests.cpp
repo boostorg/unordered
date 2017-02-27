@@ -99,6 +99,48 @@ UNORDERED_AUTO_TEST(merge_multiset)
     test::check_equivalent_keys(y);
 }
 
+#if BOOST_UNORDERED_INTEROPERABLE_NODES
+UNORDERED_AUTO_TEST(merge_set_and_multiset)
+{
+    boost::unordered_set<int> x;
+    boost::unordered_multiset<int> y;
+
+    x.merge(y);
+    BOOST_TEST(x.empty());
+    BOOST_TEST(y.empty());
+
+    x.insert(10);
+    x.merge(y);
+    BOOST_TEST(x.size() == 1);
+    BOOST_TEST(x.count(10) == 1);
+    BOOST_TEST(y.empty());
+
+    y.merge(x);
+    BOOST_TEST(x.empty());
+    BOOST_TEST(y.size() == 1);
+    BOOST_TEST(y.count(10) == 1);
+
+    x.insert(10);
+    x.insert(50);
+    y.insert(70);
+    y.insert(80);
+    x.merge(y);
+    BOOST_TEST_EQ(x.size(), 4u);
+    BOOST_TEST_EQ(y.size(), 1u);
+    BOOST_TEST_EQ(x.count(10), 1u);
+    BOOST_TEST_EQ(x.count(50), 1u);
+    BOOST_TEST_EQ(x.count(70), 1u);
+    BOOST_TEST_EQ(x.count(80), 1u);
+    BOOST_TEST_EQ(y.count(10), 1u);
+    BOOST_TEST_EQ(y.count(50), 0u);
+    BOOST_TEST_EQ(y.count(70), 0u);
+    BOOST_TEST_EQ(y.count(80), 0u);
+
+    test::check_equivalent_keys(x);
+    test::check_equivalent_keys(y);
+}
+#endif
+
 template <class X> void merge_empty_test(X*, test::random_generator generator)
 {
     test::check_instances check_;

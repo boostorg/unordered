@@ -34,6 +34,8 @@
 #include <boost/type_traits/is_empty.hpp>
 #include <boost/type_traits/is_nothrow_move_assignable.hpp>
 #include <boost/type_traits/is_nothrow_move_constructible.hpp>
+#include <boost/type_traits/is_same.hpp>
+#include <boost/type_traits/remove_const.hpp>
 #include <boost/unordered/detail/fwd.hpp>
 #include <boost/utility/addressof.hpp>
 #include <boost/utility/enable_if.hpp>
@@ -730,11 +732,8 @@ template <typename T> struct identity
 #if BOOST_UNORDERED_USE_ALLOCATOR_TRAITS == 0
 
 #include <boost/limits.hpp>
-#include <boost/utility/enable_if.hpp>
 #include <boost/pointer_to_other.hpp>
-#if defined(BOOST_NO_SFINAE_EXPR)
-#include <boost/type_traits/is_same.hpp>
-#endif
+#include <boost/utility/enable_if.hpp>
 
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES) &&                             \
     !defined(BOOST_NO_SFINAE_EXPR)
@@ -3609,6 +3608,7 @@ struct table_impl : boost::unordered::detail::table<Types>
 {
     typedef boost::unordered::detail::table<Types> table;
     typedef typename table::value_type value_type;
+    typedef typename table::node node;
     typedef typename table::bucket bucket;
     typedef typename table::policy policy;
     typedef typename table::node_pointer node_pointer;
@@ -4001,13 +4001,19 @@ struct table_impl : boost::unordered::detail::table<Types>
         return iterator(pos);
     }
 
-    template <typename Types2> void merge_impl(table_impl<Types2>& other)
+    template <typename Types2>
+    void merge_impl(boost::unordered::detail::table<Types2>& other)
     {
+        typedef boost::unordered::detail::table<Types2> other_table;
+        BOOST_STATIC_ASSERT(
+            (boost::is_same<node, typename other_table::node>::value));
+        BOOST_ASSERT(this->node_alloc() == other.node_alloc());
+
         if (other.size_) {
             link_pointer prev = other.get_previous_start();
 
             while (prev->next_) {
-                node_pointer n = Types2::node_algo::next_node(prev);
+                node_pointer n = other_table::node_algo::next_node(prev);
                 const_key_type& k = this->get_key(n->value());
                 std::size_t key_hash = this->hash(k);
                 node_pointer pos = this->find_node(key_hash, k);
@@ -4016,6 +4022,8 @@ struct table_impl : boost::unordered::detail::table<Types>
                     prev = n;
                 } else {
                     this->reserve_for_insert(this->size_ + 1);
+                    other_table::node_algo::split_groups(
+                        n, other_table::node_algo::next_node(n));
                     prev->next_ = n->next_;
                     --other.size_;
                     other.fix_bucket(other.hash_to_bucket(n->hash_), prev);
