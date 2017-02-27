@@ -60,7 +60,11 @@ template <typename A, typename T, typename H, typename P> struct multiset
     typedef boost::unordered::detail::allocator_traits<value_allocator>
         value_allocator_traits;
 
+#if BOOST_UNORDERED_INTEROPERABLE_NODES
+    typedef boost::unordered::detail::pick_node<A, value_type> pick;
+#else
     typedef boost::unordered::detail::pick_grouped_node<A, value_type> pick;
+#endif
     typedef typename pick::node node;
     typedef typename pick::bucket bucket;
     typedef typename pick::link_pointer link_pointer;
