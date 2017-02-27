@@ -7,6 +7,10 @@ function echo_unordered_docs(
     $name = 'unordered_'.
         ($equivalent_keys ? 'multi' : '').
         ($map ? 'map' : 'set');
+    // For merge....
+    $node_partner = 'unordered_'.
+        ($equivalent_keys ? '' : 'multi').
+        ($map ? 'map' : 'set');
 
     if ($map)
     {
@@ -1157,6 +1161,68 @@ EOL;
                   the equality predieate and hash function are swapped using their copy constructors.</para>
               </notes>
             </method>
+            <method name="merge">
+              <template>
+                <template-type-parameter name="H2">
+                </template-type-parameter>
+                <template-type-parameter name="P2">
+                </template-type-parameter>
+              </template>
+              <parameter name="source">
+<?php if ($map): ?>
+                <paramtype><?php echo $name; ?>&lt;Key, Mapped, H2, P2, Alloc&gt;&amp;</paramtype>
+<?php else: ?>
+                <paramtype><?php echo $name; ?>&lt;Value, H2, P2, Alloc&gt;&amp;</paramtype>
+<?php endif; ?>
+              </parameter>
+            </method>
+            <method name="merge">
+              <template>
+                <template-type-parameter name="H2">
+                </template-type-parameter>
+                <template-type-parameter name="P2">
+                </template-type-parameter>
+              </template>
+              <parameter name="source">
+<?php if ($map): ?>
+                <paramtype><?php echo $name; ?>&lt;Key, Mapped, H2, P2, Alloc&gt;&amp;&amp;</paramtype>
+<?php else: ?>
+                <paramtype><?php echo $name; ?>&lt;Value, H2, P2, Alloc&gt;&amp;&amp;</paramtype>
+<?php endif; ?>
+              </parameter>
+            </method>
+<?php /*
+            <method name="merge">
+              <template>
+                <template-type-parameter name="H2">
+                </template-type-parameter>
+                <template-type-parameter name="P2">
+                </template-type-parameter>
+              </template>
+              <parameter name="source">
+<?php if ($map): ?>
+                <paramtype><?php echo $node_partner; ?>&lt;Key, Mapped, H2, P2, Alloc&gt;&amp;</paramtype>
+<?php else: ?>
+                <paramtype><?php echo $node_partner; ?>&lt;Value, H2, P2, Alloc&gt;&amp;</paramtype>
+<?php endif; ?>
+              </parameter>
+            </method>
+            <method name="merge">
+              <template>
+                <template-type-parameter name="H2">
+                </template-type-parameter>
+                <template-type-parameter name="P2">
+                </template-type-parameter>
+              </template>
+              <parameter name="source">
+<?php if ($map): ?>
+                <paramtype><?php echo $node_partner; ?>&lt;Key, Mapped, H2, P2, Alloc&gt;&amp;&amp;</paramtype>
+<?php else: ?>
+                <paramtype><?php echo $node_partner; ?>&lt;Value, H2, P2, Alloc&gt;&amp;&amp;</paramtype>
+<?php endif; ?>
+              </parameter>
+            </method>
+*/ ?>
           </method-group>
           <method-group name="observers">
             <method name="hash_function" cv="const">

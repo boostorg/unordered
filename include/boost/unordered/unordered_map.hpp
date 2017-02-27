@@ -617,6 +617,17 @@ template <class K, class T, class H, class P, class A> class unordered_map
     void clear();
     void swap(unordered_map&);
 
+    template <typename H2, typename P2>
+    void merge(boost::unordered_map<K, T, H2, P2, A>& source);
+#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+    template <typename H2, typename P2>
+    void merge(boost::unordered_map<K, T, H2, P2, A>&& source);
+#endif
+    // template <typename H2, typename P2>
+    // void merge(boost::unordered_multimap<K,T,H2,P2,A>& source);
+    // template <typename H2, typename P2>
+    // void merge(boost::unordered_multimap<K,T,H2,P2,A>&& source);
+
     // observers
 
     hasher hash_function() const;
@@ -1055,6 +1066,17 @@ template <class K, class T, class H, class P, class A> class unordered_multimap
     void clear();
     void swap(unordered_multimap&);
 
+    template <typename H2, typename P2>
+    void merge(boost::unordered_multimap<K, T, H2, P2, A>& source);
+#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+    template <typename H2, typename P2>
+    void merge(boost::unordered_multimap<K, T, H2, P2, A>&& source);
+#endif
+    // template <typename H2, typename P2>
+    // void merge(boost::unordered_map<K,T,H2,P2,A>& source);
+    // template <typename H2, typename P2>
+    // void merge(boost::unordered_map<K,T,H2,P2,A>&& source);
+
     // observers
 
     hasher hash_function() const;
@@ -1355,6 +1377,24 @@ void unordered_map<K, T, H, P, A>::swap(unordered_map& other)
 {
     table_.swap(other.table_);
 }
+
+template <class K, class T, class H, class P, class A>
+template <typename H2, typename P2>
+void unordered_map<K, T, H, P, A>::merge(
+    boost::unordered_map<K, T, H2, P2, A>& source)
+{
+    table_.merge_impl(source.table_);
+}
+
+#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+template <class K, class T, class H, class P, class A>
+template <typename H2, typename P2>
+void unordered_map<K, T, H, P, A>::merge(
+    boost::unordered_map<K, T, H2, P2, A>&& source)
+{
+    table_.merge_impl(source.table_);
+}
+#endif
 
 // observers
 
@@ -1755,6 +1795,28 @@ unordered_multimap<K, T, H, P, A>::key_eq() const
 {
     return table_.key_eq();
 }
+
+template <class K, class T, class H, class P, class A>
+template <typename H2, typename P2>
+void unordered_multimap<K, T, H, P, A>::merge(
+    boost::unordered_multimap<K, T, H2, P2, A>& source)
+{
+    while (!source.empty()) {
+        insert(source.extract(source.begin()));
+    }
+}
+
+#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+template <class K, class T, class H, class P, class A>
+template <typename H2, typename P2>
+void unordered_multimap<K, T, H, P, A>::merge(
+    boost::unordered_multimap<K, T, H2, P2, A>&& source)
+{
+    while (!source.empty()) {
+        insert(source.extract(source.begin()));
+    }
+}
+#endif
 
 // lookup
 

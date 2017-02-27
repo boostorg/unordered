@@ -49,6 +49,7 @@ test-suite unordered
         [ run unordered/erase_equiv_tests.cpp ]
         [ run unordered/extract_tests.cpp ]
         [ run unordered/node_handle_tests.cpp ]
+        [ run unordered/merge_tests.cpp ]
         [ compile-fail unordered/insert_node_type_fail.cpp : <define>UNORDERED_TEST_MAP : insert_node_type_fail_map ]
         [ compile-fail unordered/insert_node_type_fail.cpp : <define>UNORDERED_TEST_MULTIMAP : insert_node_type_fail_multimap ]
         [ compile-fail unordered/insert_node_type_fail.cpp : <define>UNORDERED_TEST_SET : insert_node_type_fail_set ]

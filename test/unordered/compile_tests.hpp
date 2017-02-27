@@ -551,6 +551,11 @@ void unordered_test(X& x, Key& k, Hash& hf, Pred& eq)
     a.max_load_factor((float)2.0);
     a.rehash(100);
 
+    a.merge(a2);
+#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+    a.merge(rvalue_default<X>());
+#endif
+
     // Avoid unused variable warnings:
 
     sink(a);

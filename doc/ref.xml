@@ -1028,6 +1028,28 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                   the equality predieate and hash function are swapped using their copy constructors.</para>
               </notes>
             </method>
+            <method name="merge">
+              <template>
+                <template-type-parameter name="H2">
+                </template-type-parameter>
+                <template-type-parameter name="P2">
+                </template-type-parameter>
+              </template>
+              <parameter name="source">
+                <paramtype>unordered_set&lt;Value, H2, P2, Alloc&gt;&amp;</paramtype>
+              </parameter>
+            </method>
+            <method name="merge">
+              <template>
+                <template-type-parameter name="H2">
+                </template-type-parameter>
+                <template-type-parameter name="P2">
+                </template-type-parameter>
+              </template>
+              <parameter name="source">
+                <paramtype>unordered_set&lt;Value, H2, P2, Alloc&gt;&amp;&amp;</paramtype>
+              </parameter>
+            </method>
           </method-group>
           <method-group name="observers">
             <method name="hash_function" cv="const">
@@ -2381,6 +2403,28 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>The exception specifications aren't quite the same as the C++11 standard, as
                   the equality predieate and hash function are swapped using their copy constructors.</para>
               </notes>
+            </method>
+            <method name="merge">
+              <template>
+                <template-type-parameter name="H2">
+                </template-type-parameter>
+                <template-type-parameter name="P2">
+                </template-type-parameter>
+              </template>
+              <parameter name="source">
+                <paramtype>unordered_multiset&lt;Value, H2, P2, Alloc&gt;&amp;</paramtype>
+              </parameter>
+            </method>
+            <method name="merge">
+              <template>
+                <template-type-parameter name="H2">
+                </template-type-parameter>
+                <template-type-parameter name="P2">
+                </template-type-parameter>
+              </template>
+              <parameter name="source">
+                <paramtype>unordered_multiset&lt;Value, H2, P2, Alloc&gt;&amp;&amp;</paramtype>
+              </parameter>
             </method>
           </method-group>
           <method-group name="observers">
@@ -3859,6 +3903,28 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                   the equality predieate and hash function are swapped using their copy constructors.</para>
               </notes>
             </method>
+            <method name="merge">
+              <template>
+                <template-type-parameter name="H2">
+                </template-type-parameter>
+                <template-type-parameter name="P2">
+                </template-type-parameter>
+              </template>
+              <parameter name="source">
+                <paramtype>unordered_map&lt;Key, Mapped, H2, P2, Alloc&gt;&amp;</paramtype>
+              </parameter>
+            </method>
+            <method name="merge">
+              <template>
+                <template-type-parameter name="H2">
+                </template-type-parameter>
+                <template-type-parameter name="P2">
+                </template-type-parameter>
+              </template>
+              <parameter name="source">
+                <paramtype>unordered_map&lt;Key, Mapped, H2, P2, Alloc&gt;&amp;&amp;</paramtype>
+              </parameter>
+            </method>
           </method-group>
           <method-group name="observers">
             <method name="hash_function" cv="const">
@@ -5259,6 +5325,28 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>The exception specifications aren't quite the same as the C++11 standard, as
                   the equality predieate and hash function are swapped using their copy constructors.</para>
               </notes>
+            </method>
+            <method name="merge">
+              <template>
+                <template-type-parameter name="H2">
+                </template-type-parameter>
+                <template-type-parameter name="P2">
+                </template-type-parameter>
+              </template>
+              <parameter name="source">
+                <paramtype>unordered_multimap&lt;Key, Mapped, H2, P2, Alloc&gt;&amp;</paramtype>
+              </parameter>
+            </method>
+            <method name="merge">
+              <template>
+                <template-type-parameter name="H2">
+                </template-type-parameter>
+                <template-type-parameter name="P2">
+                </template-type-parameter>
+              </template>
+              <parameter name="source">
+                <paramtype>unordered_multimap&lt;Key, Mapped, H2, P2, Alloc&gt;&amp;&amp;</paramtype>
+              </parameter>
             </method>
           </method-group>
           <method-group name="observers">
