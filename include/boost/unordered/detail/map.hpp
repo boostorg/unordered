@@ -39,6 +39,10 @@ template <typename A, typename K, typename M, typename H, typename P> struct map
         l_iterator;
     typedef boost::unordered::iterator_detail::cl_iterator<node, policy>
         cl_iterator;
+
+    typedef boost::unordered::node_handle_map<node, K, M, A> node_type;
+    typedef boost::unordered::insert_return_type_map<node, K, M, A>
+        insert_return_type;
 };
 
 template <typename A, typename K, typename M, typename H, typename P>
@@ -72,6 +76,25 @@ struct multimap
         l_iterator;
     typedef boost::unordered::iterator_detail::cl_iterator<node, policy>
         cl_iterator;
+
+    typedef boost::unordered::node_handle_map<node, K, M, A> node_type;
+};
+
+template <typename K, typename M, typename H, typename P, typename A>
+class instantiate_map
+{
+    typedef boost::unordered_map<K, M, H, P, A> container;
+    container x;
+    typename container::node_type node_type;
+    typename container::insert_return_type insert_return_type;
+};
+
+template <typename K, typename M, typename H, typename P, typename A>
+class instantiate_multimap
+{
+    typedef boost::unordered_multimap<K, M, H, P, A> container;
+    container x;
+    typename container::node_type node_type;
 };
 }
 }

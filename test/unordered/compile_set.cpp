@@ -19,16 +19,19 @@
 
 // Explicit instantiation to catch compile-time errors
 
-template class boost::unordered_set<int, boost::hash<int>, std::equal_to<int>,
-    test::minimal::allocator<int> >;
-template class boost::unordered_multiset<int const, boost::hash<int>,
-    std::equal_to<int>, test::minimal::allocator<int> >;
+#define INSTANTIATE(type)                                                      \
+    template class boost::unordered::detail::instantiate_##type
 
-template class boost::unordered_set<test::minimal::assignable const,
+INSTANTIATE(set)<int, boost::hash<int>, std::equal_to<int>,
+    test::minimal::allocator<int> >;
+INSTANTIATE(multiset)<int const, boost::hash<int>, std::equal_to<int>,
+    test::minimal::allocator<int> >;
+
+INSTANTIATE(set)<test::minimal::assignable const,
     test::minimal::hash<test::minimal::assignable>,
     test::minimal::equal_to<test::minimal::assignable>,
     test::minimal::allocator<int> >;
-template class boost::unordered_multiset<test::minimal::assignable,
+INSTANTIATE(multiset)<test::minimal::assignable,
     test::minimal::hash<test::minimal::assignable>,
     test::minimal::equal_to<test::minimal::assignable>,
     test::minimal::allocator<int> >;

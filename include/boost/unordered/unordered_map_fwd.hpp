@@ -46,6 +46,9 @@ inline bool operator!=(unordered_multimap<K, T, H, P, A> const&,
 template <class K, class T, class H, class P, class A>
 inline void swap(
     unordered_multimap<K, T, H, P, A>&, unordered_multimap<K, T, H, P, A>&);
+
+template <class N, class K, class T, class A> class node_handle_map;
+template <class N, class K, class T, class A> struct insert_return_type_map;
 }
 
 using boost::unordered::unordered_map;

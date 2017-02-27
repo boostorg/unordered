@@ -39,6 +39,10 @@ template <typename A, typename T, typename H, typename P> struct set
         l_iterator;
     typedef boost::unordered::iterator_detail::cl_iterator<node, policy>
         cl_iterator;
+
+    typedef boost::unordered::node_handle_set<node, T, A> node_type;
+    typedef boost::unordered::insert_return_type_set<node, T, A>
+        insert_return_type;
 };
 
 template <typename A, typename T, typename H, typename P> struct multiset
@@ -71,6 +75,24 @@ template <typename A, typename T, typename H, typename P> struct multiset
         l_iterator;
     typedef boost::unordered::iterator_detail::cl_iterator<node, policy>
         cl_iterator;
+
+    typedef boost::unordered::node_handle_set<node, T, A> node_type;
+};
+
+template <typename T, typename H, typename P, typename A> class instantiate_set
+{
+    typedef boost::unordered_set<T, H, P, A> container;
+    container x;
+    typename container::node_type node_type;
+    typename container::insert_return_type insert_return_type;
+};
+
+template <typename T, typename H, typename P, typename A>
+class instantiate_multiset
+{
+    typedef boost::unordered_multiset<T, H, P, A> container;
+    container x;
+    typename container::node_type node_type;
 };
 }
 }
