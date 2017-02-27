@@ -2500,7 +2500,11 @@ template <typename ValueType> struct value_base
 
     value_type& value() { return *(ValueType*)this; }
 
+    value_type const& value() const { return *(ValueType const*)this; }
+
     value_type* value_ptr() { return (ValueType*)this; }
+
+    value_type const* value_ptr() const { return (ValueType const*)this; }
 
   private:
     value_base& operator=(value_base const&);
