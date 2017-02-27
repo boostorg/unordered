@@ -301,13 +301,18 @@ template <class X, class T> void unordered_equivalent_test(X& r, T const& t)
 }
 
 template <class X, class Key, class T>
-void unordered_map_functions(X&, Key const& k, T const&)
+void unordered_map_functions(X&, Key const& k, T const& v)
 {
     typedef BOOST_DEDUCED_TYPENAME X::mapped_type mapped_type;
+    typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
 
     X a;
     test::check_return_type<mapped_type>::equals_ref(a[k]);
     test::check_return_type<mapped_type>::equals_ref(a.at(k));
+    test::check_return_type<std::pair<iterator, bool> >::equals(
+        a.insert_or_assign(k, v));
+    test::check_return_type<iterator>::equals(
+        a.insert_or_assign(a.begin(), k, v));
 
     X const b = a;
     test::check_return_type<mapped_type const>::equals_ref(b.at(k));
