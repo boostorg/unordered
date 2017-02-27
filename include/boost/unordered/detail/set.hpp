@@ -27,6 +27,7 @@ template <typename A, typename T, typename H, typename P> struct set
     typedef typename pick::node node;
     typedef typename pick::bucket bucket;
     typedef typename pick::link_pointer link_pointer;
+    typedef typename pick::node_algo node_algo;
 
     typedef boost::unordered::detail::table_impl<types> table;
     typedef boost::unordered::detail::set_extractor<value_type> extractor;
@@ -63,6 +64,7 @@ template <typename A, typename T, typename H, typename P> struct multiset
     typedef typename pick::node node;
     typedef typename pick::bucket bucket;
     typedef typename pick::link_pointer link_pointer;
+    typedef typename pick::node_algo node_algo;
 
     typedef boost::unordered::detail::grouped_table_impl<types> table;
     typedef boost::unordered::detail::set_extractor<value_type> extractor;

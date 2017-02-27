@@ -27,6 +27,7 @@ template <typename A, typename K, typename M, typename H, typename P> struct map
     typedef typename pick::node node;
     typedef typename pick::bucket bucket;
     typedef typename pick::link_pointer link_pointer;
+    typedef typename pick::node_algo node_algo;
 
     typedef boost::unordered::detail::table_impl<types> table;
     typedef boost::unordered::detail::map_extractor<value_type> extractor;
@@ -64,6 +65,7 @@ struct multimap
     typedef typename pick::node node;
     typedef typename pick::bucket bucket;
     typedef typename pick::link_pointer link_pointer;
+    typedef typename pick::node_algo node_algo;
 
     typedef boost::unordered::detail::grouped_table_impl<types> table;
     typedef boost::unordered::detail::map_extractor<value_type> extractor;
