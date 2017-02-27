@@ -3499,7 +3499,7 @@ template <typename N> struct node_algo
     {
         node_pointer n = next_node(prev);
         std::size_t hash = n->hash_;
-        while (true) {
+        for (;;) {
             node_pointer next = next_node(n);
             if (!next || next->hash_ != hash) {
                 return n;
