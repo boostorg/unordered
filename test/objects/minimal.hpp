@@ -441,6 +441,74 @@ template <class T> class allocator
 #endif
 };
 
+template <class T> class allocator<T const>
+{
+  public:
+    typedef std::size_t size_type;
+    typedef std::ptrdiff_t difference_type;
+    typedef void_ptr void_pointer;
+    typedef void_const_ptr const_void_pointer;
+    // Maybe these two should be const_ptr<T>
+    typedef ptr<T const> pointer;
+    typedef const_ptr<T const> const_pointer;
+    typedef T const& reference;
+    typedef T const& const_reference;
+    typedef T const value_type;
+
+    template <class U> struct rebind
+    {
+        typedef allocator<U> other;
+    };
+
+    allocator() {}
+    template <class Y> allocator(allocator<Y> const&) {}
+    allocator(allocator const&) {}
+    ~allocator() {}
+
+    const_pointer address(const_reference r) { return const_pointer(&r); }
+
+    pointer allocate(size_type n)
+    {
+        return pointer(static_cast<T const*>(::operator new(n * sizeof(T))));
+    }
+
+    template <class Y> pointer allocate(size_type n, const_ptr<Y>)
+    {
+        return pointer(static_cast<T const*>(::operator new(n * sizeof(T))));
+    }
+
+    void deallocate(pointer p, size_type) { ::operator delete((void*)p.ptr_); }
+
+    void construct(T const* p, T const& t) { new ((void*)p) T(t); }
+
+#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+    template <class... Args>
+    void construct(T const* p, BOOST_FWD_REF(Args)... args)
+    {
+        new ((void*)p) T(boost::forward<Args>(args)...);
+    }
+#endif
+
+    void destroy(T const* p) { p->~T(); }
+
+    size_type max_size() const { return 1000; }
+
+#if defined(BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP) ||                             \
+    BOOST_WORKAROUND(BOOST_MSVC, <= 1300)
+  public:
+    allocator& operator=(allocator const&) { return *this; }
+#else
+  private:
+    allocator& operator=(allocator const&);
+#endif
+#if BOOST_UNORDERED_CHECK_ADDR_OPERATOR_NOT_USED
+    ampersand_operator_used operator&() const
+    {
+        return ampersand_operator_used();
+    }
+#endif
+};
+
 template <class T>
 inline bool operator==(allocator<T> const&, allocator<T> const&)
 {

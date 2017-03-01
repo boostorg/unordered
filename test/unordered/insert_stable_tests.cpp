@@ -47,6 +47,10 @@ std::size_t hash_value(insert_stable::member const& x)
 }
 }
 
+// This is now only supported when using grouped nodes. I can't see any
+// efficient way to do it otherwise.
+#if !BOOST_UNORDERED_INTEROPERABLE_NODES
+
 UNORDERED_AUTO_TEST(stable_insert_test1)
 {
     boost::unordered_multiset<insert_stable::member> x;
@@ -109,5 +113,7 @@ UNORDERED_AUTO_TEST(stable_insert_test2)
     }
     BOOST_TEST(it == end);
 }
+
+#endif
 
 RUN_TESTS()

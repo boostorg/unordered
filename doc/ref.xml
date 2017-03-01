@@ -130,6 +130,18 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <para>A const_local_iterator object can be used to iterate through a single bucket.</para>
             </description>
           </typedef>
+          <typedef name="node_type">
+            <type><emphasis>implementation-defined</emphasis></type>
+            <description>
+              <para>See <classname>node_handle_set</classname> for details.</para>
+            </description>
+          </typedef>
+          <typedef name="insert_return_type">
+            <type><emphasis>implementation-defined</emphasis></type>
+            <description>
+              Structure returned by inserting <code>node_type</code>.
+            </description>
+          </typedef>
           <constructor>
             <postconditions>
               <code><methodname>size</methodname>() == 0</code>
@@ -769,6 +781,122 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>Pointers and references to elements are never invalidated.</para>
               </notes>
             </method>
+            <method name="insert">
+              <parameter name="il">
+                <paramtype>initializer_list&lt;value_type&gt;</paramtype>
+              </parameter>
+              <type>void</type>
+              <description>
+                <para>Inserts a range of elements into the container. Elements are inserted if and only if there is no element in the container with an equivalent value.</para>
+              </description>
+              <requires>
+                <para><code>value_type</code> is <code>EmplaceConstructible</code> into
+                  <code>X</code> from <code>*first</code>.</para>
+              </requires>
+              <throws>
+                <para>When inserting a single element, if an exception is thrown by an operation other than a call to <code>hasher</code> the function has no effect.</para>
+              </throws>
+              <notes>
+                <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
+                <para>Pointers and references to elements are never invalidated.</para>
+              </notes>
+            </method>
+            <method name="extract">
+              <parameter name="position">
+                <paramtype>const_iterator</paramtype>
+              </parameter>
+              <type>node_type</type>
+              <description>
+                <para>Removes the element pointed to by <code>position</code>.</para>
+              </description>
+              <returns>
+                <para>A <code>node_type</code> owning the element.</para>
+              </returns>
+            </method>
+            <method name="extract">
+              <parameter name="k">
+                <paramtype>key_type const&amp;</paramtype>
+              </parameter>
+              <type>node_type</type>
+              <description>
+                <para>Removes an element with key equivalent to <code>k</code>.</para>
+              </description>
+              <returns>
+                <para>A <code>node_type</code> owning the element if found, otherwise an empty <code>node_type</code>.</para>
+              </returns>
+              <throws>
+                <para>Only throws an exception if it is thrown by <code>hasher</code> or <code>key_equal</code>.</para>
+              </throws>
+            </method>
+            <method name="insert">
+              <parameter name="nh">
+                <paramtype>node_type&amp;&amp;</paramtype>
+              </parameter>
+              <type>insert_return_type</type>
+              <description>
+                <para>If <code>nh</code> is empty, has no affect.</para>
+                <para>Otherwise inserts the element owned by <code>nh</code>
+                      if and only if there is no element in the container with an equivalent value.
+                </para>
+              </description>
+              <requires>
+                <para><code>nh</code> is empty or <code>nh.get_allocator()</code> is equal to the container's allocator.</para>
+              </requires>
+              <returns>
+                <para>If <code>nh</code> was empty, returns an <code>insert_return_type</code> with:
+                      <code>inserted</code> equal to <code>false</code>,
+                      <code>position</code> equal to <code>end()</code> and
+                      <code>node</code> empty.</para>
+                <para>Otherwise if there was already an element with an equivalent key, returns an <code>insert_return_type</code> with:
+                      <code>inserted</code> equal to <code>false</code>,
+                      <code>position</code> pointing to a matching element and
+                      <code>node</code> contains the node from <code>nh</code>.</para>
+                <para>Otherwise if the insertion succeeded, returns an <code>insert_return_type</code> with:
+                      <code>inserted</code> equal to <code>true</code>,
+                      <code>position</code> pointing to the newly inserted element and
+                      <code>node</code> empty.</para>
+              </returns>
+              <throws>
+                <para>If an exception is thrown by an operation other than a call to <code>hasher</code> the function has no effect.</para>
+              </throws>
+              <notes>
+                <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
+                <para>Pointers and references to elements are never invalidated.</para>
+              </notes>
+            </method>
+            <method name="insert">
+              <parameter name="hint">
+                <paramtype>const_iterator</paramtype>
+              </parameter>
+              <parameter name="nh">
+                <paramtype>node_type&amp;&amp;</paramtype>
+              </parameter>
+              <type>iterator</type>
+              <description>
+                <para>If <code>nh</code> is empty, has no affect.</para>
+                <para>Otherwise inserts the element owned by <code>nh</code>
+                      if and only if there is no element in the container with an equivalent value.
+                </para>
+                <para>If there is already an element in the container with an equivalent value                      has no effect on <code>nh</code> (i.e. <code>nh</code> still contains the node.)</para>
+                <para>hint is a suggestion to where the element should be inserted.</para>
+              </description>
+              <requires>
+                <para><code>nh</code> is empty or <code>nh.get_allocator()</code> is equal to the container's allocator.</para>
+              </requires>
+              <returns>
+                <para>If <code>nh</code> was empty returns <code>end()</code>.</para>
+                <para>If there was already an element in the container with an equivalent value                      returns an iterator pointing to that.</para>
+                <para>Otherwise returns an iterator pointing to the newly inserted element.</para>
+              </returns>
+              <throws>
+                <para>If an exception is thrown by an operation other than a call to <code>hasher</code> the function has no effect.</para>
+              </throws>
+              <notes>
+                <para>The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same value. </para>
+                <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
+                <para>Pointers and references to elements are never invalidated.</para>
+              </notes>
+            </method>
             <method name="erase">
               <parameter name="position">
                 <paramtype>const_iterator</paramtype>
@@ -899,6 +1027,28 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>The exception specifications aren't quite the same as the C++11 standard, as
                   the equality predieate and hash function are swapped using their copy constructors.</para>
               </notes>
+            </method>
+            <method name="merge">
+              <template>
+                <template-type-parameter name="H2">
+                </template-type-parameter>
+                <template-type-parameter name="P2">
+                </template-type-parameter>
+              </template>
+              <parameter name="source">
+                <paramtype>unordered_set&lt;Value, H2, P2, Alloc&gt;&amp;</paramtype>
+              </parameter>
+            </method>
+            <method name="merge">
+              <template>
+                <template-type-parameter name="H2">
+                </template-type-parameter>
+                <template-type-parameter name="P2">
+                </template-type-parameter>
+              </template>
+              <parameter name="source">
+                <paramtype>unordered_set&lt;Value, H2, P2, Alloc&gt;&amp;&amp;</paramtype>
+              </parameter>
             </method>
           </method-group>
           <method-group name="observers">
@@ -1383,6 +1533,12 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <para>A const_local_iterator object can be used to iterate through a single bucket.</para>
             </description>
           </typedef>
+          <typedef name="node_type">
+            <type><emphasis>implementation-defined</emphasis></type>
+            <description>
+              <para>See <classname>node_handle_set</classname> for details.</para>
+            </description>
+          </typedef>
           <constructor>
             <postconditions>
               <code><methodname>size</methodname>() == 0</code>
@@ -2017,6 +2173,106 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>Pointers and references to elements are never invalidated.</para>
               </notes>
             </method>
+            <method name="insert">
+              <parameter name="il">
+                <paramtype>initializer_list&lt;value_type&gt;</paramtype>
+              </parameter>
+              <type>void</type>
+              <description>
+                <para>Inserts a range of elements into the container. Elements are inserted if and only if there is no element in the container with an equivalent value.</para>
+              </description>
+              <requires>
+                <para><code>value_type</code> is <code>EmplaceConstructible</code> into
+                  <code>X</code> from <code>*first</code>.</para>
+              </requires>
+              <throws>
+                <para>When inserting a single element, if an exception is thrown by an operation other than a call to <code>hasher</code> the function has no effect.</para>
+              </throws>
+              <notes>
+                <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
+                <para>Pointers and references to elements are never invalidated.</para>
+              </notes>
+            </method>
+            <method name="extract">
+              <parameter name="position">
+                <paramtype>const_iterator</paramtype>
+              </parameter>
+              <type>node_type</type>
+              <description>
+                <para>Removes the element pointed to by <code>position</code>.</para>
+              </description>
+              <returns>
+                <para>A <code>node_type</code> owning the element.</para>
+              </returns>
+            </method>
+            <method name="extract">
+              <parameter name="k">
+                <paramtype>key_type const&amp;</paramtype>
+              </parameter>
+              <type>node_type</type>
+              <description>
+                <para>Removes an element with key equivalent to <code>k</code>.</para>
+              </description>
+              <returns>
+                <para>A <code>node_type</code> owning the element if found, otherwise an empty <code>node_type</code>.</para>
+              </returns>
+              <throws>
+                <para>Only throws an exception if it is thrown by <code>hasher</code> or <code>key_equal</code>.</para>
+              </throws>
+            </method>
+            <method name="insert">
+              <parameter name="nh">
+                <paramtype>node_type&amp;&amp;</paramtype>
+              </parameter>
+              <type>iterator</type>
+              <description>
+                <para>If <code>nh</code> is empty, has no affect.</para>
+                <para>Otherwise inserts the element owned by <code>nh</code></para>
+              </description>
+              <requires>
+                <para><code>nh</code> is empty or <code>nh.get_allocator()</code> is equal to the container's allocator.</para>
+              </requires>
+              <returns>
+                <para>If <code>nh</code> was empty, returns <code>end()</code>.</para>
+                <para>Otherwise returns an iterator pointing to the newly inserted element.</para>
+              </returns>
+              <throws>
+                <para>If an exception is thrown by an operation other than a call to <code>hasher</code> the function has no effect.</para>
+              </throws>
+              <notes>
+                <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
+                <para>Pointers and references to elements are never invalidated.</para>
+              </notes>
+            </method>
+            <method name="insert">
+              <parameter name="hint">
+                <paramtype>const_iterator</paramtype>
+              </parameter>
+              <parameter name="nh">
+                <paramtype>node_type&amp;&amp;</paramtype>
+              </parameter>
+              <type>iterator</type>
+              <description>
+                <para>If <code>nh</code> is empty, has no affect.</para>
+                <para>Otherwise inserts the element owned by <code>nh</code></para>
+                <para>hint is a suggestion to where the element should be inserted.</para>
+              </description>
+              <requires>
+                <para><code>nh</code> is empty or <code>nh.get_allocator()</code> is equal to the container's allocator.</para>
+              </requires>
+              <returns>
+                <para>If <code>nh</code> was empty, returns <code>end()</code>.</para>
+                <para>Otherwise returns an iterator pointing to the newly inserted element.</para>
+              </returns>
+              <throws>
+                <para>If an exception is thrown by an operation other than a call to <code>hasher</code> the function has no effect.</para>
+              </throws>
+              <notes>
+                <para>The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same value. </para>
+                <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
+                <para>Pointers and references to elements are never invalidated.</para>
+              </notes>
+            </method>
             <method name="erase">
               <parameter name="position">
                 <paramtype>const_iterator</paramtype>
@@ -2147,6 +2403,28 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>The exception specifications aren't quite the same as the C++11 standard, as
                   the equality predieate and hash function are swapped using their copy constructors.</para>
               </notes>
+            </method>
+            <method name="merge">
+              <template>
+                <template-type-parameter name="H2">
+                </template-type-parameter>
+                <template-type-parameter name="P2">
+                </template-type-parameter>
+              </template>
+              <parameter name="source">
+                <paramtype>unordered_multiset&lt;Value, H2, P2, Alloc&gt;&amp;</paramtype>
+              </parameter>
+            </method>
+            <method name="merge">
+              <template>
+                <template-type-parameter name="H2">
+                </template-type-parameter>
+                <template-type-parameter name="P2">
+                </template-type-parameter>
+              </template>
+              <parameter name="source">
+                <paramtype>unordered_multiset&lt;Value, H2, P2, Alloc&gt;&amp;&amp;</paramtype>
+              </parameter>
             </method>
           </method-group>
           <method-group name="observers">
@@ -2506,6 +2784,88 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
             </function>
           </free-function-group>
         </class>
+      <namespace name="unordered">
+        <class name="node_handle_set">
+          <template pack="true">
+            <template-type-parameter name="ImplementationDefined"/>
+          </template>
+          <purpose>
+            <para>
+              An object that owns a single element extracted from an
+              <classname>unordered_set</classname> or an
+              <classname>unordered_multiset</classname>, that
+              can then be inserted into a compatible container type.
+            </para>
+            <note>
+              <para>
+                The name and template parameters of this type is implementation
+                defined, and should be obtained using the <code>node_type</code>
+                member typedef from the appropriate container.
+              </para>
+            </note>
+          </purpose>
+          <typedef name="value_type">
+            <type>typename Container::value_type></type>
+          </typedef>
+          <typedef name="allocator_type">
+            <type>typename Container::allocator_type></type>
+          </typedef>
+          <constructor specifiers="constexpr" cv="noexcept">
+          </constructor>
+          <destructor/>
+          <constructor cv="noexcept">
+            <parameter>
+              <paramtype>node_handle_set &amp;&amp;</paramtype>
+            </parameter>
+          </constructor>
+          <method name="operator=">
+            <parameter>
+              <paramtype>node_handle_set&amp;&amp;</paramtype>
+            </parameter>
+            <type>node_handle_set&amp;</type>
+          </method>
+          <method name="value" cv="const">
+            <type>value_type&amp;</type>
+          </method>
+          <method name="get_allocator" cv="const">
+            <type>allocator_type</type>
+          </method>
+          <method name="operator bool" specifiers="explicit" cv="const noexcept">
+          </method>
+          <method name="empty" cv="const noexcept">
+            <type>bool</type>
+          </method>
+          <method name="swap" cv="noexcept(ator_traits::propagate_on_container_swap::value)">
+            <parameter>
+              <paramtype>node_handle_set&amp;</paramtype>
+            </parameter>
+            <type>void</type>
+            <notes>
+              <para>
+                In C++17 is also <code>noexcept</code> if <code>ator_traits::is_always_equal::value</code> is true.
+                But we don't support that trait yet.
+              </para>
+            </notes>
+          </method>
+          <free-function-group name="swap" cv="noexcept(noexcept(x.swap(y)))">
+            <function name="swap">
+              <template pack="true">
+                <template-type-parameter name="ImplementationDefined"/>
+              </template>
+              <parameter name="x">
+                <paramtype>node_handle_set&lt;ImplementationDefined&gt;&amp;</paramtype>
+              </parameter>
+              <parameter name="y">
+                <paramtype>node_handle_set&lt;ImplementationDefined&gt;&amp;</paramtype>
+              </parameter>
+              <type>void</type>
+              <effects>
+                <para><code>x.swap(y)</code></para>
+              </effects>
+            </function>
+          </free-function-group>
+        </class>
+      </namespace>
       </namespace>
     </header>
     <header name="boost/unordered_map.hpp">
@@ -2645,6 +3005,18 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <para>A const_local_iterator object can be used to iterate through a single bucket.</para>
             </description>
           </typedef>
+          <typedef name="node_type">
+            <type><emphasis>implementation-defined</emphasis></type>
+            <description>
+              <para>See <classname>node_handle_map</classname> for details.</para>
+            </description>
+          </typedef>
+          <typedef name="insert_return_type">
+            <type><emphasis>implementation-defined</emphasis></type>
+            <description>
+              Structure returned by inserting <code>node_type</code>.
+            </description>
+          </typedef>
           <constructor>
             <postconditions>
               <code><methodname>size</methodname>() == 0</code>
@@ -2661,7 +3033,6 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
           <constructor specifiers="explicit">
             <parameter name="n">
               <paramtype>size_type</paramtype>
-              <default><emphasis>implementation-defined</emphasis></default>
             </parameter>
             <parameter name="hf">
               <paramtype>hasher const&amp;</paramtype>
@@ -2809,6 +3180,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
             </parameter>
             <parameter name="n">
               <paramtype>size_type</paramtype>
+              <default><emphasis>implementation-defined</emphasis></default>
             </parameter>
             <parameter name="hf">
               <paramtype>hasher const&amp;</paramtype>
@@ -3284,6 +3656,122 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>Pointers and references to elements are never invalidated.</para>
               </notes>
             </method>
+            <method name="insert">
+              <parameter name="il">
+                <paramtype>initializer_list&lt;value_type&gt;</paramtype>
+              </parameter>
+              <type>void</type>
+              <description>
+                <para>Inserts a range of elements into the container. Elements are inserted if and only if there is no element in the container with an equivalent key.</para>
+              </description>
+              <requires>
+                <para><code>value_type</code> is <code>EmplaceConstructible</code> into
+                  <code>X</code> from <code>*first</code>.</para>
+              </requires>
+              <throws>
+                <para>When inserting a single element, if an exception is thrown by an operation other than a call to <code>hasher</code> the function has no effect.</para>
+              </throws>
+              <notes>
+                <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
+                <para>Pointers and references to elements are never invalidated.</para>
+              </notes>
+            </method>
+            <method name="extract">
+              <parameter name="position">
+                <paramtype>const_iterator</paramtype>
+              </parameter>
+              <type>node_type</type>
+              <description>
+                <para>Removes the element pointed to by <code>position</code>.</para>
+              </description>
+              <returns>
+                <para>A <code>node_type</code> owning the element.</para>
+              </returns>
+            </method>
+            <method name="extract">
+              <parameter name="k">
+                <paramtype>key_type const&amp;</paramtype>
+              </parameter>
+              <type>node_type</type>
+              <description>
+                <para>Removes an element with key equivalent to <code>k</code>.</para>
+              </description>
+              <returns>
+                <para>A <code>node_type</code> owning the element if found, otherwise an empty <code>node_type</code>.</para>
+              </returns>
+              <throws>
+                <para>Only throws an exception if it is thrown by <code>hasher</code> or <code>key_equal</code>.</para>
+              </throws>
+            </method>
+            <method name="insert">
+              <parameter name="nh">
+                <paramtype>node_type&amp;&amp;</paramtype>
+              </parameter>
+              <type>insert_return_type</type>
+              <description>
+                <para>If <code>nh</code> is empty, has no affect.</para>
+                <para>Otherwise inserts the element owned by <code>nh</code>
+                      if and only if there is no element in the container with an equivalent key.
+                </para>
+              </description>
+              <requires>
+                <para><code>nh</code> is empty or <code>nh.get_allocator()</code> is equal to the container's allocator.</para>
+              </requires>
+              <returns>
+                <para>If <code>nh</code> was empty, returns an <code>insert_return_type</code> with:
+                      <code>inserted</code> equal to <code>false</code>,
+                      <code>position</code> equal to <code>end()</code> and
+                      <code>node</code> empty.</para>
+                <para>Otherwise if there was already an element with an equivalent key, returns an <code>insert_return_type</code> with:
+                      <code>inserted</code> equal to <code>false</code>,
+                      <code>position</code> pointing to a matching element and
+                      <code>node</code> contains the node from <code>nh</code>.</para>
+                <para>Otherwise if the insertion succeeded, returns an <code>insert_return_type</code> with:
+                      <code>inserted</code> equal to <code>true</code>,
+                      <code>position</code> pointing to the newly inserted element and
+                      <code>node</code> empty.</para>
+              </returns>
+              <throws>
+                <para>If an exception is thrown by an operation other than a call to <code>hasher</code> the function has no effect.</para>
+              </throws>
+              <notes>
+                <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
+                <para>Pointers and references to elements are never invalidated.</para>
+              </notes>
+            </method>
+            <method name="insert">
+              <parameter name="hint">
+                <paramtype>const_iterator</paramtype>
+              </parameter>
+              <parameter name="nh">
+                <paramtype>node_type&amp;&amp;</paramtype>
+              </parameter>
+              <type>iterator</type>
+              <description>
+                <para>If <code>nh</code> is empty, has no affect.</para>
+                <para>Otherwise inserts the element owned by <code>nh</code>
+                      if and only if there is no element in the container with an equivalent key.
+                </para>
+                <para>If there is already an element in the container with an equivalent key                      has no effect on <code>nh</code> (i.e. <code>nh</code> still contains the node.)</para>
+                <para>hint is a suggestion to where the element should be inserted.</para>
+              </description>
+              <requires>
+                <para><code>nh</code> is empty or <code>nh.get_allocator()</code> is equal to the container's allocator.</para>
+              </requires>
+              <returns>
+                <para>If <code>nh</code> was empty returns <code>end()</code>.</para>
+                <para>If there was already an element in the container with an equivalent key                      returns an iterator pointing to that.</para>
+                <para>Otherwise returns an iterator pointing to the newly inserted element.</para>
+              </returns>
+              <throws>
+                <para>If an exception is thrown by an operation other than a call to <code>hasher</code> the function has no effect.</para>
+              </throws>
+              <notes>
+                <para>The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same key. </para>
+                <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
+                <para>Pointers and references to elements are never invalidated.</para>
+              </notes>
+            </method>
             <method name="erase">
               <parameter name="position">
                 <paramtype>const_iterator</paramtype>
@@ -3414,6 +3902,28 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>The exception specifications aren't quite the same as the C++11 standard, as
                   the equality predieate and hash function are swapped using their copy constructors.</para>
               </notes>
+            </method>
+            <method name="merge">
+              <template>
+                <template-type-parameter name="H2">
+                </template-type-parameter>
+                <template-type-parameter name="P2">
+                </template-type-parameter>
+              </template>
+              <parameter name="source">
+                <paramtype>unordered_map&lt;Key, Mapped, H2, P2, Alloc&gt;&amp;</paramtype>
+              </parameter>
+            </method>
+            <method name="merge">
+              <template>
+                <template-type-parameter name="H2">
+                </template-type-parameter>
+                <template-type-parameter name="P2">
+                </template-type-parameter>
+              </template>
+              <parameter name="source">
+                <paramtype>unordered_map&lt;Key, Mapped, H2, P2, Alloc&gt;&amp;&amp;</paramtype>
+              </parameter>
             </method>
           </method-group>
           <method-group name="observers">
@@ -3945,6 +4455,12 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <para>A const_local_iterator object can be used to iterate through a single bucket.</para>
             </description>
           </typedef>
+          <typedef name="node_type">
+            <type><emphasis>implementation-defined</emphasis></type>
+            <description>
+              <para>See <classname>node_handle_map</classname> for details.</para>
+            </description>
+          </typedef>
           <constructor>
             <postconditions>
               <code><methodname>size</methodname>() == 0</code>
@@ -4579,6 +5095,106 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>Pointers and references to elements are never invalidated.</para>
               </notes>
             </method>
+            <method name="insert">
+              <parameter name="il">
+                <paramtype>initializer_list&lt;value_type&gt;</paramtype>
+              </parameter>
+              <type>void</type>
+              <description>
+                <para>Inserts a range of elements into the container. Elements are inserted if and only if there is no element in the container with an equivalent key.</para>
+              </description>
+              <requires>
+                <para><code>value_type</code> is <code>EmplaceConstructible</code> into
+                  <code>X</code> from <code>*first</code>.</para>
+              </requires>
+              <throws>
+                <para>When inserting a single element, if an exception is thrown by an operation other than a call to <code>hasher</code> the function has no effect.</para>
+              </throws>
+              <notes>
+                <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
+                <para>Pointers and references to elements are never invalidated.</para>
+              </notes>
+            </method>
+            <method name="extract">
+              <parameter name="position">
+                <paramtype>const_iterator</paramtype>
+              </parameter>
+              <type>node_type</type>
+              <description>
+                <para>Removes the element pointed to by <code>position</code>.</para>
+              </description>
+              <returns>
+                <para>A <code>node_type</code> owning the element.</para>
+              </returns>
+            </method>
+            <method name="extract">
+              <parameter name="k">
+                <paramtype>key_type const&amp;</paramtype>
+              </parameter>
+              <type>node_type</type>
+              <description>
+                <para>Removes an element with key equivalent to <code>k</code>.</para>
+              </description>
+              <returns>
+                <para>A <code>node_type</code> owning the element if found, otherwise an empty <code>node_type</code>.</para>
+              </returns>
+              <throws>
+                <para>Only throws an exception if it is thrown by <code>hasher</code> or <code>key_equal</code>.</para>
+              </throws>
+            </method>
+            <method name="insert">
+              <parameter name="nh">
+                <paramtype>node_type&amp;&amp;</paramtype>
+              </parameter>
+              <type>iterator</type>
+              <description>
+                <para>If <code>nh</code> is empty, has no affect.</para>
+                <para>Otherwise inserts the element owned by <code>nh</code></para>
+              </description>
+              <requires>
+                <para><code>nh</code> is empty or <code>nh.get_allocator()</code> is equal to the container's allocator.</para>
+              </requires>
+              <returns>
+                <para>If <code>nh</code> was empty, returns <code>end()</code>.</para>
+                <para>Otherwise returns an iterator pointing to the newly inserted element.</para>
+              </returns>
+              <throws>
+                <para>If an exception is thrown by an operation other than a call to <code>hasher</code> the function has no effect.</para>
+              </throws>
+              <notes>
+                <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
+                <para>Pointers and references to elements are never invalidated.</para>
+              </notes>
+            </method>
+            <method name="insert">
+              <parameter name="hint">
+                <paramtype>const_iterator</paramtype>
+              </parameter>
+              <parameter name="nh">
+                <paramtype>node_type&amp;&amp;</paramtype>
+              </parameter>
+              <type>iterator</type>
+              <description>
+                <para>If <code>nh</code> is empty, has no affect.</para>
+                <para>Otherwise inserts the element owned by <code>nh</code></para>
+                <para>hint is a suggestion to where the element should be inserted.</para>
+              </description>
+              <requires>
+                <para><code>nh</code> is empty or <code>nh.get_allocator()</code> is equal to the container's allocator.</para>
+              </requires>
+              <returns>
+                <para>If <code>nh</code> was empty, returns <code>end()</code>.</para>
+                <para>Otherwise returns an iterator pointing to the newly inserted element.</para>
+              </returns>
+              <throws>
+                <para>If an exception is thrown by an operation other than a call to <code>hasher</code> the function has no effect.</para>
+              </throws>
+              <notes>
+                <para>The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same key. </para>
+                <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
+                <para>Pointers and references to elements are never invalidated.</para>
+              </notes>
+            </method>
             <method name="erase">
               <parameter name="position">
                 <paramtype>const_iterator</paramtype>
@@ -4709,6 +5325,28 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>The exception specifications aren't quite the same as the C++11 standard, as
                   the equality predieate and hash function are swapped using their copy constructors.</para>
               </notes>
+            </method>
+            <method name="merge">
+              <template>
+                <template-type-parameter name="H2">
+                </template-type-parameter>
+                <template-type-parameter name="P2">
+                </template-type-parameter>
+              </template>
+              <parameter name="source">
+                <paramtype>unordered_multimap&lt;Key, Mapped, H2, P2, Alloc&gt;&amp;</paramtype>
+              </parameter>
+            </method>
+            <method name="merge">
+              <template>
+                <template-type-parameter name="H2">
+                </template-type-parameter>
+                <template-type-parameter name="P2">
+                </template-type-parameter>
+              </template>
+              <parameter name="source">
+                <paramtype>unordered_multimap&lt;Key, Mapped, H2, P2, Alloc&gt;&amp;&amp;</paramtype>
+              </parameter>
             </method>
           </method-group>
           <method-group name="observers">
@@ -5074,6 +5712,94 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
             </function>
           </free-function-group>
         </class>
+      <namespace name="unordered">
+        <class name="node_handle_map">
+          <template pack="true">
+            <template-type-parameter name="ImplementationDefined"/>
+          </template>
+          <purpose>
+            <para>
+              An object that owns a single element extracted from an
+              <classname>unordered_map</classname> or an
+              <classname>unordered_multimap</classname>, that
+              can then be inserted into a compatible container type.
+            </para>
+            <note>
+              <para>
+                The name and template parameters of this type is implementation
+                defined, and should be obtained using the <code>node_type</code>
+                member typedef from the appropriate container.
+              </para>
+            </note>
+          </purpose>
+          <typedef name="key_type">
+            <type>typename Container::key_type</type>
+          </typedef>
+          <typedef name="mapped_type">
+            <type>typename Container::mapped_type</type>
+          </typedef>
+          <typedef name="allocator_type">
+            <type>typename Container::allocator_type></type>
+          </typedef>
+          <constructor specifiers="constexpr" cv="noexcept">
+          </constructor>
+          <destructor/>
+          <constructor cv="noexcept">
+            <parameter>
+              <paramtype>node_handle_map &amp;&amp;</paramtype>
+            </parameter>
+          </constructor>
+          <method name="operator=">
+            <parameter>
+              <paramtype>node_handle_map&amp;&amp;</paramtype>
+            </parameter>
+            <type>node_handle_map&amp;</type>
+          </method>
+          <method name="key" cv="const">
+            <type>key_type&amp;</type>
+          </method>
+          <method name="mapped" cv="const">
+            <type>mapped_type&amp;</type>
+          </method>
+          <method name="get_allocator" cv="const">
+            <type>allocator_type</type>
+          </method>
+          <method name="operator bool" specifiers="explicit" cv="const noexcept">
+          </method>
+          <method name="empty" cv="const noexcept">
+            <type>bool</type>
+          </method>
+          <method name="swap" cv="noexcept(ator_traits::propagate_on_container_swap::value)">
+            <parameter>
+              <paramtype>node_handle_map&amp;</paramtype>
+            </parameter>
+            <type>void</type>
+            <notes>
+              <para>
+                In C++17 is also <code>noexcept</code> if <code>ator_traits::is_always_equal::value</code> is true.
+                But we don't support that trait yet.
+              </para>
+            </notes>
+          </method>
+          <free-function-group name="swap" cv="noexcept(noexcept(x.swap(y)))">
+            <function name="swap">
+              <template pack="true">
+                <template-type-parameter name="ImplementationDefined"/>
+              </template>
+              <parameter name="x">
+                <paramtype>node_handle_map&lt;ImplementationDefined&gt;&amp;</paramtype>
+              </parameter>
+              <parameter name="y">
+                <paramtype>node_handle_map&lt;ImplementationDefined&gt;&amp;</paramtype>
+              </parameter>
+              <type>void</type>
+              <effects>
+                <para><code>x.swap(y)</code></para>
+              </effects>
+            </function>
+          </free-function-group>
+        </class>
+      </namespace>
       </namespace>
     </header>
   </library-reference>

@@ -123,20 +123,20 @@ class object : private counted_object
         return object(::test::generate(x, g), ::test::generate(x, g));
     }
 
-    friend std::pair<object, object> generate(
-        std::pair<object, object> const*, random_generator g)
-    {
-        int* x = 0;
-        return std::make_pair(
-            object(::test::generate(x, g), ::test::generate(x, g)),
-            object(::test::generate(x, g), ::test::generate(x, g)));
-    }
-
     friend std::ostream& operator<<(std::ostream& out, object const& o)
     {
         return out << "(" << o.tag1_ << "," << o.tag2_ << ")";
     }
 };
+
+std::pair<object, object> generate(
+    std::pair<object, object> const*, random_generator g)
+{
+    int* x = 0;
+    return std::make_pair(
+        object(::test::generate(x, g), ::test::generate(x, g)),
+        object(::test::generate(x, g), ::test::generate(x, g)));
+}
 
 class hash
 {

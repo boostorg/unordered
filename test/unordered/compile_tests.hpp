@@ -50,6 +50,8 @@ template <class X, class T> void container_test(X& r, T const&)
     typedef BOOST_DEDUCED_TYPENAME X::reference reference;
     typedef BOOST_DEDUCED_TYPENAME X::const_reference const_reference;
 
+    typedef BOOST_DEDUCED_TYPENAME X::node_type node_type;
+
     // value_type
 
     BOOST_STATIC_ASSERT((boost::is_same<T, value_type>::value));
@@ -71,6 +73,9 @@ template <class X, class T> void container_test(X& r, T const&)
 
     boost::function_requires<boost::InputIteratorConcept<const_iterator> >();
     BOOST_STATIC_ASSERT((boost::is_same<T, const_iterator_value_type>::value));
+
+    // node_type
+    // TODO?
 
     // difference_type
 
@@ -140,6 +145,24 @@ template <class X, class T> void container_test(X& r, T const&)
     sink(X(rvalue(a_const), m));
     X c3(rvalue(a_const), m);
 
+    // node_type
+
+    typedef BOOST_DEDUCED_TYPENAME X::node_type node_type;
+    BOOST_STATIC_ASSERT(boost::is_same<allocator_type,
+        BOOST_DEDUCED_TYPENAME node_type::allocator_type>::value);
+
+    node_type n1;
+    node_type n2(rvalue_default<node_type>());
+    node_type n3;
+    n3 = boost::move(n2);
+    n1.swap(n3);
+    swap(n1, n3);
+
+    node_type const n_const;
+    BOOST_TEST(n_const ? 0 : 1);
+    test::check_return_type<bool>::equals(!n_const);
+    test::check_return_type<bool>::equals(n_const.empty());
+
     // Avoid unused variable warnings:
 
     sink(u);
@@ -197,7 +220,7 @@ template <class X> void unordered_destructible_test(X&)
     test::check_return_type<allocator_type>::equals(a_const.get_allocator());
 }
 
-template <class X, class Key> void unordered_set_test(X&, Key const&)
+template <class X, class Key> void unordered_set_test(X& r, Key const&)
 {
     typedef BOOST_DEDUCED_TYPENAME X::value_type value_type;
     typedef BOOST_DEDUCED_TYPENAME X::key_type key_type;
@@ -227,6 +250,18 @@ template <class X, class Key> void unordered_set_test(X&, Key const&)
         (boost::is_same<value_type const*, local_iterator_pointer>::value));
     BOOST_STATIC_ASSERT((boost::is_same<value_type const*,
         const_local_iterator_pointer>::value));
+
+    typedef BOOST_DEDUCED_TYPENAME X::node_type node_type;
+    typedef BOOST_DEDUCED_TYPENAME node_type::value_type node_value_type;
+    BOOST_STATIC_ASSERT((boost::is_same<value_type, node_value_type>::value));
+
+    // Call node_type functions.
+
+    test::minimal::constructor_param v;
+    Key k_lvalue(v);
+    r.emplace(boost::move(k_lvalue));
+    node_type n1 = r.extract(r.begin());
+    test::check_return_type<value_type>::equals_ref(n1.value());
 }
 
 template <class X, class Key, class T>
@@ -261,6 +296,13 @@ void unordered_map_test(X& r, Key const& k, T const& v)
     BOOST_STATIC_ASSERT((boost::is_same<value_type const*,
         const_local_iterator_pointer>::value));
 
+    typedef BOOST_DEDUCED_TYPENAME X::node_type node_type;
+    typedef BOOST_DEDUCED_TYPENAME node_type::key_type node_key_type;
+    typedef BOOST_DEDUCED_TYPENAME node_type::mapped_type node_mapped_type;
+
+    BOOST_STATIC_ASSERT((boost::is_same<Key, node_key_type>::value));
+    BOOST_STATIC_ASSERT((boost::is_same<T, node_mapped_type>::value));
+
     // Calling functions
 
     r.insert(std::pair<Key const, T>(k, v));
@@ -274,6 +316,19 @@ void unordered_map_test(X& r, Key const& k, T const& v)
 
     r.emplace(boost::unordered::piecewise_construct, boost::make_tuple(k),
         boost::make_tuple(v));
+
+    test::check_return_type<node_type>::equals(r.extract(r.begin()));
+
+    r.emplace(k, v);
+    test::check_return_type<node_type>::equals(r.extract(k));
+
+    r.emplace(k, v);
+    node_type n1 = r.extract(r.begin());
+    test::check_return_type<key_type>::equals_ref(n1.key());
+    test::check_return_type<T>::equals_ref(n1.mapped());
+
+    r.insert(boost::move(n1));
+    r.insert(r.end(), r.extract(r.begin()));
 }
 
 template <class X> void equality_test(X& r)
@@ -291,6 +346,28 @@ template <class X, class T> void unordered_unique_test(X& r, T const& t)
     typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
     test::check_return_type<std::pair<iterator, bool> >::equals(r.insert(t));
     test::check_return_type<std::pair<iterator, bool> >::equals(r.emplace(t));
+
+    typedef BOOST_DEDUCED_TYPENAME X::node_type node_type;
+    typedef BOOST_DEDUCED_TYPENAME X::insert_return_type insert_return_type;
+
+    // insert_return_type
+
+    // TODO;
+    // boost::function_requires<boost::MoveConstructibleConcept<insert_return_type>
+    // >();
+    // TODO;
+    // boost::function_requires<boost::MoveAssignableConcept<insert_return_type>
+    // >();
+    boost::function_requires<
+        boost::DefaultConstructibleConcept<insert_return_type> >();
+    // TODO:
+    // boost::function_requires<boost::DestructibleConcept<insert_return_type>
+    // >();
+    insert_return_type insert_return, insert_return2;
+    test::check_return_type<bool>::equals(insert_return.inserted);
+    test::check_return_type<iterator>::equals(insert_return.position);
+    test::check_return_type<node_type>::equals_ref(insert_return.node);
+    boost::swap(insert_return, insert_return2);
 }
 
 template <class X, class T> void unordered_equivalent_test(X& r, T const& t)
@@ -301,13 +378,29 @@ template <class X, class T> void unordered_equivalent_test(X& r, T const& t)
 }
 
 template <class X, class Key, class T>
-void unordered_map_functions(X&, Key const& k, T const&)
+void unordered_map_functions(X&, Key const& k, T const& v)
 {
     typedef BOOST_DEDUCED_TYPENAME X::mapped_type mapped_type;
+    typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
 
     X a;
     test::check_return_type<mapped_type>::equals_ref(a[k]);
     test::check_return_type<mapped_type>::equals_ref(a.at(k));
+    test::check_return_type<std::pair<iterator, bool> >::equals(
+        a.try_emplace(k, v));
+    test::check_return_type<std::pair<iterator, bool> >::equals(
+        a.try_emplace(rvalue(k), v));
+    test::check_return_type<iterator>::equals(a.try_emplace(a.begin(), k, v));
+    test::check_return_type<iterator>::equals(
+        a.try_emplace(a.begin(), rvalue(k), v));
+    test::check_return_type<std::pair<iterator, bool> >::equals(
+        a.insert_or_assign(k, v));
+    test::check_return_type<std::pair<iterator, bool> >::equals(
+        a.insert_or_assign(rvalue(k), v));
+    test::check_return_type<iterator>::equals(
+        a.insert_or_assign(a.begin(), k, v));
+    test::check_return_type<iterator>::equals(
+        a.insert_or_assign(a.begin(), rvalue(k), v));
 
     X const b = a;
     test::check_return_type<mapped_type const>::equals_ref(b.at(k));
@@ -458,6 +551,11 @@ void unordered_test(X& x, Key& k, Hash& hf, Pred& eq)
     a.max_load_factor((float)2.0);
     a.rehash(100);
 
+    a.merge(a2);
+#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+    a.merge(rvalue_default<X>());
+#endif
+
     // Avoid unused variable warnings:
 
     sink(a);
@@ -564,6 +662,11 @@ void unordered_copyable_test(X& x, Key& k, T& t, Hash& hf, Pred& eq)
     sink(a6a);
     sink(a7a);
     sink(a9a);
+
+    typedef BOOST_DEDUCED_TYPENAME X::node_type node_type;
+    typedef BOOST_DEDUCED_TYPENAME X::allocator_type allocator_type;
+    node_type const n_const = a.extract(a.begin());
+    test::check_return_type<allocator_type>::equals(n_const.get_allocator());
 }
 
 template <class X, class Key, class T, class Hash, class Pred>

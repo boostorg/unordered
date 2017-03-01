@@ -13,17 +13,21 @@ template <typename A, typename T, typename H, typename P> struct set
 {
     typedef boost::unordered::detail::set<A, T, H, P> types;
 
-    typedef A allocator;
     typedef T value_type;
     typedef H hasher;
     typedef P key_equal;
-    typedef T key_type;
+    typedef T const const_key_type;
 
-    typedef boost::unordered::detail::allocator_traits<allocator> traits;
-    typedef boost::unordered::detail::pick_node<allocator, value_type> pick;
+    typedef typename ::boost::unordered::detail::rebind_wrap<A,
+        value_type>::type value_allocator;
+    typedef boost::unordered::detail::allocator_traits<value_allocator>
+        value_allocator_traits;
+
+    typedef boost::unordered::detail::pick_node<A, value_type> pick;
     typedef typename pick::node node;
     typedef typename pick::bucket bucket;
     typedef typename pick::link_pointer link_pointer;
+    typedef typename pick::node_algo node_algo;
 
     typedef boost::unordered::detail::table_impl<types> table;
     typedef boost::unordered::detail::set_extractor<value_type> extractor;
@@ -36,24 +40,35 @@ template <typename A, typename T, typename H, typename P> struct set
         l_iterator;
     typedef boost::unordered::iterator_detail::cl_iterator<node, policy>
         cl_iterator;
+
+    typedef boost::unordered::node_handle_set<node, T, A> node_type;
+    typedef boost::unordered::insert_return_type_set<node, T, A>
+        insert_return_type;
 };
 
 template <typename A, typename T, typename H, typename P> struct multiset
 {
     typedef boost::unordered::detail::multiset<A, T, H, P> types;
 
-    typedef A allocator;
     typedef T value_type;
     typedef H hasher;
     typedef P key_equal;
-    typedef T key_type;
+    typedef T const const_key_type;
 
-    typedef boost::unordered::detail::allocator_traits<allocator> traits;
-    typedef boost::unordered::detail::pick_grouped_node<allocator, value_type>
-        pick;
+    typedef typename ::boost::unordered::detail::rebind_wrap<A,
+        value_type>::type value_allocator;
+    typedef boost::unordered::detail::allocator_traits<value_allocator>
+        value_allocator_traits;
+
+#if BOOST_UNORDERED_INTEROPERABLE_NODES
+    typedef boost::unordered::detail::pick_node<A, value_type> pick;
+#else
+    typedef boost::unordered::detail::pick_grouped_node<A, value_type> pick;
+#endif
     typedef typename pick::node node;
     typedef typename pick::bucket bucket;
     typedef typename pick::link_pointer link_pointer;
+    typedef typename pick::node_algo node_algo;
 
     typedef boost::unordered::detail::grouped_table_impl<types> table;
     typedef boost::unordered::detail::set_extractor<value_type> extractor;
@@ -66,6 +81,24 @@ template <typename A, typename T, typename H, typename P> struct multiset
         l_iterator;
     typedef boost::unordered::iterator_detail::cl_iterator<node, policy>
         cl_iterator;
+
+    typedef boost::unordered::node_handle_set<node, T, A> node_type;
+};
+
+template <typename T, typename H, typename P, typename A> class instantiate_set
+{
+    typedef boost::unordered_set<T, H, P, A> container;
+    container x;
+    typename container::node_type node_type;
+    typename container::insert_return_type insert_return_type;
+};
+
+template <typename T, typename H, typename P, typename A>
+class instantiate_multiset
+{
+    typedef boost::unordered_multiset<T, H, P, A> container;
+    container x;
+    typename container::node_type node_type;
 };
 }
 }

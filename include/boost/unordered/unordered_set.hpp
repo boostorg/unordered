@@ -14,6 +14,7 @@
 #pragma once
 #endif
 
+#include <boost/core/explicit_operator_bool.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/move/move.hpp>
 #include <boost/unordered/detail/set.hpp>
@@ -38,6 +39,9 @@ template <class T, class H, class P, class A> class unordered_set
 #if defined(BOOST_UNORDERED_USE_MOVE)
     BOOST_COPYABLE_AND_MOVABLE(unordered_set)
 #endif
+    template <typename, typename, typename, typename>
+    friend class unordered_multiset;
+
   public:
     typedef T key_type;
     typedef T value_type;
@@ -47,12 +51,12 @@ template <class T, class H, class P, class A> class unordered_set
 
   private:
     typedef boost::unordered::detail::set<A, T, H, P> types;
-    typedef typename types::traits allocator_traits;
+    typedef typename types::value_allocator_traits value_allocator_traits;
     typedef typename types::table table;
 
   public:
-    typedef typename allocator_traits::pointer pointer;
-    typedef typename allocator_traits::const_pointer const_pointer;
+    typedef typename value_allocator_traits::pointer pointer;
+    typedef typename value_allocator_traits::const_pointer const_pointer;
 
     typedef value_type& reference;
     typedef value_type const& const_reference;
@@ -64,6 +68,8 @@ template <class T, class H, class P, class A> class unordered_set
     typedef typename table::l_iterator local_iterator;
     typedef typename table::c_iterator const_iterator;
     typedef typename table::iterator iterator;
+    typedef typename types::node_type node_type;
+    typedef typename types::insert_return_type insert_return_type;
 
   private:
     table table_;
@@ -202,6 +208,19 @@ template <class T, class H, class P, class A> class unordered_set
     }
 
     const_iterator cend() const BOOST_NOEXCEPT { return const_iterator(); }
+
+    // extract
+
+    node_type extract(const_iterator position)
+    {
+        return node_type(
+            table_.extract_by_iterator(position), table_.node_alloc());
+    }
+
+    node_type extract(const key_type& k)
+    {
+        return node_type(table_.extract_by_key(k), table_.node_alloc());
+    }
 
 // emplace
 
@@ -345,6 +364,27 @@ template <class T, class H, class P, class A> class unordered_set
     void insert(std::initializer_list<value_type>);
 #endif
 
+    insert_return_type insert(BOOST_RV_REF(node_type) np)
+    {
+        insert_return_type result;
+        table_.move_insert_node_type(np, result);
+        return boost::move(result);
+    }
+
+    iterator insert(const_iterator hint, BOOST_RV_REF(node_type) np)
+    {
+        return table_.move_insert_node_type_with_hint(hint, np);
+    }
+
+#if defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+  private:
+    // Note: Use r-value node_type to insert.
+    insert_return_type insert(node_type&);
+    iterator insert(const_iterator, node_type& np);
+
+  public:
+#endif
+
     iterator erase(const_iterator);
     size_type erase(const key_type&);
     iterator erase(const_iterator, const_iterator);
@@ -353,6 +393,24 @@ template <class T, class H, class P, class A> class unordered_set
 
     void clear();
     void swap(unordered_set&);
+
+    template <typename H2, typename P2>
+    void merge(boost::unordered_set<T, H2, P2, A>& source);
+
+#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+    template <typename H2, typename P2>
+    void merge(boost::unordered_set<T, H2, P2, A>&& source);
+#endif
+
+#if BOOST_UNORDERED_INTEROPERABLE_NODES
+    template <typename H2, typename P2>
+    void merge(boost::unordered_multiset<T, H2, P2, A>& source);
+
+#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+    template <typename H2, typename P2>
+    void merge(boost::unordered_multiset<T, H2, P2, A>&& source);
+#endif
+#endif
 
     // observers
 
@@ -438,6 +496,9 @@ template <class T, class H, class P, class A> class unordered_multiset
 #if defined(BOOST_UNORDERED_USE_MOVE)
     BOOST_COPYABLE_AND_MOVABLE(unordered_multiset)
 #endif
+    template <typename, typename, typename, typename>
+    friend class unordered_set;
+
   public:
     typedef T key_type;
     typedef T value_type;
@@ -447,12 +508,12 @@ template <class T, class H, class P, class A> class unordered_multiset
 
   private:
     typedef boost::unordered::detail::multiset<A, T, H, P> types;
-    typedef typename types::traits allocator_traits;
+    typedef typename types::value_allocator_traits value_allocator_traits;
     typedef typename types::table table;
 
   public:
-    typedef typename allocator_traits::pointer pointer;
-    typedef typename allocator_traits::const_pointer const_pointer;
+    typedef typename value_allocator_traits::pointer pointer;
+    typedef typename value_allocator_traits::const_pointer const_pointer;
 
     typedef value_type& reference;
     typedef value_type const& const_reference;
@@ -464,6 +525,7 @@ template <class T, class H, class P, class A> class unordered_multiset
     typedef typename table::l_iterator local_iterator;
     typedef typename table::c_iterator const_iterator;
     typedef typename table::iterator iterator;
+    typedef typename types::node_type node_type;
 
   private:
     table table_;
@@ -604,6 +666,19 @@ template <class T, class H, class P, class A> class unordered_multiset
 
     const_iterator cend() const BOOST_NOEXCEPT { return const_iterator(); }
 
+    // extract
+
+    node_type extract(const_iterator position)
+    {
+        return node_type(
+            table_.extract_by_iterator(position), table_.node_alloc());
+    }
+
+    node_type extract(const key_type& k)
+    {
+        return node_type(table_.extract_by_key(k), table_.node_alloc());
+    }
+
 // emplace
 
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
@@ -738,6 +813,25 @@ template <class T, class H, class P, class A> class unordered_multiset
     void insert(std::initializer_list<value_type>);
 #endif
 
+    iterator insert(BOOST_RV_REF(node_type) np)
+    {
+        return table_.move_insert_node_type(np);
+    }
+
+    iterator insert(const_iterator hint, BOOST_RV_REF(node_type) np)
+    {
+        return table_.move_insert_node_type_with_hint(hint, np);
+    }
+
+#if defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+  private:
+    // Note: Use r-value node_type to insert.
+    iterator insert(node_type&);
+    iterator insert(const_iterator, node_type& np);
+
+  public:
+#endif
+
     iterator erase(const_iterator);
     size_type erase(const key_type&);
     iterator erase(const_iterator, const_iterator);
@@ -746,6 +840,24 @@ template <class T, class H, class P, class A> class unordered_multiset
 
     void clear();
     void swap(unordered_multiset&);
+
+    template <typename H2, typename P2>
+    void merge(boost::unordered_multiset<T, H2, P2, A>& source);
+
+#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+    template <typename H2, typename P2>
+    void merge(boost::unordered_multiset<T, H2, P2, A>&& source);
+#endif
+
+#if BOOST_UNORDERED_INTEROPERABLE_NODES
+    template <typename H2, typename P2>
+    void merge(boost::unordered_set<T, H2, P2, A>& source);
+
+#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+    template <typename H2, typename P2>
+    void merge(boost::unordered_set<T, H2, P2, A>&& source);
+#endif
+#endif
 
     // observers
 
@@ -1052,6 +1164,44 @@ unordered_set<T, H, P, A>::key_eq() const
 {
     return table_.key_eq();
 }
+
+template <class T, class H, class P, class A>
+template <typename H2, typename P2>
+void unordered_set<T, H, P, A>::merge(
+    boost::unordered_set<T, H2, P2, A>& source)
+{
+    table_.merge_impl(source.table_);
+}
+
+#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+template <class T, class H, class P, class A>
+template <typename H2, typename P2>
+void unordered_set<T, H, P, A>::merge(
+    boost::unordered_set<T, H2, P2, A>&& source)
+{
+    table_.merge_impl(source.table_);
+}
+#endif
+
+#if BOOST_UNORDERED_INTEROPERABLE_NODES
+template <class T, class H, class P, class A>
+template <typename H2, typename P2>
+void unordered_set<T, H, P, A>::merge(
+    boost::unordered_multiset<T, H2, P2, A>& source)
+{
+    table_.merge_impl(source.table_);
+}
+
+#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+template <class T, class H, class P, class A>
+template <typename H2, typename P2>
+void unordered_set<T, H, P, A>::merge(
+    boost::unordered_multiset<T, H2, P2, A>&& source)
+{
+    table_.merge_impl(source.table_);
+}
+#endif
+#endif
 
 // lookup
 
@@ -1390,6 +1540,52 @@ unordered_multiset<T, H, P, A>::key_eq() const
     return table_.key_eq();
 }
 
+template <class T, class H, class P, class A>
+template <typename H2, typename P2>
+void unordered_multiset<T, H, P, A>::merge(
+    boost::unordered_multiset<T, H2, P2, A>& source)
+{
+    while (!source.empty()) {
+        insert(source.extract(source.begin()));
+    }
+}
+
+#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+template <class T, class H, class P, class A>
+template <typename H2, typename P2>
+void unordered_multiset<T, H, P, A>::merge(
+    boost::unordered_multiset<T, H2, P2, A>&& source)
+{
+    while (!source.empty()) {
+        insert(source.extract(source.begin()));
+    }
+}
+#endif
+
+#if BOOST_UNORDERED_INTEROPERABLE_NODES
+template <class T, class H, class P, class A>
+template <typename H2, typename P2>
+void unordered_multiset<T, H, P, A>::merge(
+    boost::unordered_set<T, H2, P2, A>& source)
+{
+    while (!source.empty()) {
+        insert(source.extract(source.begin()));
+    }
+}
+
+#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+template <class T, class H, class P, class A>
+template <typename H2, typename P2>
+void unordered_multiset<T, H, P, A>::merge(
+    boost::unordered_set<T, H2, P2, A>&& source)
+{
+    while (!source.empty()) {
+        insert(source.extract(source.begin()));
+    }
+}
+#endif
+#endif
+
 // lookup
 
 template <class T, class H, class P, class A>
@@ -1493,6 +1689,197 @@ inline void swap(
     };
 #endif
     m1.swap(m2);
+}
+
+template <typename N, typename T, typename A> class node_handle_set
+{
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(node_handle_set)
+
+    template <typename Types>
+    friend struct ::boost::unordered::detail::table_impl;
+    template <typename Types>
+    friend struct ::boost::unordered::detail::grouped_table_impl;
+
+    typedef typename boost::unordered::detail::rebind_wrap<A, T>::type
+        value_allocator;
+    typedef boost::unordered::detail::allocator_traits<value_allocator>
+        value_allocator_traits;
+    typedef N node;
+    typedef typename boost::unordered::detail::rebind_wrap<A, node>::type
+        node_allocator;
+    typedef boost::unordered::detail::allocator_traits<node_allocator>
+        node_allocator_traits;
+    typedef typename node_allocator_traits::pointer node_pointer;
+
+  public:
+    typedef T value_type;
+    typedef A allocator_type;
+
+  private:
+    node_pointer ptr_;
+    bool has_alloc_;
+    boost::unordered::detail::value_base<value_allocator> alloc_;
+
+  public:
+    BOOST_CONSTEXPR node_handle_set() BOOST_NOEXCEPT : ptr_(), has_alloc_(false)
+    {
+    }
+
+    /*BOOST_CONSTEXPR */ node_handle_set(
+        node_pointer ptr, allocator_type const& a)
+        : ptr_(ptr), has_alloc_(false)
+    {
+        if (ptr_) {
+            new ((void*)&alloc_) value_allocator(a);
+            has_alloc_ = true;
+        }
+    }
+
+    ~node_handle_set()
+    {
+        if (has_alloc_ && ptr_) {
+            node_allocator node_alloc(alloc_.value());
+            boost::unordered::detail::node_tmp<node_allocator> tmp(
+                ptr_, node_alloc);
+        }
+        if (has_alloc_) {
+            alloc_.value_ptr()->~value_allocator();
+        }
+    }
+
+    node_handle_set(BOOST_RV_REF(node_handle_set) n) BOOST_NOEXCEPT
+        : ptr_(n.ptr_),
+          has_alloc_(false)
+    {
+        if (n.has_alloc_) {
+            new ((void*)&alloc_) value_allocator(boost::move(n.alloc_.value()));
+            has_alloc_ = true;
+            n.ptr_ = node_pointer();
+            n.alloc_.value_ptr()->~value_allocator();
+            n.has_alloc_ = false;
+        }
+    }
+
+    node_handle_set& operator=(BOOST_RV_REF(node_handle_set) n)
+    {
+        BOOST_ASSERT(!has_alloc_ ||
+                     value_allocator_traits::
+                         propagate_on_container_move_assignment::value ||
+                     (n.has_alloc_ && alloc_.value() == n.alloc_.value()));
+
+        if (ptr_) {
+            node_allocator node_alloc(alloc_.value());
+            boost::unordered::detail::node_tmp<node_allocator> tmp(
+                ptr_, node_alloc);
+            ptr_ = node_pointer();
+        }
+
+        if (has_alloc_) {
+            alloc_.value_ptr()->~value_allocator();
+            has_alloc_ = false;
+        }
+
+        if (!has_alloc_ && n.has_alloc_) {
+            move_allocator(n);
+        }
+
+        ptr_ = n.ptr_;
+        n.ptr_ = node_pointer();
+
+        return *this;
+    }
+
+    value_type& value() const { return ptr_->value(); }
+
+    allocator_type get_allocator() const { return alloc_.value(); }
+
+    BOOST_EXPLICIT_OPERATOR_BOOL_NOEXCEPT()
+
+    bool operator!() const BOOST_NOEXCEPT { return ptr_ ? 0 : 1; }
+
+    bool empty() const BOOST_NOEXCEPT { return ptr_ ? 0 : 1; }
+
+    void swap(node_handle_set& n) BOOST_NOEXCEPT_IF(
+        value_allocator_traits::propagate_on_container_swap::value
+        /* || value_allocator_traits::is_always_equal::value */)
+    {
+        if (!has_alloc_) {
+            if (n.has_alloc_) {
+                move_allocator(n);
+            }
+        } else if (!n.has_alloc_) {
+            n.move_allocator(*this);
+        } else {
+            swap_impl(n, boost::unordered::detail::integral_constant<bool,
+                             value_allocator_traits::
+                                 propagate_on_container_swap::value>());
+        }
+        boost::swap(ptr_, n.ptr_);
+    }
+
+  private:
+    void move_allocator(node_handle_set& n)
+    {
+        new ((void*)&alloc_) value_allocator(boost::move(n.alloc_.value()));
+        n.alloc_.value_ptr()->~value_allocator();
+        has_alloc_ = true;
+        n.has_alloc_ = false;
+    }
+
+    void swap_impl(node_handle_set&, boost::unordered::detail::false_type) {}
+
+    void swap_impl(node_handle_set& n, boost::unordered::detail::true_type)
+    {
+        boost::swap(alloc_, n.alloc_);
+    }
+};
+
+template <typename N, typename T, typename A>
+void swap(node_handle_set<N, T, A>& x, node_handle_set<N, T, A>& y)
+    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(x.swap(y)))
+{
+    x.swap(y);
+}
+
+template <typename N, typename T, typename A> struct insert_return_type_set
+{
+  private:
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(insert_return_type_set)
+
+    typedef typename boost::unordered::detail::rebind_wrap<A, T>::type
+        value_allocator;
+    typedef N node_;
+
+  public:
+    bool inserted;
+    boost::unordered::iterator_detail::c_iterator<node_> position;
+    boost::unordered::node_handle_set<N, T, A> node;
+
+    insert_return_type_set() : inserted(false), position(), node() {}
+
+    insert_return_type_set(BOOST_RV_REF(insert_return_type_set)
+            x) BOOST_NOEXCEPT : inserted(x.inserted),
+                                position(x.position),
+                                node(boost::move(x.node))
+    {
+    }
+
+    insert_return_type_set& operator=(BOOST_RV_REF(insert_return_type_set) x)
+    {
+        inserted = x.inserted;
+        position = x.position;
+        node = boost::move(x.node);
+        return *this;
+    }
+};
+
+template <typename N, typename T, typename A>
+void swap(
+    insert_return_type_set<N, T, A>& x, insert_return_type_set<N, T, A>& y)
+{
+    boost::swap(x.node, y.node);
+    boost::swap(x.inserted, y.inserted);
+    boost::swap(x.position, y.position);
 }
 } // namespace unordered
 } // namespace boost
