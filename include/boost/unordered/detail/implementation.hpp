@@ -492,7 +492,7 @@ template <typename A0> struct emplace_args1
 {
     BOOST_UNORDERED_EARGS_MEMBER(1, 0, _)
 
-    emplace_args1(Arg0 b0) : a0(b0) {}
+    explicit emplace_args1(Arg0 b0) : a0(b0) {}
 };
 
 template <typename A0>
