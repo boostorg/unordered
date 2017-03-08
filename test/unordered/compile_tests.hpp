@@ -148,8 +148,8 @@ template <class X, class T> void container_test(X& r, T const&)
     // node_type
 
     typedef BOOST_DEDUCED_TYPENAME X::node_type node_type;
-    BOOST_STATIC_ASSERT(boost::is_same<allocator_type,
-        BOOST_DEDUCED_TYPENAME node_type::allocator_type>::value);
+    BOOST_STATIC_ASSERT((boost::is_same<allocator_type,
+        BOOST_DEDUCED_TYPENAME node_type::allocator_type>::value));
 
     node_type n1;
     node_type n2(rvalue_default<node_type>());

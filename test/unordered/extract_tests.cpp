@@ -44,7 +44,7 @@ void extract_tests1(Container*, test::random_generator generator)
             std::size_t new_size = count ? old_size - 1 : old_size;
             typename Container::node_type n =
                 x.extract(test::get_key<Container>(*it));
-            BOOST_TEST((bool)n == (bool)count);
+            BOOST_TEST((n ? true : false) == (count ? true : false));
             BOOST_TEST(x.size() == new_size);
             BOOST_TEST(x.count(test::get_key<Container>(*it)) == new_count);
             if (!new_count) {
