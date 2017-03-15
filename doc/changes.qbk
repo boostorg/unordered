@@ -303,4 +303,9 @@ C++11 support has resulted in some breaking changes:
   arguments, but an off by one error in the preprocessor code meant it only
   supported up to 9.
 
+[h2 Boost 1.64.0]
+* Initial support for new C++17 member functions:
+  `insert_or_assign` and `try_emplace` in `unordered_map`,
+  `merge` and `extract` in all containers.
+
 [endsect]
