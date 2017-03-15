@@ -301,6 +301,6 @@ C++11 support has resulted in some breaking changes:
   They are removed in C++17.
 * Support 10 constructor arguments in emplace. It was meant to support up to 10
   arguments, but an off by one error in the preprocessor code meant it only
-  supports up to 10.
+  supported up to 9.
 
 [endsect]
