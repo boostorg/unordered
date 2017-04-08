@@ -638,7 +638,9 @@ void unordered_copyable_test(X& x, Key& k, T& t, Hash& hf, Pred& eq)
     a.insert(list);
     a.insert({t, t, t});
 
-#if !BOOST_WORKAROUND(BOOST_MSVC, < 1900)
+#if !BOOST_WORKAROUND(BOOST_MSVC, < 1900) &&                                   \
+    (!defined(__clang__) || __clang_major__ >= 4 ||                            \
+        (__clang_major__ == 3 && __clang_minor__ >= 4))
     a.insert({});
     a.insert({t});
     a.insert({t, t});
