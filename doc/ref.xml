@@ -812,6 +812,12 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <returns>
                 <para>A <code>node_type</code> owning the element.</para>
               </returns>
+              <notes>
+                <para>
+                  In C++17 a node extracted using this method can be inserted into a compatible <code>unordered_multiset</code>,
+                  but that is not supported yet.
+                </para>
+              </notes>
             </method>
             <method name="extract">
               <parameter name="k">
@@ -827,6 +833,12 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <throws>
                 <para>Only throws an exception if it is thrown by <code>hasher</code> or <code>key_equal</code>.</para>
               </throws>
+              <notes>
+                <para>
+                  In C++17 a node extracted using this method can be inserted into a compatible <code>unordered_multiset</code>,
+                  but that is not supported yet.
+                </para>
+              </notes>
             </method>
             <method name="insert">
               <parameter name="nh">
@@ -862,6 +874,8 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <notes>
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
                 <para>Pointers and references to elements are never invalidated.</para>
+                <para>In C++17 this can be used to insert a node extracted from a compatible <code>unordered_multiset</code>,
+                    but that is not supported yet.</para>
               </notes>
             </method>
             <method name="insert">
@@ -895,6 +909,8 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same value. </para>
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
                 <para>Pointers and references to elements are never invalidated.</para>
+                <para>In C++17 this can be used to insert a node extracted from a compatible <code>unordered_multiset</code>,
+                    but that is not supported yet.</para>
               </notes>
             </method>
             <method name="erase">
@@ -1038,6 +1054,9 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <parameter name="source">
                 <paramtype>unordered_set&lt;Value, H2, P2, Alloc&gt;&amp;</paramtype>
               </parameter>
+              <notes>
+                <para>Does not support merging with a compatible <code>unordered_multiset</code> yet.</para>
+              </notes>
             </method>
             <method name="merge">
               <template>
@@ -1049,6 +1068,9 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <parameter name="source">
                 <paramtype>unordered_set&lt;Value, H2, P2, Alloc&gt;&amp;&amp;</paramtype>
               </parameter>
+              <notes>
+                <para>Does not support merging with a compatible <code>unordered_multiset</code> yet.</para>
+              </notes>
             </method>
           </method-group>
           <method-group name="observers">
@@ -2204,6 +2226,12 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <returns>
                 <para>A <code>node_type</code> owning the element.</para>
               </returns>
+              <notes>
+                <para>
+                  In C++17 a node extracted using this method can be inserted into a compatible <code>unordered_set</code>,
+                  but that is not supported yet.
+                </para>
+              </notes>
             </method>
             <method name="extract">
               <parameter name="k">
@@ -2219,6 +2247,12 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <throws>
                 <para>Only throws an exception if it is thrown by <code>hasher</code> or <code>key_equal</code>.</para>
               </throws>
+              <notes>
+                <para>
+                  In C++17 a node extracted using this method can be inserted into a compatible <code>unordered_set</code>,
+                  but that is not supported yet.
+                </para>
+              </notes>
             </method>
             <method name="insert">
               <parameter name="nh">
@@ -2242,6 +2276,8 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <notes>
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
                 <para>Pointers and references to elements are never invalidated.</para>
+                <para>In C++17 this can be used to insert a node extracted from a compatible <code>unordered_set</code>,
+                    but that is not supported yet.</para>
               </notes>
             </method>
             <method name="insert">
@@ -2271,6 +2307,8 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same value. </para>
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
                 <para>Pointers and references to elements are never invalidated.</para>
+                <para>In C++17 this can be used to insert a node extracted from a compatible <code>unordered_set</code>,
+                    but that is not supported yet.</para>
               </notes>
             </method>
             <method name="erase">
@@ -2414,6 +2452,9 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <parameter name="source">
                 <paramtype>unordered_multiset&lt;Value, H2, P2, Alloc&gt;&amp;</paramtype>
               </parameter>
+              <notes>
+                <para>Does not support merging with a compatible <code>unordered_set</code> yet.</para>
+              </notes>
             </method>
             <method name="merge">
               <template>
@@ -2425,6 +2466,9 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <parameter name="source">
                 <paramtype>unordered_multiset&lt;Value, H2, P2, Alloc&gt;&amp;&amp;</paramtype>
               </parameter>
+              <notes>
+                <para>Does not support merging with a compatible <code>unordered_set</code> yet.</para>
+              </notes>
             </method>
           </method-group>
           <method-group name="observers">
@@ -2796,13 +2840,17 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <classname>unordered_multiset</classname>, that
               can then be inserted into a compatible container type.
             </para>
-            <note>
+            <notes>
               <para>
                 The name and template parameters of this type is implementation
                 defined, and should be obtained using the <code>node_type</code>
                 member typedef from the appropriate container.
               </para>
-            </note>
+              <para>
+                In this version of Boost, <code>node_type</code> is different
+                for <code>unordered_set</code> and <code>unordered_multiset</code>, this will be fixed in a future version of Boost.
+              </para>
+            </notes>
           </purpose>
           <typedef name="value_type">
             <type>typename Container::value_type></type>
@@ -3687,6 +3735,12 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <returns>
                 <para>A <code>node_type</code> owning the element.</para>
               </returns>
+              <notes>
+                <para>
+                  In C++17 a node extracted using this method can be inserted into a compatible <code>unordered_multimap</code>,
+                  but that is not supported yet.
+                </para>
+              </notes>
             </method>
             <method name="extract">
               <parameter name="k">
@@ -3702,6 +3756,12 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <throws>
                 <para>Only throws an exception if it is thrown by <code>hasher</code> or <code>key_equal</code>.</para>
               </throws>
+              <notes>
+                <para>
+                  In C++17 a node extracted using this method can be inserted into a compatible <code>unordered_multimap</code>,
+                  but that is not supported yet.
+                </para>
+              </notes>
             </method>
             <method name="insert">
               <parameter name="nh">
@@ -3737,6 +3797,8 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <notes>
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
                 <para>Pointers and references to elements are never invalidated.</para>
+                <para>In C++17 this can be used to insert a node extracted from a compatible <code>unordered_multimap</code>,
+                    but that is not supported yet.</para>
               </notes>
             </method>
             <method name="insert">
@@ -3770,6 +3832,8 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same key. </para>
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
                 <para>Pointers and references to elements are never invalidated.</para>
+                <para>In C++17 this can be used to insert a node extracted from a compatible <code>unordered_multimap</code>,
+                    but that is not supported yet.</para>
               </notes>
             </method>
             <method name="erase">
@@ -3913,6 +3977,9 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <parameter name="source">
                 <paramtype>unordered_map&lt;Key, Mapped, H2, P2, Alloc&gt;&amp;</paramtype>
               </parameter>
+              <notes>
+                <para>Does not support merging with a compatible <code>unordered_multimap</code> yet.</para>
+              </notes>
             </method>
             <method name="merge">
               <template>
@@ -3924,6 +3991,9 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <parameter name="source">
                 <paramtype>unordered_map&lt;Key, Mapped, H2, P2, Alloc&gt;&amp;&amp;</paramtype>
               </parameter>
+              <notes>
+                <para>Does not support merging with a compatible <code>unordered_multimap</code> yet.</para>
+              </notes>
             </method>
           </method-group>
           <method-group name="observers">
@@ -5126,6 +5196,12 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <returns>
                 <para>A <code>node_type</code> owning the element.</para>
               </returns>
+              <notes>
+                <para>
+                  In C++17 a node extracted using this method can be inserted into a compatible <code>unordered_map</code>,
+                  but that is not supported yet.
+                </para>
+              </notes>
             </method>
             <method name="extract">
               <parameter name="k">
@@ -5141,6 +5217,12 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <throws>
                 <para>Only throws an exception if it is thrown by <code>hasher</code> or <code>key_equal</code>.</para>
               </throws>
+              <notes>
+                <para>
+                  In C++17 a node extracted using this method can be inserted into a compatible <code>unordered_map</code>,
+                  but that is not supported yet.
+                </para>
+              </notes>
             </method>
             <method name="insert">
               <parameter name="nh">
@@ -5164,6 +5246,8 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <notes>
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
                 <para>Pointers and references to elements are never invalidated.</para>
+                <para>In C++17 this can be used to insert a node extracted from a compatible <code>unordered_map</code>,
+                    but that is not supported yet.</para>
               </notes>
             </method>
             <method name="insert">
@@ -5193,6 +5277,8 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 <para>The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same key. </para>
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
                 <para>Pointers and references to elements are never invalidated.</para>
+                <para>In C++17 this can be used to insert a node extracted from a compatible <code>unordered_map</code>,
+                    but that is not supported yet.</para>
               </notes>
             </method>
             <method name="erase">
@@ -5336,6 +5422,9 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <parameter name="source">
                 <paramtype>unordered_multimap&lt;Key, Mapped, H2, P2, Alloc&gt;&amp;</paramtype>
               </parameter>
+              <notes>
+                <para>Does not support merging with a compatible <code>unordered_map</code> yet.</para>
+              </notes>
             </method>
             <method name="merge">
               <template>
@@ -5347,6 +5436,9 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <parameter name="source">
                 <paramtype>unordered_multimap&lt;Key, Mapped, H2, P2, Alloc&gt;&amp;&amp;</paramtype>
               </parameter>
+              <notes>
+                <para>Does not support merging with a compatible <code>unordered_map</code> yet.</para>
+              </notes>
             </method>
           </method-group>
           <method-group name="observers">
@@ -5724,13 +5816,17 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <classname>unordered_multimap</classname>, that
               can then be inserted into a compatible container type.
             </para>
-            <note>
+            <notes>
               <para>
                 The name and template parameters of this type is implementation
                 defined, and should be obtained using the <code>node_type</code>
                 member typedef from the appropriate container.
               </para>
-            </note>
+              <para>
+                In this version of Boost, <code>node_type</code> is different
+                for <code>unordered_map</code> and <code>unordered_multimap</code>, this will be fixed in a future version of Boost.
+              </para>
+            </notes>
           </purpose>
           <typedef name="key_type">
             <type>typename Container::key_type</type>

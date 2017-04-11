@@ -306,6 +306,10 @@ C++11 support has resulted in some breaking changes:
 [h2 Boost 1.64.0]
 * Initial support for new C++17 member functions:
   `insert_or_assign` and `try_emplace` in `unordered_map`,
-  `merge` and `extract` in all containers.
+* Initial support for `merge` and `extract`.
+  Does not include transfering nodes between
+  `unordered_map` and `unordered_multimap` or between `unordered_set` and
+  `unordered_multiset` yet. That will hopefully be in the next version of
+  Boost.
 
 [endsect]

@@ -925,6 +925,12 @@ EOL;
               <returns>
                 <para>A <code>node_type</code> owning the element.</para>
               </returns>
+              <notes>
+                <para>
+                  In C++17 a node extracted using this method can be inserted into a compatible <code><?php echo $node_partner; ?></code>,
+                  but that is not supported yet.
+                </para>
+              </notes>
             </method>
             <method name="extract">
               <parameter name="k">
@@ -940,6 +946,12 @@ EOL;
               <throws>
                 <para>Only throws an exception if it is thrown by <code>hasher</code> or <code>key_equal</code>.</para>
               </throws>
+              <notes>
+                <para>
+                  In C++17 a node extracted using this method can be inserted into a compatible <code><?php echo $node_partner; ?></code>,
+                  but that is not supported yet.
+                </para>
+              </notes>
             </method>
             <method name="insert">
               <parameter name="nh">
@@ -984,6 +996,8 @@ EOL;
               <notes>
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
                 <para>Pointers and references to elements are never invalidated.</para>
+                <para>In C++17 this can be used to insert a node extracted from a compatible <code><?php echo $node_partner; ?></code>,
+                    but that is not supported yet.</para>
               </notes>
             </method>
             <method name="insert">
@@ -1028,6 +1042,8 @@ EOL;
                 <para>The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same <?php echo $key_name; ?>. </para>
                 <para>Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.</para>
                 <para>Pointers and references to elements are never invalidated.</para>
+                <para>In C++17 this can be used to insert a node extracted from a compatible <code><?php echo $node_partner; ?></code>,
+                    but that is not supported yet.</para>
               </notes>
             </method>
             <method name="erase">
@@ -1175,6 +1191,9 @@ EOL;
                 <paramtype><?php echo $name; ?>&lt;Value, H2, P2, Alloc&gt;&amp;</paramtype>
 <?php endif; ?>
               </parameter>
+              <notes>
+                <para>Does not support merging with a compatible <code><?php echo $node_partner; ?></code> yet.</para>
+              </notes>
             </method>
             <method name="merge">
               <template>
@@ -1190,6 +1209,9 @@ EOL;
                 <paramtype><?php echo $name; ?>&lt;Value, H2, P2, Alloc&gt;&amp;&amp;</paramtype>
 <?php endif; ?>
               </parameter>
+              <notes>
+                <para>Does not support merging with a compatible <code><?php echo $node_partner; ?></code> yet.</para>
+              </notes>
             </method>
 <?php /*
             <method name="merge">
@@ -1650,13 +1672,20 @@ function echo_node_handle_docs($map)
               <classname>unordered_multi<?php echo $type ?></classname>, that
               can then be inserted into a compatible container type.
             </para>
-            <note>
+            <notes>
               <para>
                 The name and template parameters of this type is implementation
                 defined, and should be obtained using the <code>node_type</code>
                 member typedef from the appropriate container.
               </para>
-            </note>
+              <para>
+                In this version of Boost, <code>node_type</code> is different
+                for <?php echo $map ?
+                  '<code>unordered_map</code> and <code>unordered_multimap</code>,' :
+                  '<code>unordered_set</code> and <code>unordered_multiset</code>,';
+                ?> this will be fixed in a future version of Boost.
+              </para>
+            </notes>
           </purpose>
 <?php if ($map): ?>
           <typedef name="key_type">
