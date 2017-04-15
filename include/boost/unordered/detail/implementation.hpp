@@ -122,16 +122,16 @@ namespace detail {
 template <typename Types> struct table;
 template <typename NodePointer> struct bucket;
 struct ptr_bucket;
-template <typename Types> struct table_impl;
-template <typename Types> struct grouped_table_impl;
+template <typename Types> struct table_unique;
+template <typename Types> struct table_equiv;
 
 template <typename A, typename T> struct unique_node;
 template <typename T> struct ptr_node;
-template <typename Types> struct table_impl;
+template <typename Types> struct table_unique;
 
 template <typename A, typename T> struct grouped_node;
 template <typename T> struct grouped_ptr_node;
-template <typename Types> struct grouped_table_impl;
+template <typename Types> struct table_equiv;
 template <typename N> struct node_algo;
 template <typename N> struct grouped_node_algo;
 
@@ -1921,9 +1921,8 @@ struct iterator : public std::iterator<std::forward_iterator_tag,
     template <typename>
     friend struct boost::unordered::iterator_detail::c_iterator;
     template <typename> friend struct boost::unordered::detail::table;
-    template <typename> friend struct boost::unordered::detail::table_impl;
-    template <typename>
-    friend struct boost::unordered::detail::grouped_table_impl;
+    template <typename> friend struct boost::unordered::detail::table_unique;
+    template <typename> friend struct boost::unordered::detail::table_equiv;
 
   private:
 #endif
@@ -1978,9 +1977,8 @@ struct c_iterator
 
 #if !defined(BOOST_NO_MEMBER_TEMPLATE_FRIENDS)
     template <typename> friend struct boost::unordered::detail::table;
-    template <typename> friend struct boost::unordered::detail::table_impl;
-    template <typename>
-    friend struct boost::unordered::detail::grouped_table_impl;
+    template <typename> friend struct boost::unordered::detail::table_unique;
+    template <typename> friend struct boost::unordered::detail::table_equiv;
 
   private:
 #endif
@@ -3607,7 +3605,7 @@ template <typename A, typename T> struct pick_node
 };
 
 template <typename Types>
-struct table_impl : boost::unordered::detail::table<Types>
+struct table_unique : boost::unordered::detail::table<Types>
 {
     typedef boost::unordered::detail::table<Types> table;
     typedef typename table::value_type value_type;
@@ -3633,30 +3631,30 @@ struct table_impl : boost::unordered::detail::table<Types>
 
     // Constructors
 
-    table_impl(std::size_t n, hasher const& hf, key_equal const& eq,
+    table_unique(std::size_t n, hasher const& hf, key_equal const& eq,
         node_allocator const& a)
         : table(n, hf, eq, a)
     {
     }
 
-    table_impl(table_impl const& x)
+    table_unique(table_unique const& x)
         : table(x, node_allocator_traits::select_on_container_copy_construction(
                        x.node_alloc()))
     {
         this->init(x);
     }
 
-    table_impl(table_impl const& x, node_allocator const& a) : table(x, a)
+    table_unique(table_unique const& x, node_allocator const& a) : table(x, a)
     {
         this->init(x);
     }
 
-    table_impl(table_impl& x, boost::unordered::detail::move_tag m)
+    table_unique(table_unique& x, boost::unordered::detail::move_tag m)
         : table(x, m)
     {
     }
 
-    table_impl(table_impl& x, node_allocator const& a,
+    table_unique(table_unique& x, node_allocator const& a,
         boost::unordered::detail::move_tag m)
         : table(x, a, m)
     {
@@ -3691,7 +3689,7 @@ struct table_impl : boost::unordered::detail::table<Types>
 
     // equals
 
-    bool equals(table_impl const& other) const
+    bool equals(table_unique const& other) const
     {
         if (this->size_ != other.size_)
             return false;
@@ -4431,7 +4429,7 @@ template <typename A, typename T> struct pick_grouped_node
 };
 
 template <typename Types>
-struct grouped_table_impl : boost::unordered::detail::table<Types>
+struct table_equiv : boost::unordered::detail::table<Types>
 {
     typedef boost::unordered::detail::table<Types> table;
     typedef typename table::value_type value_type;
@@ -4454,32 +4452,30 @@ struct grouped_table_impl : boost::unordered::detail::table<Types>
 
     // Constructors
 
-    grouped_table_impl(std::size_t n, hasher const& hf, key_equal const& eq,
+    table_equiv(std::size_t n, hasher const& hf, key_equal const& eq,
         node_allocator const& a)
         : table(n, hf, eq, a)
     {
     }
 
-    grouped_table_impl(grouped_table_impl const& x)
+    table_equiv(table_equiv const& x)
         : table(x, node_allocator_traits::select_on_container_copy_construction(
                        x.node_alloc()))
     {
         this->init(x);
     }
 
-    grouped_table_impl(grouped_table_impl const& x, node_allocator const& a)
-        : table(x, a)
+    table_equiv(table_equiv const& x, node_allocator const& a) : table(x, a)
     {
         this->init(x);
     }
 
-    grouped_table_impl(
-        grouped_table_impl& x, boost::unordered::detail::move_tag m)
+    table_equiv(table_equiv& x, boost::unordered::detail::move_tag m)
         : table(x, m)
     {
     }
 
-    grouped_table_impl(grouped_table_impl& x, node_allocator const& a,
+    table_equiv(table_equiv& x, node_allocator const& a,
         boost::unordered::detail::move_tag m)
         : table(x, a, m)
     {
@@ -4503,7 +4499,7 @@ struct grouped_table_impl : boost::unordered::detail::table<Types>
 
     // Equality
 
-    bool equals(grouped_table_impl const& other) const
+    bool equals(table_equiv const& other) const
     {
         if (this->size_ != other.size_)
             return false;

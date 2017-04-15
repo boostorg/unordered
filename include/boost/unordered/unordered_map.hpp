@@ -2057,9 +2057,9 @@ template <typename N, class K, class T, class A> class node_handle_map
     BOOST_MOVABLE_BUT_NOT_COPYABLE(node_handle_map)
 
     template <typename Types>
-    friend struct ::boost::unordered::detail::table_impl;
+    friend struct ::boost::unordered::detail::table_unique;
     template <typename Types>
-    friend struct ::boost::unordered::detail::grouped_table_impl;
+    friend struct ::boost::unordered::detail::table_equiv;
 
     typedef typename boost::unordered::detail::rebind_wrap<A,
         std::pair<K const, T> >::type value_allocator;

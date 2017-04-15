@@ -1698,9 +1698,9 @@ template <typename N, typename T, typename A> class node_handle_set
     BOOST_MOVABLE_BUT_NOT_COPYABLE(node_handle_set)
 
     template <typename Types>
-    friend struct ::boost::unordered::detail::table_impl;
+    friend struct ::boost::unordered::detail::table_unique;
     template <typename Types>
-    friend struct ::boost::unordered::detail::grouped_table_impl;
+    friend struct ::boost::unordered::detail::table_equiv;
 
     typedef typename boost::unordered::detail::rebind_wrap<A, T>::type
         value_allocator;
