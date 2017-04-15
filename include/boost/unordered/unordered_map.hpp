@@ -1594,6 +1594,7 @@ inline bool operator!=(unordered_map<K, T, H, P, A> const& m1,
 template <class K, class T, class H, class P, class A>
 inline void swap(
     unordered_map<K, T, H, P, A>& m1, unordered_map<K, T, H, P, A>& m2)
+    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(m1.swap(m2)))
 {
 #if BOOST_WORKAROUND(__CODEGEARC__, BOOST_TESTED_AT(0x0613))
     struct dummy
@@ -2003,6 +2004,7 @@ inline bool operator!=(unordered_multimap<K, T, H, P, A> const& m1,
 template <class K, class T, class H, class P, class A>
 inline void swap(unordered_multimap<K, T, H, P, A>& m1,
     unordered_multimap<K, T, H, P, A>& m2)
+    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(m1.swap(m2)))
 {
 #if BOOST_WORKAROUND(__CODEGEARC__, BOOST_TESTED_AT(0x0613))
     struct dummy

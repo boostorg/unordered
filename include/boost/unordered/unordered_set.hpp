@@ -1297,6 +1297,7 @@ inline bool operator!=(
 
 template <class T, class H, class P, class A>
 inline void swap(unordered_set<T, H, P, A>& m1, unordered_set<T, H, P, A>& m2)
+    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(m1.swap(m2)))
 {
 #if BOOST_WORKAROUND(__CODEGEARC__, BOOST_TESTED_AT(0x0613))
     struct dummy
@@ -1681,6 +1682,7 @@ inline bool operator!=(unordered_multiset<T, H, P, A> const& m1,
 template <class T, class H, class P, class A>
 inline void swap(
     unordered_multiset<T, H, P, A>& m1, unordered_multiset<T, H, P, A>& m2)
+    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(m1.swap(m2)))
 {
 #if BOOST_WORKAROUND(__CODEGEARC__, BOOST_TESTED_AT(0x0613))
     struct dummy
