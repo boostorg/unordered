@@ -2765,8 +2765,30 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     }
 
     ////////////////////////////////////////////////////////////////////////
-    // Create buckets
+    // Clear buckets and Create buckets
+    //
+    // IMPORTANT: If the container already contains any elements, the
+    //            buckets will not contain any links to them. This will
+    //            need to be dealt with, for example by:
+    //            - deleting them
+    //            - putting them in a 'node_holder' for future use
+    //              (as in assignment)
+    //            - placing them in buckets (see rehash_impl)
 
+    // Clear the bucket pointers.
+    void clear_buckets()
+    {
+        bucket_pointer end = get_bucket(bucket_count_);
+        for (bucket_pointer it = buckets_; it != end; ++it) {
+            it->next_ = node_pointer();
+        }
+    }
+
+    // Create container buckets. If the container already contains any buckets
+    // the linked list will be transferred to the new buckets, but none
+    // of the bucket pointers will be set. See above note.
+    //
+    // Strong exception safety.
     void create_buckets(std::size_t new_count)
     {
         std::size_t length = new_count + 1;
@@ -2929,14 +2951,6 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         delete_nodes(get_previous_start(), link_pointer());
 
         BOOST_ASSERT(!size_);
-    }
-
-    void clear_buckets()
-    {
-        bucket_pointer end = get_bucket(bucket_count_);
-        for (bucket_pointer it = buckets_; it != end; ++it) {
-            it->next_ = node_pointer();
-        }
     }
 
     void destroy_buckets()
