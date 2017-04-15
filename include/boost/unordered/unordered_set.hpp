@@ -388,7 +388,9 @@ template <class T, class H, class P, class A> class unordered_set
     iterator erase(const_iterator);
     size_type erase(const key_type&);
     iterator erase(const_iterator, const_iterator);
+    BOOST_UNORDERED_DEPRECATED("Use erase instead")
     void quick_erase(const_iterator it) { erase(it); }
+    BOOST_UNORDERED_DEPRECATED("Use erase instead")
     void erase_return_void(const_iterator it) { erase(it); }
 
     void clear();
@@ -835,7 +837,9 @@ template <class T, class H, class P, class A> class unordered_multiset
     iterator erase(const_iterator);
     size_type erase(const key_type&);
     iterator erase(const_iterator, const_iterator);
+    BOOST_UNORDERED_DEPRECATED("Use erase instead")
     void quick_erase(const_iterator it) { erase(it); }
+    BOOST_UNORDERED_DEPRECATED("Use erase instead")
     void erase_return_void(const_iterator it) { erase(it); }
 
     void clear();

@@ -104,6 +104,33 @@
 #define BOOST_UNORDERED_USE_ALLOCATOR_TRAITS 0
 #endif
 
+//
+// Other configuration macros
+//
+
+#if defined(BOOST_UNORDERED_SUPPRESS_DEPRECATED)
+#define BOOST_UNORDERED_DEPRECATED(msg)
+#endif
+
+#if defined(__has_cpp_attribute) &&                                            \
+    (!defined(BOOST_GCC) || defined(BOOST_GCC_CXX11))
+#if __has_cpp_attribute(deprecated) && !defined(BOOST_UNORDERED_DEPRECATED)
+#define BOOST_UNORDERED_DEPRECATED(msg) [[deprecated(msg)]]
+#endif
+#endif
+
+#if !defined(BOOST_UNORDERED_DEPRECATED)
+#if defined(__GNUC__) && __GNUC__ >= 4
+#define BOOST_UNORDERED_DEPRECATED(msg) __attribute__((deprecated))
+#elif defined(_MSC_VER) && _MSC_VER >= 1400
+#define BOOST_UNORDERED_DEPRECATED(msg) __declspec(deprecated(msg))
+#elif defined(_MSC_VER) && _MSC_VER >= 1310
+#define BOOST_UNORDERED_DEPRECATED(msg) __declspec(deprecated)
+#else
+#define BOOST_UNORDERED_DEPRECATED(msg)
+#endif
+#endif
+
 namespace boost {
 namespace unordered {
 namespace iterator_detail {

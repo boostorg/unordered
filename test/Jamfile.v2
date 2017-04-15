@@ -45,7 +45,7 @@ test-suite unordered
         [ run unordered/insert_hint_tests.cpp ]
         [ run unordered/emplace_tests.cpp ]
         [ run unordered/unnecessary_copy_tests.cpp ]
-        [ run unordered/erase_tests.cpp ]
+        [ run unordered/erase_tests.cpp : : : <define>BOOST_UNORDERED_SUPPRESS_DEPRECATED ]
         [ run unordered/erase_equiv_tests.cpp ]
         [ run unordered/extract_tests.cpp ]
         [ run unordered/node_handle_tests.cpp ]

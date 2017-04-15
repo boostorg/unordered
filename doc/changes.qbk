@@ -312,4 +312,9 @@ C++11 support has resulted in some breaking changes:
   `unordered_multiset` yet. That will hopefully be in the next version of
   Boost.
 
+[h2 Boost 1.65.0]
+
+* Add deprecated attributes to `quick_erase` and `erase_return_void`.
+  Will fully remove in a future version.
+
 [endsect]
