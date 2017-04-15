@@ -2060,6 +2060,10 @@ template <typename N, class K, class T, class A> class node_handle_map
     friend struct ::boost::unordered::detail::table_unique;
     template <typename Types>
     friend struct ::boost::unordered::detail::table_equiv;
+    template <class K2, class T2, class H2, class P2, class A2>
+    friend class boost::unordered::unordered_map;
+    template <class K2, class T2, class H2, class P2, class A2>
+    friend class boost::unordered::unordered_multimap;
 
     typedef typename boost::unordered::detail::rebind_wrap<A,
         std::pair<K const, T> >::type value_allocator;
@@ -2082,19 +2086,18 @@ template <typename N, class K, class T, class A> class node_handle_map
     bool has_alloc_;
     boost::unordered::detail::value_base<value_allocator> alloc_;
 
-  public:
-    BOOST_CONSTEXPR node_handle_map() BOOST_NOEXCEPT : ptr_(), has_alloc_(false)
-    {
-    }
-
-    /*BOOST_CONSTEXPR */ node_handle_map(
-        node_pointer ptr, allocator_type const& a)
+    node_handle_map(node_pointer ptr, allocator_type const& a)
         : ptr_(ptr), has_alloc_(false)
     {
         if (ptr_) {
             new ((void*)&alloc_) value_allocator(a);
             has_alloc_ = true;
         }
+    }
+
+  public:
+    BOOST_CONSTEXPR node_handle_map() BOOST_NOEXCEPT : ptr_(), has_alloc_(false)
+    {
     }
 
     ~node_handle_map()

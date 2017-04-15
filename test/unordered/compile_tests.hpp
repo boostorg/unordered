@@ -20,6 +20,7 @@
 #include <boost/iterator/iterator_traits.hpp>
 #include <boost/limits.hpp>
 #include <boost/static_assert.hpp>
+#include <boost/type_traits/cv_traits.hpp>
 #include <boost/type_traits/is_convertible.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/utility/swap.hpp>
@@ -29,6 +30,23 @@ typedef long double comparison_type;
 template <class T> void sink(T const&) {}
 template <class T> T rvalue(T const& v) { return v; }
 template <class T> T rvalue_default() { return T(); }
+
+#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
+template <class T> T implicit_construct() { return {}; }
+#else
+template <class T> int implicit_construct()
+{
+    T x;
+    sink(x);
+    return 0;
+}
+#endif
+
+#if !defined(BOOST_NO_CXX11_NOEXCEPT)
+#define TEST_NOEXCEPT_EXPR(x) BOOST_STATIC_ASSERT((BOOST_NOEXCEPT_EXPR(x)));
+#else
+#define TEST_NOEXCEPT_EXPR(x)
+#endif
 
 template <class X, class T> void container_test(X& r, T const&)
 {
@@ -51,6 +69,8 @@ template <class X, class T> void container_test(X& r, T const&)
     typedef BOOST_DEDUCED_TYPENAME X::const_reference const_reference;
 
     typedef BOOST_DEDUCED_TYPENAME X::node_type node_type;
+
+    typedef BOOST_DEDUCED_TYPENAME X::allocator_type allocator_type;
 
     // value_type
 
@@ -75,7 +95,9 @@ template <class X, class T> void container_test(X& r, T const&)
     BOOST_STATIC_ASSERT((boost::is_same<T, const_iterator_value_type>::value));
 
     // node_type
-    // TODO?
+
+    BOOST_STATIC_ASSERT((boost::is_same<allocator_type,
+        BOOST_DEDUCED_TYPENAME node_type::allocator_type>::value));
 
     // difference_type
 
@@ -134,7 +156,6 @@ template <class X, class T> void container_test(X& r, T const&)
 
     // Allocator
 
-    typedef BOOST_DEDUCED_TYPENAME X::allocator_type allocator_type;
     test::check_return_type<allocator_type>::equals(a_const.get_allocator());
 
     allocator_type m = a.get_allocator();
@@ -147,21 +168,26 @@ template <class X, class T> void container_test(X& r, T const&)
 
     // node_type
 
-    typedef BOOST_DEDUCED_TYPENAME X::node_type node_type;
-    BOOST_STATIC_ASSERT((boost::is_same<allocator_type,
-        BOOST_DEDUCED_TYPENAME node_type::allocator_type>::value));
+    implicit_construct<node_type const>();
+    TEST_NOEXCEPT_EXPR(node_type());
 
     node_type n1;
     node_type n2(rvalue_default<node_type>());
+    TEST_NOEXCEPT_EXPR(node_type(boost::move(n1)));
     node_type n3;
     n3 = boost::move(n2);
     n1.swap(n3);
     swap(n1, n3);
+    // TODO: noexcept for swap?
+    // value, key, mapped tests in map and set specific testing.
 
     node_type const n_const;
     BOOST_TEST(n_const ? 0 : 1);
+    TEST_NOEXCEPT_EXPR(n_const ? 0 : 1);
     test::check_return_type<bool>::equals(!n_const);
     test::check_return_type<bool>::equals(n_const.empty());
+    TEST_NOEXCEPT_EXPR(!n_const);
+    TEST_NOEXCEPT_EXPR(n_const.empty());
 
     // Avoid unused variable warnings:
 
@@ -302,6 +328,8 @@ void unordered_map_test(X& r, Key const& k, T const& v)
 
     BOOST_STATIC_ASSERT((boost::is_same<Key, node_key_type>::value));
     BOOST_STATIC_ASSERT((boost::is_same<T, node_mapped_type>::value));
+    // Superfluous,but just to make sure.
+    BOOST_STATIC_ASSERT((!boost::is_const<node_key_type>::value));
 
     // Calling functions
 
@@ -329,6 +357,10 @@ void unordered_map_test(X& r, Key const& k, T const& v)
 
     r.insert(boost::move(n1));
     r.insert(r.end(), r.extract(r.begin()));
+
+    node_type n = r.extract(r.begin());
+    test::check_return_type<node_key_type>::equals_ref(n.key());
+    test::check_return_type<node_mapped_type>::equals_ref(n.mapped());
 }
 
 template <class X> void equality_test(X& r)

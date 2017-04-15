@@ -1701,6 +1701,10 @@ template <typename N, typename T, typename A> class node_handle_set
     friend struct ::boost::unordered::detail::table_unique;
     template <typename Types>
     friend struct ::boost::unordered::detail::table_equiv;
+    template <class T2, class H2, class P2, class A2>
+    friend class unordered_set;
+    template <class T2, class H2, class P2, class A2>
+    friend class unordered_multiset;
 
     typedef typename boost::unordered::detail::rebind_wrap<A, T>::type
         value_allocator;
@@ -1722,19 +1726,18 @@ template <typename N, typename T, typename A> class node_handle_set
     bool has_alloc_;
     boost::unordered::detail::value_base<value_allocator> alloc_;
 
-  public:
-    BOOST_CONSTEXPR node_handle_set() BOOST_NOEXCEPT : ptr_(), has_alloc_(false)
-    {
-    }
-
-    /*BOOST_CONSTEXPR */ node_handle_set(
-        node_pointer ptr, allocator_type const& a)
+    node_handle_set(node_pointer ptr, allocator_type const& a)
         : ptr_(ptr), has_alloc_(false)
     {
         if (ptr_) {
             new ((void*)&alloc_) value_allocator(a);
             has_alloc_ = true;
         }
+    }
+
+  public:
+    BOOST_CONSTEXPR node_handle_set() BOOST_NOEXCEPT : ptr_(), has_alloc_(false)
+    {
     }
 
     ~node_handle_set()
