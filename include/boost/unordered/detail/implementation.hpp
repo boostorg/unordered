@@ -2925,8 +2925,8 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         if (!size_)
             return;
 
-        delete_nodes(get_previous_start(), link_pointer());
         clear_buckets();
+        delete_nodes(get_previous_start(), link_pointer());
 
         BOOST_ASSERT(!size_);
     }
