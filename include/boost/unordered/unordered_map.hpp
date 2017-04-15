@@ -17,6 +17,7 @@
 #include <boost/core/explicit_operator_bool.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/move/move.hpp>
+#include <boost/type_traits/is_constructible.hpp>
 #include <boost/unordered/detail/map.hpp>
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
@@ -545,6 +546,15 @@ template <class K, class T, class H, class P, class A> class unordered_map
         return this->emplace(boost::move(x));
     }
 
+    template <class P2>
+    std::pair<iterator, bool> insert(BOOST_RV_REF(P2) obj,
+        typename boost::enable_if_c<
+            boost::is_constructible<value_type, BOOST_RV_REF(P2)>::value,
+            void*>::type = 0)
+    {
+        return this->emplace(boost::forward<P2>(obj));
+    }
+
     iterator insert(const_iterator hint, value_type const& x)
     {
         return this->emplace_hint(hint, x);
@@ -553,6 +563,15 @@ template <class K, class T, class H, class P, class A> class unordered_map
     iterator insert(const_iterator hint, BOOST_RV_REF(value_type) x)
     {
         return this->emplace_hint(hint, boost::move(x));
+    }
+
+    template <class P2>
+    iterator insert(const_iterator hint, BOOST_RV_REF(P2) obj,
+        typename boost::enable_if_c<
+            boost::is_constructible<value_type, BOOST_RV_REF(P2)>::value,
+            void*>::type = 0)
+    {
+        return this->emplace_hint(hint, boost::forward<P2>(obj));
     }
 
     template <class M>
@@ -1037,6 +1056,15 @@ template <class K, class T, class H, class P, class A> class unordered_multimap
         return this->emplace(boost::move(x));
     }
 
+    template <class P2>
+    iterator insert(BOOST_RV_REF(P2) obj,
+        typename boost::enable_if_c<
+            boost::is_constructible<value_type, BOOST_RV_REF(P2)>::value,
+            void*>::type = 0)
+    {
+        return this->emplace(boost::forward<P2>(obj));
+    }
+
     iterator insert(const_iterator hint, value_type const& x)
     {
         return this->emplace_hint(hint, x);
@@ -1045,6 +1073,15 @@ template <class K, class T, class H, class P, class A> class unordered_multimap
     iterator insert(const_iterator hint, BOOST_RV_REF(value_type) x)
     {
         return this->emplace_hint(hint, boost::move(x));
+    }
+
+    template <class P2>
+    iterator insert(const_iterator hint, BOOST_RV_REF(P2) obj,
+        typename boost::enable_if_c<
+            boost::is_constructible<value_type, BOOST_RV_REF(P2)>::value,
+            void*>::type = 0)
+    {
+        return this->emplace_hint(hint, boost::forward<P2>(obj));
     }
 
     template <class InputIt> void insert(InputIt, InputIt);
