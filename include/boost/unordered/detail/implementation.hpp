@@ -113,7 +113,7 @@
 #endif
 
 #if defined(__has_cpp_attribute) &&                                            \
-    (!defined(BOOST_GCC) || defined(BOOST_GCC_CXX11))
+    (!defined(__cplusplus) || __cplusplus >= 201402)
 #if __has_cpp_attribute(deprecated) && !defined(BOOST_UNORDERED_DEPRECATED)
 #define BOOST_UNORDERED_DEPRECATED(msg) [[deprecated(msg)]]
 #endif
