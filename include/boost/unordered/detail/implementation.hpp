@@ -2357,13 +2357,13 @@ template <class H, class P> class functions
     function_pair const& current() const
     {
         return *static_cast<function_pair const*>(
-            static_cast<void const*>(&funcs_[current_]));
+            static_cast<void const*>(funcs_[current_].address()));
     }
 
     function_pair& current()
     {
         return *static_cast<function_pair*>(
-            static_cast<void*>(&funcs_[current_]));
+            static_cast<void*>(funcs_[current_].address()));
     }
 
     void construct(bool which, H const& hf, P const& eq)
