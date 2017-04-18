@@ -391,16 +391,23 @@ template <class T> class allocator1
         ::operator delete((void*)p);
     }
 
+#if BOOST_UNORDERED_CXX11_CONSTRUCTION
+    template <typename... Args> void construct(T* p, Args&&... args)
+    {
+        detail::tracker.track_construct((void*)p, sizeof(T), tag_);
+        new (p) T(boost::forward<Args>(args)...);
+    }
+#else
     void construct(T* p, T const& t)
     {
-        // Don't count constructions here as it isn't always called.
-        // detail::tracker.track_construct((void*) p, sizeof(T), tag_);
+        detail::tracker.track_construct((void*)p, sizeof(T), tag_);
         new (p) T(t);
     }
+#endif
 
     void destroy(T* p)
     {
-        // detail::tracker.track_destroy((void*) p, sizeof(T), tag_);
+        detail::tracker.track_destroy((void*)p, sizeof(T), tag_);
         p->~T();
 
         // Work around MSVC buggy unused parameter warning.

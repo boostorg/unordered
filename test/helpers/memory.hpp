@@ -66,6 +66,8 @@ struct memory_tracker
     {
     }
 
+    ~memory_tracker() { BOOST_TEST(count_allocators == 0); }
+
     void allocator_ref()
     {
         if (count_allocators == 0) {
