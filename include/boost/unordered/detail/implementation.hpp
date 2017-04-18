@@ -485,17 +485,6 @@ struct convert_from_anything
     template <typename T> convert_from_anything(T const&);
 };
 
-namespace func {
-// This is a bit nasty, when constructing the individual members
-// of a std::pair, need to cast away 'const'. For modern compilers,
-// should be able to use std::piecewise_construct instead.
-template <typename T> T* const_cast_pointer(T* x) { return x; }
-template <typename T> T* const_cast_pointer(T const* x)
-{
-    return const_cast<T*>(x);
-}
-}
-
 ////////////////////////////////////////////////////////////////////////////
 // emplace_args
 //
@@ -1524,21 +1513,16 @@ inline typename enable_if<use_piecewise<A0>, void>::type construct_from_args(
     BOOST_FWD_REF(A1) a1, BOOST_FWD_REF(A2) a2)
 {
     boost::unordered::detail::func::construct_from_tuple(
-        alloc, boost::unordered::detail::func::const_cast_pointer(
-                   boost::addressof(address->first)),
-        boost::forward<A1>(a1));
+        alloc, boost::addressof(address->first), boost::forward<A1>(a1));
     BOOST_TRY
     {
         boost::unordered::detail::func::construct_from_tuple(
-            alloc, boost::unordered::detail::func::const_cast_pointer(
-                       boost::addressof(address->second)),
-            boost::forward<A2>(a2));
+            alloc, boost::addressof(address->second), boost::forward<A2>(a2));
     }
     BOOST_CATCH(...)
     {
         boost::unordered::detail::func::call_destroy(
-            alloc, boost::unordered::detail::func::const_cast_pointer(
-                       boost::addressof(address->first)));
+            alloc, boost::addressof(address->first));
         BOOST_RETHROW;
     }
     BOOST_CATCH_END
@@ -1602,21 +1586,16 @@ inline void construct_from_args(Alloc& alloc, std::pair<A, B>* address,
     typename enable_if<use_piecewise<A0>, void*>::type = 0)
 {
     boost::unordered::detail::func::construct_from_tuple(
-        alloc, boost::unordered::detail::func::const_cast_pointer(
-                   boost::addressof(address->first)),
-        args.a1);
+        alloc, boost::addressof(address->first), args.a1);
     BOOST_TRY
     {
         boost::unordered::detail::func::construct_from_tuple(
-            alloc, boost::unordered::detail::func::const_cast_pointer(
-                       boost::addressof(address->second)),
-            args.a2);
+            alloc, boost::addressof(address->second), args.a2);
     }
     BOOST_CATCH(...)
     {
         boost::unordered::detail::func::call_destroy(
-            alloc, boost::unordered::detail::func::const_cast_pointer(
-                       boost::addressof(address->first)));
+            alloc, boost::addressof(address->first));
         BOOST_RETHROW;
     }
     BOOST_CATCH_END
@@ -1816,21 +1795,17 @@ construct_node_pair(Alloc& alloc, BOOST_FWD_REF(Key) k)
 {
     node_constructor<Alloc> a(alloc);
     a.create_node();
-    boost::unordered::detail::func::call_construct(
-        alloc, boost::unordered::detail::func::const_cast_pointer(
-                   boost::addressof(a.node_->value_ptr()->first)),
-        boost::forward<Key>(k));
+    boost::unordered::detail::func::call_construct(alloc,
+        boost::addressof(a.node_->value_ptr()->first), boost::forward<Key>(k));
     BOOST_TRY
     {
         boost::unordered::detail::func::call_construct(
-            alloc, boost::unordered::detail::func::const_cast_pointer(
-                       boost::addressof(a.node_->value_ptr()->second)));
+            alloc, boost::addressof(a.node_->value_ptr()->second));
     }
     BOOST_CATCH(...)
     {
         boost::unordered::detail::func::call_destroy(
-            alloc, boost::unordered::detail::func::const_cast_pointer(
-                       boost::addressof(a.node_->value_ptr()->first)));
+            alloc, boost::addressof(a.node_->value_ptr()->first));
         BOOST_RETHROW;
     }
     BOOST_CATCH_END
@@ -1843,22 +1818,18 @@ construct_node_pair(Alloc& alloc, BOOST_FWD_REF(Key) k, BOOST_FWD_REF(Mapped) m)
 {
     node_constructor<Alloc> a(alloc);
     a.create_node();
-    boost::unordered::detail::func::call_construct(
-        alloc, boost::unordered::detail::func::const_cast_pointer(
-                   boost::addressof(a.node_->value_ptr()->first)),
-        boost::forward<Key>(k));
+    boost::unordered::detail::func::call_construct(alloc,
+        boost::addressof(a.node_->value_ptr()->first), boost::forward<Key>(k));
     BOOST_TRY
     {
-        boost::unordered::detail::func::call_construct(
-            alloc, boost::unordered::detail::func::const_cast_pointer(
-                       boost::addressof(a.node_->value_ptr()->second)),
+        boost::unordered::detail::func::call_construct(alloc,
+            boost::addressof(a.node_->value_ptr()->second),
             boost::forward<Mapped>(m));
     }
     BOOST_CATCH(...)
     {
         boost::unordered::detail::func::call_destroy(
-            alloc, boost::unordered::detail::func::const_cast_pointer(
-                       boost::addressof(a.node_->value_ptr()->first)));
+            alloc, boost::addressof(a.node_->value_ptr()->first));
         BOOST_RETHROW;
     }
     BOOST_CATCH_END
@@ -1872,22 +1843,18 @@ construct_node_pair_from_args(
 {
     node_constructor<Alloc> a(alloc);
     a.create_node();
-    boost::unordered::detail::func::call_construct(
-        alloc, boost::unordered::detail::func::const_cast_pointer(
-                   boost::addressof(a.node_->value_ptr()->first)),
-        boost::forward<Key>(k));
+    boost::unordered::detail::func::call_construct(alloc,
+        boost::addressof(a.node_->value_ptr()->first), boost::forward<Key>(k));
     BOOST_TRY
     {
-        boost::unordered::detail::func::construct_from_args(
-            alloc, boost::unordered::detail::func::const_cast_pointer(
-                       boost::addressof(a.node_->value_ptr()->second)),
+        boost::unordered::detail::func::construct_from_args(alloc,
+            boost::addressof(a.node_->value_ptr()->second),
             BOOST_UNORDERED_EMPLACE_FORWARD);
     }
     BOOST_CATCH(...)
     {
         boost::unordered::detail::func::call_destroy(
-            alloc, boost::unordered::detail::func::const_cast_pointer(
-                       boost::addressof(a.node_->value_ptr()->first)));
+            alloc, boost::addressof(a.node_->value_ptr()->first));
         BOOST_RETHROW;
     }
     BOOST_CATCH_END
