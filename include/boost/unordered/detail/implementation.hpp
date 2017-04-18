@@ -104,6 +104,25 @@
 #define BOOST_UNORDERED_USE_ALLOCATOR_TRAITS 0
 #endif
 
+// BOOST_UNORDERED_CXX11_CONSTRUCTION
+//
+// Use C++11 construction, requires variadic arguments, good construct support
+// in allocator_traits and piecewise construction of std::pair
+// Otherwise allocators aren't used for construction/destruction
+
+#if BOOST_UNORDERED_HAVE_PIECEWISE_CONSTRUCT &&                                \
+    !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+#if BOOST_UNORDERED_USE_ALLOCATOR_TRAITS == 0 && !defined(BOOST_NO_SFINAE_EXPR)
+#define BOOST_UNORDERED_CXX11_CONSTRUCTION 1
+#elif BOOST_UNORDERED_USE_ALLOCATOR_TRAITS == 1
+#define BOOST_UNORDERED_CXX11_CONSTRUCTION 1
+#endif
+#endif
+
+#if !defined(BOOST_UNORDERED_CXX11_CONSTRUCTION)
+#define BOOST_UNORDERED_CXX11_CONSTRUCTION 0
+#endif
+
 //
 // Other configuration macros
 //
@@ -765,13 +784,6 @@ template <typename T> struct identity
 #include <boost/pointer_to_other.hpp>
 #include <boost/utility/enable_if.hpp>
 
-#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES) &&                             \
-    !defined(BOOST_NO_SFINAE_EXPR)
-#define BOOST_UNORDERED_DETAIL_FULL_CONSTRUCT 1
-#else
-#define BOOST_UNORDERED_DETAIL_FULL_CONSTRUCT 0
-#endif
-
 namespace boost {
 namespace unordered {
 namespace detail {
@@ -1040,7 +1052,7 @@ template <typename Alloc> struct allocator_traits
     }
 
   public:
-#if BOOST_UNORDERED_DETAIL_FULL_CONSTRUCT
+#if BOOST_UNORDERED_CXX11_CONSTRUCTION
 
     template <typename T, typename... Args>
     static typename boost::enable_if_c<
@@ -1195,8 +1207,6 @@ template <typename Alloc> struct allocator_traits
 
 #include <memory>
 
-#define BOOST_UNORDERED_DETAIL_FULL_CONSTRUCT 1
-
 namespace boost {
 namespace unordered {
 namespace detail {
@@ -1221,8 +1231,6 @@ template <typename Alloc, typename T> struct rebind_wrap
 #elif BOOST_UNORDERED_USE_ALLOCATOR_TRAITS == 2
 
 #include <boost/container/allocator_traits.hpp>
-
-#define BOOST_UNORDERED_DETAIL_FULL_CONSTRUCT 0
 
 namespace boost {
 namespace unordered {
@@ -1260,9 +1268,7 @@ namespace func {
 ////////////////////////////////////////////////////////////////////////////
 // call_construct
 
-#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-
-#if BOOST_UNORDERED_DETAIL_FULL_CONSTRUCT
+#if BOOST_UNORDERED_CXX11_CONSTRUCTION
 
 template <typename Alloc, typename T, typename... Args>
 inline void call_construct(
@@ -1278,7 +1284,7 @@ inline void call_destroy(Alloc& alloc, T* x)
     boost::unordered::detail::allocator_traits<Alloc>::destroy(alloc, x);
 }
 
-#else
+#elif !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
 template <typename Alloc, typename T, typename... Args>
 inline void call_construct(Alloc&, T* address, BOOST_FWD_REF(Args)... args)
@@ -1291,9 +1297,8 @@ template <typename Alloc, typename T> inline void call_destroy(Alloc&, T* x)
     boost::unordered::detail::func::destroy(x);
 }
 
-#endif
-
 #else
+
 template <typename Alloc, typename T>
 inline void call_construct(Alloc&, T* address)
 {
