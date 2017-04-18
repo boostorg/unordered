@@ -1267,6 +1267,9 @@ namespace func {
 
 ////////////////////////////////////////////////////////////////////////////
 // call_construct
+//
+// Only use allocator_traits::construct, allocator_traits::destroy when full
+// C++11 support is available.
 
 #if BOOST_UNORDERED_CXX11_CONSTRUCTION
 
