@@ -397,13 +397,6 @@ template <class T> class allocator1
         detail::tracker.track_construct((void*)p, sizeof(U), tag_);
         new (p) U(boost::forward<Args>(args)...);
     }
-#else
-    void construct(T* p, T const& t)
-    {
-        detail::tracker.track_construct((void*)p, sizeof(T), tag_);
-        new (p) T(t);
-    }
-#endif
 
     template <typename U> void destroy(U* p)
     {
@@ -413,6 +406,22 @@ template <class T> class allocator1
         // Work around MSVC buggy unused parameter warning.
         ignore_variable(&p);
     }
+#else
+  private:
+    // I'm going to claim in the documentation that construct/destroy
+    // is never used when C++11 support isn't available, so might as
+    // well check that in the text.
+    // TODO: Or maybe just disallow them for values?
+    template <typename U> void construct(U* p);
+    template <typename U, typename A0> void construct(U* p, A0 const&);
+    template <typename U, typename A0, typename A1>
+    void construct(U* p, A0 const&, A1 const&);
+    template <typename U, typename A0, typename A1, typename A2>
+    void construct(U* p, A0 const&, A1 const&, A2 const&);
+    template <typename U> void destroy(U* p);
+
+  public:
+#endif
 
     bool operator==(allocator1 const& x) const { return tag_ == x.tag_; }
 
