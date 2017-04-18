@@ -60,9 +60,11 @@ struct memory_tracker
     unsigned int count_allocators;
     unsigned int count_allocations;
     unsigned int count_constructions;
+    bool tracking_constructions;
 
     memory_tracker()
-        : count_allocators(0), count_allocations(0), count_constructions(0)
+        : count_allocators(0), count_allocations(0), count_constructions(0),
+          tracking_constructions(true)
     {
     }
 
@@ -133,14 +135,18 @@ struct memory_tracker
 
     void track_construct(void* /*ptr*/, std::size_t /*size*/, int /*tag*/)
     {
-        ++count_constructions;
+        if (tracking_constructions) {
+            ++count_constructions;
+        }
     }
 
     void track_destroy(void* /*ptr*/, std::size_t /*size*/, int /*tag*/)
     {
-        BOOST_TEST(count_constructions > 0);
-        if (count_constructions > 0)
-            --count_constructions;
+        if (tracking_constructions) {
+            BOOST_TEST(count_constructions > 0);
+            if (count_constructions > 0)
+                --count_constructions;
+        }
     }
 };
 }
@@ -154,6 +160,29 @@ namespace detail {
 namespace {
 test::detail::memory_tracker tracker;
 }
+}
+
+namespace detail {
+struct disable_construction_tracking
+{
+    bool old_value;
+
+    disable_construction_tracking()
+        : old_value(detail::tracker.tracking_constructions)
+    {
+        test::detail::tracker.tracking_constructions = false;
+    }
+
+    ~disable_construction_tracking()
+    {
+        test::detail::tracker.tracking_constructions = old_value;
+    }
+
+  private:
+    disable_construction_tracking(disable_construction_tracking const&);
+    disable_construction_tracking& operator=(
+        disable_construction_tracking const&);
+};
 }
 }
 

@@ -392,10 +392,10 @@ template <class T> class allocator1
     }
 
 #if BOOST_UNORDERED_CXX11_CONSTRUCTION
-    template <typename... Args> void construct(T* p, Args&&... args)
+    template <typename U, typename... Args> void construct(U* p, Args&&... args)
     {
-        detail::tracker.track_construct((void*)p, sizeof(T), tag_);
-        new (p) T(boost::forward<Args>(args)...);
+        detail::tracker.track_construct((void*)p, sizeof(U), tag_);
+        new (p) U(boost::forward<Args>(args)...);
     }
 #else
     void construct(T* p, T const& t)
@@ -405,10 +405,10 @@ template <class T> class allocator1
     }
 #endif
 
-    void destroy(T* p)
+    template <typename U> void destroy(U* p)
     {
-        detail::tracker.track_destroy((void*)p, sizeof(T), tag_);
-        p->~T();
+        detail::tracker.track_destroy((void*)p, sizeof(U), tag_);
+        p->~U();
 
         // Work around MSVC buggy unused parameter warning.
         ignore_variable(&p);
