@@ -1262,19 +1262,11 @@ namespace func {
 
 #if BOOST_UNORDERED_CXX11_CONSTRUCTION
 
-template <typename Alloc, typename T, typename... Args>
-inline void call_construct(
-    Alloc& alloc, T* address, BOOST_FWD_REF(Args)... args)
-{
-    boost::unordered::detail::allocator_traits<Alloc>::construct(
-        alloc, address, boost::forward<Args>(args)...);
-}
-
-template <typename Alloc, typename T>
-inline void call_destroy(Alloc& alloc, T* x)
-{
-    boost::unordered::detail::allocator_traits<Alloc>::destroy(alloc, x);
-}
+#define BOOST_UNORDERED_CALL_CONSTRUCT0(Traits, alloc, address)                \
+    Traits::construct(alloc, address)
+#define BOOST_UNORDERED_CALL_CONSTRUCT1(Traits, alloc, address, a0)            \
+    Traits::construct(alloc, address, a0)
+#define BOOST_UNORDERED_CALL_DESTROY(Traits, alloc, x) Traits::destroy(alloc, x)
 
 #elif !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
@@ -1284,10 +1276,12 @@ inline void call_construct(Alloc&, T* address, BOOST_FWD_REF(Args)... args)
     new ((void*)address) T(boost::forward<Args>(args)...);
 }
 
-template <typename Alloc, typename T> inline void call_destroy(Alloc&, T* x)
-{
-    boost::unordered::detail::func::destroy(x);
-}
+#define BOOST_UNORDERED_CALL_CONSTRUCT0(Traits, alloc, address)                \
+    boost::unordered::detail::func::call_construct(alloc, address)
+#define BOOST_UNORDERED_CALL_CONSTRUCT1(Traits, alloc, address, a0)            \
+    boost::unordered::detail::func::call_construct(alloc, address, a0)
+#define BOOST_UNORDERED_CALL_DESTROY(Traits, alloc, x)                         \
+    boost::unordered::detail::func::destroy(x)
 
 #else
 
@@ -1303,10 +1297,12 @@ inline void call_construct(Alloc&, T* address, BOOST_FWD_REF(A0) a0)
     new ((void*)address) T(boost::forward<A0>(a0));
 }
 
-template <typename Alloc, typename T> inline void call_destroy(Alloc&, T* x)
-{
-    boost::unordered::detail::func::destroy(x);
-}
+#define BOOST_UNORDERED_CALL_CONSTRUCT0(Traits, alloc, address)                \
+    boost::unordered::detail::func::call_construct(alloc, address)
+#define BOOST_UNORDERED_CALL_CONSTRUCT1(Traits, alloc, address, a0)            \
+    boost::unordered::detail::func::call_construct(alloc, address, a0)
+#define BOOST_UNORDERED_CALL_DESTROY(Traits, alloc, x)                         \
+    boost::unordered::detail::func::destroy(x)
 
 #endif
 
@@ -1650,8 +1646,8 @@ template <typename NodeAlloc> struct node_constructor
         BOOST_ASSERT(!node_);
         node_ = p;
         node_constructed_ = true;
-        boost::unordered::detail::func::call_destroy(
-            alloc_, node_->value_ptr());
+        BOOST_UNORDERED_CALL_DESTROY(
+            node_allocator_traits, alloc_, node_->value_ptr());
     }
 
   private:
@@ -1707,8 +1703,8 @@ template <typename NodeAlloc> struct node_tmp
 template <typename Alloc> node_tmp<Alloc>::~node_tmp()
 {
     if (node_) {
-        boost::unordered::detail::func::call_destroy(
-            alloc_, node_->value_ptr());
+        BOOST_UNORDERED_CALL_DESTROY(
+            node_allocator_traits, alloc_, node_->value_ptr());
         boost::unordered::detail::func::destroy(boost::addressof(*node_));
         node_allocator_traits::deallocate(alloc_, node_, 1);
     }
@@ -1742,8 +1738,9 @@ construct_node(Alloc& alloc, BOOST_FWD_REF(U) x)
 {
     node_constructor<Alloc> a(alloc);
     a.create_node();
-    boost::unordered::detail::func::call_construct(
-        alloc, a.node_->value_ptr(), boost::forward<U>(x));
+    BOOST_UNORDERED_CALL_CONSTRUCT1(
+        boost::unordered::detail::allocator_traits<Alloc>, alloc,
+        a.node_->value_ptr(), boost::forward<U>(x));
     return a.release();
 }
 
@@ -2183,7 +2180,7 @@ template <typename NodeAlloc> struct node_holder
         } else {
             constructor_.create_node();
         }
-        boost::unordered::detail::func::call_construct(
+        BOOST_UNORDERED_CALL_CONSTRUCT1(node_allocator_traits,
             constructor_.alloc_, constructor_.node_->value_ptr(), v);
         return constructor_.release();
     }
@@ -2195,8 +2192,9 @@ template <typename NodeAlloc> struct node_holder
         } else {
             constructor_.create_node();
         }
-        boost::unordered::detail::func::call_construct(constructor_.alloc_,
-            constructor_.node_->value_ptr(), boost::move(v));
+        BOOST_UNORDERED_CALL_CONSTRUCT1(node_allocator_traits,
+            constructor_.alloc_, constructor_.node_->value_ptr(),
+            boost::move(v));
         return constructor_.release();
     }
 
@@ -2209,8 +2207,8 @@ template <typename Alloc> node_holder<Alloc>::~node_holder()
         node_pointer p = nodes_;
         nodes_ = static_cast<node_pointer>(p->next_);
 
-        boost::unordered::detail::func::call_destroy(
-            constructor_.alloc_, p->value_ptr());
+        BOOST_UNORDERED_CALL_DESTROY(
+            node_allocator_traits, constructor_.alloc_, p->value_ptr());
         boost::unordered::detail::func::destroy(boost::addressof(*p));
         node_allocator_traits::deallocate(constructor_.alloc_, p, 1);
     }
@@ -2900,15 +2898,15 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
             bucket_pointer end =
                 new_buckets + static_cast<std::ptrdiff_t>(new_count);
             for (; constructed != end; ++constructed) {
-                boost::unordered::detail::func::call_construct(
+                BOOST_UNORDERED_CALL_CONSTRUCT0(bucket_allocator_traits,
                     bucket_alloc(), boost::addressof(*constructed));
             }
 
             if (buckets_) {
                 // Copy the nodes to the new buckets, including the dummy
                 // node if there is one.
-                boost::unordered::detail::func::call_construct(bucket_alloc(),
-                    boost::addressof(*constructed),
+                BOOST_UNORDERED_CALL_CONSTRUCT1(bucket_allocator_traits,
+                    bucket_alloc(), boost::addressof(*constructed),
                     (buckets_ + static_cast<std::ptrdiff_t>(bucket_count_))
                         ->next_);
                 ++constructed;
@@ -2917,11 +2915,12 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
                 node_constructor a(node_alloc());
                 a.create_node();
 
-                boost::unordered::detail::func::call_construct(bucket_alloc(),
-                    boost::addressof(*constructed), a.release());
+                BOOST_UNORDERED_CALL_CONSTRUCT1(bucket_allocator_traits,
+                    bucket_alloc(), boost::addressof(*constructed),
+                    a.release());
                 ++constructed;
             } else {
-                boost::unordered::detail::func::call_construct(
+                BOOST_UNORDERED_CALL_CONSTRUCT0(bucket_allocator_traits,
                     bucket_alloc(), boost::addressof(*constructed));
                 ++constructed;
             }
@@ -2929,7 +2928,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         BOOST_CATCH(...)
         {
             for (bucket_pointer p = new_buckets; p != constructed; ++p) {
-                boost::unordered::detail::func::call_destroy(
+                BOOST_UNORDERED_CALL_DESTROY(bucket_allocator_traits,
                     bucket_alloc(), boost::addressof(*p));
             }
 
@@ -3008,8 +3007,8 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         node_pointer n = static_cast<node_pointer>(prev->next_);
         prev->next_ = n->next_;
 
-        boost::unordered::detail::func::call_destroy(
-            node_alloc(), n->value_ptr());
+        BOOST_UNORDERED_CALL_DESTROY(
+            node_allocator_traits, node_alloc(), n->value_ptr());
         boost::unordered::detail::func::destroy(boost::addressof(*n));
         node_allocator_traits::deallocate(node_alloc(), n, 1);
         --size_;
@@ -3065,8 +3064,8 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     {
         bucket_pointer end = get_bucket(bucket_count_ + 1);
         for (bucket_pointer it = buckets_; it != end; ++it) {
-            boost::unordered::detail::func::call_destroy(
-                bucket_alloc(), boost::addressof(*it));
+            BOOST_UNORDERED_CALL_DESTROY(
+                bucket_allocator_traits, bucket_alloc(), boost::addressof(*it));
         }
 
         bucket_allocator_traits::deallocate(
@@ -4211,8 +4210,8 @@ struct table_unique : boost::unordered::detail::table<Types>
             if (!a.node_) {
                 a.create_node();
             }
-            boost::unordered::detail::func::call_construct(
-                a.alloc_, a.node_->value_ptr(), *i);
+            BOOST_UNORDERED_CALL_CONSTRUCT1(
+                node_allocator_traits, a.alloc_, a.node_->value_ptr(), *i);
             node_tmp b(a.release(), a.alloc_);
 
             const_key_type& k = this->get_key(b.node_);
