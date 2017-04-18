@@ -1270,37 +1270,36 @@ namespace func {
 
 #elif !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
-template <typename Alloc, typename T, typename... Args>
-inline void construct_value(Alloc&, T* address, BOOST_FWD_REF(Args)... args)
+template <typename T, typename... Args>
+inline void construct_value(T* address, BOOST_FWD_REF(Args)... args)
 {
     new ((void*)address) T(boost::forward<Args>(args)...);
 }
 
 #define BOOST_UNORDERED_CALL_CONSTRUCT0(Traits, alloc, address)                \
-    boost::unordered::detail::func::construct_value(alloc, address)
+    boost::unordered::detail::func::construct_value(address)
 #define BOOST_UNORDERED_CALL_CONSTRUCT1(Traits, alloc, address, a0)            \
-    boost::unordered::detail::func::construct_value(alloc, address, a0)
+    boost::unordered::detail::func::construct_value(address, a0)
 #define BOOST_UNORDERED_CALL_DESTROY(Traits, alloc, x)                         \
     boost::unordered::detail::func::destroy(x)
 
 #else
 
-template <typename Alloc, typename T>
-inline void construct_value(Alloc&, T* address)
+template <typename T> inline void construct_value(T* address)
 {
     new ((void*)address) T();
 }
 
-template <typename Alloc, typename T, typename A0>
-inline void construct_value(Alloc&, T* address, BOOST_FWD_REF(A0) a0)
+template <typename T, typename A0>
+inline void construct_value(T* address, BOOST_FWD_REF(A0) a0)
 {
     new ((void*)address) T(boost::forward<A0>(a0));
 }
 
 #define BOOST_UNORDERED_CALL_CONSTRUCT0(Traits, alloc, address)                \
-    boost::unordered::detail::func::construct_value(alloc, address)
+    boost::unordered::detail::func::construct_value(address)
 #define BOOST_UNORDERED_CALL_CONSTRUCT1(Traits, alloc, address, a0)            \
-    boost::unordered::detail::func::construct_value(alloc, address, a0)
+    boost::unordered::detail::func::construct_value(address, a0)
 #define BOOST_UNORDERED_CALL_DESTROY(Traits, alloc, x)                         \
     boost::unordered::detail::func::destroy(x)
 
@@ -1796,12 +1795,12 @@ construct_node_pair(Alloc& alloc, BOOST_FWD_REF(Key) k)
 {
     node_constructor<Alloc> a(alloc);
     a.create_node();
-    boost::unordered::detail::func::construct_value(alloc,
+    boost::unordered::detail::func::construct_value(
         boost::addressof(a.node_->value_ptr()->first), boost::forward<Key>(k));
     BOOST_TRY
     {
         boost::unordered::detail::func::construct_value(
-            alloc, boost::addressof(a.node_->value_ptr()->second));
+            boost::addressof(a.node_->value_ptr()->second));
     }
     BOOST_CATCH(...)
     {
@@ -1819,11 +1818,11 @@ construct_node_pair(Alloc& alloc, BOOST_FWD_REF(Key) k, BOOST_FWD_REF(Mapped) m)
 {
     node_constructor<Alloc> a(alloc);
     a.create_node();
-    boost::unordered::detail::func::construct_value(alloc,
+    boost::unordered::detail::func::construct_value(
         boost::addressof(a.node_->value_ptr()->first), boost::forward<Key>(k));
     BOOST_TRY
     {
-        boost::unordered::detail::func::construct_value(alloc,
+        boost::unordered::detail::func::construct_value(
             boost::addressof(a.node_->value_ptr()->second),
             boost::forward<Mapped>(m));
     }
@@ -1844,7 +1843,7 @@ construct_node_pair_from_args(
 {
     node_constructor<Alloc> a(alloc);
     a.create_node();
-    boost::unordered::detail::func::construct_value(alloc,
+    boost::unordered::detail::func::construct_value(
         boost::addressof(a.node_->value_ptr()->first), boost::forward<Key>(k));
     BOOST_TRY
     {
