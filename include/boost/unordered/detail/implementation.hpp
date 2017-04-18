@@ -1319,9 +1319,9 @@ template <typename Alloc, typename T> inline void call_destroy(Alloc&, T* x)
 
 #define BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(n, namespace_)                    \
     template <typename Alloc, typename T>                                      \
-    void construct_from_tuple(Alloc& alloc, T* ptr, namespace_ tuple<>)        \
+    void construct_from_tuple(Alloc&, T* ptr, namespace_ tuple<>)              \
     {                                                                          \
-        boost::unordered::detail::func::call_construct(alloc, ptr);            \
+        new ((void*)ptr) T();                                                  \
     }                                                                          \
                                                                                \
     BOOST_PP_REPEAT_FROM_TO(                                                   \
@@ -1330,10 +1330,10 @@ template <typename Alloc, typename T> inline void call_destroy(Alloc&, T* x)
 #define BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE_IMPL(z, n, namespace_)            \
     template <typename Alloc, typename T,                                      \
         BOOST_PP_ENUM_PARAMS_Z(z, n, typename A)>                              \
-    void construct_from_tuple(Alloc& alloc, T* ptr,                            \
+    void construct_from_tuple(Alloc&, T* ptr,                                  \
         namespace_ tuple<BOOST_PP_ENUM_PARAMS_Z(z, n, A)> const& x)            \
     {                                                                          \
-        boost::unordered::detail::func::call_construct(alloc, ptr,             \
+        new ((void*)ptr) T(                                                    \
             BOOST_PP_ENUM_##z(n, BOOST_UNORDERED_GET_TUPLE_ARG, namespace_));  \
     }
 
@@ -1443,7 +1443,7 @@ template <typename Alloc, typename T, typename... Args>
 inline void construct_from_args(
     Alloc& alloc, T* address, BOOST_FWD_REF(Args)... args)
 {
-    boost::unordered::detail::func::call_construct(
+    boost::unordered::detail::allocator_traits<Alloc>::construct(
         alloc, address, boost::forward<Args>(args)...);
 }
 
@@ -1500,8 +1500,7 @@ template <typename Alloc, typename T, typename... Args>
 inline void construct_from_args(
     Alloc& alloc, T* address, BOOST_FWD_REF(Args)... args)
 {
-    boost::unordered::detail::func::call_construct(
-        alloc, address, boost::forward<Args>(args)...);
+    new ((void*)address) T(boost::forward<Args>(args)...);
 }
 
 // Special case for piecewise_construct
@@ -1521,8 +1520,8 @@ inline typename enable_if<use_piecewise<A0>, void>::type construct_from_args(
     }
     BOOST_CATCH(...)
     {
-        boost::unordered::detail::func::call_destroy(
-            alloc, boost::addressof(address->first));
+        boost::unordered::detail::func::destroy(
+            boost::addressof(address->first));
         BOOST_RETHROW;
     }
     BOOST_CATCH_END
@@ -1594,8 +1593,8 @@ inline void construct_from_args(Alloc& alloc, std::pair<A, B>* address,
     }
     BOOST_CATCH(...)
     {
-        boost::unordered::detail::func::call_destroy(
-            alloc, boost::addressof(address->first));
+        boost::unordered::detail::func::destroy(
+            boost::addressof(address->first));
         BOOST_RETHROW;
     }
     BOOST_CATCH_END
@@ -1756,9 +1755,9 @@ construct_node_pair(Alloc& alloc, BOOST_FWD_REF(Key) k)
 {
     node_constructor<Alloc> a(alloc);
     a.create_node();
-    boost::unordered::detail::func::call_construct(alloc, a.node_->value_ptr(),
-        std::piecewise_construct, std::forward_as_tuple(boost::forward<Key>(k)),
-        std::forward_as_tuple());
+    boost::unordered::detail::allocator_traits<Alloc>::construct(alloc,
+        a.node_->value_ptr(), std::piecewise_construct,
+        std::forward_as_tuple(boost::forward<Key>(k)), std::forward_as_tuple());
     return a.release();
 }
 
@@ -1768,8 +1767,9 @@ construct_node_pair(Alloc& alloc, BOOST_FWD_REF(Key) k, BOOST_FWD_REF(Mapped) m)
 {
     node_constructor<Alloc> a(alloc);
     a.create_node();
-    boost::unordered::detail::func::call_construct(alloc, a.node_->value_ptr(),
-        std::piecewise_construct, std::forward_as_tuple(boost::forward<Key>(k)),
+    boost::unordered::detail::allocator_traits<Alloc>::construct(alloc,
+        a.node_->value_ptr(), std::piecewise_construct,
+        std::forward_as_tuple(boost::forward<Key>(k)),
         std::forward_as_tuple(boost::forward<Mapped>(m)));
     return a.release();
 }
@@ -1781,8 +1781,9 @@ construct_node_pair_from_args(
 {
     node_constructor<Alloc> a(alloc);
     a.create_node();
-    boost::unordered::detail::func::call_construct(alloc, a.node_->value_ptr(),
-        std::piecewise_construct, std::forward_as_tuple(boost::forward<Key>(k)),
+    boost::unordered::detail::allocator_traits<Alloc>::construct(alloc,
+        a.node_->value_ptr(), std::piecewise_construct,
+        std::forward_as_tuple(boost::forward<Key>(k)),
         std::forward_as_tuple(boost::forward<Args>(args)...));
     return a.release();
 }
@@ -1804,8 +1805,8 @@ construct_node_pair(Alloc& alloc, BOOST_FWD_REF(Key) k)
     }
     BOOST_CATCH(...)
     {
-        boost::unordered::detail::func::call_destroy(
-            alloc, boost::addressof(a.node_->value_ptr()->first));
+        boost::unordered::detail::func::destroy(
+            boost::addressof(a.node_->value_ptr()->first));
         BOOST_RETHROW;
     }
     BOOST_CATCH_END
@@ -1828,8 +1829,8 @@ construct_node_pair(Alloc& alloc, BOOST_FWD_REF(Key) k, BOOST_FWD_REF(Mapped) m)
     }
     BOOST_CATCH(...)
     {
-        boost::unordered::detail::func::call_destroy(
-            alloc, boost::addressof(a.node_->value_ptr()->first));
+        boost::unordered::detail::func::destroy(
+            boost::addressof(a.node_->value_ptr()->first));
         BOOST_RETHROW;
     }
     BOOST_CATCH_END
@@ -1853,8 +1854,8 @@ construct_node_pair_from_args(
     }
     BOOST_CATCH(...)
     {
-        boost::unordered::detail::func::call_destroy(
-            alloc, boost::addressof(a.node_->value_ptr()->first));
+        boost::unordered::detail::func::destroy(
+            boost::addressof(a.node_->value_ptr()->first));
         BOOST_RETHROW;
     }
     BOOST_CATCH_END
