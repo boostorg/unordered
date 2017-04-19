@@ -1492,8 +1492,7 @@ construct_from_args(Alloc& alloc, std::pair<A, B>* address, BOOST_FWD_REF(A0),
 // Construct from variadic parameters
 
 template <typename Alloc, typename T, typename... Args>
-inline void construct_from_args(
-    Alloc& alloc, T* address, BOOST_FWD_REF(Args)... args)
+inline void construct_from_args(Alloc&, T* address, BOOST_FWD_REF(Args)... args)
 {
     new ((void*)address) T(boost::forward<Args>(args)...);
 }
