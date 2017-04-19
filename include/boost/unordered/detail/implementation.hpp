@@ -61,9 +61,9 @@
 // Unless documented elsewhere these configuration macros should be considered
 // an implementation detail, I'll try not to break them, but you never know.
 
-// BOOST_UNORDERED_EMPLACE_LIMIT = The maximum number of parameters in emplace
-// (not including things like hints). Don't set it to a lower value, as that
-// might break something.
+// BOOST_UNORDERED_EMPLACE_LIMIT = The maximum number of parameters + 1 in
+// emplace (not including things like hints). Don't set it to a lower value, as
+// that might break something.
 
 #if !defined BOOST_UNORDERED_EMPLACE_LIMIT
 #define BOOST_UNORDERED_EMPLACE_LIMIT 11
