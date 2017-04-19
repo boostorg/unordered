@@ -27,7 +27,7 @@
 #define RUN_TESTS()                                                            \
     int main(int, char**)                                                      \
     {                                                                          \
-        ::test::write_compiler_info();                                         \
+        BOOST_UNORDERED_TEST_COMPILER_INFO()                                   \
         ::test::test_list::run_tests();                                        \
         return boost::report_errors();                                         \
     }
@@ -76,22 +76,32 @@ static inline void run_tests()
     }
 }
 }
+}
 
-inline void write_compiler_info()
-{
+// TODO: Detect C++11 on more compilers
 #if defined(BOOST_GCC_CXX11)
-    char const* cpp11 = "true";
+#define BOOST_UNORDERED_TEST_CXX11 "true"
 #else
-    char const* cpp11 = "false";
+#define BOOST_UNORDERED_TEST_CXX11 "false"
 #endif
 
-    std::cout << "Compiler: " << BOOST_COMPILER << "\n"
-              << "Library: " << BOOST_STDLIB << "\n"
-              << "C++11: " << cpp11 << "\n"
-              << "\n"
-              << std::flush;
-}
-}
+#define BOOST_UNORDERED_TEST_COMPILER_INFO()                                   \
+    {                                                                          \
+        std::cout << "Compiler: " << BOOST_COMPILER << "\n"                    \
+                  << "Library: " << BOOST_STDLIB << "\n"                       \
+                  << "C++11: " << BOOST_UNORDERED_TEST_CXX11 << "\n\n"         \
+                  << "BOOST_UNORDERED_HAVE_PIECEWISE_CONSTRUCT: "              \
+                  << BOOST_UNORDERED_HAVE_PIECEWISE_CONSTRUCT << "\n"          \
+                  << "BOOST_UNORDERED_EMPLACE_LIMIT: "                         \
+                  << BOOST_UNORDERED_EMPLACE_LIMIT << "\n"                     \
+                  << "BOOST_UNORDERED_INTEROPERABLE_NODES: "                   \
+                  << BOOST_UNORDERED_INTEROPERABLE_NODES << "\n"               \
+                  << "BOOST_UNORDERED_USE_ALLOCATOR_TRAITS: "                  \
+                  << BOOST_UNORDERED_USE_ALLOCATOR_TRAITS << "\n"              \
+                  << "BOOST_UNORDERED_CXX11_CONSTRUCTION: "                    \
+                  << BOOST_UNORDERED_CXX11_CONSTRUCTION << "\n\n"              \
+                  << std::flush;                                               \
+    }
 
 #include <boost/preprocessor/cat.hpp>
 #include <boost/preprocessor/seq/fold_left.hpp>
