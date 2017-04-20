@@ -729,6 +729,7 @@ template <class K, class T, class H, class P, class A> class unordered_map
         const key_type&) const;
 
     mapped_type& operator[](const key_type&);
+    mapped_type& operator[](BOOST_RV_REF(key_type));
     mapped_type& at(const key_type&);
     mapped_type const& at(const key_type&) const;
 
@@ -1625,6 +1626,13 @@ typename unordered_map<K, T, H, P, A>::mapped_type&
     unordered_map<K, T, H, P, A>::operator[](const key_type& k)
 {
     return table_.try_emplace_impl(k).first->second;
+}
+
+template <class K, class T, class H, class P, class A>
+typename unordered_map<K, T, H, P, A>::mapped_type&
+    unordered_map<K, T, H, P, A>::operator[](BOOST_RV_REF(key_type) k)
+{
+    return table_.try_emplace_impl(boost::move(k)).first->second;
 }
 
 template <class K, class T, class H, class P, class A>
