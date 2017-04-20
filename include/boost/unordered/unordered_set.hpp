@@ -421,7 +421,7 @@ template <class T, class H, class P, class A> class unordered_set
     //    value_allocator_traits::is_always_equal::value &&
     //    is_nothrow_move_assignable_v<H> &&
     //    is_nothrow_move_assignable_v<P>)
-    void clear();
+    void clear() BOOST_NOEXCEPT;
 
     template <typename H2, typename P2>
     void merge(boost::unordered_set<T, H2, P2, A>& source);
@@ -896,7 +896,7 @@ template <class T, class H, class P, class A> class unordered_multiset
     //    value_allocator_traits::is_always_equal::value &&
     //    is_nothrow_move_assignable_v<H> &&
     //    is_nothrow_move_assignable_v<P>)
-    void clear();
+    void clear() BOOST_NOEXCEPT;
 
     template <typename H2, typename P2>
     void merge(boost::unordered_multiset<T, H2, P2, A>& source);
@@ -1193,13 +1193,13 @@ void unordered_set<T, H, P, A>::swap(unordered_set& other)
 }
 
 template <class T, class H, class P, class A>
-void unordered_set<T, H, P, A>::clear()
+void unordered_set<T, H, P, A>::clear() BOOST_NOEXCEPT
 {
     table_.clear();
 }
 
 template <class T, class H, class P, class A>
-void unordered_multiset<T, H, P, A>::clear()
+void unordered_multiset<T, H, P, A>::clear() BOOST_NOEXCEPT
 {
     table_.clear();
 }

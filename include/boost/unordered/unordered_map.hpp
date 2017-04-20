@@ -682,7 +682,7 @@ template <class K, class T, class H, class P, class A> class unordered_map
     //    value_allocator_traits::is_always_equal::value &&
     //    is_nothrow_move_assignable_v<H> &&
     //    is_nothrow_move_assignable_v<P>)
-    void clear();
+    void clear() BOOST_NOEXCEPT;
 
     template <typename H2, typename P2>
     void merge(boost::unordered_map<K, T, H2, P2, A>& source);
@@ -1188,7 +1188,7 @@ template <class K, class T, class H, class P, class A> class unordered_multimap
     //    value_allocator_traits::is_always_equal::value &&
     //    is_nothrow_move_assignable_v<H> &&
     //    is_nothrow_move_assignable_v<P>)
-    void clear();
+    void clear() BOOST_NOEXCEPT;
 
     template <typename H2, typename P2>
     void merge(boost::unordered_multimap<K, T, H2, P2, A>& source);
@@ -1504,7 +1504,7 @@ void unordered_map<K, T, H, P, A>::swap(unordered_map& other)
 }
 
 template <class K, class T, class H, class P, class A>
-void unordered_map<K, T, H, P, A>::clear()
+void unordered_map<K, T, H, P, A>::clear() BOOST_NOEXCEPT
 {
     table_.clear();
 }
@@ -1927,7 +1927,7 @@ void unordered_multimap<K, T, H, P, A>::swap(unordered_multimap& other)
 }
 
 template <class K, class T, class H, class P, class A>
-void unordered_multimap<K, T, H, P, A>::clear()
+void unordered_multimap<K, T, H, P, A>::clear() BOOST_NOEXCEPT
 {
     table_.clear();
 }
