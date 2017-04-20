@@ -668,6 +668,7 @@ template <class K, class T, class H, class P, class A> class unordered_map
             .first;
     }
 
+    iterator erase(iterator);
     iterator erase(const_iterator);
     size_type erase(const key_type&);
     iterator erase(const_iterator, const_iterator);
@@ -1169,6 +1170,7 @@ template <class K, class T, class H, class P, class A> class unordered_multimap
   public:
 #endif
 
+    iterator erase(iterator);
     iterator erase(const_iterator);
     size_type erase(const key_type&);
     iterator erase(const_iterator, const_iterator);
@@ -1454,6 +1456,13 @@ void unordered_map<K, T, H, P, A>::insert(
     table_.insert_range(list.begin(), list.end());
 }
 #endif
+
+template <class K, class T, class H, class P, class A>
+typename unordered_map<K, T, H, P, A>::iterator
+unordered_map<K, T, H, P, A>::erase(iterator position)
+{
+    return table_.erase(position);
+}
 
 template <class K, class T, class H, class P, class A>
 typename unordered_map<K, T, H, P, A>::iterator
@@ -1865,6 +1874,13 @@ void unordered_multimap<K, T, H, P, A>::insert(
     table_.insert_range(list.begin(), list.end());
 }
 #endif
+
+template <class K, class T, class H, class P, class A>
+typename unordered_multimap<K, T, H, P, A>::iterator
+unordered_multimap<K, T, H, P, A>::erase(iterator position)
+{
+    return table_.erase(position);
+}
 
 template <class K, class T, class H, class P, class A>
 typename unordered_multimap<K, T, H, P, A>::iterator

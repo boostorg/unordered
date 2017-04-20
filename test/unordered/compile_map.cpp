@@ -227,4 +227,36 @@ UNORDERED_AUTO_TEST(test2)
     unordered_map_member_test(multimap, map_value);
 }
 
+// Test for ambiguity when using key convertible from iterator
+// See LWG2059
+
+struct lwg2059_key
+{
+    int value;
+
+    template <typename T> lwg2059_key(T v) : value(v) {}
+};
+
+std::size_t hash_value(lwg2059_key x)
+{
+    return static_cast<std::size_t>(x.value);
+}
+
+bool operator==(lwg2059_key x, lwg2059_key y) { return x.value == y.value; }
+
+UNORDERED_AUTO_TEST(lwg2059)
+{
+    {
+        boost::unordered_map<lwg2059_key, int> x;
+        x.emplace(lwg2059_key(10), 5);
+        x.erase(x.begin());
+    }
+
+    {
+        boost::unordered_multimap<lwg2059_key, int> x;
+        x.emplace(lwg2059_key(10), 5);
+        x.erase(x.begin());
+    }
+}
+
 RUN_TESTS()
