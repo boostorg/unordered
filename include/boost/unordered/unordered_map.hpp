@@ -581,6 +581,33 @@ template <class K, class T, class H, class P, class A> class unordered_map
         return this->emplace_hint(hint, boost::forward<P2>(obj));
     }
 
+    template <class InputIt> void insert(InputIt, InputIt);
+
+#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
+    void insert(std::initializer_list<value_type>);
+#endif
+
+    insert_return_type insert(BOOST_RV_REF(node_type) np)
+    {
+        insert_return_type result;
+        table_.move_insert_node_type(np, result);
+        return boost::move(result);
+    }
+
+    iterator insert(const_iterator hint, BOOST_RV_REF(node_type) np)
+    {
+        return table_.move_insert_node_type_with_hint(hint, np);
+    }
+
+#if defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+  private:
+    // Note: Use r-value node_type to insert.
+    insert_return_type insert(node_type&);
+    iterator insert(const_iterator, node_type& np);
+
+  public:
+#endif
+
     template <class M>
     std::pair<iterator, bool> insert_or_assign(
         key_type const& k, BOOST_FWD_REF(M) obj)
@@ -611,33 +638,6 @@ template <class K, class T, class H, class P, class A> class unordered_map
             .insert_or_assign_impl(boost::move(k), boost::forward<M>(obj))
             .first;
     }
-
-    template <class InputIt> void insert(InputIt, InputIt);
-
-#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
-    void insert(std::initializer_list<value_type>);
-#endif
-
-    insert_return_type insert(BOOST_RV_REF(node_type) np)
-    {
-        insert_return_type result;
-        table_.move_insert_node_type(np, result);
-        return boost::move(result);
-    }
-
-    iterator insert(const_iterator hint, BOOST_RV_REF(node_type) np)
-    {
-        return table_.move_insert_node_type_with_hint(hint, np);
-    }
-
-#if defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-  private:
-    // Note: Use r-value node_type to insert.
-    insert_return_type insert(node_type&);
-    iterator insert(const_iterator, node_type& np);
-
-  public:
-#endif
 
     iterator erase(const_iterator);
     size_type erase(const key_type&);
