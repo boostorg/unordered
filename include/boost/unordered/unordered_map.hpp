@@ -677,8 +677,8 @@ template <class K, class T, class H, class P, class A> class unordered_map
     BOOST_UNORDERED_DEPRECATED("Use erase instead")
     void erase_return_void(const_iterator it) { erase(it); }
 
-    void clear();
     void swap(unordered_map&);
+    void clear();
 
     template <typename H2, typename P2>
     void merge(boost::unordered_map<K, T, H2, P2, A>& source);
@@ -1179,8 +1179,8 @@ template <class K, class T, class H, class P, class A> class unordered_multimap
     BOOST_UNORDERED_DEPRECATED("Use erase instead")
     void erase_return_void(const_iterator it) { erase(it); }
 
-    void clear();
     void swap(unordered_multimap&);
+    void clear();
 
     template <typename H2, typename P2>
     void merge(boost::unordered_multimap<K, T, H2, P2, A>& source);
@@ -1486,15 +1486,15 @@ unordered_map<K, T, H, P, A>::erase(const_iterator first, const_iterator last)
 }
 
 template <class K, class T, class H, class P, class A>
-void unordered_map<K, T, H, P, A>::clear()
-{
-    table_.clear();
-}
-
-template <class K, class T, class H, class P, class A>
 void unordered_map<K, T, H, P, A>::swap(unordered_map& other)
 {
     table_.swap(other.table_);
+}
+
+template <class K, class T, class H, class P, class A>
+void unordered_map<K, T, H, P, A>::clear()
+{
+    table_.clear();
 }
 
 template <class K, class T, class H, class P, class A>
@@ -1905,15 +1905,15 @@ unordered_multimap<K, T, H, P, A>::erase(
 }
 
 template <class K, class T, class H, class P, class A>
-void unordered_multimap<K, T, H, P, A>::clear()
-{
-    table_.clear();
-}
-
-template <class K, class T, class H, class P, class A>
 void unordered_multimap<K, T, H, P, A>::swap(unordered_multimap& other)
 {
     table_.swap(other.table_);
+}
+
+template <class K, class T, class H, class P, class A>
+void unordered_multimap<K, T, H, P, A>::clear()
+{
+    table_.clear();
 }
 
 // observers
