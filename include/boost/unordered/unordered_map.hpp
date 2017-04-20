@@ -645,18 +645,18 @@ template <class K, class T, class H, class P, class A> class unordered_map
     }
 
     template <class M>
-    iterator insert_or_assign(
-        const_iterator, key_type const& k, BOOST_FWD_REF(M) obj)
-    {
-        return table_.insert_or_assign_impl(k, boost::forward<M>(obj)).first;
-    }
-
-    template <class M>
     std::pair<iterator, bool> insert_or_assign(
         BOOST_RV_REF(key_type) k, BOOST_FWD_REF(M) obj)
     {
         return table_.insert_or_assign_impl(
             boost::move(k), boost::forward<M>(obj));
+    }
+
+    template <class M>
+    iterator insert_or_assign(
+        const_iterator, key_type const& k, BOOST_FWD_REF(M) obj)
+    {
+        return table_.insert_or_assign_impl(k, boost::forward<M>(obj)).first;
     }
 
     template <class M>
