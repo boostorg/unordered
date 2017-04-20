@@ -83,59 +83,53 @@ template <class T, class H, class P, class A> class unordered_set
         const key_equal& = key_equal(),
         const allocator_type& = allocator_type());
 
-    explicit unordered_set(size_type, const allocator_type&);
-
-    explicit unordered_set(size_type, const hasher&, const allocator_type&);
-
-    explicit unordered_set(allocator_type const&);
-
-    template <class InputIt> unordered_set(InputIt, InputIt);
-
     template <class InputIt>
-    unordered_set(InputIt, InputIt, size_type, const hasher& = hasher(),
-        const key_equal& = key_equal());
-
-    template <class InputIt>
-    unordered_set(InputIt, InputIt, size_type, const hasher&, const key_equal&,
-        const allocator_type&);
-
-    template <class InputIt>
-    unordered_set(
-        InputIt, InputIt, size_type, const hasher&, const allocator_type&);
-
-    template <class InputIt>
-    unordered_set(InputIt, InputIt, size_type, const allocator_type&);
-
-    // copy/move constructors
+    unordered_set(InputIt, InputIt,
+        size_type = boost::unordered::detail::default_bucket_count,
+        const hasher& = hasher(), const key_equal& = key_equal(),
+        const allocator_type& = allocator_type());
 
     unordered_set(unordered_set const&);
 
-    unordered_set(unordered_set const&, allocator_type const&);
-    unordered_set(BOOST_RV_REF(unordered_set), allocator_type const&);
-
-#if defined(BOOST_UNORDERED_USE_MOVE)
+#if defined(BOOST_UNORDERED_USE_MOVE) ||                                       \
+    !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
     unordered_set(BOOST_RV_REF(unordered_set) other)
-        BOOST_NOEXCEPT_IF(table::nothrow_move_constructible)
-        : table_(other.table_, boost::unordered::detail::move_tag())
-    {
-    }
-#elif !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-    unordered_set(unordered_set&& other)
         BOOST_NOEXCEPT_IF(table::nothrow_move_constructible)
         : table_(other.table_, boost::unordered::detail::move_tag())
     {
     }
 #endif
 
+    explicit unordered_set(allocator_type const&);
+
+    unordered_set(unordered_set const&, allocator_type const&);
+
+    unordered_set(BOOST_RV_REF(unordered_set), allocator_type const&);
+
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
     unordered_set(std::initializer_list<value_type>,
         size_type = boost::unordered::detail::default_bucket_count,
         const hasher& = hasher(), const key_equal& l = key_equal(),
         const allocator_type& = allocator_type());
-    unordered_set(std::initializer_list<value_type>, size_type, const hasher&,
-        const allocator_type&);
+#endif
+
+    explicit unordered_set(size_type, const allocator_type&);
+
+    explicit unordered_set(size_type, const hasher&, const allocator_type&);
+
+    template <class InputIt>
+    unordered_set(InputIt, InputIt, size_type, const allocator_type&);
+
+    template <class InputIt>
+    unordered_set(
+        InputIt, InputIt, size_type, const hasher&, const allocator_type&);
+
+#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
     unordered_set(
         std::initializer_list<value_type>, size_type, const allocator_type&);
+
+    unordered_set(std::initializer_list<value_type>, size_type, const hasher&,
+        const allocator_type&);
 #endif
 
     // Destructor
@@ -152,6 +146,10 @@ template <class T, class H, class P, class A> class unordered_set
     }
 
     unordered_set& operator=(BOOST_RV_REF(unordered_set) x)
+    // C++17 support: BOOST_NOEXCEPT_IF(
+    //    value_allocator_traits::is_always_equal::value &&
+    //    is_nothrow_move_assignable_v<H> &&
+    //    is_nothrow_move_assignable_v<P>)
     {
         table_.move_assign(x.table_);
         return *this;
@@ -165,6 +163,10 @@ template <class T, class H, class P, class A> class unordered_set
 
 #if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
     unordered_set& operator=(unordered_set&& x)
+    // C++17 support: BOOST_NOEXCEPT_IF(
+    //    value_allocator_traits::is_always_equal::value &&
+    //    is_nothrow_move_assignable_v<H> &&
+    //    is_nothrow_move_assignable_v<P>)
     {
         table_.move_assign(x.table_);
         return *this;
@@ -180,14 +182,6 @@ template <class T, class H, class P, class A> class unordered_set
     {
         return table_.node_alloc();
     }
-
-    // size and capacity
-
-    bool empty() const BOOST_NOEXCEPT { return table_.size_ == 0; }
-
-    size_type size() const BOOST_NOEXCEPT { return table_.size_; }
-
-    size_type max_size() const BOOST_NOEXCEPT;
 
     // iterators
 
@@ -209,33 +203,24 @@ template <class T, class H, class P, class A> class unordered_set
 
     const_iterator cend() const BOOST_NOEXCEPT { return const_iterator(); }
 
-    // extract
+    // size and capacity
 
-    node_type extract(const_iterator position)
-    {
-        return node_type(
-            table_.extract_by_iterator(position), table_.node_alloc());
-    }
+    bool empty() const BOOST_NOEXCEPT { return table_.size_ == 0; }
 
-    node_type extract(const key_type& k)
-    {
-        return node_type(table_.extract_by_key(k), table_.node_alloc());
-    }
+    size_type size() const BOOST_NOEXCEPT { return table_.size_; }
+
+    size_type max_size() const BOOST_NOEXCEPT;
 
 // emplace
 
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+
     template <class... Args>
     std::pair<iterator, bool> emplace(BOOST_FWD_REF(Args)... args)
     {
         return table_.emplace(boost::forward<Args>(args)...);
     }
 
-    template <class... Args>
-    iterator emplace_hint(const_iterator hint, BOOST_FWD_REF(Args)... args)
-    {
-        return table_.emplace_hint(hint, boost::forward<Args>(args)...);
-    }
 #else
 
 #if !BOOST_WORKAROUND(__SUNPRO_CC, BOOST_TESTED_AT(0x5100))
@@ -252,6 +237,46 @@ template <class T, class H, class P, class A> class unordered_set
         return this->emplace(boost::move(v));
     }
 
+#endif
+
+    template <typename A0>
+    std::pair<iterator, bool> emplace(BOOST_FWD_REF(A0) a0)
+    {
+        return table_.emplace(boost::unordered::detail::create_emplace_args(
+            boost::forward<A0>(a0)));
+    }
+
+    template <typename A0, typename A1>
+    std::pair<iterator, bool> emplace(
+        BOOST_FWD_REF(A0) a0, BOOST_FWD_REF(A1) a1)
+    {
+        return table_.emplace(boost::unordered::detail::create_emplace_args(
+            boost::forward<A0>(a0), boost::forward<A1>(a1)));
+    }
+
+    template <typename A0, typename A1, typename A2>
+    std::pair<iterator, bool> emplace(
+        BOOST_FWD_REF(A0) a0, BOOST_FWD_REF(A1) a1, BOOST_FWD_REF(A2) a2)
+    {
+        return table_.emplace(boost::unordered::detail::create_emplace_args(
+            boost::forward<A0>(a0), boost::forward<A1>(a1),
+            boost::forward<A2>(a2)));
+    }
+
+#endif
+
+#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+
+    template <class... Args>
+    iterator emplace_hint(const_iterator hint, BOOST_FWD_REF(Args)... args)
+    {
+        return table_.emplace_hint(hint, boost::forward<Args>(args)...);
+    }
+
+#else
+
+#if !BOOST_WORKAROUND(__SUNPRO_CC, BOOST_TESTED_AT(0x5100))
+
     iterator emplace_hint(const_iterator hint,
         boost::unordered::detail::empty_emplace =
             boost::unordered::detail::empty_emplace(),
@@ -263,26 +288,11 @@ template <class T, class H, class P, class A> class unordered_set
 #endif
 
     template <typename A0>
-    std::pair<iterator, bool> emplace(BOOST_FWD_REF(A0) a0)
-    {
-        return table_.emplace(boost::unordered::detail::create_emplace_args(
-            boost::forward<A0>(a0)));
-    }
-
-    template <typename A0>
     iterator emplace_hint(const_iterator hint, BOOST_FWD_REF(A0) a0)
     {
         return table_.emplace_hint(
             hint, boost::unordered::detail::create_emplace_args(
                       boost::forward<A0>(a0)));
-    }
-
-    template <typename A0, typename A1>
-    std::pair<iterator, bool> emplace(
-        BOOST_FWD_REF(A0) a0, BOOST_FWD_REF(A1) a1)
-    {
-        return table_.emplace(boost::unordered::detail::create_emplace_args(
-            boost::forward<A0>(a0), boost::forward<A1>(a1)));
     }
 
     template <typename A0, typename A1>
@@ -295,15 +305,6 @@ template <class T, class H, class P, class A> class unordered_set
     }
 
     template <typename A0, typename A1, typename A2>
-    std::pair<iterator, bool> emplace(
-        BOOST_FWD_REF(A0) a0, BOOST_FWD_REF(A1) a1, BOOST_FWD_REF(A2) a2)
-    {
-        return table_.emplace(boost::unordered::detail::create_emplace_args(
-            boost::forward<A0>(a0), boost::forward<A1>(a1),
-            boost::forward<A2>(a2)));
-    }
-
-    template <typename A0, typename A1, typename A2>
     iterator emplace_hint(const_iterator hint, BOOST_FWD_REF(A0) a0,
         BOOST_FWD_REF(A1) a1, BOOST_FWD_REF(A2) a2)
     {
@@ -312,6 +313,10 @@ template <class T, class H, class P, class A> class unordered_set
                       boost::forward<A0>(a0), boost::forward<A1>(a1),
                       boost::forward<A2>(a2)));
     }
+
+#endif
+
+#if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
 #define BOOST_UNORDERED_EMPLACE(z, n, _)                                       \
     template <BOOST_PP_ENUM_PARAMS_Z(z, n, typename A)>                        \
@@ -364,6 +369,19 @@ template <class T, class H, class P, class A> class unordered_set
     void insert(std::initializer_list<value_type>);
 #endif
 
+    // extract
+
+    node_type extract(const_iterator position)
+    {
+        return node_type(
+            table_.extract_by_iterator(position), table_.node_alloc());
+    }
+
+    node_type extract(const key_type& k)
+    {
+        return node_type(table_.extract_by_key(k), table_.node_alloc());
+    }
+
     insert_return_type insert(BOOST_RV_REF(node_type) np)
     {
         insert_return_type result;
@@ -393,8 +411,12 @@ template <class T, class H, class P, class A> class unordered_set
     BOOST_UNORDERED_DEPRECATED("Use erase instead")
     void erase_return_void(const_iterator it) { erase(it); }
 
-    void clear();
     void swap(unordered_set&);
+    // C++17 support: BOOST_NOEXCEPT_IF(
+    //    value_allocator_traits::is_always_equal::value &&
+    //    is_nothrow_move_assignable_v<H> &&
+    //    is_nothrow_move_assignable_v<P>)
+    void clear() BOOST_NOEXCEPT;
 
     template <typename H2, typename P2>
     void merge(boost::unordered_set<T, H2, P2, A>& source);
@@ -541,60 +563,54 @@ template <class T, class H, class P, class A> class unordered_multiset
         const key_equal& = key_equal(),
         const allocator_type& = allocator_type());
 
-    explicit unordered_multiset(size_type, const allocator_type&);
-
-    explicit unordered_multiset(
-        size_type, const hasher&, const allocator_type&);
-
-    explicit unordered_multiset(allocator_type const&);
-
-    template <class InputIt> unordered_multiset(InputIt, InputIt);
-
     template <class InputIt>
-    unordered_multiset(InputIt, InputIt, size_type, const hasher& = hasher(),
-        const key_equal& = key_equal());
-
-    template <class InputIt>
-    unordered_multiset(InputIt, InputIt, size_type, const hasher&,
-        const key_equal&, const allocator_type&);
-
-    template <class InputIt>
-    unordered_multiset(
-        InputIt, InputIt, size_type, const hasher&, const allocator_type&);
-
-    template <class InputIt>
-    unordered_multiset(InputIt, InputIt, size_type, const allocator_type&);
-
-    // copy/move constructors
+    unordered_multiset(InputIt, InputIt,
+        size_type = boost::unordered::detail::default_bucket_count,
+        const hasher& = hasher(), const key_equal& = key_equal(),
+        const allocator_type& = allocator_type());
 
     unordered_multiset(unordered_multiset const&);
 
-    unordered_multiset(unordered_multiset const&, allocator_type const&);
-    unordered_multiset(BOOST_RV_REF(unordered_multiset), allocator_type const&);
-
-#if defined(BOOST_UNORDERED_USE_MOVE)
+#if defined(BOOST_UNORDERED_USE_MOVE) ||                                       \
+    !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
     unordered_multiset(BOOST_RV_REF(unordered_multiset) other)
-        BOOST_NOEXCEPT_IF(table::nothrow_move_constructible)
-        : table_(other.table_, boost::unordered::detail::move_tag())
-    {
-    }
-#elif !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-    unordered_multiset(unordered_multiset&& other)
         BOOST_NOEXCEPT_IF(table::nothrow_move_constructible)
         : table_(other.table_, boost::unordered::detail::move_tag())
     {
     }
 #endif
 
+    explicit unordered_multiset(allocator_type const&);
+
+    unordered_multiset(unordered_multiset const&, allocator_type const&);
+
+    unordered_multiset(BOOST_RV_REF(unordered_multiset), allocator_type const&);
+
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
     unordered_multiset(std::initializer_list<value_type>,
         size_type = boost::unordered::detail::default_bucket_count,
         const hasher& = hasher(), const key_equal& l = key_equal(),
         const allocator_type& = allocator_type());
-    unordered_multiset(std::initializer_list<value_type>, size_type,
-        const hasher&, const allocator_type&);
+#endif
+
+    explicit unordered_multiset(size_type, const allocator_type&);
+
+    explicit unordered_multiset(
+        size_type, const hasher&, const allocator_type&);
+
+    template <class InputIt>
+    unordered_multiset(InputIt, InputIt, size_type, const allocator_type&);
+
+    template <class InputIt>
+    unordered_multiset(
+        InputIt, InputIt, size_type, const hasher&, const allocator_type&);
+
+#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
     unordered_multiset(
         std::initializer_list<value_type>, size_type, const allocator_type&);
+
+    unordered_multiset(std::initializer_list<value_type>, size_type,
+        const hasher&, const allocator_type&);
 #endif
 
     // Destructor
@@ -611,6 +627,10 @@ template <class T, class H, class P, class A> class unordered_multiset
     }
 
     unordered_multiset& operator=(BOOST_RV_REF(unordered_multiset) x)
+    // C++17 support: BOOST_NOEXCEPT_IF(
+    //    value_allocator_traits::is_always_equal::value &&
+    //    is_nothrow_move_assignable_v<H> &&
+    //    is_nothrow_move_assignable_v<P>)
     {
         table_.move_assign(x.table_);
         return *this;
@@ -624,6 +644,10 @@ template <class T, class H, class P, class A> class unordered_multiset
 
 #if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
     unordered_multiset& operator=(unordered_multiset&& x)
+    // C++17 support: BOOST_NOEXCEPT_IF(
+    //    value_allocator_traits::is_always_equal::value &&
+    //    is_nothrow_move_assignable_v<H> &&
+    //    is_nothrow_move_assignable_v<P>)
     {
         table_.move_assign(x.table_);
         return *this;
@@ -639,14 +663,6 @@ template <class T, class H, class P, class A> class unordered_multiset
     {
         return table_.node_alloc();
     }
-
-    // size and capacity
-
-    bool empty() const BOOST_NOEXCEPT { return table_.size_ == 0; }
-
-    size_type size() const BOOST_NOEXCEPT { return table_.size_; }
-
-    size_type max_size() const BOOST_NOEXCEPT;
 
     // iterators
 
@@ -668,18 +684,13 @@ template <class T, class H, class P, class A> class unordered_multiset
 
     const_iterator cend() const BOOST_NOEXCEPT { return const_iterator(); }
 
-    // extract
+    // size and capacity
 
-    node_type extract(const_iterator position)
-    {
-        return node_type(
-            table_.extract_by_iterator(position), table_.node_alloc());
-    }
+    bool empty() const BOOST_NOEXCEPT { return table_.size_ == 0; }
 
-    node_type extract(const key_type& k)
-    {
-        return node_type(table_.extract_by_key(k), table_.node_alloc());
-    }
+    size_type size() const BOOST_NOEXCEPT { return table_.size_; }
+
+    size_type max_size() const BOOST_NOEXCEPT;
 
 // emplace
 
@@ -689,11 +700,6 @@ template <class T, class H, class P, class A> class unordered_multiset
         return table_.emplace(boost::forward<Args>(args)...);
     }
 
-    template <class... Args>
-    iterator emplace_hint(const_iterator hint, BOOST_FWD_REF(Args)... args)
-    {
-        return table_.emplace_hint(hint, boost::forward<Args>(args)...);
-    }
 #else
 
 #if !BOOST_WORKAROUND(__SUNPRO_CC, BOOST_TESTED_AT(0x5100))
@@ -709,6 +715,44 @@ template <class T, class H, class P, class A> class unordered_multiset
         return this->emplace(boost::move(v));
     }
 
+#endif
+
+    template <typename A0> iterator emplace(BOOST_FWD_REF(A0) a0)
+    {
+        return table_.emplace(boost::unordered::detail::create_emplace_args(
+            boost::forward<A0>(a0)));
+    }
+
+    template <typename A0, typename A1>
+    iterator emplace(BOOST_FWD_REF(A0) a0, BOOST_FWD_REF(A1) a1)
+    {
+        return table_.emplace(boost::unordered::detail::create_emplace_args(
+            boost::forward<A0>(a0), boost::forward<A1>(a1)));
+    }
+
+    template <typename A0, typename A1, typename A2>
+    iterator emplace(
+        BOOST_FWD_REF(A0) a0, BOOST_FWD_REF(A1) a1, BOOST_FWD_REF(A2) a2)
+    {
+        return table_.emplace(boost::unordered::detail::create_emplace_args(
+            boost::forward<A0>(a0), boost::forward<A1>(a1),
+            boost::forward<A2>(a2)));
+    }
+
+#endif
+
+#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+
+    template <class... Args>
+    iterator emplace_hint(const_iterator hint, BOOST_FWD_REF(Args)... args)
+    {
+        return table_.emplace_hint(hint, boost::forward<Args>(args)...);
+    }
+
+#else
+
+#if !BOOST_WORKAROUND(__SUNPRO_CC, BOOST_TESTED_AT(0x5100))
+
     iterator emplace_hint(const_iterator hint,
         boost::unordered::detail::empty_emplace =
             boost::unordered::detail::empty_emplace(),
@@ -719,25 +763,12 @@ template <class T, class H, class P, class A> class unordered_multiset
 
 #endif
 
-    template <typename A0> iterator emplace(BOOST_FWD_REF(A0) a0)
-    {
-        return table_.emplace(boost::unordered::detail::create_emplace_args(
-            boost::forward<A0>(a0)));
-    }
-
     template <typename A0>
     iterator emplace_hint(const_iterator hint, BOOST_FWD_REF(A0) a0)
     {
         return table_.emplace_hint(
             hint, boost::unordered::detail::create_emplace_args(
                       boost::forward<A0>(a0)));
-    }
-
-    template <typename A0, typename A1>
-    iterator emplace(BOOST_FWD_REF(A0) a0, BOOST_FWD_REF(A1) a1)
-    {
-        return table_.emplace(boost::unordered::detail::create_emplace_args(
-            boost::forward<A0>(a0), boost::forward<A1>(a1)));
     }
 
     template <typename A0, typename A1>
@@ -750,15 +781,6 @@ template <class T, class H, class P, class A> class unordered_multiset
     }
 
     template <typename A0, typename A1, typename A2>
-    iterator emplace(
-        BOOST_FWD_REF(A0) a0, BOOST_FWD_REF(A1) a1, BOOST_FWD_REF(A2) a2)
-    {
-        return table_.emplace(boost::unordered::detail::create_emplace_args(
-            boost::forward<A0>(a0), boost::forward<A1>(a1),
-            boost::forward<A2>(a2)));
-    }
-
-    template <typename A0, typename A1, typename A2>
     iterator emplace_hint(const_iterator hint, BOOST_FWD_REF(A0) a0,
         BOOST_FWD_REF(A1) a1, BOOST_FWD_REF(A2) a2)
     {
@@ -767,6 +789,10 @@ template <class T, class H, class P, class A> class unordered_multiset
                       boost::forward<A0>(a0), boost::forward<A1>(a1),
                       boost::forward<A2>(a2)));
     }
+
+#endif
+
+#if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
 #define BOOST_UNORDERED_EMPLACE(z, n, _)                                       \
     template <BOOST_PP_ENUM_PARAMS_Z(z, n, typename A)>                        \
@@ -815,6 +841,19 @@ template <class T, class H, class P, class A> class unordered_multiset
     void insert(std::initializer_list<value_type>);
 #endif
 
+    // extract
+
+    node_type extract(const_iterator position)
+    {
+        return node_type(
+            table_.extract_by_iterator(position), table_.node_alloc());
+    }
+
+    node_type extract(const key_type& k)
+    {
+        return node_type(table_.extract_by_key(k), table_.node_alloc());
+    }
+
     iterator insert(BOOST_RV_REF(node_type) np)
     {
         return table_.move_insert_node_type(np);
@@ -842,8 +881,12 @@ template <class T, class H, class P, class A> class unordered_multiset
     BOOST_UNORDERED_DEPRECATED("Use erase instead")
     void erase_return_void(const_iterator it) { erase(it); }
 
-    void clear();
     void swap(unordered_multiset&);
+    // C++17 support: BOOST_NOEXCEPT_IF(
+    //    value_allocator_traits::is_always_equal::value &&
+    //    is_nothrow_move_assignable_v<H> &&
+    //    is_nothrow_move_assignable_v<P>)
+    void clear() BOOST_NOEXCEPT;
 
     template <typename H2, typename P2>
     void merge(boost::unordered_multiset<T, H2, P2, A>& source);
@@ -943,7 +986,6 @@ template <class T, class H, class P, class A> class unordered_multiset
 }; // class template unordered_multiset
 
 ////////////////////////////////////////////////////////////////////////////////
-
 template <class T, class H, class P, class A>
 unordered_set<T, H, P, A>::unordered_set()
     : table_(boost::unordered::detail::default_bucket_count, hasher(),
@@ -959,15 +1001,17 @@ unordered_set<T, H, P, A>::unordered_set(size_type n, const hasher& hf,
 }
 
 template <class T, class H, class P, class A>
-unordered_set<T, H, P, A>::unordered_set(size_type n, const allocator_type& a)
-    : table_(n, hasher(), key_equal(), a)
+template <class InputIt>
+unordered_set<T, H, P, A>::unordered_set(InputIt f, InputIt l, size_type n,
+    const hasher& hf, const key_equal& eql, const allocator_type& a)
+    : table_(boost::unordered::detail::initial_size(f, l, n), hf, eql, a)
 {
+    table_.insert_range(f, l);
 }
 
 template <class T, class H, class P, class A>
-unordered_set<T, H, P, A>::unordered_set(
-    size_type n, const hasher& hf, const allocator_type& a)
-    : table_(n, hf, key_equal(), a)
+unordered_set<T, H, P, A>::unordered_set(unordered_set const& other)
+    : table_(other.table_)
 {
 }
 
@@ -982,65 +1026,6 @@ template <class T, class H, class P, class A>
 unordered_set<T, H, P, A>::unordered_set(
     unordered_set const& other, allocator_type const& a)
     : table_(other.table_, a)
-{
-}
-
-template <class T, class H, class P, class A>
-template <class InputIt>
-unordered_set<T, H, P, A>::unordered_set(InputIt f, InputIt l)
-    : table_(boost::unordered::detail::initial_size(f, l), hasher(),
-          key_equal(), allocator_type())
-{
-    table_.insert_range(f, l);
-}
-
-template <class T, class H, class P, class A>
-template <class InputIt>
-unordered_set<T, H, P, A>::unordered_set(
-    InputIt f, InputIt l, size_type n, const hasher& hf, const key_equal& eql)
-    : table_(boost::unordered::detail::initial_size(f, l, n), hf, eql,
-          allocator_type())
-{
-    table_.insert_range(f, l);
-}
-
-template <class T, class H, class P, class A>
-template <class InputIt>
-unordered_set<T, H, P, A>::unordered_set(InputIt f, InputIt l, size_type n,
-    const hasher& hf, const key_equal& eql, const allocator_type& a)
-    : table_(boost::unordered::detail::initial_size(f, l, n), hf, eql, a)
-{
-    table_.insert_range(f, l);
-}
-
-template <class T, class H, class P, class A>
-template <class InputIt>
-unordered_set<T, H, P, A>::unordered_set(InputIt f, InputIt l, size_type n,
-    const hasher& hf, const allocator_type& a)
-    : table_(
-          boost::unordered::detail::initial_size(f, l, n), hf, key_equal(), a)
-{
-    table_.insert_range(f, l);
-}
-
-template <class T, class H, class P, class A>
-template <class InputIt>
-unordered_set<T, H, P, A>::unordered_set(
-    InputIt f, InputIt l, size_type n, const allocator_type& a)
-    : table_(boost::unordered::detail::initial_size(f, l, n), hasher(),
-          key_equal(), a)
-{
-    table_.insert_range(f, l);
-}
-
-template <class T, class H, class P, class A>
-unordered_set<T, H, P, A>::~unordered_set() BOOST_NOEXCEPT
-{
-}
-
-template <class T, class H, class P, class A>
-unordered_set<T, H, P, A>::unordered_set(unordered_set const& other)
-    : table_(other.table_)
 {
 }
 
@@ -1064,15 +1049,42 @@ unordered_set<T, H, P, A>::unordered_set(std::initializer_list<value_type> list,
     table_.insert_range(list.begin(), list.end());
 }
 
+#endif
+
 template <class T, class H, class P, class A>
-unordered_set<T, H, P, A>::unordered_set(std::initializer_list<value_type> list,
-    size_type n, const hasher& hf, const allocator_type& a)
-    : table_(
-          boost::unordered::detail::initial_size(list.begin(), list.end(), n),
-          hf, key_equal(), a)
+unordered_set<T, H, P, A>::unordered_set(size_type n, const allocator_type& a)
+    : table_(n, hasher(), key_equal(), a)
 {
-    table_.insert_range(list.begin(), list.end());
 }
+
+template <class T, class H, class P, class A>
+unordered_set<T, H, P, A>::unordered_set(
+    size_type n, const hasher& hf, const allocator_type& a)
+    : table_(n, hf, key_equal(), a)
+{
+}
+
+template <class T, class H, class P, class A>
+template <class InputIt>
+unordered_set<T, H, P, A>::unordered_set(
+    InputIt f, InputIt l, size_type n, const allocator_type& a)
+    : table_(boost::unordered::detail::initial_size(f, l, n), hasher(),
+          key_equal(), a)
+{
+    table_.insert_range(f, l);
+}
+
+template <class T, class H, class P, class A>
+template <class InputIt>
+unordered_set<T, H, P, A>::unordered_set(InputIt f, InputIt l, size_type n,
+    const hasher& hf, const allocator_type& a)
+    : table_(
+          boost::unordered::detail::initial_size(f, l, n), hf, key_equal(), a)
+{
+    table_.insert_range(f, l);
+}
+
+#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
 
 template <class T, class H, class P, class A>
 unordered_set<T, H, P, A>::unordered_set(std::initializer_list<value_type> list,
@@ -1083,6 +1095,25 @@ unordered_set<T, H, P, A>::unordered_set(std::initializer_list<value_type> list,
 {
     table_.insert_range(list.begin(), list.end());
 }
+
+template <class T, class H, class P, class A>
+unordered_set<T, H, P, A>::unordered_set(std::initializer_list<value_type> list,
+    size_type n, const hasher& hf, const allocator_type& a)
+    : table_(
+          boost::unordered::detail::initial_size(list.begin(), list.end(), n),
+          hf, key_equal(), a)
+{
+    table_.insert_range(list.begin(), list.end());
+}
+
+#endif
+
+template <class T, class H, class P, class A>
+unordered_set<T, H, P, A>::~unordered_set() BOOST_NOEXCEPT
+{
+}
+
+#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
 
 template <class T, class H, class P, class A>
 unordered_set<T, H, P, A>& unordered_set<T, H, P, A>::operator=(
@@ -1142,15 +1173,25 @@ typename unordered_set<T, H, P, A>::iterator unordered_set<T, H, P, A>::erase(
 }
 
 template <class T, class H, class P, class A>
-void unordered_set<T, H, P, A>::clear()
+void unordered_set<T, H, P, A>::swap(unordered_set& other)
+// C++17 support: BOOST_NOEXCEPT_IF(
+//    value_allocator_traits::is_always_equal::value &&
+//    is_nothrow_move_assignable_v<H> &&
+//    is_nothrow_move_assignable_v<P>)
+{
+    table_.swap(other.table_);
+}
+
+template <class T, class H, class P, class A>
+void unordered_set<T, H, P, A>::clear() BOOST_NOEXCEPT
 {
     table_.clear();
 }
 
 template <class T, class H, class P, class A>
-void unordered_set<T, H, P, A>::swap(unordered_set& other)
+void unordered_multiset<T, H, P, A>::clear() BOOST_NOEXCEPT
 {
-    table_.swap(other.table_);
+    table_.clear();
 }
 
 // observers
@@ -1329,16 +1370,19 @@ unordered_multiset<T, H, P, A>::unordered_multiset(size_type n,
 }
 
 template <class T, class H, class P, class A>
-unordered_multiset<T, H, P, A>::unordered_multiset(
-    size_type n, const allocator_type& a)
-    : table_(n, hasher(), key_equal(), a)
+template <class InputIt>
+unordered_multiset<T, H, P, A>::unordered_multiset(InputIt f, InputIt l,
+    size_type n, const hasher& hf, const key_equal& eql,
+    const allocator_type& a)
+    : table_(boost::unordered::detail::initial_size(f, l, n), hf, eql, a)
 {
+    table_.insert_range(f, l);
 }
 
 template <class T, class H, class P, class A>
 unordered_multiset<T, H, P, A>::unordered_multiset(
-    size_type n, const hasher& hf, const allocator_type& a)
-    : table_(n, hf, key_equal(), a)
+    unordered_multiset const& other)
+    : table_(other.table_)
 {
 }
 
@@ -1353,67 +1397,6 @@ template <class T, class H, class P, class A>
 unordered_multiset<T, H, P, A>::unordered_multiset(
     unordered_multiset const& other, allocator_type const& a)
     : table_(other.table_, a)
-{
-}
-
-template <class T, class H, class P, class A>
-template <class InputIt>
-unordered_multiset<T, H, P, A>::unordered_multiset(InputIt f, InputIt l)
-    : table_(boost::unordered::detail::initial_size(f, l), hasher(),
-          key_equal(), allocator_type())
-{
-    table_.insert_range(f, l);
-}
-
-template <class T, class H, class P, class A>
-template <class InputIt>
-unordered_multiset<T, H, P, A>::unordered_multiset(
-    InputIt f, InputIt l, size_type n, const hasher& hf, const key_equal& eql)
-    : table_(boost::unordered::detail::initial_size(f, l, n), hf, eql,
-          allocator_type())
-{
-    table_.insert_range(f, l);
-}
-
-template <class T, class H, class P, class A>
-template <class InputIt>
-unordered_multiset<T, H, P, A>::unordered_multiset(InputIt f, InputIt l,
-    size_type n, const hasher& hf, const key_equal& eql,
-    const allocator_type& a)
-    : table_(boost::unordered::detail::initial_size(f, l, n), hf, eql, a)
-{
-    table_.insert_range(f, l);
-}
-
-template <class T, class H, class P, class A>
-template <class InputIt>
-unordered_multiset<T, H, P, A>::unordered_multiset(InputIt f, InputIt l,
-    size_type n, const hasher& hf, const allocator_type& a)
-    : table_(
-          boost::unordered::detail::initial_size(f, l, n), hf, key_equal(), a)
-{
-    table_.insert_range(f, l);
-}
-
-template <class T, class H, class P, class A>
-template <class InputIt>
-unordered_multiset<T, H, P, A>::unordered_multiset(
-    InputIt f, InputIt l, size_type n, const allocator_type& a)
-    : table_(boost::unordered::detail::initial_size(f, l, n), hasher(),
-          key_equal(), a)
-{
-    table_.insert_range(f, l);
-}
-
-template <class T, class H, class P, class A>
-unordered_multiset<T, H, P, A>::~unordered_multiset() BOOST_NOEXCEPT
-{
-}
-
-template <class T, class H, class P, class A>
-unordered_multiset<T, H, P, A>::unordered_multiset(
-    unordered_multiset const& other)
-    : table_(other.table_)
 {
 }
 
@@ -1437,16 +1420,43 @@ unordered_multiset<T, H, P, A>::unordered_multiset(
     table_.insert_range(list.begin(), list.end());
 }
 
+#endif
+
 template <class T, class H, class P, class A>
 unordered_multiset<T, H, P, A>::unordered_multiset(
-    std::initializer_list<value_type> list, size_type n, const hasher& hf,
-    const allocator_type& a)
-    : table_(
-          boost::unordered::detail::initial_size(list.begin(), list.end(), n),
-          hf, key_equal(), a)
+    size_type n, const allocator_type& a)
+    : table_(n, hasher(), key_equal(), a)
 {
-    table_.insert_range(list.begin(), list.end());
 }
+
+template <class T, class H, class P, class A>
+unordered_multiset<T, H, P, A>::unordered_multiset(
+    size_type n, const hasher& hf, const allocator_type& a)
+    : table_(n, hf, key_equal(), a)
+{
+}
+
+template <class T, class H, class P, class A>
+template <class InputIt>
+unordered_multiset<T, H, P, A>::unordered_multiset(
+    InputIt f, InputIt l, size_type n, const allocator_type& a)
+    : table_(boost::unordered::detail::initial_size(f, l, n), hasher(),
+          key_equal(), a)
+{
+    table_.insert_range(f, l);
+}
+
+template <class T, class H, class P, class A>
+template <class InputIt>
+unordered_multiset<T, H, P, A>::unordered_multiset(InputIt f, InputIt l,
+    size_type n, const hasher& hf, const allocator_type& a)
+    : table_(
+          boost::unordered::detail::initial_size(f, l, n), hf, key_equal(), a)
+{
+    table_.insert_range(f, l);
+}
+
+#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
 
 template <class T, class H, class P, class A>
 unordered_multiset<T, H, P, A>::unordered_multiset(
@@ -1458,6 +1468,26 @@ unordered_multiset<T, H, P, A>::unordered_multiset(
 {
     table_.insert_range(list.begin(), list.end());
 }
+
+template <class T, class H, class P, class A>
+unordered_multiset<T, H, P, A>::unordered_multiset(
+    std::initializer_list<value_type> list, size_type n, const hasher& hf,
+    const allocator_type& a)
+    : table_(
+          boost::unordered::detail::initial_size(list.begin(), list.end(), n),
+          hf, key_equal(), a)
+{
+    table_.insert_range(list.begin(), list.end());
+}
+
+#endif
+
+template <class T, class H, class P, class A>
+unordered_multiset<T, H, P, A>::~unordered_multiset() BOOST_NOEXCEPT
+{
+}
+
+#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
 
 template <class T, class H, class P, class A>
 unordered_multiset<T, H, P, A>& unordered_multiset<T, H, P, A>::operator=(
@@ -1518,13 +1548,11 @@ unordered_multiset<T, H, P, A>::erase(const_iterator first, const_iterator last)
 }
 
 template <class T, class H, class P, class A>
-void unordered_multiset<T, H, P, A>::clear()
-{
-    table_.clear();
-}
-
-template <class T, class H, class P, class A>
 void unordered_multiset<T, H, P, A>::swap(unordered_multiset& other)
+// C++17 support: BOOST_NOEXCEPT_IF(
+//    value_allocator_traits::is_always_equal::value &&
+//    is_nothrow_move_assignable_v<H> &&
+//    is_nothrow_move_assignable_v<P>)
 {
     table_.swap(other.table_);
 }

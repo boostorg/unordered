@@ -422,6 +422,7 @@ void unordered_map_functions(X&, Key const& k, T const& v)
 
     X a;
     test::check_return_type<mapped_type>::equals_ref(a[k]);
+    test::check_return_type<mapped_type>::equals_ref(a[rvalue(k)]);
     test::check_return_type<mapped_type>::equals_ref(a.at(k));
     test::check_return_type<std::pair<iterator, bool> >::equals(
         a.try_emplace(k, v));
@@ -554,6 +555,7 @@ void unordered_test(X& x, Key& k, Hash& hf, Pred& eq)
     const_iterator q1 = a.cbegin(), q2 = a.cend();
     test::check_return_type<iterator>::equals(a.erase(q1, q2));
 
+    TEST_NOEXCEPT_EXPR(a.clear());
     a.clear();
 
     X const b;

@@ -290,4 +290,36 @@ UNORDERED_AUTO_TEST(destructible_tests)
     unordered_destructible_test(multiset);
 }
 
+// Test for ambiguity when using key convertible from iterator
+// See LWG2059
+
+struct lwg2059_key
+{
+    int value;
+
+    template <typename T> lwg2059_key(T v) : value(v) {}
+};
+
+std::size_t hash_value(lwg2059_key x)
+{
+    return static_cast<std::size_t>(x.value);
+}
+
+bool operator==(lwg2059_key x, lwg2059_key y) { return x.value == y.value; }
+
+UNORDERED_AUTO_TEST(lwg2059)
+{
+    {
+        boost::unordered_set<lwg2059_key> x;
+        x.emplace(lwg2059_key(10));
+        x.erase(x.begin());
+    }
+
+    {
+        boost::unordered_multiset<lwg2059_key> x;
+        x.emplace(lwg2059_key(10));
+        x.erase(x.begin());
+    }
+}
+
 RUN_TESTS()
