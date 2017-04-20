@@ -83,35 +83,13 @@ template <class T, class H, class P, class A> class unordered_set
         const key_equal& = key_equal(),
         const allocator_type& = allocator_type());
 
-    explicit unordered_set(size_type, const allocator_type&);
-
-    explicit unordered_set(size_type, const hasher&, const allocator_type&);
-
-    explicit unordered_set(allocator_type const&);
-
-    template <class InputIt> unordered_set(InputIt, InputIt);
-
     template <class InputIt>
-    unordered_set(InputIt, InputIt, size_type, const hasher& = hasher(),
-        const key_equal& = key_equal());
-
-    template <class InputIt>
-    unordered_set(InputIt, InputIt, size_type, const hasher&, const key_equal&,
-        const allocator_type&);
-
-    template <class InputIt>
-    unordered_set(
-        InputIt, InputIt, size_type, const hasher&, const allocator_type&);
-
-    template <class InputIt>
-    unordered_set(InputIt, InputIt, size_type, const allocator_type&);
-
-    // copy/move constructors
+    unordered_set(InputIt, InputIt,
+        size_type = boost::unordered::detail::default_bucket_count,
+        const hasher& = hasher(), const key_equal& = key_equal(),
+        const allocator_type& = allocator_type());
 
     unordered_set(unordered_set const&);
-
-    unordered_set(unordered_set const&, allocator_type const&);
-    unordered_set(BOOST_RV_REF(unordered_set), allocator_type const&);
 
 #if defined(BOOST_UNORDERED_USE_MOVE)
     unordered_set(BOOST_RV_REF(unordered_set) other)
@@ -127,15 +105,36 @@ template <class T, class H, class P, class A> class unordered_set
     }
 #endif
 
+    explicit unordered_set(allocator_type const&);
+
+    unordered_set(unordered_set const&, allocator_type const&);
+
+    unordered_set(BOOST_RV_REF(unordered_set), allocator_type const&);
+
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
     unordered_set(std::initializer_list<value_type>,
         size_type = boost::unordered::detail::default_bucket_count,
         const hasher& = hasher(), const key_equal& l = key_equal(),
         const allocator_type& = allocator_type());
-    unordered_set(std::initializer_list<value_type>, size_type, const hasher&,
-        const allocator_type&);
+#endif
+
+    explicit unordered_set(size_type, const allocator_type&);
+
+    explicit unordered_set(size_type, const hasher&, const allocator_type&);
+
+    template <class InputIt>
+    unordered_set(InputIt, InputIt, size_type, const allocator_type&);
+
+    template <class InputIt>
+    unordered_set(
+        InputIt, InputIt, size_type, const hasher&, const allocator_type&);
+
+#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
     unordered_set(
         std::initializer_list<value_type>, size_type, const allocator_type&);
+
+    unordered_set(std::initializer_list<value_type>, size_type, const hasher&,
+        const allocator_type&);
 #endif
 
     // Destructor
@@ -541,36 +540,13 @@ template <class T, class H, class P, class A> class unordered_multiset
         const key_equal& = key_equal(),
         const allocator_type& = allocator_type());
 
-    explicit unordered_multiset(size_type, const allocator_type&);
-
-    explicit unordered_multiset(
-        size_type, const hasher&, const allocator_type&);
-
-    explicit unordered_multiset(allocator_type const&);
-
-    template <class InputIt> unordered_multiset(InputIt, InputIt);
-
     template <class InputIt>
-    unordered_multiset(InputIt, InputIt, size_type, const hasher& = hasher(),
-        const key_equal& = key_equal());
-
-    template <class InputIt>
-    unordered_multiset(InputIt, InputIt, size_type, const hasher&,
-        const key_equal&, const allocator_type&);
-
-    template <class InputIt>
-    unordered_multiset(
-        InputIt, InputIt, size_type, const hasher&, const allocator_type&);
-
-    template <class InputIt>
-    unordered_multiset(InputIt, InputIt, size_type, const allocator_type&);
-
-    // copy/move constructors
+    unordered_multiset(InputIt, InputIt,
+        size_type = boost::unordered::detail::default_bucket_count,
+        const hasher& = hasher(), const key_equal& = key_equal(),
+        const allocator_type& = allocator_type());
 
     unordered_multiset(unordered_multiset const&);
-
-    unordered_multiset(unordered_multiset const&, allocator_type const&);
-    unordered_multiset(BOOST_RV_REF(unordered_multiset), allocator_type const&);
 
 #if defined(BOOST_UNORDERED_USE_MOVE)
     unordered_multiset(BOOST_RV_REF(unordered_multiset) other)
@@ -586,15 +562,37 @@ template <class T, class H, class P, class A> class unordered_multiset
     }
 #endif
 
+    explicit unordered_multiset(allocator_type const&);
+
+    unordered_multiset(unordered_multiset const&, allocator_type const&);
+
+    unordered_multiset(BOOST_RV_REF(unordered_multiset), allocator_type const&);
+
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
     unordered_multiset(std::initializer_list<value_type>,
         size_type = boost::unordered::detail::default_bucket_count,
         const hasher& = hasher(), const key_equal& l = key_equal(),
         const allocator_type& = allocator_type());
-    unordered_multiset(std::initializer_list<value_type>, size_type,
-        const hasher&, const allocator_type&);
+#endif
+
+    explicit unordered_multiset(size_type, const allocator_type&);
+
+    explicit unordered_multiset(
+        size_type, const hasher&, const allocator_type&);
+
+    template <class InputIt>
+    unordered_multiset(InputIt, InputIt, size_type, const allocator_type&);
+
+    template <class InputIt>
+    unordered_multiset(
+        InputIt, InputIt, size_type, const hasher&, const allocator_type&);
+
+#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
     unordered_multiset(
         std::initializer_list<value_type>, size_type, const allocator_type&);
+
+    unordered_multiset(std::initializer_list<value_type>, size_type,
+        const hasher&, const allocator_type&);
 #endif
 
     // Destructor
@@ -943,7 +941,6 @@ template <class T, class H, class P, class A> class unordered_multiset
 }; // class template unordered_multiset
 
 ////////////////////////////////////////////////////////////////////////////////
-
 template <class T, class H, class P, class A>
 unordered_set<T, H, P, A>::unordered_set()
     : table_(boost::unordered::detail::default_bucket_count, hasher(),
@@ -959,15 +956,17 @@ unordered_set<T, H, P, A>::unordered_set(size_type n, const hasher& hf,
 }
 
 template <class T, class H, class P, class A>
-unordered_set<T, H, P, A>::unordered_set(size_type n, const allocator_type& a)
-    : table_(n, hasher(), key_equal(), a)
+template <class InputIt>
+unordered_set<T, H, P, A>::unordered_set(InputIt f, InputIt l, size_type n,
+    const hasher& hf, const key_equal& eql, const allocator_type& a)
+    : table_(boost::unordered::detail::initial_size(f, l, n), hf, eql, a)
 {
+    table_.insert_range(f, l);
 }
 
 template <class T, class H, class P, class A>
-unordered_set<T, H, P, A>::unordered_set(
-    size_type n, const hasher& hf, const allocator_type& a)
-    : table_(n, hf, key_equal(), a)
+unordered_set<T, H, P, A>::unordered_set(unordered_set const& other)
+    : table_(other.table_)
 {
 }
 
@@ -982,65 +981,6 @@ template <class T, class H, class P, class A>
 unordered_set<T, H, P, A>::unordered_set(
     unordered_set const& other, allocator_type const& a)
     : table_(other.table_, a)
-{
-}
-
-template <class T, class H, class P, class A>
-template <class InputIt>
-unordered_set<T, H, P, A>::unordered_set(InputIt f, InputIt l)
-    : table_(boost::unordered::detail::initial_size(f, l), hasher(),
-          key_equal(), allocator_type())
-{
-    table_.insert_range(f, l);
-}
-
-template <class T, class H, class P, class A>
-template <class InputIt>
-unordered_set<T, H, P, A>::unordered_set(
-    InputIt f, InputIt l, size_type n, const hasher& hf, const key_equal& eql)
-    : table_(boost::unordered::detail::initial_size(f, l, n), hf, eql,
-          allocator_type())
-{
-    table_.insert_range(f, l);
-}
-
-template <class T, class H, class P, class A>
-template <class InputIt>
-unordered_set<T, H, P, A>::unordered_set(InputIt f, InputIt l, size_type n,
-    const hasher& hf, const key_equal& eql, const allocator_type& a)
-    : table_(boost::unordered::detail::initial_size(f, l, n), hf, eql, a)
-{
-    table_.insert_range(f, l);
-}
-
-template <class T, class H, class P, class A>
-template <class InputIt>
-unordered_set<T, H, P, A>::unordered_set(InputIt f, InputIt l, size_type n,
-    const hasher& hf, const allocator_type& a)
-    : table_(
-          boost::unordered::detail::initial_size(f, l, n), hf, key_equal(), a)
-{
-    table_.insert_range(f, l);
-}
-
-template <class T, class H, class P, class A>
-template <class InputIt>
-unordered_set<T, H, P, A>::unordered_set(
-    InputIt f, InputIt l, size_type n, const allocator_type& a)
-    : table_(boost::unordered::detail::initial_size(f, l, n), hasher(),
-          key_equal(), a)
-{
-    table_.insert_range(f, l);
-}
-
-template <class T, class H, class P, class A>
-unordered_set<T, H, P, A>::~unordered_set() BOOST_NOEXCEPT
-{
-}
-
-template <class T, class H, class P, class A>
-unordered_set<T, H, P, A>::unordered_set(unordered_set const& other)
-    : table_(other.table_)
 {
 }
 
@@ -1064,15 +1004,42 @@ unordered_set<T, H, P, A>::unordered_set(std::initializer_list<value_type> list,
     table_.insert_range(list.begin(), list.end());
 }
 
+#endif
+
 template <class T, class H, class P, class A>
-unordered_set<T, H, P, A>::unordered_set(std::initializer_list<value_type> list,
-    size_type n, const hasher& hf, const allocator_type& a)
-    : table_(
-          boost::unordered::detail::initial_size(list.begin(), list.end(), n),
-          hf, key_equal(), a)
+unordered_set<T, H, P, A>::unordered_set(size_type n, const allocator_type& a)
+    : table_(n, hasher(), key_equal(), a)
 {
-    table_.insert_range(list.begin(), list.end());
 }
+
+template <class T, class H, class P, class A>
+unordered_set<T, H, P, A>::unordered_set(
+    size_type n, const hasher& hf, const allocator_type& a)
+    : table_(n, hf, key_equal(), a)
+{
+}
+
+template <class T, class H, class P, class A>
+template <class InputIt>
+unordered_set<T, H, P, A>::unordered_set(
+    InputIt f, InputIt l, size_type n, const allocator_type& a)
+    : table_(boost::unordered::detail::initial_size(f, l, n), hasher(),
+          key_equal(), a)
+{
+    table_.insert_range(f, l);
+}
+
+template <class T, class H, class P, class A>
+template <class InputIt>
+unordered_set<T, H, P, A>::unordered_set(InputIt f, InputIt l, size_type n,
+    const hasher& hf, const allocator_type& a)
+    : table_(
+          boost::unordered::detail::initial_size(f, l, n), hf, key_equal(), a)
+{
+    table_.insert_range(f, l);
+}
+
+#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
 
 template <class T, class H, class P, class A>
 unordered_set<T, H, P, A>::unordered_set(std::initializer_list<value_type> list,
@@ -1083,6 +1050,25 @@ unordered_set<T, H, P, A>::unordered_set(std::initializer_list<value_type> list,
 {
     table_.insert_range(list.begin(), list.end());
 }
+
+template <class T, class H, class P, class A>
+unordered_set<T, H, P, A>::unordered_set(std::initializer_list<value_type> list,
+    size_type n, const hasher& hf, const allocator_type& a)
+    : table_(
+          boost::unordered::detail::initial_size(list.begin(), list.end(), n),
+          hf, key_equal(), a)
+{
+    table_.insert_range(list.begin(), list.end());
+}
+
+#endif
+
+template <class T, class H, class P, class A>
+unordered_set<T, H, P, A>::~unordered_set() BOOST_NOEXCEPT
+{
+}
+
+#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
 
 template <class T, class H, class P, class A>
 unordered_set<T, H, P, A>& unordered_set<T, H, P, A>::operator=(
@@ -1329,16 +1315,19 @@ unordered_multiset<T, H, P, A>::unordered_multiset(size_type n,
 }
 
 template <class T, class H, class P, class A>
-unordered_multiset<T, H, P, A>::unordered_multiset(
-    size_type n, const allocator_type& a)
-    : table_(n, hasher(), key_equal(), a)
+template <class InputIt>
+unordered_multiset<T, H, P, A>::unordered_multiset(InputIt f, InputIt l,
+    size_type n, const hasher& hf, const key_equal& eql,
+    const allocator_type& a)
+    : table_(boost::unordered::detail::initial_size(f, l, n), hf, eql, a)
 {
+    table_.insert_range(f, l);
 }
 
 template <class T, class H, class P, class A>
 unordered_multiset<T, H, P, A>::unordered_multiset(
-    size_type n, const hasher& hf, const allocator_type& a)
-    : table_(n, hf, key_equal(), a)
+    unordered_multiset const& other)
+    : table_(other.table_)
 {
 }
 
@@ -1353,67 +1342,6 @@ template <class T, class H, class P, class A>
 unordered_multiset<T, H, P, A>::unordered_multiset(
     unordered_multiset const& other, allocator_type const& a)
     : table_(other.table_, a)
-{
-}
-
-template <class T, class H, class P, class A>
-template <class InputIt>
-unordered_multiset<T, H, P, A>::unordered_multiset(InputIt f, InputIt l)
-    : table_(boost::unordered::detail::initial_size(f, l), hasher(),
-          key_equal(), allocator_type())
-{
-    table_.insert_range(f, l);
-}
-
-template <class T, class H, class P, class A>
-template <class InputIt>
-unordered_multiset<T, H, P, A>::unordered_multiset(
-    InputIt f, InputIt l, size_type n, const hasher& hf, const key_equal& eql)
-    : table_(boost::unordered::detail::initial_size(f, l, n), hf, eql,
-          allocator_type())
-{
-    table_.insert_range(f, l);
-}
-
-template <class T, class H, class P, class A>
-template <class InputIt>
-unordered_multiset<T, H, P, A>::unordered_multiset(InputIt f, InputIt l,
-    size_type n, const hasher& hf, const key_equal& eql,
-    const allocator_type& a)
-    : table_(boost::unordered::detail::initial_size(f, l, n), hf, eql, a)
-{
-    table_.insert_range(f, l);
-}
-
-template <class T, class H, class P, class A>
-template <class InputIt>
-unordered_multiset<T, H, P, A>::unordered_multiset(InputIt f, InputIt l,
-    size_type n, const hasher& hf, const allocator_type& a)
-    : table_(
-          boost::unordered::detail::initial_size(f, l, n), hf, key_equal(), a)
-{
-    table_.insert_range(f, l);
-}
-
-template <class T, class H, class P, class A>
-template <class InputIt>
-unordered_multiset<T, H, P, A>::unordered_multiset(
-    InputIt f, InputIt l, size_type n, const allocator_type& a)
-    : table_(boost::unordered::detail::initial_size(f, l, n), hasher(),
-          key_equal(), a)
-{
-    table_.insert_range(f, l);
-}
-
-template <class T, class H, class P, class A>
-unordered_multiset<T, H, P, A>::~unordered_multiset() BOOST_NOEXCEPT
-{
-}
-
-template <class T, class H, class P, class A>
-unordered_multiset<T, H, P, A>::unordered_multiset(
-    unordered_multiset const& other)
-    : table_(other.table_)
 {
 }
 
@@ -1437,16 +1365,43 @@ unordered_multiset<T, H, P, A>::unordered_multiset(
     table_.insert_range(list.begin(), list.end());
 }
 
+#endif
+
 template <class T, class H, class P, class A>
 unordered_multiset<T, H, P, A>::unordered_multiset(
-    std::initializer_list<value_type> list, size_type n, const hasher& hf,
-    const allocator_type& a)
-    : table_(
-          boost::unordered::detail::initial_size(list.begin(), list.end(), n),
-          hf, key_equal(), a)
+    size_type n, const allocator_type& a)
+    : table_(n, hasher(), key_equal(), a)
 {
-    table_.insert_range(list.begin(), list.end());
 }
+
+template <class T, class H, class P, class A>
+unordered_multiset<T, H, P, A>::unordered_multiset(
+    size_type n, const hasher& hf, const allocator_type& a)
+    : table_(n, hf, key_equal(), a)
+{
+}
+
+template <class T, class H, class P, class A>
+template <class InputIt>
+unordered_multiset<T, H, P, A>::unordered_multiset(
+    InputIt f, InputIt l, size_type n, const allocator_type& a)
+    : table_(boost::unordered::detail::initial_size(f, l, n), hasher(),
+          key_equal(), a)
+{
+    table_.insert_range(f, l);
+}
+
+template <class T, class H, class P, class A>
+template <class InputIt>
+unordered_multiset<T, H, P, A>::unordered_multiset(InputIt f, InputIt l,
+    size_type n, const hasher& hf, const allocator_type& a)
+    : table_(
+          boost::unordered::detail::initial_size(f, l, n), hf, key_equal(), a)
+{
+    table_.insert_range(f, l);
+}
+
+#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
 
 template <class T, class H, class P, class A>
 unordered_multiset<T, H, P, A>::unordered_multiset(
@@ -1458,6 +1413,26 @@ unordered_multiset<T, H, P, A>::unordered_multiset(
 {
     table_.insert_range(list.begin(), list.end());
 }
+
+template <class T, class H, class P, class A>
+unordered_multiset<T, H, P, A>::unordered_multiset(
+    std::initializer_list<value_type> list, size_type n, const hasher& hf,
+    const allocator_type& a)
+    : table_(
+          boost::unordered::detail::initial_size(list.begin(), list.end(), n),
+          hf, key_equal(), a)
+{
+    table_.insert_range(list.begin(), list.end());
+}
+
+#endif
+
+template <class T, class H, class P, class A>
+unordered_multiset<T, H, P, A>::~unordered_multiset() BOOST_NOEXCEPT
+{
+}
+
+#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
 
 template <class T, class H, class P, class A>
 unordered_multiset<T, H, P, A>& unordered_multiset<T, H, P, A>::operator=(

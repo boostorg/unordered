@@ -85,35 +85,13 @@ template <class K, class T, class H, class P, class A> class unordered_map
         const key_equal& = key_equal(),
         const allocator_type& = allocator_type());
 
-    explicit unordered_map(size_type, const allocator_type&);
-
-    explicit unordered_map(size_type, const hasher&, const allocator_type&);
-
-    explicit unordered_map(allocator_type const&);
-
-    template <class InputIt> unordered_map(InputIt, InputIt);
-
     template <class InputIt>
-    unordered_map(InputIt, InputIt, size_type, const hasher& = hasher(),
-        const key_equal& = key_equal());
-
-    template <class InputIt>
-    unordered_map(InputIt, InputIt, size_type, const hasher&, const key_equal&,
-        const allocator_type&);
-
-    template <class InputIt>
-    unordered_map(
-        InputIt, InputIt, size_type, const hasher&, const allocator_type&);
-
-    template <class InputIt>
-    unordered_map(InputIt, InputIt, size_type, const allocator_type&);
-
-    // copy/move constructors
+    unordered_map(InputIt, InputIt,
+        size_type = boost::unordered::detail::default_bucket_count,
+        const hasher& = hasher(), const key_equal& = key_equal(),
+        const allocator_type& = allocator_type());
 
     unordered_map(unordered_map const&);
-
-    unordered_map(unordered_map const&, allocator_type const&);
-    unordered_map(BOOST_RV_REF(unordered_map), allocator_type const&);
 
 #if defined(BOOST_UNORDERED_USE_MOVE)
     unordered_map(BOOST_RV_REF(unordered_map) other)
@@ -129,15 +107,36 @@ template <class K, class T, class H, class P, class A> class unordered_map
     }
 #endif
 
+    explicit unordered_map(allocator_type const&);
+
+    unordered_map(unordered_map const&, allocator_type const&);
+
+    unordered_map(BOOST_RV_REF(unordered_map), allocator_type const&);
+
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
     unordered_map(std::initializer_list<value_type>,
         size_type = boost::unordered::detail::default_bucket_count,
         const hasher& = hasher(), const key_equal& l = key_equal(),
         const allocator_type& = allocator_type());
-    unordered_map(std::initializer_list<value_type>, size_type, const hasher&,
-        const allocator_type&);
+#endif
+
+    explicit unordered_map(size_type, const allocator_type&);
+
+    explicit unordered_map(size_type, const hasher&, const allocator_type&);
+
+    template <class InputIt>
+    unordered_map(InputIt, InputIt, size_type, const allocator_type&);
+
+    template <class InputIt>
+    unordered_map(
+        InputIt, InputIt, size_type, const hasher&, const allocator_type&);
+
+#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
     unordered_map(
         std::initializer_list<value_type>, size_type, const allocator_type&);
+
+    unordered_map(std::initializer_list<value_type>, size_type, const hasher&,
+        const allocator_type&);
 #endif
 
     // Destructor
@@ -800,36 +799,13 @@ template <class K, class T, class H, class P, class A> class unordered_multimap
         const key_equal& = key_equal(),
         const allocator_type& = allocator_type());
 
-    explicit unordered_multimap(size_type, const allocator_type&);
-
-    explicit unordered_multimap(
-        size_type, const hasher&, const allocator_type&);
-
-    explicit unordered_multimap(allocator_type const&);
-
-    template <class InputIt> unordered_multimap(InputIt, InputIt);
-
     template <class InputIt>
-    unordered_multimap(InputIt, InputIt, size_type, const hasher& = hasher(),
-        const key_equal& = key_equal());
-
-    template <class InputIt>
-    unordered_multimap(InputIt, InputIt, size_type, const hasher&,
-        const key_equal&, const allocator_type&);
-
-    template <class InputIt>
-    unordered_multimap(
-        InputIt, InputIt, size_type, const hasher&, const allocator_type&);
-
-    template <class InputIt>
-    unordered_multimap(InputIt, InputIt, size_type, const allocator_type&);
-
-    // copy/move constructors
+    unordered_multimap(InputIt, InputIt,
+        size_type = boost::unordered::detail::default_bucket_count,
+        const hasher& = hasher(), const key_equal& = key_equal(),
+        const allocator_type& = allocator_type());
 
     unordered_multimap(unordered_multimap const&);
-
-    unordered_multimap(unordered_multimap const&, allocator_type const&);
-    unordered_multimap(BOOST_RV_REF(unordered_multimap), allocator_type const&);
 
 #if defined(BOOST_UNORDERED_USE_MOVE)
     unordered_multimap(BOOST_RV_REF(unordered_multimap) other)
@@ -845,15 +821,37 @@ template <class K, class T, class H, class P, class A> class unordered_multimap
     }
 #endif
 
+    explicit unordered_multimap(allocator_type const&);
+
+    unordered_multimap(unordered_multimap const&, allocator_type const&);
+
+    unordered_multimap(BOOST_RV_REF(unordered_multimap), allocator_type const&);
+
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
     unordered_multimap(std::initializer_list<value_type>,
         size_type = boost::unordered::detail::default_bucket_count,
         const hasher& = hasher(), const key_equal& l = key_equal(),
         const allocator_type& = allocator_type());
-    unordered_multimap(std::initializer_list<value_type>, size_type,
-        const hasher&, const allocator_type&);
+#endif
+
+    explicit unordered_multimap(size_type, const allocator_type&);
+
+    explicit unordered_multimap(
+        size_type, const hasher&, const allocator_type&);
+
+    template <class InputIt>
+    unordered_multimap(InputIt, InputIt, size_type, const allocator_type&);
+
+    template <class InputIt>
+    unordered_multimap(
+        InputIt, InputIt, size_type, const hasher&, const allocator_type&);
+
+#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
     unordered_multimap(
         std::initializer_list<value_type>, size_type, const allocator_type&);
+
+    unordered_multimap(std::initializer_list<value_type>, size_type,
+        const hasher&, const allocator_type&);
 #endif
 
     // Destructor
@@ -1243,16 +1241,17 @@ unordered_map<K, T, H, P, A>::unordered_map(size_type n, const hasher& hf,
 }
 
 template <class K, class T, class H, class P, class A>
-unordered_map<K, T, H, P, A>::unordered_map(
-    size_type n, const allocator_type& a)
-    : table_(n, hasher(), key_equal(), a)
+template <class InputIt>
+unordered_map<K, T, H, P, A>::unordered_map(InputIt f, InputIt l, size_type n,
+    const hasher& hf, const key_equal& eql, const allocator_type& a)
+    : table_(boost::unordered::detail::initial_size(f, l, n), hf, eql, a)
 {
+    table_.insert_range(f, l);
 }
 
 template <class K, class T, class H, class P, class A>
-unordered_map<K, T, H, P, A>::unordered_map(
-    size_type n, const hasher& hf, const allocator_type& a)
-    : table_(n, hf, key_equal(), a)
+unordered_map<K, T, H, P, A>::unordered_map(unordered_map const& other)
+    : table_(other.table_)
 {
 }
 
@@ -1267,65 +1266,6 @@ template <class K, class T, class H, class P, class A>
 unordered_map<K, T, H, P, A>::unordered_map(
     unordered_map const& other, allocator_type const& a)
     : table_(other.table_, a)
-{
-}
-
-template <class K, class T, class H, class P, class A>
-template <class InputIt>
-unordered_map<K, T, H, P, A>::unordered_map(InputIt f, InputIt l)
-    : table_(boost::unordered::detail::initial_size(f, l), hasher(),
-          key_equal(), allocator_type())
-{
-    table_.insert_range(f, l);
-}
-
-template <class K, class T, class H, class P, class A>
-template <class InputIt>
-unordered_map<K, T, H, P, A>::unordered_map(
-    InputIt f, InputIt l, size_type n, const hasher& hf, const key_equal& eql)
-    : table_(boost::unordered::detail::initial_size(f, l, n), hf, eql,
-          allocator_type())
-{
-    table_.insert_range(f, l);
-}
-
-template <class K, class T, class H, class P, class A>
-template <class InputIt>
-unordered_map<K, T, H, P, A>::unordered_map(InputIt f, InputIt l, size_type n,
-    const hasher& hf, const key_equal& eql, const allocator_type& a)
-    : table_(boost::unordered::detail::initial_size(f, l, n), hf, eql, a)
-{
-    table_.insert_range(f, l);
-}
-
-template <class K, class T, class H, class P, class A>
-template <class InputIt>
-unordered_map<K, T, H, P, A>::unordered_map(InputIt f, InputIt l, size_type n,
-    const hasher& hf, const allocator_type& a)
-    : table_(
-          boost::unordered::detail::initial_size(f, l, n), hf, key_equal(), a)
-{
-    table_.insert_range(f, l);
-}
-
-template <class K, class T, class H, class P, class A>
-template <class InputIt>
-unordered_map<K, T, H, P, A>::unordered_map(
-    InputIt f, InputIt l, size_type n, const allocator_type& a)
-    : table_(boost::unordered::detail::initial_size(f, l, n), hasher(),
-          key_equal(), a)
-{
-    table_.insert_range(f, l);
-}
-
-template <class K, class T, class H, class P, class A>
-unordered_map<K, T, H, P, A>::~unordered_map() BOOST_NOEXCEPT
-{
-}
-
-template <class K, class T, class H, class P, class A>
-unordered_map<K, T, H, P, A>::unordered_map(unordered_map const& other)
-    : table_(other.table_)
 {
 }
 
@@ -1349,16 +1289,43 @@ unordered_map<K, T, H, P, A>::unordered_map(
     table_.insert_range(list.begin(), list.end());
 }
 
+#endif
+
 template <class K, class T, class H, class P, class A>
 unordered_map<K, T, H, P, A>::unordered_map(
-    std::initializer_list<value_type> list, size_type n, const hasher& hf,
-    const allocator_type& a)
-    : table_(
-          boost::unordered::detail::initial_size(list.begin(), list.end(), n),
-          hf, key_equal(), a)
+    size_type n, const allocator_type& a)
+    : table_(n, hasher(), key_equal(), a)
 {
-    table_.insert_range(list.begin(), list.end());
 }
+
+template <class K, class T, class H, class P, class A>
+unordered_map<K, T, H, P, A>::unordered_map(
+    size_type n, const hasher& hf, const allocator_type& a)
+    : table_(n, hf, key_equal(), a)
+{
+}
+
+template <class K, class T, class H, class P, class A>
+template <class InputIt>
+unordered_map<K, T, H, P, A>::unordered_map(
+    InputIt f, InputIt l, size_type n, const allocator_type& a)
+    : table_(boost::unordered::detail::initial_size(f, l, n), hasher(),
+          key_equal(), a)
+{
+    table_.insert_range(f, l);
+}
+
+template <class K, class T, class H, class P, class A>
+template <class InputIt>
+unordered_map<K, T, H, P, A>::unordered_map(InputIt f, InputIt l, size_type n,
+    const hasher& hf, const allocator_type& a)
+    : table_(
+          boost::unordered::detail::initial_size(f, l, n), hf, key_equal(), a)
+{
+    table_.insert_range(f, l);
+}
+
+#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
 
 template <class K, class T, class H, class P, class A>
 unordered_map<K, T, H, P, A>::unordered_map(
@@ -1370,6 +1337,26 @@ unordered_map<K, T, H, P, A>::unordered_map(
 {
     table_.insert_range(list.begin(), list.end());
 }
+
+template <class K, class T, class H, class P, class A>
+unordered_map<K, T, H, P, A>::unordered_map(
+    std::initializer_list<value_type> list, size_type n, const hasher& hf,
+    const allocator_type& a)
+    : table_(
+          boost::unordered::detail::initial_size(list.begin(), list.end(), n),
+          hf, key_equal(), a)
+{
+    table_.insert_range(list.begin(), list.end());
+}
+
+#endif
+
+template <class K, class T, class H, class P, class A>
+unordered_map<K, T, H, P, A>::~unordered_map() BOOST_NOEXCEPT
+{
+}
+
+#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
 
 template <class K, class T, class H, class P, class A>
 unordered_map<K, T, H, P, A>& unordered_map<K, T, H, P, A>::operator=(
@@ -1663,16 +1650,19 @@ unordered_multimap<K, T, H, P, A>::unordered_multimap(size_type n,
 }
 
 template <class K, class T, class H, class P, class A>
-unordered_multimap<K, T, H, P, A>::unordered_multimap(
-    size_type n, const allocator_type& a)
-    : table_(n, hasher(), key_equal(), a)
+template <class InputIt>
+unordered_multimap<K, T, H, P, A>::unordered_multimap(InputIt f, InputIt l,
+    size_type n, const hasher& hf, const key_equal& eql,
+    const allocator_type& a)
+    : table_(boost::unordered::detail::initial_size(f, l, n), hf, eql, a)
 {
+    table_.insert_range(f, l);
 }
 
 template <class K, class T, class H, class P, class A>
 unordered_multimap<K, T, H, P, A>::unordered_multimap(
-    size_type n, const hasher& hf, const allocator_type& a)
-    : table_(n, hf, key_equal(), a)
+    unordered_multimap const& other)
+    : table_(other.table_)
 {
 }
 
@@ -1687,67 +1677,6 @@ template <class K, class T, class H, class P, class A>
 unordered_multimap<K, T, H, P, A>::unordered_multimap(
     unordered_multimap const& other, allocator_type const& a)
     : table_(other.table_, a)
-{
-}
-
-template <class K, class T, class H, class P, class A>
-template <class InputIt>
-unordered_multimap<K, T, H, P, A>::unordered_multimap(InputIt f, InputIt l)
-    : table_(boost::unordered::detail::initial_size(f, l), hasher(),
-          key_equal(), allocator_type())
-{
-    table_.insert_range(f, l);
-}
-
-template <class K, class T, class H, class P, class A>
-template <class InputIt>
-unordered_multimap<K, T, H, P, A>::unordered_multimap(
-    InputIt f, InputIt l, size_type n, const hasher& hf, const key_equal& eql)
-    : table_(boost::unordered::detail::initial_size(f, l, n), hf, eql,
-          allocator_type())
-{
-    table_.insert_range(f, l);
-}
-
-template <class K, class T, class H, class P, class A>
-template <class InputIt>
-unordered_multimap<K, T, H, P, A>::unordered_multimap(InputIt f, InputIt l,
-    size_type n, const hasher& hf, const key_equal& eql,
-    const allocator_type& a)
-    : table_(boost::unordered::detail::initial_size(f, l, n), hf, eql, a)
-{
-    table_.insert_range(f, l);
-}
-
-template <class K, class T, class H, class P, class A>
-template <class InputIt>
-unordered_multimap<K, T, H, P, A>::unordered_multimap(InputIt f, InputIt l,
-    size_type n, const hasher& hf, const allocator_type& a)
-    : table_(
-          boost::unordered::detail::initial_size(f, l, n), hf, key_equal(), a)
-{
-    table_.insert_range(f, l);
-}
-
-template <class K, class T, class H, class P, class A>
-template <class InputIt>
-unordered_multimap<K, T, H, P, A>::unordered_multimap(
-    InputIt f, InputIt l, size_type n, const allocator_type& a)
-    : table_(boost::unordered::detail::initial_size(f, l, n), hasher(),
-          key_equal(), a)
-{
-    table_.insert_range(f, l);
-}
-
-template <class K, class T, class H, class P, class A>
-unordered_multimap<K, T, H, P, A>::~unordered_multimap() BOOST_NOEXCEPT
-{
-}
-
-template <class K, class T, class H, class P, class A>
-unordered_multimap<K, T, H, P, A>::unordered_multimap(
-    unordered_multimap const& other)
-    : table_(other.table_)
 {
 }
 
@@ -1771,16 +1700,43 @@ unordered_multimap<K, T, H, P, A>::unordered_multimap(
     table_.insert_range(list.begin(), list.end());
 }
 
+#endif
+
 template <class K, class T, class H, class P, class A>
 unordered_multimap<K, T, H, P, A>::unordered_multimap(
-    std::initializer_list<value_type> list, size_type n, const hasher& hf,
-    const allocator_type& a)
-    : table_(
-          boost::unordered::detail::initial_size(list.begin(), list.end(), n),
-          hf, key_equal(), a)
+    size_type n, const allocator_type& a)
+    : table_(n, hasher(), key_equal(), a)
 {
-    table_.insert_range(list.begin(), list.end());
 }
+
+template <class K, class T, class H, class P, class A>
+unordered_multimap<K, T, H, P, A>::unordered_multimap(
+    size_type n, const hasher& hf, const allocator_type& a)
+    : table_(n, hf, key_equal(), a)
+{
+}
+
+template <class K, class T, class H, class P, class A>
+template <class InputIt>
+unordered_multimap<K, T, H, P, A>::unordered_multimap(
+    InputIt f, InputIt l, size_type n, const allocator_type& a)
+    : table_(boost::unordered::detail::initial_size(f, l, n), hasher(),
+          key_equal(), a)
+{
+    table_.insert_range(f, l);
+}
+
+template <class K, class T, class H, class P, class A>
+template <class InputIt>
+unordered_multimap<K, T, H, P, A>::unordered_multimap(InputIt f, InputIt l,
+    size_type n, const hasher& hf, const allocator_type& a)
+    : table_(
+          boost::unordered::detail::initial_size(f, l, n), hf, key_equal(), a)
+{
+    table_.insert_range(f, l);
+}
+
+#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
 
 template <class K, class T, class H, class P, class A>
 unordered_multimap<K, T, H, P, A>::unordered_multimap(
@@ -1792,6 +1748,26 @@ unordered_multimap<K, T, H, P, A>::unordered_multimap(
 {
     table_.insert_range(list.begin(), list.end());
 }
+
+template <class K, class T, class H, class P, class A>
+unordered_multimap<K, T, H, P, A>::unordered_multimap(
+    std::initializer_list<value_type> list, size_type n, const hasher& hf,
+    const allocator_type& a)
+    : table_(
+          boost::unordered::detail::initial_size(list.begin(), list.end(), n),
+          hf, key_equal(), a)
+{
+    table_.insert_range(list.begin(), list.end());
+}
+
+#endif
+
+template <class K, class T, class H, class P, class A>
+unordered_multimap<K, T, H, P, A>::~unordered_multimap() BOOST_NOEXCEPT
+{
+}
+
+#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
 
 template <class K, class T, class H, class P, class A>
 unordered_multimap<K, T, H, P, A>& unordered_multimap<K, T, H, P, A>::operator=(
