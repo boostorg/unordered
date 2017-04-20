@@ -707,10 +707,6 @@ template <class K, class T, class H, class P, class A> class unordered_map
     hasher hash_function() const;
     key_equal key_eq() const;
 
-    mapped_type& operator[](const key_type&);
-    mapped_type& at(const key_type&);
-    mapped_type const& at(const key_type&) const;
-
     // lookup
 
     iterator find(const key_type&);
@@ -731,6 +727,10 @@ template <class K, class T, class H, class P, class A> class unordered_map
     std::pair<iterator, iterator> equal_range(const key_type&);
     std::pair<const_iterator, const_iterator> equal_range(
         const key_type&) const;
+
+    mapped_type& operator[](const key_type&);
+    mapped_type& at(const key_type&);
+    mapped_type const& at(const key_type&) const;
 
     // bucket interface
 
@@ -1563,27 +1563,6 @@ unordered_map<K, T, H, P, A>::key_eq() const
     return table_.key_eq();
 }
 
-template <class K, class T, class H, class P, class A>
-typename unordered_map<K, T, H, P, A>::mapped_type&
-    unordered_map<K, T, H, P, A>::operator[](const key_type& k)
-{
-    return table_.try_emplace_impl(k).first->second;
-}
-
-template <class K, class T, class H, class P, class A>
-typename unordered_map<K, T, H, P, A>::mapped_type&
-unordered_map<K, T, H, P, A>::at(const key_type& k)
-{
-    return table_.at(k).second;
-}
-
-template <class K, class T, class H, class P, class A>
-typename unordered_map<K, T, H, P, A>::mapped_type const&
-unordered_map<K, T, H, P, A>::at(const key_type& k) const
-{
-    return table_.at(k).second;
-}
-
 // lookup
 
 template <class K, class T, class H, class P, class A>
@@ -1639,6 +1618,27 @@ std::pair<typename unordered_map<K, T, H, P, A>::const_iterator,
 unordered_map<K, T, H, P, A>::equal_range(const key_type& k) const
 {
     return table_.equal_range(k);
+}
+
+template <class K, class T, class H, class P, class A>
+typename unordered_map<K, T, H, P, A>::mapped_type&
+    unordered_map<K, T, H, P, A>::operator[](const key_type& k)
+{
+    return table_.try_emplace_impl(k).first->second;
+}
+
+template <class K, class T, class H, class P, class A>
+typename unordered_map<K, T, H, P, A>::mapped_type&
+unordered_map<K, T, H, P, A>::at(const key_type& k)
+{
+    return table_.at(k).second;
+}
+
+template <class K, class T, class H, class P, class A>
+typename unordered_map<K, T, H, P, A>::mapped_type const&
+unordered_map<K, T, H, P, A>::at(const key_type& k) const
+{
+    return table_.at(k).second;
 }
 
 template <class K, class T, class H, class P, class A>
