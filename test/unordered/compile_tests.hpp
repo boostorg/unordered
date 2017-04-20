@@ -19,6 +19,7 @@
 #include "../helpers/check_return_type.hpp"
 #include <boost/iterator/iterator_traits.hpp>
 #include <boost/limits.hpp>
+#include <boost/predef.h>
 #include <boost/static_assert.hpp>
 #include <boost/type_traits/cv_traits.hpp>
 #include <boost/type_traits/is_convertible.hpp>
@@ -169,11 +170,15 @@ template <class X, class T> void container_test(X& r, T const&)
     // node_type
 
     implicit_construct<node_type const>();
+#if !BOOST_COMP_GNUC || BOOST_COMP_GNUC >= BOOST_VERSION_NUMBER(4, 8, 0)
     TEST_NOEXCEPT_EXPR(node_type());
+#endif
 
     node_type n1;
     node_type n2(rvalue_default<node_type>());
+#if !BOOST_COMP_GNUC || BOOST_COMP_GNUC >= BOOST_VERSION_NUMBER(4, 8, 0)
     TEST_NOEXCEPT_EXPR(node_type(boost::move(n1)));
+#endif
     node_type n3;
     n3 = boost::move(n2);
     n1.swap(n3);
