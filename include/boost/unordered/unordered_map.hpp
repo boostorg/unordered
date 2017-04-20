@@ -190,14 +190,6 @@ template <class K, class T, class H, class P, class A> class unordered_map
         return table_.node_alloc();
     }
 
-    // size and capacity
-
-    bool empty() const BOOST_NOEXCEPT { return table_.size_ == 0; }
-
-    size_type size() const BOOST_NOEXCEPT { return table_.size_; }
-
-    size_type max_size() const BOOST_NOEXCEPT;
-
     // iterators
 
     iterator begin() BOOST_NOEXCEPT { return iterator(table_.begin()); }
@@ -217,6 +209,14 @@ template <class K, class T, class H, class P, class A> class unordered_map
     }
 
     const_iterator cend() const BOOST_NOEXCEPT { return const_iterator(); }
+
+    // size and capacity
+
+    bool empty() const BOOST_NOEXCEPT { return table_.size_ == 0; }
+
+    size_type size() const BOOST_NOEXCEPT { return table_.size_; }
+
+    size_type max_size() const BOOST_NOEXCEPT;
 
     // extract
 
@@ -913,14 +913,6 @@ template <class K, class T, class H, class P, class A> class unordered_multimap
         return table_.node_alloc();
     }
 
-    // size and capacity
-
-    bool empty() const BOOST_NOEXCEPT { return table_.size_ == 0; }
-
-    size_type size() const BOOST_NOEXCEPT { return table_.size_; }
-
-    size_type max_size() const BOOST_NOEXCEPT;
-
     // iterators
 
     iterator begin() BOOST_NOEXCEPT { return iterator(table_.begin()); }
@@ -940,6 +932,14 @@ template <class K, class T, class H, class P, class A> class unordered_multimap
     }
 
     const_iterator cend() const BOOST_NOEXCEPT { return const_iterator(); }
+
+    // size and capacity
+
+    bool empty() const BOOST_NOEXCEPT { return table_.size_ == 0; }
+
+    size_type size() const BOOST_NOEXCEPT { return table_.size_; }
+
+    size_type max_size() const BOOST_NOEXCEPT;
 
     // extract
 
