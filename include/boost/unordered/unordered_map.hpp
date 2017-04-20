@@ -678,6 +678,10 @@ template <class K, class T, class H, class P, class A> class unordered_map
     void erase_return_void(const_iterator it) { erase(it); }
 
     void swap(unordered_map&);
+    // C++17 support: BOOST_NOEXCEPT_IF(
+    //    value_allocator_traits::is_always_equal::value &&
+    //    is_nothrow_move_assignable_v<H> &&
+    //    is_nothrow_move_assignable_v<P>)
     void clear();
 
     template <typename H2, typename P2>
@@ -1180,6 +1184,10 @@ template <class K, class T, class H, class P, class A> class unordered_multimap
     void erase_return_void(const_iterator it) { erase(it); }
 
     void swap(unordered_multimap&);
+    // C++17 support: BOOST_NOEXCEPT_IF(
+    //    value_allocator_traits::is_always_equal::value &&
+    //    is_nothrow_move_assignable_v<H> &&
+    //    is_nothrow_move_assignable_v<P>)
     void clear();
 
     template <typename H2, typename P2>
@@ -1487,6 +1495,10 @@ unordered_map<K, T, H, P, A>::erase(const_iterator first, const_iterator last)
 
 template <class K, class T, class H, class P, class A>
 void unordered_map<K, T, H, P, A>::swap(unordered_map& other)
+// C++17 support: BOOST_NOEXCEPT_IF(
+//    value_allocator_traits::is_always_equal::value &&
+//    is_nothrow_move_assignable_v<H> &&
+//    is_nothrow_move_assignable_v<P>)
 {
     table_.swap(other.table_);
 }
@@ -1906,6 +1918,10 @@ unordered_multimap<K, T, H, P, A>::erase(
 
 template <class K, class T, class H, class P, class A>
 void unordered_multimap<K, T, H, P, A>::swap(unordered_multimap& other)
+// C++17 support: BOOST_NOEXCEPT_IF(
+//    value_allocator_traits::is_always_equal::value &&
+//    is_nothrow_move_assignable_v<H> &&
+//    is_nothrow_move_assignable_v<P>)
 {
     table_.swap(other.table_);
 }

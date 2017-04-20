@@ -417,6 +417,10 @@ template <class T, class H, class P, class A> class unordered_set
     void erase_return_void(const_iterator it) { erase(it); }
 
     void swap(unordered_set&);
+    // C++17 support: BOOST_NOEXCEPT_IF(
+    //    value_allocator_traits::is_always_equal::value &&
+    //    is_nothrow_move_assignable_v<H> &&
+    //    is_nothrow_move_assignable_v<P>)
     void clear();
 
     template <typename H2, typename P2>
@@ -888,6 +892,10 @@ template <class T, class H, class P, class A> class unordered_multiset
     void erase_return_void(const_iterator it) { erase(it); }
 
     void swap(unordered_multiset&);
+    // C++17 support: BOOST_NOEXCEPT_IF(
+    //    value_allocator_traits::is_always_equal::value &&
+    //    is_nothrow_move_assignable_v<H> &&
+    //    is_nothrow_move_assignable_v<P>)
     void clear();
 
     template <typename H2, typename P2>
@@ -1176,6 +1184,10 @@ typename unordered_set<T, H, P, A>::iterator unordered_set<T, H, P, A>::erase(
 
 template <class T, class H, class P, class A>
 void unordered_set<T, H, P, A>::swap(unordered_set& other)
+// C++17 support: BOOST_NOEXCEPT_IF(
+//    value_allocator_traits::is_always_equal::value &&
+//    is_nothrow_move_assignable_v<H> &&
+//    is_nothrow_move_assignable_v<P>)
 {
     table_.swap(other.table_);
 }
@@ -1547,6 +1559,10 @@ unordered_multiset<T, H, P, A>::erase(const_iterator first, const_iterator last)
 
 template <class T, class H, class P, class A>
 void unordered_multiset<T, H, P, A>::swap(unordered_multiset& other)
+// C++17 support: BOOST_NOEXCEPT_IF(
+//    value_allocator_traits::is_always_equal::value &&
+//    is_nothrow_move_assignable_v<H> &&
+//    is_nothrow_move_assignable_v<P>)
 {
     table_.swap(other.table_);
 }
