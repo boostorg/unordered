@@ -216,19 +216,6 @@ template <class T, class H, class P, class A> class unordered_set
 
     size_type max_size() const BOOST_NOEXCEPT;
 
-    // extract
-
-    node_type extract(const_iterator position)
-    {
-        return node_type(
-            table_.extract_by_iterator(position), table_.node_alloc());
-    }
-
-    node_type extract(const key_type& k)
-    {
-        return node_type(table_.extract_by_key(k), table_.node_alloc());
-    }
-
 // emplace
 
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
@@ -386,6 +373,19 @@ template <class T, class H, class P, class A> class unordered_set
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
     void insert(std::initializer_list<value_type>);
 #endif
+
+    // extract
+
+    node_type extract(const_iterator position)
+    {
+        return node_type(
+            table_.extract_by_iterator(position), table_.node_alloc());
+    }
+
+    node_type extract(const key_type& k)
+    {
+        return node_type(table_.extract_by_key(k), table_.node_alloc());
+    }
 
     insert_return_type insert(BOOST_RV_REF(node_type) np)
     {
@@ -698,19 +698,6 @@ template <class T, class H, class P, class A> class unordered_multiset
 
     size_type max_size() const BOOST_NOEXCEPT;
 
-    // extract
-
-    node_type extract(const_iterator position)
-    {
-        return node_type(
-            table_.extract_by_iterator(position), table_.node_alloc());
-    }
-
-    node_type extract(const key_type& k)
-    {
-        return node_type(table_.extract_by_key(k), table_.node_alloc());
-    }
-
 // emplace
 
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
@@ -859,6 +846,19 @@ template <class T, class H, class P, class A> class unordered_multiset
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
     void insert(std::initializer_list<value_type>);
 #endif
+
+    // extract
+
+    node_type extract(const_iterator position)
+    {
+        return node_type(
+            table_.extract_by_iterator(position), table_.node_alloc());
+    }
+
+    node_type extract(const key_type& k)
+    {
+        return node_type(table_.extract_by_key(k), table_.node_alloc());
+    }
 
     iterator insert(BOOST_RV_REF(node_type) np)
     {
