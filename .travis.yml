@@ -60,5 +60,5 @@ before_script:
 
 script:
     - cd ${TRAVIS_BUILD_DIR}/test
-    - bjam include=${HOME}/boost include=${TRAVIS_BUILD_DIR}/include
+    - bjam -q include=${HOME}/boost include=${TRAVIS_BUILD_DIR}/include
     - xmllint --noout ${TRAVIS_BUILD_DIR}/doc/ref.xml
