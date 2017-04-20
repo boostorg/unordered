@@ -168,17 +168,16 @@ namespace detail {
 template <typename Types> struct table;
 template <typename NodePointer> struct bucket;
 struct ptr_bucket;
+
 template <typename Types> struct table_unique;
 template <typename Types> struct table_equiv;
 
 template <typename A, typename T> struct unique_node;
 template <typename T> struct ptr_node;
-template <typename Types> struct table_unique;
+template <typename N> struct node_algo;
 
 template <typename A, typename T> struct grouped_node;
 template <typename T> struct grouped_ptr_node;
-template <typename Types> struct table_equiv;
-template <typename N> struct node_algo;
 template <typename N> struct grouped_node_algo;
 
 static const float minimum_max_load_factor = 1e-3f;
