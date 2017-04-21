@@ -47,9 +47,6 @@
 #include <stdexcept>
 #include <utility>
 
-#if !defined(BOOST_NO_CXX11_HDR_TUPLE)
-#include <tuple>
-#endif
 
 #if !defined(BOOST_NO_CXX11_HDR_TYPE_TRAITS)
 #include <type_traits>
@@ -126,6 +123,17 @@
 //
 // Other configuration macros
 //
+
+#if BOOST_UNORDERED_HAVE_PIECEWISE_CONSTRUCT || \
+    (!defined(BOOST_NO_CXX11_HDR_TUPLE) && !defined(__SUNPRO_CC))
+#define BOOST_UNORDERED_HAS_STD_TUPLE 1
+#else
+#define BOOST_UNORDERED_HAS_STD_TUPLE 0
+#endif
+
+#if BOOST_UNORDERED_HAS_STD_TUPLE
+#include <tuple>
+#endif
 
 #if defined(BOOST_UNORDERED_SUPPRESS_DEPRECATED)
 #define BOOST_UNORDERED_DEPRECATED(msg)
@@ -1391,8 +1399,7 @@ template <int N> struct length
 
 BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(10, boost::)
 
-#if !BOOST_UNORDERED_CXX11_CONSTRUCTION && !defined(__SUNPRO_CC) &&            \
-    !defined(BOOST_NO_CXX11_HDR_TUPLE)
+#if !BOOST_UNORDERED_CXX11_CONSTRUCTION && BOOST_UNORDERED_HAS_STD_TUPLE
 BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(10, std::)
 #endif
 
@@ -3541,7 +3548,7 @@ template <class ValueType> struct map_extractor
 
     BOOST_UNORDERED_KEY_FROM_TUPLE(boost::)
 
-#if !defined(BOOST_NO_CXX11_HDR_TUPLE)
+#if BOOST_UNORDERED_HAS_STD_TUPLE
     BOOST_UNORDERED_KEY_FROM_TUPLE(std::)
 #endif
 };
