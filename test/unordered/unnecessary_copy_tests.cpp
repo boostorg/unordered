@@ -501,7 +501,7 @@ UNORDERED_AUTO_TEST(unnecessary_copy_emplace_map_test)
     COPY_COUNT(0);
     MOVE_COUNT(0);
 
-#if BOOST_UNORDERED_HAS_STD_TUPLE
+#if BOOST_UNORDERED_TUPLE_ARGS
 
     reset();
     x.emplace(boost::unordered::piecewise_construct,

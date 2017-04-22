@@ -19,6 +19,7 @@
 #include <boost/iterator/iterator_categories.hpp>
 #include <boost/limits.hpp>
 #include <boost/move/move.hpp>
+#include <boost/preprocessor/arithmetic/inc.hpp>
 #include <boost/preprocessor/cat.hpp>
 #include <boost/preprocessor/repetition/enum.hpp>
 #include <boost/preprocessor/repetition/enum_binary_params.hpp>
@@ -46,7 +47,6 @@
 #include <iterator>
 #include <stdexcept>
 #include <utility>
-
 
 #if !defined(BOOST_NO_CXX11_HDR_TYPE_TRAITS)
 #include <type_traits>
@@ -124,14 +124,22 @@
 // Other configuration macros
 //
 
-#if BOOST_UNORDERED_HAVE_PIECEWISE_CONSTRUCT || \
-    (!defined(BOOST_NO_CXX11_HDR_TUPLE) && !defined(__SUNPRO_CC))
-#define BOOST_UNORDERED_HAS_STD_TUPLE 1
+#if defined(BOOST_UNORDERED_TUPLE_ARGS)
+#elif defined(__SUNPRO_CC)
+#define BOOST_UNORDERED_TUPLE_ARGS 0
+#elif !defined(BOOST_NO_CXX11_HDR_TUPLE)
+#define BOOST_UNORDERED_TUPLE_ARGS 10
+#elif BOOST_UNORDERED_HAVE_PIECEWISE_CONSTRUCT
+#if defined(BOOST_MSVC) && defined(_VARIADIC_MAX)
+#define BOOST_UNORDERED_TUPLE_ARGS _VARIADIC_MAX
 #else
-#define BOOST_UNORDERED_HAS_STD_TUPLE 0
+#define BOOST_UNORDERED_TUPLE_ARGS 5
+#endif
+#else
+#define BOOST_UNORDERED_TUPLE_ARGS 0
 #endif
 
-#if BOOST_UNORDERED_HAS_STD_TUPLE
+#if BOOST_UNORDERED_TUPLE_ARGS
 #include <tuple>
 #endif
 
@@ -1317,97 +1325,103 @@ inline void construct_value(T* address, BOOST_FWD_REF(A0) a0)
 //
 // Used to emulate piecewise construction.
 
-#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+#if !defined(__SUNPRO_CC)
 
-#define BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(n, namespace_)                    \
-    template <typename Alloc, typename T>                                      \
-    void construct_from_tuple(Alloc&, T* ptr, namespace_ tuple<>)              \
-    {                                                                          \
-        new ((void*)ptr) T();                                                  \
-    }                                                                          \
-                                                                               \
-    BOOST_PP_REPEAT_FROM_TO(                                                   \
-        1, n, BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE_IMPL, namespace_)
-
-#define BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE_IMPL(z, n, namespace_)            \
+#define BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(z, n, namespace_)                 \
     template <typename Alloc, typename T,                                      \
         BOOST_PP_ENUM_PARAMS_Z(z, n, typename A)>                              \
     void construct_from_tuple(Alloc&, T* ptr,                                  \
-        namespace_ tuple<BOOST_PP_ENUM_PARAMS_Z(z, n, A)> const& x)            \
+        namespace_::tuple<BOOST_PP_ENUM_PARAMS_Z(z, n, A)> const& x)           \
     {                                                                          \
         new ((void*)ptr) T(                                                    \
             BOOST_PP_ENUM_##z(n, BOOST_UNORDERED_GET_TUPLE_ARG, namespace_));  \
     }
 
-#define BOOST_UNORDERED_GET_TUPLE_ARG(z, n, namespace_) namespace_ get<n>(x)
+#define BOOST_UNORDERED_GET_TUPLE_ARG(z, n, namespace_) namespace_::get<n>(x)
 
-#elif !defined(__SUNPRO_CC)
+// construct_from_tuple for boost::tuple
 
-#define BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(n, namespace_)                    \
-    template <typename Alloc, typename T>                                      \
-    void construct_from_tuple(Alloc&, T* ptr, namespace_ tuple<>)              \
-    {                                                                          \
-        new ((void*)ptr) T();                                                  \
-    }                                                                          \
-                                                                               \
-    BOOST_PP_REPEAT_FROM_TO(                                                   \
-        1, n, BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE_IMPL, namespace_)
+template <typename Alloc, typename T>
+void construct_from_tuple(Alloc&, T* ptr, boost::tuple<>)
+{
+    new ((void*)ptr) T();
+}
 
-#define BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE_IMPL(z, n, namespace_)            \
-    template <typename Alloc, typename T,                                      \
-        BOOST_PP_ENUM_PARAMS_Z(z, n, typename A)>                              \
-    void construct_from_tuple(Alloc&, T* ptr,                                  \
-        namespace_ tuple<BOOST_PP_ENUM_PARAMS_Z(z, n, A)> const& x)            \
-    {                                                                          \
-        new ((void*)ptr) T(                                                    \
-            BOOST_PP_ENUM_##z(n, BOOST_UNORDERED_GET_TUPLE_ARG, namespace_));  \
-    }
+BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 1, boost)
+BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 2, boost)
+BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 3, boost)
+BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 4, boost)
+BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 5, boost)
+BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 6, boost)
+BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 7, boost)
+BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 8, boost)
+BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 9, boost)
+BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 10, boost)
 
-#define BOOST_UNORDERED_GET_TUPLE_ARG(z, n, namespace_) namespace_ get<n>(x)
+// construct_from_tuple for std::tuple
 
-#else
+#if !BOOST_UNORDERED_CXX11_CONSTRUCTION && BOOST_UNORDERED_TUPLE_ARGS
+
+template <typename Alloc, typename T>
+void construct_from_tuple(Alloc&, T* ptr, std::tuple<>)
+{
+    new ((void*)ptr) T();
+}
+
+BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 1, std)
+BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 2, std)
+BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 3, std)
+BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 4, std)
+BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 5, std)
+
+#if BOOST_UNORDERED_TUPLE_ARGS >= 6
+BOOST_PP_REPEAT_FROM_TO(6, BOOST_PP_INC(BOOST_UNORDERED_TUPLE_ARGS),
+    BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE, std)
+#endif
+
+#endif
+
+#undef BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE
+#undef BOOST_UNORDERED_GET_TUPLE_ARG
+
+#else // __SUNPRO_CC
 
 template <int N> struct length
 {
 };
 
-#define BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(n, namespace_)                    \
-    template <typename Alloc, typename T>                                      \
-    void construct_from_tuple_impl(boost::unordered::detail::func::length<0>,  \
-        Alloc&, T* ptr, namespace_ tuple<>)                                    \
-    {                                                                          \
-        new ((void*)ptr) T();                                                  \
-    }                                                                          \
-                                                                               \
-    BOOST_PP_REPEAT_FROM_TO(                                                   \
-        1, n, BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE_IMPL, namespace_)
-
-#define BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE_IMPL(z, n, namespace_)            \
+#define BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(z, n, namespace_)                 \
     template <typename Alloc, typename T,                                      \
         BOOST_PP_ENUM_PARAMS_Z(z, n, typename A)>                              \
     void construct_from_tuple_impl(boost::unordered::detail::func::length<n>,  \
         Alloc&, T* ptr,                                                        \
-        namespace_ tuple<BOOST_PP_ENUM_PARAMS_Z(z, n, A)> const& x)            \
+        namespace_::tuple<BOOST_PP_ENUM_PARAMS_Z(z, n, A)> const& x)           \
     {                                                                          \
         new ((void*)ptr) T(                                                    \
             BOOST_PP_ENUM_##z(n, BOOST_UNORDERED_GET_TUPLE_ARG, namespace_));  \
     }
 
-#define BOOST_UNORDERED_GET_TUPLE_ARG(z, n, namespace_) namespace_ get<n>(x)
+#define BOOST_UNORDERED_GET_TUPLE_ARG(z, n, namespace_) namespace_::get<n>(x)
 
-#endif
+// construct_from_tuple for boost::tuple
 
-BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(10, boost::)
+template <typename Alloc, typename T>
+void construct_from_tuple_impl(
+    boost::unordered::detail::func::length<0>, Alloc&, T* ptr, boost::tuple<>)
+{
+    new ((void*)ptr) T();
+}
 
-#if !BOOST_UNORDERED_CXX11_CONSTRUCTION && BOOST_UNORDERED_HAS_STD_TUPLE
-BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(10, std::)
-#endif
-
-#undef BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE
-#undef BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE_IMPL
-#undef BOOST_UNORDERED_GET_TUPLE_ARG
-
-#if defined(__SUNPRO_CC)
+BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 1, boost)
+BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 2, boost)
+BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 3, boost)
+BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 4, boost)
+BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 5, boost)
+BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 6, boost)
+BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 7, boost)
+BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 8, boost)
+BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 9, boost)
+BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 10, boost)
 
 template <typename Alloc, typename T, typename Tuple>
 void construct_from_tuple(Alloc& alloc, T* ptr, Tuple const& x)
@@ -1416,6 +1430,9 @@ void construct_from_tuple(Alloc& alloc, T* ptr, Tuple const& x)
                                   boost::tuples::length<Tuple>::value>(),
         alloc, ptr, x);
 }
+
+#undef BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE
+#undef BOOST_UNORDERED_GET_TUPLE_ARG
 
 #endif
 
@@ -3548,7 +3565,7 @@ template <class ValueType> struct map_extractor
 
     BOOST_UNORDERED_KEY_FROM_TUPLE(boost::)
 
-#if BOOST_UNORDERED_HAS_STD_TUPLE
+#if BOOST_UNORDERED_TUPLE_ARGS
     BOOST_UNORDERED_KEY_FROM_TUPLE(std::)
 #endif
 };
