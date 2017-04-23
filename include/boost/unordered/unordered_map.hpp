@@ -339,7 +339,7 @@ template <class K, class T, class H, class P, class A> class unordered_map
     }
 
     BOOST_PP_REPEAT_FROM_TO(
-        4, BOOST_UNORDERED_EMPLACE_LIMIT, BOOST_UNORDERED_EMPLACE, _)
+        4, BOOST_PP_INC(BOOST_UNORDERED_EMPLACE_LIMIT), BOOST_UNORDERED_EMPLACE, _)
 
 #undef BOOST_UNORDERED_EMPLACE
 
@@ -626,7 +626,7 @@ template <class K, class T, class H, class P, class A> class unordered_map
     }
 
     BOOST_PP_REPEAT_FROM_TO(
-        4, BOOST_UNORDERED_EMPLACE_LIMIT, BOOST_UNORDERED_TRY_EMPLACE, _)
+        4, BOOST_PP_INC(BOOST_UNORDERED_EMPLACE_LIMIT), BOOST_UNORDERED_TRY_EMPLACE, _)
 
 #undef BOOST_UNORDERED_TRY_EMPLACE
 
@@ -1086,7 +1086,7 @@ template <class K, class T, class H, class P, class A> class unordered_multimap
     }
 
     BOOST_PP_REPEAT_FROM_TO(
-        4, BOOST_UNORDERED_EMPLACE_LIMIT, BOOST_UNORDERED_EMPLACE, _)
+        4, BOOST_PP_INC(BOOST_UNORDERED_EMPLACE_LIMIT), BOOST_UNORDERED_EMPLACE, _)
 
 #undef BOOST_UNORDERED_EMPLACE
 

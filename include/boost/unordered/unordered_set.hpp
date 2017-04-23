@@ -336,8 +336,8 @@ template <class T, class H, class P, class A> class unordered_set
                       BOOST_PP_ENUM_##z(n, BOOST_UNORDERED_CALL_FORWARD, a))); \
     }
 
-    BOOST_PP_REPEAT_FROM_TO(
-        4, BOOST_UNORDERED_EMPLACE_LIMIT, BOOST_UNORDERED_EMPLACE, _)
+    BOOST_PP_REPEAT_FROM_TO(4, BOOST_PP_INC(BOOST_UNORDERED_EMPLACE_LIMIT),
+        BOOST_UNORDERED_EMPLACE, _)
 
 #undef BOOST_UNORDERED_EMPLACE
 
@@ -811,8 +811,8 @@ template <class T, class H, class P, class A> class unordered_multiset
                       BOOST_PP_ENUM_##z(n, BOOST_UNORDERED_CALL_FORWARD, a))); \
     }
 
-    BOOST_PP_REPEAT_FROM_TO(
-        4, BOOST_UNORDERED_EMPLACE_LIMIT, BOOST_UNORDERED_EMPLACE, _)
+    BOOST_PP_REPEAT_FROM_TO(4, BOOST_PP_INC(BOOST_UNORDERED_EMPLACE_LIMIT),
+        BOOST_UNORDERED_EMPLACE, _)
 
 #undef BOOST_UNORDERED_EMPLACE
 

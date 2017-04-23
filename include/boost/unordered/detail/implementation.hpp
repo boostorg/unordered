@@ -58,12 +58,12 @@
 // Unless documented elsewhere these configuration macros should be considered
 // an implementation detail, I'll try not to break them, but you never know.
 
-// BOOST_UNORDERED_EMPLACE_LIMIT = The maximum number of parameters + 1 in
+// BOOST_UNORDERED_EMPLACE_LIMIT = The maximum number of parameters in
 // emplace (not including things like hints). Don't set it to a lower value, as
 // that might break something.
 
 #if !defined BOOST_UNORDERED_EMPLACE_LIMIT
-#define BOOST_UNORDERED_EMPLACE_LIMIT 11
+#define BOOST_UNORDERED_EMPLACE_LIMIT 10
 #endif
 
 // BOOST_UNORDERED_INTEROPERABLE_NODES - Use the same node type for
@@ -619,7 +619,7 @@ inline emplace_args3<A0, A1, A2> create_emplace_args(
     }
 
 BOOST_PP_REPEAT_FROM_TO(
-    4, BOOST_UNORDERED_EMPLACE_LIMIT, BOOST_UNORDERED_EARGS, _)
+    4, BOOST_PP_INC(BOOST_UNORDERED_EMPLACE_LIMIT), BOOST_UNORDERED_EARGS, _)
 
 #undef BOOST_UNORDERED_DEFINE_EMPLACE_ARGS
 #undef BOOST_UNORDERED_EARGS_MEMBER
@@ -1590,8 +1590,8 @@ inline void construct_from_args(
             num_params, BOOST_UNORDERED_CALL_FORWARD, args.a));                \
     }
 
-BOOST_PP_REPEAT_FROM_TO(
-    4, BOOST_UNORDERED_EMPLACE_LIMIT, BOOST_UNORDERED_CONSTRUCT_IMPL, _)
+BOOST_PP_REPEAT_FROM_TO(4, BOOST_PP_INC(BOOST_UNORDERED_EMPLACE_LIMIT),
+    BOOST_UNORDERED_CONSTRUCT_IMPL, _)
 
 #undef BOOST_UNORDERED_CONSTRUCT_IMPL
 
