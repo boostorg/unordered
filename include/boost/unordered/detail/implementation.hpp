@@ -2708,6 +2708,8 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     ////////////////////////////////////////////////////////////////////////
     // Data access
 
+    static node_pointer get_node(c_iterator it) { return it.node_; }
+
     bucket_allocator const& bucket_alloc() const { return allocators_.first(); }
 
     node_allocator const& node_alloc() const { return allocators_.second(); }
@@ -2758,12 +2760,6 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         return policy::to_bucket(bucket_count_, hash_value);
     }
 
-    float load_factor() const
-    {
-        BOOST_ASSERT(bucket_count_ != 0);
-        return static_cast<float>(size_) / static_cast<float>(bucket_count_);
-    }
-
     std::size_t bucket_size(std::size_t index) const
     {
         node_pointer n = begin(index);
@@ -2781,17 +2777,6 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
 
     ////////////////////////////////////////////////////////////////////////
     // Load methods
-
-    std::size_t max_size() const
-    {
-        using namespace std;
-
-        // size < mlf_ * count
-        return boost::unordered::detail::double_to_size(
-                   ceil(static_cast<double>(mlf_) *
-                        static_cast<double>(max_bucket_count()))) -
-               1;
-    }
 
     void recalculate_max_load()
     {
@@ -2866,26 +2851,6 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         : functions(x, m), allocators_(a, a), bucket_count_(x.bucket_count_),
           size_(0), mlf_(x.mlf_), max_load_(x.max_load_), buckets_()
     {
-    }
-
-    ////////////////////////////////////////////////////////////////////////
-    // Initialisation.
-
-    void init(table const& x)
-    {
-        if (x.size_) {
-            static_cast<table_impl*>(this)->copy_buckets(x);
-        }
-    }
-
-    void move_init(table& x)
-    {
-        if (node_alloc() == x.node_alloc()) {
-            move_buckets_from(x);
-        } else if (x.size_) {
-            // TODO: Could pick new bucket size?
-            static_cast<table_impl*>(this)->move_buckets(x);
-        }
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -3078,17 +3043,6 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         BOOST_ASSERT(!size_);
     }
 
-    void clear()
-    {
-        if (!size_)
-            return;
-
-        clear_buckets();
-        delete_nodes(get_previous_start(), link_pointer());
-
-        BOOST_ASSERT(!size_);
-    }
-
     void destroy_buckets()
     {
         bucket_pointer end = get_bucket(bucket_count_ + 1);
@@ -3258,13 +3212,6 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
 
     // Find Node
 
-    template <typename Key, typename Hash, typename Pred>
-    node_pointer generic_find_node(
-        Key const& k, Hash const& hf, Pred const& eq) const
-    {
-        return this->find_node_impl(policy::apply_hash(hf, k), k, eq);
-    }
-
     node_pointer find_node(std::size_t key_hash, const_key_type& k) const
     {
         return this->find_node_impl(key_hash, k, this->key_eq());
@@ -3391,13 +3338,6 @@ inline void table<Types>::rehash(std::size_t min_buckets)
         if (min_buckets != bucket_count_)
             this->rehash_impl(min_buckets);
     }
-}
-
-template <typename Types>
-inline void table<Types>::reserve(std::size_t num_elements)
-{
-    rehash(static_cast<std::size_t>(
-        std::ceil(static_cast<double>(num_elements) / mlf_)));
 }
 
 template <typename Types>
@@ -3789,50 +3729,34 @@ struct table_unique : boost::unordered::detail::table<Types>
         : table(x, node_allocator_traits::select_on_container_copy_construction(
                        x.node_alloc()))
     {
-        this->init(x);
+        if (x.size_) {
+            this->copy_buckets(x);
+        }
     }
 
     table_unique(table_unique const& x, node_allocator const& a) : table(x, a)
     {
-        this->init(x);
+        if (x.size_) {
+            this->copy_buckets(x);
+        }
     }
 
     table_unique(table_unique& x, boost::unordered::detail::move_tag m)
         : table(x, m)
     {
+        // The move is done in the base class.
     }
 
     table_unique(table_unique& x, node_allocator const& a,
         boost::unordered::detail::move_tag m)
         : table(x, a, m)
     {
-        this->move_init(x);
-    }
-
-    // Accessors
-
-    std::size_t count(const_key_type& k) const
-    {
-        return this->find_node(k) ? 1 : 0;
-    }
-
-    value_type& at(const_key_type& k) const
-    {
-        if (this->size_) {
-            node_pointer n = this->find_node(k);
-            if (n)
-                return n->value();
+        if (this->node_alloc() == x.node_alloc()) {
+            this->move_buckets_from(x);
+        } else if (x.size_) {
+            // TODO: Could pick new bucket size?
+            this->move_buckets(x);
         }
-
-        boost::throw_exception(
-            std::out_of_range("Unable to find key in unordered_map."));
-    }
-
-    std::pair<iterator, iterator> equal_range(const_key_type& k) const
-    {
-        node_pointer n = this->find_node(k);
-        return std::make_pair(
-            iterator(n), iterator(n ? node_algo::next_node(n) : n));
     }
 
     // equals
@@ -3889,81 +3813,6 @@ struct table_unique : boost::unordered::detail::table<Types>
         this->reserve_for_insert(this->size_ + 1);
         return this->add_node(b.release(), key_hash);
     }
-
-#if defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-#if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-    emplace_return emplace(boost::unordered::detail::emplace_args1<
-        boost::unordered::detail::please_ignore_this_overload> const&)
-    {
-        BOOST_ASSERT(false);
-        return emplace_return(iterator(), false);
-    }
-
-    iterator emplace_hint(
-        c_iterator,
-        boost::unordered::detail::emplace_args1<
-            boost::unordered::detail::please_ignore_this_overload> const&)
-    {
-        BOOST_ASSERT(false);
-        return iterator();
-    }
-#else
-    emplace_return emplace(
-        boost::unordered::detail::please_ignore_this_overload const&)
-    {
-        BOOST_ASSERT(false);
-        return emplace_return(iterator(), false);
-    }
-
-    iterator emplace_hint(c_iterator,
-        boost::unordered::detail::please_ignore_this_overload const&)
-    {
-        BOOST_ASSERT(false);
-        return iterator();
-    }
-#endif
-#endif
-
-    template <BOOST_UNORDERED_EMPLACE_TEMPLATE>
-    emplace_return emplace(BOOST_UNORDERED_EMPLACE_ARGS)
-    {
-#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-        return emplace_impl(extractor::extract(BOOST_UNORDERED_EMPLACE_FORWARD),
-            BOOST_UNORDERED_EMPLACE_FORWARD);
-#else
-        return emplace_impl(extractor::extract(args.a0, args.a1),
-            BOOST_UNORDERED_EMPLACE_FORWARD);
-#endif
-    }
-
-    template <BOOST_UNORDERED_EMPLACE_TEMPLATE>
-    iterator emplace_hint(c_iterator hint, BOOST_UNORDERED_EMPLACE_ARGS)
-    {
-#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-        return emplace_hint_impl(hint,
-            extractor::extract(BOOST_UNORDERED_EMPLACE_FORWARD),
-            BOOST_UNORDERED_EMPLACE_FORWARD);
-#else
-        return emplace_hint_impl(hint, extractor::extract(args.a0, args.a1),
-            BOOST_UNORDERED_EMPLACE_FORWARD);
-#endif
-    }
-
-#if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-    template <typename A0>
-    emplace_return emplace(
-        boost::unordered::detail::emplace_args1<A0> const& args)
-    {
-        return emplace_impl(extractor::extract(args.a0), args);
-    }
-
-    template <typename A0>
-    iterator emplace_hint(c_iterator hint,
-        boost::unordered::detail::emplace_args1<A0> const& args)
-    {
-        return emplace_hint_impl(hint, extractor::extract(args.a0), args);
-    }
-#endif
 
     template <BOOST_UNORDERED_EMPLACE_TEMPLATE>
     iterator emplace_hint_impl(
@@ -4188,12 +4037,6 @@ struct table_unique : boost::unordered::detail::table<Types>
     // if hash function throws, or inserting > 1 element, basic exception
     // safety strong otherwise
 
-    template <class InputIt> void insert_range(InputIt i, InputIt j)
-    {
-        if (i != j)
-            return insert_range_impl(extractor::extract(*i), i, j);
-    }
-
     template <class InputIt>
     void insert_range_impl(const_key_type& k, InputIt i, InputIt j)
     {
@@ -4296,22 +4139,6 @@ struct table_unique : boost::unordered::detail::table<Types>
         this->delete_nodes(prev, end);
         this->fix_bucket(bucket_index, prev);
         return 1;
-    }
-
-    iterator erase(c_iterator r)
-    {
-        BOOST_ASSERT(r.node_);
-        node_pointer next = node_algo::next_node(r.node_);
-        erase_nodes(r.node_, next);
-        return iterator(next);
-    }
-
-    iterator erase_range(c_iterator r1, c_iterator r2)
-    {
-        if (r1 == r2)
-            return iterator(r2.node_);
-        erase_nodes(r1.node_, r2.node_);
-        return iterator(r2.node_);
     }
 
     void erase_nodes(node_pointer i, node_pointer j)
@@ -4610,39 +4437,34 @@ struct table_equiv : boost::unordered::detail::table<Types>
         : table(x, node_allocator_traits::select_on_container_copy_construction(
                        x.node_alloc()))
     {
-        this->init(x);
+        if (x.size_) {
+            copy_buckets(x);
+        }
     }
 
     table_equiv(table_equiv const& x, node_allocator const& a) : table(x, a)
     {
-        this->init(x);
+        if (x.size_) {
+            copy_buckets(x);
+        }
     }
 
     table_equiv(table_equiv& x, boost::unordered::detail::move_tag m)
         : table(x, m)
     {
+        // The move is done in the base class.
     }
 
     table_equiv(table_equiv& x, node_allocator const& a,
         boost::unordered::detail::move_tag m)
         : table(x, a, m)
     {
-        this->move_init(x);
-    }
-
-    // Accessors
-
-    std::size_t count(const_key_type& k) const
-    {
-        node_pointer n = this->find_node(k);
-        return n ? node_algo::count(n, this) : 0;
-    }
-
-    std::pair<iterator, iterator> equal_range(const_key_type& k) const
-    {
-        node_pointer n = this->find_node(k);
-        return std::make_pair(
-            iterator(n), iterator(n ? node_algo::next_group(n, this) : n));
+        if (this->node_alloc() == x.node_alloc()) {
+            this->move_buckets_from(x);
+        } else if (x.size_) {
+            // TODO: Could pick new bucket size?
+            this->move_buckets(x);
+        }
     }
 
     // Equality
@@ -4784,56 +4606,6 @@ struct table_equiv : boost::unordered::detail::table<Types>
         }
         ++this->size_;
         return n;
-    }
-
-#if defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-#if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-    iterator emplace(boost::unordered::detail::emplace_args1<
-        boost::unordered::detail::please_ignore_this_overload> const&)
-    {
-        BOOST_ASSERT(false);
-        return iterator();
-    }
-
-    iterator emplace_hint(
-        c_iterator,
-        boost::unordered::detail::emplace_args1<
-            boost::unordered::detail::please_ignore_this_overload> const&)
-    {
-        BOOST_ASSERT(false);
-        return iterator();
-    }
-#else
-    iterator emplace(
-        boost::unordered::detail::please_ignore_this_overload const&)
-    {
-        BOOST_ASSERT(false);
-        return iterator();
-    }
-
-    iterator emplace_hint(c_iterator,
-        boost::unordered::detail::please_ignore_this_overload const&)
-    {
-        BOOST_ASSERT(false);
-        return iterator();
-    }
-#endif
-#endif
-
-    template <BOOST_UNORDERED_EMPLACE_TEMPLATE>
-    iterator emplace(BOOST_UNORDERED_EMPLACE_ARGS)
-    {
-        return iterator(emplace_impl(
-            boost::unordered::detail::func::construct_node_from_args(
-                this->node_alloc(), BOOST_UNORDERED_EMPLACE_FORWARD)));
-    }
-
-    template <BOOST_UNORDERED_EMPLACE_TEMPLATE>
-    iterator emplace_hint(c_iterator hint, BOOST_UNORDERED_EMPLACE_ARGS)
-    {
-        return iterator(emplace_hint_impl(
-            hint, boost::unordered::detail::func::construct_node_from_args(
-                      this->node_alloc(), BOOST_UNORDERED_EMPLACE_FORWARD)));
     }
 
     iterator emplace_impl(node_pointer n)
@@ -5003,22 +4775,6 @@ struct table_equiv : boost::unordered::detail::table<Types>
         std::size_t deleted_count = this->delete_nodes(prev, end);
         this->fix_bucket(bucket_index, prev);
         return deleted_count;
-    }
-
-    iterator erase(c_iterator r)
-    {
-        BOOST_ASSERT(r.node_);
-        node_pointer next = node_algo::next_node(r.node_);
-        erase_nodes(r.node_, next);
-        return iterator(next);
-    }
-
-    iterator erase_range(c_iterator r1, c_iterator r2)
-    {
-        if (r1 == r2)
-            return iterator(r2.node_);
-        erase_nodes(r1.node_, r2.node_);
-        return iterator(r2.node_);
     }
 
     link_pointer erase_nodes(node_pointer i, node_pointer j)
