@@ -2854,26 +2854,6 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     }
 
     ////////////////////////////////////////////////////////////////////////
-    // Initialisation.
-
-    void init(table const& x)
-    {
-        if (x.size_) {
-            static_cast<table_impl*>(this)->copy_buckets(x);
-        }
-    }
-
-    void move_init(table& x)
-    {
-        if (node_alloc() == x.node_alloc()) {
-            move_buckets_from(x);
-        } else if (x.size_) {
-            // TODO: Could pick new bucket size?
-            static_cast<table_impl*>(this)->move_buckets(x);
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////
     // Clear buckets and Create buckets
     //
     // IMPORTANT: If the container already contains any elements, the
@@ -3749,24 +3729,34 @@ struct table_unique : boost::unordered::detail::table<Types>
         : table(x, node_allocator_traits::select_on_container_copy_construction(
                        x.node_alloc()))
     {
-        this->init(x);
+        if (x.size_) {
+            this->copy_buckets(x);
+        }
     }
 
     table_unique(table_unique const& x, node_allocator const& a) : table(x, a)
     {
-        this->init(x);
+        if (x.size_) {
+            this->copy_buckets(x);
+        }
     }
 
     table_unique(table_unique& x, boost::unordered::detail::move_tag m)
         : table(x, m)
     {
+        // The move is done in the base class.
     }
 
     table_unique(table_unique& x, node_allocator const& a,
         boost::unordered::detail::move_tag m)
         : table(x, a, m)
     {
-        this->move_init(x);
+        if (this->node_alloc() == x.node_alloc()) {
+            this->move_buckets_from(x);
+        } else if (x.size_) {
+            // TODO: Could pick new bucket size?
+            this->move_buckets(x);
+        }
     }
 
     // Accessors
@@ -4461,24 +4451,34 @@ struct table_equiv : boost::unordered::detail::table<Types>
         : table(x, node_allocator_traits::select_on_container_copy_construction(
                        x.node_alloc()))
     {
-        this->init(x);
+        if (x.size_) {
+            copy_buckets(x);
+        }
     }
 
     table_equiv(table_equiv const& x, node_allocator const& a) : table(x, a)
     {
-        this->init(x);
+        if (x.size_) {
+            copy_buckets(x);
+        }
     }
 
     table_equiv(table_equiv& x, boost::unordered::detail::move_tag m)
         : table(x, m)
     {
+        // The move is done in the base class.
     }
 
     table_equiv(table_equiv& x, node_allocator const& a,
         boost::unordered::detail::move_tag m)
         : table(x, a, m)
     {
-        this->move_init(x);
+        if (this->node_alloc() == x.node_alloc()) {
+            this->move_buckets_from(x);
+        } else if (x.size_) {
+            // TODO: Could pick new bucket size?
+            this->move_buckets(x);
+        }
     }
 
     // Equality
