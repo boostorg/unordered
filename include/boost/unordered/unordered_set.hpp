@@ -1352,7 +1352,9 @@ unordered_set<T, H, P, A>::bucket_size(size_type n) const
 template <class T, class H, class P, class A>
 float unordered_set<T, H, P, A>::load_factor() const BOOST_NOEXCEPT
 {
-    return table_.load_factor();
+    BOOST_ASSERT(table_.bucket_count_ != 0);
+    return static_cast<float>(table_.size_) /
+           static_cast<float>(table_.bucket_count_);
 }
 
 template <class T, class H, class P, class A>
@@ -1732,7 +1734,9 @@ unordered_multiset<T, H, P, A>::bucket_size(size_type n) const
 template <class T, class H, class P, class A>
 float unordered_multiset<T, H, P, A>::load_factor() const BOOST_NOEXCEPT
 {
-    return table_.load_factor();
+    BOOST_ASSERT(table_.bucket_count_ != 0);
+    return static_cast<float>(table_.size_) /
+           static_cast<float>(table_.bucket_count_);
 }
 
 template <class T, class H, class P, class A>

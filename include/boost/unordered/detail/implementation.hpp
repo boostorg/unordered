@@ -2758,12 +2758,6 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         return policy::to_bucket(bucket_count_, hash_value);
     }
 
-    float load_factor() const
-    {
-        BOOST_ASSERT(bucket_count_ != 0);
-        return static_cast<float>(size_) / static_cast<float>(bucket_count_);
-    }
-
     std::size_t bucket_size(std::size_t index) const
     {
         node_pointer n = begin(index);

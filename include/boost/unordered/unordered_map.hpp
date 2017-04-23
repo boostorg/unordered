@@ -1716,7 +1716,9 @@ unordered_map<K, T, H, P, A>::bucket_size(size_type n) const
 template <class K, class T, class H, class P, class A>
 float unordered_map<K, T, H, P, A>::load_factor() const BOOST_NOEXCEPT
 {
-    return table_.load_factor();
+    BOOST_ASSERT(table_.bucket_count_ != 0);
+    return static_cast<float>(table_.size_) /
+           static_cast<float>(table_.bucket_count_);
 }
 
 template <class K, class T, class H, class P, class A>
@@ -2129,7 +2131,9 @@ unordered_multimap<K, T, H, P, A>::bucket_size(size_type n) const
 template <class K, class T, class H, class P, class A>
 float unordered_multimap<K, T, H, P, A>::load_factor() const BOOST_NOEXCEPT
 {
-    return table_.load_factor();
+    BOOST_ASSERT(table_.bucket_count_ != 0);
+    return static_cast<float>(table_.size_) /
+           static_cast<float>(table_.bucket_count_);
 }
 
 template <class K, class T, class H, class P, class A>
