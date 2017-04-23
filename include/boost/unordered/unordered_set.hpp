@@ -1379,7 +1379,8 @@ void unordered_set<T, H, P, A>::rehash(size_type n)
 template <class T, class H, class P, class A>
 void unordered_set<T, H, P, A>::reserve(size_type n)
 {
-    table_.reserve(n);
+    table_.rehash(static_cast<std::size_t>(
+        std::ceil(static_cast<double>(n) / table_.mlf_)));
 }
 
 template <class T, class H, class P, class A>
@@ -1768,7 +1769,8 @@ void unordered_multiset<T, H, P, A>::rehash(size_type n)
 template <class T, class H, class P, class A>
 void unordered_multiset<T, H, P, A>::reserve(size_type n)
 {
-    table_.reserve(n);
+    table_.rehash(static_cast<std::size_t>(
+        std::ceil(static_cast<double>(n) / table_.mlf_)));
 }
 
 template <class T, class H, class P, class A>

@@ -3359,13 +3359,6 @@ inline void table<Types>::rehash(std::size_t min_buckets)
 }
 
 template <typename Types>
-inline void table<Types>::reserve(std::size_t num_elements)
-{
-    rehash(static_cast<std::size_t>(
-        std::ceil(static_cast<double>(num_elements) / mlf_)));
-}
-
-template <typename Types>
 inline void table<Types>::rehash_impl(std::size_t num_buckets)
 {
     BOOST_ASSERT(this->buckets_);
