@@ -3890,81 +3890,6 @@ struct table_unique : boost::unordered::detail::table<Types>
         return this->add_node(b.release(), key_hash);
     }
 
-#if defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-#if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-    emplace_return emplace(boost::unordered::detail::emplace_args1<
-        boost::unordered::detail::please_ignore_this_overload> const&)
-    {
-        BOOST_ASSERT(false);
-        return emplace_return(iterator(), false);
-    }
-
-    iterator emplace_hint(
-        c_iterator,
-        boost::unordered::detail::emplace_args1<
-            boost::unordered::detail::please_ignore_this_overload> const&)
-    {
-        BOOST_ASSERT(false);
-        return iterator();
-    }
-#else
-    emplace_return emplace(
-        boost::unordered::detail::please_ignore_this_overload const&)
-    {
-        BOOST_ASSERT(false);
-        return emplace_return(iterator(), false);
-    }
-
-    iterator emplace_hint(c_iterator,
-        boost::unordered::detail::please_ignore_this_overload const&)
-    {
-        BOOST_ASSERT(false);
-        return iterator();
-    }
-#endif
-#endif
-
-    template <BOOST_UNORDERED_EMPLACE_TEMPLATE>
-    emplace_return emplace(BOOST_UNORDERED_EMPLACE_ARGS)
-    {
-#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-        return emplace_impl(extractor::extract(BOOST_UNORDERED_EMPLACE_FORWARD),
-            BOOST_UNORDERED_EMPLACE_FORWARD);
-#else
-        return emplace_impl(extractor::extract(args.a0, args.a1),
-            BOOST_UNORDERED_EMPLACE_FORWARD);
-#endif
-    }
-
-    template <BOOST_UNORDERED_EMPLACE_TEMPLATE>
-    iterator emplace_hint(c_iterator hint, BOOST_UNORDERED_EMPLACE_ARGS)
-    {
-#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-        return emplace_hint_impl(hint,
-            extractor::extract(BOOST_UNORDERED_EMPLACE_FORWARD),
-            BOOST_UNORDERED_EMPLACE_FORWARD);
-#else
-        return emplace_hint_impl(hint, extractor::extract(args.a0, args.a1),
-            BOOST_UNORDERED_EMPLACE_FORWARD);
-#endif
-    }
-
-#if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-    template <typename A0>
-    emplace_return emplace(
-        boost::unordered::detail::emplace_args1<A0> const& args)
-    {
-        return emplace_impl(extractor::extract(args.a0), args);
-    }
-
-    template <typename A0>
-    iterator emplace_hint(c_iterator hint,
-        boost::unordered::detail::emplace_args1<A0> const& args)
-    {
-        return emplace_hint_impl(hint, extractor::extract(args.a0), args);
-    }
-#endif
-
     template <BOOST_UNORDERED_EMPLACE_TEMPLATE>
     iterator emplace_hint_impl(
         c_iterator hint, const_key_type& k, BOOST_UNORDERED_EMPLACE_ARGS)
@@ -4784,56 +4709,6 @@ struct table_equiv : boost::unordered::detail::table<Types>
         }
         ++this->size_;
         return n;
-    }
-
-#if defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-#if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-    iterator emplace(boost::unordered::detail::emplace_args1<
-        boost::unordered::detail::please_ignore_this_overload> const&)
-    {
-        BOOST_ASSERT(false);
-        return iterator();
-    }
-
-    iterator emplace_hint(
-        c_iterator,
-        boost::unordered::detail::emplace_args1<
-            boost::unordered::detail::please_ignore_this_overload> const&)
-    {
-        BOOST_ASSERT(false);
-        return iterator();
-    }
-#else
-    iterator emplace(
-        boost::unordered::detail::please_ignore_this_overload const&)
-    {
-        BOOST_ASSERT(false);
-        return iterator();
-    }
-
-    iterator emplace_hint(c_iterator,
-        boost::unordered::detail::please_ignore_this_overload const&)
-    {
-        BOOST_ASSERT(false);
-        return iterator();
-    }
-#endif
-#endif
-
-    template <BOOST_UNORDERED_EMPLACE_TEMPLATE>
-    iterator emplace(BOOST_UNORDERED_EMPLACE_ARGS)
-    {
-        return iterator(emplace_impl(
-            boost::unordered::detail::func::construct_node_from_args(
-                this->node_alloc(), BOOST_UNORDERED_EMPLACE_FORWARD)));
-    }
-
-    template <BOOST_UNORDERED_EMPLACE_TEMPLATE>
-    iterator emplace_hint(c_iterator hint, BOOST_UNORDERED_EMPLACE_ARGS)
-    {
-        return iterator(emplace_hint_impl(
-            hint, boost::unordered::detail::func::construct_node_from_args(
-                      this->node_alloc(), BOOST_UNORDERED_EMPLACE_FORWARD)));
     }
 
     iterator emplace_impl(node_pointer n)
