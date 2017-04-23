@@ -2776,17 +2776,6 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     ////////////////////////////////////////////////////////////////////////
     // Load methods
 
-    std::size_t max_size() const
-    {
-        using namespace std;
-
-        // size < mlf_ * count
-        return boost::unordered::detail::double_to_size(
-                   ceil(static_cast<double>(mlf_) *
-                        static_cast<double>(max_bucket_count()))) -
-               1;
-    }
-
     void recalculate_max_load()
     {
         using namespace std;
