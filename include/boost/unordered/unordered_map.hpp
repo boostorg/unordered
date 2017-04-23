@@ -1682,7 +1682,7 @@ template <class K, class T, class H, class P, class A>
 typename unordered_map<K, T, H, P, A>::size_type
 unordered_map<K, T, H, P, A>::count(const key_type& k) const
 {
-    return table_.count(k);
+    return table_.find_node(k) ? 1 : 0;
 }
 
 template <class K, class T, class H, class P, class A>
@@ -1690,7 +1690,9 @@ std::pair<typename unordered_map<K, T, H, P, A>::iterator,
     typename unordered_map<K, T, H, P, A>::iterator>
 unordered_map<K, T, H, P, A>::equal_range(const key_type& k)
 {
-    return table_.equal_range(k);
+    node_pointer n = table_.find_node(k);
+    return std::make_pair(
+        iterator(n), iterator(n ? table::node_algo::next_node(n) : n));
 }
 
 template <class K, class T, class H, class P, class A>
@@ -1698,7 +1700,9 @@ std::pair<typename unordered_map<K, T, H, P, A>::const_iterator,
     typename unordered_map<K, T, H, P, A>::const_iterator>
 unordered_map<K, T, H, P, A>::equal_range(const key_type& k) const
 {
-    return table_.equal_range(k);
+    node_pointer n = table_.find_node(k);
+    return std::make_pair(const_iterator(n),
+        const_iterator(n ? table::node_algo::next_node(n) : n));
 }
 
 template <class K, class T, class H, class P, class A>
@@ -2146,7 +2150,8 @@ template <class K, class T, class H, class P, class A>
 typename unordered_multimap<K, T, H, P, A>::size_type
 unordered_multimap<K, T, H, P, A>::count(const key_type& k) const
 {
-    return table_.count(k);
+    node_pointer n = table_.find_node(k);
+    return n ? table::node_algo::count(n, &table_) : 0;
 }
 
 template <class K, class T, class H, class P, class A>
@@ -2154,7 +2159,9 @@ std::pair<typename unordered_multimap<K, T, H, P, A>::iterator,
     typename unordered_multimap<K, T, H, P, A>::iterator>
 unordered_multimap<K, T, H, P, A>::equal_range(const key_type& k)
 {
-    return table_.equal_range(k);
+    node_pointer n = table_.find_node(k);
+    return std::make_pair(iterator(n),
+        iterator(n ? table::node_algo::next_group(n, &table_) : n));
 }
 
 template <class K, class T, class H, class P, class A>
@@ -2162,7 +2169,9 @@ std::pair<typename unordered_multimap<K, T, H, P, A>::const_iterator,
     typename unordered_multimap<K, T, H, P, A>::const_iterator>
 unordered_multimap<K, T, H, P, A>::equal_range(const key_type& k) const
 {
-    return table_.equal_range(k);
+    node_pointer n = table_.find_node(k);
+    return std::make_pair(const_iterator(n),
+        const_iterator(n ? table::node_algo::next_group(n, &table_) : n));
 }
 
 template <class K, class T, class H, class P, class A>

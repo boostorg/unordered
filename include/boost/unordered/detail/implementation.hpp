@@ -3771,11 +3771,6 @@ struct table_unique : boost::unordered::detail::table<Types>
 
     // Accessors
 
-    std::size_t count(const_key_type& k) const
-    {
-        return this->find_node(k) ? 1 : 0;
-    }
-
     value_type& at(const_key_type& k) const
     {
         if (this->size_) {
@@ -3786,13 +3781,6 @@ struct table_unique : boost::unordered::detail::table<Types>
 
         boost::throw_exception(
             std::out_of_range("Unable to find key in unordered_map."));
-    }
-
-    std::pair<iterator, iterator> equal_range(const_key_type& k) const
-    {
-        node_pointer n = this->find_node(k);
-        return std::make_pair(
-            iterator(n), iterator(n ? node_algo::next_node(n) : n));
     }
 
     // equals
@@ -4491,21 +4479,6 @@ struct table_equiv : boost::unordered::detail::table<Types>
         : table(x, a, m)
     {
         this->move_init(x);
-    }
-
-    // Accessors
-
-    std::size_t count(const_key_type& k) const
-    {
-        node_pointer n = this->find_node(k);
-        return n ? node_algo::count(n, this) : 0;
-    }
-
-    std::pair<iterator, iterator> equal_range(const_key_type& k) const
-    {
-        node_pointer n = this->find_node(k);
-        return std::make_pair(
-            iterator(n), iterator(n ? node_algo::next_group(n, this) : n));
     }
 
     // Equality
