@@ -339,19 +339,11 @@ template <class T> class allocator
 
     template <class Y> allocator(allocator<Y> const& x) : tag_(x.tag_)
     {
-        UNORDERED_SCOPE(allocator::allocator())
-        {
-            UNORDERED_EPOINT("Mock allocator template copy constructor.");
-        }
         test::detail::tracker.allocator_ref();
     }
 
     allocator(allocator const& x) : tag_(x.tag_)
     {
-        UNORDERED_SCOPE(allocator::allocator())
-        {
-            UNORDERED_EPOINT("Mock allocator copy constructor.");
-        }
         test::detail::tracker.allocator_ref();
     }
 
@@ -359,11 +351,7 @@ template <class T> class allocator
 
     allocator& operator=(allocator const& x)
     {
-        UNORDERED_SCOPE(allocator::allocator())
-        {
-            UNORDERED_EPOINT("Mock allocator assignment operator.");
-            tag_ = x.tag_;
-        }
+        tag_ = x.tag_;
         return *this;
     }
 
@@ -530,42 +518,22 @@ template <class T> class allocator2
 
     allocator2(allocator<T> const& x) : tag_(x.tag_)
     {
-        UNORDERED_SCOPE(allocator2::allocator2())
-        {
-            UNORDERED_EPOINT("Mock allocator2 constructor from allocator.");
-        }
         test::detail::tracker.allocator_ref();
     }
 
     template <class Y> allocator2(allocator2<Y> const& x) : tag_(x.tag_)
     {
-        UNORDERED_SCOPE(allocator2::allocator2())
-        {
-            UNORDERED_EPOINT("Mock allocator2 template copy constructor.");
-        }
         test::detail::tracker.allocator_ref();
     }
 
     allocator2(allocator2 const& x) : tag_(x.tag_)
     {
-        UNORDERED_SCOPE(allocator2::allocator2())
-        {
-            UNORDERED_EPOINT("Mock allocator2 copy constructor.");
-        }
         test::detail::tracker.allocator_ref();
     }
 
     ~allocator2() { test::detail::tracker.allocator_unref(); }
 
-    allocator2& operator=(allocator2 const& x)
-    {
-        UNORDERED_SCOPE(allocator2::allocator2())
-        {
-            UNORDERED_EPOINT("Mock allocator2 assignment operator.");
-            tag_ = x.tag_;
-        }
-        return *this;
-    }
+    allocator2& operator=(allocator2 const&) { return *this; }
 
     // If address throws, then it can't be used in erase or the
     // destructor, which is very limiting. I need to check up on
