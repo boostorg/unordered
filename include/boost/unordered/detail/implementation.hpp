@@ -2708,6 +2708,8 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     ////////////////////////////////////////////////////////////////////////
     // Data access
 
+    static node_pointer get_node(c_iterator it) { return it.node_; }
+
     bucket_allocator const& bucket_alloc() const { return allocators_.first(); }
 
     node_allocator const& node_alloc() const { return allocators_.second(); }
@@ -4175,22 +4177,6 @@ struct table_unique : boost::unordered::detail::table<Types>
         return 1;
     }
 
-    iterator erase(c_iterator r)
-    {
-        BOOST_ASSERT(r.node_);
-        node_pointer next = node_algo::next_node(r.node_);
-        erase_nodes(r.node_, next);
-        return iterator(next);
-    }
-
-    iterator erase_range(c_iterator r1, c_iterator r2)
-    {
-        if (r1 == r2)
-            return iterator(r2.node_);
-        erase_nodes(r1.node_, r2.node_);
-        return iterator(r2.node_);
-    }
-
     void erase_nodes(node_pointer i, node_pointer j)
     {
         std::size_t bucket_index = this->hash_to_bucket(i->hash_);
@@ -4830,22 +4816,6 @@ struct table_equiv : boost::unordered::detail::table<Types>
         std::size_t deleted_count = this->delete_nodes(prev, end);
         this->fix_bucket(bucket_index, prev);
         return deleted_count;
-    }
-
-    iterator erase(c_iterator r)
-    {
-        BOOST_ASSERT(r.node_);
-        node_pointer next = node_algo::next_node(r.node_);
-        erase_nodes(r.node_, next);
-        return iterator(next);
-    }
-
-    iterator erase_range(c_iterator r1, c_iterator r2)
-    {
-        if (r1 == r2)
-            return iterator(r2.node_);
-        erase_nodes(r1.node_, r2.node_);
-        return iterator(r2.node_);
     }
 
     link_pointer erase_nodes(node_pointer i, node_pointer j)
