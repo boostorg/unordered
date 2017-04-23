@@ -4071,12 +4071,6 @@ struct table_unique : boost::unordered::detail::table<Types>
     // if hash function throws, or inserting > 1 element, basic exception
     // safety strong otherwise
 
-    template <class InputIt> void insert_range(InputIt i, InputIt j)
-    {
-        if (i != j)
-            return insert_range_impl(extractor::extract(*i), i, j);
-    }
-
     template <class InputIt>
     void insert_range_impl(const_key_type& k, InputIt i, InputIt j)
     {
