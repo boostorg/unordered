@@ -1328,7 +1328,8 @@ typename unordered_set<T, H, P, A>::const_iterator
 unordered_set<T, H, P, A>::find(CompatibleKey const& k,
     CompatibleHash const& hash, CompatiblePredicate const& eq) const
 {
-    return const_iterator(table_.generic_find_node(k, hash, eq));
+    return const_iterator(
+        table_.find_node_impl(table::policy::apply_hash(hash, k), k, eq));
 }
 
 template <class T, class H, class P, class A>
@@ -1716,7 +1717,8 @@ typename unordered_multiset<T, H, P, A>::const_iterator
 unordered_multiset<T, H, P, A>::find(CompatibleKey const& k,
     CompatibleHash const& hash, CompatiblePredicate const& eq) const
 {
-    return const_iterator(table_.generic_find_node(k, hash, eq));
+    return const_iterator(
+        table_.find_node_impl(table::policy::apply_hash(hash, k), k, eq));
 }
 
 template <class T, class H, class P, class A>
