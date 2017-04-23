@@ -1723,14 +1723,28 @@ template <class K, class T, class H, class P, class A>
 typename unordered_map<K, T, H, P, A>::mapped_type&
 unordered_map<K, T, H, P, A>::at(const key_type& k)
 {
-    return table_.at(k).second;
+    if (table_.size_) {
+        node_pointer n = table_.find_node(k);
+        if (n)
+            return n->value().second;
+    }
+
+    boost::throw_exception(
+        std::out_of_range("Unable to find key in unordered_map."));
 }
 
 template <class K, class T, class H, class P, class A>
 typename unordered_map<K, T, H, P, A>::mapped_type const&
 unordered_map<K, T, H, P, A>::at(const key_type& k) const
 {
-    return table_.at(k).second;
+    if (table_.size_) {
+        node_pointer n = table_.find_node(k);
+        if (n)
+            return n->value().second;
+    }
+
+    boost::throw_exception(
+        std::out_of_range("Unable to find key in unordered_map."));
 }
 
 template <class K, class T, class H, class P, class A>

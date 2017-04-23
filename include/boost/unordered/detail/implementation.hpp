@@ -3759,20 +3759,6 @@ struct table_unique : boost::unordered::detail::table<Types>
         }
     }
 
-    // Accessors
-
-    value_type& at(const_key_type& k) const
-    {
-        if (this->size_) {
-            node_pointer n = this->find_node(k);
-            if (n)
-                return n->value();
-        }
-
-        boost::throw_exception(
-            std::out_of_range("Unable to find key in unordered_map."));
-    }
-
     // equals
 
     bool equals(table_unique const& other) const
