@@ -55,6 +55,7 @@ template <class K, class T, class H, class P, class A> class unordered_map
     typedef boost::unordered::detail::map<A, K, T, H, P> types;
     typedef typename types::value_allocator_traits value_allocator_traits;
     typedef typename types::table table;
+    typedef typename table::link_pointer link_pointer;
 
   public:
     typedef typename value_allocator_traits::pointer pointer;
@@ -836,6 +837,7 @@ template <class K, class T, class H, class P, class A> class unordered_multimap
     typedef boost::unordered::detail::multimap<A, K, T, H, P> types;
     typedef typename types::value_allocator_traits value_allocator_traits;
     typedef typename types::table table;
+    typedef typename table::link_pointer link_pointer;
 
   public:
     typedef typename value_allocator_traits::pointer pointer;
@@ -1483,7 +1485,7 @@ template <class K, class T, class H, class P, class A>
 unordered_map<K, T, H, P, A>& unordered_map<K, T, H, P, A>::operator=(
     std::initializer_list<value_type> list)
 {
-    table_.clear();
+    this->clear();
     table_.insert_range(list.begin(), list.end());
     return *this;
 }
@@ -1557,7 +1559,10 @@ void unordered_map<K, T, H, P, A>::swap(unordered_map& other)
 template <class K, class T, class H, class P, class A>
 void unordered_map<K, T, H, P, A>::clear() BOOST_NOEXCEPT
 {
-    table_.clear();
+    if (table_.size_) {
+        table_.clear_buckets();
+        table_.delete_nodes(table_.get_previous_start(), link_pointer());
+    }
 }
 
 template <class K, class T, class H, class P, class A>
@@ -1912,7 +1917,7 @@ template <class K, class T, class H, class P, class A>
 unordered_multimap<K, T, H, P, A>& unordered_multimap<K, T, H, P, A>::operator=(
     std::initializer_list<value_type> list)
 {
-    table_.clear();
+    this->clear();
     table_.insert_range(list.begin(), list.end());
     return *this;
 }
@@ -1987,7 +1992,10 @@ void unordered_multimap<K, T, H, P, A>::swap(unordered_multimap& other)
 template <class K, class T, class H, class P, class A>
 void unordered_multimap<K, T, H, P, A>::clear() BOOST_NOEXCEPT
 {
-    table_.clear();
+    if (table_.size_) {
+        table_.clear_buckets();
+        table_.delete_nodes(table_.get_previous_start(), link_pointer());
+    }
 }
 
 // observers

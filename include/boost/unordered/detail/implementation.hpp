@@ -3078,17 +3078,6 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         BOOST_ASSERT(!size_);
     }
 
-    void clear()
-    {
-        if (!size_)
-            return;
-
-        clear_buckets();
-        delete_nodes(get_previous_start(), link_pointer());
-
-        BOOST_ASSERT(!size_);
-    }
-
     void destroy_buckets()
     {
         bucket_pointer end = get_bucket(bucket_count_ + 1);
