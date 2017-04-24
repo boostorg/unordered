@@ -99,6 +99,7 @@ template <class T, class H, class P, class A> class unordered_set
         BOOST_NOEXCEPT_IF(table::nothrow_move_constructible)
         : table_(other.table_, boost::unordered::detail::move_tag())
     {
+        // The move is done in table_
     }
 #endif
 
@@ -609,6 +610,7 @@ template <class T, class H, class P, class A> class unordered_multiset
         BOOST_NOEXCEPT_IF(table::nothrow_move_constructible)
         : table_(other.table_, boost::unordered::detail::move_tag())
     {
+        // The move is done in table_
     }
 #endif
 
@@ -1077,6 +1079,9 @@ template <class T, class H, class P, class A>
 unordered_set<T, H, P, A>::unordered_set(unordered_set const& other)
     : table_(other.table_)
 {
+    if (other.table_.size_) {
+        table_.copy_buckets(other.table_);
+    }
 }
 
 template <class T, class H, class P, class A>
@@ -1091,6 +1096,9 @@ unordered_set<T, H, P, A>::unordered_set(
     unordered_set const& other, allocator_type const& a)
     : table_(other.table_, a)
 {
+    if (other.table_.size_) {
+        table_.copy_buckets(other.table_);
+    }
 }
 
 template <class T, class H, class P, class A>
@@ -1098,6 +1106,12 @@ unordered_set<T, H, P, A>::unordered_set(
     BOOST_RV_REF(unordered_set) other, allocator_type const& a)
     : table_(other.table_, a, boost::unordered::detail::move_tag())
 {
+    if (table_.node_alloc() == other.table_.node_alloc()) {
+        table_.move_buckets_from(other.table_);
+    } else if (other.table_.size_) {
+        // TODO: Could pick new bucket size?
+        table_.move_buckets(other.table_);
+    }
 }
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
@@ -1468,6 +1482,9 @@ unordered_multiset<T, H, P, A>::unordered_multiset(
     unordered_multiset const& other)
     : table_(other.table_)
 {
+    if (other.table_.size_) {
+        table_.copy_buckets(other.table_);
+    }
 }
 
 template <class T, class H, class P, class A>
@@ -1482,6 +1499,9 @@ unordered_multiset<T, H, P, A>::unordered_multiset(
     unordered_multiset const& other, allocator_type const& a)
     : table_(other.table_, a)
 {
+    if (other.table_.size_) {
+        table_.copy_buckets(other.table_);
+    }
 }
 
 template <class T, class H, class P, class A>
@@ -1489,6 +1509,12 @@ unordered_multiset<T, H, P, A>::unordered_multiset(
     BOOST_RV_REF(unordered_multiset) other, allocator_type const& a)
     : table_(other.table_, a, boost::unordered::detail::move_tag())
 {
+    if (table_.node_alloc() == other.table_.node_alloc()) {
+        table_.move_buckets_from(other.table_);
+    } else if (other.table_.size()) {
+        // TODO: Could pick new bucket size?
+        table_.move_buckets_equiv(other.table_);
+    }
 }
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
