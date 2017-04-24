@@ -185,9 +185,6 @@ template <typename Types> struct table;
 template <typename NodePointer> struct bucket;
 struct ptr_bucket;
 
-template <typename Types> struct table_unique;
-template <typename Types> struct table_equiv;
-
 template <typename A, typename T> struct unique_node;
 template <typename T> struct ptr_node;
 template <typename N> struct node_algo;
@@ -198,11 +195,19 @@ template <typename N> struct grouped_node_algo;
 
 static const float minimum_max_load_factor = 1e-3f;
 static const std::size_t default_bucket_count = 11;
+
 struct move_tag
 {
 };
+
 struct empty_emplace
 {
+};
+
+struct no_key
+{
+    no_key() {}
+    template <class T> no_key(T const&) {}
 };
 
 namespace func {
@@ -2041,8 +2046,6 @@ struct iterator : public std::iterator<std::forward_iterator_tag,
     template <typename>
     friend struct boost::unordered::iterator_detail::c_iterator;
     template <typename> friend struct boost::unordered::detail::table;
-    template <typename> friend struct boost::unordered::detail::table_unique;
-    template <typename> friend struct boost::unordered::detail::table_equiv;
 
   private:
 #endif
@@ -2097,8 +2100,6 @@ struct c_iterator
 
 #if !defined(BOOST_NO_MEMBER_TEMPLATE_FRIENDS)
     template <typename> friend struct boost::unordered::detail::table;
-    template <typename> friend struct boost::unordered::detail::table_unique;
-    template <typename> friend struct boost::unordered::detail::table_equiv;
 
   private:
 #endif
@@ -2694,6 +2695,8 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         node_constructor;
     typedef boost::unordered::detail::node_tmp<node_allocator> node_tmp;
 
+    typedef std::pair<iterator, bool> emplace_return;
+
     ////////////////////////////////////////////////////////////////////////
     // Members
 
@@ -3116,7 +3119,12 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         }
 
         new_func_this.commit();
-        static_cast<table_impl*>(this)->assign_buckets(x);
+
+        if (Types::is_unique) {
+            assign_buckets_unique(x);
+        } else {
+            assign_buckets_equiv(x);
+        }
     }
 
     void assign(table const& x, true_type)
@@ -3140,7 +3148,11 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
 
             // Finally copy the elements.
             if (x.size_) {
-                static_cast<table_impl*>(this)->copy_buckets(x);
+                if (Types::is_unique) {
+                    copy_buckets_unique(x);
+                } else {
+                    copy_buckets_equiv(x);
+                }
             }
         }
     }
@@ -3194,7 +3206,12 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
             }
 
             new_func_this.commit();
-            static_cast<table_impl*>(this)->move_assign_buckets(x);
+
+            if (Types::is_unique) {
+                move_assign_buckets_unique(x);
+            } else {
+                move_assign_buckets_equiv(x);
+            }
         }
     }
 
@@ -3298,6 +3315,874 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     void rehash(std::size_t);
     void reserve(std::size_t);
     void rehash_impl(std::size_t);
+
+    ////////////////////////////////////////////////////////////////////////
+    // Unique keys
+
+    // equals
+
+    bool equals_unique(table const& other) const
+    {
+        if (this->size_ != other.size_)
+            return false;
+
+        for (node_pointer n1 = this->begin(); n1;
+             n1 = node_algo::next_node(n1)) {
+            node_pointer n2 = other.find_node(other.get_key(n1));
+
+            if (!n2 || n1->value() != n2->value())
+                return false;
+        }
+
+        return true;
+    }
+
+    // Emplace/Insert
+
+    inline node_pointer add_node_unique(node_pointer n, std::size_t key_hash)
+    {
+        n->hash_ = key_hash;
+
+        bucket_pointer b = this->get_bucket(this->hash_to_bucket(key_hash));
+
+        if (!b->next_) {
+            link_pointer start_node = this->get_previous_start();
+
+            if (start_node->next_) {
+                this->get_bucket(this->hash_to_bucket(
+                                     node_algo::next_node(start_node)->hash_))
+                    ->next_ = n;
+            }
+
+            b->next_ = start_node;
+            n->next_ = start_node->next_;
+            start_node->next_ = n;
+        } else {
+            n->next_ = b->next_->next_;
+            b->next_->next_ = n;
+        }
+
+        ++this->size_;
+        return n;
+    }
+
+    inline node_pointer resize_and_add_node_unique(
+        node_pointer n, std::size_t key_hash)
+    {
+        node_tmp b(n, this->node_alloc());
+        this->reserve_for_insert(this->size_ + 1);
+        return this->add_node_unique(b.release(), key_hash);
+    }
+
+    template <BOOST_UNORDERED_EMPLACE_TEMPLATE>
+    iterator emplace_hint_unique(
+        c_iterator hint, const_key_type& k, BOOST_UNORDERED_EMPLACE_ARGS)
+    {
+        if (hint.node_ && this->key_eq()(k, this->get_key(hint.node_))) {
+            return iterator(hint.node_);
+        } else {
+            return emplace_unique(k, BOOST_UNORDERED_EMPLACE_FORWARD).first;
+        }
+    }
+
+    template <BOOST_UNORDERED_EMPLACE_TEMPLATE>
+    emplace_return emplace_unique(
+        const_key_type& k, BOOST_UNORDERED_EMPLACE_ARGS)
+    {
+        std::size_t key_hash = this->hash(k);
+        node_pointer pos = this->find_node(key_hash, k);
+        if (pos) {
+            return emplace_return(iterator(pos), false);
+        } else {
+            return emplace_return(
+                iterator(this->resize_and_add_node_unique(
+                    boost::unordered::detail::func::construct_node_from_args(
+                        this->node_alloc(), BOOST_UNORDERED_EMPLACE_FORWARD),
+                    key_hash)),
+                true);
+        }
+    }
+
+    template <BOOST_UNORDERED_EMPLACE_TEMPLATE>
+    iterator emplace_hint_unique(
+        c_iterator hint, no_key, BOOST_UNORDERED_EMPLACE_ARGS)
+    {
+        node_tmp b(boost::unordered::detail::func::construct_node_from_args(
+                       this->node_alloc(), BOOST_UNORDERED_EMPLACE_FORWARD),
+            this->node_alloc());
+        const_key_type& k = this->get_key(b.node_);
+        if (hint.node_ && this->key_eq()(k, this->get_key(hint.node_))) {
+            return iterator(hint.node_);
+        }
+        std::size_t key_hash = this->hash(k);
+        node_pointer pos = this->find_node(key_hash, k);
+        if (pos) {
+            return iterator(pos);
+        } else {
+            return iterator(
+                this->resize_and_add_node_unique(b.release(), key_hash));
+        }
+    }
+
+    template <BOOST_UNORDERED_EMPLACE_TEMPLATE>
+    emplace_return emplace_unique(no_key, BOOST_UNORDERED_EMPLACE_ARGS)
+    {
+        node_tmp b(boost::unordered::detail::func::construct_node_from_args(
+                       this->node_alloc(), BOOST_UNORDERED_EMPLACE_FORWARD),
+            this->node_alloc());
+        const_key_type& k = this->get_key(b.node_);
+        std::size_t key_hash = this->hash(k);
+        node_pointer pos = this->find_node(key_hash, k);
+        if (pos) {
+            return emplace_return(iterator(pos), false);
+        } else {
+            return emplace_return(iterator(this->resize_and_add_node_unique(
+                                      b.release(), key_hash)),
+                true);
+        }
+    }
+
+    template <typename Key>
+    emplace_return try_emplace_unique(BOOST_FWD_REF(Key) k)
+    {
+        std::size_t key_hash = this->hash(k);
+        node_pointer pos = this->find_node(key_hash, k);
+        if (pos) {
+            return emplace_return(iterator(pos), false);
+        } else {
+            return emplace_return(
+                iterator(this->resize_and_add_node_unique(
+                    boost::unordered::detail::func::construct_node_pair(
+                        this->node_alloc(), boost::forward<Key>(k)),
+                    key_hash)),
+                true);
+        }
+    }
+
+    template <typename Key>
+    iterator try_emplace_hint_unique(c_iterator hint, BOOST_FWD_REF(Key) k)
+    {
+        if (hint.node_ && this->key_eq()(hint->first, k)) {
+            return iterator(hint.node_);
+        } else {
+            return try_emplace_unique(k).first;
+        }
+    }
+
+    template <typename Key, BOOST_UNORDERED_EMPLACE_TEMPLATE>
+    emplace_return try_emplace_unique(
+        BOOST_FWD_REF(Key) k, BOOST_UNORDERED_EMPLACE_ARGS)
+    {
+        std::size_t key_hash = this->hash(k);
+        node_pointer pos = this->find_node(key_hash, k);
+        if (pos) {
+            return emplace_return(iterator(pos), false);
+        } else {
+            return emplace_return(
+                iterator(this->resize_and_add_node_unique(
+                    boost::unordered::detail::func::
+                        construct_node_pair_from_args(this->node_alloc(),
+                            boost::forward<Key>(k),
+                            BOOST_UNORDERED_EMPLACE_FORWARD),
+                    key_hash)),
+                true);
+        }
+    }
+
+    template <typename Key, BOOST_UNORDERED_EMPLACE_TEMPLATE>
+    iterator try_emplace_hint_unique(
+        c_iterator hint, BOOST_FWD_REF(Key) k, BOOST_UNORDERED_EMPLACE_ARGS)
+    {
+        if (hint.node_ && this->key_eq()(hint->first, k)) {
+            return iterator(hint.node_);
+        } else {
+            return try_emplace_unique(k, BOOST_UNORDERED_EMPLACE_FORWARD).first;
+        }
+    }
+
+    template <typename Key, typename M>
+    emplace_return insert_or_assign_unique(
+        BOOST_FWD_REF(Key) k, BOOST_FWD_REF(M) obj)
+    {
+        std::size_t key_hash = this->hash(k);
+        node_pointer pos = this->find_node(key_hash, k);
+
+        if (pos) {
+            pos->value().second = boost::forward<M>(obj);
+            return emplace_return(iterator(pos), false);
+        } else {
+            return emplace_return(
+                iterator(this->resize_and_add_node_unique(
+                    boost::unordered::detail::func::construct_node_pair(
+                        this->node_alloc(), boost::forward<Key>(k),
+                        boost::forward<M>(obj)),
+                    key_hash)),
+                true);
+        }
+    }
+
+    template <typename NodeType, typename InsertReturnType>
+    void move_insert_node_type_unique(NodeType& np, InsertReturnType& result)
+    {
+        if (np) {
+            const_key_type& k = this->get_key(np.ptr_);
+            std::size_t key_hash = this->hash(k);
+            node_pointer pos = this->find_node(key_hash, k);
+
+            if (pos) {
+                result.node = boost::move(np);
+                result.position = iterator(pos);
+            } else {
+                this->reserve_for_insert(this->size_ + 1);
+                result.position =
+                    iterator(this->add_node_unique(np.ptr_, key_hash));
+                result.inserted = true;
+                np.ptr_ = node_pointer();
+            }
+        }
+    }
+
+    template <typename NodeType>
+    iterator move_insert_node_type_with_hint_unique(
+        c_iterator hint, NodeType& np)
+    {
+        if (!np) {
+            return iterator();
+        }
+        const_key_type& k = this->get_key(np.ptr_);
+        if (hint.node_ && this->key_eq()(k, this->get_key(hint.node_))) {
+            return iterator(hint.node_);
+        }
+        std::size_t key_hash = this->hash(k);
+        node_pointer pos = this->find_node(key_hash, k);
+        if (!pos) {
+            this->reserve_for_insert(this->size_ + 1);
+            pos = this->add_node_unique(np.ptr_, key_hash);
+            np.ptr_ = node_pointer();
+        }
+        return iterator(pos);
+    }
+
+    template <typename Types2>
+    void merge_unique(boost::unordered::detail::table<Types2>& other)
+    {
+        typedef boost::unordered::detail::table<Types2> other_table;
+        BOOST_STATIC_ASSERT(
+            (boost::is_same<node, typename other_table::node>::value));
+        BOOST_ASSERT(this->node_alloc() == other.node_alloc());
+
+        if (other.size_) {
+            link_pointer prev = other.get_previous_start();
+
+            while (prev->next_) {
+                node_pointer n = other_table::node_algo::next_node(prev);
+                const_key_type& k = this->get_key(n);
+                std::size_t key_hash = this->hash(k);
+                node_pointer pos = this->find_node(key_hash, k);
+
+                if (pos) {
+                    prev = n;
+                } else {
+                    this->reserve_for_insert(this->size_ + 1);
+                    other_table::node_algo::split_groups(
+                        n, other_table::node_algo::next_node(n));
+                    prev->next_ = n->next_;
+                    --other.size_;
+                    other.fix_bucket(other.hash_to_bucket(n->hash_), prev);
+                    this->add_node_unique(n, key_hash);
+                }
+            }
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////
+    // Insert range methods
+    //
+    // if hash function throws, or inserting > 1 element, basic exception
+    // safety strong otherwise
+
+    template <class InputIt>
+    void insert_range_unique(const_key_type& k, InputIt i, InputIt j)
+    {
+        insert_range_unique2(k, i, j);
+
+        while (++i != j) {
+            // Note: can't use get_key as '*i' might not be value_type - it
+            // could be a pair with first_types as key_type without const or
+            // a different second_type.
+            insert_range_unique2(extractor::extract(*i), i, j);
+        }
+    }
+
+    template <class InputIt>
+    void insert_range_unique2(const_key_type& k, InputIt i, InputIt j)
+    {
+        // No side effects in this initial code
+        std::size_t key_hash = this->hash(k);
+        node_pointer pos = this->find_node(key_hash, k);
+
+        if (!pos) {
+            node_tmp b(boost::unordered::detail::func::construct_node(
+                           this->node_alloc(), *i),
+                this->node_alloc());
+            if (this->size_ + 1 > this->max_load_)
+                this->reserve_for_insert(
+                    this->size_ + boost::unordered::detail::insert_size(i, j));
+            this->add_node_unique(b.release(), key_hash);
+        }
+    }
+
+    template <class InputIt>
+    void insert_range_unique(no_key, InputIt i, InputIt j)
+    {
+        node_constructor a(this->node_alloc());
+
+        do {
+            if (!a.node_) {
+                a.create_node();
+            }
+            BOOST_UNORDERED_CALL_CONSTRUCT1(
+                node_allocator_traits, a.alloc_, a.node_->value_ptr(), *i);
+            node_tmp b(a.release(), a.alloc_);
+
+            const_key_type& k = this->get_key(b.node_);
+            std::size_t key_hash = this->hash(k);
+            node_pointer pos = this->find_node(key_hash, k);
+
+            if (pos) {
+                a.reclaim(b.release());
+            } else {
+                // reserve has basic exception safety if the hash function
+                // throws, strong otherwise.
+                this->reserve_for_insert(this->size_ + 1);
+                this->add_node_unique(b.release(), key_hash);
+            }
+        } while (++i != j);
+    }
+
+    ////////////////////////////////////////////////////////////////////////
+    // Extract
+
+    inline node_pointer extract_by_iterator_unique(c_iterator i)
+    {
+        node_pointer n = i.node_;
+        BOOST_ASSERT(n);
+        std::size_t key_hash = n->hash_;
+        std::size_t bucket_index = this->hash_to_bucket(key_hash);
+        link_pointer prev = this->get_previous_start(bucket_index);
+        while (prev->next_ != n) {
+            prev = prev->next_;
+        }
+        prev->next_ = n->next_;
+        --this->size_;
+        this->fix_bucket(bucket_index, prev);
+        n->next_ = link_pointer();
+        return n;
+    }
+
+    ////////////////////////////////////////////////////////////////////////
+    // Erase
+    //
+    // no throw
+
+    std::size_t erase_key_unique(const_key_type& k)
+    {
+        if (!this->size_)
+            return 0;
+        std::size_t key_hash = this->hash(k);
+        std::size_t bucket_index = this->hash_to_bucket(key_hash);
+        link_pointer prev = this->find_previous_node(k, key_hash, bucket_index);
+        if (!prev)
+            return 0;
+        link_pointer end = node_algo::next_node(prev)->next_;
+        this->delete_nodes(prev, end);
+        this->fix_bucket(bucket_index, prev);
+        return 1;
+    }
+
+    void erase_nodes_unique(node_pointer i, node_pointer j)
+    {
+        std::size_t bucket_index = this->hash_to_bucket(i->hash_);
+
+        // Find the node before i.
+        link_pointer prev = this->get_previous_start(bucket_index);
+        while (prev->next_ != i)
+            prev = prev->next_;
+
+        // Delete the nodes.
+        do {
+            this->delete_node(prev);
+            bucket_index = this->fix_bucket(bucket_index, prev);
+        } while (prev->next_ != j);
+    }
+
+    ////////////////////////////////////////////////////////////////////////
+    // fill_buckets_unique
+
+    void copy_buckets_unique(table const& src)
+    {
+        this->create_buckets(this->bucket_count_);
+
+        for (node_pointer n = src.begin(); n; n = node_algo::next_node(n)) {
+            this->add_node_unique(
+                boost::unordered::detail::func::construct_node(
+                    this->node_alloc(), n->value()),
+                n->hash_);
+        }
+    }
+
+    // TODO: Should be move_buckets_uniq
+    void move_buckets(table const& src)
+    {
+        this->create_buckets(this->bucket_count_);
+
+        for (node_pointer n = src.begin(); n; n = node_algo::next_node(n)) {
+            this->add_node_unique(
+                boost::unordered::detail::func::construct_node(
+                    this->node_alloc(), boost::move(n->value())),
+                n->hash_);
+        }
+    }
+
+    void assign_buckets_unique(table const& src)
+    {
+        node_holder<node_allocator> holder(*this);
+        for (node_pointer n = src.begin(); n; n = node_algo::next_node(n)) {
+            this->add_node_unique(holder.copy_of(n->value()), n->hash_);
+        }
+    }
+
+    void move_assign_buckets_unique(table& src)
+    {
+        node_holder<node_allocator> holder(*this);
+        for (node_pointer n = src.begin(); n; n = node_algo::next_node(n)) {
+            this->add_node_unique(holder.move_copy_of(n->value()), n->hash_);
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////
+    // Equivalent keys
+
+    // Equality
+
+    bool equals_equiv(table const& other) const
+    {
+        if (this->size_ != other.size_)
+            return false;
+
+        for (node_pointer n1 = this->begin(); n1;) {
+            node_pointer n2 = other.find_node(other.get_key(n1));
+            if (!n2)
+                return false;
+            node_pointer end1 = node_algo::next_group(n1, this);
+            node_pointer end2 = node_algo::next_group(n2, this);
+            if (!group_equals_equiv(n1, end1, n2, end2))
+                return false;
+            n1 = end1;
+        }
+
+        return true;
+    }
+
+    static bool group_equals_equiv(
+        node_pointer n1, node_pointer end1, node_pointer n2, node_pointer end2)
+    {
+        for (;;) {
+            if (n1->value() != n2->value())
+                break;
+
+            n1 = node_algo::next_node(n1);
+            n2 = node_algo::next_node(n2);
+
+            if (n1 == end1)
+                return n2 == end2;
+            if (n2 == end2)
+                return false;
+        }
+
+        for (node_pointer n1a = n1, n2a = n2;;) {
+            n1a = node_algo::next_node(n1a);
+            n2a = node_algo::next_node(n2a);
+
+            if (n1a == end1) {
+                if (n2a == end2)
+                    break;
+                else
+                    return false;
+            }
+
+            if (n2a == end2)
+                return false;
+        }
+
+        node_pointer start = n1;
+        for (; n1 != end1; n1 = node_algo::next_node(n1)) {
+            value_type const& v = n1->value();
+            if (!find_equiv(start, n1, v)) {
+                std::size_t matches = count_equal_equiv(n2, end2, v);
+                if (!matches)
+                    return false;
+                if (matches !=
+                    1 + count_equal_equiv(node_algo::next_node(n1), end1, v))
+                    return false;
+            }
+        }
+
+        return true;
+    }
+
+    static bool find_equiv(
+        node_pointer n, node_pointer end, value_type const& v)
+    {
+        for (; n != end; n = node_algo::next_node(n))
+            if (n->value() == v)
+                return true;
+        return false;
+    }
+
+    static std::size_t count_equal_equiv(
+        node_pointer n, node_pointer end, value_type const& v)
+    {
+        std::size_t count = 0;
+        for (; n != end; n = node_algo::next_node(n))
+            if (n->value() == v)
+                ++count;
+        return count;
+    }
+
+    // Emplace/Insert
+
+    inline node_pointer add_node_equiv(
+        node_pointer n, std::size_t key_hash, node_pointer pos)
+    {
+        n->hash_ = key_hash;
+        if (pos) {
+            node_algo::add_to_node(n, pos);
+            if (n->next_) {
+                std::size_t next_bucket =
+                    this->hash_to_bucket(node_algo::next_node(n)->hash_);
+                if (next_bucket != this->hash_to_bucket(key_hash)) {
+                    this->get_bucket(next_bucket)->next_ = n;
+                }
+            }
+        } else {
+            bucket_pointer b = this->get_bucket(this->hash_to_bucket(key_hash));
+
+            if (!b->next_) {
+                link_pointer start_node = this->get_previous_start();
+
+                if (start_node->next_) {
+                    this->get_bucket(
+                            this->hash_to_bucket(
+                                node_algo::next_node(start_node)->hash_))
+                        ->next_ = n;
+                }
+
+                b->next_ = start_node;
+                n->next_ = start_node->next_;
+                start_node->next_ = n;
+            } else {
+                n->next_ = b->next_->next_;
+                b->next_->next_ = n;
+            }
+        }
+        ++this->size_;
+        return n;
+    }
+
+    inline node_pointer add_using_hint_equiv(node_pointer n, node_pointer hint)
+    {
+        n->hash_ = hint->hash_;
+        node_algo::add_to_node(n, hint);
+        if (n->next_ != hint && n->next_) {
+            std::size_t next_bucket =
+                this->hash_to_bucket(node_algo::next_node(n)->hash_);
+            if (next_bucket != this->hash_to_bucket(n->hash_)) {
+                this->get_bucket(next_bucket)->next_ = n;
+            }
+        }
+        ++this->size_;
+        return n;
+    }
+
+    iterator emplace_equiv(node_pointer n)
+    {
+        node_tmp a(n, this->node_alloc());
+        const_key_type& k = this->get_key(a.node_);
+        std::size_t key_hash = this->hash(k);
+        node_pointer position = this->find_node(key_hash, k);
+        this->reserve_for_insert(this->size_ + 1);
+        return iterator(this->add_node_equiv(a.release(), key_hash, position));
+    }
+
+    iterator emplace_hint_equiv(c_iterator hint, node_pointer n)
+    {
+        node_tmp a(n, this->node_alloc());
+        const_key_type& k = this->get_key(a.node_);
+        if (hint.node_ && this->key_eq()(k, this->get_key(hint.node_))) {
+            this->reserve_for_insert(this->size_ + 1);
+            return iterator(
+                this->add_using_hint_equiv(a.release(), hint.node_));
+        } else {
+            std::size_t key_hash = this->hash(k);
+            node_pointer position = this->find_node(key_hash, k);
+            this->reserve_for_insert(this->size_ + 1);
+            return iterator(
+                this->add_node_equiv(a.release(), key_hash, position));
+        }
+    }
+
+    void emplace_no_rehash_equiv(node_pointer n)
+    {
+        node_tmp a(n, this->node_alloc());
+        const_key_type& k = this->get_key(a.node_);
+        std::size_t key_hash = this->hash(k);
+        node_pointer position = this->find_node(key_hash, k);
+        this->add_node_equiv(a.release(), key_hash, position);
+    }
+
+    template <typename NodeType>
+    iterator move_insert_node_type_equiv(NodeType& np)
+    {
+        iterator result;
+
+        if (np) {
+            const_key_type& k = this->get_key(np.ptr_);
+            std::size_t key_hash = this->hash(k);
+            node_pointer pos = this->find_node(key_hash, k);
+            this->reserve_for_insert(this->size_ + 1);
+            result = iterator(this->add_node_equiv(np.ptr_, key_hash, pos));
+            np.ptr_ = node_pointer();
+        }
+
+        return result;
+    }
+
+    template <typename NodeType>
+    iterator move_insert_node_type_with_hint_equiv(
+        c_iterator hint, NodeType& np)
+    {
+        iterator result;
+
+        if (np) {
+            const_key_type& k = this->get_key(np.ptr_);
+
+            if (hint.node_ && this->key_eq()(k, this->get_key(hint.node_))) {
+                this->reserve_for_insert(this->size_ + 1);
+                result =
+                    iterator(this->add_using_hint_equiv(np.ptr_, hint.node_));
+            } else {
+                std::size_t key_hash = this->hash(k);
+                node_pointer pos = this->find_node(key_hash, k);
+                this->reserve_for_insert(this->size_ + 1);
+                result = iterator(this->add_node_equiv(np.ptr_, key_hash, pos));
+            }
+            np.ptr_ = node_pointer();
+        }
+
+        return result;
+    }
+
+    ////////////////////////////////////////////////////////////////////////
+    // Insert range methods
+
+    // if hash function throws, or inserting > 1 element, basic exception
+    // safety. Strong otherwise
+    template <class I>
+    void insert_range_equiv(I i, I j,
+        typename boost::unordered::detail::enable_if_forward<I, void*>::type =
+            0)
+    {
+        if (i == j)
+            return;
+
+        std::size_t distance = static_cast<std::size_t>(std::distance(i, j));
+        if (distance == 1) {
+            emplace_equiv(boost::unordered::detail::func::construct_node(
+                this->node_alloc(), *i));
+        } else {
+            // Only require basic exception safety here
+            this->reserve_for_insert(this->size_ + distance);
+
+            for (; i != j; ++i) {
+                emplace_no_rehash_equiv(
+                    boost::unordered::detail::func::construct_node(
+                        this->node_alloc(), *i));
+            }
+        }
+    }
+
+    template <class I>
+    void insert_range_equiv(I i, I j,
+        typename boost::unordered::detail::disable_if_forward<I, void*>::type =
+            0)
+    {
+        for (; i != j; ++i) {
+            emplace_equiv(boost::unordered::detail::func::construct_node(
+                this->node_alloc(), *i));
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////
+    // Extract
+
+    inline node_pointer extract_by_iterator_equiv(c_iterator n)
+    {
+        node_pointer i = n.node_;
+        BOOST_ASSERT(i);
+        node_pointer j(node_algo::next_node(i));
+        std::size_t bucket_index = this->hash_to_bucket(i->hash_);
+        // Split the groups containing 'i' and 'j'.
+        // And get the pointer to the node before i while
+        // we're at it.
+        link_pointer prev = node_algo::split_groups(i, j);
+
+        // If we don't have a 'prev' it means that i is at the
+        // beginning of a block, so search through the blocks in the
+        // same bucket.
+        if (!prev) {
+            prev = this->get_previous_start(bucket_index);
+            while (prev->next_ != i) {
+                prev = node_algo::next_for_erase(prev);
+            }
+        }
+
+        prev->next_ = i->next_;
+        --this->size_;
+        this->fix_bucket(bucket_index, prev);
+        i->next_ = link_pointer();
+
+        return i;
+    }
+
+    ////////////////////////////////////////////////////////////////////////
+    // Erase
+    //
+    // no throw
+
+    std::size_t erase_key_equiv(const_key_type& k)
+    {
+        if (!this->size_)
+            return 0;
+
+        std::size_t key_hash = this->hash(k);
+        std::size_t bucket_index = this->hash_to_bucket(key_hash);
+        link_pointer prev = this->find_previous_node(k, key_hash, bucket_index);
+        if (!prev)
+            return 0;
+
+        node_pointer first_node = node_algo::next_node(prev);
+        link_pointer end = node_algo::next_group(first_node, this);
+
+        std::size_t deleted_count = this->delete_nodes(prev, end);
+        this->fix_bucket(bucket_index, prev);
+        return deleted_count;
+    }
+
+    link_pointer erase_nodes_equiv(node_pointer i, node_pointer j)
+    {
+        std::size_t bucket_index = this->hash_to_bucket(i->hash_);
+
+        // Split the groups containing 'i' and 'j'.
+        // And get the pointer to the node before i while
+        // we're at it.
+        link_pointer prev = node_algo::split_groups(i, j);
+
+        // If we don't have a 'prev' it means that i is at the
+        // beginning of a block, so search through the blocks in the
+        // same bucket.
+        if (!prev) {
+            prev = this->get_previous_start(bucket_index);
+            while (prev->next_ != i) {
+                prev = node_algo::next_for_erase(prev);
+            }
+        }
+
+        // Delete the nodes.
+        // Is it inefficient to call fix_bucket for every node?
+        do {
+            this->delete_node(prev);
+            bucket_index = this->fix_bucket(bucket_index, prev);
+        } while (prev->next_ != j);
+
+        return prev;
+    }
+
+    ////////////////////////////////////////////////////////////////////////
+    // fill_buckets
+
+    void copy_buckets_equiv(table const& src)
+    {
+        this->create_buckets(this->bucket_count_);
+
+        for (node_pointer n = src.begin(); n;) {
+            std::size_t key_hash = n->hash_;
+            node_pointer group_end(node_algo::next_group(n, this));
+            node_pointer pos = this->add_node_equiv(
+                boost::unordered::detail::func::construct_node(
+                    this->node_alloc(), n->value()),
+                key_hash, node_pointer());
+            for (n = node_algo::next_node(n); n != group_end;
+                 n = node_algo::next_node(n)) {
+                this->add_node_equiv(
+                    boost::unordered::detail::func::construct_node(
+                        this->node_alloc(), n->value()),
+                    key_hash, pos);
+            }
+        }
+    }
+
+    void move_buckets_equiv(table const& src)
+    {
+        this->create_buckets(this->bucket_count_);
+
+        for (node_pointer n = src.begin(); n;) {
+            std::size_t key_hash = n->hash_;
+            node_pointer group_end(node_algo::next_group(n, this));
+            node_pointer pos = this->add_node_equiv(
+                boost::unordered::detail::func::construct_node(
+                    this->node_alloc(), boost::move(n->value())),
+                key_hash, node_pointer());
+            for (n = node_algo::next_node(n); n != group_end;
+                 n = node_algo::next_node(n)) {
+                this->add_node_equiv(
+                    boost::unordered::detail::func::construct_node(
+                        this->node_alloc(), boost::move(n->value())),
+                    key_hash, pos);
+            }
+        }
+    }
+
+    void assign_buckets_equiv(table const& src)
+    {
+        node_holder<node_allocator> holder(*this);
+        for (node_pointer n = src.begin(); n;) {
+            std::size_t key_hash = n->hash_;
+            node_pointer group_end(node_algo::next_group(n, this));
+            node_pointer pos = this->add_node_equiv(
+                holder.copy_of(n->value()), key_hash, node_pointer());
+            for (n = node_algo::next_node(n); n != group_end;
+                 n = node_algo::next_node(n)) {
+                this->add_node_equiv(holder.copy_of(n->value()), key_hash, pos);
+            }
+        }
+    }
+
+    void move_assign_buckets_equiv(table& src)
+    {
+        node_holder<node_allocator> holder(*this);
+        for (node_pointer n = src.begin(); n;) {
+            std::size_t key_hash = n->hash_;
+            node_pointer group_end(node_algo::next_group(n, this));
+            node_pointer pos = this->add_node_equiv(
+                holder.move_copy_of(n->value()), key_hash, node_pointer());
+            for (n = node_algo::next_node(n); n != group_end;
+                 n = node_algo::next_node(n)) {
+                this->add_node_equiv(
+                    holder.move_copy_of(n->value()), key_hash, pos);
+            }
+        }
+    }
 };
 
 ////////////////////////////////////////////////////////////////////////////
@@ -3377,12 +4262,6 @@ inline void table<Types>::rehash_impl(std::size_t num_buckets)
 // constructed. This could be done by overloading the emplace implementation
 // for the different cases, but that's a bit tricky on compilers without
 // variadic templates.
-
-struct no_key
-{
-    no_key() {}
-    template <class T> no_key(T const&) {}
-};
 
 template <typename Key, typename T> struct is_key
 {
@@ -3624,7 +4503,7 @@ template <typename N> struct node_algo
 
     // Add node 'n' after 'pos'.
     // This results in a different order to the grouped implementation.
-    static inline void add_to_node_group(node_pointer n, node_pointer pos)
+    static inline void add_to_node(node_pointer n, node_pointer pos)
     {
         n->next_ = pos->next_;
         pos->next_ = n;
@@ -3690,508 +4569,6 @@ template <typename A, typename T> struct pick_node
     typedef typename pick::bucket bucket;
     typedef typename pick::link_pointer link_pointer;
     typedef boost::unordered::detail::node_algo<node> node_algo;
-};
-
-template <typename Types>
-struct table_unique : boost::unordered::detail::table<Types>
-{
-    typedef boost::unordered::detail::table<Types> table;
-    typedef typename table::value_type value_type;
-    typedef typename table::node node;
-    typedef typename table::bucket bucket;
-    typedef typename table::policy policy;
-    typedef typename table::node_pointer node_pointer;
-    typedef typename table::node_allocator node_allocator;
-    typedef typename table::node_allocator_traits node_allocator_traits;
-    typedef typename table::bucket_pointer bucket_pointer;
-    typedef typename table::link_pointer link_pointer;
-    typedef typename table::hasher hasher;
-    typedef typename table::key_equal key_equal;
-    typedef typename table::const_key_type const_key_type;
-    typedef typename table::node_constructor node_constructor;
-    typedef typename table::node_tmp node_tmp;
-    typedef typename table::extractor extractor;
-    typedef typename table::iterator iterator;
-    typedef typename table::c_iterator c_iterator;
-    typedef typename table::node_algo node_algo;
-
-    typedef std::pair<iterator, bool> emplace_return;
-
-    // Constructors
-
-    table_unique(std::size_t n, hasher const& hf, key_equal const& eq,
-        node_allocator const& a)
-        : table(n, hf, eq, a)
-    {
-    }
-
-    table_unique(table_unique const& x)
-        : table(x, node_allocator_traits::select_on_container_copy_construction(
-                       x.node_alloc()))
-    {
-        if (x.size_) {
-            this->copy_buckets(x);
-        }
-    }
-
-    table_unique(table_unique const& x, node_allocator const& a) : table(x, a)
-    {
-        if (x.size_) {
-            this->copy_buckets(x);
-        }
-    }
-
-    table_unique(table_unique& x, boost::unordered::detail::move_tag m)
-        : table(x, m)
-    {
-        // The move is done in the base class.
-    }
-
-    table_unique(table_unique& x, node_allocator const& a,
-        boost::unordered::detail::move_tag m)
-        : table(x, a, m)
-    {
-        if (this->node_alloc() == x.node_alloc()) {
-            this->move_buckets_from(x);
-        } else if (x.size_) {
-            // TODO: Could pick new bucket size?
-            this->move_buckets(x);
-        }
-    }
-
-    // equals
-
-    bool equals(table_unique const& other) const
-    {
-        if (this->size_ != other.size_)
-            return false;
-
-        for (node_pointer n1 = this->begin(); n1;
-             n1 = node_algo::next_node(n1)) {
-            node_pointer n2 = other.find_node(other.get_key(n1));
-
-            if (!n2 || n1->value() != n2->value())
-                return false;
-        }
-
-        return true;
-    }
-
-    // Emplace/Insert
-
-    inline node_pointer add_node(node_pointer n, std::size_t key_hash)
-    {
-        n->hash_ = key_hash;
-
-        bucket_pointer b = this->get_bucket(this->hash_to_bucket(key_hash));
-
-        if (!b->next_) {
-            link_pointer start_node = this->get_previous_start();
-
-            if (start_node->next_) {
-                this->get_bucket(this->hash_to_bucket(
-                                     node_algo::next_node(start_node)->hash_))
-                    ->next_ = n;
-            }
-
-            b->next_ = start_node;
-            n->next_ = start_node->next_;
-            start_node->next_ = n;
-        } else {
-            n->next_ = b->next_->next_;
-            b->next_->next_ = n;
-        }
-
-        ++this->size_;
-        return n;
-    }
-
-    inline node_pointer resize_and_add_node(
-        node_pointer n, std::size_t key_hash)
-    {
-        node_tmp b(n, this->node_alloc());
-        this->reserve_for_insert(this->size_ + 1);
-        return this->add_node(b.release(), key_hash);
-    }
-
-    template <BOOST_UNORDERED_EMPLACE_TEMPLATE>
-    iterator emplace_hint_impl(
-        c_iterator hint, const_key_type& k, BOOST_UNORDERED_EMPLACE_ARGS)
-    {
-        if (hint.node_ && this->key_eq()(k, this->get_key(hint.node_))) {
-            return iterator(hint.node_);
-        } else {
-            return emplace_impl(k, BOOST_UNORDERED_EMPLACE_FORWARD).first;
-        }
-    }
-
-    template <BOOST_UNORDERED_EMPLACE_TEMPLATE>
-    emplace_return emplace_impl(const_key_type& k, BOOST_UNORDERED_EMPLACE_ARGS)
-    {
-        std::size_t key_hash = this->hash(k);
-        node_pointer pos = this->find_node(key_hash, k);
-        if (pos) {
-            return emplace_return(iterator(pos), false);
-        } else {
-            return emplace_return(
-                iterator(this->resize_and_add_node(
-                    boost::unordered::detail::func::construct_node_from_args(
-                        this->node_alloc(), BOOST_UNORDERED_EMPLACE_FORWARD),
-                    key_hash)),
-                true);
-        }
-    }
-
-    template <BOOST_UNORDERED_EMPLACE_TEMPLATE>
-    iterator emplace_hint_impl(
-        c_iterator hint, no_key, BOOST_UNORDERED_EMPLACE_ARGS)
-    {
-        node_tmp b(boost::unordered::detail::func::construct_node_from_args(
-                       this->node_alloc(), BOOST_UNORDERED_EMPLACE_FORWARD),
-            this->node_alloc());
-        const_key_type& k = this->get_key(b.node_);
-        if (hint.node_ && this->key_eq()(k, this->get_key(hint.node_))) {
-            return iterator(hint.node_);
-        }
-        std::size_t key_hash = this->hash(k);
-        node_pointer pos = this->find_node(key_hash, k);
-        if (pos) {
-            return iterator(pos);
-        } else {
-            return iterator(this->resize_and_add_node(b.release(), key_hash));
-        }
-    }
-
-    template <BOOST_UNORDERED_EMPLACE_TEMPLATE>
-    emplace_return emplace_impl(no_key, BOOST_UNORDERED_EMPLACE_ARGS)
-    {
-        node_tmp b(boost::unordered::detail::func::construct_node_from_args(
-                       this->node_alloc(), BOOST_UNORDERED_EMPLACE_FORWARD),
-            this->node_alloc());
-        const_key_type& k = this->get_key(b.node_);
-        std::size_t key_hash = this->hash(k);
-        node_pointer pos = this->find_node(key_hash, k);
-        if (pos) {
-            return emplace_return(iterator(pos), false);
-        } else {
-            return emplace_return(
-                iterator(this->resize_and_add_node(b.release(), key_hash)),
-                true);
-        }
-    }
-
-    template <typename Key>
-    emplace_return try_emplace_impl(BOOST_FWD_REF(Key) k)
-    {
-        std::size_t key_hash = this->hash(k);
-        node_pointer pos = this->find_node(key_hash, k);
-        if (pos) {
-            return emplace_return(iterator(pos), false);
-        } else {
-            return emplace_return(
-                iterator(this->resize_and_add_node(
-                    boost::unordered::detail::func::construct_node_pair(
-                        this->node_alloc(), boost::forward<Key>(k)),
-                    key_hash)),
-                true);
-        }
-    }
-
-    template <typename Key>
-    iterator try_emplace_hint_impl(c_iterator hint, BOOST_FWD_REF(Key) k)
-    {
-        if (hint.node_ && this->key_eq()(hint->first, k)) {
-            return iterator(hint.node_);
-        } else {
-            return try_emplace_impl(k).first;
-        }
-    }
-
-    template <typename Key, BOOST_UNORDERED_EMPLACE_TEMPLATE>
-    emplace_return try_emplace_impl(
-        BOOST_FWD_REF(Key) k, BOOST_UNORDERED_EMPLACE_ARGS)
-    {
-        std::size_t key_hash = this->hash(k);
-        node_pointer pos = this->find_node(key_hash, k);
-        if (pos) {
-            return emplace_return(iterator(pos), false);
-        } else {
-            return emplace_return(
-                iterator(this->resize_and_add_node(
-                    boost::unordered::detail::func::
-                        construct_node_pair_from_args(this->node_alloc(),
-                            boost::forward<Key>(k),
-                            BOOST_UNORDERED_EMPLACE_FORWARD),
-                    key_hash)),
-                true);
-        }
-    }
-
-    template <typename Key, BOOST_UNORDERED_EMPLACE_TEMPLATE>
-    iterator try_emplace_hint_impl(
-        c_iterator hint, BOOST_FWD_REF(Key) k, BOOST_UNORDERED_EMPLACE_ARGS)
-    {
-        if (hint.node_ && this->key_eq()(hint->first, k)) {
-            return iterator(hint.node_);
-        } else {
-            return try_emplace_impl(k, BOOST_UNORDERED_EMPLACE_FORWARD).first;
-        }
-    }
-
-    template <typename Key, typename M>
-    emplace_return insert_or_assign_impl(
-        BOOST_FWD_REF(Key) k, BOOST_FWD_REF(M) obj)
-    {
-        std::size_t key_hash = this->hash(k);
-        node_pointer pos = this->find_node(key_hash, k);
-
-        if (pos) {
-            pos->value().second = boost::forward<M>(obj);
-            return emplace_return(iterator(pos), false);
-        } else {
-            return emplace_return(
-                iterator(this->resize_and_add_node(
-                    boost::unordered::detail::func::construct_node_pair(
-                        this->node_alloc(), boost::forward<Key>(k),
-                        boost::forward<M>(obj)),
-                    key_hash)),
-                true);
-        }
-    }
-
-    template <typename NodeType, typename InsertReturnType>
-    void move_insert_node_type(NodeType& np, InsertReturnType& result)
-    {
-        if (np) {
-            const_key_type& k = this->get_key(np.ptr_);
-            std::size_t key_hash = this->hash(k);
-            node_pointer pos = this->find_node(key_hash, k);
-
-            if (pos) {
-                result.node = boost::move(np);
-                result.position = iterator(pos);
-            } else {
-                this->reserve_for_insert(this->size_ + 1);
-                result.position = iterator(this->add_node(np.ptr_, key_hash));
-                result.inserted = true;
-                np.ptr_ = node_pointer();
-            }
-        }
-    }
-
-    template <typename NodeType>
-    iterator move_insert_node_type_with_hint(c_iterator hint, NodeType& np)
-    {
-        if (!np) {
-            return iterator();
-        }
-        const_key_type& k = this->get_key(np.ptr_);
-        if (hint.node_ && this->key_eq()(k, this->get_key(hint.node_))) {
-            return iterator(hint.node_);
-        }
-        std::size_t key_hash = this->hash(k);
-        node_pointer pos = this->find_node(key_hash, k);
-        if (!pos) {
-            this->reserve_for_insert(this->size_ + 1);
-            pos = this->add_node(np.ptr_, key_hash);
-            np.ptr_ = node_pointer();
-        }
-        return iterator(pos);
-    }
-
-    template <typename Types2>
-    void merge_impl(boost::unordered::detail::table<Types2>& other)
-    {
-        typedef boost::unordered::detail::table<Types2> other_table;
-        BOOST_STATIC_ASSERT(
-            (boost::is_same<node, typename other_table::node>::value));
-        BOOST_ASSERT(this->node_alloc() == other.node_alloc());
-
-        if (other.size_) {
-            link_pointer prev = other.get_previous_start();
-
-            while (prev->next_) {
-                node_pointer n = other_table::node_algo::next_node(prev);
-                const_key_type& k = this->get_key(n);
-                std::size_t key_hash = this->hash(k);
-                node_pointer pos = this->find_node(key_hash, k);
-
-                if (pos) {
-                    prev = n;
-                } else {
-                    this->reserve_for_insert(this->size_ + 1);
-                    other_table::node_algo::split_groups(
-                        n, other_table::node_algo::next_node(n));
-                    prev->next_ = n->next_;
-                    --other.size_;
-                    other.fix_bucket(other.hash_to_bucket(n->hash_), prev);
-                    this->add_node(n, key_hash);
-                }
-            }
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////
-    // Insert range methods
-    //
-    // if hash function throws, or inserting > 1 element, basic exception
-    // safety strong otherwise
-
-    template <class InputIt>
-    void insert_range_impl(const_key_type& k, InputIt i, InputIt j)
-    {
-        insert_range_impl2(k, i, j);
-
-        while (++i != j) {
-            // Note: can't use get_key as '*i' might not be value_type - it
-            // could be a pair with first_types as key_type without const or
-            // a different second_type.
-            insert_range_impl2(extractor::extract(*i), i, j);
-        }
-    }
-
-    template <class InputIt>
-    void insert_range_impl2(const_key_type& k, InputIt i, InputIt j)
-    {
-        // No side effects in this initial code
-        std::size_t key_hash = this->hash(k);
-        node_pointer pos = this->find_node(key_hash, k);
-
-        if (!pos) {
-            node_tmp b(boost::unordered::detail::func::construct_node(
-                           this->node_alloc(), *i),
-                this->node_alloc());
-            if (this->size_ + 1 > this->max_load_)
-                this->reserve_for_insert(
-                    this->size_ + boost::unordered::detail::insert_size(i, j));
-            this->add_node(b.release(), key_hash);
-        }
-    }
-
-    template <class InputIt>
-    void insert_range_impl(no_key, InputIt i, InputIt j)
-    {
-        node_constructor a(this->node_alloc());
-
-        do {
-            if (!a.node_) {
-                a.create_node();
-            }
-            BOOST_UNORDERED_CALL_CONSTRUCT1(
-                node_allocator_traits, a.alloc_, a.node_->value_ptr(), *i);
-            node_tmp b(a.release(), a.alloc_);
-
-            const_key_type& k = this->get_key(b.node_);
-            std::size_t key_hash = this->hash(k);
-            node_pointer pos = this->find_node(key_hash, k);
-
-            if (pos) {
-                a.reclaim(b.release());
-            } else {
-                // reserve has basic exception safety if the hash function
-                // throws, strong otherwise.
-                this->reserve_for_insert(this->size_ + 1);
-                this->add_node(b.release(), key_hash);
-            }
-        } while (++i != j);
-    }
-
-    ////////////////////////////////////////////////////////////////////////
-    // Extract
-
-    inline node_pointer extract_by_iterator(c_iterator i)
-    {
-        node_pointer n = i.node_;
-        BOOST_ASSERT(n);
-        std::size_t key_hash = n->hash_;
-        std::size_t bucket_index = this->hash_to_bucket(key_hash);
-        link_pointer prev = this->get_previous_start(bucket_index);
-        while (prev->next_ != n) {
-            prev = prev->next_;
-        }
-        prev->next_ = n->next_;
-        --this->size_;
-        this->fix_bucket(bucket_index, prev);
-        n->next_ = link_pointer();
-        return n;
-    }
-
-    ////////////////////////////////////////////////////////////////////////
-    // Erase
-    //
-    // no throw
-
-    std::size_t erase_key(const_key_type& k)
-    {
-        if (!this->size_)
-            return 0;
-        std::size_t key_hash = this->hash(k);
-        std::size_t bucket_index = this->hash_to_bucket(key_hash);
-        link_pointer prev = this->find_previous_node(k, key_hash, bucket_index);
-        if (!prev)
-            return 0;
-        link_pointer end = node_algo::next_node(prev)->next_;
-        this->delete_nodes(prev, end);
-        this->fix_bucket(bucket_index, prev);
-        return 1;
-    }
-
-    void erase_nodes(node_pointer i, node_pointer j)
-    {
-        std::size_t bucket_index = this->hash_to_bucket(i->hash_);
-
-        // Find the node before i.
-        link_pointer prev = this->get_previous_start(bucket_index);
-        while (prev->next_ != i)
-            prev = prev->next_;
-
-        // Delete the nodes.
-        do {
-            this->delete_node(prev);
-            bucket_index = this->fix_bucket(bucket_index, prev);
-        } while (prev->next_ != j);
-    }
-
-    ////////////////////////////////////////////////////////////////////////
-    // fill_buckets
-
-    void copy_buckets(table const& src)
-    {
-        this->create_buckets(this->bucket_count_);
-
-        for (node_pointer n = src.begin(); n; n = node_algo::next_node(n)) {
-            this->add_node(boost::unordered::detail::func::construct_node(
-                               this->node_alloc(), n->value()),
-                n->hash_);
-        }
-    }
-
-    void move_buckets(table const& src)
-    {
-        this->create_buckets(this->bucket_count_);
-
-        for (node_pointer n = src.begin(); n; n = node_algo::next_node(n)) {
-            this->add_node(boost::unordered::detail::func::construct_node(
-                               this->node_alloc(), boost::move(n->value())),
-                n->hash_);
-        }
-    }
-
-    void assign_buckets(table const& src)
-    {
-        node_holder<node_allocator> holder(*this);
-        for (node_pointer n = src.begin(); n; n = node_algo::next_node(n)) {
-            this->add_node(holder.copy_of(n->value()), n->hash_);
-        }
-    }
-
-    void move_assign_buckets(table& src)
-    {
-        node_holder<node_allocator> holder(*this);
-        for (node_pointer n = src.begin(); n; n = node_algo::next_node(n)) {
-            this->add_node(holder.move_copy_of(n->value()), n->hash_);
-        }
-    }
 };
 
 ////////////////////////////////////////////////////////////////////////
@@ -4297,7 +4674,7 @@ template <typename N> struct grouped_node_algo
     // If 'pos' is the first node in group, add to the end of the group,
     // otherwise add before 'pos'. Other versions will probably behave
     // differently.
-    static inline void add_to_node_group(node_pointer n, node_pointer pos)
+    static inline void add_to_node(node_pointer n, node_pointer pos)
     {
         n->next_ = pos->group_prev_->next_;
         n->group_prev_ = pos->group_prev_;
@@ -4396,483 +4773,6 @@ template <typename A, typename T> struct pick_grouped_node
     typedef typename pick::bucket bucket;
     typedef typename pick::link_pointer link_pointer;
     typedef boost::unordered::detail::grouped_node_algo<node> node_algo;
-};
-
-template <typename Types>
-struct table_equiv : boost::unordered::detail::table<Types>
-{
-    typedef boost::unordered::detail::table<Types> table;
-    typedef typename table::value_type value_type;
-    typedef typename table::bucket bucket;
-    typedef typename table::policy policy;
-    typedef typename table::node_pointer node_pointer;
-    typedef typename table::node_allocator node_allocator;
-    typedef typename table::node_allocator_traits node_allocator_traits;
-    typedef typename table::bucket_pointer bucket_pointer;
-    typedef typename table::link_pointer link_pointer;
-    typedef typename table::hasher hasher;
-    typedef typename table::key_equal key_equal;
-    typedef typename table::const_key_type const_key_type;
-    typedef typename table::node_constructor node_constructor;
-    typedef typename table::node_tmp node_tmp;
-    typedef typename table::extractor extractor;
-    typedef typename table::iterator iterator;
-    typedef typename table::c_iterator c_iterator;
-    typedef typename table::node_algo node_algo;
-
-    // Constructors
-
-    table_equiv(std::size_t n, hasher const& hf, key_equal const& eq,
-        node_allocator const& a)
-        : table(n, hf, eq, a)
-    {
-    }
-
-    table_equiv(table_equiv const& x)
-        : table(x, node_allocator_traits::select_on_container_copy_construction(
-                       x.node_alloc()))
-    {
-        if (x.size_) {
-            copy_buckets(x);
-        }
-    }
-
-    table_equiv(table_equiv const& x, node_allocator const& a) : table(x, a)
-    {
-        if (x.size_) {
-            copy_buckets(x);
-        }
-    }
-
-    table_equiv(table_equiv& x, boost::unordered::detail::move_tag m)
-        : table(x, m)
-    {
-        // The move is done in the base class.
-    }
-
-    table_equiv(table_equiv& x, node_allocator const& a,
-        boost::unordered::detail::move_tag m)
-        : table(x, a, m)
-    {
-        if (this->node_alloc() == x.node_alloc()) {
-            this->move_buckets_from(x);
-        } else if (x.size_) {
-            // TODO: Could pick new bucket size?
-            this->move_buckets(x);
-        }
-    }
-
-    // Equality
-
-    bool equals(table_equiv const& other) const
-    {
-        if (this->size_ != other.size_)
-            return false;
-
-        for (node_pointer n1 = this->begin(); n1;) {
-            node_pointer n2 = other.find_node(other.get_key(n1));
-            if (!n2)
-                return false;
-            node_pointer end1 = node_algo::next_group(n1, this);
-            node_pointer end2 = node_algo::next_group(n2, this);
-            if (!group_equals(n1, end1, n2, end2))
-                return false;
-            n1 = end1;
-        }
-
-        return true;
-    }
-
-    static bool group_equals(
-        node_pointer n1, node_pointer end1, node_pointer n2, node_pointer end2)
-    {
-        for (;;) {
-            if (n1->value() != n2->value())
-                break;
-
-            n1 = node_algo::next_node(n1);
-            n2 = node_algo::next_node(n2);
-
-            if (n1 == end1)
-                return n2 == end2;
-            if (n2 == end2)
-                return false;
-        }
-
-        for (node_pointer n1a = n1, n2a = n2;;) {
-            n1a = node_algo::next_node(n1a);
-            n2a = node_algo::next_node(n2a);
-
-            if (n1a == end1) {
-                if (n2a == end2)
-                    break;
-                else
-                    return false;
-            }
-
-            if (n2a == end2)
-                return false;
-        }
-
-        node_pointer start = n1;
-        for (; n1 != end1; n1 = node_algo::next_node(n1)) {
-            value_type const& v = n1->value();
-            if (!find(start, n1, v)) {
-                std::size_t matches = count_equal(n2, end2, v);
-                if (!matches)
-                    return false;
-                if (matches !=
-                    1 + count_equal(node_algo::next_node(n1), end1, v))
-                    return false;
-            }
-        }
-
-        return true;
-    }
-
-    static bool find(node_pointer n, node_pointer end, value_type const& v)
-    {
-        for (; n != end; n = node_algo::next_node(n))
-            if (n->value() == v)
-                return true;
-        return false;
-    }
-
-    static std::size_t count_equal(
-        node_pointer n, node_pointer end, value_type const& v)
-    {
-        std::size_t count = 0;
-        for (; n != end; n = node_algo::next_node(n))
-            if (n->value() == v)
-                ++count;
-        return count;
-    }
-
-    // Emplace/Insert
-
-    inline node_pointer add_node(
-        node_pointer n, std::size_t key_hash, node_pointer pos)
-    {
-        n->hash_ = key_hash;
-        if (pos) {
-            node_algo::add_to_node_group(n, pos);
-            if (n->next_) {
-                std::size_t next_bucket =
-                    this->hash_to_bucket(node_algo::next_node(n)->hash_);
-                if (next_bucket != this->hash_to_bucket(key_hash)) {
-                    this->get_bucket(next_bucket)->next_ = n;
-                }
-            }
-        } else {
-            bucket_pointer b = this->get_bucket(this->hash_to_bucket(key_hash));
-
-            if (!b->next_) {
-                link_pointer start_node = this->get_previous_start();
-
-                if (start_node->next_) {
-                    this->get_bucket(
-                            this->hash_to_bucket(
-                                node_algo::next_node(start_node)->hash_))
-                        ->next_ = n;
-                }
-
-                b->next_ = start_node;
-                n->next_ = start_node->next_;
-                start_node->next_ = n;
-            } else {
-                n->next_ = b->next_->next_;
-                b->next_->next_ = n;
-            }
-        }
-        ++this->size_;
-        return n;
-    }
-
-    inline node_pointer add_using_hint(node_pointer n, node_pointer hint)
-    {
-        n->hash_ = hint->hash_;
-        node_algo::add_to_node_group(n, hint);
-        if (n->next_ != hint && n->next_) {
-            std::size_t next_bucket =
-                this->hash_to_bucket(node_algo::next_node(n)->hash_);
-            if (next_bucket != this->hash_to_bucket(n->hash_)) {
-                this->get_bucket(next_bucket)->next_ = n;
-            }
-        }
-        ++this->size_;
-        return n;
-    }
-
-    iterator emplace_impl(node_pointer n)
-    {
-        node_tmp a(n, this->node_alloc());
-        const_key_type& k = this->get_key(a.node_);
-        std::size_t key_hash = this->hash(k);
-        node_pointer position = this->find_node(key_hash, k);
-        this->reserve_for_insert(this->size_ + 1);
-        return iterator(this->add_node(a.release(), key_hash, position));
-    }
-
-    iterator emplace_hint_impl(c_iterator hint, node_pointer n)
-    {
-        node_tmp a(n, this->node_alloc());
-        const_key_type& k = this->get_key(a.node_);
-        if (hint.node_ && this->key_eq()(k, this->get_key(hint.node_))) {
-            this->reserve_for_insert(this->size_ + 1);
-            return iterator(this->add_using_hint(a.release(), hint.node_));
-        } else {
-            std::size_t key_hash = this->hash(k);
-            node_pointer position = this->find_node(key_hash, k);
-            this->reserve_for_insert(this->size_ + 1);
-            return iterator(this->add_node(a.release(), key_hash, position));
-        }
-    }
-
-    void emplace_impl_no_rehash(node_pointer n)
-    {
-        node_tmp a(n, this->node_alloc());
-        const_key_type& k = this->get_key(a.node_);
-        std::size_t key_hash = this->hash(k);
-        node_pointer position = this->find_node(key_hash, k);
-        this->add_node(a.release(), key_hash, position);
-    }
-
-    template <typename NodeType> iterator move_insert_node_type(NodeType& np)
-    {
-        iterator result;
-
-        if (np) {
-            const_key_type& k = this->get_key(np.ptr_);
-            std::size_t key_hash = this->hash(k);
-            node_pointer pos = this->find_node(key_hash, k);
-            this->reserve_for_insert(this->size_ + 1);
-            result = iterator(this->add_node(np.ptr_, key_hash, pos));
-            np.ptr_ = node_pointer();
-        }
-
-        return result;
-    }
-
-    template <typename NodeType>
-    iterator move_insert_node_type_with_hint(c_iterator hint, NodeType& np)
-    {
-        iterator result;
-
-        if (np) {
-            const_key_type& k = this->get_key(np.ptr_);
-
-            if (hint.node_ && this->key_eq()(k, this->get_key(hint.node_))) {
-                this->reserve_for_insert(this->size_ + 1);
-                result = iterator(this->add_using_hint(np.ptr_, hint.node_));
-            } else {
-                std::size_t key_hash = this->hash(k);
-                node_pointer pos = this->find_node(key_hash, k);
-                this->reserve_for_insert(this->size_ + 1);
-                result = iterator(this->add_node(np.ptr_, key_hash, pos));
-            }
-            np.ptr_ = node_pointer();
-        }
-
-        return result;
-    }
-
-    ////////////////////////////////////////////////////////////////////////
-    // Insert range methods
-
-    // if hash function throws, or inserting > 1 element, basic exception
-    // safety. Strong otherwise
-    template <class I>
-    void insert_range(I i, I j,
-        typename boost::unordered::detail::enable_if_forward<I, void*>::type =
-            0)
-    {
-        if (i == j)
-            return;
-
-        std::size_t distance = static_cast<std::size_t>(std::distance(i, j));
-        if (distance == 1) {
-            emplace_impl(boost::unordered::detail::func::construct_node(
-                this->node_alloc(), *i));
-        } else {
-            // Only require basic exception safety here
-            this->reserve_for_insert(this->size_ + distance);
-
-            for (; i != j; ++i) {
-                emplace_impl_no_rehash(
-                    boost::unordered::detail::func::construct_node(
-                        this->node_alloc(), *i));
-            }
-        }
-    }
-
-    template <class I>
-    void insert_range(I i, I j,
-        typename boost::unordered::detail::disable_if_forward<I, void*>::type =
-            0)
-    {
-        for (; i != j; ++i) {
-            emplace_impl(boost::unordered::detail::func::construct_node(
-                this->node_alloc(), *i));
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////
-    // Extract
-
-    inline node_pointer extract_by_iterator(c_iterator n)
-    {
-        node_pointer i = n.node_;
-        BOOST_ASSERT(i);
-        node_pointer j(node_algo::next_node(i));
-        std::size_t bucket_index = this->hash_to_bucket(i->hash_);
-        // Split the groups containing 'i' and 'j'.
-        // And get the pointer to the node before i while
-        // we're at it.
-        link_pointer prev = node_algo::split_groups(i, j);
-
-        // If we don't have a 'prev' it means that i is at the
-        // beginning of a block, so search through the blocks in the
-        // same bucket.
-        if (!prev) {
-            prev = this->get_previous_start(bucket_index);
-            while (prev->next_ != i) {
-                prev = node_algo::next_for_erase(prev);
-            }
-        }
-
-        prev->next_ = i->next_;
-        --this->size_;
-        this->fix_bucket(bucket_index, prev);
-        i->next_ = link_pointer();
-
-        return i;
-    }
-
-    ////////////////////////////////////////////////////////////////////////
-    // Erase
-    //
-    // no throw
-
-    std::size_t erase_key(const_key_type& k)
-    {
-        if (!this->size_)
-            return 0;
-
-        std::size_t key_hash = this->hash(k);
-        std::size_t bucket_index = this->hash_to_bucket(key_hash);
-        link_pointer prev = this->find_previous_node(k, key_hash, bucket_index);
-        if (!prev)
-            return 0;
-
-        node_pointer first_node = node_algo::next_node(prev);
-        link_pointer end = node_algo::next_group(first_node, this);
-
-        std::size_t deleted_count = this->delete_nodes(prev, end);
-        this->fix_bucket(bucket_index, prev);
-        return deleted_count;
-    }
-
-    link_pointer erase_nodes(node_pointer i, node_pointer j)
-    {
-        std::size_t bucket_index = this->hash_to_bucket(i->hash_);
-
-        // Split the groups containing 'i' and 'j'.
-        // And get the pointer to the node before i while
-        // we're at it.
-        link_pointer prev = node_algo::split_groups(i, j);
-
-        // If we don't have a 'prev' it means that i is at the
-        // beginning of a block, so search through the blocks in the
-        // same bucket.
-        if (!prev) {
-            prev = this->get_previous_start(bucket_index);
-            while (prev->next_ != i) {
-                prev = node_algo::next_for_erase(prev);
-            }
-        }
-
-        // Delete the nodes.
-        // Is it inefficient to call fix_bucket for every node?
-        do {
-            this->delete_node(prev);
-            bucket_index = this->fix_bucket(bucket_index, prev);
-        } while (prev->next_ != j);
-
-        return prev;
-    }
-
-    ////////////////////////////////////////////////////////////////////////
-    // fill_buckets
-
-    void copy_buckets(table const& src)
-    {
-        this->create_buckets(this->bucket_count_);
-
-        for (node_pointer n = src.begin(); n;) {
-            std::size_t key_hash = n->hash_;
-            node_pointer group_end(node_algo::next_group(n, this));
-            node_pointer pos =
-                this->add_node(boost::unordered::detail::func::construct_node(
-                                   this->node_alloc(), n->value()),
-                    key_hash, node_pointer());
-            for (n = node_algo::next_node(n); n != group_end;
-                 n = node_algo::next_node(n)) {
-                this->add_node(boost::unordered::detail::func::construct_node(
-                                   this->node_alloc(), n->value()),
-                    key_hash, pos);
-            }
-        }
-    }
-
-    void move_buckets(table const& src)
-    {
-        this->create_buckets(this->bucket_count_);
-
-        for (node_pointer n = src.begin(); n;) {
-            std::size_t key_hash = n->hash_;
-            node_pointer group_end(node_algo::next_group(n, this));
-            node_pointer pos =
-                this->add_node(boost::unordered::detail::func::construct_node(
-                                   this->node_alloc(), boost::move(n->value())),
-                    key_hash, node_pointer());
-            for (n = node_algo::next_node(n); n != group_end;
-                 n = node_algo::next_node(n)) {
-                this->add_node(boost::unordered::detail::func::construct_node(
-                                   this->node_alloc(), boost::move(n->value())),
-                    key_hash, pos);
-            }
-        }
-    }
-
-    void assign_buckets(table const& src)
-    {
-        node_holder<node_allocator> holder(*this);
-        for (node_pointer n = src.begin(); n;) {
-            std::size_t key_hash = n->hash_;
-            node_pointer group_end(node_algo::next_group(n, this));
-            node_pointer pos = this->add_node(
-                holder.copy_of(n->value()), key_hash, node_pointer());
-            for (n = node_algo::next_node(n); n != group_end;
-                 n = node_algo::next_node(n)) {
-                this->add_node(holder.copy_of(n->value()), key_hash, pos);
-            }
-        }
-    }
-
-    void move_assign_buckets(table& src)
-    {
-        node_holder<node_allocator> holder(*this);
-        for (node_pointer n = src.begin(); n;) {
-            std::size_t key_hash = n->hash_;
-            node_pointer group_end(node_algo::next_group(n, this));
-            node_pointer pos = this->add_node(
-                holder.move_copy_of(n->value()), key_hash, node_pointer());
-            for (n = node_algo::next_node(n); n != group_end;
-                 n = node_algo::next_node(n)) {
-                this->add_node(holder.move_copy_of(n->value()), key_hash, pos);
-            }
-        }
-    }
 };
 }
 }
