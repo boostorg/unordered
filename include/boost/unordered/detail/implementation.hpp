@@ -185,9 +185,6 @@ template <typename Types> struct table;
 template <typename NodePointer> struct bucket;
 struct ptr_bucket;
 
-template <typename Types> struct table_unique;
-template <typename Types> struct table_equiv;
-
 template <typename A, typename T> struct unique_node;
 template <typename T> struct ptr_node;
 template <typename N> struct node_algo;
@@ -198,11 +195,19 @@ template <typename N> struct grouped_node_algo;
 
 static const float minimum_max_load_factor = 1e-3f;
 static const std::size_t default_bucket_count = 11;
+
 struct move_tag
 {
 };
+
 struct empty_emplace
 {
+};
+
+struct no_key
+{
+    no_key() {}
+    template <class T> no_key(T const&) {}
 };
 
 namespace func {
@@ -2041,8 +2046,6 @@ struct iterator : public std::iterator<std::forward_iterator_tag,
     template <typename>
     friend struct boost::unordered::iterator_detail::c_iterator;
     template <typename> friend struct boost::unordered::detail::table;
-    template <typename> friend struct boost::unordered::detail::table_unique;
-    template <typename> friend struct boost::unordered::detail::table_equiv;
 
   private:
 #endif
@@ -2097,8 +2100,6 @@ struct c_iterator
 
 #if !defined(BOOST_NO_MEMBER_TEMPLATE_FRIENDS)
     template <typename> friend struct boost::unordered::detail::table;
-    template <typename> friend struct boost::unordered::detail::table_unique;
-    template <typename> friend struct boost::unordered::detail::table_equiv;
 
   private:
 #endif
@@ -2694,6 +2695,8 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         node_constructor;
     typedef boost::unordered::detail::node_tmp<node_allocator> node_tmp;
 
+    typedef std::pair<iterator, bool> emplace_return;
+
     ////////////////////////////////////////////////////////////////////////
     // Members
 
@@ -3116,7 +3119,12 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         }
 
         new_func_this.commit();
-        static_cast<table_impl*>(this)->assign_buckets(x);
+
+        if (Types::is_unique) {
+            assign_buckets_unique(x);
+        } else {
+            assign_buckets_equiv(x);
+        }
     }
 
     void assign(table const& x, true_type)
@@ -3140,7 +3148,11 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
 
             // Finally copy the elements.
             if (x.size_) {
-                static_cast<table_impl*>(this)->copy_buckets(x);
+                if (Types::is_unique) {
+                    copy_buckets_unique(x);
+                } else {
+                    copy_buckets_equiv(x);
+                }
             }
         }
     }
@@ -3194,7 +3206,12 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
             }
 
             new_func_this.commit();
-            static_cast<table_impl*>(this)->move_assign_buckets(x);
+
+            if (Types::is_unique) {
+                move_assign_buckets_unique(x);
+            } else {
+                move_assign_buckets_equiv(x);
+            }
         }
     }
 
@@ -3298,453 +3315,9 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     void rehash(std::size_t);
     void reserve(std::size_t);
     void rehash_impl(std::size_t);
-};
 
-////////////////////////////////////////////////////////////////////////////
-// Reserve & Rehash
-
-// basic exception safety
-template <typename Types>
-inline void table<Types>::reserve_for_insert(std::size_t size)
-{
-    if (!buckets_) {
-        create_buckets((std::max)(bucket_count_, min_buckets_for_size(size)));
-    } else if (size > max_load_) {
-        std::size_t num_buckets =
-            min_buckets_for_size((std::max)(size, size_ + (size_ >> 1)));
-
-        if (num_buckets != bucket_count_)
-            this->rehash_impl(num_buckets);
-    }
-}
-
-// if hash function throws, basic exception safety
-// strong otherwise.
-
-template <typename Types>
-inline void table<Types>::rehash(std::size_t min_buckets)
-{
-    using namespace std;
-
-    if (!size_) {
-        delete_buckets();
-        bucket_count_ = policy::new_bucket_count(min_buckets);
-    } else {
-        min_buckets = policy::new_bucket_count((std::max)(min_buckets,
-            boost::unordered::detail::double_to_size(
-                floor(static_cast<double>(size_) / static_cast<double>(mlf_))) +
-                1));
-
-        if (min_buckets != bucket_count_)
-            this->rehash_impl(min_buckets);
-    }
-}
-
-template <typename Types>
-inline void table<Types>::rehash_impl(std::size_t num_buckets)
-{
-    BOOST_ASSERT(this->buckets_);
-
-    this->create_buckets(num_buckets);
-    link_pointer prev = this->get_previous_start();
-    while (prev->next_) {
-        node_pointer group_last = node_algo::last_for_rehash(prev);
-        bucket_pointer b =
-            this->get_bucket(this->hash_to_bucket(group_last->hash_));
-        if (!b->next_) {
-            b->next_ = prev;
-            prev = group_last;
-        } else {
-            link_pointer next = group_last->next_;
-            group_last->next_ = b->next_->next_;
-            b->next_->next_ = prev->next_;
-            prev->next_ = next;
-        }
-    }
-}
-
-#if defined(BOOST_MSVC)
-#pragma warning(pop)
-#endif
-
-////////////////////////////////////////////////////////////////////////
-// key extractors
-//
-// no throw
-//
-// 'extract_key' is called with the emplace parameters to return a
-// key if available or 'no_key' is one isn't and will need to be
-// constructed. This could be done by overloading the emplace implementation
-// for the different cases, but that's a bit tricky on compilers without
-// variadic templates.
-
-struct no_key
-{
-    no_key() {}
-    template <class T> no_key(T const&) {}
-};
-
-template <typename Key, typename T> struct is_key
-{
-    template <typename T2> static choice1::type test(T2 const&);
-    static choice2::type test(Key const&);
-
-    enum
-    {
-        value = sizeof(test(boost::unordered::detail::make<T>())) ==
-                sizeof(choice2::type)
-    };
-
-    typedef typename boost::detail::if_true<value>::BOOST_NESTED_TEMPLATE
-        then<Key const&, no_key>::type type;
-};
-
-template <class ValueType> struct set_extractor
-{
-    typedef ValueType value_type;
-    typedef ValueType key_type;
-
-    static key_type const& extract(value_type const& v) { return v; }
-
-    static no_key extract() { return no_key(); }
-
-    template <class Arg> static no_key extract(Arg const&) { return no_key(); }
-
-#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-    template <class Arg1, class Arg2, class... Args>
-    static no_key extract(Arg1 const&, Arg2 const&, Args const&...)
-    {
-        return no_key();
-    }
-#else
-    template <class Arg1, class Arg2>
-    static no_key extract(Arg1 const&, Arg2 const&)
-    {
-        return no_key();
-    }
-#endif
-};
-
-template <class ValueType> struct map_extractor
-{
-    typedef ValueType value_type;
-    typedef typename boost::remove_const<typename boost::unordered::detail::
-            pair_traits<ValueType>::first_type>::type key_type;
-
-    static key_type const& extract(value_type const& v) { return v.first; }
-
-    template <class Second>
-    static key_type const& extract(std::pair<key_type, Second> const& v)
-    {
-        return v.first;
-    }
-
-    template <class Second>
-    static key_type const& extract(std::pair<key_type const, Second> const& v)
-    {
-        return v.first;
-    }
-
-    template <class Arg1>
-    static key_type const& extract(key_type const& k, Arg1 const&)
-    {
-        return k;
-    }
-
-    static no_key extract() { return no_key(); }
-
-    template <class Arg> static no_key extract(Arg const&) { return no_key(); }
-
-    template <class Arg1, class Arg2>
-    static no_key extract(Arg1 const&, Arg2 const&)
-    {
-        return no_key();
-    }
-
-#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-    template <class Arg1, class Arg2, class Arg3, class... Args>
-    static no_key extract(Arg1 const&, Arg2 const&, Arg3 const&, Args const&...)
-    {
-        return no_key();
-    }
-#endif
-
-#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-
-#define BOOST_UNORDERED_KEY_FROM_TUPLE(namespace_)                             \
-    template <typename T2>                                                     \
-    static no_key extract(boost::unordered::piecewise_construct_t,             \
-        namespace_ tuple<> const&, T2 const&)                                  \
-    {                                                                          \
-        return no_key();                                                       \
-    }                                                                          \
-                                                                               \
-    template <typename T, typename T2>                                         \
-    static typename is_key<key_type, T>::type extract(                         \
-        boost::unordered::piecewise_construct_t, namespace_ tuple<T> const& k, \
-        T2 const&)                                                             \
-    {                                                                          \
-        return typename is_key<key_type, T>::type(namespace_ get<0>(k));       \
-    }
-
-#else
-
-#define BOOST_UNORDERED_KEY_FROM_TUPLE(namespace_)                             \
-    static no_key extract(                                                     \
-        boost::unordered::piecewise_construct_t, namespace_ tuple<> const&)    \
-    {                                                                          \
-        return no_key();                                                       \
-    }                                                                          \
-                                                                               \
-    template <typename T>                                                      \
-    static typename is_key<key_type, T>::type extract(                         \
-        boost::unordered::piecewise_construct_t, namespace_ tuple<T> const& k) \
-    {                                                                          \
-        return typename is_key<key_type, T>::type(namespace_ get<0>(k));       \
-    }
-
-#endif
-
-    BOOST_UNORDERED_KEY_FROM_TUPLE(boost::)
-
-#if BOOST_UNORDERED_TUPLE_ARGS
-    BOOST_UNORDERED_KEY_FROM_TUPLE(std::)
-#endif
-};
-
-////////////////////////////////////////////////////////////////////////
-// Unique nodes
-
-template <typename A, typename T>
-struct unique_node : boost::unordered::detail::value_base<T>
-{
-    typedef typename ::boost::unordered::detail::rebind_wrap<A,
-        unique_node<A, T> >::type allocator;
-    typedef typename ::boost::unordered::detail::allocator_traits<
-        allocator>::pointer node_pointer;
-    typedef node_pointer link_pointer;
-    typedef typename ::boost::unordered::detail::rebind_wrap<A,
-        bucket<node_pointer> >::type bucket_allocator;
-    typedef typename ::boost::unordered::detail::allocator_traits<
-        bucket_allocator>::pointer bucket_pointer;
-
-    link_pointer next_;
-    std::size_t hash_;
-
-    unique_node() : next_(), hash_(0) {}
-
-    void init(node_pointer) {}
-
-  private:
-    unique_node& operator=(unique_node const&);
-};
-
-template <typename T> struct ptr_node : boost::unordered::detail::ptr_bucket
-{
-    typedef T value_type;
-    typedef boost::unordered::detail::ptr_bucket bucket_base;
-    typedef ptr_node<T>* node_pointer;
-    typedef ptr_bucket* link_pointer;
-    typedef ptr_bucket* bucket_pointer;
-
-    std::size_t hash_;
-    boost::unordered::detail::value_base<T> value_base_;
-
-    ptr_node() : bucket_base(), hash_(0) {}
-
-    void init(node_pointer) {}
-
-    void* address() { return value_base_.address(); }
-    value_type& value() { return value_base_.value(); }
-    value_type* value_ptr() { return value_base_.value_ptr(); }
-
-  private:
-    ptr_node& operator=(ptr_node const&);
-};
-
-template <typename N> struct node_algo
-{
-    typedef typename N::node_pointer node_pointer;
-    typedef typename N::link_pointer link_pointer;
-    typedef typename N::bucket_pointer bucket_pointer;
-
-    static node_pointer next_node(link_pointer n)
-    {
-        return static_cast<node_pointer>(n->next_);
-    }
-
-    static node_pointer next_for_find(node_pointer n)
-    {
-        return static_cast<node_pointer>(n->next_);
-    }
-
-    static link_pointer next_for_erase(link_pointer prev)
-    {
-        return prev->next_;
-    }
-
-    // Group together all nodes with equal hash value, this may
-    // include nodes with different keys, but that's okay because
-    // they will end up in the same bucket.
-    static node_pointer last_for_rehash(link_pointer prev)
-    {
-        node_pointer n = next_node(prev);
-        std::size_t hash = n->hash_;
-        for (;;) {
-            node_pointer next = next_node(n);
-            if (!next || next->hash_ != hash) {
-                return n;
-            }
-            n = next;
-        }
-    }
-
-    template <typename Table>
-    static node_pointer next_group(node_pointer n, Table const* t)
-    {
-        node_pointer n1 = n;
-        do {
-            n1 = next_node(n1);
-        } while (n1 && t->key_eq()(t->get_key(n), t->get_key(n1)));
-        return n1;
-    }
-
-    template <typename Table>
-    static std::size_t count(node_pointer n, Table const* t)
-    {
-        std::size_t x = 0;
-        node_pointer it = n;
-        do {
-            ++x;
-            it = next_node(it);
-        } while (it && t->key_eq()(t->get_key(n), t->get_key(it)));
-
-        return x;
-    }
-
-    // Add node 'n' after 'pos'.
-    // This results in a different order to the grouped implementation.
-    static inline void add_to_node(node_pointer n, node_pointer pos)
-    {
-        n->next_ = pos->next_;
-        pos->next_ = n;
-    }
-
-    static inline node_pointer extract_first_node(link_pointer prev)
-    {
-        node_pointer n = next_node(prev);
-        prev->next_ = n->next_;
-        return n;
-    }
-
-    static link_pointer split_groups(node_pointer, node_pointer)
-    {
-        return link_pointer();
-    }
-};
-
-// If the allocator uses raw pointers use ptr_node
-// Otherwise use node.
-
-template <typename A, typename T, typename NodePtr, typename BucketPtr>
-struct pick_node2
-{
-    typedef boost::unordered::detail::unique_node<A, T> node;
-
-    typedef typename boost::unordered::detail::allocator_traits<
-        typename boost::unordered::detail::rebind_wrap<A, node>::type>::pointer
-        node_pointer;
-
-    typedef boost::unordered::detail::bucket<node_pointer> bucket;
-    typedef node_pointer link_pointer;
-};
-
-template <typename A, typename T>
-struct pick_node2<A, T, boost::unordered::detail::ptr_node<T>*,
-    boost::unordered::detail::ptr_bucket*>
-{
-    typedef boost::unordered::detail::ptr_node<T> node;
-    typedef boost::unordered::detail::ptr_bucket bucket;
-    typedef bucket* link_pointer;
-};
-
-template <typename A, typename T> struct pick_node
-{
-    typedef typename boost::remove_const<T>::type nonconst;
-
-    typedef boost::unordered::detail::allocator_traits<
-        typename boost::unordered::detail::rebind_wrap<A,
-            boost::unordered::detail::ptr_node<nonconst> >::type>
-        tentative_node_traits;
-
-    typedef boost::unordered::detail::allocator_traits<
-        typename boost::unordered::detail::rebind_wrap<A,
-            boost::unordered::detail::ptr_bucket>::type>
-        tentative_bucket_traits;
-
-    typedef pick_node2<A, nonconst, typename tentative_node_traits::pointer,
-        typename tentative_bucket_traits::pointer>
-        pick;
-
-    typedef typename pick::node node;
-    typedef typename pick::bucket bucket;
-    typedef typename pick::link_pointer link_pointer;
-    typedef boost::unordered::detail::node_algo<node> node_algo;
-};
-
-template <typename Types>
-struct table_unique : boost::unordered::detail::table<Types>
-{
-    typedef boost::unordered::detail::table<Types> table;
-    typedef typename table::value_type value_type;
-    typedef typename table::node node;
-    typedef typename table::bucket bucket;
-    typedef typename table::policy policy;
-    typedef typename table::node_pointer node_pointer;
-    typedef typename table::node_allocator node_allocator;
-    typedef typename table::node_allocator_traits node_allocator_traits;
-    typedef typename table::bucket_pointer bucket_pointer;
-    typedef typename table::link_pointer link_pointer;
-    typedef typename table::hasher hasher;
-    typedef typename table::key_equal key_equal;
-    typedef typename table::const_key_type const_key_type;
-    typedef typename table::node_constructor node_constructor;
-    typedef typename table::node_tmp node_tmp;
-    typedef typename table::extractor extractor;
-    typedef typename table::iterator iterator;
-    typedef typename table::c_iterator c_iterator;
-    typedef typename table::node_algo node_algo;
-
-    typedef std::pair<iterator, bool> emplace_return;
-
-    // Constructors
-
-    table_unique(std::size_t n, hasher const& hf, key_equal const& eq,
-        node_allocator const& a)
-        : table(n, hf, eq, a)
-    {
-    }
-
-    table_unique(table_unique const& x)
-        : table(x, node_allocator_traits::select_on_container_copy_construction(
-                       x.node_alloc()))
-    {
-    }
-
-    table_unique(table_unique const& x, node_allocator const& a) : table(x, a)
-    {
-    }
-
-    table_unique(table_unique& x, boost::unordered::detail::move_tag m)
-        : table(x, m)
-    {
-    }
-
-    table_unique(table_unique& x, node_allocator const& a,
-        boost::unordered::detail::move_tag m)
-        : table(x, a, m)
-    {
-    }
+    ////////////////////////////////////////////////////////////////////////
+    // Unique keys
 
     // equals
 
@@ -4146,11 +3719,6 @@ struct table_unique : boost::unordered::detail::table<Types>
     ////////////////////////////////////////////////////////////////////////
     // fill_buckets_unique
 
-    BOOST_FORCEINLINE void copy_buckets(table const& src)
-    {
-        this->copy_buckets_unique(src);
-    }
-
     void copy_buckets_unique(table const& src)
     {
         this->create_buckets(this->bucket_count_);
@@ -4163,6 +3731,7 @@ struct table_unique : boost::unordered::detail::table<Types>
         }
     }
 
+    // TODO: Should be move_buckets_uniq
     void move_buckets(table const& src)
     {
         this->create_buckets(this->bucket_count_);
@@ -4175,22 +3744,12 @@ struct table_unique : boost::unordered::detail::table<Types>
         }
     }
 
-    BOOST_FORCEINLINE void assign_buckets(table const& src)
-    {
-        this->assign_buckets_unique(src);
-    }
-
     void assign_buckets_unique(table const& src)
     {
         node_holder<node_allocator> holder(*this);
         for (node_pointer n = src.begin(); n; n = node_algo::next_node(n)) {
             this->add_node_unique(holder.copy_of(n->value()), n->hash_);
         }
-    }
-
-    BOOST_FORCEINLINE void move_assign_buckets(table const& src)
-    {
-        this->move_assign_buckets_unique(src);
     }
 
     void move_assign_buckets_unique(table& src)
@@ -4200,260 +3759,9 @@ struct table_unique : boost::unordered::detail::table<Types>
             this->add_node_unique(holder.move_copy_of(n->value()), n->hash_);
         }
     }
-};
 
-////////////////////////////////////////////////////////////////////////
-// Grouped nodes
-
-template <typename A, typename T>
-struct grouped_node : boost::unordered::detail::value_base<T>
-{
-    typedef typename ::boost::unordered::detail::rebind_wrap<A,
-        grouped_node<A, T> >::type allocator;
-    typedef typename ::boost::unordered::detail::allocator_traits<
-        allocator>::pointer node_pointer;
-    typedef node_pointer link_pointer;
-    typedef typename ::boost::unordered::detail::rebind_wrap<A,
-        bucket<node_pointer> >::type bucket_allocator;
-    typedef typename ::boost::unordered::detail::allocator_traits<
-        bucket_allocator>::pointer bucket_pointer;
-
-    link_pointer next_;
-    node_pointer group_prev_;
-    std::size_t hash_;
-
-    grouped_node() : next_(), group_prev_(), hash_(0) {}
-
-    void init(node_pointer self) { group_prev_ = self; }
-
-  private:
-    grouped_node& operator=(grouped_node const&);
-};
-
-template <typename T>
-struct grouped_ptr_node : boost::unordered::detail::ptr_bucket
-{
-    typedef T value_type;
-    typedef boost::unordered::detail::ptr_bucket bucket_base;
-    typedef grouped_ptr_node<T>* node_pointer;
-    typedef ptr_bucket* link_pointer;
-    typedef ptr_bucket* bucket_pointer;
-
-    node_pointer group_prev_;
-    std::size_t hash_;
-    boost::unordered::detail::value_base<T> value_base_;
-
-    grouped_ptr_node() : bucket_base(), group_prev_(0), hash_(0) {}
-
-    void init(node_pointer self) { group_prev_ = self; }
-
-    void* address() { return value_base_.address(); }
-    value_type& value() { return value_base_.value(); }
-    value_type* value_ptr() { return value_base_.value_ptr(); }
-
-  private:
-    grouped_ptr_node& operator=(grouped_ptr_node const&);
-};
-
-template <typename N> struct grouped_node_algo
-{
-    typedef typename N::node_pointer node_pointer;
-    typedef typename N::link_pointer link_pointer;
-    typedef typename N::bucket_pointer bucket_pointer;
-
-    static node_pointer next_node(link_pointer n)
-    {
-        return static_cast<node_pointer>(n->next_);
-    }
-
-    static node_pointer next_for_find(node_pointer n)
-    {
-        return static_cast<node_pointer>(n->group_prev_->next_);
-    }
-
-    static link_pointer next_for_erase(link_pointer prev)
-    {
-        return static_cast<node_pointer>(prev->next_)->group_prev_;
-    }
-
-    static node_pointer last_for_rehash(link_pointer prev)
-    {
-        return static_cast<node_pointer>(prev->next_)->group_prev_;
-    }
-
-    // The 'void*' arguments are pointers to the table, which we
-    // will ignore, but without groups they could be used to
-    // access the various functions for dealing with values and keys.
-    static node_pointer next_group(node_pointer n, void const*)
-    {
-        return static_cast<node_pointer>(n->group_prev_->next_);
-    }
-
-    static std::size_t count(node_pointer n, void const*)
-    {
-        std::size_t x = 0;
-        node_pointer it = n;
-        do {
-            it = it->group_prev_;
-            ++x;
-        } while (it != n);
-
-        return x;
-    }
-
-    // Adds node 'n' to the group containing 'pos'.
-    // If 'pos' is the first node in group, add to the end of the group,
-    // otherwise add before 'pos'. Other versions will probably behave
-    // differently.
-    static inline void add_to_node(node_pointer n, node_pointer pos)
-    {
-        n->next_ = pos->group_prev_->next_;
-        n->group_prev_ = pos->group_prev_;
-        pos->group_prev_->next_ = n;
-        pos->group_prev_ = n;
-    }
-
-    static inline node_pointer extract_first_node(link_pointer prev)
-    {
-        node_pointer n = next_node(prev);
-        if (n->group_prev_ != n) {
-            node_pointer next = next_node(n);
-            next->group_prev_ = n->group_prev_;
-            n->group_prev_ = n;
-        }
-        prev->next_ = n->next_;
-        return n;
-    }
-
-    // Split the groups containing 'i' and 'j' so that they can
-    // be safely erased/extracted.
-    static link_pointer split_groups(node_pointer i, node_pointer j)
-    {
-        node_pointer prev = i->group_prev_;
-        if (prev->next_ != i)
-            prev = node_pointer();
-
-        if (j) {
-            node_pointer first = j;
-            while (first != i && first->group_prev_->next_ == first) {
-                first = first->group_prev_;
-            }
-
-            boost::swap(first->group_prev_, j->group_prev_);
-            if (first == i)
-                return prev;
-        }
-
-        if (prev) {
-            node_pointer first = prev;
-            while (first->group_prev_->next_ == first) {
-                first = first->group_prev_;
-            }
-            boost::swap(first->group_prev_, i->group_prev_);
-        }
-
-        return prev;
-    }
-};
-
-// If the allocator uses raw pointers use grouped_ptr_node
-// Otherwise use grouped_node.
-
-template <typename A, typename T, typename NodePtr, typename BucketPtr>
-struct pick_grouped_node2
-{
-    typedef boost::unordered::detail::grouped_node<A, T> node;
-
-    typedef typename boost::unordered::detail::allocator_traits<
-        typename boost::unordered::detail::rebind_wrap<A, node>::type>::pointer
-        node_pointer;
-
-    typedef boost::unordered::detail::bucket<node_pointer> bucket;
-    typedef node_pointer link_pointer;
-};
-
-template <typename A, typename T>
-struct pick_grouped_node2<A, T, boost::unordered::detail::grouped_ptr_node<T>*,
-    boost::unordered::detail::ptr_bucket*>
-{
-    typedef boost::unordered::detail::grouped_ptr_node<T> node;
-    typedef boost::unordered::detail::ptr_bucket bucket;
-    typedef bucket* link_pointer;
-};
-
-template <typename A, typename T> struct pick_grouped_node
-{
-    typedef typename boost::remove_const<T>::type nonconst;
-
-    typedef boost::unordered::detail::allocator_traits<
-        typename boost::unordered::detail::rebind_wrap<A,
-            boost::unordered::detail::grouped_ptr_node<nonconst> >::type>
-        tentative_node_traits;
-
-    typedef boost::unordered::detail::allocator_traits<
-        typename boost::unordered::detail::rebind_wrap<A,
-            boost::unordered::detail::ptr_bucket>::type>
-        tentative_bucket_traits;
-
-    typedef pick_grouped_node2<A, nonconst,
-        typename tentative_node_traits::pointer,
-        typename tentative_bucket_traits::pointer>
-        pick;
-
-    typedef typename pick::node node;
-    typedef typename pick::bucket bucket;
-    typedef typename pick::link_pointer link_pointer;
-    typedef boost::unordered::detail::grouped_node_algo<node> node_algo;
-};
-
-template <typename Types>
-struct table_equiv : boost::unordered::detail::table<Types>
-{
-    typedef boost::unordered::detail::table<Types> table;
-    typedef typename table::value_type value_type;
-    typedef typename table::bucket bucket;
-    typedef typename table::policy policy;
-    typedef typename table::node_pointer node_pointer;
-    typedef typename table::node_allocator node_allocator;
-    typedef typename table::node_allocator_traits node_allocator_traits;
-    typedef typename table::bucket_pointer bucket_pointer;
-    typedef typename table::link_pointer link_pointer;
-    typedef typename table::hasher hasher;
-    typedef typename table::key_equal key_equal;
-    typedef typename table::const_key_type const_key_type;
-    typedef typename table::node_constructor node_constructor;
-    typedef typename table::node_tmp node_tmp;
-    typedef typename table::extractor extractor;
-    typedef typename table::iterator iterator;
-    typedef typename table::c_iterator c_iterator;
-    typedef typename table::node_algo node_algo;
-
-    // Constructors
-
-    table_equiv(std::size_t n, hasher const& hf, key_equal const& eq,
-        node_allocator const& a)
-        : table(n, hf, eq, a)
-    {
-    }
-
-    table_equiv(table_equiv const& x)
-        : table(x, node_allocator_traits::select_on_container_copy_construction(
-                       x.node_alloc()))
-    {
-    }
-
-    table_equiv(table_equiv const& x, node_allocator const& a) : table(x, a) {}
-
-    table_equiv(table_equiv& x, boost::unordered::detail::move_tag m)
-        : table(x, m)
-    {
-    }
-
-    table_equiv(table_equiv& x, node_allocator const& a,
-        boost::unordered::detail::move_tag m)
-        : table(x, a, m)
-    {
-    }
+    ////////////////////////////////////////////////////////////////////////
+    // Equivalent keys
 
     // Equality
 
@@ -4803,11 +4111,6 @@ struct table_equiv : boost::unordered::detail::table<Types>
     ////////////////////////////////////////////////////////////////////////
     // fill_buckets
 
-    BOOST_FORCEINLINE void copy_buckets(table const& src)
-    {
-        this->copy_buckets_equiv(src);
-    }
-
     void copy_buckets_equiv(table const& src)
     {
         this->create_buckets(this->bucket_count_);
@@ -4850,11 +4153,6 @@ struct table_equiv : boost::unordered::detail::table<Types>
         }
     }
 
-    BOOST_FORCEINLINE void assign_buckets(table const& src)
-    {
-        this->assign_buckets_equiv(src);
-    }
-
     void assign_buckets_equiv(table const& src)
     {
         node_holder<node_allocator> holder(*this);
@@ -4868,11 +4166,6 @@ struct table_equiv : boost::unordered::detail::table<Types>
                 this->add_node_equiv(holder.copy_of(n->value()), key_hash, pos);
             }
         }
-    }
-
-    BOOST_FORCEINLINE void move_assign_buckets(table const& src)
-    {
-        this->move_assign_buckets_equiv(src);
     }
 
     void move_assign_buckets_equiv(table& src)
@@ -4890,6 +4183,596 @@ struct table_equiv : boost::unordered::detail::table<Types>
             }
         }
     }
+};
+
+////////////////////////////////////////////////////////////////////////////
+// Reserve & Rehash
+
+// basic exception safety
+template <typename Types>
+inline void table<Types>::reserve_for_insert(std::size_t size)
+{
+    if (!buckets_) {
+        create_buckets((std::max)(bucket_count_, min_buckets_for_size(size)));
+    } else if (size > max_load_) {
+        std::size_t num_buckets =
+            min_buckets_for_size((std::max)(size, size_ + (size_ >> 1)));
+
+        if (num_buckets != bucket_count_)
+            this->rehash_impl(num_buckets);
+    }
+}
+
+// if hash function throws, basic exception safety
+// strong otherwise.
+
+template <typename Types>
+inline void table<Types>::rehash(std::size_t min_buckets)
+{
+    using namespace std;
+
+    if (!size_) {
+        delete_buckets();
+        bucket_count_ = policy::new_bucket_count(min_buckets);
+    } else {
+        min_buckets = policy::new_bucket_count((std::max)(min_buckets,
+            boost::unordered::detail::double_to_size(
+                floor(static_cast<double>(size_) / static_cast<double>(mlf_))) +
+                1));
+
+        if (min_buckets != bucket_count_)
+            this->rehash_impl(min_buckets);
+    }
+}
+
+template <typename Types>
+inline void table<Types>::rehash_impl(std::size_t num_buckets)
+{
+    BOOST_ASSERT(this->buckets_);
+
+    this->create_buckets(num_buckets);
+    link_pointer prev = this->get_previous_start();
+    while (prev->next_) {
+        node_pointer group_last = node_algo::last_for_rehash(prev);
+        bucket_pointer b =
+            this->get_bucket(this->hash_to_bucket(group_last->hash_));
+        if (!b->next_) {
+            b->next_ = prev;
+            prev = group_last;
+        } else {
+            link_pointer next = group_last->next_;
+            group_last->next_ = b->next_->next_;
+            b->next_->next_ = prev->next_;
+            prev->next_ = next;
+        }
+    }
+}
+
+#if defined(BOOST_MSVC)
+#pragma warning(pop)
+#endif
+
+////////////////////////////////////////////////////////////////////////
+// key extractors
+//
+// no throw
+//
+// 'extract_key' is called with the emplace parameters to return a
+// key if available or 'no_key' is one isn't and will need to be
+// constructed. This could be done by overloading the emplace implementation
+// for the different cases, but that's a bit tricky on compilers without
+// variadic templates.
+
+template <typename Key, typename T> struct is_key
+{
+    template <typename T2> static choice1::type test(T2 const&);
+    static choice2::type test(Key const&);
+
+    enum
+    {
+        value = sizeof(test(boost::unordered::detail::make<T>())) ==
+                sizeof(choice2::type)
+    };
+
+    typedef typename boost::detail::if_true<value>::BOOST_NESTED_TEMPLATE
+        then<Key const&, no_key>::type type;
+};
+
+template <class ValueType> struct set_extractor
+{
+    typedef ValueType value_type;
+    typedef ValueType key_type;
+
+    static key_type const& extract(value_type const& v) { return v; }
+
+    static no_key extract() { return no_key(); }
+
+    template <class Arg> static no_key extract(Arg const&) { return no_key(); }
+
+#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+    template <class Arg1, class Arg2, class... Args>
+    static no_key extract(Arg1 const&, Arg2 const&, Args const&...)
+    {
+        return no_key();
+    }
+#else
+    template <class Arg1, class Arg2>
+    static no_key extract(Arg1 const&, Arg2 const&)
+    {
+        return no_key();
+    }
+#endif
+};
+
+template <class ValueType> struct map_extractor
+{
+    typedef ValueType value_type;
+    typedef typename boost::remove_const<typename boost::unordered::detail::
+            pair_traits<ValueType>::first_type>::type key_type;
+
+    static key_type const& extract(value_type const& v) { return v.first; }
+
+    template <class Second>
+    static key_type const& extract(std::pair<key_type, Second> const& v)
+    {
+        return v.first;
+    }
+
+    template <class Second>
+    static key_type const& extract(std::pair<key_type const, Second> const& v)
+    {
+        return v.first;
+    }
+
+    template <class Arg1>
+    static key_type const& extract(key_type const& k, Arg1 const&)
+    {
+        return k;
+    }
+
+    static no_key extract() { return no_key(); }
+
+    template <class Arg> static no_key extract(Arg const&) { return no_key(); }
+
+    template <class Arg1, class Arg2>
+    static no_key extract(Arg1 const&, Arg2 const&)
+    {
+        return no_key();
+    }
+
+#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+    template <class Arg1, class Arg2, class Arg3, class... Args>
+    static no_key extract(Arg1 const&, Arg2 const&, Arg3 const&, Args const&...)
+    {
+        return no_key();
+    }
+#endif
+
+#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+
+#define BOOST_UNORDERED_KEY_FROM_TUPLE(namespace_)                             \
+    template <typename T2>                                                     \
+    static no_key extract(boost::unordered::piecewise_construct_t,             \
+        namespace_ tuple<> const&, T2 const&)                                  \
+    {                                                                          \
+        return no_key();                                                       \
+    }                                                                          \
+                                                                               \
+    template <typename T, typename T2>                                         \
+    static typename is_key<key_type, T>::type extract(                         \
+        boost::unordered::piecewise_construct_t, namespace_ tuple<T> const& k, \
+        T2 const&)                                                             \
+    {                                                                          \
+        return typename is_key<key_type, T>::type(namespace_ get<0>(k));       \
+    }
+
+#else
+
+#define BOOST_UNORDERED_KEY_FROM_TUPLE(namespace_)                             \
+    static no_key extract(                                                     \
+        boost::unordered::piecewise_construct_t, namespace_ tuple<> const&)    \
+    {                                                                          \
+        return no_key();                                                       \
+    }                                                                          \
+                                                                               \
+    template <typename T>                                                      \
+    static typename is_key<key_type, T>::type extract(                         \
+        boost::unordered::piecewise_construct_t, namespace_ tuple<T> const& k) \
+    {                                                                          \
+        return typename is_key<key_type, T>::type(namespace_ get<0>(k));       \
+    }
+
+#endif
+
+    BOOST_UNORDERED_KEY_FROM_TUPLE(boost::)
+
+#if BOOST_UNORDERED_TUPLE_ARGS
+    BOOST_UNORDERED_KEY_FROM_TUPLE(std::)
+#endif
+};
+
+////////////////////////////////////////////////////////////////////////
+// Unique nodes
+
+template <typename A, typename T>
+struct unique_node : boost::unordered::detail::value_base<T>
+{
+    typedef typename ::boost::unordered::detail::rebind_wrap<A,
+        unique_node<A, T> >::type allocator;
+    typedef typename ::boost::unordered::detail::allocator_traits<
+        allocator>::pointer node_pointer;
+    typedef node_pointer link_pointer;
+    typedef typename ::boost::unordered::detail::rebind_wrap<A,
+        bucket<node_pointer> >::type bucket_allocator;
+    typedef typename ::boost::unordered::detail::allocator_traits<
+        bucket_allocator>::pointer bucket_pointer;
+
+    link_pointer next_;
+    std::size_t hash_;
+
+    unique_node() : next_(), hash_(0) {}
+
+    void init(node_pointer) {}
+
+  private:
+    unique_node& operator=(unique_node const&);
+};
+
+template <typename T> struct ptr_node : boost::unordered::detail::ptr_bucket
+{
+    typedef T value_type;
+    typedef boost::unordered::detail::ptr_bucket bucket_base;
+    typedef ptr_node<T>* node_pointer;
+    typedef ptr_bucket* link_pointer;
+    typedef ptr_bucket* bucket_pointer;
+
+    std::size_t hash_;
+    boost::unordered::detail::value_base<T> value_base_;
+
+    ptr_node() : bucket_base(), hash_(0) {}
+
+    void init(node_pointer) {}
+
+    void* address() { return value_base_.address(); }
+    value_type& value() { return value_base_.value(); }
+    value_type* value_ptr() { return value_base_.value_ptr(); }
+
+  private:
+    ptr_node& operator=(ptr_node const&);
+};
+
+template <typename N> struct node_algo
+{
+    typedef typename N::node_pointer node_pointer;
+    typedef typename N::link_pointer link_pointer;
+    typedef typename N::bucket_pointer bucket_pointer;
+
+    static node_pointer next_node(link_pointer n)
+    {
+        return static_cast<node_pointer>(n->next_);
+    }
+
+    static node_pointer next_for_find(node_pointer n)
+    {
+        return static_cast<node_pointer>(n->next_);
+    }
+
+    static link_pointer next_for_erase(link_pointer prev)
+    {
+        return prev->next_;
+    }
+
+    // Group together all nodes with equal hash value, this may
+    // include nodes with different keys, but that's okay because
+    // they will end up in the same bucket.
+    static node_pointer last_for_rehash(link_pointer prev)
+    {
+        node_pointer n = next_node(prev);
+        std::size_t hash = n->hash_;
+        for (;;) {
+            node_pointer next = next_node(n);
+            if (!next || next->hash_ != hash) {
+                return n;
+            }
+            n = next;
+        }
+    }
+
+    template <typename Table>
+    static node_pointer next_group(node_pointer n, Table const* t)
+    {
+        node_pointer n1 = n;
+        do {
+            n1 = next_node(n1);
+        } while (n1 && t->key_eq()(t->get_key(n), t->get_key(n1)));
+        return n1;
+    }
+
+    template <typename Table>
+    static std::size_t count(node_pointer n, Table const* t)
+    {
+        std::size_t x = 0;
+        node_pointer it = n;
+        do {
+            ++x;
+            it = next_node(it);
+        } while (it && t->key_eq()(t->get_key(n), t->get_key(it)));
+
+        return x;
+    }
+
+    // Add node 'n' after 'pos'.
+    // This results in a different order to the grouped implementation.
+    static inline void add_to_node(node_pointer n, node_pointer pos)
+    {
+        n->next_ = pos->next_;
+        pos->next_ = n;
+    }
+
+    static inline node_pointer extract_first_node(link_pointer prev)
+    {
+        node_pointer n = next_node(prev);
+        prev->next_ = n->next_;
+        return n;
+    }
+
+    static link_pointer split_groups(node_pointer, node_pointer)
+    {
+        return link_pointer();
+    }
+};
+
+// If the allocator uses raw pointers use ptr_node
+// Otherwise use node.
+
+template <typename A, typename T, typename NodePtr, typename BucketPtr>
+struct pick_node2
+{
+    typedef boost::unordered::detail::unique_node<A, T> node;
+
+    typedef typename boost::unordered::detail::allocator_traits<
+        typename boost::unordered::detail::rebind_wrap<A, node>::type>::pointer
+        node_pointer;
+
+    typedef boost::unordered::detail::bucket<node_pointer> bucket;
+    typedef node_pointer link_pointer;
+};
+
+template <typename A, typename T>
+struct pick_node2<A, T, boost::unordered::detail::ptr_node<T>*,
+    boost::unordered::detail::ptr_bucket*>
+{
+    typedef boost::unordered::detail::ptr_node<T> node;
+    typedef boost::unordered::detail::ptr_bucket bucket;
+    typedef bucket* link_pointer;
+};
+
+template <typename A, typename T> struct pick_node
+{
+    typedef typename boost::remove_const<T>::type nonconst;
+
+    typedef boost::unordered::detail::allocator_traits<
+        typename boost::unordered::detail::rebind_wrap<A,
+            boost::unordered::detail::ptr_node<nonconst> >::type>
+        tentative_node_traits;
+
+    typedef boost::unordered::detail::allocator_traits<
+        typename boost::unordered::detail::rebind_wrap<A,
+            boost::unordered::detail::ptr_bucket>::type>
+        tentative_bucket_traits;
+
+    typedef pick_node2<A, nonconst, typename tentative_node_traits::pointer,
+        typename tentative_bucket_traits::pointer>
+        pick;
+
+    typedef typename pick::node node;
+    typedef typename pick::bucket bucket;
+    typedef typename pick::link_pointer link_pointer;
+    typedef boost::unordered::detail::node_algo<node> node_algo;
+};
+
+////////////////////////////////////////////////////////////////////////
+// Grouped nodes
+
+template <typename A, typename T>
+struct grouped_node : boost::unordered::detail::value_base<T>
+{
+    typedef typename ::boost::unordered::detail::rebind_wrap<A,
+        grouped_node<A, T> >::type allocator;
+    typedef typename ::boost::unordered::detail::allocator_traits<
+        allocator>::pointer node_pointer;
+    typedef node_pointer link_pointer;
+    typedef typename ::boost::unordered::detail::rebind_wrap<A,
+        bucket<node_pointer> >::type bucket_allocator;
+    typedef typename ::boost::unordered::detail::allocator_traits<
+        bucket_allocator>::pointer bucket_pointer;
+
+    link_pointer next_;
+    node_pointer group_prev_;
+    std::size_t hash_;
+
+    grouped_node() : next_(), group_prev_(), hash_(0) {}
+
+    void init(node_pointer self) { group_prev_ = self; }
+
+  private:
+    grouped_node& operator=(grouped_node const&);
+};
+
+template <typename T>
+struct grouped_ptr_node : boost::unordered::detail::ptr_bucket
+{
+    typedef T value_type;
+    typedef boost::unordered::detail::ptr_bucket bucket_base;
+    typedef grouped_ptr_node<T>* node_pointer;
+    typedef ptr_bucket* link_pointer;
+    typedef ptr_bucket* bucket_pointer;
+
+    node_pointer group_prev_;
+    std::size_t hash_;
+    boost::unordered::detail::value_base<T> value_base_;
+
+    grouped_ptr_node() : bucket_base(), group_prev_(0), hash_(0) {}
+
+    void init(node_pointer self) { group_prev_ = self; }
+
+    void* address() { return value_base_.address(); }
+    value_type& value() { return value_base_.value(); }
+    value_type* value_ptr() { return value_base_.value_ptr(); }
+
+  private:
+    grouped_ptr_node& operator=(grouped_ptr_node const&);
+};
+
+template <typename N> struct grouped_node_algo
+{
+    typedef typename N::node_pointer node_pointer;
+    typedef typename N::link_pointer link_pointer;
+    typedef typename N::bucket_pointer bucket_pointer;
+
+    static node_pointer next_node(link_pointer n)
+    {
+        return static_cast<node_pointer>(n->next_);
+    }
+
+    static node_pointer next_for_find(node_pointer n)
+    {
+        return static_cast<node_pointer>(n->group_prev_->next_);
+    }
+
+    static link_pointer next_for_erase(link_pointer prev)
+    {
+        return static_cast<node_pointer>(prev->next_)->group_prev_;
+    }
+
+    static node_pointer last_for_rehash(link_pointer prev)
+    {
+        return static_cast<node_pointer>(prev->next_)->group_prev_;
+    }
+
+    // The 'void*' arguments are pointers to the table, which we
+    // will ignore, but without groups they could be used to
+    // access the various functions for dealing with values and keys.
+    static node_pointer next_group(node_pointer n, void const*)
+    {
+        return static_cast<node_pointer>(n->group_prev_->next_);
+    }
+
+    static std::size_t count(node_pointer n, void const*)
+    {
+        std::size_t x = 0;
+        node_pointer it = n;
+        do {
+            it = it->group_prev_;
+            ++x;
+        } while (it != n);
+
+        return x;
+    }
+
+    // Adds node 'n' to the group containing 'pos'.
+    // If 'pos' is the first node in group, add to the end of the group,
+    // otherwise add before 'pos'. Other versions will probably behave
+    // differently.
+    static inline void add_to_node(node_pointer n, node_pointer pos)
+    {
+        n->next_ = pos->group_prev_->next_;
+        n->group_prev_ = pos->group_prev_;
+        pos->group_prev_->next_ = n;
+        pos->group_prev_ = n;
+    }
+
+    static inline node_pointer extract_first_node(link_pointer prev)
+    {
+        node_pointer n = next_node(prev);
+        if (n->group_prev_ != n) {
+            node_pointer next = next_node(n);
+            next->group_prev_ = n->group_prev_;
+            n->group_prev_ = n;
+        }
+        prev->next_ = n->next_;
+        return n;
+    }
+
+    // Split the groups containing 'i' and 'j' so that they can
+    // be safely erased/extracted.
+    static link_pointer split_groups(node_pointer i, node_pointer j)
+    {
+        node_pointer prev = i->group_prev_;
+        if (prev->next_ != i)
+            prev = node_pointer();
+
+        if (j) {
+            node_pointer first = j;
+            while (first != i && first->group_prev_->next_ == first) {
+                first = first->group_prev_;
+            }
+
+            boost::swap(first->group_prev_, j->group_prev_);
+            if (first == i)
+                return prev;
+        }
+
+        if (prev) {
+            node_pointer first = prev;
+            while (first->group_prev_->next_ == first) {
+                first = first->group_prev_;
+            }
+            boost::swap(first->group_prev_, i->group_prev_);
+        }
+
+        return prev;
+    }
+};
+
+// If the allocator uses raw pointers use grouped_ptr_node
+// Otherwise use grouped_node.
+
+template <typename A, typename T, typename NodePtr, typename BucketPtr>
+struct pick_grouped_node2
+{
+    typedef boost::unordered::detail::grouped_node<A, T> node;
+
+    typedef typename boost::unordered::detail::allocator_traits<
+        typename boost::unordered::detail::rebind_wrap<A, node>::type>::pointer
+        node_pointer;
+
+    typedef boost::unordered::detail::bucket<node_pointer> bucket;
+    typedef node_pointer link_pointer;
+};
+
+template <typename A, typename T>
+struct pick_grouped_node2<A, T, boost::unordered::detail::grouped_ptr_node<T>*,
+    boost::unordered::detail::ptr_bucket*>
+{
+    typedef boost::unordered::detail::grouped_ptr_node<T> node;
+    typedef boost::unordered::detail::ptr_bucket bucket;
+    typedef bucket* link_pointer;
+};
+
+template <typename A, typename T> struct pick_grouped_node
+{
+    typedef typename boost::remove_const<T>::type nonconst;
+
+    typedef boost::unordered::detail::allocator_traits<
+        typename boost::unordered::detail::rebind_wrap<A,
+            boost::unordered::detail::grouped_ptr_node<nonconst> >::type>
+        tentative_node_traits;
+
+    typedef boost::unordered::detail::allocator_traits<
+        typename boost::unordered::detail::rebind_wrap<A,
+            boost::unordered::detail::ptr_bucket>::type>
+        tentative_bucket_traits;
+
+    typedef pick_grouped_node2<A, nonconst,
+        typename tentative_node_traits::pointer,
+        typename tentative_bucket_traits::pointer>
+        pick;
+
+    typedef typename pick::node node;
+    typedef typename pick::bucket bucket;
+    typedef typename pick::link_pointer link_pointer;
+    typedef boost::unordered::detail::grouped_node_algo<node> node_algo;
 };
 }
 }

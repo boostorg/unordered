@@ -1378,7 +1378,9 @@ unordered_map<K, T, H, P, A>::unordered_map(InputIt f, InputIt l, size_type n,
 
 template <class K, class T, class H, class P, class A>
 unordered_map<K, T, H, P, A>::unordered_map(unordered_map const& other)
-    : table_(other.table_)
+    : table_(other.table_,
+          unordered_map::value_allocator_traits::
+              select_on_container_copy_construction(other.get_allocator()))
 {
     if (other.table_.size_) {
         table_.copy_buckets_unique(other.table_);
@@ -1866,7 +1868,9 @@ unordered_multimap<K, T, H, P, A>::unordered_multimap(InputIt f, InputIt l,
 template <class K, class T, class H, class P, class A>
 unordered_multimap<K, T, H, P, A>::unordered_multimap(
     unordered_multimap const& other)
-    : table_(other.table_)
+    : table_(other.table_,
+          unordered_multimap::value_allocator_traits::
+              select_on_container_copy_construction(other.get_allocator()))
 {
     if (other.table_.size_) {
         table_.copy_buckets_equiv(other.table_);
@@ -1897,7 +1901,7 @@ unordered_multimap<K, T, H, P, A>::unordered_multimap(
 {
     if (table_.node_alloc() == other.table_.node_alloc()) {
         table_.move_buckets_from(other.table_);
-    } else if (other.table_.size()) {
+    } else if (other.table_.size_) {
         // TODO: Could pick new bucket size?
         table_.move_buckets_equiv(other.table_);
     }
@@ -2294,10 +2298,7 @@ template <typename N, class K, class T, class A> class node_handle_map
 {
     BOOST_MOVABLE_BUT_NOT_COPYABLE(node_handle_map)
 
-    template <typename Types>
-    friend struct ::boost::unordered::detail::table_unique;
-    template <typename Types>
-    friend struct ::boost::unordered::detail::table_equiv;
+    template <typename Types> friend struct ::boost::unordered::detail::table;
     template <class K2, class T2, class H2, class P2, class A2>
     friend class boost::unordered::unordered_map;
     template <class K2, class T2, class H2, class P2, class A2>

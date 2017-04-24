@@ -1077,7 +1077,9 @@ unordered_set<T, H, P, A>::unordered_set(InputIt f, InputIt l, size_type n,
 
 template <class T, class H, class P, class A>
 unordered_set<T, H, P, A>::unordered_set(unordered_set const& other)
-    : table_(other.table_)
+    : table_(other.table_,
+          unordered_set::value_allocator_traits::
+              select_on_container_copy_construction(other.get_allocator()))
 {
     if (other.table_.size_) {
         table_.copy_buckets_unique(other.table_);
@@ -1480,7 +1482,9 @@ unordered_multiset<T, H, P, A>::unordered_multiset(InputIt f, InputIt l,
 template <class T, class H, class P, class A>
 unordered_multiset<T, H, P, A>::unordered_multiset(
     unordered_multiset const& other)
-    : table_(other.table_)
+    : table_(other.table_,
+          unordered_multiset::value_allocator_traits::
+              select_on_container_copy_construction(other.get_allocator()))
 {
     if (other.table_.size_) {
         table_.copy_buckets_equiv(other.table_);
@@ -1511,7 +1515,7 @@ unordered_multiset<T, H, P, A>::unordered_multiset(
 {
     if (table_.node_alloc() == other.table_.node_alloc()) {
         table_.move_buckets_from(other.table_);
-    } else if (other.table_.size()) {
+    } else if (other.table_.size_) {
         // TODO: Could pick new bucket size?
         table_.move_buckets_equiv(other.table_);
     }
@@ -1869,10 +1873,7 @@ template <typename N, typename T, typename A> class node_handle_set
 {
     BOOST_MOVABLE_BUT_NOT_COPYABLE(node_handle_set)
 
-    template <typename Types>
-    friend struct ::boost::unordered::detail::table_unique;
-    template <typename Types>
-    friend struct ::boost::unordered::detail::table_equiv;
+    template <typename Types> friend struct ::boost::unordered::detail::table;
     template <class T2, class H2, class P2, class A2>
     friend class unordered_set;
     template <class T2, class H2, class P2, class A2>
