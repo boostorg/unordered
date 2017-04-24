@@ -1080,7 +1080,7 @@ unordered_set<T, H, P, A>::unordered_set(unordered_set const& other)
     : table_(other.table_)
 {
     if (other.table_.size_) {
-        table_.copy_buckets(other.table_);
+        table_.copy_buckets_unique(other.table_);
     }
 }
 
@@ -1097,7 +1097,7 @@ unordered_set<T, H, P, A>::unordered_set(
     : table_(other.table_, a)
 {
     if (other.table_.size_) {
-        table_.copy_buckets(other.table_);
+        table_.copy_buckets_unique(other.table_);
     }
 }
 
@@ -1483,7 +1483,7 @@ unordered_multiset<T, H, P, A>::unordered_multiset(
     : table_(other.table_)
 {
     if (other.table_.size_) {
-        table_.copy_buckets(other.table_);
+        table_.copy_buckets_equiv(other.table_);
     }
 }
 
@@ -1500,7 +1500,7 @@ unordered_multiset<T, H, P, A>::unordered_multiset(
     : table_(other.table_, a)
 {
     if (other.table_.size_) {
-        table_.copy_buckets(other.table_);
+        table_.copy_buckets_equiv(other.table_);
     }
 }
 
