@@ -254,7 +254,12 @@ template <class Test> void exception_safety(Test const& f, char const* /*name*/)
         } catch (test_failure) {
             error_msg = "test_failure caught.";
             break;
-        } catch (test_exception) {
+        } catch (test_exception e) {
+            if (error_count != boost::detail::test_errors()) {
+                BOOST_LIGHTWEIGHT_TEST_OSTREAM
+                    << "Iteration: " << iteration
+                    << " Error found for epoint: " << e.name << std::endl;
+            }
         } catch (...) {
             error_msg = "Unexpected exception.";
             break;
