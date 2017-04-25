@@ -78,18 +78,17 @@ static inline void run_tests()
 }
 }
 
-// TODO: Detect C++11 on more compilers
-#if defined(BOOST_GCC_CXX11)
-#define BOOST_UNORDERED_TEST_CXX11 "true"
+#if defined(__cplusplus)
+#define BOOST_UNORDERED_CPLUSPLUS __cplusplus
 #else
-#define BOOST_UNORDERED_TEST_CXX11 "false"
+#define BOOST_UNORDERED_CPLUSPLUS "(not defined)"
 #endif
 
 #define BOOST_UNORDERED_TEST_COMPILER_INFO()                                   \
     {                                                                          \
         std::cout << "Compiler: " << BOOST_COMPILER << "\n"                    \
                   << "Library: " << BOOST_STDLIB << "\n"                       \
-                  << "C++11: " << BOOST_UNORDERED_TEST_CXX11 << "\n\n"         \
+                  << "__cplusplus: " << BOOST_UNORDERED_CPLUSPLUS << "\n\n"    \
                   << "BOOST_UNORDERED_HAVE_PIECEWISE_CONSTRUCT: "              \
                   << BOOST_UNORDERED_HAVE_PIECEWISE_CONSTRUCT << "\n"          \
                   << "BOOST_UNORDERED_EMPLACE_LIMIT: "                         \
