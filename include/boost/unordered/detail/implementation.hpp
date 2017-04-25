@@ -186,7 +186,7 @@ template <typename Types> struct table;
 template <typename NodePointer> struct bucket;
 struct ptr_bucket;
 
-template <typename A, typename T> struct unique_node;
+template <typename A, typename T> struct node;
 template <typename T> struct ptr_node;
 template <typename N> struct node_algo;
 
@@ -4376,10 +4376,10 @@ template <class ValueType> struct map_extractor
 // Unique nodes
 
 template <typename A, typename T>
-struct unique_node : boost::unordered::detail::value_base<T>
+struct node : boost::unordered::detail::value_base<T>
 {
     typedef typename ::boost::unordered::detail::rebind_wrap<A,
-        unique_node<A, T> >::type allocator;
+        node<A, T> >::type allocator;
     typedef typename ::boost::unordered::detail::allocator_traits<
         allocator>::pointer node_pointer;
     typedef node_pointer link_pointer;
@@ -4391,12 +4391,12 @@ struct unique_node : boost::unordered::detail::value_base<T>
     link_pointer next_;
     std::size_t hash_;
 
-    unique_node() : next_(), hash_(0) {}
+    node() : next_(), hash_(0) {}
 
     void init(node_pointer) {}
 
   private:
-    unique_node& operator=(unique_node const&);
+    node& operator=(node const&);
 };
 
 template <typename T> struct ptr_node : boost::unordered::detail::ptr_bucket
@@ -4509,7 +4509,7 @@ template <typename N> struct node_algo
 template <typename A, typename T, typename NodePtr, typename BucketPtr>
 struct pick_node2
 {
-    typedef boost::unordered::detail::unique_node<A, T> node;
+    typedef boost::unordered::detail::node<A, T> node;
 
     typedef typename boost::unordered::detail::allocator_traits<
         typename boost::unordered::detail::rebind_wrap<A, node>::type>::pointer
