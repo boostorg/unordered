@@ -71,6 +71,7 @@
 //
 // 0 = Use different nodes
 // 1 = Use ungrouped nodes everywhere
+// 2 = Use grouped nodes everywhere
 //
 // Might add an extra value to use grouped nodes everywhere later.
 

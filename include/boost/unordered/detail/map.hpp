@@ -23,7 +23,11 @@ template <typename A, typename K, typename M, typename H, typename P> struct map
     typedef boost::unordered::detail::allocator_traits<value_allocator>
         value_allocator_traits;
 
+#if BOOST_UNORDERED_INTEROPERABLE_NODES != 2
     typedef boost::unordered::detail::pick_node<A, value_type> pick;
+#else
+    typedef boost::unordered::detail::pick_grouped_node<A, value_type> pick;
+#endif
     typedef typename pick::node node;
     typedef typename pick::bucket bucket;
     typedef typename pick::link_pointer link_pointer;
@@ -65,10 +69,10 @@ struct multimap
     typedef boost::unordered::detail::allocator_traits<value_allocator>
         value_allocator_traits;
 
-#if BOOST_UNORDERED_INTEROPERABLE_NODES
-    typedef boost::unordered::detail::pick_node<A, value_type> pick;
-#else
+#if BOOST_UNORDERED_INTEROPERABLE_NODES != 1
     typedef boost::unordered::detail::pick_grouped_node<A, value_type> pick;
+#else
+    typedef boost::unordered::detail::pick_node<A, value_type> pick;
 #endif
     typedef typename pick::node node;
     typedef typename pick::bucket bucket;

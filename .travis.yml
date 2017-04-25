@@ -44,8 +44,8 @@ matrix:
             user_config="using gcc : : g++-4.8 -fsanitize=address -Werror --std=c++03 -DBOOST_UNORDERED_INTEROPERABLE_NODES=1 ;"
       - compiler: clang
         env: |
-            label="gcc C++11 interopable1";
-            user_config="using clang : : clang++ -fsanitize=address -Werror --std=c++03 -DBOOST_UNORDERED_INTEROPERABLE_NODES=1 ;"
+            label="gcc C++11 interopable2";
+            user_config="using clang : : clang++ -fsanitize=address -Werror --std=c++03 -DBOOST_UNORDERED_INTEROPERABLE_NODES=2 ;"
 
 before_script:
     - cd ${TRAVIS_BUILD_DIR}
