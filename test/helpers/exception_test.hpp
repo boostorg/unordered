@@ -241,8 +241,10 @@ template <class Test> void exception_safety(Test const& f, char const* /*name*/)
 
     iteration = 0;
     bool success = false;
+    unsigned int failure_count = 0;
     char const* error_msg = 0;
     do {
+        int error_count = boost::detail::test_errors();
         ++iteration;
         count = 0;
 
@@ -253,12 +255,15 @@ template <class Test> void exception_safety(Test const& f, char const* /*name*/)
             error_msg = "test_failure caught.";
             break;
         } catch (test_exception) {
-            continue;
         } catch (...) {
             error_msg = "Unexpected exception.";
             break;
         }
-    } while (!success);
+
+        if (error_count != boost::detail::test_errors()) {
+            ++failure_count;
+        }
+    } while (!success && failure_count < 5);
 
     if (error_msg) {
         BOOST_ERROR(error_msg);
