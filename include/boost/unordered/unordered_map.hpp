@@ -523,7 +523,7 @@ template <class K, class T, class H, class P, class A> class unordered_map
     std::pair<iterator, bool> try_emplace(
         BOOST_RV_REF(key_type) k, BOOST_FWD_REF(A0) a0)
     {
-        return table_.try_emplace_hint_unique(
+        return table_.try_emplace_unique(
             boost::move(k), boost::unordered::detail::create_emplace_args(
                                 boost::forward<A0>(a0)));
     }
