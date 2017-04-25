@@ -2852,7 +2852,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     table(
         table& x, node_allocator const& a, boost::unordered::detail::move_tag m)
         : functions(x, m), allocators_(a, a), bucket_count_(x.bucket_count_),
-          size_(0), mlf_(x.mlf_), max_load_(x.max_load_), buckets_()
+          size_(0), mlf_(x.mlf_), max_load_(0), buckets_()
     {
     }
 
@@ -2987,6 +2987,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         buckets_ = other.buckets_;
         bucket_count_ = other.bucket_count_;
         size_ = other.size_;
+        max_load_ = other.max_load_;
         other.buckets_ = bucket_pointer();
         other.size_ = 0;
         other.max_load_ = 0;
@@ -3139,7 +3140,6 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
             new_func_this.commit();
             mlf_ = x.mlf_;
             bucket_count_ = min_buckets_for_size(x.size_);
-            max_load_ = 0;
 
             // Finally copy the elements.
             if (x.size_) {
@@ -3169,7 +3169,6 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         allocators_.move_assign(x.allocators_);
         // No throw from here.
         mlf_ = x.mlf_;
-        max_load_ = x.max_load_;
         move_buckets_from(x);
         new_func_this.commit();
     }
@@ -3181,7 +3180,6 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
             set_hash_functions new_func_this(*this, x);
             // No throw from here.
             mlf_ = x.mlf_;
-            max_load_ = x.max_load_;
             move_buckets_from(x);
             new_func_this.commit();
         } else {
