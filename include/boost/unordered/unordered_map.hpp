@@ -489,17 +489,27 @@ template <class K, class T, class H, class P, class A> class unordered_map
 
 #else
 
+    // In order to make this a template, this handles both:
+    // try_emplace(key const&)
+    // try_emplace(key&&)
+
     template <typename Key>
     std::pair<iterator, bool> try_emplace(BOOST_FWD_REF(Key) k)
     {
         return table_.try_emplace_unique(boost::forward<Key>(k));
     }
 
+    // In order to make this a template, this handles both:
+    // try_emplace(const_iterator hint, key const&)
+    // try_emplace(const_iterator hint, key&&)
+
     template <typename Key>
     iterator try_emplace(const_iterator hint, BOOST_FWD_REF(Key) k)
     {
         return table_.try_emplace_hint_unique(hint, boost::forward<Key>(k));
     }
+
+    // try_emplace(key const&, Args&&...)
 
     template <typename A0>
     std::pair<iterator, bool> try_emplace(
@@ -508,33 +518,6 @@ template <class K, class T, class H, class P, class A> class unordered_map
         return table_.try_emplace_unique(
             k, boost::unordered::detail::create_emplace_args(
                    boost::forward<A0>(a0)));
-    }
-
-    template <typename A0>
-    iterator try_emplace(
-        const_iterator hint, key_type const& k, BOOST_FWD_REF(A0) a0)
-    {
-        return table_.try_emplace_hint_unique(
-            hint, k, boost::unordered::detail::create_emplace_args(
-                         boost::forward<A0>(a0)));
-    }
-
-    template <typename A0>
-    std::pair<iterator, bool> try_emplace(
-        BOOST_RV_REF(key_type) k, BOOST_FWD_REF(A0) a0)
-    {
-        return table_.try_emplace_unique(
-            boost::move(k), boost::unordered::detail::create_emplace_args(
-                                boost::forward<A0>(a0)));
-    }
-
-    template <typename A0>
-    iterator try_emplace(
-        const_iterator hint, BOOST_RV_REF(key_type) k, BOOST_FWD_REF(A0) a0)
-    {
-        return table_.try_emplace_hint_unique(
-            hint, boost::move(k), boost::unordered::detail::create_emplace_args(
-                                      boost::forward<A0>(a0)));
     }
 
     template <typename A0, typename A1>
@@ -546,35 +529,6 @@ template <class K, class T, class H, class P, class A> class unordered_map
                    boost::forward<A0>(a0), boost::forward<A1>(a1)));
     }
 
-    template <typename A0, typename A1>
-    iterator try_emplace(const_iterator hint, key_type const& k,
-        BOOST_FWD_REF(A0) a0, BOOST_FWD_REF(A1) a1)
-    {
-        return table_.try_emplace_hint_unique(
-            hint, k, boost::unordered::detail::create_emplace_args(
-                         boost::forward<A0>(a0), boost::forward<A1>(a1)));
-    }
-
-    template <typename A0, typename A1>
-    std::pair<iterator, bool> try_emplace(
-        BOOST_RV_REF(key_type) k, BOOST_FWD_REF(A0) a0, BOOST_FWD_REF(A1) a1)
-    {
-        return table_.try_emplace_unique(
-            boost::move(k),
-            boost::unordered::detail::create_emplace_args(
-                boost::forward<A0>(a0), boost::forward<A1>(a1)));
-    }
-
-    template <typename A0, typename A1>
-    iterator try_emplace(const_iterator hint, BOOST_RV_REF(key_type) k,
-        BOOST_FWD_REF(A0) a0, BOOST_FWD_REF(A1) a1)
-    {
-        return table_.try_emplace_hint_unique(
-            hint, boost::move(k),
-            boost::unordered::detail::create_emplace_args(
-                boost::forward<A0>(a0), boost::forward<A1>(a1)));
-    }
-
     template <typename A0, typename A1, typename A2>
     std::pair<iterator, bool> try_emplace(key_type const& k,
         BOOST_FWD_REF(A0) a0, BOOST_FWD_REF(A1) a1, BOOST_FWD_REF(A2) a2)
@@ -583,6 +537,26 @@ template <class K, class T, class H, class P, class A> class unordered_map
             k, boost::unordered::detail::create_emplace_args(
                    boost::forward<A0>(a0), boost::forward<A1>(a1),
                    boost::forward<A2>(a2)));
+    }
+
+    // try_emplace(const_iterator hint, key const&, Args&&...)
+
+    template <typename A0>
+    iterator try_emplace(
+        const_iterator hint, key_type const& k, BOOST_FWD_REF(A0) a0)
+    {
+        return table_.try_emplace_hint_unique(
+            hint, k, boost::unordered::detail::create_emplace_args(
+                         boost::forward<A0>(a0)));
+    }
+
+    template <typename A0, typename A1>
+    iterator try_emplace(const_iterator hint, key_type const& k,
+        BOOST_FWD_REF(A0) a0, BOOST_FWD_REF(A1) a1)
+    {
+        return table_.try_emplace_hint_unique(
+            hint, k, boost::unordered::detail::create_emplace_args(
+                         boost::forward<A0>(a0), boost::forward<A1>(a1)));
     }
 
     template <typename A0, typename A1, typename A2>
@@ -597,6 +571,27 @@ template <class K, class T, class H, class P, class A> class unordered_map
             .first;
     }
 
+    // try_emplace(key&&, Args&&...)
+
+    template <typename A0>
+    std::pair<iterator, bool> try_emplace(
+        BOOST_RV_REF(key_type) k, BOOST_FWD_REF(A0) a0)
+    {
+        return table_.try_emplace_unique(
+            boost::move(k), boost::unordered::detail::create_emplace_args(
+                                boost::forward<A0>(a0)));
+    }
+
+    template <typename A0, typename A1>
+    std::pair<iterator, bool> try_emplace(
+        BOOST_RV_REF(key_type) k, BOOST_FWD_REF(A0) a0, BOOST_FWD_REF(A1) a1)
+    {
+        return table_.try_emplace_unique(
+            boost::move(k),
+            boost::unordered::detail::create_emplace_args(
+                boost::forward<A0>(a0), boost::forward<A1>(a1)));
+    }
+
     template <typename A0, typename A1, typename A2>
     std::pair<iterator, bool> try_emplace(BOOST_RV_REF(key_type) k,
         BOOST_FWD_REF(A0) a0, BOOST_FWD_REF(A1) a1, BOOST_FWD_REF(A2) a2)
@@ -605,6 +600,27 @@ template <class K, class T, class H, class P, class A> class unordered_map
             boost::move(k), boost::unordered::detail::create_emplace_args(
                                 boost::forward<A0>(a0), boost::forward<A1>(a1),
                                 boost::forward<A2>(a2)));
+    }
+
+    // try_emplace(const_iterator hint, key&&, Args&&...)
+
+    template <typename A0>
+    iterator try_emplace(
+        const_iterator hint, BOOST_RV_REF(key_type) k, BOOST_FWD_REF(A0) a0)
+    {
+        return table_.try_emplace_hint_unique(
+            hint, boost::move(k), boost::unordered::detail::create_emplace_args(
+                                      boost::forward<A0>(a0)));
+    }
+
+    template <typename A0, typename A1>
+    iterator try_emplace(const_iterator hint, BOOST_RV_REF(key_type) k,
+        BOOST_FWD_REF(A0) a0, BOOST_FWD_REF(A1) a1)
+    {
+        return table_.try_emplace_hint_unique(
+            hint, boost::move(k),
+            boost::unordered::detail::create_emplace_args(
+                boost::forward<A0>(a0), boost::forward<A1>(a1)));
     }
 
     template <typename A0, typename A1, typename A2>
