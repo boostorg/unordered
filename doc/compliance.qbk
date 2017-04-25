@@ -64,9 +64,9 @@ Due to imperfect move emulation, some assignments might check
 The following support is required for full use of C++11 style
 construction/destruction:
 
- * Variadic templates.
- * Piecewise construction of `std::pair`.
- * Either `std::allocator_traits` or expression SFINAE.
+* Variadic templates.
+* Piecewise construction of `std::pair`.
+* Either `std::allocator_traits` or expression SFINAE.
 
 This is detected using Boost.Config. The macro
 `BOOST_UNORDERED_CXX11_CONSTRUCTION` will be set to 1 if it is found, or 0
