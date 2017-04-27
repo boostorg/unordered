@@ -1242,7 +1242,7 @@ typename unordered_set<T, H, P, A>::iterator unordered_set<T, H, P, A>::erase(
 {
     node_pointer node = table::get_node(position);
     BOOST_ASSERT(node);
-    node_pointer next = table::node_algo::next_node(node);
+    node_pointer next = table::next_node(node);
     table_.erase_nodes_unique(node, next);
     return iterator(next);
 }
@@ -1368,8 +1368,8 @@ std::pair<typename unordered_set<T, H, P, A>::const_iterator,
 unordered_set<T, H, P, A>::equal_range(const key_type& k) const
 {
     node_pointer n = table_.find_node(k);
-    return std::make_pair(const_iterator(n),
-        const_iterator(n ? table::node_algo::next_node(n) : n));
+    return std::make_pair(
+        const_iterator(n), const_iterator(n ? table::next_node(n) : n));
 }
 
 template <class T, class H, class P, class A>
@@ -1646,7 +1646,7 @@ unordered_multiset<T, H, P, A>::erase(const_iterator position)
 {
     node_pointer node = table::get_node(position);
     BOOST_ASSERT(node);
-    node_pointer next = table::node_algo::next_node(node);
+    node_pointer next = table::next_node(node);
     table_.erase_nodes_equiv(node, next);
     return iterator(next);
 }
@@ -1772,7 +1772,7 @@ typename unordered_multiset<T, H, P, A>::size_type
 unordered_multiset<T, H, P, A>::count(const key_type& k) const
 {
     node_pointer n = table_.find_node(k);
-    return n ? table::node_algo::count(n, &table_) : 0;
+    return n ? table_.group_count(n) : 0;
 }
 
 template <class T, class H, class P, class A>
@@ -1781,8 +1781,8 @@ std::pair<typename unordered_multiset<T, H, P, A>::const_iterator,
 unordered_multiset<T, H, P, A>::equal_range(const key_type& k) const
 {
     node_pointer n = table_.find_node(k);
-    return std::make_pair(const_iterator(n),
-        const_iterator(n ? table::node_algo::next_group(n, &table_) : n));
+    return std::make_pair(
+        const_iterator(n), const_iterator(n ? table_.next_group(n) : n));
 }
 
 template <class T, class H, class P, class A>

@@ -175,7 +175,6 @@ struct ptr_bucket;
 
 template <typename A, typename T> struct node;
 template <typename T> struct ptr_node;
-template <typename N> struct node_algo;
 
 static const float minimum_max_load_factor = 1e-3f;
 static const std::size_t default_bucket_count = 11;
@@ -2660,7 +2659,6 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     typedef typename Types::c_iterator c_iterator;
     typedef typename Types::l_iterator l_iterator;
     typedef typename Types::cl_iterator cl_iterator;
-    typedef typename Types::node_algo node_algo;
 
     typedef boost::unordered::detail::functions<typename Types::hasher,
         typename Types::key_equal>
@@ -2701,6 +2699,42 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
 
     static node_pointer get_node(c_iterator it) { return it.node_; }
 
+    static node_pointer next_node(link_pointer n)
+    {
+        return static_cast<node_pointer>(n->next_);
+    }
+
+    static node_pointer next_for_find(link_pointer n)
+    {
+        return static_cast<node_pointer>(n->next_);
+    }
+
+    static link_pointer next_for_erase(link_pointer prev)
+    {
+        return prev->next_;
+    }
+
+    node_pointer next_group(node_pointer n) const
+    {
+        node_pointer n1 = n;
+        do {
+            n1 = next_node(n1);
+        } while (n1 && this->key_eq()(get_key(n), get_key(n1)));
+        return n1;
+    }
+
+    std::size_t group_count(node_pointer n) const
+    {
+        std::size_t x = 0;
+        node_pointer it = n;
+        do {
+            ++x;
+            it = next_node(it);
+        } while (it && this->key_eq()(get_key(n), get_key(it)));
+
+        return x;
+    }
+
     bucket_allocator const& bucket_alloc() const { return allocators_.first(); }
 
     node_allocator const& node_alloc() const { return allocators_.second(); }
@@ -2734,8 +2768,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
 
     node_pointer begin() const
     {
-        return size_ ? node_algo::next_node(get_previous_start())
-                     : node_pointer();
+        return size_ ? next_node(get_previous_start()) : node_pointer();
     }
 
     node_pointer begin(std::size_t bucket_index) const
@@ -2743,7 +2776,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         if (!size_)
             return node_pointer();
         link_pointer prev = get_previous_start(bucket_index);
-        return prev ? node_algo::next_node(prev) : node_pointer();
+        return prev ? next_node(prev) : node_pointer();
     }
 
     std::size_t hash_to_bucket(std::size_t hash_value) const
@@ -2760,7 +2793,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         std::size_t count = 0;
         while (n && hash_to_bucket(n->hash_) == index) {
             ++count;
-            n = node_algo::next_node(n);
+            n = next_node(n);
         }
 
         return count;
@@ -3235,7 +3268,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
                     return node_pointer();
             }
 
-            n = node_algo::next_for_find(n);
+            n = next_for_find(n);
         }
     }
 
@@ -3252,15 +3285,15 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
             if (!prev->next_) {
                 return link_pointer();
             }
-            std::size_t node_hash = node_algo::next_node(prev)->hash_;
+            std::size_t node_hash = next_node(prev)->hash_;
             if (this->hash_to_bucket(node_hash) != bucket_index) {
                 return link_pointer();
             }
             if (node_hash == key_hash &&
-                this->key_eq()(k, this->get_key(node_algo::next_node(prev)))) {
+                this->key_eq()(k, this->get_key(next_node(prev)))) {
                 return prev;
             }
-            prev = node_algo::next_for_erase(prev);
+            prev = next_for_erase(prev);
         }
     }
 
@@ -3277,7 +3310,8 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         if (!prev) {
             return node_pointer();
         }
-        node_pointer n = node_algo::extract_first_node(prev);
+        node_pointer n = next_node(prev);
+        prev->next_ = n->next_;
         --this->size_;
         this->fix_bucket(bucket_index, prev);
         n->next_ = link_pointer();
@@ -3302,8 +3336,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         if (this->size_ != other.size_)
             return false;
 
-        for (node_pointer n1 = this->begin(); n1;
-             n1 = node_algo::next_node(n1)) {
+        for (node_pointer n1 = this->begin(); n1; n1 = next_node(n1)) {
             node_pointer n2 = other.find_node(other.get_key(n1));
 
             if (!n2 || n1->value() != n2->value())
@@ -3325,8 +3358,8 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
             link_pointer start_node = this->get_previous_start();
 
             if (start_node->next_) {
-                this->get_bucket(this->hash_to_bucket(
-                                     node_algo::next_node(start_node)->hash_))
+                this->get_bucket(
+                        this->hash_to_bucket(next_node(start_node)->hash_))
                     ->next_ = n;
             }
 
@@ -3551,7 +3584,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
             link_pointer prev = other.get_previous_start();
 
             while (prev->next_) {
-                node_pointer n = other_table::node_algo::next_node(prev);
+                node_pointer n = other_table::next_node(prev);
                 const_key_type& k = this->get_key(n);
                 std::size_t key_hash = this->hash(k);
                 node_pointer pos = this->find_node(key_hash, k);
@@ -3560,8 +3593,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
                     prev = n;
                 } else {
                     this->reserve_for_insert(this->size_ + 1);
-                    other_table::node_algo::split_groups(
-                        n, other_table::node_algo::next_node(n));
+                    // other_table::split_groups(n, other_table::next_node(n));
                     prev->next_ = n->next_;
                     --other.size_;
                     other.fix_bucket(other.hash_to_bucket(n->hash_), prev);
@@ -3670,7 +3702,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         link_pointer prev = this->find_previous_node(k, key_hash, bucket_index);
         if (!prev)
             return 0;
-        link_pointer end = node_algo::next_node(prev)->next_;
+        link_pointer end = next_node(prev)->next_;
         this->delete_nodes(prev, end);
         this->fix_bucket(bucket_index, prev);
         return 1;
@@ -3699,7 +3731,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     {
         this->create_buckets(this->bucket_count_);
 
-        for (node_pointer n = src.begin(); n; n = node_algo::next_node(n)) {
+        for (node_pointer n = src.begin(); n; n = next_node(n)) {
             this->add_node_unique(
                 boost::unordered::detail::func::construct_node(
                     this->node_alloc(), n->value()),
@@ -3712,7 +3744,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     {
         this->create_buckets(this->bucket_count_);
 
-        for (node_pointer n = src.begin(); n; n = node_algo::next_node(n)) {
+        for (node_pointer n = src.begin(); n; n = next_node(n)) {
             this->add_node_unique(
                 boost::unordered::detail::func::construct_node(
                     this->node_alloc(), boost::move(n->value())),
@@ -3723,7 +3755,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     void assign_buckets_unique(table const& src)
     {
         node_holder<node_allocator> holder(*this);
-        for (node_pointer n = src.begin(); n; n = node_algo::next_node(n)) {
+        for (node_pointer n = src.begin(); n; n = next_node(n)) {
             this->add_node_unique(holder.copy_of(n->value()), n->hash_);
         }
     }
@@ -3731,7 +3763,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     void move_assign_buckets_unique(table& src)
     {
         node_holder<node_allocator> holder(*this);
-        for (node_pointer n = src.begin(); n; n = node_algo::next_node(n)) {
+        for (node_pointer n = src.begin(); n; n = next_node(n)) {
             this->add_node_unique(holder.move_copy_of(n->value()), n->hash_);
         }
     }
@@ -3750,8 +3782,8 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
             node_pointer n2 = other.find_node(other.get_key(n1));
             if (!n2)
                 return false;
-            node_pointer end1 = node_algo::next_group(n1, this);
-            node_pointer end2 = node_algo::next_group(n2, this);
+            node_pointer end1 = next_group(n1);
+            node_pointer end2 = next_group(n2);
             if (!group_equals_equiv(n1, end1, n2, end2))
                 return false;
             n1 = end1;
@@ -3767,8 +3799,8 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
             if (n1->value() != n2->value())
                 break;
 
-            n1 = node_algo::next_node(n1);
-            n2 = node_algo::next_node(n2);
+            n1 = next_node(n1);
+            n2 = next_node(n2);
 
             if (n1 == end1)
                 return n2 == end2;
@@ -3777,8 +3809,8 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         }
 
         for (node_pointer n1a = n1, n2a = n2;;) {
-            n1a = node_algo::next_node(n1a);
-            n2a = node_algo::next_node(n2a);
+            n1a = next_node(n1a);
+            n2a = next_node(n2a);
 
             if (n1a == end1) {
                 if (n2a == end2)
@@ -3792,14 +3824,13 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         }
 
         node_pointer start = n1;
-        for (; n1 != end1; n1 = node_algo::next_node(n1)) {
+        for (; n1 != end1; n1 = next_node(n1)) {
             value_type const& v = n1->value();
             if (!find_equiv(start, n1, v)) {
                 std::size_t matches = count_equal_equiv(n2, end2, v);
                 if (!matches)
                     return false;
-                if (matches !=
-                    1 + count_equal_equiv(node_algo::next_node(n1), end1, v))
+                if (matches != 1 + count_equal_equiv(next_node(n1), end1, v))
                     return false;
             }
         }
@@ -3810,7 +3841,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     static bool find_equiv(
         node_pointer n, node_pointer end, value_type const& v)
     {
-        for (; n != end; n = node_algo::next_node(n))
+        for (; n != end; n = next_node(n))
             if (n->value() == v)
                 return true;
         return false;
@@ -3820,7 +3851,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         node_pointer n, node_pointer end, value_type const& v)
     {
         std::size_t count = 0;
-        for (; n != end; n = node_algo::next_node(n))
+        for (; n != end; n = next_node(n))
             if (n->value() == v)
                 ++count;
         return count;
@@ -3833,10 +3864,11 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     {
         n->hash_ = key_hash;
         if (pos) {
-            node_algo::add_to_node(n, pos);
+            n->next_ = pos->next_;
+            pos->next_ = n;
             if (n->next_) {
                 std::size_t next_bucket =
-                    this->hash_to_bucket(node_algo::next_node(n)->hash_);
+                    this->hash_to_bucket(next_node(n)->hash_);
                 if (next_bucket != this->hash_to_bucket(key_hash)) {
                     this->get_bucket(next_bucket)->next_ = n;
                 }
@@ -3849,8 +3881,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
 
                 if (start_node->next_) {
                     this->get_bucket(
-                            this->hash_to_bucket(
-                                node_algo::next_node(start_node)->hash_))
+                            this->hash_to_bucket(next_node(start_node)->hash_))
                         ->next_ = n;
                 }
 
@@ -3869,10 +3900,10 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     inline node_pointer add_using_hint_equiv(node_pointer n, node_pointer hint)
     {
         n->hash_ = hint->hash_;
-        node_algo::add_to_node(n, hint);
+        n->next_ = hint->next_;
+        hint->next_ = n;
         if (n->next_ != hint && n->next_) {
-            std::size_t next_bucket =
-                this->hash_to_bucket(node_algo::next_node(n)->hash_);
+            std::size_t next_bucket = this->hash_to_bucket(next_node(n)->hash_);
             if (next_bucket != this->hash_to_bucket(n->hash_)) {
                 this->get_bucket(next_bucket)->next_ = n;
             }
@@ -4006,21 +4037,19 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     {
         node_pointer i = n.node_;
         BOOST_ASSERT(i);
-        node_pointer j(node_algo::next_node(i));
+        node_pointer j(next_node(i));
         std::size_t bucket_index = this->hash_to_bucket(i->hash_);
         // Split the groups containing 'i' and 'j'.
         // And get the pointer to the node before i while
         // we're at it.
-        link_pointer prev = node_algo::split_groups(i, j);
+        // link_pointer prev = split_groups(i, j);
 
         // If we don't have a 'prev' it means that i is at the
         // beginning of a block, so search through the blocks in the
         // same bucket.
-        if (!prev) {
-            prev = this->get_previous_start(bucket_index);
-            while (prev->next_ != i) {
-                prev = node_algo::next_for_erase(prev);
-            }
+        link_pointer prev = this->get_previous_start(bucket_index);
+        while (prev->next_ != i) {
+            prev = next_for_erase(prev);
         }
 
         prev->next_ = i->next_;
@@ -4047,8 +4076,8 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         if (!prev)
             return 0;
 
-        node_pointer first_node = node_algo::next_node(prev);
-        link_pointer end = node_algo::next_group(first_node, this);
+        node_pointer first_node = next_node(prev);
+        link_pointer end = next_group(first_node);
 
         std::size_t deleted_count = this->delete_nodes(prev, end);
         this->fix_bucket(bucket_index, prev);
@@ -4062,16 +4091,14 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         // Split the groups containing 'i' and 'j'.
         // And get the pointer to the node before i while
         // we're at it.
-        link_pointer prev = node_algo::split_groups(i, j);
+        // link_pointer prev = split_groups(i, j);
 
         // If we don't have a 'prev' it means that i is at the
         // beginning of a block, so search through the blocks in the
         // same bucket.
-        if (!prev) {
-            prev = this->get_previous_start(bucket_index);
-            while (prev->next_ != i) {
-                prev = node_algo::next_for_erase(prev);
-            }
+        link_pointer prev = this->get_previous_start(bucket_index);
+        while (prev->next_ != i) {
+            prev = next_for_erase(prev);
         }
 
         // Delete the nodes.
@@ -4093,13 +4120,12 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
 
         for (node_pointer n = src.begin(); n;) {
             std::size_t key_hash = n->hash_;
-            node_pointer group_end(node_algo::next_group(n, this));
+            node_pointer group_end(next_group(n));
             node_pointer pos = this->add_node_equiv(
                 boost::unordered::detail::func::construct_node(
                     this->node_alloc(), n->value()),
                 key_hash, node_pointer());
-            for (n = node_algo::next_node(n); n != group_end;
-                 n = node_algo::next_node(n)) {
+            for (n = next_node(n); n != group_end; n = next_node(n)) {
                 this->add_node_equiv(
                     boost::unordered::detail::func::construct_node(
                         this->node_alloc(), n->value()),
@@ -4114,13 +4140,12 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
 
         for (node_pointer n = src.begin(); n;) {
             std::size_t key_hash = n->hash_;
-            node_pointer group_end(node_algo::next_group(n, this));
+            node_pointer group_end(next_group(n));
             node_pointer pos = this->add_node_equiv(
                 boost::unordered::detail::func::construct_node(
                     this->node_alloc(), boost::move(n->value())),
                 key_hash, node_pointer());
-            for (n = node_algo::next_node(n); n != group_end;
-                 n = node_algo::next_node(n)) {
+            for (n = next_node(n); n != group_end; n = next_node(n)) {
                 this->add_node_equiv(
                     boost::unordered::detail::func::construct_node(
                         this->node_alloc(), boost::move(n->value())),
@@ -4134,11 +4159,10 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         node_holder<node_allocator> holder(*this);
         for (node_pointer n = src.begin(); n;) {
             std::size_t key_hash = n->hash_;
-            node_pointer group_end(node_algo::next_group(n, this));
+            node_pointer group_end(next_group(n));
             node_pointer pos = this->add_node_equiv(
                 holder.copy_of(n->value()), key_hash, node_pointer());
-            for (n = node_algo::next_node(n); n != group_end;
-                 n = node_algo::next_node(n)) {
+            for (n = next_node(n); n != group_end; n = next_node(n)) {
                 this->add_node_equiv(holder.copy_of(n->value()), key_hash, pos);
             }
         }
@@ -4149,11 +4173,10 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         node_holder<node_allocator> holder(*this);
         for (node_pointer n = src.begin(); n;) {
             std::size_t key_hash = n->hash_;
-            node_pointer group_end(node_algo::next_group(n, this));
+            node_pointer group_end(next_group(n));
             node_pointer pos = this->add_node_equiv(
                 holder.move_copy_of(n->value()), key_hash, node_pointer());
-            for (n = node_algo::next_node(n); n != group_end;
-                 n = node_algo::next_node(n)) {
+            for (n = next_node(n); n != group_end; n = next_node(n)) {
                 this->add_node_equiv(
                     holder.move_copy_of(n->value()), key_hash, pos);
             }
@@ -4209,7 +4232,21 @@ inline void table<Types>::rehash_impl(std::size_t num_buckets)
     this->create_buckets(num_buckets);
     link_pointer prev = this->get_previous_start();
     while (prev->next_) {
-        node_pointer group_last = node_algo::last_for_rehash(prev);
+        // Group together all nodes with equal hash value, this may
+        // include nodes with different keys, but that's okay because
+        // they will end up in the same bucket.
+        //
+        // TODO: Don't do this for unique keys?
+        node_pointer group_last = next_node(prev);
+        std::size_t hash = group_last->hash_;
+        for (;;) {
+            node_pointer next = next_node(group_last);
+            if (!next || next->hash_ != hash) {
+                break;
+            }
+            group_last = next;
+        }
+
         bucket_pointer b =
             this->get_bucket(this->hash_to_bucket(group_last->hash_));
         if (!b->next_) {
@@ -4419,87 +4456,6 @@ template <typename T> struct ptr_node : boost::unordered::detail::ptr_bucket
     ptr_node& operator=(ptr_node const&);
 };
 
-template <typename N> struct node_algo
-{
-    typedef typename N::node_pointer node_pointer;
-    typedef typename N::link_pointer link_pointer;
-    typedef typename N::bucket_pointer bucket_pointer;
-
-    static node_pointer next_node(link_pointer n)
-    {
-        return static_cast<node_pointer>(n->next_);
-    }
-
-    static node_pointer next_for_find(node_pointer n)
-    {
-        return static_cast<node_pointer>(n->next_);
-    }
-
-    static link_pointer next_for_erase(link_pointer prev)
-    {
-        return prev->next_;
-    }
-
-    // Group together all nodes with equal hash value, this may
-    // include nodes with different keys, but that's okay because
-    // they will end up in the same bucket.
-    static node_pointer last_for_rehash(link_pointer prev)
-    {
-        node_pointer n = next_node(prev);
-        std::size_t hash = n->hash_;
-        for (;;) {
-            node_pointer next = next_node(n);
-            if (!next || next->hash_ != hash) {
-                return n;
-            }
-            n = next;
-        }
-    }
-
-    template <typename Table>
-    static node_pointer next_group(node_pointer n, Table const* t)
-    {
-        node_pointer n1 = n;
-        do {
-            n1 = next_node(n1);
-        } while (n1 && t->key_eq()(t->get_key(n), t->get_key(n1)));
-        return n1;
-    }
-
-    template <typename Table>
-    static std::size_t count(node_pointer n, Table const* t)
-    {
-        std::size_t x = 0;
-        node_pointer it = n;
-        do {
-            ++x;
-            it = next_node(it);
-        } while (it && t->key_eq()(t->get_key(n), t->get_key(it)));
-
-        return x;
-    }
-
-    // Add node 'n' after 'pos'.
-    // This results in a different order to the grouped implementation.
-    static inline void add_to_node(node_pointer n, node_pointer pos)
-    {
-        n->next_ = pos->next_;
-        pos->next_ = n;
-    }
-
-    static inline node_pointer extract_first_node(link_pointer prev)
-    {
-        node_pointer n = next_node(prev);
-        prev->next_ = n->next_;
-        return n;
-    }
-
-    static link_pointer split_groups(node_pointer, node_pointer)
-    {
-        return link_pointer();
-    }
-};
-
 // If the allocator uses raw pointers use ptr_node
 // Otherwise use node.
 
@@ -4546,7 +4502,6 @@ template <typename A, typename T> struct pick_node
     typedef typename pick::node node;
     typedef typename pick::bucket bucket;
     typedef typename pick::link_pointer link_pointer;
-    typedef boost::unordered::detail::node_algo<node> node_algo;
 };
 }
 }
