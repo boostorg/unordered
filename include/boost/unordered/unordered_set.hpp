@@ -457,14 +457,12 @@ template <class T, class H, class P, class A> class unordered_set
     void merge(boost::unordered_set<T, H2, P2, A>&& source);
 #endif
 
-#if BOOST_UNORDERED_INTEROPERABLE_NODES
     template <typename H2, typename P2>
     void merge(boost::unordered_multiset<T, H2, P2, A>& source);
 
 #if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
     template <typename H2, typename P2>
     void merge(boost::unordered_multiset<T, H2, P2, A>&& source);
-#endif
 #endif
 
     // observers
@@ -962,14 +960,12 @@ template <class T, class H, class P, class A> class unordered_multiset
     void merge(boost::unordered_multiset<T, H2, P2, A>&& source);
 #endif
 
-#if BOOST_UNORDERED_INTEROPERABLE_NODES
     template <typename H2, typename P2>
     void merge(boost::unordered_set<T, H2, P2, A>& source);
 
 #if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
     template <typename H2, typename P2>
     void merge(boost::unordered_set<T, H2, P2, A>&& source);
-#endif
 #endif
 
     // observers
@@ -1322,7 +1318,6 @@ void unordered_set<T, H, P, A>::merge(
 }
 #endif
 
-#if BOOST_UNORDERED_INTEROPERABLE_NODES
 template <class T, class H, class P, class A>
 template <typename H2, typename P2>
 void unordered_set<T, H, P, A>::merge(
@@ -1339,7 +1334,6 @@ void unordered_set<T, H, P, A>::merge(
 {
     table_.merge_unique(source.table_);
 }
-#endif
 #endif
 
 // lookup
@@ -1732,7 +1726,6 @@ void unordered_multiset<T, H, P, A>::merge(
 }
 #endif
 
-#if BOOST_UNORDERED_INTEROPERABLE_NODES
 template <class T, class H, class P, class A>
 template <typename H2, typename P2>
 void unordered_multiset<T, H, P, A>::merge(
@@ -1753,7 +1746,6 @@ void unordered_multiset<T, H, P, A>::merge(
         insert(source.extract(source.begin()));
     }
 }
-#endif
 #endif
 
 // lookup
