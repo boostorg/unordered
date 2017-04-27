@@ -1674,8 +1674,7 @@ template <typename Alloc> node_constructor<Alloc>::~node_constructor()
 {
     if (node_) {
         if (node_constructed_) {
-            BOOST_UNORDERED_CALL_DESTROY(
-                node_allocator_traits, alloc_, boost::addressof(*node_));
+            boost::unordered::detail::func::destroy(boost::addressof(*node_));
         }
 
         node_allocator_traits::deallocate(alloc_, node_, 1);
@@ -1689,8 +1688,7 @@ template <typename Alloc> void node_constructor<Alloc>::create_node()
 
     node_ = node_allocator_traits::allocate(alloc_, 1);
 
-    BOOST_UNORDERED_CALL_CONSTRUCT0(
-        node_allocator_traits, alloc_, boost::addressof(*node_));
+    new (boost::addressof(*node_)) node();
     node_constructed_ = true;
 }
 
@@ -1721,8 +1719,7 @@ template <typename Alloc> node_tmp<Alloc>::~node_tmp()
     if (node_) {
         BOOST_UNORDERED_CALL_DESTROY(
             node_allocator_traits, alloc_, node_->value_ptr());
-        BOOST_UNORDERED_CALL_DESTROY(
-            node_allocator_traits, alloc_, boost::addressof(*node_));
+        boost::unordered::detail::func::destroy(boost::addressof(*node_));
         node_allocator_traits::deallocate(alloc_, node_, 1);
     }
 }
@@ -2221,8 +2218,7 @@ template <typename Alloc> node_holder<Alloc>::~node_holder()
 
         BOOST_UNORDERED_CALL_DESTROY(
             node_allocator_traits, constructor_.alloc_, p->value_ptr());
-        BOOST_UNORDERED_CALL_DESTROY(
-            node_allocator_traits, constructor_.alloc_, boost::addressof(*p));
+        boost::unordered::detail::func::destroy(boost::addressof(*p));
         node_allocator_traits::deallocate(constructor_.alloc_, p, 1);
     }
 }
@@ -2913,20 +2909,21 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
             bucket_allocator_traits::allocate(bucket_alloc(), length);
         bucket_pointer constructed = new_buckets;
 
+        // TODO: Apart from constructing the dummy node this is now
+        //       nothrow, so maybe rearrange it a bit so that less
+        //       exception handling is required.
         BOOST_TRY
         {
             bucket_pointer end =
                 new_buckets + static_cast<std::ptrdiff_t>(new_count);
             for (; constructed != end; ++constructed) {
-                BOOST_UNORDERED_CALL_CONSTRUCT0(bucket_allocator_traits,
-                    bucket_alloc(), boost::addressof(*constructed));
+                new (boost::addressof(*constructed)) bucket();
             }
 
             if (buckets_) {
                 // Copy the nodes to the new buckets, including the dummy
                 // node if there is one.
-                BOOST_UNORDERED_CALL_CONSTRUCT1(bucket_allocator_traits,
-                    bucket_alloc(), boost::addressof(*constructed),
+                new (boost::addressof(*constructed)) bucket(
                     (buckets_ + static_cast<std::ptrdiff_t>(bucket_count_))
                         ->next_);
                 ++constructed;
@@ -2935,21 +2932,17 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
                 node_constructor a(node_alloc());
                 a.create_node();
 
-                BOOST_UNORDERED_CALL_CONSTRUCT1(bucket_allocator_traits,
-                    bucket_alloc(), boost::addressof(*constructed),
-                    a.release());
+                new (boost::addressof(*constructed)) bucket(a.release());
                 ++constructed;
             } else {
-                BOOST_UNORDERED_CALL_CONSTRUCT0(bucket_allocator_traits,
-                    bucket_alloc(), boost::addressof(*constructed));
+                new (boost::addressof(*constructed)) bucket();
                 ++constructed;
             }
         }
         BOOST_CATCH(...)
         {
             for (bucket_pointer p = new_buckets; p != constructed; ++p) {
-                BOOST_UNORDERED_CALL_DESTROY(bucket_allocator_traits,
-                    bucket_alloc(), boost::addressof(*p));
+                boost::unordered::detail::func::destroy(boost::addressof(*p));
             }
 
             bucket_allocator_traits::deallocate(
@@ -3030,8 +3023,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
 
         BOOST_UNORDERED_CALL_DESTROY(
             node_allocator_traits, node_alloc(), n->value_ptr());
-        BOOST_UNORDERED_CALL_DESTROY(
-            node_allocator_traits, node_alloc(), boost::addressof(*n));
+        boost::unordered::detail::func::destroy(boost::addressof(*n));
         node_allocator_traits::deallocate(node_alloc(), n, 1);
         --size_;
     }
@@ -3059,8 +3051,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
             if (bucket::extra_node) {
                 node_pointer n =
                     static_cast<node_pointer>(get_bucket(bucket_count_)->next_);
-                BOOST_UNORDERED_CALL_DESTROY(
-                    node_allocator_traits, node_alloc(), boost::addressof(*n));
+                boost::unordered::detail::func::destroy(boost::addressof(*n));
                 node_allocator_traits::deallocate(node_alloc(), n, 1);
             }
 
@@ -3076,8 +3067,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     {
         bucket_pointer end = get_bucket(bucket_count_ + 1);
         for (bucket_pointer it = buckets_; it != end; ++it) {
-            BOOST_UNORDERED_CALL_DESTROY(
-                bucket_allocator_traits, bucket_alloc(), boost::addressof(*it));
+            boost::unordered::detail::func::destroy(boost::addressof(*it));
         }
 
         bucket_allocator_traits::deallocate(
