@@ -856,7 +856,7 @@ template <class K, class T, class H, class P, class A> class unordered_multimap
     typedef A allocator_type;
 
   private:
-    typedef boost::unordered::detail::multimap<A, K, T, H, P> types;
+    typedef boost::unordered::detail::map<A, K, T, H, P> types;
     typedef typename types::value_allocator_traits value_allocator_traits;
     typedef typename types::table table;
     typedef typename table::node_pointer node_pointer;
