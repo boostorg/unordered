@@ -30,10 +30,6 @@ template <typename A, typename T, typename H, typename P> struct set
 
     typedef boost::unordered::detail::table<types> table;
     typedef boost::unordered::detail::set_extractor<value_type> extractor;
-    enum
-    {
-        is_unique = true
-    };
 
     typedef typename boost::unordered::detail::pick_policy<T>::type policy;
 
@@ -70,10 +66,6 @@ template <typename A, typename T, typename H, typename P> struct multiset
 
     typedef boost::unordered::detail::table<types> table;
     typedef boost::unordered::detail::set_extractor<value_type> extractor;
-    enum
-    {
-        is_unique = false
-    };
 
     typedef typename boost::unordered::detail::pick_policy<T>::type policy;
 

@@ -30,10 +30,6 @@ template <typename A, typename K, typename M, typename H, typename P> struct map
 
     typedef boost::unordered::detail::table<types> table;
     typedef boost::unordered::detail::map_extractor<value_type> extractor;
-    enum
-    {
-        is_unique = true
-    };
 
     typedef typename boost::unordered::detail::pick_policy<K>::type policy;
 
@@ -71,10 +67,6 @@ struct multimap
 
     typedef boost::unordered::detail::table<types> table;
     typedef boost::unordered::detail::map_extractor<value_type> extractor;
-    enum
-    {
-        is_unique = false
-    };
 
     typedef typename boost::unordered::detail::pick_policy<K>::type policy;
 

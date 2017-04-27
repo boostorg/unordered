@@ -146,7 +146,7 @@ template <class K, class T, class H, class P, class A> class unordered_map
 #if defined(BOOST_UNORDERED_USE_MOVE)
     unordered_map& operator=(BOOST_COPY_ASSIGN_REF(unordered_map) x)
     {
-        table_.assign(x.table_);
+        table_.assign(x.table_, true);
         return *this;
     }
 
@@ -156,13 +156,13 @@ template <class K, class T, class H, class P, class A> class unordered_map
     //    is_nothrow_move_assignable_v<H> &&
     //    is_nothrow_move_assignable_v<P>)
     {
-        table_.move_assign(x.table_);
+        table_.move_assign(x.table_, true);
         return *this;
     }
 #else
     unordered_map& operator=(unordered_map const& x)
     {
-        table_.assign(x.table_);
+        table_.assign(x.table_, true);
         return *this;
     }
 
@@ -173,7 +173,7 @@ template <class K, class T, class H, class P, class A> class unordered_map
     //    is_nothrow_move_assignable_v<H> &&
     //    is_nothrow_move_assignable_v<P>)
     {
-        table_.move_assign(x.table_);
+        table_.move_assign(x.table_, true);
         return *this;
     }
 #endif
@@ -950,7 +950,7 @@ template <class K, class T, class H, class P, class A> class unordered_multimap
 #if defined(BOOST_UNORDERED_USE_MOVE)
     unordered_multimap& operator=(BOOST_COPY_ASSIGN_REF(unordered_multimap) x)
     {
-        table_.assign(x.table_);
+        table_.assign(x.table_, false);
         return *this;
     }
 
@@ -960,13 +960,13 @@ template <class K, class T, class H, class P, class A> class unordered_multimap
     //    is_nothrow_move_assignable_v<H> &&
     //    is_nothrow_move_assignable_v<P>)
     {
-        table_.move_assign(x.table_);
+        table_.move_assign(x.table_, false);
         return *this;
     }
 #else
     unordered_multimap& operator=(unordered_multimap const& x)
     {
-        table_.assign(x.table_);
+        table_.assign(x.table_, false);
         return *this;
     }
 
@@ -977,7 +977,7 @@ template <class K, class T, class H, class P, class A> class unordered_multimap
     //    is_nothrow_move_assignable_v<H> &&
     //    is_nothrow_move_assignable_v<P>)
     {
-        table_.move_assign(x.table_);
+        table_.move_assign(x.table_, false);
         return *this;
     }
 #endif
