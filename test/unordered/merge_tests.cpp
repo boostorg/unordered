@@ -99,7 +99,6 @@ UNORDERED_AUTO_TEST(merge_multiset)
     test::check_equivalent_keys(y);
 }
 
-#if BOOST_UNORDERED_INTEROPERABLE_NODES
 UNORDERED_AUTO_TEST(merge_set_and_multiset)
 {
     boost::unordered_set<int> x;
@@ -139,7 +138,6 @@ UNORDERED_AUTO_TEST(merge_set_and_multiset)
     test::check_equivalent_keys(x);
     test::check_equivalent_keys(y);
 }
-#endif
 
 template <class X> void merge_empty_test(X*, test::random_generator generator)
 {

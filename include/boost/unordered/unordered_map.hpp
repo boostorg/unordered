@@ -146,7 +146,7 @@ template <class K, class T, class H, class P, class A> class unordered_map
 #if defined(BOOST_UNORDERED_USE_MOVE)
     unordered_map& operator=(BOOST_COPY_ASSIGN_REF(unordered_map) x)
     {
-        table_.assign(x.table_);
+        table_.assign(x.table_, true);
         return *this;
     }
 
@@ -156,13 +156,13 @@ template <class K, class T, class H, class P, class A> class unordered_map
     //    is_nothrow_move_assignable_v<H> &&
     //    is_nothrow_move_assignable_v<P>)
     {
-        table_.move_assign(x.table_);
+        table_.move_assign(x.table_, true);
         return *this;
     }
 #else
     unordered_map& operator=(unordered_map const& x)
     {
-        table_.assign(x.table_);
+        table_.assign(x.table_, true);
         return *this;
     }
 
@@ -173,7 +173,7 @@ template <class K, class T, class H, class P, class A> class unordered_map
     //    is_nothrow_move_assignable_v<H> &&
     //    is_nothrow_move_assignable_v<P>)
     {
-        table_.move_assign(x.table_);
+        table_.move_assign(x.table_, true);
         return *this;
     }
 #endif
@@ -740,14 +740,12 @@ template <class K, class T, class H, class P, class A> class unordered_map
     void merge(boost::unordered_map<K, T, H2, P2, A>&& source);
 #endif
 
-#if BOOST_UNORDERED_INTEROPERABLE_NODES
     template <typename H2, typename P2>
     void merge(boost::unordered_multimap<K, T, H2, P2, A>& source);
 
 #if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
     template <typename H2, typename P2>
     void merge(boost::unordered_multimap<K, T, H2, P2, A>&& source);
-#endif
 #endif
 
     // observers
@@ -858,7 +856,7 @@ template <class K, class T, class H, class P, class A> class unordered_multimap
     typedef A allocator_type;
 
   private:
-    typedef boost::unordered::detail::multimap<A, K, T, H, P> types;
+    typedef boost::unordered::detail::map<A, K, T, H, P> types;
     typedef typename types::value_allocator_traits value_allocator_traits;
     typedef typename types::table table;
     typedef typename table::node_pointer node_pointer;
@@ -952,7 +950,7 @@ template <class K, class T, class H, class P, class A> class unordered_multimap
 #if defined(BOOST_UNORDERED_USE_MOVE)
     unordered_multimap& operator=(BOOST_COPY_ASSIGN_REF(unordered_multimap) x)
     {
-        table_.assign(x.table_);
+        table_.assign(x.table_, false);
         return *this;
     }
 
@@ -962,13 +960,13 @@ template <class K, class T, class H, class P, class A> class unordered_multimap
     //    is_nothrow_move_assignable_v<H> &&
     //    is_nothrow_move_assignable_v<P>)
     {
-        table_.move_assign(x.table_);
+        table_.move_assign(x.table_, false);
         return *this;
     }
 #else
     unordered_multimap& operator=(unordered_multimap const& x)
     {
-        table_.assign(x.table_);
+        table_.assign(x.table_, false);
         return *this;
     }
 
@@ -979,7 +977,7 @@ template <class K, class T, class H, class P, class A> class unordered_multimap
     //    is_nothrow_move_assignable_v<H> &&
     //    is_nothrow_move_assignable_v<P>)
     {
-        table_.move_assign(x.table_);
+        table_.move_assign(x.table_, false);
         return *this;
     }
 #endif
@@ -1277,14 +1275,12 @@ template <class K, class T, class H, class P, class A> class unordered_multimap
     void merge(boost::unordered_multimap<K, T, H2, P2, A>&& source);
 #endif
 
-#if BOOST_UNORDERED_INTEROPERABLE_NODES
     template <typename H2, typename P2>
     void merge(boost::unordered_map<K, T, H2, P2, A>& source);
 
 #if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
     template <typename H2, typename P2>
     void merge(boost::unordered_map<K, T, H2, P2, A>&& source);
-#endif
 #endif
 
     // observers
@@ -1573,7 +1569,7 @@ unordered_map<K, T, H, P, A>::erase(iterator position)
 {
     node_pointer node = table::get_node(position);
     BOOST_ASSERT(node);
-    node_pointer next = table::node_algo::next_node(node);
+    node_pointer next = table::next_node(node);
     table_.erase_nodes_unique(node, next);
     return iterator(next);
 }
@@ -1584,7 +1580,7 @@ unordered_map<K, T, H, P, A>::erase(const_iterator position)
 {
     node_pointer node = table::get_node(position);
     BOOST_ASSERT(node);
-    node_pointer next = table::node_algo::next_node(node);
+    node_pointer next = table::next_node(node);
     table_.erase_nodes_unique(node, next);
     return iterator(next);
 }
@@ -1644,7 +1640,6 @@ void unordered_map<K, T, H, P, A>::merge(
 }
 #endif
 
-#if BOOST_UNORDERED_INTEROPERABLE_NODES
 template <class K, class T, class H, class P, class A>
 template <typename H2, typename P2>
 void unordered_map<K, T, H, P, A>::merge(
@@ -1661,7 +1656,6 @@ void unordered_map<K, T, H, P, A>::merge(
 {
     table_.merge_unique(source.table_);
 }
-#endif
 #endif
 
 // observers
@@ -1729,8 +1723,7 @@ std::pair<typename unordered_map<K, T, H, P, A>::iterator,
 unordered_map<K, T, H, P, A>::equal_range(const key_type& k)
 {
     node_pointer n = table_.find_node(k);
-    return std::make_pair(
-        iterator(n), iterator(n ? table::node_algo::next_node(n) : n));
+    return std::make_pair(iterator(n), iterator(n ? table::next_node(n) : n));
 }
 
 template <class K, class T, class H, class P, class A>
@@ -1739,8 +1732,8 @@ std::pair<typename unordered_map<K, T, H, P, A>::const_iterator,
 unordered_map<K, T, H, P, A>::equal_range(const key_type& k) const
 {
     node_pointer n = table_.find_node(k);
-    return std::make_pair(const_iterator(n),
-        const_iterator(n ? table::node_algo::next_node(n) : n));
+    return std::make_pair(
+        const_iterator(n), const_iterator(n ? table::next_node(n) : n));
 }
 
 template <class K, class T, class H, class P, class A>
@@ -2060,7 +2053,7 @@ unordered_multimap<K, T, H, P, A>::erase(iterator position)
 {
     node_pointer node = table::get_node(position);
     BOOST_ASSERT(node);
-    node_pointer next = table::node_algo::next_node(node);
+    node_pointer next = table::next_node(node);
     table_.erase_nodes_equiv(node, next);
     return iterator(next);
 }
@@ -2071,7 +2064,7 @@ unordered_multimap<K, T, H, P, A>::erase(const_iterator position)
 {
     node_pointer node = table::get_node(position);
     BOOST_ASSERT(node);
-    node_pointer next = table::node_algo::next_node(node);
+    node_pointer next = table::next_node(node);
     table_.erase_nodes_equiv(node, next);
     return iterator(next);
 }
@@ -2152,7 +2145,6 @@ void unordered_multimap<K, T, H, P, A>::merge(
 }
 #endif
 
-#if BOOST_UNORDERED_INTEROPERABLE_NODES
 template <class K, class T, class H, class P, class A>
 template <typename H2, typename P2>
 void unordered_multimap<K, T, H, P, A>::merge(
@@ -2173,7 +2165,6 @@ void unordered_multimap<K, T, H, P, A>::merge(
         insert(source.extract(source.begin()));
     }
 }
-#endif
 #endif
 
 // lookup
@@ -2217,7 +2208,7 @@ typename unordered_multimap<K, T, H, P, A>::size_type
 unordered_multimap<K, T, H, P, A>::count(const key_type& k) const
 {
     node_pointer n = table_.find_node(k);
-    return n ? table::node_algo::count(n, &table_) : 0;
+    return n ? table_.group_count(n) : 0;
 }
 
 template <class K, class T, class H, class P, class A>
@@ -2226,8 +2217,7 @@ std::pair<typename unordered_multimap<K, T, H, P, A>::iterator,
 unordered_multimap<K, T, H, P, A>::equal_range(const key_type& k)
 {
     node_pointer n = table_.find_node(k);
-    return std::make_pair(iterator(n),
-        iterator(n ? table::node_algo::next_group(n, &table_) : n));
+    return std::make_pair(iterator(n), iterator(n ? table_.next_group(n) : n));
 }
 
 template <class K, class T, class H, class P, class A>
@@ -2236,8 +2226,8 @@ std::pair<typename unordered_multimap<K, T, H, P, A>::const_iterator,
 unordered_multimap<K, T, H, P, A>::equal_range(const key_type& k) const
 {
     node_pointer n = table_.find_node(k);
-    return std::make_pair(const_iterator(n),
-        const_iterator(n ? table::node_algo::next_group(n, &table_) : n));
+    return std::make_pair(
+        const_iterator(n), const_iterator(n ? table_.next_group(n) : n));
 }
 
 template <class K, class T, class H, class P, class A>

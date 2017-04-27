@@ -93,8 +93,6 @@ static inline void run_tests()
                   << BOOST_UNORDERED_HAVE_PIECEWISE_CONSTRUCT << "\n"          \
                   << "BOOST_UNORDERED_EMPLACE_LIMIT: "                         \
                   << BOOST_UNORDERED_EMPLACE_LIMIT << "\n"                     \
-                  << "BOOST_UNORDERED_INTEROPERABLE_NODES: "                   \
-                  << BOOST_UNORDERED_INTEROPERABLE_NODES << "\n"               \
                   << "BOOST_UNORDERED_USE_ALLOCATOR_TRAITS: "                  \
                   << BOOST_UNORDERED_USE_ALLOCATOR_TRAITS << "\n"              \
                   << "BOOST_UNORDERED_CXX11_CONSTRUCTION: "                    \

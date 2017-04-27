@@ -144,7 +144,7 @@ template <class T, class H, class P, class A> class unordered_set
 #if defined(BOOST_UNORDERED_USE_MOVE)
     unordered_set& operator=(BOOST_COPY_ASSIGN_REF(unordered_set) x)
     {
-        table_.assign(x.table_);
+        table_.assign(x.table_, true);
         return *this;
     }
 
@@ -154,13 +154,13 @@ template <class T, class H, class P, class A> class unordered_set
     //    is_nothrow_move_assignable_v<H> &&
     //    is_nothrow_move_assignable_v<P>)
     {
-        table_.move_assign(x.table_);
+        table_.move_assign(x.table_, true);
         return *this;
     }
 #else
     unordered_set& operator=(unordered_set const& x)
     {
-        table_.assign(x.table_);
+        table_.assign(x.table_, true);
         return *this;
     }
 
@@ -171,7 +171,7 @@ template <class T, class H, class P, class A> class unordered_set
     //    is_nothrow_move_assignable_v<H> &&
     //    is_nothrow_move_assignable_v<P>)
     {
-        table_.move_assign(x.table_);
+        table_.move_assign(x.table_, true);
         return *this;
     }
 #endif
@@ -457,14 +457,12 @@ template <class T, class H, class P, class A> class unordered_set
     void merge(boost::unordered_set<T, H2, P2, A>&& source);
 #endif
 
-#if BOOST_UNORDERED_INTEROPERABLE_NODES
     template <typename H2, typename P2>
     void merge(boost::unordered_multiset<T, H2, P2, A>& source);
 
 #if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
     template <typename H2, typename P2>
     void merge(boost::unordered_multiset<T, H2, P2, A>&& source);
-#endif
 #endif
 
     // observers
@@ -562,7 +560,7 @@ template <class T, class H, class P, class A> class unordered_multiset
     typedef A allocator_type;
 
   private:
-    typedef boost::unordered::detail::multiset<A, T, H, P> types;
+    typedef boost::unordered::detail::set<A, T, H, P> types;
     typedef typename types::value_allocator_traits value_allocator_traits;
     typedef typename types::table table;
     typedef typename table::node_pointer node_pointer;
@@ -656,7 +654,7 @@ template <class T, class H, class P, class A> class unordered_multiset
 #if defined(BOOST_UNORDERED_USE_MOVE)
     unordered_multiset& operator=(BOOST_COPY_ASSIGN_REF(unordered_multiset) x)
     {
-        table_.assign(x.table_);
+        table_.assign(x.table_, false);
         return *this;
     }
 
@@ -666,13 +664,13 @@ template <class T, class H, class P, class A> class unordered_multiset
     //    is_nothrow_move_assignable_v<H> &&
     //    is_nothrow_move_assignable_v<P>)
     {
-        table_.move_assign(x.table_);
+        table_.move_assign(x.table_, false);
         return *this;
     }
 #else
     unordered_multiset& operator=(unordered_multiset const& x)
     {
-        table_.assign(x.table_);
+        table_.assign(x.table_, false);
         return *this;
     }
 
@@ -683,7 +681,7 @@ template <class T, class H, class P, class A> class unordered_multiset
     //    is_nothrow_move_assignable_v<H> &&
     //    is_nothrow_move_assignable_v<P>)
     {
-        table_.move_assign(x.table_);
+        table_.move_assign(x.table_, false);
         return *this;
     }
 #endif
@@ -962,14 +960,12 @@ template <class T, class H, class P, class A> class unordered_multiset
     void merge(boost::unordered_multiset<T, H2, P2, A>&& source);
 #endif
 
-#if BOOST_UNORDERED_INTEROPERABLE_NODES
     template <typename H2, typename P2>
     void merge(boost::unordered_set<T, H2, P2, A>& source);
 
 #if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
     template <typename H2, typename P2>
     void merge(boost::unordered_set<T, H2, P2, A>&& source);
-#endif
 #endif
 
     // observers
@@ -1246,7 +1242,7 @@ typename unordered_set<T, H, P, A>::iterator unordered_set<T, H, P, A>::erase(
 {
     node_pointer node = table::get_node(position);
     BOOST_ASSERT(node);
-    node_pointer next = table::node_algo::next_node(node);
+    node_pointer next = table::next_node(node);
     table_.erase_nodes_unique(node, next);
     return iterator(next);
 }
@@ -1322,7 +1318,6 @@ void unordered_set<T, H, P, A>::merge(
 }
 #endif
 
-#if BOOST_UNORDERED_INTEROPERABLE_NODES
 template <class T, class H, class P, class A>
 template <typename H2, typename P2>
 void unordered_set<T, H, P, A>::merge(
@@ -1339,7 +1334,6 @@ void unordered_set<T, H, P, A>::merge(
 {
     table_.merge_unique(source.table_);
 }
-#endif
 #endif
 
 // lookup
@@ -1374,8 +1368,8 @@ std::pair<typename unordered_set<T, H, P, A>::const_iterator,
 unordered_set<T, H, P, A>::equal_range(const key_type& k) const
 {
     node_pointer n = table_.find_node(k);
-    return std::make_pair(const_iterator(n),
-        const_iterator(n ? table::node_algo::next_node(n) : n));
+    return std::make_pair(
+        const_iterator(n), const_iterator(n ? table::next_node(n) : n));
 }
 
 template <class T, class H, class P, class A>
@@ -1652,7 +1646,7 @@ unordered_multiset<T, H, P, A>::erase(const_iterator position)
 {
     node_pointer node = table::get_node(position);
     BOOST_ASSERT(node);
-    node_pointer next = table::node_algo::next_node(node);
+    node_pointer next = table::next_node(node);
     table_.erase_nodes_equiv(node, next);
     return iterator(next);
 }
@@ -1732,7 +1726,6 @@ void unordered_multiset<T, H, P, A>::merge(
 }
 #endif
 
-#if BOOST_UNORDERED_INTEROPERABLE_NODES
 template <class T, class H, class P, class A>
 template <typename H2, typename P2>
 void unordered_multiset<T, H, P, A>::merge(
@@ -1753,7 +1746,6 @@ void unordered_multiset<T, H, P, A>::merge(
         insert(source.extract(source.begin()));
     }
 }
-#endif
 #endif
 
 // lookup
@@ -1780,7 +1772,7 @@ typename unordered_multiset<T, H, P, A>::size_type
 unordered_multiset<T, H, P, A>::count(const key_type& k) const
 {
     node_pointer n = table_.find_node(k);
-    return n ? table::node_algo::count(n, &table_) : 0;
+    return n ? table_.group_count(n) : 0;
 }
 
 template <class T, class H, class P, class A>
@@ -1789,8 +1781,8 @@ std::pair<typename unordered_multiset<T, H, P, A>::const_iterator,
 unordered_multiset<T, H, P, A>::equal_range(const key_type& k) const
 {
     node_pointer n = table_.find_node(k);
-    return std::make_pair(const_iterator(n),
-        const_iterator(n ? table::node_algo::next_group(n, &table_) : n));
+    return std::make_pair(
+        const_iterator(n), const_iterator(n ? table_.next_group(n) : n));
 }
 
 template <class T, class H, class P, class A>
