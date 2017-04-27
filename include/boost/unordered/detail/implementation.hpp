@@ -1935,7 +1935,7 @@ struct l_iterator : public std::iterator<std::forward_iterator_tag,
     l_iterator& operator++()
     {
         ptr_ = static_cast<node_pointer>(ptr_->next_);
-        if (ptr_ && Policy::to_bucket(bucket_count_, ptr_->hash_) != bucket_)
+        if (ptr_ && ptr_->get_bucket() != bucket_)
             ptr_ = node_pointer();
         return *this;
     }
@@ -1999,7 +1999,7 @@ struct cl_iterator
     cl_iterator& operator++()
     {
         ptr_ = static_cast<node_pointer>(ptr_->next_);
-        if (ptr_ && Policy::to_bucket(bucket_count_, ptr_->hash_) != bucket_)
+        if (ptr_ && ptr_->get_bucket() != bucket_)
             ptr_ = node_pointer();
         return *this;
     }
@@ -2706,7 +2706,11 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
 
     static node_pointer next_for_find(link_pointer n)
     {
-        return static_cast<node_pointer>(n->next_);
+        node_pointer n2 = static_cast<node_pointer>(n);
+        do {
+            n2 = next_node(n2);
+        } while (n2 && !n2->is_first_in_group());
+        return n2;
     }
 
     static link_pointer next_for_erase(link_pointer prev)
@@ -2719,7 +2723,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         node_pointer n1 = n;
         do {
             n1 = next_node(n1);
-        } while (n1 && this->key_eq()(get_key(n), get_key(n1)));
+        } while (n1 && !n1->is_first_in_group());
         return n1;
     }
 
@@ -2730,15 +2734,12 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         do {
             ++x;
             it = next_node(it);
-        } while (it && this->key_eq()(get_key(n), get_key(it)));
+        } while (it && !it->is_first_in_group());
 
         return x;
     }
 
-    std::size_t node_bucket(node_pointer n) const
-    {
-        return this->hash_to_bucket(n->hash_);
-    }
+    std::size_t node_bucket(node_pointer n) const { return n->get_bucket(); }
 
     bucket_allocator const& bucket_alloc() const { return allocators_.first(); }
 
@@ -3282,15 +3283,17 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         }
 
         for (;;) {
-            if (!prev->next_) {
+            node_pointer n = next_node(prev);
+            if (!n) {
                 return link_pointer();
+            } else if (n->is_first_in_group()) {
+                if (node_bucket(n) != bucket_index) {
+                    return link_pointer();
+                } else if (this->key_eq()(k, this->get_key(n))) {
+                    return prev;
+                }
             }
-            if (node_bucket(next_node(prev)) != bucket_index) {
-                return link_pointer();
-            } else if (this->key_eq()(k, this->get_key(next_node(prev)))) {
-                return prev;
-            }
-            prev = next_for_erase(prev);
+            prev = n;
         }
     }
 
@@ -3308,7 +3311,11 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
             return node_pointer();
         }
         node_pointer n = next_node(prev);
-        prev->next_ = n->next_;
+        node_pointer n2 = next_node(n);
+        if (n2) {
+            n2->set_first_in_group();
+        }
+        prev->next_ = n2;
         --this->size_;
         this->fix_bucket(bucket_index, prev);
         n->next_ = link_pointer();
@@ -3347,9 +3354,12 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
 
     inline node_pointer add_node_unique(node_pointer n, std::size_t key_hash)
     {
-        n->hash_ = key_hash;
+        std::size_t bucket = this->hash_to_bucket(key_hash);
+        bucket_pointer b = this->get_bucket(bucket);
 
-        bucket_pointer b = this->get_bucket(this->hash_to_bucket(key_hash));
+        // TODO: Do this need to set_first_in_group ?
+        n->bucket_info_ = bucket;
+        n->set_first_in_group();
 
         if (!b->next_) {
             link_pointer start_node = this->get_previous_start();
@@ -3567,6 +3577,8 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         return iterator(pos);
     }
 
+    // TODO: Could speed this up a little by only considering
+    // the first node in a group.
     template <typename Types2>
     void merge_unique(boost::unordered::detail::table<Types2>& other)
     {
@@ -3588,8 +3600,10 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
                     prev = n;
                 } else {
                     this->reserve_for_insert(this->size_ + 1);
-                    // other_table::split_groups(n, other_table::next_node(n));
                     prev->next_ = n->next_;
+                    if (prev->next_ && n->is_first_in_group()) {
+                        next_node(prev)->set_first_in_group();
+                    }
                     --other.size_;
                     other.fix_bucket(other.node_bucket(n), prev);
                     this->add_node_unique(n, key_hash);
@@ -3726,10 +3740,11 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         this->create_buckets(this->bucket_count_);
 
         for (node_pointer n = src.begin(); n; n = next_node(n)) {
+            std::size_t key_hash = this->hash(this->get_key(n));
             this->add_node_unique(
                 boost::unordered::detail::func::construct_node(
                     this->node_alloc(), n->value()),
-                n->hash_);
+                key_hash);
         }
     }
 
@@ -3739,10 +3754,11 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         this->create_buckets(this->bucket_count_);
 
         for (node_pointer n = src.begin(); n; n = next_node(n)) {
+            std::size_t key_hash = this->hash(this->get_key(n));
             this->add_node_unique(
                 boost::unordered::detail::func::construct_node(
                     this->node_alloc(), boost::move(n->value())),
-                n->hash_);
+                key_hash);
         }
     }
 
@@ -3750,7 +3766,8 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     {
         node_holder<node_allocator> holder(*this);
         for (node_pointer n = src.begin(); n; n = next_node(n)) {
-            this->add_node_unique(holder.copy_of(n->value()), n->hash_);
+            std::size_t key_hash = this->hash(this->get_key(n));
+            this->add_node_unique(holder.copy_of(n->value()), key_hash);
         }
     }
 
@@ -3758,7 +3775,8 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     {
         node_holder<node_allocator> holder(*this);
         for (node_pointer n = src.begin(); n; n = next_node(n)) {
-            this->add_node_unique(holder.move_copy_of(n->value()), n->hash_);
+            std::size_t key_hash = this->hash(this->get_key(n));
+            this->add_node_unique(holder.move_copy_of(n->value()), key_hash);
         }
     }
 
@@ -3856,18 +3874,21 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     inline node_pointer add_node_equiv(
         node_pointer n, std::size_t key_hash, node_pointer pos)
     {
-        n->hash_ = key_hash;
+        std::size_t bucket = this->hash_to_bucket(key_hash);
+        n->bucket_info_ = bucket;
+
         if (pos) {
             n->next_ = pos->next_;
             pos->next_ = n;
             if (n->next_) {
                 std::size_t next_bucket = this->node_bucket(next_node(n));
-                if (next_bucket != this->hash_to_bucket(key_hash)) {
+                if (next_bucket != bucket) {
                     this->get_bucket(next_bucket)->next_ = n;
                 }
             }
         } else {
-            bucket_pointer b = this->get_bucket(this->hash_to_bucket(key_hash));
+            n->set_first_in_group();
+            bucket_pointer b = this->get_bucket(bucket);
 
             if (!b->next_) {
                 link_pointer start_node = this->get_previous_start();
@@ -3891,7 +3912,8 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
 
     inline node_pointer add_using_hint_equiv(node_pointer n, node_pointer hint)
     {
-        n->hash_ = hint->hash_;
+        n->bucket_info_ = hint->bucket_info_;
+        n->reset_first_in_group();
         n->next_ = hint->next_;
         hint->next_ = n;
         if (n->next_ != hint && n->next_) {
@@ -4031,20 +4053,16 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         BOOST_ASSERT(i);
         node_pointer j(next_node(i));
         std::size_t bucket_index = this->node_bucket(i);
-        // Split the groups containing 'i' and 'j'.
-        // And get the pointer to the node before i while
-        // we're at it.
-        // link_pointer prev = split_groups(i, j);
 
-        // If we don't have a 'prev' it means that i is at the
-        // beginning of a block, so search through the blocks in the
-        // same bucket.
         link_pointer prev = this->get_previous_start(bucket_index);
         while (prev->next_ != i) {
             prev = next_for_erase(prev);
         }
 
         prev->next_ = i->next_;
+        if (j && i->is_first_in_group()) {
+            j->set_first_in_group();
+        }
         --this->size_;
         this->fix_bucket(bucket_index, prev);
         i->next_ = link_pointer();
@@ -4080,14 +4098,6 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     {
         std::size_t bucket_index = this->node_bucket(i);
 
-        // Split the groups containing 'i' and 'j'.
-        // And get the pointer to the node before i while
-        // we're at it.
-        // link_pointer prev = split_groups(i, j);
-
-        // If we don't have a 'prev' it means that i is at the
-        // beginning of a block, so search through the blocks in the
-        // same bucket.
         link_pointer prev = this->get_previous_start(bucket_index);
         while (prev->next_ != i) {
             prev = next_for_erase(prev);
@@ -4095,10 +4105,16 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
 
         // Delete the nodes.
         // Is it inefficient to call fix_bucket for every node?
+        bool includes_first = false;
         do {
+            includes_first =
+                includes_first || next_node(prev)->is_first_in_group();
             this->delete_node(prev);
             bucket_index = this->fix_bucket(bucket_index, prev);
         } while (prev->next_ != j);
+        if (j && includes_first) {
+            j->set_first_in_group();
+        }
 
         return prev;
     }
@@ -4111,7 +4127,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         this->create_buckets(this->bucket_count_);
 
         for (node_pointer n = src.begin(); n;) {
-            std::size_t key_hash = n->hash_;
+            std::size_t key_hash = this->hash(this->get_key(n));
             node_pointer group_end(next_group(n));
             node_pointer pos = this->add_node_equiv(
                 boost::unordered::detail::func::construct_node(
@@ -4131,7 +4147,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         this->create_buckets(this->bucket_count_);
 
         for (node_pointer n = src.begin(); n;) {
-            std::size_t key_hash = n->hash_;
+            std::size_t key_hash = this->hash(this->get_key(n));
             node_pointer group_end(next_group(n));
             node_pointer pos = this->add_node_equiv(
                 boost::unordered::detail::func::construct_node(
@@ -4150,7 +4166,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     {
         node_holder<node_allocator> holder(*this);
         for (node_pointer n = src.begin(); n;) {
-            std::size_t key_hash = n->hash_;
+            std::size_t key_hash = this->hash(this->get_key(n));
             node_pointer group_end(next_group(n));
             node_pointer pos = this->add_node_equiv(
                 holder.copy_of(n->value()), key_hash, node_pointer());
@@ -4164,7 +4180,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     {
         node_holder<node_allocator> holder(*this);
         for (node_pointer n = src.begin(); n;) {
-            std::size_t key_hash = n->hash_;
+            std::size_t key_hash = this->hash(this->get_key(n));
             node_pointer group_end(next_group(n));
             node_pointer pos = this->add_node_equiv(
                 holder.move_copy_of(n->value()), key_hash, node_pointer());
@@ -4223,33 +4239,43 @@ inline void table<Types>::rehash_impl(std::size_t num_buckets)
 
     this->create_buckets(num_buckets);
     link_pointer prev = this->get_previous_start();
-    while (prev->next_) {
-        // Group together all nodes with equal hash value, this may
-        // include nodes with different keys, but that's okay because
-        // they will end up in the same bucket.
-        //
-        // TODO: Don't do this for unique keys?
-        node_pointer group_last = next_node(prev);
-        std::size_t hash = group_last->hash_;
-        for (;;) {
-            node_pointer next = next_node(group_last);
-            if (!next || next->hash_ != hash) {
-                break;
-            }
-            group_last = next;
-        }
+    BOOST_TRY
+    {
+        while (prev->next_) {
+            node_pointer n = next_node(prev);
+            std::size_t key_hash = this->hash(this->get_key(n));
+            std::size_t bucket_index = this->hash_to_bucket(key_hash);
 
-        bucket_pointer b = this->get_bucket(this->node_bucket(group_last));
-        if (!b->next_) {
-            b->next_ = prev;
-            prev = group_last;
-        } else {
-            link_pointer next = group_last->next_;
-            group_last->next_ = b->next_->next_;
-            b->next_->next_ = prev->next_;
-            prev->next_ = next;
+            n->bucket_info_ = bucket_index;
+            n->set_first_in_group();
+
+            // Iterator through the rest of the group of equal nodes,
+            // setting the bucket.
+            for (;;) {
+                node_pointer next = next_node(n);
+                if (!next || next->is_first_in_group()) {
+                    break;
+                }
+                n = next;
+                n->bucket_info_ = bucket_index;
+                // n->reset_first_in_group();
+            }
+
+            // n is now the last node in the group
+            bucket_pointer b = this->get_bucket(bucket_index);
+            if (!b->next_) {
+                b->next_ = prev;
+                prev = n;
+            } else {
+                link_pointer next = n->next_;
+                n->next_ = b->next_->next_;
+                b->next_->next_ = prev->next_;
+                prev->next_ = next;
+            }
         }
     }
+    BOOST_CATCH(...) { delete_nodes(prev, link_pointer()); }
+    BOOST_CATCH_END
 }
 
 #if defined(BOOST_MSVC)
@@ -4414,11 +4440,31 @@ struct node : boost::unordered::detail::value_base<T>
         bucket_allocator>::pointer bucket_pointer;
 
     link_pointer next_;
-    std::size_t hash_;
+    std::size_t bucket_info_;
 
-    node() : next_(), hash_(0) {}
+    node() : next_(), bucket_info_(0) {}
 
     void init(node_pointer) {}
+
+    std::size_t get_bucket() const
+    {
+        return bucket_info_ & ((std::size_t)-1 >> 1);
+    }
+
+    std::size_t is_first_in_group() const
+    {
+        return bucket_info_ & ~((std::size_t)-1 >> 1);
+    }
+
+    void set_first_in_group()
+    {
+        bucket_info_ = bucket_info_ | ~((std::size_t)-1 >> 1);
+    }
+
+    void reset_first_in_group()
+    {
+        bucket_info_ = bucket_info_ & ((std::size_t)-1 >> 1);
+    }
 
   private:
     node& operator=(node const&);
@@ -4432,16 +4478,36 @@ template <typename T> struct ptr_node : boost::unordered::detail::ptr_bucket
     typedef ptr_bucket* link_pointer;
     typedef ptr_bucket* bucket_pointer;
 
-    std::size_t hash_;
+    std::size_t bucket_info_;
     boost::unordered::detail::value_base<T> value_base_;
 
-    ptr_node() : bucket_base(), hash_(0) {}
+    ptr_node() : bucket_base(), bucket_info_(0) {}
 
     void init(node_pointer) {}
 
     void* address() { return value_base_.address(); }
     value_type& value() { return value_base_.value(); }
     value_type* value_ptr() { return value_base_.value_ptr(); }
+
+    std::size_t get_bucket() const
+    {
+        return bucket_info_ & ((std::size_t)-1 >> 1);
+    }
+
+    std::size_t is_first_in_group() const
+    {
+        return bucket_info_ & ~((std::size_t)-1 >> 1);
+    }
+
+    void set_first_in_group()
+    {
+        bucket_info_ = bucket_info_ | ~((std::size_t)-1 >> 1);
+    }
+
+    void reset_first_in_group()
+    {
+        bucket_info_ = bucket_info_ & ((std::size_t)-1 >> 1);
+    }
 
   private:
     ptr_node& operator=(ptr_node const&);
