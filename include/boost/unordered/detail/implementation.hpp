@@ -1691,7 +1691,6 @@ template <typename Alloc> void node_constructor<Alloc>::create_node()
 
     BOOST_UNORDERED_CALL_CONSTRUCT0(
         node_allocator_traits, alloc_, boost::addressof(*node_));
-    node_->init(node_);
     node_constructed_ = true;
 }
 
@@ -2182,7 +2181,6 @@ template <typename NodeAlloc> struct node_holder
     {
         node_pointer n = nodes_;
         nodes_ = static_cast<node_pointer>(nodes_->next_);
-        n->init(n);
         n->next_ = link_pointer();
         return n;
     }
@@ -4461,8 +4459,6 @@ struct node : boost::unordered::detail::value_base<T>
 
     node() : next_(), bucket_info_(0) {}
 
-    void init(node_pointer) {}
-
     std::size_t get_bucket() const
     {
         return bucket_info_ & ((std::size_t)-1 >> 1);
@@ -4499,8 +4495,6 @@ template <typename T> struct ptr_node : boost::unordered::detail::ptr_bucket
     boost::unordered::detail::value_base<T> value_base_;
 
     ptr_node() : bucket_base(), bucket_info_(0) {}
-
-    void init(node_pointer) {}
 
     void* address() { return value_base_.address(); }
     value_type& value() { return value_base_.value(); }
