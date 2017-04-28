@@ -563,12 +563,10 @@ template <class K, class T, class H, class P, class A> class unordered_map
     iterator try_emplace(const_iterator hint, key_type const& k,
         BOOST_FWD_REF(A0) a0, BOOST_FWD_REF(A1) a1, BOOST_FWD_REF(A2) a2)
     {
-        return table_
-            .try_emplace_unique(
-                hint, k, boost::unordered::detail::create_emplace_args(
-                             boost::forward<A0>(a0), boost::forward<A1>(a1),
-                             boost::forward<A2>(a2)))
-            .first;
+        return table_.try_emplace_hint_unique(
+            hint, k, boost::unordered::detail::create_emplace_args(
+                         boost::forward<A0>(a0), boost::forward<A1>(a1),
+                         boost::forward<A2>(a2)));
     }
 
     // try_emplace(key&&, Args&&...)

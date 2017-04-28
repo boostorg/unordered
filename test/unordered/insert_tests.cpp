@@ -1172,6 +1172,23 @@ UNORDERED_AUTO_TEST(map_emplace_test2)
         BOOST_TEST(x.find(overloaded_constructor(2, 3)) != x.end() &&
                    x.find(overloaded_constructor(2, 3))->second ==
                        overloaded_constructor(4, 5, 6));
+
+        x.clear();
+
+        x.try_emplace(x.begin(), overloaded_constructor());
+        BOOST_TEST(x.find(overloaded_constructor()) != x.end() &&
+                   x.find(overloaded_constructor())->second ==
+                       overloaded_constructor());
+
+        x.try_emplace(x.end(), 1);
+        BOOST_TEST(x.find(overloaded_constructor(1)) != x.end() &&
+                   x.find(overloaded_constructor(1))->second ==
+                       overloaded_constructor());
+
+        x.try_emplace(x.begin(), overloaded_constructor(2, 3), 4, 5, 6);
+        BOOST_TEST(x.find(overloaded_constructor(2, 3)) != x.end() &&
+                   x.find(overloaded_constructor(2, 3))->second ==
+                       overloaded_constructor(4, 5, 6));
     }
 
     {
