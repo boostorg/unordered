@@ -20,11 +20,13 @@ matrix:
       - compiler: gcc
         env: |
             label="gcc C++03";
-            user_config="using gcc : : g++-4.8 -fsanitize=address -Werror --std=c++03 ;"
+            user_config="using gcc : : g++-4.8 --coverage -fsanitize=address -Werror --std=c++03 ;"
+            enable_coverage=1
       - compiler: gcc
         env: |
             label="gcc C++11";
-            user_config="using gcc : : g++-4.8 -fsanitize=address -Werror --std=c++11 ;"
+            user_config="using gcc : : g++-4.8 --coverage -fsanitize=address -Werror --std=c++11 ;"
+            enable_coverage=1
       - compiler: gcc
         env: |
             label="gcc 32 bit C++11";
@@ -39,6 +41,9 @@ matrix:
             label="clang 32 bit";
             user_config="using clang : : clang++ -m32 -Werror --std=c++03 ;"
 
+before_install:
+    - if [ -n $enable_coverage ]; then pip install --user cpp-coveralls; fi
+
 before_script:
     - cd ${TRAVIS_BUILD_DIR}
     - touch Jamroot.jam
@@ -49,6 +54,9 @@ before_script:
     - tar -xjf boost.tar.bz2
     - mv boost_1_64_0 boost
     - rm -r boost/boost/unordered
+
+after_success:
+    if [ -n $enable_coverage ]; then coveralls -r ${TRAVIS_BUILD_DIR} -b ${TRAVIS_BUILD_DIR}/test --gcov-options '\-lp' --include include/boost/unordered/ ; fi
 
 script:
     - cd ${TRAVIS_BUILD_DIR}/test
