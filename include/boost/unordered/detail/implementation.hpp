@@ -1263,8 +1263,6 @@ namespace func {
 
 #if BOOST_UNORDERED_CXX11_CONSTRUCTION
 
-#define BOOST_UNORDERED_CALL_CONSTRUCT0(Traits, alloc, address)                \
-    Traits::construct(alloc, address)
 #define BOOST_UNORDERED_CALL_CONSTRUCT1(Traits, alloc, address, a0)            \
     Traits::construct(alloc, address, a0)
 #define BOOST_UNORDERED_CALL_DESTROY(Traits, alloc, x) Traits::destroy(alloc, x)
@@ -1277,8 +1275,6 @@ inline void construct_value(T* address, BOOST_FWD_REF(Args)... args)
     new ((void*)address) T(boost::forward<Args>(args)...);
 }
 
-#define BOOST_UNORDERED_CALL_CONSTRUCT0(Traits, alloc, address)                \
-    boost::unordered::detail::func::construct_value(address)
 #define BOOST_UNORDERED_CALL_CONSTRUCT1(Traits, alloc, address, a0)            \
     boost::unordered::detail::func::construct_value(address, a0)
 #define BOOST_UNORDERED_CALL_DESTROY(Traits, alloc, x)                         \
@@ -1297,8 +1293,6 @@ inline void construct_value(T* address, BOOST_FWD_REF(A0) a0)
     new ((void*)address) T(boost::forward<A0>(a0));
 }
 
-#define BOOST_UNORDERED_CALL_CONSTRUCT0(Traits, alloc, address)                \
-    boost::unordered::detail::func::construct_value(address)
 #define BOOST_UNORDERED_CALL_CONSTRUCT1(Traits, alloc, address, a0)            \
     boost::unordered::detail::func::construct_value(address, a0)
 #define BOOST_UNORDERED_CALL_DESTROY(Traits, alloc, x)                         \
@@ -4570,7 +4564,6 @@ template <typename A, typename T> struct pick_node
 #undef BOOST_UNORDERED_EMPLACE_TEMPLATE
 #undef BOOST_UNORDERED_EMPLACE_ARGS
 #undef BOOST_UNORDERED_EMPLACE_FORWARD
-#undef BOOST_UNORDERED_CALL_CONSTRUCT0
 #undef BOOST_UNORDERED_CALL_CONSTRUCT1
 #undef BOOST_UNORDERED_CALL_DESTROY
 
