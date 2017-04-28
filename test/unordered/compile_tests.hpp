@@ -339,9 +339,15 @@ void unordered_map_test(X& r, Key const& k, T const& v)
     // Calling functions
 
     r.insert(std::pair<Key const, T>(k, v));
+    r.insert(r.begin(), std::pair<Key const, T>(k, v));
+    std::pair<Key const, T> const value(k, v);
+    r.insert(value);
+    r.insert(r.end(), value);
 
     Key k_lvalue(k);
     T v_lvalue(v);
+
+    // Emplace
 
     r.emplace(k, v);
     r.emplace(k_lvalue, v_lvalue);
@@ -349,6 +355,17 @@ void unordered_map_test(X& r, Key const& k, T const& v)
 
     r.emplace(boost::unordered::piecewise_construct, boost::make_tuple(k),
         boost::make_tuple(v));
+
+    // Emplace with hint
+
+    r.emplace_hint(r.begin(), k, v);
+    r.emplace_hint(r.begin(), k_lvalue, v_lvalue);
+    r.emplace_hint(r.begin(), rvalue(k), rvalue(v));
+
+    r.emplace_hint(r.begin(), boost::unordered::piecewise_construct,
+        boost::make_tuple(k), boost::make_tuple(v));
+
+    // Extract
 
     test::check_return_type<node_type>::equals(r.extract(r.begin()));
 
@@ -360,7 +377,11 @@ void unordered_map_test(X& r, Key const& k, T const& v)
     test::check_return_type<key_type>::equals_ref(n1.key());
     test::check_return_type<T>::equals_ref(n1.mapped());
 
-    r.insert(boost::move(n1));
+    node_type n2 = boost::move(n1);
+    r.insert(boost::move(n2));
+    r.insert(r.extract(r.begin()));
+    n2 = r.extract(r.begin());
+    r.insert(r.begin(), boost::move(n2));
     r.insert(r.end(), r.extract(r.begin()));
 
     node_type n = r.extract(r.begin());
@@ -665,6 +686,13 @@ void unordered_copyable_test(X& x, Key& k, T& t, Hash& hf, Pred& eq)
 
     sink(X(b, m));
     X a9a(b, m);
+
+    X b1;
+    b1.insert(t);
+    X a9b(b1);
+    sink(a9b);
+    X a9c(b1, m);
+    sink(a9c);
 
     const_iterator q = a.cbegin();
 
