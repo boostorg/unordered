@@ -3338,11 +3338,11 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
 
     inline node_pointer add_node_unique(node_pointer n, std::size_t key_hash)
     {
-        std::size_t bucket = this->hash_to_bucket(key_hash);
-        bucket_pointer b = this->get_bucket(bucket);
+        std::size_t bucket_index = this->hash_to_bucket(key_hash);
+        bucket_pointer b = this->get_bucket(bucket_index);
 
         // TODO: Do this need to set_first_in_group ?
-        n->bucket_info_ = bucket;
+        n->bucket_info_ = bucket_index;
         n->set_first_in_group();
 
         if (!b->next_) {
@@ -3875,21 +3875,21 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     inline node_pointer add_node_equiv(
         node_pointer n, std::size_t key_hash, node_pointer pos)
     {
-        std::size_t bucket = this->hash_to_bucket(key_hash);
-        n->bucket_info_ = bucket;
+        std::size_t bucket_index = this->hash_to_bucket(key_hash);
+        n->bucket_info_ = bucket_index;
 
         if (pos) {
             n->next_ = pos->next_;
             pos->next_ = n;
             if (n->next_) {
                 std::size_t next_bucket = this->node_bucket(next_node(n));
-                if (next_bucket != bucket) {
+                if (next_bucket != bucket_index) {
                     this->get_bucket(next_bucket)->next_ = n;
                 }
             }
         } else {
             n->set_first_in_group();
-            bucket_pointer b = this->get_bucket(bucket);
+            bucket_pointer b = this->get_bucket(bucket_index);
 
             if (!b->next_) {
                 link_pointer start_node = this->get_previous_start();
