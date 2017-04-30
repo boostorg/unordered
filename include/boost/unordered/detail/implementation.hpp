@@ -1630,12 +1630,8 @@ template <typename NodeAlloc> struct node_constructor
 
     node_allocator& alloc_;
     node_pointer node_;
-    bool node_constructed_;
 
-    node_constructor(node_allocator& n)
-        : alloc_(n), node_(), node_constructed_(false)
-    {
-    }
+    node_constructor(node_allocator& n) : alloc_(n), node_() {}
 
     ~node_constructor();
 
@@ -1644,7 +1640,7 @@ template <typename NodeAlloc> struct node_constructor
     // no throw
     node_pointer release()
     {
-        BOOST_ASSERT(node_ && node_constructed_);
+        BOOST_ASSERT(node_);
         node_pointer p = node_;
         node_ = node_pointer();
         return p;
@@ -1654,7 +1650,6 @@ template <typename NodeAlloc> struct node_constructor
     {
         BOOST_ASSERT(!node_);
         node_ = p;
-        node_constructed_ = true;
         BOOST_UNORDERED_CALL_DESTROY(
             node_allocator_traits, alloc_, node_->value_ptr());
     }
@@ -1667,10 +1662,7 @@ template <typename NodeAlloc> struct node_constructor
 template <typename Alloc> node_constructor<Alloc>::~node_constructor()
 {
     if (node_) {
-        if (node_constructed_) {
-            boost::unordered::detail::func::destroy(boost::addressof(*node_));
-        }
-
+        boost::unordered::detail::func::destroy(boost::addressof(*node_));
         node_allocator_traits::deallocate(alloc_, node_, 1);
     }
 }
@@ -1678,12 +1670,8 @@ template <typename Alloc> node_constructor<Alloc>::~node_constructor()
 template <typename Alloc> void node_constructor<Alloc>::create_node()
 {
     BOOST_ASSERT(!node_);
-    node_constructed_ = false;
-
     node_ = node_allocator_traits::allocate(alloc_, 1);
-
     new (boost::addressof(*node_)) node();
-    node_constructed_ = true;
 }
 
 template <typename NodeAlloc> struct node_tmp
