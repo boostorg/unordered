@@ -2898,57 +2898,37 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     // Strong exception safety.
     void create_buckets(std::size_t new_count)
     {
-        std::size_t length = new_count + 1;
-        bucket_pointer new_buckets =
-            bucket_allocator_traits::allocate(bucket_alloc(), length);
-        bucket_pointer constructed = new_buckets;
+        link_pointer dummy_node;
 
-        // TODO: Apart from constructing the dummy node this is now
-        //       nothrow, so maybe rearrange it a bit so that less
-        //       exception handling is required.
-        BOOST_TRY
-        {
-            bucket_pointer end =
-                new_buckets + static_cast<std::ptrdiff_t>(new_count);
-            for (; constructed != end; ++constructed) {
-                new (boost::addressof(*constructed)) bucket();
-            }
-
-            if (buckets_) {
-                // Copy the nodes to the new buckets, including the dummy
-                // node if there is one.
-                new (boost::addressof(*constructed)) bucket(
-                    (buckets_ + static_cast<std::ptrdiff_t>(bucket_count_))
-                        ->next_);
-                ++constructed;
-                destroy_buckets();
-            } else if (bucket::extra_node) {
-                node_constructor a(node_alloc());
-                a.create_node();
-
-                new (boost::addressof(*constructed)) bucket(a.release());
-                ++constructed;
-            } else {
-                new (boost::addressof(*constructed)) bucket();
-                ++constructed;
-            }
+        // Construct the new buckets and dummy node, and destroy the old buckets
+        if (buckets_) {
+            dummy_node =
+                (buckets_ + static_cast<std::ptrdiff_t>(bucket_count_))->next_;
+            bucket_pointer new_buckets = bucket_allocator_traits::allocate(
+                bucket_alloc(), new_count + 1);
+            destroy_buckets();
+            buckets_ = new_buckets;
+        } else if (bucket::extra_node) {
+            node_constructor a(node_alloc());
+            a.create_node();
+            buckets_ = bucket_allocator_traits::allocate(
+                bucket_alloc(), new_count + 1);
+            dummy_node = a.release();
+        } else {
+            dummy_node = link_pointer();
+            buckets_ = bucket_allocator_traits::allocate(
+                bucket_alloc(), new_count + 1);
         }
-        BOOST_CATCH(...)
-        {
-            for (bucket_pointer p = new_buckets; p != constructed; ++p) {
-                boost::unordered::detail::func::destroy(boost::addressof(*p));
-            }
 
-            bucket_allocator_traits::deallocate(
-                bucket_alloc(), new_buckets, length);
-
-            BOOST_RETHROW;
-        }
-        BOOST_CATCH_END
-
+        // nothrow from here...
         bucket_count_ = new_count;
-        buckets_ = new_buckets;
         recalculate_max_load();
+
+        bucket_pointer end = buckets_ + static_cast<std::ptrdiff_t>(new_count);
+        for (bucket_pointer i = buckets_; i != end; ++i) {
+            new (boost::addressof(*i)) bucket();
+        }
+        new (boost::addressof(*end)) bucket(dummy_node);
     }
 
     ////////////////////////////////////////////////////////////////////////
