@@ -13,6 +13,7 @@
 #pragma once
 #endif
 
+#include <boost/predef.h>
 #include <boost/assert.hpp>
 #include <boost/detail/no_exceptions_support.hpp>
 #include <boost/detail/select_type.hpp>
@@ -113,7 +114,9 @@
 //
 
 #if defined(BOOST_UNORDERED_TUPLE_ARGS)
-#elif defined(__SUNPRO_CC)
+#elif BOOST_COMP_SUNPRO && BOOST_COMP_SUNPRO < BOOST_VERSION_NUMBER(5,21,0)
+// I had problems with tuples on older versions of the sunpro.
+// Might be fixed in an earlier version than I specified here.
 #define BOOST_UNORDERED_TUPLE_ARGS 0
 #elif !defined(BOOST_NO_CXX11_HDR_TUPLE)
 #define BOOST_UNORDERED_TUPLE_ARGS 10
@@ -239,7 +242,7 @@ template <class T> struct prime_list_template
 {
     static std::size_t const value[];
 
-#if !defined(SUNPRO_CC)
+#if !(BOOST_COMP_SUNPRO && BOOST_COMP_SUNPRO < BOOST_VERSION_NUMBER(5,21,0))
     static std::ptrdiff_t const length;
 #else
     static std::ptrdiff_t const length =
@@ -251,7 +254,7 @@ template <class T>
 std::size_t const prime_list_template<T>::value[] = {
     BOOST_PP_SEQ_ENUM(BOOST_UNORDERED_PRIMES)};
 
-#if !defined(SUNPRO_CC)
+#if !(BOOST_COMP_SUNPRO && BOOST_COMP_SUNPRO < BOOST_VERSION_NUMBER(5,21,0))
 template <class T>
 std::ptrdiff_t const prime_list_template<T>::length = BOOST_PP_SEQ_SIZE(
     BOOST_UNORDERED_PRIMES);
@@ -1305,7 +1308,7 @@ inline void construct_value(T* address, BOOST_FWD_REF(A0) a0)
 //
 // Used to emulate piecewise construction.
 
-#if !defined(__SUNPRO_CC)
+#if !(BOOST_COMP_SUNPRO && BOOST_COMP_SUNPRO < BOOST_VERSION_NUMBER(5,21,0))
 
 #define BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(z, n, namespace_)                 \
     template <typename Alloc, typename T,                                      \
