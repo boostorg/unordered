@@ -3540,45 +3540,26 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
             (boost::is_same<node, typename other_table::node>::value));
         BOOST_ASSERT(this->node_alloc() == other.node_alloc());
 
-        if (!other.size_) {
-            return;
-        }
+        if (other.size_) {
+            link_pointer prev = other.get_previous_start();
 
-        link_pointer prev = other.get_previous_start();
-        node_pointer n = other_table::next_node(prev);
-        while (n) {
-            const_key_type& k = this->get_key(n);
-            std::size_t key_hash = this->hash(k);
-            node_pointer pos = this->find_node(key_hash, k);
+            while (prev->next_) {
+                node_pointer n = other_table::next_node(prev);
+                const_key_type& k = this->get_key(n);
+                std::size_t key_hash = this->hash(k);
+                node_pointer pos = this->find_node(key_hash, k);
 
-            if (pos) {
-                prev = n;
-                n = other_table::next_node(prev);
-            } else {
-                this->reserve_for_insert(this->size_ + 1);
-
-                prev->next_ = n->next_;
-                --other.size_;
-                other.fix_bucket(other.node_bucket(n), prev);
-                this->add_node_unique(n, key_hash);
-                n = other_table::next_node(prev);
-
-                // If the next node was from the same group, it's now
-                // the first node in the group.
-                if (n && !n->is_first_in_group()) {
-                    n->set_first_in_group();
+                if (pos) {
                     prev = n;
-                    n = other_table::next_node(prev);
-                }
-            }
-
-            // Skip over rest of group of nodes with equivalent keys,
-            // as we know there's already one in the container.
-            while (n && !n->is_first_in_group()) {
-                prev = n;
-                n = other_table::next_node(prev);
-                if (!n) {
-                    return;
+                } else {
+                    this->reserve_for_insert(this->size_ + 1);
+                    prev->next_ = n->next_;
+                    if (prev->next_ && n->is_first_in_group()) {
+                        next_node(prev)->set_first_in_group();
+                    }
+                    --other.size_;
+                    other.fix_bucket(other.node_bucket(n), prev);
+                    this->add_node_unique(n, key_hash);
                 }
             }
         }
