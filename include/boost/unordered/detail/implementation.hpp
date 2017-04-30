@@ -3885,7 +3885,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         n->reset_first_in_group();
         n->next_ = hint->next_;
         hint->next_ = n;
-        if (n->next_ != hint && n->next_) {
+        if (n->next_) {
             std::size_t next_bucket = this->node_bucket(next_node(n));
             if (next_bucket != this->node_bucket(n)) {
                 this->get_bucket(next_bucket)->next_ = n;
