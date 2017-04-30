@@ -159,8 +159,8 @@ namespace unordered {
 namespace iterator_detail {
 template <typename Node> struct iterator;
 template <typename Node> struct c_iterator;
-template <typename Node, typename Policy> struct l_iterator;
-template <typename Node, typename Policy> struct cl_iterator;
+template <typename Node> struct l_iterator;
+template <typename Node> struct cl_iterator;
 }
 }
 }
@@ -1878,13 +1878,13 @@ namespace iterator_detail {
 //
 // all no throw
 
-template <typename Node, typename Policy>
+template <typename Node>
 struct l_iterator : public std::iterator<std::forward_iterator_tag,
                         typename Node::value_type, std::ptrdiff_t,
                         typename Node::value_type*, typename Node::value_type&>
 {
 #if !defined(BOOST_NO_MEMBER_TEMPLATE_FRIENDS)
-    template <typename Node2, typename Policy2>
+    template <typename Node2>
     friend struct boost::unordered::iterator_detail::cl_iterator;
 
   private:
@@ -1936,13 +1936,13 @@ struct l_iterator : public std::iterator<std::forward_iterator_tag,
     }
 };
 
-template <typename Node, typename Policy>
+template <typename Node>
 struct cl_iterator
     : public std::iterator<std::forward_iterator_tag, typename Node::value_type,
           std::ptrdiff_t, typename Node::value_type const*,
           typename Node::value_type const&>
 {
-    friend struct boost::unordered::iterator_detail::l_iterator<Node, Policy>;
+    friend struct boost::unordered::iterator_detail::l_iterator<Node>;
 
   private:
     typedef typename Node::node_pointer node_pointer;
@@ -1963,7 +1963,7 @@ struct cl_iterator
     }
 
     cl_iterator(
-        boost::unordered::iterator_detail::l_iterator<Node, Policy> const& x)
+        boost::unordered::iterator_detail::l_iterator<Node> const& x)
         BOOST_NOEXCEPT : ptr_(x.ptr_),
                          bucket_(x.bucket_),
                          bucket_count_(x.bucket_count_)

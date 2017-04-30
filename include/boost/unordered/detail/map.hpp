@@ -35,10 +35,8 @@ template <typename A, typename K, typename M, typename H, typename P> struct map
 
     typedef boost::unordered::iterator_detail::iterator<node> iterator;
     typedef boost::unordered::iterator_detail::c_iterator<node> c_iterator;
-    typedef boost::unordered::iterator_detail::l_iterator<node, policy>
-        l_iterator;
-    typedef boost::unordered::iterator_detail::cl_iterator<node, policy>
-        cl_iterator;
+    typedef boost::unordered::iterator_detail::l_iterator<node> l_iterator;
+    typedef boost::unordered::iterator_detail::cl_iterator<node> cl_iterator;
 
     typedef boost::unordered::node_handle_map<node, K, M, A> node_type;
     typedef boost::unordered::insert_return_type_map<node, K, M, A>
