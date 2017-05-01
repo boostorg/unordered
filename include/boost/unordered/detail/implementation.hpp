@@ -4267,6 +4267,11 @@ template <class ValueType> struct set_extractor
 
     static key_type const& extract(value_type const& v) { return v; }
 
+    static key_type const& extract(BOOST_UNORDERED_RV_REF(value_type) v)
+    {
+        return v;
+    }
+
     static no_key extract() { return no_key(); }
 
     template <class Arg> static no_key extract(Arg const&) { return no_key(); }
@@ -4305,6 +4310,22 @@ template <class ValueType> struct map_extractor
     {
         return v.first;
     }
+
+#if defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+    template <class Second>
+    static key_type const& extract(
+        boost::rv<std::pair<key_type, Second> > const& v)
+    {
+        return v.first;
+    }
+
+    template <class Second>
+    static key_type const& extract(
+        boost::rv<std::pair<key_type const, Second> > const& v)
+    {
+        return v.first;
+    }
+#endif
 
     template <class Arg1>
     static key_type const& extract(key_type const& k, Arg1 const&)

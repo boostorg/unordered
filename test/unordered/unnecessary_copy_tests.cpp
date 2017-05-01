@@ -180,6 +180,53 @@ template <class T> void unnecessary_copy_insert_test(T*)
     reset();
     x.insert(a);
     COPY_COUNT(1);
+    MOVE_COUNT(0);
+}
+
+template <class T> void unnecessary_copy_insert_rvalue_set_test(T*)
+{
+    T x;
+    BOOST_DEDUCED_TYPENAME T::value_type a;
+    reset();
+    x.insert(boost::move(a));
+    COPY_COUNT(0);
+    MOVE_COUNT(1);
+
+    BOOST_DEDUCED_TYPENAME T::value_type a2;
+    reset();
+    x.insert(boost::move(a));
+    COPY_COUNT(0);
+    MOVE_COUNT((x.size() == 2 ? 1 : 0));
+}
+
+template <class T> void unnecessary_copy_insert_rvalue_map_test(T*)
+{
+    // Doesn't currently try to emulate std::pair move construction,
+    // so std::pair's require a copy. Could try emulating it in
+    // construct_from_args.
+
+    T x;
+    BOOST_DEDUCED_TYPENAME T::value_type a;
+    reset();
+    x.insert(boost::move(a));
+#if defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+    COPY_COUNT(1);
+    MOVE_COUNT(0);
+#else
+    COPY_COUNT(0);
+    MOVE_COUNT(1);
+#endif
+
+    BOOST_DEDUCED_TYPENAME T::value_type a2;
+    reset();
+    x.insert(boost::move(a));
+#if defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+    COPY_COUNT((x.size() == 2 ? 1 : 0));
+    MOVE_COUNT(0);
+#else
+    COPY_COUNT(0);
+    MOVE_COUNT((x.size() == 2 ? 1 : 0));
+#endif
 }
 
 boost::unordered_set<count_copies>* set;
@@ -188,6 +235,8 @@ boost::unordered_map<int, count_copies>* map;
 boost::unordered_multimap<int, count_copies>* multimap;
 
 UNORDERED_TEST(unnecessary_copy_insert_test, ((set)(multiset)(map)(multimap)))
+UNORDERED_TEST(unnecessary_copy_insert_rvalue_set_test, ((set)(multiset)))
+UNORDERED_TEST(unnecessary_copy_insert_rvalue_map_test, ((map)(multimap)))
 
 template <class T> void unnecessary_copy_emplace_test(T*)
 {
@@ -315,15 +364,10 @@ UNORDERED_AUTO_TEST(unnecessary_copy_emplace_set_test)
     // the existing element.
     reset();
     x.emplace();
-#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES) ||                             \
-    !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+
     // source_cost doesn't make much sense here, but it seems to fit.
     COPY_COUNT(1);
     MOVE_COUNT(source_cost);
-#else
-    COPY_COUNT(1);
-    MOVE_COUNT(1 + source_cost);
-#endif
 #endif
 
     //
@@ -347,13 +391,8 @@ UNORDERED_AUTO_TEST(unnecessary_copy_emplace_set_test)
     // No move should take place.
     reset();
     x.emplace(boost::move(a));
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
     COPY_COUNT(0);
     MOVE_COUNT(0);
-#else
-    COPY_COUNT(0);
-    MOVE_COUNT(1);
-#endif
 
     // Use a new value for cases where a did get moved...
     count_copies b;
