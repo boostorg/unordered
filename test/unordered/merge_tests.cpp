@@ -184,20 +184,17 @@ void merge_into_unique_keys_test(X1*, X2*, int hash_equal1, int hash_equal2,
         test::equal_to(hash_equal1));
     X2 x2(v2.begin(), v2.end(), 0, test::hash(hash_equal2),
         test::equal_to(hash_equal2));
-    x1.merge(x2);
 
     test::ordered<X1> tracker1 = test::create_ordered(x1);
     test::ordered<X2> tracker2 = test::create_ordered(x2);
-    test::ordered<X2> tracker_tmp = test::create_ordered(x2);
     tracker1.insert(v1.begin(), v1.end());
-    tracker_tmp.insert(v2.begin(), v2.end());
-    for (BOOST_DEDUCED_TYPENAME test::ordered<X2>::iterator it =
-             tracker_tmp.begin();
-         it != tracker_tmp.end(); ++it) {
+    for (typename X2::iterator it = x2.begin(); it != x2.end(); ++it) {
         if (!tracker1.insert(*it).second) {
             tracker2.insert(*it);
         }
     }
+
+    x1.merge(x2);
 
     tracker1.compare(x1);
     tracker2.compare(x2);
