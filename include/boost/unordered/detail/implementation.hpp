@@ -13,13 +13,13 @@
 #pragma once
 #endif
 
-#include <boost/predef.h>
 #include <boost/assert.hpp>
 #include <boost/detail/no_exceptions_support.hpp>
 #include <boost/detail/select_type.hpp>
 #include <boost/iterator/iterator_categories.hpp>
 #include <boost/limits.hpp>
 #include <boost/move/move.hpp>
+#include <boost/predef.h>
 #include <boost/preprocessor/arithmetic/inc.hpp>
 #include <boost/preprocessor/cat.hpp>
 #include <boost/preprocessor/repetition/enum.hpp>
@@ -114,7 +114,7 @@
 //
 
 #if defined(BOOST_UNORDERED_TUPLE_ARGS)
-#elif BOOST_COMP_SUNPRO && BOOST_COMP_SUNPRO < BOOST_VERSION_NUMBER(5,21,0)
+#elif BOOST_COMP_SUNPRO && BOOST_COMP_SUNPRO < BOOST_VERSION_NUMBER(5, 21, 0)
 // I had problems with tuples on older versions of the sunpro.
 // Might be fixed in an earlier version than I specified here.
 #define BOOST_UNORDERED_TUPLE_ARGS 0
@@ -242,7 +242,7 @@ template <class T> struct prime_list_template
 {
     static std::size_t const value[];
 
-#if !(BOOST_COMP_SUNPRO && BOOST_COMP_SUNPRO < BOOST_VERSION_NUMBER(5,21,0))
+#if !(BOOST_COMP_SUNPRO && BOOST_COMP_SUNPRO < BOOST_VERSION_NUMBER(5, 21, 0))
     static std::ptrdiff_t const length;
 #else
     static std::ptrdiff_t const length =
@@ -254,7 +254,7 @@ template <class T>
 std::size_t const prime_list_template<T>::value[] = {
     BOOST_PP_SEQ_ENUM(BOOST_UNORDERED_PRIMES)};
 
-#if !(BOOST_COMP_SUNPRO && BOOST_COMP_SUNPRO < BOOST_VERSION_NUMBER(5,21,0))
+#if !(BOOST_COMP_SUNPRO && BOOST_COMP_SUNPRO < BOOST_VERSION_NUMBER(5, 21, 0))
 template <class T>
 std::ptrdiff_t const prime_list_template<T>::length = BOOST_PP_SEQ_SIZE(
     BOOST_UNORDERED_PRIMES);
@@ -1308,7 +1308,7 @@ inline void construct_value(T* address, BOOST_FWD_REF(A0) a0)
 //
 // Used to emulate piecewise construction.
 
-#if !(BOOST_COMP_SUNPRO && BOOST_COMP_SUNPRO < BOOST_VERSION_NUMBER(5,21,0))
+#if !(BOOST_COMP_SUNPRO && BOOST_COMP_SUNPRO < BOOST_VERSION_NUMBER(5, 21, 0))
 
 #define BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(z, n, namespace_)                 \
     template <typename Alloc, typename T,                                      \
@@ -1965,8 +1965,7 @@ struct cl_iterator
     {
     }
 
-    cl_iterator(
-        boost::unordered::iterator_detail::l_iterator<Node> const& x)
+    cl_iterator(boost::unordered::iterator_detail::l_iterator<Node> const& x)
         BOOST_NOEXCEPT : ptr_(x.ptr_),
                          bucket_(x.bucket_),
                          bucket_count_(x.bucket_count_)

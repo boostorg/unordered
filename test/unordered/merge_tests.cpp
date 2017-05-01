@@ -170,8 +170,8 @@ void merge_into_empty_test(X*, test::random_generator generator)
 }
 
 template <class X1, class X2>
-void merge_into_unique_keys_test(
-    X1*, X2*, int hash_equal1, int hash_equal2, test::random_generator generator)
+void merge_into_unique_keys_test(X1*, X2*, int hash_equal1, int hash_equal2,
+    test::random_generator generator)
 {
     test::check_instances check_;
 
@@ -206,8 +206,8 @@ void merge_into_unique_keys_test(
 }
 
 template <class X1, class X2>
-void merge_into_equiv_keys_test(
-    X1*, X2*, int hash_equal1, int hash_equal2, test::random_generator generator)
+void merge_into_equiv_keys_test(X1*, X2*, int hash_equal1, int hash_equal2,
+    test::random_generator generator)
 {
     test::check_instances check_;
 
@@ -339,7 +339,6 @@ UNORDERED_TEST(merge_into_equiv_keys_test,
     ((0)(1)(2))
     ((default_generator)(generate_collisions)))
 // clang-format on
-
 }
 
 RUN_TESTS()

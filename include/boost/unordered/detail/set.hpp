@@ -35,10 +35,8 @@ template <typename A, typename T, typename H, typename P> struct set
 
     typedef boost::unordered::iterator_detail::c_iterator<node> iterator;
     typedef boost::unordered::iterator_detail::c_iterator<node> c_iterator;
-    typedef boost::unordered::iterator_detail::cl_iterator<node>
-        l_iterator;
-    typedef boost::unordered::iterator_detail::cl_iterator<node>
-        cl_iterator;
+    typedef boost::unordered::iterator_detail::cl_iterator<node> l_iterator;
+    typedef boost::unordered::iterator_detail::cl_iterator<node> cl_iterator;
 
     typedef boost::unordered::node_handle_set<node, T, A> node_type;
     typedef boost::unordered::insert_return_type_set<node, T, A>
