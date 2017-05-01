@@ -3313,7 +3313,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
 
         // TODO: Do this need to set_first_in_group ?
         n->bucket_info_ = bucket_index;
-        n->set_first_in_group();
+        // n->set_first_in_group();
 
         if (!b->next_) {
             link_pointer start_node = this->get_previous_start();
@@ -3830,6 +3830,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         n->bucket_info_ = bucket_index;
 
         if (pos) {
+            n->reset_first_in_group();
             n->next_ = pos->next_;
             pos->next_ = n;
             if (n->next_) {
@@ -3839,7 +3840,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
                 }
             }
         } else {
-            n->set_first_in_group();
+            // n->set_first_in_group();
             bucket_pointer b = this->get_bucket(bucket_index);
 
             if (!b->next_) {
@@ -4210,7 +4211,7 @@ inline void table<Types>::rehash_impl(std::size_t num_buckets)
                 }
                 n = next;
                 n->bucket_info_ = bucket_index;
-                // n->reset_first_in_group();
+                n->reset_first_in_group();
             }
 
             // n is now the last node in the group
@@ -4424,17 +4425,17 @@ struct node : boost::unordered::detail::value_base<T>
 
     std::size_t is_first_in_group() const
     {
-        return bucket_info_ & ~((std::size_t)-1 >> 1);
+        return !(bucket_info_ & ~((std::size_t)-1 >> 1));
     }
 
     void set_first_in_group()
     {
-        bucket_info_ = bucket_info_ | ~((std::size_t)-1 >> 1);
+        bucket_info_ = bucket_info_ & ((std::size_t)-1 >> 1);
     }
 
     void reset_first_in_group()
     {
-        bucket_info_ = bucket_info_ & ((std::size_t)-1 >> 1);
+        bucket_info_ = bucket_info_ | ~((std::size_t)-1 >> 1);
     }
 
   private:
@@ -4465,17 +4466,17 @@ template <typename T> struct ptr_node : boost::unordered::detail::ptr_bucket
 
     std::size_t is_first_in_group() const
     {
-        return bucket_info_ & ~((std::size_t)-1 >> 1);
+        return !(bucket_info_ & ~((std::size_t)-1 >> 1));
     }
 
     void set_first_in_group()
     {
-        bucket_info_ = bucket_info_ | ~((std::size_t)-1 >> 1);
+        bucket_info_ = bucket_info_ & ((std::size_t)-1 >> 1);
     }
 
     void reset_first_in_group()
     {
-        bucket_info_ = bucket_info_ & ((std::size_t)-1 >> 1);
+        bucket_info_ = bucket_info_ | ~((std::size_t)-1 >> 1);
     }
 
   private:
