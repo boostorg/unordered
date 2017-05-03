@@ -75,7 +75,7 @@
 // 2 = boost::container::allocator_traits
 
 #if !defined(BOOST_UNORDERED_USE_ALLOCATOR_TRAITS)
-#if !defined(BOOST_NO_CXX11_ALLOCATOR)
+#if !defined(BOOST_NO_CXX11_ALLOCATOR) && !BOOST_COMP_SUNPRO
 #define BOOST_UNORDERED_USE_ALLOCATOR_TRAITS 1
 #elif defined(BOOST_MSVC)
 #if BOOST_MSVC < 1400
