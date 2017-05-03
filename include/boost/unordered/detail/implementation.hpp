@@ -3013,16 +3013,12 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
 
     ~table() { delete_buckets(); }
 
-    void delete_node(link_pointer prev)
+    void destroy_node(node_pointer n)
     {
-        node_pointer n = next_node(prev);
-        prev->next_ = n->next_;
-
         BOOST_UNORDERED_CALL_DESTROY(
             node_allocator_traits, node_alloc(), n->value_ptr());
         boost::unordered::detail::func::destroy(boost::addressof(*n));
         node_allocator_traits::deallocate(node_alloc(), n, 1);
-        --size_;
     }
 
     std::size_t delete_nodes(link_pointer prev, node_pointer end)
@@ -3031,11 +3027,16 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
 
         std::size_t count = 0;
 
+        node_pointer n = next_node(prev);
+        prev->next_ = end;
         do {
-            delete_node(prev);
+            node_pointer next = next_node(n);
+            destroy_node(n);
+            n = next;
             ++count;
-        } while (prev->next_ != end);
+        } while (n != end);
 
+        size_ -= count;
         return count;
     }
 
@@ -3072,12 +3073,14 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     }
 
     ////////////////////////////////////////////////////////////////////////
-    // Fix buckets after delete
+    // Fix buckets after delete/extract
     //
+    // (prev,next) should mark an open range of nodes in a single bucket which
+    // have either been unlinked, or are about to be.
 
-    std::size_t fix_bucket(std::size_t bucket_index, link_pointer prev)
+    std::size_t fix_bucket(
+        std::size_t bucket_index, link_pointer prev, node_pointer next)
     {
-        node_pointer next = next_node(prev);
         std::size_t bucket_index2 = bucket_index;
 
         if (next) {
@@ -3305,7 +3308,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         }
         prev->next_ = n2;
         --this->size_;
-        this->fix_bucket(bucket_index, prev);
+        this->fix_bucket(bucket_index, prev, n2);
         n->next_ = link_pointer();
 
         return n;
@@ -3586,12 +3589,14 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
                     prev = n;
                 } else {
                     this->reserve_for_insert(this->size_ + 1);
-                    prev->next_ = n->next_;
-                    if (prev->next_ && n->is_first_in_group()) {
-                        next_node(prev)->set_first_in_group();
+                    node_pointer n2 = next_node(n);
+                    prev->next_ = n2;
+                    if (n2 && n->is_first_in_group()) {
+                        n2->set_first_in_group();
                     }
                     --other.size_;
-                    other.fix_bucket(other.node_bucket(n), prev);
+                    other.fix_bucket(
+                        other.node_bucket(n), prev, n2);
                     this->add_node_unique(n, key_hash);
                 }
             }
@@ -3675,9 +3680,10 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         while (prev->next_ != n) {
             prev = prev->next_;
         }
-        prev->next_ = n->next_;
+        node_pointer n2 = next_node(n);
+        prev->next_ = n2;
         --this->size_;
-        this->fix_bucket(bucket_index, prev);
+        this->fix_bucket(bucket_index, prev, n2);
         n->next_ = link_pointer();
         return n;
     }
@@ -3698,7 +3704,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
             return 0;
         node_pointer end = next_node(next_node(prev));
         this->delete_nodes(prev, end);
-        this->fix_bucket(bucket_index, prev);
+        this->fix_bucket(bucket_index, prev, end);
         return 1;
     }
 
@@ -3712,10 +3718,14 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
             prev = prev->next_;
 
         // Delete the nodes.
+        prev->next_ = j;
         do {
-            this->delete_node(prev);
-            bucket_index = this->fix_bucket(bucket_index, prev);
-        } while (prev->next_ != j);
+            node_pointer next = next_node(i);
+            destroy_node(i);
+            --size_;
+            bucket_index = this->fix_bucket(bucket_index, prev, next);
+            i = next;
+        } while (i != j);
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -4046,12 +4056,12 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
             prev = next_node(prev);
         }
 
-        prev->next_ = i->next_;
+        prev->next_ = j;
         if (j && i->is_first_in_group()) {
             j->set_first_in_group();
         }
         --this->size_;
-        this->fix_bucket(bucket_index, prev);
+        this->fix_bucket(bucket_index, prev, j);
         i->next_ = link_pointer();
 
         return i;
@@ -4077,7 +4087,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         node_pointer end = next_group(first_node);
 
         std::size_t deleted_count = this->delete_nodes(prev, end);
-        this->fix_bucket(bucket_index, prev);
+        this->fix_bucket(bucket_index, prev, end);
         return deleted_count;
     }
 
@@ -4093,12 +4103,15 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         // Delete the nodes.
         // Is it inefficient to call fix_bucket for every node?
         bool includes_first = false;
+        prev->next_ = j;
         do {
-            includes_first =
-                includes_first || next_node(prev)->is_first_in_group();
-            this->delete_node(prev);
-            bucket_index = this->fix_bucket(bucket_index, prev);
-        } while (prev->next_ != j);
+            includes_first = includes_first || i->is_first_in_group();
+            node_pointer next = next_node(i);
+            destroy_node(i);
+            --size_;
+            bucket_index = this->fix_bucket(bucket_index, prev, next);
+            i = next;
+        } while (i != j);
         if (j && includes_first) {
             j->set_first_in_group();
         }
