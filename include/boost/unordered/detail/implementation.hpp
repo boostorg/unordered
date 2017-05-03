@@ -113,13 +113,28 @@
 // Other configuration macros
 //
 
+// BOOST_UNORDERED_TUPLE_ARGS
+//
+// Maximum number of std::tuple members to support, or 0 if std::tuple
+// isn't avaiable. More are supported when full C++11 is used.
+
+// Already defined, so do nothing
 #if defined(BOOST_UNORDERED_TUPLE_ARGS)
-#elif BOOST_COMP_SUNPRO && BOOST_COMP_SUNPRO < BOOST_VERSION_NUMBER(5, 21, 0)
+
 // I had problems with tuples on older versions of the sunpro.
 // Might be fixed in an earlier version than I specified here.
+#elif BOOST_COMP_SUNPRO && BOOST_COMP_SUNPRO < BOOST_VERSION_NUMBER(5, 21, 0)
 #define BOOST_UNORDERED_TUPLE_ARGS 0
+
+// Assume if we have C++11 tuple it's properly variadic,
+// and just use a max number of 10 arguments.
 #elif !defined(BOOST_NO_CXX11_HDR_TUPLE)
 #define BOOST_UNORDERED_TUPLE_ARGS 10
+
+// Visual C++ has a decent enough tuple for piecewise construction,
+// so use that if available, using _VARIADIC_MAX for the maximum
+// number of parameters. Note that this comes after the check
+// for a full C++11 tuple.
 #elif defined(BOOST_MSVC)
 #if !BOOST_UNORDERED_HAVE_PIECEWISE_CONSTRUCT
 #define BOOST_UNORDERED_TUPLE_ARGS 0
@@ -128,6 +143,8 @@
 #else
 #define BOOST_UNORDERED_TUPLE_ARGS 5
 #endif
+
+// Assume that we don't have std::tuple
 #else
 #define BOOST_UNORDERED_TUPLE_ARGS 0
 #endif
@@ -136,9 +153,17 @@
 #include <tuple>
 #endif
 
+// BOOST_UNORDERED_SUPPRESS_DEPRECATED
+//
+// Define to stop deprecation attributes
+
 #if defined(BOOST_UNORDERED_SUPPRESS_DEPRECATED)
 #define BOOST_UNORDERED_DEPRECATED(msg)
 #endif
+
+// BOOST_UNORDERED_DEPRECATED
+//
+// Wrapper around various depreaction attributes.
 
 #if defined(__has_cpp_attribute) &&                                            \
     (!defined(__cplusplus) || __cplusplus >= 201402)
