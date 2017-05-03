@@ -2729,11 +2729,6 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         return n2;
     }
 
-    static link_pointer next_for_erase(link_pointer prev)
-    {
-        return prev->next_;
-    }
-
     node_pointer next_group(node_pointer n) const
     {
         node_pointer n1 = n;
@@ -3020,7 +3015,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
 
     void delete_node(link_pointer prev)
     {
-        node_pointer n = static_cast<node_pointer>(prev->next_);
+        node_pointer n = next_node(prev);
         prev->next_ = n->next_;
 
         BOOST_UNORDERED_CALL_DESTROY(
@@ -3082,25 +3077,26 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
 
     std::size_t fix_bucket(std::size_t bucket_index, link_pointer prev)
     {
-        link_pointer end = prev->next_;
+        node_pointer next = next_node(prev);
         std::size_t bucket_index2 = bucket_index;
 
-        if (end) {
-            bucket_index2 = node_bucket(static_cast<node_pointer>(end));
+        if (next) {
+            bucket_index2 = node_bucket(next);
 
-            // If begin and end are in the same bucket, then
-            // there's nothing to do.
-            if (bucket_index == bucket_index2)
+            // If next is in the same bucket, then there's nothing to do.
+            if (bucket_index == bucket_index2) {
                 return bucket_index2;
+            }
 
-            // Update the bucket containing end.
+            // Update the bucket containing next.
             get_bucket(bucket_index2)->next_ = prev;
         }
 
         // Check if this bucket is now empty.
         bucket_pointer this_bucket = get_bucket(bucket_index);
-        if (this_bucket->next_ == prev)
+        if (this_bucket->next_ == prev) {
             this_bucket->next_ = link_pointer();
+        }
 
         return bucket_index2;
     }
@@ -4047,7 +4043,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
 
         link_pointer prev = this->get_previous_start(bucket_index);
         while (prev->next_ != i) {
-            prev = next_for_erase(prev);
+            prev = next_node(prev);
         }
 
         prev->next_ = i->next_;
@@ -4091,7 +4087,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
 
         link_pointer prev = this->get_previous_start(bucket_index);
         while (prev->next_ != i) {
-            prev = next_for_erase(prev);
+            prev = next_node(prev);
         }
 
         // Delete the nodes.
