@@ -1616,7 +1616,7 @@ void unordered_map<K, T, H, P, A>::clear() BOOST_NOEXCEPT
 {
     if (table_.size_) {
         table_.clear_buckets();
-        table_.delete_nodes(table_.get_previous_start(), link_pointer());
+        table_.delete_nodes(table_.get_previous_start(), node_pointer());
     }
 }
 
@@ -2101,7 +2101,7 @@ void unordered_multimap<K, T, H, P, A>::clear() BOOST_NOEXCEPT
 {
     if (table_.size_) {
         table_.clear_buckets();
-        table_.delete_nodes(table_.get_previous_start(), link_pointer());
+        table_.delete_nodes(table_.get_previous_start(), node_pointer());
     }
 }
 

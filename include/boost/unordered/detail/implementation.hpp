@@ -3025,7 +3025,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         --size_;
     }
 
-    std::size_t delete_nodes(link_pointer prev, link_pointer end)
+    std::size_t delete_nodes(link_pointer prev, node_pointer end)
     {
         BOOST_ASSERT(prev->next_ != end);
 
@@ -3043,7 +3043,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     {
         if (buckets_) {
             if (size_)
-                delete_nodes(get_previous_start(), link_pointer());
+                delete_nodes(get_previous_start(), node_pointer());
 
             if (bucket::extra_node) {
                 node_pointer n =
@@ -3696,7 +3696,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         link_pointer prev = this->find_previous_node(k, bucket_index);
         if (!prev)
             return 0;
-        link_pointer end = next_node(prev)->next_;
+        node_pointer end = next_node(next_node(prev));
         this->delete_nodes(prev, end);
         this->fix_bucket(bucket_index, prev);
         return 1;
@@ -4074,7 +4074,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
             return 0;
 
         node_pointer first_node = next_node(prev);
-        link_pointer end = next_group(first_node);
+        node_pointer end = next_group(first_node);
 
         std::size_t deleted_count = this->delete_nodes(prev, end);
         this->fix_bucket(bucket_index, prev);
@@ -4261,7 +4261,7 @@ inline void table<Types>::rehash_impl(std::size_t num_buckets)
             }
         }
     }
-    BOOST_CATCH(...) { delete_nodes(prev, link_pointer()); }
+    BOOST_CATCH(...) { delete_nodes(prev, node_pointer()); }
     BOOST_CATCH_END
 }
 
