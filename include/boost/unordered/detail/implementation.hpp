@@ -1779,10 +1779,21 @@ construct_node_pair_from_args(
 {
     node_constructor<Alloc> a(alloc);
     a.create_node();
+#if !(BOOST_COMP_CLANG && BOOST_COMP_CLANG < BOOST_VERSION_NUMBER(3, 8, 0) &&  \
+      defined(BOOST_LIBSTDCXX11))
     boost::unordered::detail::allocator_traits<Alloc>::construct(alloc,
         a.node_->value_ptr(), std::piecewise_construct,
         std::forward_as_tuple(boost::forward<Key>(k)),
         std::forward_as_tuple(boost::forward<Args>(args)...));
+#else
+    // It doesn't seem to be possible to construct a tuple with 3 variadic
+    // rvalue reference members when using older versions of clang with
+    // libstdc++, so just use std::make_tuple instead of std::forward_as_tuple.
+    boost::unordered::detail::allocator_traits<Alloc>::construct(alloc,
+        a.node_->value_ptr(), std::piecewise_construct,
+        std::forward_as_tuple(boost::forward<Key>(k)),
+        std::make_tuple(boost::forward<Args>(args)...));
+#endif
     return a.release();
 }
 
