@@ -23,7 +23,8 @@ template <class T> struct self_swap_base : public test::exception_base
     typedef T data_type;
     T init() const { return T(values.begin(), values.end()); }
 
-    void run(T& x) const {
+    void run(T& x) const
+    {
         x.swap(x);
 
         DISABLE_EXCEPTIONS;

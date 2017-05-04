@@ -53,6 +53,7 @@ template <class T> struct rehash_test0 : rehash_test_base<T>
     void run(T& x) const
     {
         x.rehash(0);
+
         DISABLE_EXCEPTIONS;
         test::check_container(x, this->values);
         test::check_equivalent_keys(x);
@@ -65,6 +66,7 @@ template <class T> struct rehash_test1 : rehash_test_base<T>
     void run(T& x) const
     {
         x.rehash(200);
+
         DISABLE_EXCEPTIONS;
         test::check_container(x, this->values);
         test::check_equivalent_keys(x);
@@ -77,6 +79,7 @@ template <class T> struct rehash_test2 : rehash_test_base<T>
     void run(T& x) const
     {
         x.rehash(0);
+
         DISABLE_EXCEPTIONS;
         test::check_container(x, this->values);
         test::check_equivalent_keys(x);
@@ -89,6 +92,7 @@ template <class T> struct rehash_test3 : rehash_test_base<T>
     void run(T& x) const
     {
         x.rehash(200);
+
         DISABLE_EXCEPTIONS;
         test::check_container(x, this->values);
         test::check_equivalent_keys(x);
@@ -101,6 +105,7 @@ template <class T> struct rehash_test4 : rehash_test_base<T>
     void run(T& x) const
     {
         x.rehash(0);
+
         DISABLE_EXCEPTIONS;
         test::check_container(x, this->values);
         test::check_equivalent_keys(x);
@@ -113,6 +118,7 @@ template <class T> struct rehash_test5 : rehash_test_base<T>
     void run(T& x) const
     {
         x.rehash(0);
+
         DISABLE_EXCEPTIONS;
         test::check_container(x, this->values);
         test::check_equivalent_keys(x);

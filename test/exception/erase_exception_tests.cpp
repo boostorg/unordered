@@ -44,8 +44,9 @@ template <class T> struct erase_by_key_test1 : public erase_test_base<T>
             x.erase(test::get_key<T>(*it));
         }
 
+        DISABLE_EXCEPTIONS;
         BOOST_TEST(x.empty());
-        test::check_equivalent_keys(x);        
+        test::check_equivalent_keys(x);
     }
 };
 

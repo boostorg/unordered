@@ -23,8 +23,11 @@ template <class T> struct self_assign_base : public test::exception_base
     typedef T data_type;
     T init() const { return T(values.begin(), values.end()); }
 
-    void run(T& x) const {
+    void run(T& x) const
+    {
         x = x;
+
+        DISABLE_EXCEPTIONS;
         test::check_container(x, values);
         test::check_equivalent_keys(x);
     }
@@ -65,8 +68,11 @@ template <class T> struct assign_base : public test::exception_base
     typedef T data_type;
     T init() const { return T(x); }
 
-    void run(T& x1) const {
+    void run(T& x1) const
+    {
         x1 = y;
+
+        DISABLE_EXCEPTIONS;
         test::check_container(x1, y_values);
         test::check_equivalent_keys(x1);
     }

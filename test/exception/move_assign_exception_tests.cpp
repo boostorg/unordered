@@ -44,6 +44,7 @@ template <class T> struct move_assign_base : public test::exception_base
         disable_exceptions.release();
         x1 = boost::move(y1);
 
+        DISABLE_EXCEPTIONS;
         test::check_container(x1, y_values);
         test::check_equivalent_keys(x1);
     }

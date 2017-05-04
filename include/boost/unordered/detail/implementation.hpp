@@ -3595,8 +3595,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
                         n2->set_first_in_group();
                     }
                     --other.size_;
-                    other.fix_bucket(
-                        other.node_bucket(n), prev, n2);
+                    other.fix_bucket(other.node_bucket(n), prev, n2);
                     this->add_node_unique(n, key_hash);
                 }
             }
@@ -4274,7 +4273,8 @@ inline void table<Types>::rehash_impl(std::size_t num_buckets)
             }
         }
     }
-    BOOST_CATCH(...) {
+    BOOST_CATCH(...)
+    {
         delete_nodes(prev, node_pointer());
         BOOST_RETHROW
     }
