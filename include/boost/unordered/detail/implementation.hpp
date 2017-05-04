@@ -1516,7 +1516,7 @@ construct_from_args(Alloc& alloc, std::pair<A, B>* address, BOOST_FWD_REF(A0),
     {
         boost::unordered::detail::func::destroy(
             boost::addressof(address->first));
-        BOOST_RETHROW;
+        BOOST_RETHROW
     }
     BOOST_CATCH_END
 }
@@ -1551,7 +1551,7 @@ inline typename enable_if<use_piecewise<A0>, void>::type construct_from_args(
     {
         boost::unordered::detail::func::destroy(
             boost::addressof(address->first));
-        BOOST_RETHROW;
+        BOOST_RETHROW
     }
     BOOST_CATCH_END
 }
@@ -1630,7 +1630,7 @@ inline void construct_from_args(Alloc& alloc, std::pair<A, B>* address,
     {
         boost::unordered::detail::func::destroy(
             boost::addressof(address->first));
-        BOOST_RETHROW;
+        BOOST_RETHROW
     }
     BOOST_CATCH_END
 }
@@ -1841,7 +1841,7 @@ construct_node_pair(Alloc& alloc, BOOST_FWD_REF(Key) k)
     {
         boost::unordered::detail::func::destroy(
             boost::addressof(a.node_->value_ptr()->first));
-        BOOST_RETHROW;
+        BOOST_RETHROW
     }
     BOOST_CATCH_END
     return a.release();
@@ -1865,7 +1865,7 @@ construct_node_pair(Alloc& alloc, BOOST_FWD_REF(Key) k, BOOST_FWD_REF(Mapped) m)
     {
         boost::unordered::detail::func::destroy(
             boost::addressof(a.node_->value_ptr()->first));
-        BOOST_RETHROW;
+        BOOST_RETHROW
     }
     BOOST_CATCH_END
     return a.release();
@@ -1890,7 +1890,7 @@ construct_node_pair_from_args(
     {
         boost::unordered::detail::func::destroy(
             boost::addressof(a.node_->value_ptr()->first));
-        BOOST_RETHROW;
+        BOOST_RETHROW
     }
     BOOST_CATCH_END
     return a.release();
@@ -4274,7 +4274,10 @@ inline void table<Types>::rehash_impl(std::size_t num_buckets)
             }
         }
     }
-    BOOST_CATCH(...) { delete_nodes(prev, node_pointer()); }
+    BOOST_CATCH(...) {
+        delete_nodes(prev, node_pointer());
+        BOOST_RETHROW
+    }
     BOOST_CATCH_END
 }
 

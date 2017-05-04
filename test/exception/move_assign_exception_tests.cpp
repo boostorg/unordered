@@ -7,6 +7,7 @@
 
 #include "../helpers/invariants.hpp"
 #include "../helpers/random_values.hpp"
+#include "../helpers/tracker.hpp"
 #include <iostream>
 
 #if defined(BOOST_MSVC)
@@ -42,7 +43,11 @@ template <class T> struct move_assign_base : public test::exception_base
         T y1 = y;
         disable_exceptions.release();
         x1 = boost::move(y1);
+
+        test::check_container(x1, y_values);
+        test::check_equivalent_keys(x1);
     }
+
     void check BOOST_PREVENT_MACRO_SUBSTITUTION(T const& x1) const
     {
         test::check_equivalent_keys(x1);

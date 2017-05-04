@@ -2,13 +2,14 @@
 // Copyright 2006-2009 Daniel James.
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
 #include "./containers.hpp"
+#include <iostream>
 
 #include "../helpers/helpers.hpp"
 #include "../helpers/invariants.hpp"
 #include "../helpers/random_values.hpp"
 #include "../helpers/strong.hpp"
+#include "../helpers/tracker.hpp"
 #include <cmath>
 #include <string>
 
@@ -54,6 +55,10 @@ template <class T> struct emplace_test1 : public insert_test_base<T>
             strong.store(x, test::detail::tracker.count_allocations);
             x.emplace(*it);
         }
+
+        DISABLE_EXCEPTIONS;
+        test::check_container(x, this->values);
+        test::check_equivalent_keys(x);
     }
 };
 
@@ -72,6 +77,10 @@ template <class T> struct insert_test1 : public insert_test_base<T>
             strong.store(x, test::detail::tracker.count_allocations);
             x.insert(*it);
         }
+
+        DISABLE_EXCEPTIONS;
+        test::check_container(x, this->values);
+        test::check_equivalent_keys(x);
     }
 };
 
@@ -88,12 +97,23 @@ template <class T> struct insert_test2 : public insert_test_base<T>
             strong.store(x, test::detail::tracker.count_allocations);
             x.insert(x.begin(), *it);
         }
+
+        DISABLE_EXCEPTIONS;
+        test::check_container(x, this->values);
+        test::check_equivalent_keys(x);
     }
 };
 
 template <class T> struct insert_test3 : public insert_test_base<T>
 {
-    void run(T& x) const { x.insert(this->values.begin(), this->values.end()); }
+    void run(T& x) const
+    {
+        x.insert(this->values.begin(), this->values.end());
+
+        DISABLE_EXCEPTIONS;
+        test::check_container(x, this->values);
+        test::check_equivalent_keys(x);
+    }
 
     void check BOOST_PREVENT_MACRO_SUBSTITUTION(T const& x) const
     {
@@ -114,6 +134,10 @@ template <class T> struct insert_test4 : public insert_test_base<T>
             strong.store(x, test::detail::tracker.count_allocations);
             x.insert(it, test::next(it));
         }
+
+        DISABLE_EXCEPTIONS;
+        test::check_container(x, this->values);
+        test::check_equivalent_keys(x);
     }
 };
 
@@ -147,17 +171,30 @@ template <class T> struct insert_test_rehash1 : public insert_test_base<T>
         int count = 0;
         BOOST_DEDUCED_TYPENAME T::const_iterator pos = x.cbegin();
 
+        test::list<typename T::value_type> v;
+        {
+            DISABLE_EXCEPTIONS;
+            v.insert(x.begin(), x.end());
+        }
+
         for (BOOST_DEDUCED_TYPENAME test::random_values<T>::const_iterator
                  it = test::next(this->values.begin(), x.size()),
                  end = this->values.end();
              it != end && count < 10; ++it, ++count) {
             strong.store(x, test::detail::tracker.count_allocations);
             pos = x.insert(pos, *it);
+
+            DISABLE_EXCEPTIONS;
+            v.push_back(*it);
         }
 
         // This isn't actually a failure, but it means the test isn't doing its
         // job.
         BOOST_TEST(x.bucket_count() != bucket_count);
+
+        DISABLE_EXCEPTIONS;
+        test::check_container(x, v);
+        test::check_equivalent_keys(x);
     }
 };
 
@@ -170,17 +207,30 @@ template <class T> struct insert_test_rehash2 : public insert_test_rehash1<T>
         BOOST_DEDUCED_TYPENAME T::size_type bucket_count = x.bucket_count();
         int count = 0;
 
+        test::list<typename T::value_type> v;
+        {
+            DISABLE_EXCEPTIONS;
+            v.insert(x.begin(), x.end());
+        }
+
         for (BOOST_DEDUCED_TYPENAME test::random_values<T>::const_iterator
                  it = test::next(this->values.begin(), x.size()),
                  end = this->values.end();
              it != end && count < 10; ++it, ++count) {
             strong.store(x, test::detail::tracker.count_allocations);
             x.insert(*it);
+
+            DISABLE_EXCEPTIONS;
+            v.push_back(*it);
         }
 
         // This isn't actually a failure, but it means the test isn't doing its
         // job.
         BOOST_TEST(x.bucket_count() != bucket_count);
+
+        DISABLE_EXCEPTIONS;
+        test::check_container(x, v);
+        test::check_equivalent_keys(x);
     }
 };
 
@@ -218,6 +268,14 @@ template <class T> struct insert_test_rehash3 : public insert_test_base<T>
     void run(T& x) const
     {
         BOOST_DEDUCED_TYPENAME T::size_type bucket_count = x.bucket_count();
+        test::list<typename T::value_type> v;
+
+        {
+            DISABLE_EXCEPTIONS;
+            v.insert(x.begin(), x.end());
+            v.insert(test::next(this->values.begin(), x.size()),
+                test::next(this->values.begin(), x.size() + 20));
+        }
 
         x.insert(test::next(this->values.begin(), x.size()),
             test::next(this->values.begin(), x.size() + 20));
@@ -225,6 +283,10 @@ template <class T> struct insert_test_rehash3 : public insert_test_base<T>
         // This isn't actually a failure, but it means the test isn't doing its
         // job.
         BOOST_TEST(x.bucket_count() != bucket_count);
+
+        DISABLE_EXCEPTIONS;
+        test::check_container(x, v);
+        test::check_equivalent_keys(x);
     }
 
     void check BOOST_PREVENT_MACRO_SUBSTITUTION(T const& x) const
@@ -263,6 +325,10 @@ template <class T> struct pair_emplace_test1 : public insert_test_base<T>
             x.emplace(boost::unordered::piecewise_construct,
                 boost::make_tuple(it->first), boost::make_tuple(it->second));
         }
+
+        DISABLE_EXCEPTIONS;
+        test::check_container(x, this->values);
+        test::check_equivalent_keys(x);
     }
 };
 
@@ -281,6 +347,10 @@ template <class T> struct pair_emplace_test2 : public insert_test_base<T>
                 boost::make_tuple(it->first),
                 boost::make_tuple(it->second.tag1_, it->second.tag2_));
         }
+
+        DISABLE_EXCEPTIONS;
+        test::check_container(x, this->values);
+        test::check_equivalent_keys(x);
     }
 };
 

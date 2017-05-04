@@ -7,6 +7,7 @@
 
 #include "../helpers/invariants.hpp"
 #include "../helpers/random_values.hpp"
+#include "../helpers/tracker.hpp"
 
 #if defined(BOOST_MSVC)
 #pragma warning(disable : 4512) // assignment operator could not be generated
@@ -21,7 +22,13 @@ template <class T> struct self_assign_base : public test::exception_base
 
     typedef T data_type;
     T init() const { return T(values.begin(), values.end()); }
-    void run(T& x) const { x = x; }
+
+    void run(T& x) const {
+        x = x;
+        test::check_container(x, values);
+        test::check_equivalent_keys(x);
+    }
+
     void check BOOST_PREVENT_MACRO_SUBSTITUTION(T const& x) const
     {
         test::check_equivalent_keys(x);
@@ -57,7 +64,13 @@ template <class T> struct assign_base : public test::exception_base
 
     typedef T data_type;
     T init() const { return T(x); }
-    void run(T& x1) const { x1 = y; }
+
+    void run(T& x1) const {
+        x1 = y;
+        test::check_container(x1, y_values);
+        test::check_equivalent_keys(x1);
+    }
+
     void check BOOST_PREVENT_MACRO_SUBSTITUTION(T const& x1) const
     {
         test::check_equivalent_keys(x1);
