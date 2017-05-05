@@ -226,6 +226,55 @@ class hash
     }
 };
 
+class less
+{
+    int tag_;
+
+  public:
+    less(int t = 0) : tag_(t) {}
+
+    less(less const& x) : tag_(x.tag_) {}
+
+    bool operator()(object const& x1, object const& x2) const
+    {
+        return less_impl(x1, x2);
+    }
+
+    bool operator()(std::pair<object, object> const& x1,
+        std::pair<object, object> const& x2) const
+    {
+        if (less_impl(x1.first, x2.first)) {
+            return true;
+        }
+        if (!less_impl(x1.first, x2.first)) {
+            return false;
+        }
+        return less_impl(x1.second, x2.second);
+    }
+
+    bool less_impl(object const& x1, object const& x2) const
+    {
+        switch (tag_) {
+        case 1:
+            return x1.tag1_ < x2.tag1_;
+        case 2:
+            return x1.tag2_ < x2.tag2_;
+        default:
+            return x1 < x2;
+        }
+    }
+
+    friend bool operator==(less const& x1, less const& x2)
+    {
+        return x1.tag_ == x2.tag_;
+    }
+
+    friend bool operator!=(less const& x1, less const& x2)
+    {
+        return x1.tag_ != x2.tag_;
+    }
+};
+
 class equal_to
 {
     int tag_;
@@ -310,55 +359,8 @@ class equal_to
         }
         return x1.tag_ != x2.tag_;
     }
-};
 
-class less
-{
-    int tag_;
-
-  public:
-    less(int t = 0) : tag_(t) {}
-
-    less(less const& x) : tag_(x.tag_) {}
-
-    bool operator()(object const& x1, object const& x2) const
-    {
-        return less_impl(x1, x2);
-    }
-
-    bool operator()(std::pair<object, object> const& x1,
-        std::pair<object, object> const& x2) const
-    {
-        if (less_impl(x1.first, x2.first)) {
-            return true;
-        }
-        if (!less_impl(x1.first, x2.first)) {
-            return false;
-        }
-        return less_impl(x1.second, x2.second);
-    }
-
-    bool less_impl(object const& x1, object const& x2) const
-    {
-        switch (tag_) {
-        case 1:
-            return x1.tag1_ < x2.tag1_;
-        case 2:
-            return x1.tag2_ < x2.tag2_;
-        default:
-            return x1 < x2;
-        }
-    }
-
-    friend bool operator==(less const& x1, less const& x2)
-    {
-        return x1.tag_ == x2.tag_;
-    }
-
-    friend bool operator!=(less const& x1, less const& x2)
-    {
-        return x1.tag_ != x2.tag_;
-    }
+    friend less create_compare(equal_to x) { return less(x.tag_); }
 };
 
 template <class T> class allocator
