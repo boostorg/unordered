@@ -447,7 +447,7 @@ template <class T, class H, class P, class A> class unordered_set
     //    value_allocator_traits::is_always_equal::value &&
     //    is_nothrow_move_assignable_v<H> &&
     //    is_nothrow_move_assignable_v<P>)
-    void clear() BOOST_NOEXCEPT;
+    void clear() BOOST_NOEXCEPT { table_.clear_impl(); }
 
     template <typename H2, typename P2>
     void merge(boost::unordered_set<T, H2, P2, A>& source);
@@ -950,7 +950,7 @@ template <class T, class H, class P, class A> class unordered_multiset
     //    value_allocator_traits::is_always_equal::value &&
     //    is_nothrow_move_assignable_v<H> &&
     //    is_nothrow_move_assignable_v<P>)
-    void clear() BOOST_NOEXCEPT;
+    void clear() BOOST_NOEXCEPT { table_.clear_impl(); }
 
     template <typename H2, typename P2>
     void merge(boost::unordered_multiset<T, H2, P2, A>& source);
@@ -1273,15 +1273,6 @@ void unordered_set<T, H, P, A>::swap(unordered_set& other)
 //    is_nothrow_move_assignable_v<P>)
 {
     table_.swap(other.table_);
-}
-
-template <class T, class H, class P, class A>
-void unordered_set<T, H, P, A>::clear() BOOST_NOEXCEPT
-{
-    if (table_.size_) {
-        table_.clear_buckets();
-        table_.delete_nodes(table_.get_previous_start(), node_pointer());
-    }
 }
 
 // observers
@@ -1677,15 +1668,6 @@ void unordered_multiset<T, H, P, A>::swap(unordered_multiset& other)
 //    is_nothrow_move_assignable_v<P>)
 {
     table_.swap(other.table_);
-}
-
-template <class T, class H, class P, class A>
-void unordered_multiset<T, H, P, A>::clear() BOOST_NOEXCEPT
-{
-    if (table_.size_) {
-        table_.clear_buckets();
-        table_.delete_nodes(table_.get_previous_start(), node_pointer());
-    }
 }
 
 // observers
