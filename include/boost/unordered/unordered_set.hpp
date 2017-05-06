@@ -144,7 +144,7 @@ template <class T, class H, class P, class A> class unordered_set
 #if defined(BOOST_UNORDERED_USE_MOVE)
     unordered_set& operator=(BOOST_COPY_ASSIGN_REF(unordered_set) x)
     {
-        table_.assign(x.table_, true);
+        table_.assign(x.table_, boost::unordered::detail::true_type());
         return *this;
     }
 
@@ -154,13 +154,13 @@ template <class T, class H, class P, class A> class unordered_set
     //    is_nothrow_move_assignable_v<H> &&
     //    is_nothrow_move_assignable_v<P>)
     {
-        table_.move_assign(x.table_, true);
+        table_.move_assign(x.table_, boost::unordered::detail::true_type());
         return *this;
     }
 #else
     unordered_set& operator=(unordered_set const& x)
     {
-        table_.assign(x.table_, true);
+        table_.assign(x.table_, boost::unordered::detail::true_type());
         return *this;
     }
 
@@ -171,7 +171,7 @@ template <class T, class H, class P, class A> class unordered_set
     //    is_nothrow_move_assignable_v<H> &&
     //    is_nothrow_move_assignable_v<P>)
     {
-        table_.move_assign(x.table_, true);
+        table_.move_assign(x.table_, boost::unordered::detail::true_type());
         return *this;
     }
 #endif
@@ -654,7 +654,7 @@ template <class T, class H, class P, class A> class unordered_multiset
 #if defined(BOOST_UNORDERED_USE_MOVE)
     unordered_multiset& operator=(BOOST_COPY_ASSIGN_REF(unordered_multiset) x)
     {
-        table_.assign(x.table_, false);
+        table_.assign(x.table_, boost::unordered::detail::false_type());
         return *this;
     }
 
@@ -664,13 +664,13 @@ template <class T, class H, class P, class A> class unordered_multiset
     //    is_nothrow_move_assignable_v<H> &&
     //    is_nothrow_move_assignable_v<P>)
     {
-        table_.move_assign(x.table_, false);
+        table_.move_assign(x.table_, boost::unordered::detail::false_type());
         return *this;
     }
 #else
     unordered_multiset& operator=(unordered_multiset const& x)
     {
-        table_.assign(x.table_, false);
+        table_.assign(x.table_, boost::unordered::detail::false_type());
         return *this;
     }
 
@@ -681,7 +681,7 @@ template <class T, class H, class P, class A> class unordered_multiset
     //    is_nothrow_move_assignable_v<H> &&
     //    is_nothrow_move_assignable_v<P>)
     {
-        table_.move_assign(x.table_, false);
+        table_.move_assign(x.table_, boost::unordered::detail::false_type());
         return *this;
     }
 #endif
@@ -1078,7 +1078,8 @@ unordered_set<T, H, P, A>::unordered_set(unordered_set const& other)
               select_on_container_copy_construction(other.get_allocator()))
 {
     if (other.table_.size_) {
-        table_.copy_buckets_unique(other.table_);
+        table_.copy_buckets(
+            other.table_, boost::unordered::detail::true_type());
     }
 }
 
@@ -1095,7 +1096,8 @@ unordered_set<T, H, P, A>::unordered_set(
     : table_(other.table_, a)
 {
     if (other.table_.size_) {
-        table_.copy_buckets_unique(other.table_);
+        table_.copy_buckets(
+            other.table_, boost::unordered::detail::true_type());
     }
 }
 
@@ -1472,7 +1474,8 @@ unordered_multiset<T, H, P, A>::unordered_multiset(
               select_on_container_copy_construction(other.get_allocator()))
 {
     if (other.table_.size_) {
-        table_.copy_buckets_equiv(other.table_);
+        table_.copy_buckets(
+            other.table_, boost::unordered::detail::false_type());
     }
 }
 
@@ -1489,7 +1492,8 @@ unordered_multiset<T, H, P, A>::unordered_multiset(
     : table_(other.table_, a)
 {
     if (other.table_.size_) {
-        table_.copy_buckets_equiv(other.table_);
+        table_.copy_buckets(
+            other.table_, boost::unordered::detail::false_type());
     }
 }
 

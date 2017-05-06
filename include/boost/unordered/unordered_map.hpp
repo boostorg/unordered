@@ -146,7 +146,7 @@ template <class K, class T, class H, class P, class A> class unordered_map
 #if defined(BOOST_UNORDERED_USE_MOVE)
     unordered_map& operator=(BOOST_COPY_ASSIGN_REF(unordered_map) x)
     {
-        table_.assign(x.table_, true);
+        table_.assign(x.table_, boost::unordered::detail::true_type());
         return *this;
     }
 
@@ -156,13 +156,13 @@ template <class K, class T, class H, class P, class A> class unordered_map
     //    is_nothrow_move_assignable_v<H> &&
     //    is_nothrow_move_assignable_v<P>)
     {
-        table_.move_assign(x.table_, true);
+        table_.move_assign(x.table_, boost::unordered::detail::true_type());
         return *this;
     }
 #else
     unordered_map& operator=(unordered_map const& x)
     {
-        table_.assign(x.table_, true);
+        table_.assign(x.table_, boost::unordered::detail::true_type());
         return *this;
     }
 
@@ -173,7 +173,7 @@ template <class K, class T, class H, class P, class A> class unordered_map
     //    is_nothrow_move_assignable_v<H> &&
     //    is_nothrow_move_assignable_v<P>)
     {
-        table_.move_assign(x.table_, true);
+        table_.move_assign(x.table_, boost::unordered::detail::true_type());
         return *this;
     }
 #endif
@@ -948,7 +948,7 @@ template <class K, class T, class H, class P, class A> class unordered_multimap
 #if defined(BOOST_UNORDERED_USE_MOVE)
     unordered_multimap& operator=(BOOST_COPY_ASSIGN_REF(unordered_multimap) x)
     {
-        table_.assign(x.table_, false);
+        table_.assign(x.table_, boost::unordered::detail::false_type());
         return *this;
     }
 
@@ -958,13 +958,13 @@ template <class K, class T, class H, class P, class A> class unordered_multimap
     //    is_nothrow_move_assignable_v<H> &&
     //    is_nothrow_move_assignable_v<P>)
     {
-        table_.move_assign(x.table_, false);
+        table_.move_assign(x.table_, boost::unordered::detail::false_type());
         return *this;
     }
 #else
     unordered_multimap& operator=(unordered_multimap const& x)
     {
-        table_.assign(x.table_, false);
+        table_.assign(x.table_, boost::unordered::detail::false_type());
         return *this;
     }
 
@@ -975,7 +975,7 @@ template <class K, class T, class H, class P, class A> class unordered_multimap
     //    is_nothrow_move_assignable_v<H> &&
     //    is_nothrow_move_assignable_v<P>)
     {
-        table_.move_assign(x.table_, false);
+        table_.move_assign(x.table_, boost::unordered::detail::false_type());
         return *this;
     }
 #endif
@@ -1399,7 +1399,8 @@ unordered_map<K, T, H, P, A>::unordered_map(unordered_map const& other)
               select_on_container_copy_construction(other.get_allocator()))
 {
     if (other.table_.size_) {
-        table_.copy_buckets_unique(other.table_);
+        table_.copy_buckets(
+            other.table_, boost::unordered::detail::true_type());
     }
 }
 
@@ -1416,7 +1417,8 @@ unordered_map<K, T, H, P, A>::unordered_map(
     : table_(other.table_, a)
 {
     if (other.table_.size_) {
-        table_.copy_buckets_unique(other.table_);
+        table_.copy_buckets(
+            other.table_, boost::unordered::detail::true_type());
     }
 }
 
@@ -1877,7 +1879,8 @@ unordered_multimap<K, T, H, P, A>::unordered_multimap(
               select_on_container_copy_construction(other.get_allocator()))
 {
     if (other.table_.size_) {
-        table_.copy_buckets_equiv(other.table_);
+        table_.copy_buckets(
+            other.table_, boost::unordered::detail::false_type());
     }
 }
 
@@ -1894,7 +1897,8 @@ unordered_multimap<K, T, H, P, A>::unordered_multimap(
     : table_(other.table_, a)
 {
     if (other.table_.size_) {
-        table_.copy_buckets_equiv(other.table_);
+        table_.copy_buckets(
+            other.table_, boost::unordered::detail::false_type());
     }
 }
 

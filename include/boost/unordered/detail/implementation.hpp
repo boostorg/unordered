@@ -3098,7 +3098,8 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     ////////////////////////////////////////////////////////////////////////
     // Assignment
 
-    void assign(table const& x, bool is_unique)
+    template <typename UniqueType>
+    void assign(table const& x, UniqueType is_unique)
     {
         if (this != boost::addressof(x)) {
             assign(x, is_unique,
@@ -3108,7 +3109,8 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         }
     }
 
-    void assign(table const& x, bool is_unique, false_type)
+    template <typename UniqueType>
+    void assign(table const& x, UniqueType is_unique, false_type)
     {
         // Strong exception safety.
         set_hash_functions new_func_this(*this, x);
@@ -3123,14 +3125,11 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
 
         new_func_this.commit();
 
-        if (is_unique) {
-            assign_buckets_unique(x);
-        } else {
-            assign_buckets_equiv(x);
-        }
+        assign_buckets(x, is_unique);
     }
 
-    void assign(table const& x, bool is_unique, true_type)
+    template <typename UniqueType>
+    void assign(table const& x, UniqueType is_unique, true_type)
     {
         if (node_alloc() == x.node_alloc()) {
             allocators_.assign(x.allocators_);
@@ -3150,16 +3149,13 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
 
             // Finally copy the elements.
             if (x.size_) {
-                if (is_unique) {
-                    copy_buckets_unique(x);
-                } else {
-                    copy_buckets_equiv(x);
-                }
+                copy_buckets(x, is_unique);
             }
         }
     }
 
-    void move_assign(table& x, bool is_unique)
+    template <typename UniqueType>
+    void move_assign(table& x, UniqueType is_unique)
     {
         if (this != boost::addressof(x)) {
             move_assign(
@@ -3170,7 +3166,8 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         }
     }
 
-    void move_assign(table& x, bool /* is_unique */, true_type)
+    template <typename UniqueType>
+    void move_assign(table& x, UniqueType, true_type)
     {
         delete_buckets();
         set_hash_functions new_func_this(*this, x);
@@ -3181,7 +3178,8 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         new_func_this.commit();
     }
 
-    void move_assign(table& x, bool is_unique, false_type)
+    template <typename UniqueType>
+    void move_assign(table& x, UniqueType is_unique, false_type)
     {
         if (node_alloc() == x.node_alloc()) {
             delete_buckets();
@@ -3203,11 +3201,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
 
             new_func_this.commit();
 
-            if (is_unique) {
-                move_assign_buckets_unique(x);
-            } else {
-                move_assign_buckets_equiv(x);
-            }
+            move_assign_buckets(x, is_unique);
         }
     }
 
@@ -3724,7 +3718,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     ////////////////////////////////////////////////////////////////////////
     // fill_buckets_unique
 
-    void copy_buckets_unique(table const& src)
+    void copy_buckets(table const& src, true_type)
     {
         this->create_buckets(this->bucket_count_);
 
@@ -3751,7 +3745,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         }
     }
 
-    void assign_buckets_unique(table const& src)
+    void assign_buckets(table const& src, true_type)
     {
         node_holder<node_allocator> holder(*this);
         for (node_pointer n = src.begin(); n; n = next_node(n)) {
@@ -3760,7 +3754,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         }
     }
 
-    void move_assign_buckets_unique(table& src)
+    void move_assign_buckets(table& src, true_type)
     {
         node_holder<node_allocator> holder(*this);
         for (node_pointer n = src.begin(); n; n = next_node(n)) {
@@ -4121,7 +4115,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     ////////////////////////////////////////////////////////////////////////
     // fill_buckets
 
-    void copy_buckets_equiv(table const& src)
+    void copy_buckets(table const& src, false_type)
     {
         this->create_buckets(this->bucket_count_);
 
@@ -4161,7 +4155,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         }
     }
 
-    void assign_buckets_equiv(table const& src)
+    void assign_buckets(table const& src, false_type)
     {
         node_holder<node_allocator> holder(*this);
         for (node_pointer n = src.begin(); n;) {
@@ -4175,7 +4169,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
         }
     }
 
-    void move_assign_buckets_equiv(table& src)
+    void move_assign_buckets(table& src, false_type)
     {
         node_holder<node_allocator> holder(*this);
         for (node_pointer n = src.begin(); n;) {
