@@ -150,8 +150,8 @@ template <class T> struct equivalent_test1 : assign_base<T>
     }
 };
 
-EXCEPTION_TESTS((self_assign_test1)(self_assign_test2)(assign_test1)(
-                    assign_test2)(assign_test3)(assign_test4)(assign_test4a)(
-                    assign_test5)(equivalent_test1),
+EXCEPTION_TESTS_REPEAT(5, (self_assign_test1)(self_assign_test2)(assign_test1)(
+                              assign_test2)(assign_test3)(assign_test4)(
+                              assign_test4a)(assign_test5)(equivalent_test1),
     CONTAINER_SEQ)
 RUN_TESTS()

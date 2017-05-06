@@ -309,7 +309,7 @@ template <class T> struct insert_test_rehash3 : public insert_test_base<T>
 #define ALL_TESTS BASIC_TESTS
 #endif
 
-EXCEPTION_TESTS(ALL_TESTS, CONTAINER_SEQ)
+EXCEPTION_TESTS_REPEAT(5, ALL_TESTS, CONTAINER_SEQ)
 
 template <class T> struct pair_emplace_test1 : public insert_test_base<T>
 {
@@ -354,7 +354,8 @@ template <class T> struct pair_emplace_test2 : public insert_test_base<T>
     }
 };
 
-EXCEPTION_TESTS((pair_emplace_test1)(pair_emplace_test2), CONTAINER_PAIR_SEQ)
+EXCEPTION_TESTS_REPEAT(
+    5, (pair_emplace_test1)(pair_emplace_test2), CONTAINER_PAIR_SEQ)
 
 template <class T> struct index_insert_test1 : public insert_test_base<T>
 {
@@ -372,6 +373,6 @@ template <class T> struct index_insert_test1 : public insert_test_base<T>
     }
 };
 
-EXCEPTION_TESTS((index_insert_test1), (test_map))
+EXCEPTION_TESTS_REPEAT(5, (index_insert_test1), (test_map))
 
 RUN_TESTS()
