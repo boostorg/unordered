@@ -14,7 +14,9 @@ test::seed_t initialize_seed(835193);
 template <class T> struct erase_test_base : public test::exception_base
 {
     test::random_values<T> values;
-    erase_test_base(unsigned int count = 5) : values(count) {}
+    erase_test_base(unsigned int count = 5) : values(count, test::limited_range)
+    {
+    }
 
     typedef T data_type;
 

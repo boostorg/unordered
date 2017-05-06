@@ -32,7 +32,10 @@ template <class T> struct copy_test2 : public test::exception_base
     test::random_values<T> values;
     T x;
 
-    copy_test2() : values(5), x(values.begin(), values.end()) {}
+    copy_test2()
+        : values(5, test::limited_range), x(values.begin(), values.end())
+    {
+    }
 
     void run() const
     {
@@ -50,6 +53,26 @@ template <class T> struct copy_test3 : public test::exception_base
     T x;
 
     copy_test3() : values(100), x(values.begin(), values.end()) {}
+
+    void run() const
+    {
+        T y(x);
+
+        DISABLE_EXCEPTIONS;
+        test::check_container(y, this->values);
+        test::check_equivalent_keys(y);
+    }
+};
+
+template <class T> struct copy_test3a : public test::exception_base
+{
+    test::random_values<T> values;
+    T x;
+
+    copy_test3a()
+        : values(100, test::limited_range), x(values.begin(), values.end())
+    {
+    }
 
     void run() const
     {
@@ -79,6 +102,10 @@ template <class T> struct copy_with_allocator_test : public test::exception_base
     }
 };
 
-EXCEPTION_TESTS((copy_test1)(copy_test2)(copy_test3)(copy_with_allocator_test),
+// clang-format off
+EXCEPTION_TESTS(
+    (copy_test1)(copy_test2)(copy_test3)(copy_test3a)(copy_with_allocator_test),
     CONTAINER_SEQ)
+// clang-format on
+
 RUN_TESTS()

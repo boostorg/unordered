@@ -98,8 +98,8 @@ template <class T> struct range : public test::exception_base
 {
     test::random_values<T> values;
 
-    range() : values(5) {}
-    range(unsigned int count) : values(count) {}
+    range() : values(5, test::limited_range) {}
+    range(unsigned int count) : values(count, test::limited_range) {}
 };
 
 template <class T> struct range_construct_test1 : public range<T>, objects

@@ -20,7 +20,7 @@ template <class T> struct rehash_test_base : public test::exception_base
     test::random_values<T> values;
     unsigned int n;
     rehash_test_base(unsigned int count = 100, unsigned int n_ = 0)
-        : values(count), n(n_)
+        : values(count, test::limited_range), n(n_)
     {
     }
 

@@ -18,7 +18,9 @@ test::seed_t initialize_seed(9387);
 template <class T> struct self_swap_base : public test::exception_base
 {
     test::random_values<T> values;
-    self_swap_base(std::size_t count = 0) : values(count) {}
+    self_swap_base(std::size_t count = 0) : values(count, test::limited_range)
+    {
+    }
 
     typedef T data_type;
     T init() const { return T(values.begin(), values.end()); }
@@ -65,7 +67,8 @@ template <class T> struct swap_base : public test::exception_base
     typedef BOOST_DEDUCED_TYPENAME T::allocator_type allocator_type;
 
     swap_base(unsigned int count1, unsigned int count2, int tag1, int tag2)
-        : x_values(count1), y_values(count2),
+        : x_values(count1, test::limited_range),
+          y_values(count2, test::limited_range),
           initial_x(x_values.begin(), x_values.end(), 0, hasher(tag1),
               key_equal(tag1), allocator_type(tag1)),
           initial_y(

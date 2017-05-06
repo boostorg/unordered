@@ -18,7 +18,9 @@ test::seed_t initialize_seed(12847);
 template <class T> struct self_assign_base : public test::exception_base
 {
     test::random_values<T> values;
-    self_assign_base(std::size_t count = 0) : values(count) {}
+    self_assign_base(std::size_t count = 0) : values(count, test::limited_range)
+    {
+    }
 
     typedef T data_type;
     T init() const { return T(values.begin(), values.end()); }
@@ -95,11 +97,12 @@ template <class T> struct assign_base : public test::exception_base
 template <class T> struct assign_values : assign_base<T>
 {
     assign_values(unsigned int count1, unsigned int count2, int tag1, int tag2,
-        float mlf1 = 1.0, float mlf2 = 1.0)
+        test::random_generator gen = test::default_generator, float mlf1 = 1.0,
+        float mlf2 = 1.0)
         : assign_base<T>(tag1, tag2, mlf1, mlf2)
     {
-        this->x_values.fill(count1);
-        this->y_values.fill(count2);
+        this->x_values.fill(count1, gen);
+        this->y_values.fill(count2, gen);
         this->x.insert(this->x_values.begin(), this->x_values.end());
         this->y.insert(this->y_values.begin(), this->y_values.end());
     }
@@ -115,9 +118,19 @@ template <class T> struct assign_test2 : assign_values<T>
     assign_test2() : assign_values<T>(60, 0, 0, 0) {}
 };
 
+template <class T> struct assign_test2a : assign_values<T>
+{
+    assign_test2a() : assign_values<T>(60, 0, 0, 0, test::limited_range) {}
+};
+
 template <class T> struct assign_test3 : assign_values<T>
 {
     assign_test3() : assign_values<T>(0, 60, 0, 0) {}
+};
+
+template <class T> struct assign_test3a : assign_values<T>
+{
+    assign_test3a() : assign_values<T>(0, 60, 0, 0, test::limited_range) {}
 };
 
 template <class T> struct assign_test4 : assign_values<T>
@@ -130,9 +143,17 @@ template <class T> struct assign_test4a : assign_values<T>
     assign_test4a() : assign_values<T>(10, 100, 1, 2) {}
 };
 
+template <class T> struct assign_test4b : assign_values<T>
+{
+    assign_test4b() : assign_values<T>(10, 100, 1, 2, test::limited_range) {}
+};
+
 template <class T> struct assign_test5 : assign_values<T>
 {
-    assign_test5() : assign_values<T>(5, 60, 0, 0, 1.0f, 0.1f) {}
+    assign_test5()
+        : assign_values<T>(5, 60, 0, 0, test::default_generator, 1.0f, 0.1f)
+    {
+    }
 };
 
 template <class T> struct equivalent_test1 : assign_base<T>
@@ -150,8 +171,15 @@ template <class T> struct equivalent_test1 : assign_base<T>
     }
 };
 
-EXCEPTION_TESTS_REPEAT(5, (self_assign_test1)(self_assign_test2)(assign_test1)(
-                              assign_test2)(assign_test3)(assign_test4)(
-                              assign_test4a)(assign_test5)(equivalent_test1),
+// clang-format off
+EXCEPTION_TESTS_REPEAT(5,
+    (self_assign_test1)(self_assign_test2)
+    (assign_test1)(assign_test2)(assign_test2a)
+    (assign_test3)(assign_test3a)
+    (assign_test4)(assign_test4a)(assign_test4b)
+    (assign_test5)
+    (equivalent_test1),
     CONTAINER_SEQ)
+// clang-format on
+
 RUN_TESTS()
