@@ -15,364 +15,370 @@
 
 test::seed_t initialize_seed(747373);
 
-template <class T> struct insert_test_base : public test::exception_base
+// Overload to generate inserters that need type information.
+
+template <typename Inserter, typename T>
+Inserter generate(Inserter inserter, T&)
 {
-    test::random_values<T> values;
-    insert_test_base(unsigned int count = 5)
-        : values(count, test::limited_range)
-    {
-    }
+    return inserter;
+}
 
-    typedef T data_type;
-    typedef test::strong<T> strong_type;
+// Get the iterator returned from an insert/emplace.
 
-    data_type init() const { return T(); }
+template <typename T> T get_iterator(T const& x) { return x; }
 
-    void check BOOST_PREVENT_MACRO_SUBSTITUTION(
-        T const& x, strong_type const& strong) const
-    {
+template <typename T> T get_iterator(std::pair<T, bool> const& x)
+{
+    return x.first;
+}
+
+// Generic insert exception test for typical single element inserts..
+
+template <typename T, typename Inserter, typename Values>
+void insert_exception_test_impl(T x, Inserter insert, Values const& v)
+{
+    test::strong<T> strong;
+
+    test::ordered<T> tracker;
+    tracker.insert(x.begin(), x.end());
+
+    try {
+        ENABLE_EXCEPTIONS;
+
+        for (typename Values::const_iterator it = v.begin(); it != v.end();
+             ++it) {
+            strong.store(x, test::detail::tracker.count_allocations);
+            insert(x, it);
+        }
+    } catch (...) {
         std::string scope(test::scope);
 
         if (scope.find("hash::operator()") == std::string::npos)
             strong.test(x, test::detail::tracker.count_allocations);
         test::check_equivalent_keys(x);
+
+        throw;
     }
-};
 
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES) &&                              \
-    !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
+    test::check_equivalent_keys(x);
+    tracker.insert(v.begin(), v.end());
+    tracker.compare(x);
+}
 
-template <class T> struct emplace_test1 : public insert_test_base<T>
+// Simple insert exception test
+
+template <typename T, typename Inserter>
+void insert_exception_test(T*, Inserter insert, test::random_generator gen)
 {
-    typedef BOOST_DEDUCED_TYPENAME insert_test_base<T>::strong_type strong_type;
+    for (int i = 0; i < 5; ++i) {
+        test::random_values<T> v(10, gen);
+        T x;
 
-    void run(T& x, strong_type& strong) const
-    {
-        for (BOOST_DEDUCED_TYPENAME test::random_values<T>::const_iterator
-                 it = this->values.begin(),
-                 end = this->values.end();
-             it != end; ++it) {
-            strong.store(x, test::detail::tracker.count_allocations);
-            x.emplace(*it);
-        }
-
-        DISABLE_EXCEPTIONS;
-        test::check_container(x, this->values);
-        test::check_equivalent_keys(x);
+        EXCEPTION_LOOP(insert_exception_test_impl(x, generate(insert, x), v));
     }
-};
+}
 
-#endif
+// Insert into a container which is about to hit its max load, so that it
+// rehashes.
 
-template <class T> struct insert_test1 : public insert_test_base<T>
+template <typename T, typename Inserter>
+void insert_rehash_exception_test(
+    T*, Inserter insert, test::random_generator gen)
 {
-    typedef BOOST_DEDUCED_TYPENAME insert_test_base<T>::strong_type strong_type;
+    using namespace std;
+    typedef BOOST_DEDUCED_TYPENAME T::size_type size_type;
 
-    void run(T& x, strong_type& strong) const
-    {
-        for (BOOST_DEDUCED_TYPENAME test::random_values<T>::const_iterator
-                 it = this->values.begin(),
-                 end = this->values.end();
-             it != end; ++it) {
-            strong.store(x, test::detail::tracker.count_allocations);
-            x.insert(*it);
-        }
-
-        DISABLE_EXCEPTIONS;
-        test::check_container(x, this->values);
-        test::check_equivalent_keys(x);
-    }
-};
-
-template <class T> struct insert_test2 : public insert_test_base<T>
-{
-    typedef BOOST_DEDUCED_TYPENAME insert_test_base<T>::strong_type strong_type;
-
-    void run(T& x, strong_type& strong) const
-    {
-        for (BOOST_DEDUCED_TYPENAME test::random_values<T>::const_iterator
-                 it = this->values.begin(),
-                 end = this->values.end();
-             it != end; ++it) {
-            strong.store(x, test::detail::tracker.count_allocations);
-            x.insert(x.begin(), *it);
-        }
-
-        DISABLE_EXCEPTIONS;
-        test::check_container(x, this->values);
-        test::check_equivalent_keys(x);
-    }
-};
-
-template <class T> struct insert_test3 : public insert_test_base<T>
-{
-    void run(T& x) const
-    {
-        x.insert(this->values.begin(), this->values.end());
-
-        DISABLE_EXCEPTIONS;
-        test::check_container(x, this->values);
-        test::check_equivalent_keys(x);
-    }
-
-    void check BOOST_PREVENT_MACRO_SUBSTITUTION(T const& x) const
-    {
-        test::check_equivalent_keys(x);
-    }
-};
-
-template <class T> struct insert_test4 : public insert_test_base<T>
-{
-    typedef BOOST_DEDUCED_TYPENAME insert_test_base<T>::strong_type strong_type;
-
-    void run(T& x, strong_type& strong) const
-    {
-        for (BOOST_DEDUCED_TYPENAME test::random_values<T>::const_iterator
-                 it = this->values.begin(),
-                 end = this->values.end();
-             it != end; ++it) {
-            strong.store(x, test::detail::tracker.count_allocations);
-            x.insert(it, test::next(it));
-        }
-
-        DISABLE_EXCEPTIONS;
-        test::check_container(x, this->values);
-        test::check_equivalent_keys(x);
-    }
-};
-
-template <class T> struct insert_test_rehash1 : public insert_test_base<T>
-{
-    typedef BOOST_DEDUCED_TYPENAME insert_test_base<T>::strong_type strong_type;
-
-    insert_test_rehash1() : insert_test_base<T>(1000) {}
-
-    T init() const
-    {
-        using namespace std;
-        typedef BOOST_DEDUCED_TYPENAME T::size_type size_type;
-
+    for (int i = 0; i < 5; ++i) {
         T x;
         x.max_load_factor(0.25);
-        // TODO: This doesn't really work is bucket_count is 0
         size_type bucket_count = x.bucket_count();
         size_type initial_elements = static_cast<size_type>(
             ceil((double)bucket_count * (double)x.max_load_factor()) - 1);
-        BOOST_TEST(initial_elements < this->values.size());
-        x.insert(this->values.begin(),
-            test::next(this->values.begin(), initial_elements));
+        test::random_values<T> v(initial_elements);
+        x.insert(v.begin(), v.end());
         BOOST_TEST(bucket_count == x.bucket_count());
-        return x;
+
+        test::random_values<T> v2(5, gen);
+        EXCEPTION_LOOP(insert_exception_test_impl(x, generate(insert, x), v2));
     }
+}
 
-    void run(T& x, strong_type& strong) const
-    {
-        BOOST_DEDUCED_TYPENAME T::size_type bucket_count = x.bucket_count();
-        int count = 0;
-        BOOST_DEDUCED_TYPENAME T::const_iterator pos = x.cbegin();
+// Various methods for inserting a single element
 
-        test::list<typename T::value_type> v;
-        {
-            DISABLE_EXCEPTIONS;
-            v.insert(x.begin(), x.end());
-        }
-
-        for (BOOST_DEDUCED_TYPENAME test::random_values<T>::const_iterator
-                 it = test::next(this->values.begin(), x.size()),
-                 end = this->values.end();
-             it != end && count < 10; ++it, ++count) {
-            strong.store(x, test::detail::tracker.count_allocations);
-            pos = x.insert(pos, *it);
-
-            DISABLE_EXCEPTIONS;
-            v.push_back(*it);
-        }
-
-        // This isn't actually a failure, but it means the test isn't doing its
-        // job.
-        BOOST_TEST(x.bucket_count() != bucket_count);
-
-        DISABLE_EXCEPTIONS;
-        test::check_container(x, v);
-        test::check_equivalent_keys(x);
-    }
-};
-
-template <class T> struct insert_test_rehash2 : public insert_test_rehash1<T>
+struct insert_lvalue_type
 {
-    typedef BOOST_DEDUCED_TYPENAME insert_test_base<T>::strong_type strong_type;
-
-    void run(T& x, strong_type& strong) const
+    template <typename T, typename Iterator> void operator()(T& x, Iterator it)
     {
-        BOOST_DEDUCED_TYPENAME T::size_type bucket_count = x.bucket_count();
-        int count = 0;
-
-        test::list<typename T::value_type> v;
-        {
-            DISABLE_EXCEPTIONS;
-            v.insert(x.begin(), x.end());
-        }
-
-        for (BOOST_DEDUCED_TYPENAME test::random_values<T>::const_iterator
-                 it = test::next(this->values.begin(), x.size()),
-                 end = this->values.end();
-             it != end && count < 10; ++it, ++count) {
-            strong.store(x, test::detail::tracker.count_allocations);
-            x.insert(*it);
-
-            DISABLE_EXCEPTIONS;
-            v.push_back(*it);
-        }
-
-        // This isn't actually a failure, but it means the test isn't doing its
-        // job.
-        BOOST_TEST(x.bucket_count() != bucket_count);
-
-        DISABLE_EXCEPTIONS;
-        test::check_container(x, v);
-        test::check_equivalent_keys(x);
+        x.insert(*it);
     }
-};
+} insert_lvalue;
 
-template <class T> struct insert_test_rehash3 : public insert_test_base<T>
+struct insert_lvalue_begin_type
 {
-    BOOST_DEDUCED_TYPENAME T::size_type mutable rehash_bucket_count,
-        original_bucket_count;
-
-    insert_test_rehash3() : insert_test_base<T>(1000) {}
-
-    T init() const
+    template <typename T, typename Iterator> void operator()(T& x, Iterator it)
     {
-        using namespace std;
-        typedef BOOST_DEDUCED_TYPENAME T::size_type size_type;
+        x.insert(x.begin(), *it);
+    }
+} insert_lvalue_begin;
 
+struct insert_lvalue_end_type
+{
+    template <typename T, typename Iterator> void operator()(T& x, Iterator it)
+    {
+        x.insert(x.end(), *it);
+    }
+} insert_lvalue_end;
+
+struct insert_lvalue_pos_type
+{
+    template <typename T> struct impl
+    {
+        typename T::iterator pos;
+
+        impl(T& x) : pos(x.begin()) {}
+
+        template <typename Iterator> void operator()(T& x, Iterator it)
+        {
+            pos = get_iterator(x.insert(pos, *it));
+        }
+    };
+
+    template <typename T> friend impl<T> generate(insert_lvalue_pos_type, T& x)
+    {
+        return impl<T>(x);
+    }
+} insert_lvalue_pos;
+
+struct insert_single_item_range_type
+{
+    template <typename T, typename Iterator> void operator()(T& x, Iterator it)
+    {
+        x.insert(it, test::next(it));
+    }
+} insert_single_item_range;
+
+struct emplace_lvalue_type
+{
+    template <typename T, typename Iterator> void operator()(T& x, Iterator it)
+    {
+        x.emplace(*it);
+    }
+} emplace_lvalue;
+
+struct emplace_lvalue_begin_type
+{
+    template <typename T, typename Iterator> void operator()(T& x, Iterator it)
+    {
+        x.emplace_hint(x.begin(), *it);
+    }
+} emplace_lvalue_begin;
+
+struct emplace_lvalue_end_type
+{
+    template <typename T, typename Iterator> void operator()(T& x, Iterator it)
+    {
+        x.emplace_hint(x.end(), *it);
+    }
+} emplace_lvalue_end;
+
+struct emplace_lvalue_pos_type
+{
+    template <typename T> struct impl
+    {
+        typename T::iterator pos;
+
+        impl(T& x) : pos(x.begin()) {}
+
+        template <typename Iterator> void operator()(T& x, Iterator it)
+        {
+            pos = get_iterator(x.emplace_hint(pos, *it));
+        }
+    };
+
+    template <typename T> friend impl<T> generate(emplace_lvalue_pos_type, T& x)
+    {
+        return impl<T>(x);
+    }
+} emplace_lvalue_pos;
+
+// Run the exception tests in various combinations.
+
+test_set* test_set_;
+test_multiset* test_multiset_;
+test_map* test_map_;
+test_multimap* test_multimap_;
+
+using test::default_generator;
+using test::limited_range;
+using test::generate_collisions;
+
+// clang-format off
+UNORDERED_TEST(insert_exception_test,
+    ((test_set_)(test_multiset_)(test_map_)(test_multimap_))
+    ((insert_lvalue)(insert_lvalue_begin)(insert_lvalue_end)
+     (insert_lvalue_pos)(insert_single_item_range)
+     (emplace_lvalue)(emplace_lvalue_begin)(emplace_lvalue_end)
+     (emplace_lvalue_pos)
+    )
+    ((default_generator)(limited_range)(generate_collisions))
+)
+
+UNORDERED_TEST(insert_rehash_exception_test,
+    ((test_set_)(test_multiset_)(test_map_)(test_multimap_))
+    ((insert_lvalue)(insert_lvalue_begin)(insert_lvalue_end)
+     (insert_lvalue_pos)(insert_single_item_range)
+     (emplace_lvalue)(emplace_lvalue_begin)(emplace_lvalue_end)
+     (emplace_lvalue_pos)
+    )
+    ((default_generator)(limited_range)(generate_collisions))
+)
+// clang-format on
+
+// Repeat insert tests with pairs
+
+struct pair_emplace_type
+{
+    template <typename T, typename Iterator> void operator()(T& x, Iterator it)
+    {
+        x.emplace(boost::unordered::piecewise_construct,
+            boost::make_tuple(it->first), boost::make_tuple(it->second));
+    }
+} pair_emplace;
+
+struct pair_emplace2_type
+{
+    template <typename T, typename Iterator> void operator()(T& x, Iterator it)
+    {
+        x.emplace_hint(x.begin(), boost::unordered::piecewise_construct,
+            boost::make_tuple(it->first),
+            boost::make_tuple(it->second.tag1_, it->second.tag2_));
+    }
+} pair_emplace2;
+
+test_pair_set* test_pair_set_;
+test_pair_multiset* test_pair_multiset_;
+
+// clang-format off
+UNORDERED_TEST(insert_exception_test,
+    ((test_pair_set_)(test_pair_multiset_)(test_map_)(test_multimap_))
+    ((pair_emplace)(pair_emplace2))
+    ((default_generator)(limited_range)(generate_collisions))
+)
+UNORDERED_TEST(insert_rehash_exception_test,
+    ((test_pair_set_)(test_pair_multiset_)(test_map_)(test_multimap_))
+    ((pair_emplace)(pair_emplace2))
+    ((default_generator)(limited_range)(generate_collisions))
+)
+// clang-format on
+
+// Test inserting using operator[]
+
+template <typename T, typename Values>
+void insert_operator_exception_test_impl(T x, Values const& v)
+{
+    test::ordered<T> tracker;
+    tracker.insert(x.begin(), x.end());
+
+    try {
+        ENABLE_EXCEPTIONS;
+
+        for (typename Values::const_iterator it = v.begin(); it != v.end();
+             ++it) {
+            x[it->first] = it->second;
+
+            DISABLE_EXCEPTIONS;
+            tracker[it->first] = it->second;
+        }
+    } catch (...) {
+        test::check_equivalent_keys(x);
+        throw;
+    }
+
+    test::check_equivalent_keys(x);
+    tracker.compare(x);
+}
+
+template <typename T>
+void insert_operator_exception_test(T*, test::random_generator gen)
+{
+    for (int i = 0; i < 5; ++i) {
+        test::random_values<T> v(10, gen);
+        T x;
+
+        EXCEPTION_LOOP(insert_operator_exception_test_impl(x, v));
+    }
+}
+
+// clang-format off
+UNORDERED_TEST(insert_operator_exception_test,
+    ((test_map_))
+    ((default_generator)(limited_range)(generate_collisions))
+)
+// clang-format on
+
+// Range insert tests
+
+template <typename T, typename Values>
+void insert_range_exception_test_impl(T x, Values const& v)
+{
+    test::ordered<T> tracker;
+    tracker.insert(x.begin(), x.end());
+
+    try {
+        ENABLE_EXCEPTIONS;
+        x.insert(v.begin(), v.end());
+    } catch (...) {
+        test::check_equivalent_keys(x);
+        throw;
+    }
+
+    test::check_equivalent_keys(x);
+    tracker.insert(v.begin(), v.end());
+    tracker.compare(x);
+}
+
+template <typename T>
+void insert_range_exception_test(T*, test::random_generator gen)
+{
+    for (int i = 0; i < 5; ++i) {
+        test::random_values<T> v(10, gen);
+        T x;
+
+        EXCEPTION_LOOP(insert_range_exception_test_impl(x, v));
+    }
+}
+
+template <typename T>
+void insert_range_rehash_exception_test(T*, test::random_generator gen)
+{
+    using namespace std;
+    typedef BOOST_DEDUCED_TYPENAME T::size_type size_type;
+
+    for (int i = 0; i < 5; ++i) {
         T x;
         x.max_load_factor(0.25);
+        size_type bucket_count = x.bucket_count();
+        size_type initial_elements = static_cast<size_type>(
+            ceil((double)bucket_count * (double)x.max_load_factor()) - 1);
+        test::random_values<T> v(initial_elements);
+        x.insert(v.begin(), v.end());
+        BOOST_TEST(bucket_count == x.bucket_count());
 
-        original_bucket_count = x.bucket_count();
-        rehash_bucket_count =
-            static_cast<size_type>(ceil(
-                (double)original_bucket_count * (double)x.max_load_factor())) -
-            1;
-
-        size_type initial_elements =
-            rehash_bucket_count > 5 ? rehash_bucket_count - 5 : 1;
-
-        BOOST_TEST(initial_elements < this->values.size());
-        x.insert(this->values.begin(),
-            test::next(this->values.begin(), initial_elements));
-        BOOST_TEST(original_bucket_count == x.bucket_count());
-        return x;
+        test::random_values<T> v2(5, gen);
+        EXCEPTION_LOOP(insert_range_exception_test_impl(x, v2));
     }
+}
 
-    void run(T& x) const
-    {
-        BOOST_DEDUCED_TYPENAME T::size_type bucket_count = x.bucket_count();
-        test::list<typename T::value_type> v;
+// clang-format off
+UNORDERED_TEST(insert_range_exception_test,
+    ((test_set_)(test_multiset_)(test_map_)(test_multimap_))
+    ((default_generator)(limited_range)(generate_collisions))
+)
 
-        {
-            DISABLE_EXCEPTIONS;
-            v.insert(x.begin(), x.end());
-            v.insert(test::next(this->values.begin(), x.size()),
-                test::next(this->values.begin(), x.size() + 20));
-        }
-
-        x.insert(test::next(this->values.begin(), x.size()),
-            test::next(this->values.begin(), x.size() + 20));
-
-        // This isn't actually a failure, but it means the test isn't doing its
-        // job.
-        BOOST_TEST(x.bucket_count() != bucket_count);
-
-        DISABLE_EXCEPTIONS;
-        test::check_container(x, v);
-        test::check_equivalent_keys(x);
-    }
-
-    void check BOOST_PREVENT_MACRO_SUBSTITUTION(T const& x) const
-    {
-        if (x.size() < rehash_bucket_count) {
-            // BOOST_TEST(x.bucket_count() == original_bucket_count);
-        }
-        test::check_equivalent_keys(x);
-    }
-};
-
-#define BASIC_TESTS                                                            \
-    (insert_test1)(insert_test2)(insert_test3)(insert_test4)(                  \
-        insert_test_rehash1)(insert_test_rehash2)(insert_test_rehash3)
-
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES) &&                              \
-    !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-#define ALL_TESTS (emplace_test1) BASIC_TESTS
-#else
-#define ALL_TESTS BASIC_TESTS
-#endif
-
-EXCEPTION_TESTS_REPEAT(5, ALL_TESTS, CONTAINER_SEQ)
-
-template <class T> struct pair_emplace_test1 : public insert_test_base<T>
-{
-    typedef BOOST_DEDUCED_TYPENAME insert_test_base<T>::strong_type strong_type;
-
-    void run(T& x, strong_type& strong) const
-    {
-        for (BOOST_DEDUCED_TYPENAME test::random_values<T>::const_iterator
-                 it = this->values.begin(),
-                 end = this->values.end();
-             it != end; ++it) {
-            strong.store(x, test::detail::tracker.count_allocations);
-            x.emplace(boost::unordered::piecewise_construct,
-                boost::make_tuple(it->first), boost::make_tuple(it->second));
-        }
-
-        DISABLE_EXCEPTIONS;
-        test::check_container(x, this->values);
-        test::check_equivalent_keys(x);
-    }
-};
-
-template <class T> struct pair_emplace_test2 : public insert_test_base<T>
-{
-    typedef BOOST_DEDUCED_TYPENAME insert_test_base<T>::strong_type strong_type;
-
-    void run(T& x, strong_type& strong) const
-    {
-        for (BOOST_DEDUCED_TYPENAME test::random_values<T>::const_iterator
-                 it = this->values.begin(),
-                 end = this->values.end();
-             it != end; ++it) {
-            strong.store(x, test::detail::tracker.count_allocations);
-            x.emplace(boost::unordered::piecewise_construct,
-                boost::make_tuple(it->first),
-                boost::make_tuple(it->second.tag1_, it->second.tag2_));
-        }
-
-        DISABLE_EXCEPTIONS;
-        test::check_container(x, this->values);
-        test::check_equivalent_keys(x);
-    }
-};
-
-EXCEPTION_TESTS_REPEAT(
-    5, (pair_emplace_test1)(pair_emplace_test2), CONTAINER_PAIR_SEQ)
-
-template <class T> struct index_insert_test1 : public insert_test_base<T>
-{
-    typedef BOOST_DEDUCED_TYPENAME insert_test_base<T>::strong_type strong_type;
-
-    void run(T& x, strong_type& strong) const
-    {
-        for (BOOST_DEDUCED_TYPENAME test::random_values<T>::const_iterator
-                 it = this->values.begin(),
-                 end = this->values.end();
-             it != end; ++it) {
-            strong.store(x, test::detail::tracker.count_allocations);
-            x[it->first];
-        }
-    }
-};
-
-EXCEPTION_TESTS_REPEAT(5, (index_insert_test1), (test_map))
+UNORDERED_TEST(insert_range_rehash_exception_test,
+    ((test_set_)(test_multiset_)(test_map_)(test_multimap_))
+    ((default_generator)(limited_range)(generate_collisions))
+)
+// clang-format on
 
 RUN_TESTS()
