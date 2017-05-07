@@ -15,6 +15,21 @@
 
 test::seed_t initialize_seed(747373);
 
+// Fill in a container so that it's about to rehash
+template <typename T> void rehash_prep(T& x)
+{
+    using namespace std;
+    typedef BOOST_DEDUCED_TYPENAME T::size_type size_type;
+
+    x.max_load_factor(0.25);
+    size_type bucket_count = x.bucket_count();
+    size_type initial_elements = static_cast<size_type>(
+        ceil((double)bucket_count * (double)x.max_load_factor()) - 1);
+    test::random_values<T> v(initial_elements);
+    x.insert(v.begin(), v.end());
+    BOOST_TEST(bucket_count == x.bucket_count());
+}
+
 // Overload to generate inserters that need type information.
 
 template <typename Inserter, typename T>
@@ -51,17 +66,13 @@ void insert_exception_test_impl(T x, Inserter insert, Values const& v)
             insert(x, it);
         }
     } catch (...) {
-        std::string scope(test::scope);
-
-        if (scope.find("hash::operator()") == std::string::npos)
-            strong.test(x, test::detail::tracker.count_allocations);
         test::check_equivalent_keys(x);
-
+        insert.exception_check(x, strong);
         throw;
     }
 
     test::check_equivalent_keys(x);
-    tracker.insert(v.begin(), v.end());
+    insert.track(tracker, v.begin(), v.end());
     tracker.compare(x);
 }
 
@@ -85,18 +96,9 @@ template <typename T, typename Inserter>
 void insert_rehash_exception_test(
     T*, Inserter insert, test::random_generator gen)
 {
-    using namespace std;
-    typedef BOOST_DEDUCED_TYPENAME T::size_type size_type;
-
     for (int i = 0; i < 5; ++i) {
         T x;
-        x.max_load_factor(0.25);
-        size_type bucket_count = x.bucket_count();
-        size_type initial_elements = static_cast<size_type>(
-            ceil((double)bucket_count * (double)x.max_load_factor()) - 1);
-        test::random_values<T> v(initial_elements);
-        x.insert(v.begin(), v.end());
-        BOOST_TEST(bucket_count == x.bucket_count());
+        rehash_prep(x);
 
         test::random_values<T> v2(5, gen);
         EXCEPTION_LOOP(insert_exception_test_impl(x, generate(insert, x), v2));
@@ -105,7 +107,24 @@ void insert_rehash_exception_test(
 
 // Various methods for inserting a single element
 
-struct insert_lvalue_type
+struct inserter_base
+{
+    template <typename T> void exception_check(T& x, test::strong<T>& strong)
+    {
+        std::string scope(test::scope);
+
+        if (scope.find("hash::operator()") == std::string::npos)
+            strong.test(x, test::detail::tracker.count_allocations);
+    }
+
+    template <typename T, typename Iterator>
+    void track(T& tracker, Iterator begin, Iterator end)
+    {
+        tracker.insert(begin, end);
+    }
+};
+
+struct insert_lvalue_type : inserter_base
 {
     template <typename T, typename Iterator> void operator()(T& x, Iterator it)
     {
@@ -113,7 +132,7 @@ struct insert_lvalue_type
     }
 } insert_lvalue;
 
-struct insert_lvalue_begin_type
+struct insert_lvalue_begin_type : inserter_base
 {
     template <typename T, typename Iterator> void operator()(T& x, Iterator it)
     {
@@ -121,7 +140,7 @@ struct insert_lvalue_begin_type
     }
 } insert_lvalue_begin;
 
-struct insert_lvalue_end_type
+struct insert_lvalue_end_type : inserter_base
 {
     template <typename T, typename Iterator> void operator()(T& x, Iterator it)
     {
@@ -131,7 +150,7 @@ struct insert_lvalue_end_type
 
 struct insert_lvalue_pos_type
 {
-    template <typename T> struct impl
+    template <typename T> struct impl : inserter_base
     {
         typename T::iterator pos;
 
@@ -149,7 +168,7 @@ struct insert_lvalue_pos_type
     }
 } insert_lvalue_pos;
 
-struct insert_single_item_range_type
+struct insert_single_item_range_type : inserter_base
 {
     template <typename T, typename Iterator> void operator()(T& x, Iterator it)
     {
@@ -157,7 +176,7 @@ struct insert_single_item_range_type
     }
 } insert_single_item_range;
 
-struct emplace_lvalue_type
+struct emplace_lvalue_type : inserter_base
 {
     template <typename T, typename Iterator> void operator()(T& x, Iterator it)
     {
@@ -165,7 +184,7 @@ struct emplace_lvalue_type
     }
 } emplace_lvalue;
 
-struct emplace_lvalue_begin_type
+struct emplace_lvalue_begin_type : inserter_base
 {
     template <typename T, typename Iterator> void operator()(T& x, Iterator it)
     {
@@ -173,7 +192,7 @@ struct emplace_lvalue_begin_type
     }
 } emplace_lvalue_begin;
 
-struct emplace_lvalue_end_type
+struct emplace_lvalue_end_type : inserter_base
 {
     template <typename T, typename Iterator> void operator()(T& x, Iterator it)
     {
@@ -183,7 +202,7 @@ struct emplace_lvalue_end_type
 
 struct emplace_lvalue_pos_type
 {
-    template <typename T> struct impl
+    template <typename T> struct impl : inserter_base
     {
         typename T::iterator pos;
 
@@ -236,7 +255,7 @@ UNORDERED_TEST(insert_rehash_exception_test,
 
 // Repeat insert tests with pairs
 
-struct pair_emplace_type
+struct pair_emplace_type : inserter_base
 {
     template <typename T, typename Iterator> void operator()(T& x, Iterator it)
     {
@@ -245,7 +264,7 @@ struct pair_emplace_type
     }
 } pair_emplace;
 
-struct pair_emplace2_type
+struct pair_emplace2_type : inserter_base
 {
     template <typename T, typename Iterator> void operator()(T& x, Iterator it)
     {
@@ -273,45 +292,43 @@ UNORDERED_TEST(insert_rehash_exception_test,
 
 // Test inserting using operator[]
 
-template <typename T, typename Values>
-void insert_operator_exception_test_impl(T x, Values const& v)
+struct map_inserter_base
 {
-    test::ordered<T> tracker;
-    tracker.insert(x.begin(), x.end());
+    template <typename T> void exception_check(T& x, test::strong<T>& strong)
+    {
+        std::string scope(test::scope);
 
-    try {
-        ENABLE_EXCEPTIONS;
+        if (scope.find("hash::operator()") == std::string::npos &&
+            scope.find("::operator=") == std::string::npos)
+            strong.test(x, test::detail::tracker.count_allocations);
+    }
 
-        for (typename Values::const_iterator it = v.begin(); it != v.end();
-             ++it) {
-            x[it->first] = it->second;
-
-            DISABLE_EXCEPTIONS;
-            tracker[it->first] = it->second;
+    template <typename T, typename Iterator>
+    void track(T& tracker, Iterator begin, Iterator end)
+    {
+        for (; begin != end; ++begin) {
+            tracker[begin->first] = begin->second;
         }
-    } catch (...) {
-        test::check_equivalent_keys(x);
-        throw;
     }
+};
 
-    test::check_equivalent_keys(x);
-    tracker.compare(x);
-}
-
-template <typename T>
-void insert_operator_exception_test(T*, test::random_generator gen)
+struct map_insert_operator_type : map_inserter_base
 {
-    for (int i = 0; i < 5; ++i) {
-        test::random_values<T> v(10, gen);
-        T x;
-
-        EXCEPTION_LOOP(insert_operator_exception_test_impl(x, v));
+    template <typename T, typename Iterator> void operator()(T& x, Iterator it)
+    {
+        x[it->first] = it->second;
     }
-}
+} map_insert_operator;
 
 // clang-format off
-UNORDERED_TEST(insert_operator_exception_test,
+UNORDERED_TEST(insert_exception_test,
     ((test_map_))
+    ((map_insert_operator))
+    ((default_generator)(limited_range)(generate_collisions))
+)
+UNORDERED_TEST(insert_rehash_exception_test,
+    ((test_map_))
+    ((map_insert_operator))
     ((default_generator)(limited_range)(generate_collisions))
 )
 // clang-format on
@@ -351,18 +368,9 @@ void insert_range_exception_test(T*, test::random_generator gen)
 template <typename T>
 void insert_range_rehash_exception_test(T*, test::random_generator gen)
 {
-    using namespace std;
-    typedef BOOST_DEDUCED_TYPENAME T::size_type size_type;
-
     for (int i = 0; i < 5; ++i) {
         T x;
-        x.max_load_factor(0.25);
-        size_type bucket_count = x.bucket_count();
-        size_type initial_elements = static_cast<size_type>(
-            ceil((double)bucket_count * (double)x.max_load_factor()) - 1);
-        test::random_values<T> v(initial_elements);
-        x.insert(v.begin(), v.end());
-        BOOST_TEST(bucket_count == x.bucket_count());
+        rehash_prep(x);
 
         test::random_values<T> v2(5, gen);
         EXCEPTION_LOOP(insert_range_exception_test_impl(x, v2));
