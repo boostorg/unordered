@@ -92,4 +92,5 @@ test-suite unordered-exception
         [ run exception/rehash_exception_tests.cpp framework ]
         [ run exception/swap_exception_tests.cpp framework : : :
             <define>BOOST_UNORDERED_SWAP_METHOD=2 ]
+        [ run exception/merge_exception_tests.cpp framework ]
     ;

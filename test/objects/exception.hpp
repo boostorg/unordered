@@ -10,8 +10,9 @@
 
 #include "../helpers/count.hpp"
 #include "../helpers/fwd.hpp"
+#include "../helpers/generators.hpp"
 #include "../helpers/memory.hpp"
-#include "../objects/fwd.hpp"
+#include "./fwd.hpp"
 #include <boost/limits.hpp>
 #include <cstddef>
 #include <iostream>
