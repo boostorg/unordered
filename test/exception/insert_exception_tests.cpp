@@ -292,6 +292,22 @@ UNORDERED_TEST(insert_rehash_exception_test,
 
 // Test inserting using operator[]
 
+struct try_emplace_type : inserter_base
+{
+    template <typename T, typename Iterator> void operator()(T& x, Iterator it)
+    {
+        x.try_emplace(it->first, it->second);
+    }
+} try_emplace;
+
+struct try_emplace2_type : inserter_base
+{
+    template <typename T, typename Iterator> void operator()(T& x, Iterator it)
+    {
+        x.try_emplace(it->first, it->second.tag1_, it->second.tag2_);
+    }
+} try_emplace2;
+
 struct map_inserter_base
 {
     template <typename T> void exception_check(T& x, test::strong<T>& strong)
@@ -320,15 +336,23 @@ struct map_insert_operator_type : map_inserter_base
     }
 } map_insert_operator;
 
+struct map_insert_or_assign_type : map_inserter_base
+{
+    template <typename T, typename Iterator> void operator()(T& x, Iterator it)
+    {
+        x.insert_or_assign(it->first, it->second);
+    }
+} map_insert_or_assign;
+
 // clang-format off
 UNORDERED_TEST(insert_exception_test,
     ((test_map_))
-    ((map_insert_operator))
+    ((try_emplace)(try_emplace2)(map_insert_operator)(map_insert_or_assign))
     ((default_generator)(limited_range)(generate_collisions))
 )
 UNORDERED_TEST(insert_rehash_exception_test,
     ((test_map_))
-    ((map_insert_operator))
+    ((try_emplace)(try_emplace2)(map_insert_operator)(map_insert_or_assign))
     ((default_generator)(limited_range)(generate_collisions))
 )
 // clang-format on
