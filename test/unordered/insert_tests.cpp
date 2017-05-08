@@ -3,6 +3,8 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+#if !defined(PIECEWISE_TEST_NAME)
+
 // clang-format off
 #include "../helpers/prefix.hpp"
 #include <boost/unordered_set.hpp>
@@ -1350,10 +1352,58 @@ UNORDERED_AUTO_TEST(set_emplace_test2)
     BOOST_TEST(x.find(check) != x.end() && *x.find(check) == check);
 }
 
+// Use the preprocessor to generate tests using different combinations of
+// boost/std piecewise_construct_t/tuple.
+
+#define PIECEWISE_TEST_NAME boost_tuple_piecewise_tests
+#define PIECEWISE_NAMESPACE boost::unordered
+#define TUPLE_NAMESPACE boost
+#define EMULATING_PIECEWISE_CONSTRUCTION 1
+#include "./insert_tests.cpp"
+
 #if BOOST_UNORDERED_HAVE_PIECEWISE_CONSTRUCT
 
-UNORDERED_AUTO_TEST(map_std_emplace_test2)
+#define PIECEWISE_TEST_NAME boost_tuple_std_piecewise_tests
+#define PIECEWISE_NAMESPACE std
+#define TUPLE_NAMESPACE boost
+#define EMULATING_PIECEWISE_CONSTRUCTION 1
+#include "./insert_tests.cpp"
+
+#endif
+
+#if !defined(BOOST_NO_CXX11_HDR_TUPLE)
+
+#define PIECEWISE_TEST_NAME std_tuple_boost_piecewise_tests
+#define PIECEWISE_NAMESPACE boost::unordered
+#define TUPLE_NAMESPACE std
+#define EMULATING_PIECEWISE_CONSTRUCTION 0
+#include "./insert_tests.cpp"
+
+#endif
+
+#if !defined(BOOST_NO_CXX11_HDR_TUPLE) &&                                      \
+    BOOST_UNORDERED_HAVE_PIECEWISE_CONSTRUCT
+
+#define PIECEWISE_TEST_NAME std_piecewise_tests
+#define PIECEWISE_NAMESPACE std
+#define TUPLE_NAMESPACE std
+#define EMULATING_PIECEWISE_CONSTRUCTION 0
+#include "./insert_tests.cpp"
+
+#endif
+
+}
+
+RUN_TESTS()
+
+#else // PIECEWISE_TEST_NAME
+
+UNORDERED_AUTO_TEST(PIECEWISE_TEST_NAME)
 {
+#if EMULATING_PIECEWISE_CONSTRUCTION
+    test::detail::disable_construction_tracking _scoped;
+#endif
+
     {
         boost::unordered_map<overloaded_constructor, overloaded_constructor,
             boost::hash<overloaded_constructor>,
@@ -1362,26 +1412,27 @@ UNORDERED_AUTO_TEST(map_std_emplace_test2)
                 overloaded_constructor> > >
             x;
 
-        x.emplace(
-            std::piecewise_construct, std::make_tuple(), std::make_tuple());
+        x.emplace(PIECEWISE_NAMESPACE::piecewise_construct,
+            TUPLE_NAMESPACE::make_tuple(), TUPLE_NAMESPACE::make_tuple());
         BOOST_TEST(x.find(overloaded_constructor()) != x.end() &&
                    x.find(overloaded_constructor())->second ==
                        overloaded_constructor());
 
-        x.emplace(
-            convertible_to_piecewise(), std::make_tuple(1), std::make_tuple());
+        x.emplace(convertible_to_piecewise(), TUPLE_NAMESPACE::make_tuple(1),
+            TUPLE_NAMESPACE::make_tuple());
         BOOST_TEST(x.find(overloaded_constructor(1)) != x.end() &&
                    x.find(overloaded_constructor(1))->second ==
                        overloaded_constructor());
 
-        x.emplace(piecewise_rvalue(), std::make_tuple(2, 3),
-            std::make_tuple(4, 5, 6));
+        x.emplace(piecewise_rvalue(), TUPLE_NAMESPACE::make_tuple(2, 3),
+            TUPLE_NAMESPACE::make_tuple(4, 5, 6));
         BOOST_TEST(x.find(overloaded_constructor(2, 3)) != x.end() &&
                    x.find(overloaded_constructor(2, 3))->second ==
                        overloaded_constructor(4, 5, 6));
 
         derived_from_piecewise_construct_t d;
-        x.emplace(d, std::make_tuple(9, 3, 1), std::make_tuple(10));
+        x.emplace(d, TUPLE_NAMESPACE::make_tuple(9, 3, 1),
+            TUPLE_NAMESPACE::make_tuple(10));
         BOOST_TEST(x.find(overloaded_constructor(9, 3, 1)) != x.end() &&
                    x.find(overloaded_constructor(9, 3, 1))->second ==
                        overloaded_constructor(10));
@@ -1411,51 +1462,59 @@ UNORDERED_AUTO_TEST(map_std_emplace_test2)
                 overloaded_constructor> > >
             x;
 
-        x.emplace(
-            std::piecewise_construct, std::make_tuple(), std::make_tuple());
+        x.emplace(PIECEWISE_NAMESPACE::piecewise_construct,
+            TUPLE_NAMESPACE::make_tuple(), TUPLE_NAMESPACE::make_tuple());
         BOOST_TEST(x.find(overloaded_constructor()) != x.end() &&
                    x.find(overloaded_constructor())->second ==
                        overloaded_constructor());
 
-        x.emplace(
-            convertible_to_piecewise(), std::make_tuple(1), std::make_tuple());
+        x.emplace(convertible_to_piecewise(), TUPLE_NAMESPACE::make_tuple(1),
+            TUPLE_NAMESPACE::make_tuple());
         BOOST_TEST(x.find(overloaded_constructor(1)) != x.end() &&
                    x.find(overloaded_constructor(1))->second ==
                        overloaded_constructor());
 
-        x.emplace(piecewise_rvalue(), std::make_tuple(2, 3),
-            std::make_tuple(4, 5, 6));
+        x.emplace(piecewise_rvalue(), TUPLE_NAMESPACE::make_tuple(2, 3),
+            TUPLE_NAMESPACE::make_tuple(4, 5, 6));
         BOOST_TEST(x.find(overloaded_constructor(2, 3)) != x.end() &&
                    x.find(overloaded_constructor(2, 3))->second ==
                        overloaded_constructor(4, 5, 6));
 
         derived_from_piecewise_construct_t d;
-        x.emplace(d, std::make_tuple(9, 3, 1), std::make_tuple(10));
+        x.emplace(d, TUPLE_NAMESPACE::make_tuple(9, 3, 1),
+            TUPLE_NAMESPACE::make_tuple(10));
         BOOST_TEST(x.find(overloaded_constructor(9, 3, 1)) != x.end() &&
                    x.find(overloaded_constructor(9, 3, 1))->second ==
                        overloaded_constructor(10));
     }
 }
 
-UNORDERED_AUTO_TEST(set_std_emplace_test2)
+UNORDERED_AUTO_TEST(BOOST_PP_CAT(PIECEWISE_TEST_NAME, 2))
 {
+#if EMULATING_PIECEWISE_CONSTRUCTION
+    test::detail::disable_construction_tracking _scoped;
+#endif
+
     boost::unordered_set<
         std::pair<overloaded_constructor, overloaded_constructor> >
         x;
     std::pair<overloaded_constructor, overloaded_constructor> check;
 
-    x.emplace(std::piecewise_construct, std::make_tuple(), std::make_tuple());
+    x.emplace(PIECEWISE_NAMESPACE::piecewise_construct,
+        TUPLE_NAMESPACE::make_tuple(), TUPLE_NAMESPACE::make_tuple());
     BOOST_TEST(x.find(check) != x.end() && *x.find(check) == check);
 
     x.clear();
-    x.emplace(
-        std::piecewise_construct, std::make_tuple(1), std::make_tuple(2, 3));
+    x.emplace(PIECEWISE_NAMESPACE::piecewise_construct,
+        TUPLE_NAMESPACE::make_tuple(1), TUPLE_NAMESPACE::make_tuple(2, 3));
     check =
         std::make_pair(overloaded_constructor(1), overloaded_constructor(2, 3));
     BOOST_TEST(x.find(check) != x.end() && *x.find(check) == check);
 }
 
-#endif
-}
+#undef PIECEWISE_TEST_NAME
+#undef PIECEWISE_NAMESPACE
+#undef TUPLE_NAMESPACE
+#undef EMULATING_PIECEWISE_CONSTRUCTION
 
-RUN_TESTS()
+#endif
