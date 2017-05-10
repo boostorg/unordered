@@ -62,7 +62,7 @@ using test::generate_collisions;
 using test::limited_range;
 
 // clang-format off
-UNORDERED_TEST(merge_exception_test,
+UNORDERED_MULTI_TEST(set_merge, merge_exception_test,
     ((test_set_)(test_multiset_))
     ((test_set_)(test_multiset_))
     ((0)(10)(100))
@@ -72,7 +72,7 @@ UNORDERED_TEST(merge_exception_test,
     ((default_generator)(limited_range))
     ((default_generator)(limited_range))
 )
-UNORDERED_TEST(merge_exception_test,
+UNORDERED_MULTI_TEST(map_merge, merge_exception_test,
     ((test_map_)(test_multimap_))
     ((test_map_)(test_multimap_))
     ((0)(10)(100))
@@ -83,7 +83,7 @@ UNORDERED_TEST(merge_exception_test,
     ((default_generator)(limited_range))
 )
 // Run fewer generate_collisions tests, as they're slow.
-UNORDERED_TEST(merge_exception_test,
+UNORDERED_MULTI_TEST(set_merge_collisions, merge_exception_test,
     ((test_set_)(test_multiset_))
     ((test_set_)(test_multiset_))
     ((10))
@@ -93,7 +93,7 @@ UNORDERED_TEST(merge_exception_test,
     ((generate_collisions))
     ((generate_collisions))
 )
-UNORDERED_TEST(merge_exception_test,
+UNORDERED_MULTI_TEST(map_merge_collisions, merge_exception_test,
     ((test_map_)(test_multimap_))
     ((test_map_)(test_multimap_))
     ((10))
