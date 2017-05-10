@@ -33,9 +33,7 @@ void unique_insert_tests1(X*, test::random_generator generator)
     typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
     typedef test::ordered<X> ordered;
 
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM
-        << "insert(value) tests for containers with unique keys.\n";
-
+    UNORDERED_SUB_TEST("insert(value) tests for containers with unique keys")
     {
         X x;
         test::ordered<X> tracker = test::create_ordered(x);
@@ -67,9 +65,7 @@ void unique_insert_tests1(X*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM
-        << "insert(rvalue) tests for containers with unique keys.\n";
-
+    UNORDERED_SUB_TEST("insert(rvalue) tests for containers with unique keys")
     {
         X x;
         test::ordered<X> tracker = test::create_ordered(x);
@@ -108,9 +104,8 @@ void equivalent_insert_tests1(X*, test::random_generator generator)
 {
     test::check_instances check_;
 
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM
-        << "insert(value) tests for containers with equivalent keys.\n";
-
+    UNORDERED_SUB_TEST(
+        "insert(value) tests for containers with equivalent keys")
     {
         X x;
         test::ordered<X> tracker = test::create_ordered(x);
@@ -139,9 +134,8 @@ void equivalent_insert_tests1(X*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM
-        << "insert(rvalue) tests for containers with equivalent keys.\n";
-
+    UNORDERED_SUB_TEST(
+        "insert(rvalue) tests for containers with equivalent keys")
     {
         X x;
         test::ordered<X> tracker = test::create_ordered(x);
@@ -180,8 +174,7 @@ template <class X> void insert_tests2(X*, test::random_generator generator)
     typedef BOOST_DEDUCED_TYPENAME X::const_iterator const_iterator;
     typedef BOOST_DEDUCED_TYPENAME tracker_type::iterator tracker_iterator;
 
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "insert(begin(), value) tests.\n";
-
+    UNORDERED_SUB_TEST("insert(begin(), value) tests")
     {
         test::check_instances check_;
 
@@ -210,8 +203,7 @@ template <class X> void insert_tests2(X*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "insert(end(), value) tests.\n";
-
+    UNORDERED_SUB_TEST("insert(end(), value) tests")
     {
         test::check_instances check_;
 
@@ -241,8 +233,7 @@ template <class X> void insert_tests2(X*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "insert(pos, value) tests.\n";
-
+    UNORDERED_SUB_TEST("insert(pos, value) tests")
     {
         test::check_instances check_;
 
@@ -272,8 +263,7 @@ template <class X> void insert_tests2(X*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "insert(pos, rvalue) tests.\n";
-
+    UNORDERED_SUB_TEST("insert(pos, rvalue) tests")
     {
         test::check_instances check_;
 
@@ -304,8 +294,7 @@ template <class X> void insert_tests2(X*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "insert single item range tests.\n";
-
+    UNORDERED_SUB_TEST("insert single item range tests")
     {
         test::check_instances check_;
 
@@ -333,8 +322,7 @@ template <class X> void insert_tests2(X*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "insert range tests.\n";
-
+    UNORDERED_SUB_TEST("insert range tests")
     {
         test::check_instances check_;
 
@@ -347,8 +335,7 @@ template <class X> void insert_tests2(X*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "insert range with rehash tests.\n";
-
+    UNORDERED_SUB_TEST("insert range with rehash tests")
     {
         test::check_instances check_;
 
@@ -365,8 +352,7 @@ template <class X> void insert_tests2(X*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "insert input iterator range tests.\n";
-
+    UNORDERED_SUB_TEST("insert input iterator range tests")
     {
         test::check_instances check_;
 
@@ -382,8 +368,7 @@ template <class X> void insert_tests2(X*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "insert copy iterator range tests.\n";
-
+    UNORDERED_SUB_TEST("insert copy iterator range tests")
     {
         test::check_instances check_;
 
@@ -396,8 +381,7 @@ template <class X> void insert_tests2(X*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "insert copy iterator range test 2.\n";
-
+    UNORDERED_SUB_TEST("insert copy iterator range test 2")
     {
         test::check_instances check_;
 
@@ -413,8 +397,7 @@ template <class X> void insert_tests2(X*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "insert various ranges.\n";
-
+    UNORDERED_SUB_TEST("insert various ranges")
     {
         for (int i = 0; i < 100; ++i) {
             X x;
@@ -460,9 +443,6 @@ void unique_emplace_tests1(X*, test::random_generator generator)
     typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
     typedef test::ordered<X> ordered;
 
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM
-        << "emplace(value) tests for containers with unique keys.\n";
-
     X x;
     test::ordered<X> tracker = test::create_ordered(x);
 
@@ -495,9 +475,6 @@ void unique_emplace_tests1(X*, test::random_generator generator)
 template <class X>
 void equivalent_emplace_tests1(X*, test::random_generator generator)
 {
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM
-        << "emplace(value) tests for containers with equivalent keys.\n";
-
     X x;
     test::ordered<X> tracker = test::create_ordered(x);
 
@@ -526,9 +503,6 @@ void equivalent_emplace_tests1(X*, test::random_generator generator)
 
 template <class X> void move_emplace_tests(X*, test::random_generator generator)
 {
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM
-        << "emplace(move(value)) tests for containers with unique keys.\n";
-
     X x;
     test::ordered<X> tracker = test::create_ordered(x);
 
@@ -557,7 +531,6 @@ template <class X> void move_emplace_tests(X*, test::random_generator generator)
 template <class X> void default_emplace_tests(X*, test::random_generator)
 {
 #if !BOOST_WORKAROUND(__SUNPRO_CC, BOOST_TESTED_AT(0x5100))
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "emplace() tests.\n";
     bool is_unique = test::has_unique_keys<X>::value;
 
     X x;
@@ -592,8 +565,6 @@ template <class X> void default_emplace_tests(X*, test::random_generator)
 
 template <class X> void map_tests(X*, test::random_generator generator)
 {
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "map tests.\n";
-
     X x;
     test::ordered<X> tracker = test::create_ordered(x);
 
@@ -620,8 +591,8 @@ template <class X> void map_tests(X*, test::random_generator generator)
 template <class X> void map_tests2(X*, test::random_generator generator)
 {
     typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "insert_or_assign\n";
 
+    UNORDERED_SUB_TEST("insert_or_assign")
     {
         test::check_instances check_;
 
@@ -652,8 +623,7 @@ template <class X> void map_tests2(X*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "insert_or_assign(begin)\n";
-
+    UNORDERED_SUB_TEST("insert_or_assign(begin)")
     {
         test::check_instances check_;
 
@@ -683,8 +653,7 @@ template <class X> void map_tests2(X*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "insert_or_assign(end)\n";
-
+    UNORDERED_SUB_TEST("insert_or_assign(end)")
     {
         test::check_instances check_;
 
@@ -714,8 +683,7 @@ template <class X> void map_tests2(X*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "insert_or_assign(last)\n";
-
+    UNORDERED_SUB_TEST("insert_or_assign(last)")
     {
         test::check_instances check_;
 
@@ -751,10 +719,9 @@ template <class X> void map_tests2(X*, test::random_generator generator)
 
 template <class X> void try_emplace_tests(X*, test::random_generator generator)
 {
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "try_emplace(key, value)\n";
-
     typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
 
+    UNORDERED_SUB_TEST("try_emplace(key, value)")
     {
         test::check_instances check_;
 
@@ -794,10 +761,9 @@ template <class X> void try_emplace_tests(X*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "try_emplace(begin(), key, value)\n";
-
     typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
 
+    UNORDERED_SUB_TEST("try_emplace(begin(), key, value)")
     {
         test::check_instances check_;
 
@@ -834,10 +800,9 @@ template <class X> void try_emplace_tests(X*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "try_emplace(end(), key, value)\n";
-
     typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
 
+    UNORDERED_SUB_TEST("try_emplace(end(), key, value)")
     {
         test::check_instances check_;
 
@@ -874,10 +839,9 @@ template <class X> void try_emplace_tests(X*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "try_emplace(pos, key, value)\n";
-
     typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
 
+    UNORDERED_SUB_TEST("try_emplace(pos, key, value)")
     {
         test::check_instances check_;
 
@@ -920,8 +884,6 @@ template <class X> void try_emplace_tests(X*, test::random_generator generator)
 template <class X>
 void map_insert_range_test1(X*, test::random_generator generator)
 {
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "map_insert_range_test1\n";
-
     test::check_instances check_;
 
     typedef test::list<std::pair<BOOST_DEDUCED_TYPENAME X::key_type,
@@ -939,8 +901,6 @@ void map_insert_range_test1(X*, test::random_generator generator)
 template <class X>
 void map_insert_range_test2(X*, test::random_generator generator)
 {
-    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "map_insert_range_test2\n";
-
     test::check_instances check_;
 
     typedef test::list<std::pair<BOOST_DEDUCED_TYPENAME X::key_type const,
@@ -1397,7 +1357,7 @@ UNORDERED_AUTO_TEST(set_emplace_test2)
 #endif
 }
 
-RUN_TESTS()
+RUN_TESTS_QUIET()
 
 #else // PIECEWISE_TEST_NAME
 

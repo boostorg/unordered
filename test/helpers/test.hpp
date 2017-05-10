@@ -39,7 +39,39 @@
         return boost::report_errors();                                         \
     }
 
+#define UNORDERED_SUB_TEST(x)                                                  \
+    for (int UNORDERED_SUB_TEST_VALUE = ::test::start_sub_test(x);             \
+         UNORDERED_SUB_TEST_VALUE;                                             \
+         UNORDERED_SUB_TEST_VALUE =                                            \
+             ::test::end_sub_test(x, UNORDERED_SUB_TEST_VALUE))
+
 namespace test {
+
+static inline bool& is_quiet()
+{
+    static bool value = false;
+    return value;
+}
+
+static inline int start_sub_test(char const* name)
+{
+    if (!is_quiet()) {
+        BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Sub-test: " << name << "\n"
+                                       << std::flush;
+    }
+    // Add one because it's used as a loop condition.
+    return boost::detail::test_errors() + 1;
+}
+
+static inline int end_sub_test(char const* name, int value)
+{
+    if (is_quiet() && value != boost::detail::test_errors() + 1) {
+        BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Error in sub-test: " << name << "\n"
+                                       << std::flush;
+    }
+    return 0;
+}
+
 struct registered_test_base
 {
     registered_test_base* next;
@@ -75,6 +107,8 @@ static inline void add_test(registered_test_base* test)
 
 static inline void run_tests(bool quiet = false)
 {
+    test::is_quiet() = quiet;
+
     for (registered_test_base* i = first(); i; i = i->next) {
         int error_count = boost::detail::test_errors();
         if (!quiet) {
@@ -160,6 +194,8 @@ static inline void run_tests(bool quiet = false)
         BOOST_PP_SEQ_TAIL(BOOST_PP_SEQ_TAIL(product)))
 
 #define UNORDERED_MULTI_TEST_OP2(name, n, params)                              \
+    UNORDERED_SUB_TEST(BOOST_PP_STRINGIZE(                                     \
+        BOOST_PP_SEQ_FOLD_LEFT(UNORDERED_TEST_OP_JOIN, name, params)))         \
     {                                                                          \
         for (int i = 0; i < n; ++i)                                            \
             name BOOST_PP_SEQ_TO_TUPLE(params);                                \
