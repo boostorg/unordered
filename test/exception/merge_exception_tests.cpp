@@ -105,4 +105,4 @@ UNORDERED_TEST(merge_exception_test,
 )
 // clang-format on
 
-RUN_TESTS()
+RUN_TESTS_QUIET()

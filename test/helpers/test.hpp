@@ -31,6 +31,14 @@
         return boost::report_errors();                                         \
     }
 
+#define RUN_TESTS_QUIET()                                                      \
+    int main(int, char**)                                                      \
+    {                                                                          \
+        BOOST_UNORDERED_TEST_COMPILER_INFO()                                   \
+        ::test::test_list::run_tests(true);                                    \
+        return boost::report_errors();                                         \
+    }
+
 namespace test {
 struct registered_test_base
 {
@@ -65,13 +73,20 @@ static inline void add_test(registered_test_base* test)
     last() = test;
 }
 
-static inline void run_tests()
+static inline void run_tests(bool quiet = false)
 {
     for (registered_test_base* i = first(); i; i = i->next) {
-        BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Running " << i->name << "\n"
-                                       << std::flush;
+        int error_count = boost::detail::test_errors();
+        if (!quiet) {
+            BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Running " << i->name << "\n"
+                                           << std::flush;
+        }
         i->run();
         BOOST_LIGHTWEIGHT_TEST_OSTREAM << std::flush;
+        if (quiet && error_count != boost::detail::test_errors()) {
+            BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Error in: " << i->name << "\n"
+                                           << std::flush;
+        }
     }
 }
 }
