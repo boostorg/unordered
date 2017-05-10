@@ -190,12 +190,16 @@ static inline state& get_state()
         BOOST_PP_SEQ_ELEM(1, product),                                         \
         BOOST_PP_SEQ_TAIL(BOOST_PP_SEQ_TAIL(product)))
 
+// Need to wrap UNORDERED_SUB_TEST in a block to avoid an msvc bug.
+// https://support.microsoft.com/en-gb/help/315481/bug-too-many-unnested-loops-incorrectly-causes-a-c1061-compiler-error-in-visual-c
 #define UNORDERED_MULTI_TEST_OP2(name, n, params)                              \
-    UNORDERED_SUB_TEST(BOOST_PP_STRINGIZE(                                     \
-        BOOST_PP_SEQ_FOLD_LEFT(UNORDERED_TEST_OP_JOIN, name, params)))         \
     {                                                                          \
-        for (int i = 0; i < n; ++i)                                            \
-            name BOOST_PP_SEQ_TO_TUPLE(params);                                \
+        UNORDERED_SUB_TEST(BOOST_PP_STRINGIZE(                                 \
+            BOOST_PP_SEQ_FOLD_LEFT(UNORDERED_TEST_OP_JOIN, name, params)))     \
+        {                                                                      \
+            for (int i = 0; i < n; ++i)                                        \
+                name BOOST_PP_SEQ_TO_TUPLE(params);                            \
+        }                                                                      \
     }
 
 #endif
