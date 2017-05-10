@@ -37,7 +37,8 @@ template <class X> void tests(X*, test::random_generator generator)
 
     BOOST_TEST(x.bucket_count() <= x.max_bucket_count());
     if (!(x.bucket_count() <= x.max_bucket_count())) {
-        std::cerr << x.bucket_count() << "<=" << x.max_bucket_count() << "\n";
+        BOOST_LIGHTWEIGHT_TEST_OSTREAM << x.bucket_count()
+                                       << "<=" << x.max_bucket_count() << "\n";
     }
 
     for (BOOST_DEDUCED_TYPENAME test::random_values<X>::const_iterator

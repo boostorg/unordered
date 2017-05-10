@@ -12,8 +12,6 @@
 
 #include "../helpers/test.hpp"
 
-#include <iostream>
-
 namespace insert_stable {
 struct member
 {

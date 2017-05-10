@@ -15,7 +15,6 @@
 #include "./fwd.hpp"
 #include <boost/limits.hpp>
 #include <cstddef>
-#include <iostream>
 #include <new>
 
 namespace test {

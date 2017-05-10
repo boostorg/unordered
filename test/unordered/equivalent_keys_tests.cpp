@@ -17,8 +17,6 @@
 #include "../helpers/tracker.hpp"
 #include "../helpers/invariants.hpp"
 
-#include <iostream>
-
 template <class Container, class Iterator>
 void test_equal_insertion(Iterator begin, Iterator end)
 {

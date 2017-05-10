@@ -10,7 +10,6 @@
 #include "../helpers/postfix.hpp"
 // clang-format on
 
-#include <iostream>
 #include "../helpers/test.hpp"
 
 namespace unnecessary_copy_tests {
@@ -138,32 +137,36 @@ std::size_t hash_value(unnecessary_copy_tests::count_copies const& x)
 #define COPY_COUNT(n)                                                          \
     if (::unnecessary_copy_tests::count_copies::copies != n) {                 \
         BOOST_ERROR("Wrong number of copies.");                                \
-        std::cerr << "Number of copies: "                                      \
-                  << ::unnecessary_copy_tests::count_copies::copies            \
-                  << " expecting: " << n << std::endl;                         \
+        BOOST_LIGHTWEIGHT_TEST_OSTREAM                                         \
+            << "Number of copies: "                                            \
+            << ::unnecessary_copy_tests::count_copies::copies                  \
+            << " expecting: " << n << std::endl;                               \
     }
 #define MOVE_COUNT(n)                                                          \
     if (::unnecessary_copy_tests::count_copies::moves != n) {                  \
         BOOST_ERROR("Wrong number of moves.");                                 \
-        std::cerr << "Number of moves: "                                       \
-                  << ::unnecessary_copy_tests::count_copies::moves             \
-                  << " expecting: " << n << std::endl;                         \
+        BOOST_LIGHTWEIGHT_TEST_OSTREAM                                         \
+            << "Number of moves: "                                             \
+            << ::unnecessary_copy_tests::count_copies::moves                   \
+            << " expecting: " << n << std::endl;                               \
     }
 #define COPY_COUNT_RANGE(a, b)                                                 \
     if (::unnecessary_copy_tests::count_copies::copies < a ||                  \
         ::unnecessary_copy_tests::count_copies::copies > b) {                  \
         BOOST_ERROR("Wrong number of copies.");                                \
-        std::cerr << "Number of copies: "                                      \
-                  << ::unnecessary_copy_tests::count_copies::copies            \
-                  << " expecting: [" << a << ", " << b << "]" << std::endl;    \
+        BOOST_LIGHTWEIGHT_TEST_OSTREAM                                         \
+            << "Number of copies: "                                            \
+            << ::unnecessary_copy_tests::count_copies::copies                  \
+            << " expecting: [" << a << ", " << b << "]" << std::endl;          \
     }
 #define MOVE_COUNT_RANGE(a, b)                                                 \
     if (::unnecessary_copy_tests::count_copies::moves < a ||                   \
         ::unnecessary_copy_tests::count_copies::moves > b) {                   \
         BOOST_ERROR("Wrong number of moves.");                                 \
-        std::cerr << "Number of moves: "                                       \
-                  << ::unnecessary_copy_tests::count_copies::moves             \
-                  << " expecting: [" << a << ", " << b << "]" << std::endl;    \
+        BOOST_LIGHTWEIGHT_TEST_OSTREAM                                         \
+            << "Number of moves: "                                             \
+            << ::unnecessary_copy_tests::count_copies::moves                   \
+            << " expecting: [" << a << ", " << b << "]" << std::endl;          \
     }
 #define COPY_COUNT_EXTRA(a, b) COPY_COUNT_RANGE(a, a + b * EXTRA_CONSTRUCT_COST)
 #define MOVE_COUNT_EXTRA(a, b) MOVE_COUNT_RANGE(a, a + b * EXTRA_CONSTRUCT_COST)

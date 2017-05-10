@@ -28,7 +28,7 @@ template <class T> void constructor_tests1(T*, test::random_generator generator)
     BOOST_DEDUCED_TYPENAME T::key_equal eq;
     BOOST_DEDUCED_TYPENAME T::allocator_type al;
 
-    std::cerr << "Construct 1\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Construct 1\n";
     {
         test::check_instances check_;
 
@@ -40,7 +40,7 @@ template <class T> void constructor_tests1(T*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    std::cerr << "Construct 2\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Construct 2\n";
     {
         test::check_instances check_;
 
@@ -53,7 +53,7 @@ template <class T> void constructor_tests1(T*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    std::cerr << "Construct 3\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Construct 3\n";
     {
         test::check_instances check_;
 
@@ -66,7 +66,7 @@ template <class T> void constructor_tests1(T*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    std::cerr << "Construct 4\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Construct 4\n";
     {
         test::check_instances check_;
 
@@ -78,7 +78,7 @@ template <class T> void constructor_tests1(T*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    std::cerr << "Construct 5\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Construct 5\n";
     {
         test::check_instances check_;
 
@@ -92,7 +92,7 @@ template <class T> void constructor_tests1(T*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    std::cerr << "Construct 6\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Construct 6\n";
     {
         test::check_instances check_;
 
@@ -106,7 +106,7 @@ template <class T> void constructor_tests1(T*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    std::cerr << "Construct 7\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Construct 7\n";
     {
         test::check_instances check_;
 
@@ -120,7 +120,7 @@ template <class T> void constructor_tests1(T*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    std::cerr << "Construct 8\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Construct 8\n";
     {
         test::check_instances check_;
 
@@ -133,7 +133,7 @@ template <class T> void constructor_tests1(T*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    std::cerr << "Construct 9\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Construct 9\n";
     {
         test::check_instances check_;
 
@@ -145,7 +145,7 @@ template <class T> void constructor_tests1(T*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    std::cerr << "Construct 10\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Construct 10\n";
     {
         test::check_instances check_;
 
@@ -159,7 +159,7 @@ template <class T> void constructor_tests1(T*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    std::cerr << "Construct 11\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Construct 11\n";
     {
         test::check_instances check_;
 
@@ -185,7 +185,7 @@ void constructor_tests2(T*, test::random_generator const& generator)
     BOOST_DEDUCED_TYPENAME T::allocator_type al1(1);
     BOOST_DEDUCED_TYPENAME T::allocator_type al2(2);
 
-    std::cerr << "Construct 1\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Construct 1\n";
     {
         test::check_instances check_;
         T x(10000, hf1, eq1);
@@ -196,7 +196,7 @@ void constructor_tests2(T*, test::random_generator const& generator)
         test::check_equivalent_keys(x);
     }
 
-    std::cerr << "Construct 2\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Construct 2\n";
     {
         test::check_instances check_;
         T x(100, hf1);
@@ -208,7 +208,7 @@ void constructor_tests2(T*, test::random_generator const& generator)
         test::check_equivalent_keys(x);
     }
 
-    std::cerr << "Construct 3\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Construct 3\n";
     {
         test::check_instances check_;
         test::random_values<T> v(100, generator);
@@ -220,7 +220,7 @@ void constructor_tests2(T*, test::random_generator const& generator)
         test::check_equivalent_keys(x);
     }
 
-    std::cerr << "Construct 4\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Construct 4\n";
     {
         test::check_instances check_;
         test::random_values<T> v(5, generator);
@@ -233,7 +233,7 @@ void constructor_tests2(T*, test::random_generator const& generator)
         test::check_equivalent_keys(x);
     }
 
-    std::cerr << "Construct 5\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Construct 5\n";
     {
         test::check_instances check_;
         test::random_values<T> v(100, generator);
@@ -245,7 +245,7 @@ void constructor_tests2(T*, test::random_generator const& generator)
         test::check_equivalent_keys(y);
     }
 
-    std::cerr << "Construct 6\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Construct 6\n";
     {
         test::check_instances check_;
         test::random_values<T> v(100, generator);
@@ -257,7 +257,7 @@ void constructor_tests2(T*, test::random_generator const& generator)
         test::check_equivalent_keys(y);
     }
 
-    std::cerr << "Construct 7\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Construct 7\n";
     {
         test::check_instances check_;
         test::random_values<T> v(100, generator);
@@ -269,7 +269,7 @@ void constructor_tests2(T*, test::random_generator const& generator)
         test::check_equivalent_keys(y);
     }
 
-    std::cerr << "Construct 8 - from input iterator\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Construct 8 - from input iterator\n";
     {
         test::check_instances check_;
         test::random_values<T> v(100, generator);
@@ -288,7 +288,7 @@ void constructor_tests2(T*, test::random_generator const& generator)
         test::check_equivalent_keys(y);
     }
 
-    std::cerr << "Construct 8.5 - from copy iterator\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Construct 8.5 - from copy iterator\n";
     {
         test::check_instances check_;
         test::random_values<T> v(100, generator);
@@ -302,7 +302,7 @@ void constructor_tests2(T*, test::random_generator const& generator)
         test::check_equivalent_keys(y);
     }
 
-    std::cerr << "Construct 9\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Construct 9\n";
     {
         test::check_instances check_;
 
@@ -320,7 +320,7 @@ void constructor_tests2(T*, test::random_generator const& generator)
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
     std::initializer_list<BOOST_DEDUCED_TYPENAME T::value_type> list;
 
-    std::cerr << "Initializer list construct 1\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Initializer list construct 1\n";
     {
         test::check_instances check_;
 
@@ -331,7 +331,7 @@ void constructor_tests2(T*, test::random_generator const& generator)
         BOOST_TEST(test::equivalent(x.get_allocator(), al));
     }
 
-    std::cerr << "Initializer list construct 2\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Initializer list construct 2\n";
     {
         test::check_instances check_;
 
@@ -343,7 +343,7 @@ void constructor_tests2(T*, test::random_generator const& generator)
         BOOST_TEST(test::equivalent(x.get_allocator(), al));
     }
 
-    std::cerr << "Initializer list construct 3\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Initializer list construct 3\n";
     {
         test::check_instances check_;
 
@@ -355,7 +355,7 @@ void constructor_tests2(T*, test::random_generator const& generator)
         BOOST_TEST(test::equivalent(x.get_allocator(), al));
     }
 
-    std::cerr << "Initializer list construct 4\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Initializer list construct 4\n";
     {
         test::check_instances check_;
 
@@ -367,7 +367,7 @@ void constructor_tests2(T*, test::random_generator const& generator)
         BOOST_TEST(test::equivalent(x.get_allocator(), al));
     }
 
-    std::cerr << "Initializer list construct 5\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Initializer list construct 5\n";
     {
         test::check_instances check_;
 
@@ -384,7 +384,7 @@ void constructor_tests2(T*, test::random_generator const& generator)
 template <class T>
 void map_constructor_test(T*, test::random_generator const& generator)
 {
-    std::cerr << "map_constructor_test\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "map_constructor_test\n";
 
     typedef test::list<std::pair<BOOST_DEDUCED_TYPENAME T::key_type,
         BOOST_DEDUCED_TYPENAME T::mapped_type> >
@@ -429,7 +429,7 @@ UNORDERED_TEST(map_constructor_test,
 
 UNORDERED_AUTO_TEST(test_default_initializer_list)
 {
-    std::cerr << "Initializer List Tests\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Initializer List Tests\n";
     std::initializer_list<int> init;
     boost::unordered_set<int> x1 = init;
     BOOST_TEST(x1.empty());
@@ -441,7 +441,7 @@ UNORDERED_AUTO_TEST(test_default_initializer_list)
 
 UNORDERED_AUTO_TEST(test_initializer_list)
 {
-    std::cerr << "Initializer List Tests\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Initializer List Tests\n";
     boost::unordered_set<int> x1 = {2, 10, 45, -5};
     BOOST_TEST(x1.find(10) != x1.end());
     BOOST_TEST(x1.find(46) == x1.end());

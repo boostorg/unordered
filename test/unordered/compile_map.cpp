@@ -12,7 +12,6 @@
 #include "../helpers/postfix.hpp"
 // clang-format on
 
-#include <iostream>
 #include "../helpers/test.hpp"
 #include "../objects/minimal.hpp"
 #include "./compile_tests.hpp"
@@ -46,7 +45,7 @@ UNORDERED_AUTO_TEST(test0)
         value_type;
     value_type value(x, x);
 
-    std::cout << "Test unordered_map.\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Test unordered_map.\n";
 
     boost::unordered_map<int, int> int_map;
 
@@ -64,7 +63,7 @@ UNORDERED_AUTO_TEST(test0)
     container_test(int_map2, std::pair<int const, int>(0, 0));
     container_test(map, value);
 
-    std::cout << "Test unordered_multimap.\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Test unordered_multimap.\n";
 
     boost::unordered_multimap<int, int> int_multimap;
 
@@ -139,7 +138,7 @@ UNORDERED_AUTO_TEST(test1)
     int value = 0;
     std::pair<int const, int> map_value(0, 0);
 
-    std::cout << "Test unordered_map.\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Test unordered_map.\n";
 
     boost::unordered_map<int, int> map;
 
@@ -157,7 +156,7 @@ UNORDERED_AUTO_TEST(test1)
     unordered_copyable_test(map2, value, map_value, hash, equal_to);
     unordered_map_functions(map2, value, value);
 
-    std::cout << "Test unordered_multimap.\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Test unordered_multimap.\n";
 
     boost::unordered_multimap<int, int> multimap;
 
@@ -188,7 +187,7 @@ UNORDERED_AUTO_TEST(test2)
         map_value_type;
     map_value_type map_value(assignable, assignable);
 
-    std::cout << "Test unordered_map.\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Test unordered_map.\n";
 
     boost::unordered_map<test::minimal::assignable, test::minimal::assignable,
         test::minimal::hash<test::minimal::assignable>,
@@ -212,7 +211,7 @@ UNORDERED_AUTO_TEST(test2)
 
     unordered_map_functions(map2, assignable, default_assignable);
 
-    std::cout << "Test unordered_multimap.\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Test unordered_multimap.\n";
 
     boost::unordered_multimap<test::minimal::assignable,
         test::minimal::assignable,

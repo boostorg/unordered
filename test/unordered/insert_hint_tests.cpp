@@ -15,7 +15,6 @@
 
 #include <map>
 #include <set>
-#include <iostream>
 
 namespace insert_hint {
 UNORDERED_AUTO_TEST(insert_hint_empty)

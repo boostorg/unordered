@@ -11,8 +11,6 @@
 #include "../helpers/tracker.hpp"
 #include <string>
 
-#include <iostream>
-
 test::seed_t initialize_seed(3298597);
 
 template <class T> struct rehash_test_base : public test::exception_base

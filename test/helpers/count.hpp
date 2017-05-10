@@ -7,7 +7,6 @@
 #define BOOST_UNORDERED_TEST_HELPERS_COUNT_HEAD
 
 #include <boost/detail/lightweight_test.hpp>
-#include <iostream>
 
 namespace test {
 struct object_count

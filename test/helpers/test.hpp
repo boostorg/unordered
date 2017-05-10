@@ -9,7 +9,6 @@
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/preprocessor/cat.hpp>
 #include <boost/preprocessor/stringize.hpp>
-#include <iostream>
 
 #define UNORDERED_AUTO_TEST(x)                                                 \
     struct BOOST_PP_CAT(x, _type) : public ::test::registered_test_base        \
@@ -69,10 +68,10 @@ static inline void add_test(registered_test_base* test)
 static inline void run_tests()
 {
     for (registered_test_base* i = first(); i; i = i->next) {
-        std::cout << "Running " << i->name << "\n" << std::flush;
+        BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Running " << i->name << "\n"
+                                       << std::flush;
         i->run();
-        std::cerr << std::flush;
-        std::cout << std::flush;
+        BOOST_LIGHTWEIGHT_TEST_OSTREAM << std::flush;
     }
 }
 }
@@ -86,18 +85,19 @@ static inline void run_tests()
 
 #define BOOST_UNORDERED_TEST_COMPILER_INFO()                                   \
     {                                                                          \
-        std::cout << "Compiler: " << BOOST_COMPILER << "\n"                    \
-                  << "Library: " << BOOST_STDLIB << "\n"                       \
-                  << "__cplusplus: " << BOOST_UNORDERED_CPLUSPLUS << "\n\n"    \
-                  << "BOOST_UNORDERED_HAVE_PIECEWISE_CONSTRUCT: "              \
-                  << BOOST_UNORDERED_HAVE_PIECEWISE_CONSTRUCT << "\n"          \
-                  << "BOOST_UNORDERED_EMPLACE_LIMIT: "                         \
-                  << BOOST_UNORDERED_EMPLACE_LIMIT << "\n"                     \
-                  << "BOOST_UNORDERED_USE_ALLOCATOR_TRAITS: "                  \
-                  << BOOST_UNORDERED_USE_ALLOCATOR_TRAITS << "\n"              \
-                  << "BOOST_UNORDERED_CXX11_CONSTRUCTION: "                    \
-                  << BOOST_UNORDERED_CXX11_CONSTRUCTION << "\n\n"              \
-                  << std::flush;                                               \
+        BOOST_LIGHTWEIGHT_TEST_OSTREAM                                         \
+            << "Compiler: " << BOOST_COMPILER << "\n"                          \
+            << "Library: " << BOOST_STDLIB << "\n"                             \
+            << "__cplusplus: " << BOOST_UNORDERED_CPLUSPLUS << "\n\n"          \
+            << "BOOST_UNORDERED_HAVE_PIECEWISE_CONSTRUCT: "                    \
+            << BOOST_UNORDERED_HAVE_PIECEWISE_CONSTRUCT << "\n"                \
+            << "BOOST_UNORDERED_EMPLACE_LIMIT: "                               \
+            << BOOST_UNORDERED_EMPLACE_LIMIT << "\n"                           \
+            << "BOOST_UNORDERED_USE_ALLOCATOR_TRAITS: "                        \
+            << BOOST_UNORDERED_USE_ALLOCATOR_TRAITS << "\n"                    \
+            << "BOOST_UNORDERED_CXX11_CONSTRUCTION: "                          \
+            << BOOST_UNORDERED_CXX11_CONSTRUCTION << "\n\n"                    \
+            << std::flush;                                                     \
     }
 
 #include <boost/preprocessor/cat.hpp>

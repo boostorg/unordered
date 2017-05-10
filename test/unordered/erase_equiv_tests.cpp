@@ -17,7 +17,6 @@
 #include "../helpers/invariants.hpp"
 #include "../helpers/helpers.hpp"
 #include <set>
-#include <iostream>
 #include <iterator>
 #include "../objects/test.hpp"
 
@@ -31,14 +30,15 @@ struct write_pair_type
     template <class X1, class X2>
     void operator()(std::pair<X1, X2> const& x) const
     {
-        std::cout << "(" << x.first << "," << x.second << ")";
+        BOOST_LIGHTWEIGHT_TEST_OSTREAM << "(" << x.first << "," << x.second
+                                       << ")";
     }
 } write_pair;
 
 template <class Container> void write_container(Container const& x)
 {
     std::for_each(x.begin(), x.end(), write_pair);
-    std::cout << "\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "\n";
 }
 
 // Make everything collide - for testing erase in a single bucket.
@@ -165,8 +165,8 @@ template <class Container> void erase_subrange_tests(Container const& x)
             collide_list init(y.begin(), y.end());
             if (!general_erase_range_test(y, position, position + length)) {
                 BOOST_ERROR("general_erase_range_test failed.");
-                std::cout << "Erase: [" << position << "," << position + length
-                          << ")\n";
+                BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Erase: [" << position << ","
+                                               << position + length << ")\n";
                 write_container(init);
                 write_container(y);
             }
@@ -185,7 +185,8 @@ void x_by_y_erase_range_tests(Container*, int values, int duplicates)
         }
     }
 
-    std::cout << "Values: " << values << ", Duplicates: " << duplicates << "\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Values: " << values
+                                   << ", Duplicates: " << duplicates << "\n";
     erase_subrange_tests(y);
 }
 
@@ -201,24 +202,24 @@ void exhaustive_erase_tests(Container* x, int num_values, int num_duplicated)
 
 UNORDERED_AUTO_TEST(exhaustive_collide_tests)
 {
-    std::cout << "exhaustive_collide_tests:\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "exhaustive_collide_tests:\n";
     collide_map m;
     exhaustive_erase_tests((collide_map*)0, 4, 4);
-    std::cout << "\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "\n";
 }
 
 UNORDERED_AUTO_TEST(exhaustive_collide2_tests)
 {
-    std::cout << "exhaustive_collide2_tests:\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "exhaustive_collide2_tests:\n";
     exhaustive_erase_tests((collide_map2*)0, 8, 4);
-    std::cout << "\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "\n";
 }
 
 UNORDERED_AUTO_TEST(exhaustive_collide3_tests)
 {
-    std::cout << "exhaustive_collide3_tests:\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "exhaustive_collide3_tests:\n";
     exhaustive_erase_tests((collide_map3*)0, 8, 4);
-    std::cout << "\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "\n";
 }
 
 RUN_TESTS()

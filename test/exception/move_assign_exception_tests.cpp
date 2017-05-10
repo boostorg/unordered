@@ -8,7 +8,6 @@
 #include "../helpers/invariants.hpp"
 #include "../helpers/random_values.hpp"
 #include "../helpers/tracker.hpp"
-#include <iostream>
 
 #if defined(BOOST_MSVC)
 #pragma warning(                                                               \
