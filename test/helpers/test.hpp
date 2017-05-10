@@ -16,7 +16,7 @@
         BOOST_PP_CAT(x, _type)                                                 \
         () : ::test::registered_test_base(BOOST_PP_STRINGIZE(x))               \
         {                                                                      \
-            ::test::test_list::add_test(this);                                 \
+            ::test::get_state().add_test(this);                                \
         }                                                                      \
         void run();                                                            \
     };                                                                         \
@@ -27,7 +27,7 @@
     int main(int, char**)                                                      \
     {                                                                          \
         BOOST_UNORDERED_TEST_COMPILER_INFO()                                   \
-        ::test::test_list::run_tests();                                        \
+        ::test::get_state().run_tests();                                       \
         return boost::report_errors();                                         \
     }
 
@@ -35,42 +35,17 @@
     int main(int, char**)                                                      \
     {                                                                          \
         BOOST_UNORDERED_TEST_COMPILER_INFO()                                   \
-        ::test::test_list::run_tests(true);                                    \
+        ::test::get_state().run_tests(true);                                   \
         return boost::report_errors();                                         \
     }
 
 #define UNORDERED_SUB_TEST(x)                                                  \
-    for (int UNORDERED_SUB_TEST_VALUE = ::test::start_sub_test(x);             \
+    for (int UNORDERED_SUB_TEST_VALUE = ::test::get_state().start_sub_test(x); \
          UNORDERED_SUB_TEST_VALUE;                                             \
          UNORDERED_SUB_TEST_VALUE =                                            \
-             ::test::end_sub_test(x, UNORDERED_SUB_TEST_VALUE))
+             ::test::get_state().end_sub_test(x, UNORDERED_SUB_TEST_VALUE))
 
 namespace test {
-
-static inline bool& is_quiet()
-{
-    static bool value = false;
-    return value;
-}
-
-static inline int start_sub_test(char const* name)
-{
-    if (!is_quiet()) {
-        BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Sub-test: " << name << "\n"
-                                       << std::flush;
-    }
-    // Add one because it's used as a loop condition.
-    return boost::detail::test_errors() + 1;
-}
-
-static inline int end_sub_test(char const* name, int value)
-{
-    if (is_quiet() && value != boost::detail::test_errors() + 1) {
-        BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Error in sub-test: " << name << "\n"
-                                       << std::flush;
-    }
-    return 0;
-}
 
 struct registered_test_base
 {
@@ -81,48 +56,70 @@ struct registered_test_base
     virtual ~registered_test_base() {}
 };
 
-namespace test_list {
-static inline registered_test_base*& first()
+struct state
 {
-    static registered_test_base* ptr = 0;
-    return ptr;
-}
+    bool is_quiet;
+    registered_test_base* first_test;
+    registered_test_base* last_test;
 
-static inline registered_test_base*& last()
-{
-    static registered_test_base* ptr = 0;
-    return ptr;
-}
+    state() : is_quiet(false), first_test(0), last_test(0) {}
 
-static inline void add_test(registered_test_base* test)
-{
-    if (last()) {
-        last()->next = test;
-    } else {
-        first() = test;
+    void add_test(registered_test_base* test)
+    {
+        if (last_test) {
+            last_test->next = test;
+        } else {
+            first_test = test;
+        }
+        last_test = test;
     }
 
-    last() = test;
-}
+    void run_tests(bool quiet = false)
+    {
+        is_quiet = quiet;
 
-static inline void run_tests(bool quiet = false)
-{
-    test::is_quiet() = quiet;
-
-    for (registered_test_base* i = first(); i; i = i->next) {
-        int error_count = boost::detail::test_errors();
-        if (!quiet) {
-            BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Running " << i->name << "\n"
-                                           << std::flush;
-        }
-        i->run();
-        BOOST_LIGHTWEIGHT_TEST_OSTREAM << std::flush;
-        if (quiet && error_count != boost::detail::test_errors()) {
-            BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Error in: " << i->name << "\n"
-                                           << std::flush;
+        for (registered_test_base* i = first_test; i; i = i->next) {
+            int error_count = boost::detail::test_errors();
+            if (!quiet) {
+                BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Running " << i->name << "\n"
+                                               << std::flush;
+            }
+            i->run();
+            BOOST_LIGHTWEIGHT_TEST_OSTREAM << std::flush;
+            if (quiet && error_count != boost::detail::test_errors()) {
+                BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Error in: " << i->name
+                                               << "\n"
+                                               << std::flush;
+            }
         }
     }
-}
+
+    int start_sub_test(char const* name)
+    {
+        if (!is_quiet) {
+            BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Sub-test: " << name << "\n"
+                                           << std::flush;
+        }
+        // Add one because it's used as a loop condition.
+        return boost::detail::test_errors() + 1;
+    }
+
+    int end_sub_test(char const* name, int value)
+    {
+        if (is_quiet && value != boost::detail::test_errors() + 1) {
+            BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Error in sub-test: " << name
+                                           << "\n"
+                                           << std::flush;
+        }
+        return 0;
+    }
+};
+
+// Get the currnet translation unit's test state.
+static inline state& get_state()
+{
+    static state instance;
+    return instance;
 }
 }
 
