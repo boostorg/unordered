@@ -75,7 +75,7 @@
 // 2 = boost::container::allocator_traits
 
 #if !defined(BOOST_UNORDERED_USE_ALLOCATOR_TRAITS)
-#if !defined(BOOST_NO_CXX11_ALLOCATOR) && !BOOST_COMP_SUNPRO
+#if !defined(BOOST_NO_CXX11_ALLOCATOR)
 #define BOOST_UNORDERED_USE_ALLOCATOR_TRAITS 1
 #elif defined(BOOST_MSVC)
 #if BOOST_MSVC < 1400
@@ -98,7 +98,12 @@
 
 #if BOOST_UNORDERED_HAVE_PIECEWISE_CONSTRUCT &&                                \
     !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-#if BOOST_UNORDERED_USE_ALLOCATOR_TRAITS == 0 && !defined(BOOST_NO_SFINAE_EXPR)
+#if BOOST_COMP_SUNPRO && BOOST_LIB_STD_GNU
+// Sun C++ std::pair piecewise construction doesn't seem to be exception safe.
+// (At least for Sun C++ 12.5 using libstdc++).
+#define BOOST_UNORDERED_CXX11_CONSTRUCTION 0
+#elif BOOST_UNORDERED_USE_ALLOCATOR_TRAITS == 0 &&                             \
+    !defined(BOOST_NO_SFINAE_EXPR)
 #define BOOST_UNORDERED_CXX11_CONSTRUCTION 1
 #elif BOOST_UNORDERED_USE_ALLOCATOR_TRAITS == 1
 #define BOOST_UNORDERED_CXX11_CONSTRUCTION 1
