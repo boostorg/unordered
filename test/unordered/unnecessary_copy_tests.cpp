@@ -362,7 +362,7 @@ UNORDERED_AUTO_TEST(unnecessary_copy_emplace_set_test)
 // 0 arguments
 //
 
-#if !BOOST_WORKAROUND(__SUNPRO_CC, BOOST_TESTED_AT(0x5100))
+#if !BOOST_UNORDERED_SUN_WORKAROUNDS1
     // The container will have to create a copy in order to compare with
     // the existing element.
     reset();
@@ -451,7 +451,7 @@ UNORDERED_AUTO_TEST(unnecessary_copy_emplace_map_test)
 // 0 arguments
 //
 
-#if !BOOST_WORKAROUND(__SUNPRO_CC, BOOST_TESTED_AT(0x5100))
+#if !BOOST_UNORDERED_SUN_WORKAROUNDS1
     // COPY_COUNT(1) would be okay here.
     reset();
     x.emplace();

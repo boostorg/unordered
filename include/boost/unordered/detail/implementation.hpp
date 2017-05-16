@@ -59,6 +59,19 @@
 // Unless documented elsewhere these configuration macros should be considered
 // an implementation detail, I'll try not to break them, but you never know.
 
+// Use Sun C++ workarounds
+// I'm not sure which versions of the compiler require these workarounds, so
+// I'm just using them of everything older than the current test compilers
+// (as of May 2017).
+
+#if !defined(BOOST_UNORDERED_SUN_WORKAROUNDS1)
+#if BOOST_COMP_SUNPRO && BOOST_COMP_SUNPRO < BOOST_VERSION_NUMBER(5, 21, 0)
+#define BOOST_UNORDERED_SUN_WORKAROUNDS1 1
+#else
+#define BOOST_UNORDERED_SUN_WORKAROUNDS1 0
+#endif
+#endif
+
 // BOOST_UNORDERED_EMPLACE_LIMIT = The maximum number of parameters in
 // emplace (not including things like hints). Don't set it to a lower value, as
 // that might break something.
@@ -100,7 +113,7 @@
 
 // I had problems with tuples on older versions of the sunpro.
 // Might be fixed in an earlier version than I specified here.
-#elif BOOST_COMP_SUNPRO && BOOST_COMP_SUNPRO < BOOST_VERSION_NUMBER(5, 21, 0)
+#elif BOOST_UNORDERED_SUN_WORKAROUNDS1
 #define BOOST_UNORDERED_TUPLE_ARGS 0
 
 // Assume if we have C++11 tuple it's properly variadic,
@@ -270,7 +283,7 @@ template <class T> struct prime_list_template
 {
     static std::size_t const value[];
 
-#if !(BOOST_COMP_SUNPRO && BOOST_COMP_SUNPRO < BOOST_VERSION_NUMBER(5, 21, 0))
+#if !BOOST_UNORDERED_SUN_WORKAROUNDS1
     static std::ptrdiff_t const length;
 #else
     static std::ptrdiff_t const length =
@@ -282,7 +295,7 @@ template <class T>
 std::size_t const prime_list_template<T>::value[] = {
     BOOST_PP_SEQ_ENUM(BOOST_UNORDERED_PRIMES)};
 
-#if !(BOOST_COMP_SUNPRO && BOOST_COMP_SUNPRO < BOOST_VERSION_NUMBER(5, 21, 0))
+#if !BOOST_UNORDERED_SUN_WORKAROUNDS1
 template <class T>
 std::ptrdiff_t const prime_list_template<T>::length = BOOST_PP_SEQ_SIZE(
     BOOST_UNORDERED_PRIMES);
@@ -1336,7 +1349,7 @@ inline void construct_value(T* address, BOOST_FWD_REF(A0) a0)
 //
 // Used to emulate piecewise construction.
 
-#if !(BOOST_COMP_SUNPRO && BOOST_COMP_SUNPRO < BOOST_VERSION_NUMBER(5, 21, 0))
+#if !BOOST_UNORDERED_SUN_WORKAROUNDS1
 
 #define BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(z, n, namespace_)                 \
     template <typename Alloc, typename T,                                      \
@@ -1395,7 +1408,7 @@ BOOST_PP_REPEAT_FROM_TO(6, BOOST_PP_INC(BOOST_UNORDERED_TUPLE_ARGS),
 #undef BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE
 #undef BOOST_UNORDERED_GET_TUPLE_ARG
 
-#else // __SUNPRO_CC
+#else // BOOST_UNORDERED_SUN_WORKAROUNDS1
 
 template <int N> struct length
 {

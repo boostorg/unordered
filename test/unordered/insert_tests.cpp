@@ -530,7 +530,7 @@ template <class X> void move_emplace_tests(X*, test::random_generator generator)
 
 template <class X> void default_emplace_tests(X*, test::random_generator)
 {
-#if !BOOST_WORKAROUND(__SUNPRO_CC, BOOST_TESTED_AT(0x5100))
+#if !BOOST_UNORDERED_SUN_WORKAROUNDS1
     bool is_unique = test::has_unique_keys<X>::value;
 
     X x;
@@ -1108,7 +1108,7 @@ UNORDERED_AUTO_TEST(map_emplace_test)
             test::allocator1<std::pair<int const, overloaded_constructor> > >
             x;
 
-#if !BOOST_WORKAROUND(__SUNPRO_CC, BOOST_TESTED_AT(0x5100))
+#if !BOOST_UNORDERED_SUN_WORKAROUNDS1
         x.emplace();
         BOOST_TEST(x.find(0) != x.end() &&
                    x.find(0)->second == overloaded_constructor());
@@ -1129,7 +1129,7 @@ UNORDERED_AUTO_TEST(map_emplace_test)
             test::allocator1<std::pair<int const, overloaded_constructor> > >
             x;
 
-#if !BOOST_WORKAROUND(__SUNPRO_CC, BOOST_TESTED_AT(0x5100))
+#if !BOOST_UNORDERED_SUN_WORKAROUNDS1
         x.emplace();
         BOOST_TEST(x.find(0) != x.end() &&
                    x.find(0)->second == overloaded_constructor());
@@ -1146,7 +1146,7 @@ UNORDERED_AUTO_TEST(set_emplace_test)
     boost::unordered_set<overloaded_constructor> x;
     overloaded_constructor check;
 
-#if !BOOST_WORKAROUND(__SUNPRO_CC, BOOST_TESTED_AT(0x5100))
+#if !BOOST_UNORDERED_SUN_WORKAROUNDS1
     x.emplace();
     BOOST_TEST(x.find(check) != x.end() && *x.find(check) == check);
 #endif

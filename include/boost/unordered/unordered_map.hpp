@@ -230,7 +230,7 @@ template <class K, class T, class H, class P, class A> class unordered_map
 
 #else
 
-#if !(BOOST_COMP_SUNPRO && BOOST_COMP_SUNPRO < BOOST_VERSION_NUMBER(5, 21, 0))
+#if !BOOST_UNORDERED_SUN_WORKAROUNDS1
 
     // 0 argument emplace requires special treatment in case
     // the container is instantiated with a value type that
@@ -292,7 +292,7 @@ template <class K, class T, class H, class P, class A> class unordered_map
 
 #else
 
-#if !(BOOST_COMP_SUNPRO && BOOST_COMP_SUNPRO < BOOST_VERSION_NUMBER(5, 21, 0))
+#if !BOOST_UNORDERED_SUN_WORKAROUNDS1
 
     iterator emplace_hint(const_iterator hint,
         boost::unordered::detail::empty_emplace =
@@ -1031,7 +1031,7 @@ template <class K, class T, class H, class P, class A> class unordered_multimap
 
 #else
 
-#if !(BOOST_COMP_SUNPRO && BOOST_COMP_SUNPRO < BOOST_VERSION_NUMBER(5, 21, 0))
+#if !BOOST_UNORDERED_SUN_WORKAROUNDS1
 
     // 0 argument emplace requires special treatment in case
     // the container is instantiated with a value type that
@@ -1091,7 +1091,7 @@ template <class K, class T, class H, class P, class A> class unordered_multimap
 
 #else
 
-#if !(BOOST_COMP_SUNPRO && BOOST_COMP_SUNPRO < BOOST_VERSION_NUMBER(5, 21, 0))
+#if !BOOST_UNORDERED_SUN_WORKAROUNDS1
 
     iterator emplace_hint(const_iterator hint,
         boost::unordered::detail::empty_emplace =
