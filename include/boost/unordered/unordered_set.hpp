@@ -66,10 +66,10 @@ template <class T, class H, class P, class A> class unordered_set
     typedef std::size_t size_type;
     typedef std::ptrdiff_t difference_type;
 
-    typedef typename table::cl_iterator const_local_iterator;
-    typedef typename table::l_iterator local_iterator;
-    typedef typename table::c_iterator const_iterator;
     typedef typename table::iterator iterator;
+    typedef typename table::c_iterator const_iterator;
+    typedef typename table::l_iterator local_iterator;
+    typedef typename table::cl_iterator const_local_iterator;
     typedef typename types::node_type node_type;
     typedef typename types::insert_return_type insert_return_type;
 
@@ -529,9 +529,8 @@ template <class T, class H, class P, class A> class unordered_set
 
     // hash policy
 
-    float max_load_factor() const BOOST_NOEXCEPT { return table_.mlf_; }
-
     float load_factor() const BOOST_NOEXCEPT;
+    float max_load_factor() const BOOST_NOEXCEPT { return table_.mlf_; }
     void max_load_factor(float) BOOST_NOEXCEPT;
     void rehash(size_type);
     void reserve(size_type);
@@ -576,10 +575,10 @@ template <class T, class H, class P, class A> class unordered_multiset
     typedef std::size_t size_type;
     typedef std::ptrdiff_t difference_type;
 
-    typedef typename table::cl_iterator const_local_iterator;
-    typedef typename table::l_iterator local_iterator;
-    typedef typename table::c_iterator const_iterator;
     typedef typename table::iterator iterator;
+    typedef typename table::c_iterator const_iterator;
+    typedef typename table::l_iterator local_iterator;
+    typedef typename table::cl_iterator const_local_iterator;
     typedef typename types::node_type node_type;
 
   private:
@@ -1032,9 +1031,8 @@ template <class T, class H, class P, class A> class unordered_multiset
 
     // hash policy
 
-    float max_load_factor() const BOOST_NOEXCEPT { return table_.mlf_; }
-
     float load_factor() const BOOST_NOEXCEPT;
+    float max_load_factor() const BOOST_NOEXCEPT { return table_.mlf_; }
     void max_load_factor(float) BOOST_NOEXCEPT;
     void rehash(size_type);
     void reserve(size_type);
