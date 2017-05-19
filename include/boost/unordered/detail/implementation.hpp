@@ -150,6 +150,9 @@
 // Sun C++ std::pair piecewise construction doesn't seem to be exception safe.
 // (At least for Sun C++ 12.5 using libstdc++).
 #define BOOST_UNORDERED_CXX11_CONSTRUCTION 0
+#elif BOOST_COMP_GNUC && BOOST_COMP_GNUC < BOOST_VERSION_NUMBER(4, 7, 0)
+// Piecewise construction in GCC 4.6 doesn't work for uncopyable types.
+#define BOOST_UNORDERED_CXX11_CONSTRUCTION 0
 #elif BOOST_UNORDERED_USE_ALLOCATOR_TRAITS == 0 &&                             \
     !defined(BOOST_NO_SFINAE_EXPR)
 #define BOOST_UNORDERED_CXX11_CONSTRUCTION 1
