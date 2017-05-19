@@ -111,11 +111,6 @@
 // Already defined, so do nothing
 #if defined(BOOST_UNORDERED_TUPLE_ARGS)
 
-// I had problems with tuples on older versions of the sunpro.
-// Might be fixed in an earlier version than I specified here.
-#elif BOOST_UNORDERED_SUN_WORKAROUNDS1
-#define BOOST_UNORDERED_TUPLE_ARGS 0
-
 // Assume if we have C++11 tuple it's properly variadic,
 // and just use a max number of 10 arguments.
 #elif !defined(BOOST_NO_CXX11_HDR_TUPLE)
@@ -1349,8 +1344,6 @@ inline void construct_value(T* address, BOOST_FWD_REF(A0) a0)
 //
 // Used to emulate piecewise construction.
 
-#if !BOOST_UNORDERED_SUN_WORKAROUNDS1
-
 #define BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(z, n, namespace_)                 \
     template <typename Alloc, typename T,                                      \
         BOOST_PP_ENUM_PARAMS_Z(z, n, typename A)>                              \
@@ -1364,6 +1357,9 @@ inline void construct_value(T* address, BOOST_FWD_REF(A0) a0)
 #define BOOST_UNORDERED_GET_TUPLE_ARG(z, n, namespace_) namespace_::get<n>(x)
 
 // construct_from_tuple for boost::tuple
+// The workaround for old Sun compilers comes later in the file.
+
+#if !BOOST_UNORDERED_SUN_WORKAROUNDS1
 
 template <typename Alloc, typename T>
 void construct_from_tuple(Alloc&, T* ptr, boost::tuple<>)
@@ -1381,6 +1377,8 @@ BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 7, boost)
 BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 8, boost)
 BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 9, boost)
 BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 10, boost)
+
+#endif
 
 // construct_from_tuple for std::tuple
 
@@ -1408,7 +1406,14 @@ BOOST_PP_REPEAT_FROM_TO(6, BOOST_PP_INC(BOOST_UNORDERED_TUPLE_ARGS),
 #undef BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE
 #undef BOOST_UNORDERED_GET_TUPLE_ARG
 
-#else // BOOST_UNORDERED_SUN_WORKAROUNDS1
+// construct_from_tuple for boost::tuple on old versions of sunpro.
+//
+// Old versions of Sun C++ had problems with template overloads of
+// boost::tuple, so to fix it I added a distinct type for each length to
+// the overloads. That means there's no possible ambiguity between the
+// different overloads, so that the compiler doesn't get confused
+
+#if BOOST_UNORDERED_SUN_WORKAROUNDS1
 
 template <int N> struct length
 {
@@ -1426,8 +1431,6 @@ template <int N> struct length
     }
 
 #define BOOST_UNORDERED_GET_TUPLE_ARG(z, n, namespace_) namespace_::get<n>(x)
-
-// construct_from_tuple for boost::tuple
 
 template <typename Alloc, typename T>
 void construct_from_tuple_impl(
