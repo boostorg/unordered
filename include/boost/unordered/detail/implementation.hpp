@@ -14,6 +14,7 @@
 #endif
 
 #include <boost/assert.hpp>
+#include <boost/core/pointer_traits.hpp>
 #include <boost/detail/no_exceptions_support.hpp>
 #include <boost/detail/select_type.hpp>
 #include <boost/iterator/iterator_categories.hpp>
@@ -1721,7 +1722,7 @@ template <typename Alloc> void node_constructor<Alloc>::create_node()
 {
     BOOST_ASSERT(!node_);
     node_ = node_allocator_traits::allocate(alloc_, 1);
-    new (boost::addressof(*node_)) node();
+    new (boost::pointer_traits<node_pointer>::to_address(node_)) node();
 }
 
 template <typename NodeAlloc> struct node_tmp
