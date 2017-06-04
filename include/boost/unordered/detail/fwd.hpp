@@ -32,6 +32,8 @@
 #endif
 #endif
 
+// TODO: Use piecewise construction by default? Is it safe to assume that an
+//       unknown library has it?
 #if !defined(BOOST_UNORDERED_HAVE_PIECEWISE_CONSTRUCT)
 #define BOOST_UNORDERED_HAVE_PIECEWISE_CONSTRUCT 0
 #endif

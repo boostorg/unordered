@@ -1,4 +1,3 @@
-
 // Copyright (C) 2003-2004 Jeremy B. Maitin-Shepard.
 // Copyright (C) 2005-2016 Daniel James
 //
@@ -530,6 +529,18 @@ struct convert_from_anything
     template <typename T> convert_from_anything(T const&);
 };
 
+// Get a pointer from a smart pointer, a bit simpler than pointer_traits
+// as we already know the pointer type that we want.
+template <typename T> struct pointer
+{
+    template <typename Ptr> static T* get(Ptr const& x)
+    {
+        return static_cast<T*>(x.operator->());
+    }
+
+    template <typename T2> static T* get(T2* x) { return static_cast<T*>(x); }
+};
+
 ////////////////////////////////////////////////////////////////////////////
 // emplace_args
 //
@@ -563,7 +574,8 @@ struct convert_from_anything
 
 #endif
 
-template <typename A0> struct emplace_args1
+template <typename A0>
+struct emplace_args1
 {
     BOOST_UNORDERED_EARGS_MEMBER(1, 0, _)
 
@@ -1712,7 +1724,7 @@ template <typename NodeAlloc> struct node_constructor
 template <typename Alloc> node_constructor<Alloc>::~node_constructor()
 {
     if (node_) {
-        boost::unordered::detail::func::destroy(boost::addressof(*node_));
+        boost::unordered::detail::func::destroy(pointer<node>::get(node_));
         node_allocator_traits::deallocate(alloc_, node_, 1);
     }
 }
@@ -1721,7 +1733,7 @@ template <typename Alloc> void node_constructor<Alloc>::create_node()
 {
     BOOST_ASSERT(!node_);
     node_ = node_allocator_traits::allocate(alloc_, 1);
-    new (boost::addressof(*node_)) node();
+    new (pointer<void>::get(node_)) node();
 }
 
 template <typename NodeAlloc> struct node_tmp
@@ -1729,6 +1741,7 @@ template <typename NodeAlloc> struct node_tmp
     typedef boost::unordered::detail::allocator_traits<NodeAlloc>
         node_allocator_traits;
     typedef typename node_allocator_traits::pointer node_pointer;
+    typedef typename node_allocator_traits::value_type node;
 
     NodeAlloc& alloc_;
     node_pointer node_;
@@ -1751,7 +1764,7 @@ template <typename Alloc> node_tmp<Alloc>::~node_tmp()
     if (node_) {
         BOOST_UNORDERED_CALL_DESTROY(
             node_allocator_traits, alloc_, node_->value_ptr());
-        boost::unordered::detail::func::destroy(boost::addressof(*node_));
+        boost::unordered::detail::func::destroy(pointer<node>::get(node_));
         node_allocator_traits::deallocate(alloc_, node_, 1);
     }
 }
@@ -2260,7 +2273,7 @@ template <typename Alloc> node_holder<Alloc>::~node_holder()
 
         BOOST_UNORDERED_CALL_DESTROY(
             node_allocator_traits, constructor_.alloc_, p->value_ptr());
-        boost::unordered::detail::func::destroy(boost::addressof(*p));
+        boost::unordered::detail::func::destroy(pointer<node>::get(p));
         node_allocator_traits::deallocate(constructor_.alloc_, p, 1);
     }
 }
@@ -2969,9 +2982,9 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
 
         bucket_pointer end = buckets_ + static_cast<std::ptrdiff_t>(new_count);
         for (bucket_pointer i = buckets_; i != end; ++i) {
-            new (boost::addressof(*i)) bucket();
+            new (pointer<void>::get(i)) bucket();
         }
-        new (boost::addressof(*end)) bucket(dummy_node);
+        new (pointer<void>::get(end)) bucket(dummy_node);
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -3037,7 +3050,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     {
         BOOST_UNORDERED_CALL_DESTROY(
             node_allocator_traits, node_alloc(), n->value_ptr());
-        boost::unordered::detail::func::destroy(boost::addressof(*n));
+        boost::unordered::detail::func::destroy(pointer<node>::get(n));
         node_allocator_traits::deallocate(node_alloc(), n, 1);
     }
 
@@ -3049,7 +3062,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
 
             if (bucket::extra_node) {
                 node_pointer next = next_node(n);
-                boost::unordered::detail::func::destroy(boost::addressof(*n));
+                boost::unordered::detail::func::destroy(pointer<node>::get(n));
                 node_allocator_traits::deallocate(node_alloc(), n, 1);
                 n = next;
             }
@@ -3071,7 +3084,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     {
         bucket_pointer end = get_bucket(bucket_count_ + 1);
         for (bucket_pointer it = buckets_; it != end; ++it) {
-            boost::unordered::detail::func::destroy(boost::addressof(*it));
+            boost::unordered::detail::func::destroy(pointer<bucket>::get(it));
         }
 
         bucket_allocator_traits::deallocate(
@@ -3121,7 +3134,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     template <typename UniqueType>
     void assign(table const& x, UniqueType is_unique)
     {
-        if (this != boost::addressof(x)) {
+        if (this != &x) {
             assign(x, is_unique,
                 boost::unordered::detail::integral_constant<bool,
                        allocator_traits<node_allocator>::
@@ -3177,7 +3190,7 @@ struct table : boost::unordered::detail::functions<typename Types::hasher,
     template <typename UniqueType>
     void move_assign(table& x, UniqueType is_unique)
     {
-        if (this != boost::addressof(x)) {
+        if (this != &x) {
             move_assign(
                 x, is_unique,
                 boost::unordered::detail::integral_constant<bool,
