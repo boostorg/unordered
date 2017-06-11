@@ -19,9 +19,9 @@
 // arguments.
 
 namespace emplace_tests {
-// Constructible with 2 to 10 arguments
-struct emplace_value : private test::counted_object
-{
+  // Constructible with 2 to 10 arguments
+  struct emplace_value : private test::counted_object
+  {
     typedef int A0;
     typedef std::string A1;
     typedef char A2;
@@ -59,40 +59,40 @@ struct emplace_value : private test::counted_object
     }
 
     emplace_value(
-        A0 const& b0, A1 const& b1, A2 const& b2, A3 const& b3, A4 const& b4)
+      A0 const& b0, A1 const& b1, A2 const& b2, A3 const& b3, A4 const& b4)
         : arg_count(5), a0(b0), a1(b1), a2(b2), a3(b3), a4(b4)
     {
     }
 
     emplace_value(A0 const& b0, A1 const& b1, A2 const& b2, A3 const& b3,
-        A4 const& b4, A5 const& b5)
+      A4 const& b4, A5 const& b5)
         : arg_count(6), a0(b0), a1(b1), a2(b2), a3(b3), a4(b4), a5(b5)
     {
     }
 
     emplace_value(A0 const& b0, A1 const& b1, A2 const& b2, A3 const& b3,
-        A4 const& b4, A5 const& b5, A6 const& b6)
+      A4 const& b4, A5 const& b5, A6 const& b6)
         : arg_count(7), a0(b0), a1(b1), a2(b2), a3(b3), a4(b4), a5(b5), a6(b6)
     {
     }
 
     emplace_value(A0 const& b0, A1 const& b1, A2 const& b2, A3 const& b3,
-        A4 const& b4, A5 const& b5, A6 const& b6, A7 const& b7)
+      A4 const& b4, A5 const& b5, A6 const& b6, A7 const& b7)
         : arg_count(8), a0(b0), a1(b1), a2(b2), a3(b3), a4(b4), a5(b5), a6(b6),
           a7(b7)
     {
     }
 
     emplace_value(A0 const& b0, A1 const& b1, A2 const& b2, A3 const& b3,
-        A4 const& b4, A5 const& b5, A6 const& b6, A7 const& b7, A8 const& b8)
+      A4 const& b4, A5 const& b5, A6 const& b6, A7 const& b7, A8 const& b8)
         : arg_count(9), a0(b0), a1(b1), a2(b2), a3(b3), a4(b4), a5(b5), a6(b6),
           a7(b7), a8(b8)
     {
     }
 
     emplace_value(A0 const& b0, A1 const& b1, A2 const& b2, A3 const& b3,
-        A4 const& b4, A5 const& b5, A6 const& b6, A7 const& b7, A8 const& b8,
-        A9 const& b9)
+      A4 const& b4, A5 const& b5, A6 const& b6, A7 const& b7, A8 const& b8,
+      A9 const& b9)
         : arg_count(10), a0(b0), a1(b1), a2(b2), a3(b3), a4(b4), a5(b5), a6(b6),
           a7(b7), a8(b8), a9(b9)
     {
@@ -100,79 +100,79 @@ struct emplace_value : private test::counted_object
 
     friend std::size_t hash_value(emplace_value const& x)
     {
-        std::size_t r1 = 23894278u;
-        if (x.arg_count >= 1)
-            boost::hash_combine(r1, x.a0);
-        if (x.arg_count >= 2)
-            boost::hash_combine(r1, x.a1);
-        if (x.arg_count >= 3)
-            boost::hash_combine(r1, x.a2);
-        if (x.arg_count >= 4)
-            boost::hash_combine(r1, x.a3);
-        if (x.arg_count >= 5)
-            boost::hash_combine(r1, x.a4);
-        if (x.arg_count >= 6)
-            boost::hash_combine(r1, x.a5);
-        if (x.arg_count >= 7)
-            boost::hash_combine(r1, x.a6);
-        if (x.arg_count >= 8)
-            boost::hash_combine(r1, x.a7);
-        if (x.arg_count >= 9)
-            boost::hash_combine(r1, x.a8);
-        if (x.arg_count >= 10)
-            boost::hash_combine(r1, x.a9);
-        return r1;
+      std::size_t r1 = 23894278u;
+      if (x.arg_count >= 1)
+        boost::hash_combine(r1, x.a0);
+      if (x.arg_count >= 2)
+        boost::hash_combine(r1, x.a1);
+      if (x.arg_count >= 3)
+        boost::hash_combine(r1, x.a2);
+      if (x.arg_count >= 4)
+        boost::hash_combine(r1, x.a3);
+      if (x.arg_count >= 5)
+        boost::hash_combine(r1, x.a4);
+      if (x.arg_count >= 6)
+        boost::hash_combine(r1, x.a5);
+      if (x.arg_count >= 7)
+        boost::hash_combine(r1, x.a6);
+      if (x.arg_count >= 8)
+        boost::hash_combine(r1, x.a7);
+      if (x.arg_count >= 9)
+        boost::hash_combine(r1, x.a8);
+      if (x.arg_count >= 10)
+        boost::hash_combine(r1, x.a9);
+      return r1;
     }
 
     friend bool operator==(emplace_value const& x, emplace_value const& y)
     {
-        if (x.arg_count != y.arg_count) {
-            return false;
-        }
-        if (x.arg_count >= 1 && x.a0 != y.a0) {
-            return false;
-        }
-        if (x.arg_count >= 2 && x.a1 != y.a1) {
-            return false;
-        }
-        if (x.arg_count >= 3 && x.a2 != y.a2) {
-            return false;
-        }
-        if (x.arg_count >= 4 && x.a3 != y.a3) {
-            return false;
-        }
-        if (x.arg_count >= 5 && x.a4 != y.a4) {
-            return false;
-        }
-        if (x.arg_count >= 6 && x.a5 != y.a5) {
-            return false;
-        }
-        if (x.arg_count >= 7 && x.a6 != y.a6) {
-            return false;
-        }
-        if (x.arg_count >= 8 && x.a7 != y.a7) {
-            return false;
-        }
-        if (x.arg_count >= 9 && x.a8 != y.a8) {
-            return false;
-        }
-        if (x.arg_count >= 10 && x.a9 != y.a9) {
-            return false;
-        }
-        return true;
+      if (x.arg_count != y.arg_count) {
+        return false;
+      }
+      if (x.arg_count >= 1 && x.a0 != y.a0) {
+        return false;
+      }
+      if (x.arg_count >= 2 && x.a1 != y.a1) {
+        return false;
+      }
+      if (x.arg_count >= 3 && x.a2 != y.a2) {
+        return false;
+      }
+      if (x.arg_count >= 4 && x.a3 != y.a3) {
+        return false;
+      }
+      if (x.arg_count >= 5 && x.a4 != y.a4) {
+        return false;
+      }
+      if (x.arg_count >= 6 && x.a5 != y.a5) {
+        return false;
+      }
+      if (x.arg_count >= 7 && x.a6 != y.a6) {
+        return false;
+      }
+      if (x.arg_count >= 8 && x.a7 != y.a7) {
+        return false;
+      }
+      if (x.arg_count >= 9 && x.a8 != y.a8) {
+        return false;
+      }
+      if (x.arg_count >= 10 && x.a9 != y.a9) {
+        return false;
+      }
+      return true;
     }
 
   private:
     emplace_value();
     emplace_value(emplace_value const&);
-};
+  };
 
-UNORDERED_AUTO_TEST(emplace_set)
-{
+  UNORDERED_AUTO_TEST(emplace_set)
+  {
     test::check_instances check_;
 
     typedef boost::unordered_set<emplace_value, boost::hash<emplace_value> >
-        container;
+      container;
     typedef container::iterator iterator;
     typedef std::pair<iterator, bool> return_type;
     container x(10);
@@ -233,12 +233,12 @@ UNORDERED_AUTO_TEST(emplace_set)
     BOOST_TEST_EQ(check_.instances(), 8);
     BOOST_TEST_EQ(check_.constructions(), 9);
 
-    BOOST_TEST(r1.first ==
-               x.emplace_hint(r1.first, 10, "", 'a', 4, 5, 6, 7, 8, 9, 10));
-    BOOST_TEST(r1.first ==
-               x.emplace_hint(r2.first, 10, "", 'a', 4, 5, 6, 7, 8, 9, 10));
     BOOST_TEST(
-        r1.first == x.emplace_hint(x.end(), 10, "", 'a', 4, 5, 6, 7, 8, 9, 10));
+      r1.first == x.emplace_hint(r1.first, 10, "", 'a', 4, 5, 6, 7, 8, 9, 10));
+    BOOST_TEST(
+      r1.first == x.emplace_hint(r2.first, 10, "", 'a', 4, 5, 6, 7, 8, 9, 10));
+    BOOST_TEST(
+      r1.first == x.emplace_hint(x.end(), 10, "", 'a', 4, 5, 6, 7, 8, 9, 10));
     BOOST_TEST_EQ(check_.instances(), 8);
     BOOST_TEST_EQ(check_.constructions(), 12);
 
@@ -247,15 +247,15 @@ UNORDERED_AUTO_TEST(emplace_set)
     BOOST_TEST(x.count(v2) == 1);
     BOOST_TEST(x.count(v3) == 1);
     BOOST_TEST(x.count(v4) == 1);
-}
+  }
 
-UNORDERED_AUTO_TEST(emplace_multiset)
-{
+  UNORDERED_AUTO_TEST(emplace_multiset)
+  {
     test::check_instances check_;
 
     typedef boost::unordered_multiset<emplace_value,
-        boost::hash<emplace_value> >
-        container;
+      boost::hash<emplace_value> >
+      container;
     typedef container::iterator iterator;
     container x(10);
     iterator i1, i2;
@@ -326,15 +326,15 @@ UNORDERED_AUTO_TEST(emplace_multiset)
     BOOST_TEST_EQ(x.count(v1), 1u);
     BOOST_TEST_EQ(x.count(v2), 2u);
     BOOST_TEST_EQ(x.count(v3), 2u);
-}
+  }
 
-UNORDERED_AUTO_TEST(emplace_map)
-{
+  UNORDERED_AUTO_TEST(emplace_map)
+  {
     test::check_instances check_;
 
     typedef boost::unordered_map<emplace_value, emplace_value,
-        boost::hash<emplace_value> >
-        container;
+      boost::hash<emplace_value> >
+      container;
     typedef container::iterator iterator;
     typedef std::pair<iterator, bool> return_type;
     container x(10);
@@ -345,8 +345,8 @@ UNORDERED_AUTO_TEST(emplace_map)
     emplace_value k1(5, "", 'b', 4, 5);
     emplace_value m1(8, "xxx", 'z', 4, 5, 6, 7, 8);
     r1 = x.emplace(boost::unordered::piecewise_construct,
-        boost::make_tuple(5, "", 'b', 4, 5),
-        boost::make_tuple(8, "xxx", 'z', 4, 5, 6, 7, 8));
+      boost::make_tuple(5, "", 'b', 4, 5),
+      boost::make_tuple(8, "xxx", 'z', 4, 5, 6, 7, 8));
     BOOST_TEST_EQ(x.size(), 1u);
     BOOST_TEST(r1.second);
     BOOST_TEST(x.find(k1) == r1.first);
@@ -355,8 +355,8 @@ UNORDERED_AUTO_TEST(emplace_map)
     BOOST_TEST_EQ(check_.constructions(), 4);
 
     r2 = x.emplace(boost::unordered::piecewise_construct,
-        boost::make_tuple(5, "", 'b', 4, 5),
-        boost::make_tuple(8, "xxx", 'z', 4, 5, 6, 7, 8));
+      boost::make_tuple(5, "", 'b', 4, 5),
+      boost::make_tuple(8, "xxx", 'z', 4, 5, 6, 7, 8));
     BOOST_TEST_EQ(x.size(), 1u);
     BOOST_TEST(!r2.second);
     BOOST_TEST(r1.first == r2.first);
@@ -371,8 +371,8 @@ UNORDERED_AUTO_TEST(emplace_map)
     emplace_value k2(9, "", 'b', 4, 5, 6, 7, 8, 9);
     emplace_value m2(3, "aaa", 'm');
     r1 = x.emplace(boost::unordered::piecewise_construct,
-        boost::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
-        boost::make_tuple(3, "aaa", 'm'));
+      boost::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
+      boost::make_tuple(3, "aaa", 'm'));
     BOOST_TEST_EQ(x.size(), 2u);
     BOOST_TEST(r1.second);
     BOOST_TEST(r1.first->first.arg_count == 9);
@@ -384,29 +384,29 @@ UNORDERED_AUTO_TEST(emplace_map)
 
     BOOST_TEST(r1.first ==
                x.emplace_hint(r1.first, boost::unordered::piecewise_construct,
-                   boost::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
-                   boost::make_tuple(15, "jkjk")));
+                 boost::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
+                 boost::make_tuple(15, "jkjk")));
     BOOST_TEST(r1.first ==
                x.emplace_hint(r2.first, boost::unordered::piecewise_construct,
-                   boost::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
-                   boost::make_tuple(275, "xxx", 'm', 6)));
+                 boost::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
+                 boost::make_tuple(275, "xxx", 'm', 6)));
     BOOST_TEST(r1.first ==
                x.emplace_hint(x.end(), boost::unordered::piecewise_construct,
-                   boost::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
-                   boost::make_tuple(-10, "blah blah", '\0')));
+                 boost::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
+                 boost::make_tuple(-10, "blah blah", '\0')));
     BOOST_TEST_EQ(x.size(), 2u);
     BOOST_TEST(x.find(k2)->second == m2);
     BOOST_TEST_EQ(check_.instances(), 8);
     BOOST_TEST_EQ(check_.constructions(), 16);
-}
+  }
 
-UNORDERED_AUTO_TEST(emplace_multimap)
-{
+  UNORDERED_AUTO_TEST(emplace_multimap)
+  {
     test::check_instances check_;
 
     typedef boost::unordered_multimap<emplace_value, emplace_value,
-        boost::hash<emplace_value> >
-        container;
+      boost::hash<emplace_value> >
+      container;
     typedef container::iterator iterator;
     container x(10);
     iterator i1, i2, i3, i4;
@@ -416,8 +416,8 @@ UNORDERED_AUTO_TEST(emplace_multimap)
     emplace_value k1(5, "", 'b', 4, 5);
     emplace_value m1(8, "xxx", 'z', 4, 5, 6, 7, 8);
     i1 = x.emplace(boost::unordered::piecewise_construct,
-        boost::make_tuple(5, "", 'b', 4, 5),
-        boost::make_tuple(8, "xxx", 'z', 4, 5, 6, 7, 8));
+      boost::make_tuple(5, "", 'b', 4, 5),
+      boost::make_tuple(8, "xxx", 'z', 4, 5, 6, 7, 8));
     BOOST_TEST_EQ(x.size(), 1u);
     BOOST_TEST(x.find(k1) == i1);
     BOOST_TEST(x.find(k1)->second == m1);
@@ -426,8 +426,8 @@ UNORDERED_AUTO_TEST(emplace_multimap)
 
     emplace_value m1a(8, "xxx", 'z', 4, 5, 6, 7, 8);
     i2 = x.emplace(boost::unordered::piecewise_construct,
-        boost::make_tuple(5, "", 'b', 4, 5),
-        boost::make_tuple(8, "xxx", 'z', 4, 5, 6, 7, 8));
+      boost::make_tuple(5, "", 'b', 4, 5),
+      boost::make_tuple(8, "xxx", 'z', 4, 5, 6, 7, 8));
     BOOST_TEST_EQ(x.size(), 2u);
     BOOST_TEST(i1 != i2);
     BOOST_TEST(i1->second == m1);
@@ -440,8 +440,8 @@ UNORDERED_AUTO_TEST(emplace_multimap)
     emplace_value k2(9, "", 'b', 4, 5, 6, 7, 8, 9);
     emplace_value m2(3, "aaa", 'm');
     i1 = x.emplace(boost::unordered::piecewise_construct,
-        boost::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
-        boost::make_tuple(3, "aaa", 'm'));
+      boost::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
+      boost::make_tuple(3, "aaa", 'm'));
     BOOST_TEST_EQ(x.size(), 3u);
     BOOST_TEST(i1->first.arg_count == 9);
     BOOST_TEST(i1->second.arg_count == 3);
@@ -450,24 +450,24 @@ UNORDERED_AUTO_TEST(emplace_multimap)
 
     emplace_value m2a(15, "jkjk");
     i2 = x.emplace_hint(i2, boost::unordered::piecewise_construct,
-        boost::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
-        boost::make_tuple(15, "jkjk"));
+      boost::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
+      boost::make_tuple(15, "jkjk"));
     emplace_value m2b(275, "xxx", 'm', 6);
     i3 = x.emplace_hint(i1, boost::unordered::piecewise_construct,
-        boost::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
-        boost::make_tuple(275, "xxx", 'm', 6));
+      boost::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
+      boost::make_tuple(275, "xxx", 'm', 6));
     emplace_value m2c(-10, "blah blah", '\0');
     i4 = x.emplace_hint(x.end(), boost::unordered::piecewise_construct,
-        boost::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
-        boost::make_tuple(-10, "blah blah", '\0'));
+      boost::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
+      boost::make_tuple(-10, "blah blah", '\0'));
     BOOST_TEST_EQ(x.size(), 6u);
     BOOST_TEST(x.find(k2)->second == m2);
     BOOST_TEST_EQ(check_.instances(), 20);
     BOOST_TEST_EQ(check_.constructions(), 20);
-}
+  }
 
-UNORDERED_AUTO_TEST(try_emplace)
-{
+  UNORDERED_AUTO_TEST(try_emplace)
+  {
     test::check_instances check_;
 
     typedef boost::unordered_map<int, emplace_value> container;
@@ -509,11 +509,11 @@ UNORDERED_AUTO_TEST(try_emplace)
 
     BOOST_TEST(r2.first == x.try_emplace(r2.first, k2, 808709, "what"));
     BOOST_TEST(
-        r2.first ==
-        x.try_emplace(r2.first, k2, 10, "xxx", 'a', 4, 5, 6, 7, 8, 9, 10));
+      r2.first ==
+      x.try_emplace(r2.first, k2, 10, "xxx", 'a', 4, 5, 6, 7, 8, 9, 10));
     BOOST_TEST(r2.first->second == m2);
     BOOST_TEST_EQ(x.size(), 2u);
-}
+  }
 }
 
 RUN_TESTS()

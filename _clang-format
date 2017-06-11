@@ -11,8 +11,9 @@ BasedOnStyle: LLVM
 
 # Basic settings
 ColumnLimit: 80
-ContinuationIndentWidth: 4
-IndentWidth: 4
+NamespaceIndentation: All
+ContinuationIndentWidth: 2
+IndentWidth: 2
 UseTab: Never
 Language: Cpp
 Standard: Cpp03

@@ -13,8 +13,8 @@
 #include "../helpers/test.hpp"
 
 namespace insert_stable {
-struct member
-{
+  struct member
+  {
     int tag1_;
     int tag2_;
 
@@ -23,14 +23,14 @@ struct member
 
     friend bool operator==(member const& x, member const& y)
     {
-        return x.tag1_ == y.tag1_;
+      return x.tag1_ == y.tag1_;
     }
 
     friend bool operator!=(member const& x, member const& y)
     {
-        return x.tag1_ != y.tag1_;
+      return x.tag1_ != y.tag1_;
     }
-};
+  };
 }
 
 #ifdef BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP
@@ -39,10 +39,10 @@ namespace boost
 namespace insert_stable
 #endif
 {
-std::size_t hash_value(insert_stable::member const& x)
-{
+  std::size_t hash_value(insert_stable::member const& x)
+  {
     return static_cast<std::size_t>(x.tag1_);
-}
+  }
 }
 
 // This is no longer supported, as there's no longer an efficient way to get to
