@@ -410,15 +410,18 @@ template <class X, class T> void unordered_unique_test(X& r, T const& t)
   // insert_return_type
 
   // TODO;
-  // boost::function_requires<boost::MoveConstructibleConcept<insert_return_type>
+  // boost::function_requires<
+  //     boost::MoveConstructibleConcept<insert_return_type>
   // >();
   // TODO;
-  // boost::function_requires<boost::MoveAssignableConcept<insert_return_type>
+  // boost::function_requires<
+  //     boost::MoveAssignableConcept<insert_return_type>
   // >();
   boost::function_requires<
     boost::DefaultConstructibleConcept<insert_return_type> >();
   // TODO:
-  // boost::function_requires<boost::DestructibleConcept<insert_return_type>
+  // boost::function_requires<
+  //     boost::DestructibleConcept<insert_return_type>
   // >();
   insert_return_type insert_return, insert_return2;
   test::check_return_type<bool>::equals(insert_return.inserted);

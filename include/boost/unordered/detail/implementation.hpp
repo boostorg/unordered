@@ -240,7 +240,7 @@ namespace boost {
         }
       }
 
-      ////////////////////////////////////////////////////////////////////////////
+      //////////////////////////////////////////////////////////////////////////
       // iterator SFINAE
 
       template <typename I>
@@ -263,8 +263,11 @@ namespace boost {
             ReturnType>
       {
       };
+    }
+  }
+}
 
-////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // primes
 
 // clang-format off
@@ -276,8 +279,11 @@ namespace boost {
     (1572869ul)(3145739ul)(6291469ul)(12582917ul)(25165843ul) \
     (50331653ul)(100663319ul)(201326611ul)(402653189ul)(805306457ul) \
     (1610612741ul)(3221225473ul)(4294967291ul)
-      // clang-format on
+// clang-format on
 
+namespace boost {
+  namespace unordered {
+    namespace detail {
       template <class T> struct prime_list_template
       {
         static std::size_t const value[];
@@ -330,7 +336,7 @@ namespace boost {
         return *bound;
       }
 
-      ////////////////////////////////////////////////////////////////////////////
+      //////////////////////////////////////////////////////////////////////////
       // insert_size/initial_size
 
       template <class I>
@@ -359,7 +365,7 @@ namespace boost {
           boost::unordered::detail::insert_size(i, j) + 1, num_buckets);
       }
 
-      ////////////////////////////////////////////////////////////////////////////
+      //////////////////////////////////////////////////////////////////////////
       // compressed
 
       template <typename T, int Index> struct compressed_base : private T
@@ -452,7 +458,7 @@ namespace boost {
         compressed& operator=(compressed const&);
       };
 
-      ////////////////////////////////////////////////////////////////////////////
+      //////////////////////////////////////////////////////////////////////////
       // pair_traits
       //
       // Used to get the types from a pair without instantiating it.
@@ -477,7 +483,7 @@ namespace boost {
 // will be default-initialized.
 #endif
 
-      ////////////////////////////////////////////////////////////////////////////
+      //////////////////////////////////////////////////////////////////////////
       // Bits and pieces for implementing traits
 
       template <typename T>
@@ -550,6 +556,9 @@ namespace boost {
           return static_cast<T*>(x);
         }
       };
+    }
+  }
+}
 
 ////////////////////////////////////////////////////////////////////////////
 // emplace_args
@@ -584,6 +593,38 @@ namespace boost {
 
 #endif
 
+#define BOOST_UNORDERED_FWD_PARAM(z, n, a)                                     \
+  BOOST_FWD_REF(BOOST_PP_CAT(A, n)) BOOST_PP_CAT(a, n)
+
+#define BOOST_UNORDERED_CALL_FORWARD(z, i, a)                                  \
+  boost::forward<BOOST_PP_CAT(A, i)>(BOOST_PP_CAT(a, i))
+
+#define BOOST_UNORDERED_EARGS_INIT(z, n, _)                                    \
+  BOOST_PP_CAT(a, n)(BOOST_PP_CAT(b, n))
+
+#define BOOST_UNORDERED_EARGS(z, n, _)                                         \
+  template <BOOST_PP_ENUM_PARAMS_Z(z, n, typename A)>                          \
+  struct BOOST_PP_CAT(emplace_args, n)                                         \
+  {                                                                            \
+    BOOST_PP_REPEAT_##z(n, BOOST_UNORDERED_EARGS_MEMBER, _) BOOST_PP_CAT(      \
+      emplace_args, n)(BOOST_PP_ENUM_BINARY_PARAMS_Z(z, n, Arg, b))            \
+        : BOOST_PP_ENUM_##z(n, BOOST_UNORDERED_EARGS_INIT, _)                  \
+    {                                                                          \
+    }                                                                          \
+  };                                                                           \
+                                                                               \
+  template <BOOST_PP_ENUM_PARAMS_Z(z, n, typename A)>                          \
+  inline BOOST_PP_CAT(emplace_args, n)<BOOST_PP_ENUM_PARAMS_Z(z, n, A)>        \
+    create_emplace_args(BOOST_PP_ENUM_##z(n, BOOST_UNORDERED_FWD_PARAM, b))    \
+  {                                                                            \
+    BOOST_PP_CAT(emplace_args, n)<BOOST_PP_ENUM_PARAMS_Z(z, n, A)> e(          \
+      BOOST_PP_ENUM_PARAMS_Z(z, n, b));                                        \
+    return e;                                                                  \
+  }
+
+namespace boost {
+  namespace unordered {
+    namespace detail {
       template <typename A0> struct emplace_args1
       {
         BOOST_UNORDERED_EARGS_MEMBER(1, 0, _)
@@ -631,35 +672,6 @@ namespace boost {
         return e;
       }
 
-#define BOOST_UNORDERED_FWD_PARAM(z, n, a)                                     \
-  BOOST_FWD_REF(BOOST_PP_CAT(A, n)) BOOST_PP_CAT(a, n)
-
-#define BOOST_UNORDERED_CALL_FORWARD(z, i, a)                                  \
-  boost::forward<BOOST_PP_CAT(A, i)>(BOOST_PP_CAT(a, i))
-
-#define BOOST_UNORDERED_EARGS_INIT(z, n, _)                                    \
-  BOOST_PP_CAT(a, n)(BOOST_PP_CAT(b, n))
-
-#define BOOST_UNORDERED_EARGS(z, n, _)                                         \
-  template <BOOST_PP_ENUM_PARAMS_Z(z, n, typename A)>                          \
-  struct BOOST_PP_CAT(emplace_args, n)                                         \
-  {                                                                            \
-    BOOST_PP_REPEAT_##z(n, BOOST_UNORDERED_EARGS_MEMBER, _) BOOST_PP_CAT(      \
-      emplace_args, n)(BOOST_PP_ENUM_BINARY_PARAMS_Z(z, n, Arg, b))            \
-        : BOOST_PP_ENUM_##z(n, BOOST_UNORDERED_EARGS_INIT, _)                  \
-    {                                                                          \
-    }                                                                          \
-  };                                                                           \
-                                                                               \
-  template <BOOST_PP_ENUM_PARAMS_Z(z, n, typename A)>                          \
-  inline BOOST_PP_CAT(emplace_args, n)<BOOST_PP_ENUM_PARAMS_Z(z, n, A)>        \
-    create_emplace_args(BOOST_PP_ENUM_##z(n, BOOST_UNORDERED_FWD_PARAM, b))    \
-  {                                                                            \
-    BOOST_PP_CAT(emplace_args, n)<BOOST_PP_ENUM_PARAMS_Z(z, n, A)> e(          \
-      BOOST_PP_ENUM_PARAMS_Z(z, n, b));                                        \
-    return e;                                                                  \
-  }
-
       BOOST_UNORDERED_EARGS(1, 4, _)
       BOOST_UNORDERED_EARGS(1, 5, _)
       BOOST_UNORDERED_EARGS(1, 6, _)
@@ -668,6 +680,9 @@ namespace boost {
       BOOST_UNORDERED_EARGS(1, 9, _)
       BOOST_PP_REPEAT_FROM_TO(10, BOOST_PP_INC(BOOST_UNORDERED_EMPLACE_LIMIT),
         BOOST_UNORDERED_EARGS, _)
+    }
+  }
+}
 
 #undef BOOST_UNORDERED_DEFINE_EMPLACE_ARGS
 #undef BOOST_UNORDERED_EARGS_MEMBER
@@ -679,6 +694,10 @@ namespace boost {
 //
 // Some utilities for implementing allocator_traits, but useful elsewhere so
 // they're always defined.
+
+namespace boost {
+  namespace unordered {
+    namespace detail {
 
 ////////////////////////////////////////////////////////////////////////////
 // Integral_constrant, true_type, false_type
@@ -722,6 +741,9 @@ namespace boost {
 #if defined(BOOST_MSVC)
 #pragma warning(pop)
 #endif
+    }
+  }
+}
 
 ////////////////////////////////////////////////////////////////////////////
 // Expression test mechanism
@@ -735,10 +757,16 @@ namespace boost {
 
 #if !defined(BOOST_NO_SFINAE_EXPR)
 
+namespace boost {
+  namespace unordered {
+    namespace detail {
       template <typename T, long unsigned int> struct expr_test;
       template <typename T> struct expr_test<T, sizeof(char)> : T
       {
       };
+    }
+  }
+}
 
 #define BOOST_UNORDERED_CHECK_EXPRESSION(count, result, expression)            \
   template <typename U>                                                        \
@@ -767,10 +795,16 @@ namespace boost {
 
 #else
 
+namespace boost {
+  namespace unordered {
+    namespace detail {
       template <typename T> struct identity
       {
         typedef T type;
       };
+    }
+  }
+}
 
 #define BOOST_UNORDERED_CHECK_MEMBER(count, result, name, member)              \
                                                                                \
@@ -820,9 +854,6 @@ namespace boost {
   }
 
 #endif
-    }
-  }
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -899,6 +930,9 @@ namespace boost {
           typename boost::detail::if_true<value>::BOOST_NESTED_TEMPLATE then<
             Alloc, fallback>::type::BOOST_NESTED_TEMPLATE rebind<T>::other type;
       };
+    }
+  }
+}
 
 #if defined(BOOST_MSVC) && BOOST_MSVC <= 1400
 
@@ -927,9 +961,15 @@ namespace boost {
 
 #else
 
+namespace boost {
+  namespace unordered {
+    namespace detail {
       template <typename T, typename T2> struct sfinae : T2
       {
       };
+    }
+  }
+}
 
 #define BOOST_UNORDERED_DEFAULT_TYPE_TMPLT(tname)                              \
   template <typename Tp, typename Default> struct default_type_##tname         \
@@ -960,6 +1000,9 @@ namespace boost {
 #define BOOST_UNORDERED_DEFAULT_TYPE(T, tname, arg)                            \
   typename default_type_##tname<T, arg>::type
 
+namespace boost {
+  namespace unordered {
+    namespace detail {
       BOOST_UNORDERED_DEFAULT_TYPE_TMPLT(pointer);
       BOOST_UNORDERED_DEFAULT_TYPE_TMPLT(const_pointer);
       BOOST_UNORDERED_DEFAULT_TYPE_TMPLT(void_pointer);
@@ -1017,7 +1060,13 @@ namespace boost {
       BOOST_UNORDERED_HAS_MEMBER(destroy);
 
 #endif
+    }
+  }
+}
 
+namespace boost {
+  namespace unordered {
+    namespace detail {
       namespace func {
 
         template <typename Alloc>
@@ -1059,9 +1108,14 @@ namespace boost {
         {
           return (std::numeric_limits<SizeType>::max)();
         }
-
       } // namespace func.
+    }
+  }
+}
 
+namespace boost {
+  namespace unordered {
+    namespace detail {
       template <typename Alloc> struct allocator_traits
       {
         typedef Alloc allocator_type;
@@ -1326,11 +1380,6 @@ namespace boost {
 // Functions used to construct nodes. Emulates variadic construction,
 // piecewise construction etc.
 
-namespace boost {
-  namespace unordered {
-    namespace detail {
-      namespace func {
-
 ////////////////////////////////////////////////////////////////////////////
 // construct_value
 //
@@ -1345,11 +1394,19 @@ namespace boost {
 
 #elif !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
+namespace boost {
+  namespace unordered {
+    namespace detail {
+      namespace func {
         template <typename T, typename... Args>
         inline void construct_value(T* address, BOOST_FWD_REF(Args)... args)
         {
           new ((void*)address) T(boost::forward<Args>(args)...);
         }
+      }
+    }
+  }
+}
 
 #define BOOST_UNORDERED_CALL_CONSTRUCT1(Traits, alloc, address, a0)            \
   boost::unordered::detail::func::construct_value(address, a0)
@@ -1358,6 +1415,10 @@ namespace boost {
 
 #else
 
+namespace boost {
+  namespace unordered {
+    namespace detail {
+      namespace func {
         template <typename T> inline void construct_value(T* address)
         {
           new ((void*)address) T();
@@ -1368,6 +1429,10 @@ namespace boost {
         {
           new ((void*)address) T(boost::forward<A0>(a0));
         }
+      }
+    }
+  }
+}
 
 #define BOOST_UNORDERED_CALL_CONSTRUCT1(Traits, alloc, address, a0)            \
   boost::unordered::detail::func::construct_value(address, a0)
@@ -1398,6 +1463,10 @@ namespace boost {
 
 #if !BOOST_UNORDERED_SUN_WORKAROUNDS1
 
+namespace boost {
+  namespace unordered {
+    namespace detail {
+      namespace func {
         template <typename Alloc, typename T>
         void construct_from_tuple(Alloc&, T* ptr, boost::tuple<>)
         {
@@ -1414,6 +1483,10 @@ namespace boost {
         BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 8, boost)
         BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 9, boost)
         BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 10, boost)
+      }
+    }
+  }
+}
 
 #endif
 
@@ -1421,6 +1494,10 @@ namespace boost {
 
 #if !BOOST_UNORDERED_CXX11_CONSTRUCTION && BOOST_UNORDERED_TUPLE_ARGS
 
+namespace boost {
+  namespace unordered {
+    namespace detail {
+      namespace func {
         template <typename Alloc, typename T>
         void construct_from_tuple(Alloc&, T* ptr, std::tuple<>)
         {
@@ -1437,6 +1514,10 @@ namespace boost {
         BOOST_PP_REPEAT_FROM_TO(6, BOOST_PP_INC(BOOST_UNORDERED_TUPLE_ARGS),
           BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE, std)
 #endif
+      }
+    }
+  }
+}
 
 #endif
 
@@ -1452,10 +1533,6 @@ namespace boost {
 
 #if BOOST_UNORDERED_SUN_WORKAROUNDS1
 
-        template <int N> struct length
-        {
-        };
-
 #define BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(z, n, namespace_)                 \
   template <typename Alloc, typename T,                                        \
     BOOST_PP_ENUM_PARAMS_Z(z, n, typename A)>                                  \
@@ -1468,6 +1545,14 @@ namespace boost {
   }
 
 #define BOOST_UNORDERED_GET_TUPLE_ARG(z, n, namespace_) namespace_::get<n>(x)
+
+namespace boost {
+  namespace unordered {
+    namespace detail {
+      namespace func {
+        template <int N> struct length
+        {
+        };
 
         template <typename Alloc, typename T>
         void construct_from_tuple_impl(
@@ -1495,13 +1580,21 @@ namespace boost {
                                       boost::tuples::length<Tuple>::value>(),
             alloc, ptr, x);
         }
+      }
+    }
+  }
+}
 
 #undef BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE
 #undef BOOST_UNORDERED_GET_TUPLE_ARG
 
 #endif
 
-        ////////////////////////////////////////////////////////////////////////////
+namespace boost {
+  namespace unordered {
+    namespace detail {
+      namespace func {
+        ////////////////////////////////////////////////////////////////////////
         // Trait to check for piecewise construction.
 
         template <typename A0> struct use_piecewise
@@ -1520,7 +1613,7 @@ namespace boost {
 
 #if BOOST_UNORDERED_CXX11_CONSTRUCTION
 
-        ////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////
         // Construct from variadic parameters
 
         template <typename Alloc, typename T, typename... Args>
@@ -1580,7 +1673,7 @@ namespace boost {
 
 #elif !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
-        ////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////
         // Construct from variadic parameters
 
         template <typename Alloc, typename T, typename... Args>
@@ -1616,7 +1709,7 @@ namespace boost {
 
 #else // BOOST_NO_CXX11_VARIADIC_TEMPLATES
 
-        ////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////
         // Construct from emplace_args
 
         // Explicitly write out first three overloads for the sake of sane
@@ -1990,7 +2083,7 @@ namespace boost {
   namespace unordered {
     namespace iterator_detail {
 
-      ////////////////////////////////////////////////////////////////////////////
+      //////////////////////////////////////////////////////////////////////////
       // Iterators
       //
       // all no throw
@@ -2496,7 +2589,7 @@ namespace boost {
       {
       };
 
-      ////////////////////////////////////////////////////////////////////////////
+      //////////////////////////////////////////////////////////////////////////
       // Functions
 
       // Assigning and swapping the equality and hash function objects
@@ -2698,7 +2791,7 @@ namespace boost {
 #pragma warning(disable : 4127) // conditional expression is constant
 #endif
 
-      ////////////////////////////////////////////////////////////////////////////
+      //////////////////////////////////////////////////////////////////////////
       // convert double to std::size_t
 
       inline std::size_t double_to_size(double f)
@@ -4285,7 +4378,7 @@ namespace boost {
         }
       };
 
-      ////////////////////////////////////////////////////////////////////////////
+      //////////////////////////////////////////////////////////////////////////
       // Clear
 
       template <typename Types> inline void table<Types>::clear_impl()
@@ -4309,7 +4402,7 @@ namespace boost {
         }
       }
 
-      ////////////////////////////////////////////////////////////////////////////
+      //////////////////////////////////////////////////////////////////////////
       // Reserve & Rehash
 
       // basic exception safety
