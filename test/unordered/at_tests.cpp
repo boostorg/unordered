@@ -19,6 +19,21 @@ UNORDERED_AUTO_TEST(at_tests)
     BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Create Map" << std::endl;
 
     boost::unordered_map<std::string, int> x;
+    boost::unordered_map<std::string, int> const& x_const(x);
+
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Check empty container" << std::endl;
+
+    try {
+        x.at("one");
+        BOOST_ERROR("Should have thrown.");
+    } catch (std::out_of_range) {
+    }
+
+    try {
+        x_const.at("one");
+        BOOST_ERROR("Should have thrown.");
+    } catch (std::out_of_range) {
+    }
 
     BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Add elements" << std::endl;
 
@@ -29,11 +44,19 @@ UNORDERED_AUTO_TEST(at_tests)
 
     BOOST_TEST(x.at("one") == 1);
     BOOST_TEST(x.at("two") == 2);
+    BOOST_TEST(x_const.at("one") == 1);
+    BOOST_TEST(x_const.at("two") == 2);
 
     BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Check missing element" << std::endl;
 
     try {
         x.at("three");
+        BOOST_ERROR("Should have thrown.");
+    } catch (std::out_of_range) {
+    }
+
+    try {
+        x_const.at("three");
         BOOST_ERROR("Should have thrown.");
     } catch (std::out_of_range) {
     }

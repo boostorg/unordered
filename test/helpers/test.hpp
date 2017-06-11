@@ -9,7 +9,6 @@
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/preprocessor/cat.hpp>
 #include <boost/preprocessor/stringize.hpp>
-#include <iostream>
 
 #define UNORDERED_AUTO_TEST(x)                                                 \
     struct BOOST_PP_CAT(x, _type) : public ::test::registered_test_base        \
@@ -17,7 +16,7 @@
         BOOST_PP_CAT(x, _type)                                                 \
         () : ::test::registered_test_base(BOOST_PP_STRINGIZE(x))               \
         {                                                                      \
-            ::test::test_list::add_test(this);                                 \
+            ::test::get_state().add_test(this);                                \
         }                                                                      \
         void run();                                                            \
     };                                                                         \
@@ -27,12 +26,27 @@
 #define RUN_TESTS()                                                            \
     int main(int, char**)                                                      \
     {                                                                          \
-        ::test::write_compiler_info();                                         \
-        ::test::test_list::run_tests();                                        \
+        BOOST_UNORDERED_TEST_COMPILER_INFO()                                   \
+        ::test::get_state().run_tests();                                       \
         return boost::report_errors();                                         \
     }
 
+#define RUN_TESTS_QUIET()                                                      \
+    int main(int, char**)                                                      \
+    {                                                                          \
+        BOOST_UNORDERED_TEST_COMPILER_INFO()                                   \
+        ::test::get_state().run_tests(true);                                   \
+        return boost::report_errors();                                         \
+    }
+
+#define UNORDERED_SUB_TEST(x)                                                  \
+    for (int UNORDERED_SUB_TEST_VALUE = ::test::get_state().start_sub_test(x); \
+         UNORDERED_SUB_TEST_VALUE;                                             \
+         UNORDERED_SUB_TEST_VALUE =                                            \
+             ::test::get_state().end_sub_test(x, UNORDERED_SUB_TEST_VALUE))
+
 namespace test {
+
 struct registered_test_base
 {
     registered_test_base* next;
@@ -42,56 +56,95 @@ struct registered_test_base
     virtual ~registered_test_base() {}
 };
 
-namespace test_list {
-static inline registered_test_base*& first()
+struct state
 {
-    static registered_test_base* ptr = 0;
-    return ptr;
-}
+    bool is_quiet;
+    registered_test_base* first_test;
+    registered_test_base* last_test;
 
-static inline registered_test_base*& last()
-{
-    static registered_test_base* ptr = 0;
-    return ptr;
-}
+    state() : is_quiet(false), first_test(0), last_test(0) {}
 
-static inline void add_test(registered_test_base* test)
-{
-    if (last()) {
-        last()->next = test;
-    } else {
-        first() = test;
+    void add_test(registered_test_base* test)
+    {
+        if (last_test) {
+            last_test->next = test;
+        } else {
+            first_test = test;
+        }
+        last_test = test;
     }
 
-    last() = test;
-}
+    void run_tests(bool quiet = false)
+    {
+        is_quiet = quiet;
 
-static inline void run_tests()
-{
-    for (registered_test_base* i = first(); i; i = i->next) {
-        std::cout << "Running " << i->name << "\n" << std::flush;
-        i->run();
-        std::cerr << std::flush;
-        std::cout << std::flush;
+        for (registered_test_base* i = first_test; i; i = i->next) {
+            int error_count = boost::detail::test_errors();
+            if (!quiet) {
+                BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Running " << i->name << "\n"
+                                               << std::flush;
+            }
+            i->run();
+            BOOST_LIGHTWEIGHT_TEST_OSTREAM << std::flush;
+            if (quiet && error_count != boost::detail::test_errors()) {
+                BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Error in: " << i->name
+                                               << "\n"
+                                               << std::flush;
+            }
+        }
     }
+
+    int start_sub_test(char const* name)
+    {
+        if (!is_quiet) {
+            BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Sub-test: " << name << "\n"
+                                           << std::flush;
+        }
+        // Add one because it's used as a loop condition.
+        return boost::detail::test_errors() + 1;
+    }
+
+    int end_sub_test(char const* name, int value)
+    {
+        if (is_quiet && value != boost::detail::test_errors() + 1) {
+            BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Error in sub-test: " << name
+                                           << "\n"
+                                           << std::flush;
+        }
+        return 0;
+    }
+};
+
+// Get the currnet translation unit's test state.
+static inline state& get_state()
+{
+    static state instance;
+    return instance;
 }
 }
 
-inline void write_compiler_info()
-{
-#if defined(BOOST_GCC_CXX11)
-    char const* cpp11 = "true";
+#if defined(__cplusplus)
+#define BOOST_UNORDERED_CPLUSPLUS __cplusplus
 #else
-    char const* cpp11 = "false";
+#define BOOST_UNORDERED_CPLUSPLUS "(not defined)"
 #endif
 
-    std::cout << "Compiler: " << BOOST_COMPILER << "\n"
-              << "Library: " << BOOST_STDLIB << "\n"
-              << "C++11: " << cpp11 << "\n"
-              << "\n"
-              << std::flush;
-}
-}
+#define BOOST_UNORDERED_TEST_COMPILER_INFO()                                   \
+    {                                                                          \
+        BOOST_LIGHTWEIGHT_TEST_OSTREAM                                         \
+            << "Compiler: " << BOOST_COMPILER << "\n"                          \
+            << "Library: " << BOOST_STDLIB << "\n"                             \
+            << "__cplusplus: " << BOOST_UNORDERED_CPLUSPLUS << "\n\n"          \
+            << "BOOST_UNORDERED_HAVE_PIECEWISE_CONSTRUCT: "                    \
+            << BOOST_UNORDERED_HAVE_PIECEWISE_CONSTRUCT << "\n"                \
+            << "BOOST_UNORDERED_EMPLACE_LIMIT: "                               \
+            << BOOST_UNORDERED_EMPLACE_LIMIT << "\n"                           \
+            << "BOOST_UNORDERED_USE_ALLOCATOR_TRAITS: "                        \
+            << BOOST_UNORDERED_USE_ALLOCATOR_TRAITS << "\n"                    \
+            << "BOOST_UNORDERED_CXX11_CONSTRUCTION: "                          \
+            << BOOST_UNORDERED_CXX11_CONSTRUCTION << "\n\n"                    \
+            << std::flush;                                                     \
+    }
 
 #include <boost/preprocessor/cat.hpp>
 #include <boost/preprocessor/seq/fold_left.hpp>
@@ -121,5 +174,32 @@ inline void write_compiler_info()
 
 #define UNORDERED_TEST_OP_JOIN(s, state, elem)                                 \
     BOOST_PP_CAT(state, BOOST_PP_CAT(_, elem))
+
+#define UNORDERED_MULTI_TEST(name, impl, parameters)                           \
+    UNORDERED_MULTI_TEST_REPEAT(name, impl, 1, parameters)
+
+#define UNORDERED_MULTI_TEST_REPEAT(name, impl, n, parameters)                 \
+    UNORDERED_AUTO_TEST(name)                                                  \
+    {                                                                          \
+        BOOST_PP_SEQ_FOR_EACH_PRODUCT(                                         \
+            UNORDERED_MULTI_TEST_OP, ((impl))((n))parameters)                  \
+    }
+
+#define UNORDERED_MULTI_TEST_OP(r, product)                                    \
+    UNORDERED_MULTI_TEST_OP2(BOOST_PP_SEQ_ELEM(0, product),                    \
+        BOOST_PP_SEQ_ELEM(1, product),                                         \
+        BOOST_PP_SEQ_TAIL(BOOST_PP_SEQ_TAIL(product)))
+
+// Need to wrap UNORDERED_SUB_TEST in a block to avoid an msvc bug.
+// https://support.microsoft.com/en-gb/help/315481/bug-too-many-unnested-loops-incorrectly-causes-a-c1061-compiler-error-in-visual-c
+#define UNORDERED_MULTI_TEST_OP2(name, n, params)                              \
+    {                                                                          \
+        UNORDERED_SUB_TEST(BOOST_PP_STRINGIZE(                                 \
+            BOOST_PP_SEQ_FOLD_LEFT(UNORDERED_TEST_OP_JOIN, name, params)))     \
+        {                                                                      \
+            for (int i = 0; i < n; ++i)                                        \
+                name BOOST_PP_SEQ_TO_TUPLE(params);                            \
+        }                                                                      \
+    }
 
 #endif

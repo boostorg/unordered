@@ -63,20 +63,28 @@ template <class X> void check_equivalent_keys(X const& x1)
         BOOST_DEDUCED_TYPENAME X::size_type bucket = x1.bucket(key);
         BOOST_DEDUCED_TYPENAME X::const_local_iterator lit = x1.begin(bucket),
                                                        lend = x1.end(bucket);
-        for (; lit != lend && !eq(get_key<X>(*lit), key); ++lit)
-            continue;
-        if (lit == lend)
+
+        unsigned int count_checked = 0;
+        for (; lit != lend && !eq(get_key<X>(*lit), key); ++lit) {
+            ++count_checked;
+        }
+
+        if (lit == lend) {
             BOOST_ERROR("Unable to find element with a local_iterator");
-        unsigned int count2 = 0;
-        for (; lit != lend && eq(get_key<X>(*lit), key); ++lit)
-            ++count2;
-        if (count != count2)
-            BOOST_ERROR("Element count doesn't match local_iterator.");
-        for (; lit != lend; ++lit) {
-            if (eq(get_key<X>(*lit), key)) {
-                BOOST_ERROR("Non-adjacent element with equivalent key "
-                            "in bucket.");
-                break;
+            std::cerr << "Checked: " << count_checked << " elements"
+                      << std::endl;
+        } else {
+            unsigned int count2 = 0;
+            for (; lit != lend && eq(get_key<X>(*lit), key); ++lit)
+                ++count2;
+            if (count != count2)
+                BOOST_ERROR("Element count doesn't match local_iterator.");
+            for (; lit != lend; ++lit) {
+                if (eq(get_key<X>(*lit), key)) {
+                    BOOST_ERROR("Non-adjacent element with equivalent key "
+                                "in bucket.");
+                    break;
+                }
             }
         }
     };

@@ -36,7 +36,8 @@ bool throwing_test_exception = false;
 void test_throw(char const* name)
 {
     if (throwing_test_exception) {
-        std::cerr << "Throw exception in: " << name << std::endl;
+        BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Throw exception in: " << name
+                                       << std::endl;
         throw test_exception();
     }
 }

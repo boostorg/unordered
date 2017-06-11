@@ -65,6 +65,11 @@ template <typename T> struct allocator : std::allocator<T>
     allocator(const allocator<T2>& other) : std::allocator<T>(other)
     {
     }
+
+    template <typename T2>
+    allocator(const std::allocator<T2>& other) : std::allocator<T>(other)
+    {
+    }
 };
 
 // Declare some members of a structs.

@@ -13,7 +13,7 @@ containers in the draft standard, so the interface was fixed. But there are
 still some implementation decisions to make. The priorities are
 conformance to the standard and portability.
 
-The [@http://en.wikipedia.org/wiki/Hash_table wikipedia article on hash tables]
+The [@http://en.wikipedia.org/wiki/Hash_table Wikipedia article on hash tables]
 has a good summary of the implementation issues for hash tables in general.
 
 [h2 Data Structure]
@@ -100,7 +100,7 @@ knowledge of the number of bits in the hash value, so it isn't portable enough
 to use as a default. It can applicable in certain cases so the containers
 have a policy based implementation that can use this alternative technique.
 
-Currently this is only done on 64 bit architecures, where prime number
+Currently this is only done on 64 bit architectures, where prime number
 modulus can be expensive. Although this varies depending on the architecture,
 so I probably should revisit it.
 

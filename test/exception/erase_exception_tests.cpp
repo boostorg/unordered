@@ -14,7 +14,9 @@ test::seed_t initialize_seed(835193);
 template <class T> struct erase_test_base : public test::exception_base
 {
     test::random_values<T> values;
-    erase_test_base(unsigned int count = 5) : values(count) {}
+    erase_test_base(unsigned int count = 5) : values(count, test::limited_range)
+    {
+    }
 
     typedef T data_type;
 
@@ -43,6 +45,10 @@ template <class T> struct erase_by_key_test1 : public erase_test_base<T>
              it != end; ++it) {
             x.erase(test::get_key<T>(*it));
         }
+
+        DISABLE_EXCEPTIONS;
+        BOOST_TEST(x.empty());
+        test::check_equivalent_keys(x);
     }
 };
 

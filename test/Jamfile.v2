@@ -15,6 +15,7 @@ project unordered-test/unordered
         <toolset>darwin:<cxxflags>"-pedantic -Wstrict-aliasing -fstrict-aliasing -Wextra -Wsign-promo -Wunused-parameter -Wconversion -Wfloat-equal -Wshadow"
         <toolset>clang:<cxxflags>"-pedantic -Wstrict-aliasing -fstrict-aliasing -Wextra -Wsign-promo -Wunused-parameter -Wsign-conversion -Wconversion -Wfloat-equal -Wshadow"
         <toolset>msvc:<cxxflags>"/wd4494"
+        <toolset>gcc:<c++-template-depth>500
     ;
 
 #alias framework : /boost/test//boost_unit_test_framework ;
@@ -45,7 +46,7 @@ test-suite unordered
         [ run unordered/insert_hint_tests.cpp ]
         [ run unordered/emplace_tests.cpp ]
         [ run unordered/unnecessary_copy_tests.cpp ]
-        [ run unordered/erase_tests.cpp ]
+        [ run unordered/erase_tests.cpp : : : <define>BOOST_UNORDERED_SUPPRESS_DEPRECATED ]
         [ run unordered/erase_equiv_tests.cpp ]
         [ run unordered/extract_tests.cpp ]
         [ run unordered/node_handle_tests.cpp ]
@@ -61,6 +62,7 @@ test-suite unordered
         [ run unordered/rehash_tests.cpp ]
         [ run unordered/equality_tests.cpp ]
         [ run unordered/swap_tests.cpp ]
+        [ run unordered/detail_tests.cpp ]
 
         [ run unordered/compile_set.cpp : :
             : <define>BOOST_UNORDERED_USE_MOVE
@@ -90,4 +92,5 @@ test-suite unordered-exception
         [ run exception/rehash_exception_tests.cpp framework ]
         [ run exception/swap_exception_tests.cpp framework : : :
             <define>BOOST_UNORDERED_SWAP_METHOD=2 ]
+        [ run exception/merge_exception_tests.cpp framework ]
     ;

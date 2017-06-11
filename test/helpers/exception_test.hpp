@@ -241,8 +241,10 @@ template <class Test> void exception_safety(Test const& f, char const* /*name*/)
 
     iteration = 0;
     bool success = false;
+    unsigned int failure_count = 0;
     char const* error_msg = 0;
     do {
+        int error_count = boost::detail::test_errors();
         ++iteration;
         count = 0;
 
@@ -252,19 +254,98 @@ template <class Test> void exception_safety(Test const& f, char const* /*name*/)
         } catch (test_failure) {
             error_msg = "test_failure caught.";
             break;
-        } catch (test_exception) {
-            continue;
+        } catch (test_exception e) {
+            if (error_count != boost::detail::test_errors()) {
+                BOOST_LIGHTWEIGHT_TEST_OSTREAM
+                    << "Iteration: " << iteration
+                    << " Error found for epoint: " << e.name << std::endl;
+            }
         } catch (...) {
             error_msg = "Unexpected exception.";
             break;
         }
-    } while (!success);
+
+        if (error_count != boost::detail::test_errors()) {
+            ++failure_count;
+        }
+    } while (!success && failure_count < 5);
 
     if (error_msg) {
         BOOST_ERROR(error_msg);
     }
     runner.end();
 }
+
+//
+// An alternative way to run exception tests.
+// See merge_exception_tests.cpp for an example.
+
+struct exception_looper
+{
+    bool success;
+    unsigned int failure_count;
+    char const* error_msg;
+    int error_count;
+
+    exception_looper() : success(false), failure_count(0), error_msg(0) {}
+
+    void start() { iteration = 0; }
+
+    bool loop_condition() const
+    {
+        return !error_msg && !success && failure_count < 5;
+    }
+
+    void start_iteration()
+    {
+        error_count = boost::detail::test_errors();
+        ++iteration;
+        count = 0;
+    }
+
+    void successful_run() { success = true; }
+
+    void test_failure_caught(test_failure const&)
+    {
+        error_msg = "test_failure caught.";
+    }
+
+    void test_exception_caught(test_exception const& e)
+    {
+        if (error_count != boost::detail::test_errors()) {
+            BOOST_LIGHTWEIGHT_TEST_OSTREAM
+                << "Iteration: " << iteration
+                << " Error found for epoint: " << e.name << std::endl;
+        }
+    }
+
+    void unexpected_exception_caught() { error_msg = "Unexpected exception."; }
+
+    void end()
+    {
+        if (error_msg) {
+            BOOST_ERROR(error_msg);
+        }
+    }
+};
+
+#define EXCEPTION_LOOP(op)                                                     \
+    test::lightweight::exception_looper looper;                                \
+    looper.start();                                                            \
+    while (looper.loop_condition()) {                                          \
+        looper.start_iteration();                                              \
+        try {                                                                  \
+            op;                                                                \
+            looper.successful_run();                                           \
+        } catch (test::lightweight::test_failure e) {                          \
+            looper.test_failure_caught(e);                                     \
+        } catch (test::lightweight::test_exception e) {                        \
+            looper.test_exception_caught(e);                                   \
+        } catch (...) {                                                        \
+            looper.unexpected_exception_caught();                              \
+        }                                                                      \
+    }                                                                          \
+    looper.end();
 }
 }
 

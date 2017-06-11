@@ -18,7 +18,6 @@
 #include "../helpers/helpers.hpp"
 #include "../helpers/invariants.hpp"
 #include <vector>
-#include <iostream>
 #include <cstdlib>
 
 namespace erase_tests {
@@ -31,7 +30,7 @@ void erase_tests1(Container*, test::random_generator generator)
     typedef BOOST_DEDUCED_TYPENAME Container::iterator iterator;
     typedef BOOST_DEDUCED_TYPENAME Container::const_iterator c_iterator;
 
-    std::cerr << "Erase by key.\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Erase by key.\n";
     {
         test::check_instances check_;
 
@@ -52,7 +51,7 @@ void erase_tests1(Container*, test::random_generator generator)
         }
     }
 
-    std::cerr << "erase(begin()).\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "erase(begin()).\n";
     {
         test::check_instances check_;
 
@@ -75,7 +74,7 @@ void erase_tests1(Container*, test::random_generator generator)
         BOOST_TEST(x.empty());
     }
 
-    std::cerr << "erase(random position).\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "erase(random position).\n";
     {
         test::check_instances check_;
 
@@ -104,7 +103,8 @@ void erase_tests1(Container*, test::random_generator generator)
                     index == 0 ? next == x.begin() : next == test::next(prev));
             BOOST_TEST(x.count(key) == count - 1);
             if (x.count(key) != count - 1) {
-                std::cerr << count << " => " << x.count(key) << std::endl;
+                BOOST_LIGHTWEIGHT_TEST_OSTREAM << count << " => "
+                                               << x.count(key) << std::endl;
             }
             BOOST_TEST(x.size() == size);
             if (++iterations % 20 == 0)
@@ -113,7 +113,7 @@ void erase_tests1(Container*, test::random_generator generator)
         BOOST_TEST(x.empty());
     }
 
-    std::cerr << "erase(ranges).\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "erase(ranges).\n";
     {
         test::check_instances check_;
 
@@ -140,7 +140,7 @@ void erase_tests1(Container*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    std::cerr << "erase(random ranges).\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "erase(random ranges).\n";
     {
         test::check_instances check_;
         Container x;
@@ -179,7 +179,7 @@ void erase_tests1(Container*, test::random_generator generator)
         }
     }
 
-    std::cerr << "quick_erase(begin()).\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "quick_erase(begin()).\n";
     {
         test::check_instances check_;
 
@@ -201,7 +201,7 @@ void erase_tests1(Container*, test::random_generator generator)
         BOOST_TEST(x.empty());
     }
 
-    std::cerr << "quick_erase(random position).\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "quick_erase(random position).\n";
     {
         test::check_instances check_;
 
@@ -230,7 +230,8 @@ void erase_tests1(Container*, test::random_generator generator)
                     index == 0 ? next == x.begin() : next == test::next(prev));
             BOOST_TEST(x.count(key) == count - 1);
             if (x.count(key) != count - 1) {
-                std::cerr << count << " => " << x.count(key) << std::endl;
+                BOOST_LIGHTWEIGHT_TEST_OSTREAM << count << " => "
+                                               << x.count(key) << std::endl;
             }
             BOOST_TEST(x.size() == size);
             if (++iterations % 20 == 0)
@@ -239,7 +240,7 @@ void erase_tests1(Container*, test::random_generator generator)
         BOOST_TEST(x.empty());
     }
 
-    std::cerr << "clear().\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "clear().\n";
     {
         test::check_instances check_;
 
@@ -250,7 +251,7 @@ void erase_tests1(Container*, test::random_generator generator)
         BOOST_TEST(x.begin() == x.end());
     }
 
-    std::cerr << "\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "\n";
 }
 
 boost::unordered_set<test::object, test::hash, test::equal_to,

@@ -93,7 +93,7 @@ UNORDERED_AUTO_TEST(simple_tests)
     using namespace std;
     srand(14878);
 
-    std::cout << "Test unordered_set.\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Test unordered_set.\n";
     boost::unordered_set<int> set;
     simple_test(set);
 
@@ -102,7 +102,7 @@ UNORDERED_AUTO_TEST(simple_tests)
     set.insert(1456);
     simple_test(set);
 
-    std::cout << "Test unordered_multiset.\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Test unordered_multiset.\n";
     boost::unordered_multiset<int> multiset;
     simple_test(multiset);
 
@@ -113,7 +113,7 @@ UNORDERED_AUTO_TEST(simple_tests)
     }
     simple_test(multiset);
 
-    std::cout << "Test unordered_map.\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Test unordered_map.\n";
     boost::unordered_map<int, int> map;
 
     for (int i2 = 0; i2 < 1000; ++i2) {
@@ -121,7 +121,7 @@ UNORDERED_AUTO_TEST(simple_tests)
     }
     simple_test(map);
 
-    std::cout << "Test unordered_multimap.\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Test unordered_multimap.\n";
     boost::unordered_multimap<int, int> multimap;
 
     for (int i3 = 0; i3 < 1000; ++i3) {

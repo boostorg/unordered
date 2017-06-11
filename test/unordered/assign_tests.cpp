@@ -17,8 +17,6 @@
 #include "../helpers/tracker.hpp"
 #include "../helpers/equivalent.hpp"
 
-#include <iostream>
-
 #if defined(BOOST_MSVC)
 #pragma warning(disable : 4127) // conditional expression is constant
 #endif
@@ -32,7 +30,7 @@ template <class T> void assign_tests1(T*, test::random_generator generator)
     BOOST_DEDUCED_TYPENAME T::hasher hf;
     BOOST_DEDUCED_TYPENAME T::key_equal eq;
 
-    std::cerr << "assign_tests1.1\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "assign_tests1.1\n";
     {
         test::check_instances check_;
 
@@ -43,7 +41,7 @@ template <class T> void assign_tests1(T*, test::random_generator generator)
         BOOST_TEST(test::equivalent(x.key_eq(), eq));
     }
 
-    std::cerr << "assign_tests1.2\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "assign_tests1.2\n";
     {
         test::check_instances check_;
 
@@ -79,7 +77,7 @@ template <class T> void assign_tests2(T*, test::random_generator generator)
 
     typedef BOOST_DEDUCED_TYPENAME T::allocator_type allocator_type;
 
-    std::cerr << "assign_tests2.0 - empty container\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "assign_tests2.0 - empty container\n";
     {
         test::check_instances check_;
 
@@ -93,7 +91,7 @@ template <class T> void assign_tests2(T*, test::random_generator generator)
         test::check_container(x1, x2);
     }
 
-    std::cerr << "assign_tests2.1\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "assign_tests2.1\n";
     {
         test::check_instances check_;
 
@@ -110,7 +108,7 @@ template <class T> void assign_tests2(T*, test::random_generator generator)
         BOOST_TEST(x2.load_factor() <= x2.max_load_factor());
     }
 
-    std::cerr << "assign_tests2.1a\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "assign_tests2.1a\n";
     {
         test::check_instances check_;
 
@@ -128,7 +126,7 @@ template <class T> void assign_tests2(T*, test::random_generator generator)
         BOOST_TEST(x2.load_factor() <= x2.max_load_factor());
     }
 
-    std::cerr << "assign_tests2.2\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "assign_tests2.2\n";
     {
         test::check_instances check_;
 
@@ -150,7 +148,7 @@ template <class T> void assign_tests2(T*, test::random_generator generator)
         BOOST_TEST(x2.load_factor() <= x2.max_load_factor());
     }
 
-    std::cerr << "assign_tests2.3\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "assign_tests2.3\n";
     {
         test::check_instances check_;
 
@@ -172,7 +170,7 @@ template <class T> void assign_tests2(T*, test::random_generator generator)
         BOOST_TEST(x2.load_factor() <= x2.max_load_factor());
     }
 
-    std::cerr << "assign_tests2.4\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "assign_tests2.4\n";
     {
         test::check_instances check_;
 
@@ -271,7 +269,7 @@ UNORDERED_TEST(
 
 UNORDERED_AUTO_TEST(assign_default_initializer_list)
 {
-    std::cerr << "Initializer List Tests\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Initializer List Tests\n";
     std::initializer_list<std::pair<int const, int> > init;
     boost::unordered_map<int, int> x1;
     x1[25] = 3;
@@ -286,7 +284,7 @@ UNORDERED_AUTO_TEST(assign_default_initializer_list)
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
 UNORDERED_AUTO_TEST(assign_initializer_list)
 {
-    std::cerr << "Initializer List Tests\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Initializer List Tests\n";
 
     boost::unordered_set<int> x;
     x.insert(10);

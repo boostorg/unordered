@@ -7,7 +7,7 @@
 
 #include "../helpers/invariants.hpp"
 #include "../helpers/random_values.hpp"
-#include <iostream>
+#include "../helpers/tracker.hpp"
 
 #if defined(BOOST_MSVC)
 #pragma warning(                                                               \
@@ -42,7 +42,12 @@ template <class T> struct move_assign_base : public test::exception_base
         T y1 = y;
         disable_exceptions.release();
         x1 = boost::move(y1);
+
+        DISABLE_EXCEPTIONS;
+        test::check_container(x1, y_values);
+        test::check_equivalent_keys(x1);
     }
+
     void check BOOST_PREVENT_MACRO_SUBSTITUTION(T const& x1) const
     {
         test::check_equivalent_keys(x1);
@@ -64,8 +69,8 @@ template <class T> struct move_assign_values : move_assign_base<T>
         int tag2, float mlf1 = 1.0, float mlf2 = 1.0)
         : move_assign_base<T>(tag1, tag2, mlf1, mlf2)
     {
-        this->x_values.fill(count1);
-        this->y_values.fill(count2);
+        this->x_values.fill(count1, test::limited_range);
+        this->y_values.fill(count2, test::limited_range);
         this->x.insert(this->x_values.begin(), this->x_values.end());
         this->y.insert(this->y_values.begin(), this->y_values.end());
     }
@@ -105,10 +110,10 @@ template <class T> struct equivalent_test1 : move_assign_base<T>
 {
     equivalent_test1() : move_assign_base<T>(0, 0)
     {
-        test::random_values<T> x_values2(10);
+        test::random_values<T> x_values2(10, test::limited_range);
         this->x_values.insert(x_values2.begin(), x_values2.end());
         this->x_values.insert(x_values2.begin(), x_values2.end());
-        test::random_values<T> y_values2(10);
+        test::random_values<T> y_values2(10, test::limited_range);
         this->y_values.insert(y_values2.begin(), y_values2.end());
         this->y_values.insert(y_values2.begin(), y_values2.end());
         this->x.insert(this->x_values.begin(), this->x_values.end());

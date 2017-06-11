@@ -3,6 +3,8 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+#if !defined(PIECEWISE_TEST_NAME)
+
 // clang-format off
 #include "../helpers/prefix.hpp"
 #include <boost/unordered_set.hpp>
@@ -19,8 +21,6 @@
 #include "../helpers/input_iterator.hpp"
 #include "../helpers/helpers.hpp"
 
-#include <iostream>
-
 namespace insert_tests {
 
 test::seed_t initialize_seed(243432);
@@ -33,66 +33,138 @@ void unique_insert_tests1(X*, test::random_generator generator)
     typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
     typedef test::ordered<X> ordered;
 
-    std::cerr << "insert(value) tests for containers with unique keys.\n";
+    UNORDERED_SUB_TEST("insert(value) tests for containers with unique keys")
+    {
+        X x;
+        test::ordered<X> tracker = test::create_ordered(x);
 
-    X x;
-    test::ordered<X> tracker = test::create_ordered(x);
+        test::random_values<X> v(1000, generator);
 
-    test::random_values<X> v(1000, generator);
+        for (BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator it =
+                 v.begin();
+             it != v.end(); ++it) {
 
-    for (BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator it = v.begin();
-         it != v.end(); ++it) {
+            BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count =
+                x.bucket_count();
+            float b = x.max_load_factor();
 
-        BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count = x.bucket_count();
-        float b = x.max_load_factor();
+            std::pair<iterator, bool> r1 = x.insert(*it);
+            std::pair<BOOST_DEDUCED_TYPENAME ordered::iterator, bool> r2 =
+                tracker.insert(*it);
 
-        std::pair<iterator, bool> r1 = x.insert(*it);
-        std::pair<BOOST_DEDUCED_TYPENAME ordered::iterator, bool> r2 =
-            tracker.insert(*it);
+            BOOST_TEST(r1.second == r2.second);
+            BOOST_TEST(*r1.first == *r2.first);
 
-        BOOST_TEST(r1.second == r2.second);
-        BOOST_TEST(*r1.first == *r2.first);
+            tracker.compare_key(x, *it);
 
-        tracker.compare_key(x, *it);
+            if (static_cast<double>(x.size()) <=
+                b * static_cast<double>(old_bucket_count))
+                BOOST_TEST(x.bucket_count() == old_bucket_count);
+        }
 
-        if (static_cast<double>(x.size()) <=
-            b * static_cast<double>(old_bucket_count))
-            BOOST_TEST(x.bucket_count() == old_bucket_count);
+        test::check_equivalent_keys(x);
     }
 
-    test::check_equivalent_keys(x);
+    UNORDERED_SUB_TEST("insert(rvalue) tests for containers with unique keys")
+    {
+        X x;
+        test::ordered<X> tracker = test::create_ordered(x);
+
+        test::random_values<X> v(1000, generator);
+
+        for (BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator it =
+                 v.begin();
+             it != v.end(); ++it) {
+
+            BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count =
+                x.bucket_count();
+            float b = x.max_load_factor();
+
+            typename X::value_type value = *it;
+            std::pair<iterator, bool> r1 = x.insert(boost::move(value));
+            std::pair<BOOST_DEDUCED_TYPENAME ordered::iterator, bool> r2 =
+                tracker.insert(*it);
+
+            BOOST_TEST(r1.second == r2.second);
+            BOOST_TEST(*r1.first == *r2.first);
+
+            tracker.compare_key(x, *it);
+
+            if (static_cast<double>(x.size()) <=
+                b * static_cast<double>(old_bucket_count))
+                BOOST_TEST(x.bucket_count() == old_bucket_count);
+        }
+
+        test::check_equivalent_keys(x);
+    }
 }
 
 template <class X>
 void equivalent_insert_tests1(X*, test::random_generator generator)
 {
-    std::cerr << "insert(value) tests for containers with equivalent keys.\n";
-
     test::check_instances check_;
 
-    X x;
-    test::ordered<X> tracker = test::create_ordered(x);
+    UNORDERED_SUB_TEST(
+        "insert(value) tests for containers with equivalent keys")
+    {
+        X x;
+        test::ordered<X> tracker = test::create_ordered(x);
 
-    test::random_values<X> v(1000, generator);
-    for (BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator it = v.begin();
-         it != v.end(); ++it) {
-        BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count = x.bucket_count();
-        float b = x.max_load_factor();
+        test::random_values<X> v(1000, generator);
+        for (BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator it =
+                 v.begin();
+             it != v.end(); ++it) {
+            BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count =
+                x.bucket_count();
+            float b = x.max_load_factor();
 
-        BOOST_DEDUCED_TYPENAME X::iterator r1 = x.insert(*it);
-        BOOST_DEDUCED_TYPENAME test::ordered<X>::iterator r2 =
-            tracker.insert(*it);
+            BOOST_DEDUCED_TYPENAME X::iterator r1 = x.insert(*it);
+            BOOST_DEDUCED_TYPENAME test::ordered<X>::iterator r2 =
+                tracker.insert(*it);
 
-        BOOST_TEST(*r1 == *r2);
+            BOOST_TEST(*r1 == *r2);
 
-        tracker.compare_key(x, *it);
+            tracker.compare_key(x, *it);
 
-        if (static_cast<double>(x.size()) <=
-            b * static_cast<double>(old_bucket_count))
-            BOOST_TEST(x.bucket_count() == old_bucket_count);
+            if (static_cast<double>(x.size()) <=
+                b * static_cast<double>(old_bucket_count))
+                BOOST_TEST(x.bucket_count() == old_bucket_count);
+        }
+
+        test::check_equivalent_keys(x);
     }
 
-    test::check_equivalent_keys(x);
+    UNORDERED_SUB_TEST(
+        "insert(rvalue) tests for containers with equivalent keys")
+    {
+        X x;
+        test::ordered<X> tracker = test::create_ordered(x);
+
+        test::random_values<X> v(1000, generator);
+        for (BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator it =
+                 v.begin();
+             it != v.end(); ++it) {
+            BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count =
+                x.bucket_count();
+            float b = x.max_load_factor();
+
+            typename X::value_type value = *it;
+            BOOST_DEDUCED_TYPENAME X::iterator r1 =
+                x.insert(boost::move(value));
+            BOOST_DEDUCED_TYPENAME test::ordered<X>::iterator r2 =
+                tracker.insert(*it);
+
+            BOOST_TEST(*r1 == *r2);
+
+            tracker.compare_key(x, *it);
+
+            if (static_cast<double>(x.size()) <=
+                b * static_cast<double>(old_bucket_count))
+                BOOST_TEST(x.bucket_count() == old_bucket_count);
+        }
+
+        test::check_equivalent_keys(x);
+    }
 }
 
 template <class X> void insert_tests2(X*, test::random_generator generator)
@@ -102,8 +174,7 @@ template <class X> void insert_tests2(X*, test::random_generator generator)
     typedef BOOST_DEDUCED_TYPENAME X::const_iterator const_iterator;
     typedef BOOST_DEDUCED_TYPENAME tracker_type::iterator tracker_iterator;
 
-    std::cerr << "insert(begin(), value) tests.\n";
-
+    UNORDERED_SUB_TEST("insert(begin(), value) tests")
     {
         test::check_instances check_;
 
@@ -132,8 +203,7 @@ template <class X> void insert_tests2(X*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    std::cerr << "insert(end(), value) tests.\n";
-
+    UNORDERED_SUB_TEST("insert(end(), value) tests")
     {
         test::check_instances check_;
 
@@ -163,8 +233,7 @@ template <class X> void insert_tests2(X*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    std::cerr << "insert(pos, value) tests.\n";
-
+    UNORDERED_SUB_TEST("insert(pos, value) tests")
     {
         test::check_instances check_;
 
@@ -194,8 +263,38 @@ template <class X> void insert_tests2(X*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    std::cerr << "insert single item range tests.\n";
+    UNORDERED_SUB_TEST("insert(pos, rvalue) tests")
+    {
+        test::check_instances check_;
 
+        X x;
+        const_iterator pos = x.begin();
+        tracker_type tracker = test::create_ordered(x);
+
+        test::random_values<X> v(1000, generator);
+        for (BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator it =
+                 v.begin();
+             it != v.end(); ++it) {
+            BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count =
+                x.bucket_count();
+            float b = x.max_load_factor();
+
+            typename X::value_type value = *it;
+            pos = x.insert(pos, boost::move(value));
+            tracker_iterator r2 = tracker.insert(tracker.begin(), *it);
+            BOOST_TEST(*pos == *r2);
+            tracker.compare_key(x, *it);
+
+            if (static_cast<double>(x.size()) <=
+                b * static_cast<double>(old_bucket_count))
+                BOOST_TEST(x.bucket_count() == old_bucket_count);
+        }
+
+        tracker.compare(x);
+        test::check_equivalent_keys(x);
+    }
+
+    UNORDERED_SUB_TEST("insert single item range tests")
     {
         test::check_instances check_;
 
@@ -223,8 +322,7 @@ template <class X> void insert_tests2(X*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    std::cerr << "insert range tests.\n";
-
+    UNORDERED_SUB_TEST("insert range tests")
     {
         test::check_instances check_;
 
@@ -237,8 +335,7 @@ template <class X> void insert_tests2(X*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    std::cerr << "insert range with rehash tests.\n";
-
+    UNORDERED_SUB_TEST("insert range with rehash tests")
     {
         test::check_instances check_;
 
@@ -255,8 +352,7 @@ template <class X> void insert_tests2(X*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    std::cerr << "insert input iterator range tests.\n";
-
+    UNORDERED_SUB_TEST("insert input iterator range tests")
     {
         test::check_instances check_;
 
@@ -272,8 +368,7 @@ template <class X> void insert_tests2(X*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    std::cerr << "insert copy iterator range tests.\n";
-
+    UNORDERED_SUB_TEST("insert copy iterator range tests")
     {
         test::check_instances check_;
 
@@ -286,8 +381,7 @@ template <class X> void insert_tests2(X*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    std::cerr << "insert copy iterator range test 2.\n";
-
+    UNORDERED_SUB_TEST("insert copy iterator range test 2")
     {
         test::check_instances check_;
 
@@ -303,8 +397,7 @@ template <class X> void insert_tests2(X*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    std::cerr << "insert various ranges.\n";
-
+    UNORDERED_SUB_TEST("insert various ranges")
     {
         for (int i = 0; i < 100; ++i) {
             X x;
@@ -350,8 +443,6 @@ void unique_emplace_tests1(X*, test::random_generator generator)
     typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
     typedef test::ordered<X> ordered;
 
-    std::cerr << "emplace(value) tests for containers with unique keys.\n";
-
     X x;
     test::ordered<X> tracker = test::create_ordered(x);
 
@@ -384,8 +475,6 @@ void unique_emplace_tests1(X*, test::random_generator generator)
 template <class X>
 void equivalent_emplace_tests1(X*, test::random_generator generator)
 {
-    std::cerr << "emplace(value) tests for containers with equivalent keys.\n";
-
     X x;
     test::ordered<X> tracker = test::create_ordered(x);
 
@@ -414,9 +503,6 @@ void equivalent_emplace_tests1(X*, test::random_generator generator)
 
 template <class X> void move_emplace_tests(X*, test::random_generator generator)
 {
-    std::cerr
-        << "emplace(move(value)) tests for containers with unique keys.\n";
-
     X x;
     test::ordered<X> tracker = test::create_ordered(x);
 
@@ -444,8 +530,7 @@ template <class X> void move_emplace_tests(X*, test::random_generator generator)
 
 template <class X> void default_emplace_tests(X*, test::random_generator)
 {
-#if !BOOST_WORKAROUND(__SUNPRO_CC, BOOST_TESTED_AT(0x5100))
-    std::cerr << "emplace() tests.\n";
+#if !BOOST_UNORDERED_SUN_WORKAROUNDS1
     bool is_unique = test::has_unique_keys<X>::value;
 
     X x;
@@ -480,8 +565,6 @@ template <class X> void default_emplace_tests(X*, test::random_generator)
 
 template <class X> void map_tests(X*, test::random_generator generator)
 {
-    std::cerr << "map tests.\n";
-
     X x;
     test::ordered<X> tracker = test::create_ordered(x);
 
@@ -508,8 +591,8 @@ template <class X> void map_tests(X*, test::random_generator generator)
 template <class X> void map_tests2(X*, test::random_generator generator)
 {
     typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
-    std::cerr << "insert_or_assign\n";
 
+    UNORDERED_SUB_TEST("insert_or_assign")
     {
         test::check_instances check_;
 
@@ -540,8 +623,7 @@ template <class X> void map_tests2(X*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    std::cerr << "insert_or_assign(begin)\n";
-
+    UNORDERED_SUB_TEST("insert_or_assign(begin)")
     {
         test::check_instances check_;
 
@@ -571,8 +653,7 @@ template <class X> void map_tests2(X*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    std::cerr << "insert_or_assign(end)\n";
-
+    UNORDERED_SUB_TEST("insert_or_assign(end)")
     {
         test::check_instances check_;
 
@@ -602,8 +683,7 @@ template <class X> void map_tests2(X*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    std::cerr << "insert_or_assign(last)\n";
-
+    UNORDERED_SUB_TEST("insert_or_assign(last)")
     {
         test::check_instances check_;
 
@@ -639,10 +719,9 @@ template <class X> void map_tests2(X*, test::random_generator generator)
 
 template <class X> void try_emplace_tests(X*, test::random_generator generator)
 {
-    std::cerr << "try_emplace(key, value)\n";
-
     typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
 
+    UNORDERED_SUB_TEST("try_emplace(key, value)")
     {
         test::check_instances check_;
 
@@ -682,10 +761,9 @@ template <class X> void try_emplace_tests(X*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    std::cerr << "try_emplace(begin(), key, value)\n";
-
     typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
 
+    UNORDERED_SUB_TEST("try_emplace(begin(), key, value)")
     {
         test::check_instances check_;
 
@@ -722,10 +800,9 @@ template <class X> void try_emplace_tests(X*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    std::cerr << "try_emplace(end(), key, value)\n";
-
     typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
 
+    UNORDERED_SUB_TEST("try_emplace(end(), key, value)")
     {
         test::check_instances check_;
 
@@ -762,10 +839,9 @@ template <class X> void try_emplace_tests(X*, test::random_generator generator)
         test::check_equivalent_keys(x);
     }
 
-    std::cerr << "try_emplace(pos, key, value)\n";
-
     typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
 
+    UNORDERED_SUB_TEST("try_emplace(pos, key, value)")
     {
         test::check_instances check_;
 
@@ -808,8 +884,6 @@ template <class X> void try_emplace_tests(X*, test::random_generator generator)
 template <class X>
 void map_insert_range_test1(X*, test::random_generator generator)
 {
-    std::cerr << "map_insert_range_test1\n";
-
     test::check_instances check_;
 
     typedef test::list<std::pair<BOOST_DEDUCED_TYPENAME X::key_type,
@@ -827,8 +901,6 @@ void map_insert_range_test1(X*, test::random_generator generator)
 template <class X>
 void map_insert_range_test2(X*, test::random_generator generator)
 {
-    std::cerr << "map_insert_range_test2\n";
-
     test::check_instances check_;
 
     typedef test::list<std::pair<BOOST_DEDUCED_TYPENAME X::key_type const,
@@ -1030,21 +1102,43 @@ struct overloaded_constructor
 
 UNORDERED_AUTO_TEST(map_emplace_test)
 {
-    boost::unordered_map<int, overloaded_constructor> x;
+    {
+        boost::unordered_map<int, overloaded_constructor, test::hash,
+            test::equal_to,
+            test::allocator1<std::pair<int const, overloaded_constructor> > >
+            x;
 
-#if !BOOST_WORKAROUND(__SUNPRO_CC, BOOST_TESTED_AT(0x5100))
-    x.emplace();
-    BOOST_TEST(
-        x.find(0) != x.end() && x.find(0)->second == overloaded_constructor());
+#if !BOOST_UNORDERED_SUN_WORKAROUNDS1
+        x.emplace();
+        BOOST_TEST(x.find(0) != x.end() &&
+                   x.find(0)->second == overloaded_constructor());
 #endif
 
-    x.emplace(2, 3);
-    BOOST_TEST(
-        x.find(2) != x.end() && x.find(2)->second == overloaded_constructor(3));
+        x.emplace(2, 3);
+        BOOST_TEST(x.find(2) != x.end() &&
+                   x.find(2)->second == overloaded_constructor(3));
 
-    x.try_emplace(5);
-    BOOST_TEST(
-        x.find(5) != x.end() && x.find(5)->second == overloaded_constructor());
+        x.try_emplace(5);
+        BOOST_TEST(x.find(5) != x.end() &&
+                   x.find(5)->second == overloaded_constructor());
+    }
+
+    {
+        boost::unordered_multimap<int, overloaded_constructor, test::hash,
+            test::equal_to,
+            test::allocator1<std::pair<int const, overloaded_constructor> > >
+            x;
+
+#if !BOOST_UNORDERED_SUN_WORKAROUNDS1
+        x.emplace();
+        BOOST_TEST(x.find(0) != x.end() &&
+                   x.find(0)->second == overloaded_constructor());
+#endif
+
+        x.emplace(2, 3);
+        BOOST_TEST(x.find(2) != x.end() &&
+                   x.find(2)->second == overloaded_constructor(3));
+    }
 }
 
 UNORDERED_AUTO_TEST(set_emplace_test)
@@ -1052,7 +1146,7 @@ UNORDERED_AUTO_TEST(set_emplace_test)
     boost::unordered_set<overloaded_constructor> x;
     overloaded_constructor check;
 
-#if !BOOST_WORKAROUND(__SUNPRO_CC, BOOST_TESTED_AT(0x5100))
+#if !BOOST_UNORDERED_SUN_WORKAROUNDS1
     x.emplace();
     BOOST_TEST(x.find(check) != x.end() && *x.find(check) == check);
 #endif
@@ -1098,48 +1192,109 @@ struct convertible_to_piecewise
 
 UNORDERED_AUTO_TEST(map_emplace_test2)
 {
-    boost::unordered_map<overloaded_constructor, overloaded_constructor> x;
+    // Emulating piecewise construction with boost::tuple bypasses the
+    // allocator's construct method, but still uses test destroy method.
+    test::detail::disable_construction_tracking _scoped;
 
-    x.emplace(boost::unordered::piecewise_construct, boost::make_tuple(),
-        boost::make_tuple());
-    BOOST_TEST(
-        x.find(overloaded_constructor()) != x.end() &&
-        x.find(overloaded_constructor())->second == overloaded_constructor());
+    {
+        boost::unordered_map<overloaded_constructor, overloaded_constructor,
+            boost::hash<overloaded_constructor>,
+            std::equal_to<overloaded_constructor>,
+            test::allocator1<std::pair<overloaded_constructor const,
+                overloaded_constructor> > >
+            x;
 
-    x.emplace(
-        convertible_to_piecewise(), boost::make_tuple(1), boost::make_tuple());
-    BOOST_TEST(
-        x.find(overloaded_constructor(1)) != x.end() &&
-        x.find(overloaded_constructor(1))->second == overloaded_constructor());
+        x.emplace(boost::unordered::piecewise_construct, boost::make_tuple(),
+            boost::make_tuple());
+        BOOST_TEST(x.find(overloaded_constructor()) != x.end() &&
+                   x.find(overloaded_constructor())->second ==
+                       overloaded_constructor());
 
-    x.emplace(piecewise_rvalue(), boost::make_tuple(2, 3),
-        boost::make_tuple(4, 5, 6));
-    BOOST_TEST(x.find(overloaded_constructor(2, 3)) != x.end() &&
-               x.find(overloaded_constructor(2, 3))->second ==
-                   overloaded_constructor(4, 5, 6));
+        x.emplace(convertible_to_piecewise(), boost::make_tuple(1),
+            boost::make_tuple());
+        BOOST_TEST(x.find(overloaded_constructor(1)) != x.end() &&
+                   x.find(overloaded_constructor(1))->second ==
+                       overloaded_constructor());
 
-    derived_from_piecewise_construct_t d;
-    x.emplace(d, boost::make_tuple(9, 3, 1), boost::make_tuple(10));
-    BOOST_TEST(x.find(overloaded_constructor(9, 3, 1)) != x.end() &&
-               x.find(overloaded_constructor(9, 3, 1))->second ==
-                   overloaded_constructor(10));
+        x.emplace(piecewise_rvalue(), boost::make_tuple(2, 3),
+            boost::make_tuple(4, 5, 6));
+        BOOST_TEST(x.find(overloaded_constructor(2, 3)) != x.end() &&
+                   x.find(overloaded_constructor(2, 3))->second ==
+                       overloaded_constructor(4, 5, 6));
 
-    x.clear();
+        derived_from_piecewise_construct_t d;
+        x.emplace(d, boost::make_tuple(9, 3, 1), boost::make_tuple(10));
+        BOOST_TEST(x.find(overloaded_constructor(9, 3, 1)) != x.end() &&
+                   x.find(overloaded_constructor(9, 3, 1))->second ==
+                       overloaded_constructor(10));
 
-    x.try_emplace(overloaded_constructor());
-    BOOST_TEST(
-        x.find(overloaded_constructor()) != x.end() &&
-        x.find(overloaded_constructor())->second == overloaded_constructor());
+        x.clear();
 
-    x.try_emplace(1);
-    BOOST_TEST(
-        x.find(overloaded_constructor(1)) != x.end() &&
-        x.find(overloaded_constructor(1))->second == overloaded_constructor());
+        x.try_emplace(overloaded_constructor());
+        BOOST_TEST(x.find(overloaded_constructor()) != x.end() &&
+                   x.find(overloaded_constructor())->second ==
+                       overloaded_constructor());
 
-    x.try_emplace(overloaded_constructor(2, 3), 4, 5, 6);
-    BOOST_TEST(x.find(overloaded_constructor(2, 3)) != x.end() &&
-               x.find(overloaded_constructor(2, 3))->second ==
-                   overloaded_constructor(4, 5, 6));
+        x.try_emplace(1);
+        BOOST_TEST(x.find(overloaded_constructor(1)) != x.end() &&
+                   x.find(overloaded_constructor(1))->second ==
+                       overloaded_constructor());
+
+        x.try_emplace(overloaded_constructor(2, 3), 4, 5, 6);
+        BOOST_TEST(x.find(overloaded_constructor(2, 3)) != x.end() &&
+                   x.find(overloaded_constructor(2, 3))->second ==
+                       overloaded_constructor(4, 5, 6));
+
+        x.clear();
+
+        x.try_emplace(x.begin(), overloaded_constructor());
+        BOOST_TEST(x.find(overloaded_constructor()) != x.end() &&
+                   x.find(overloaded_constructor())->second ==
+                       overloaded_constructor());
+
+        x.try_emplace(x.end(), 1);
+        BOOST_TEST(x.find(overloaded_constructor(1)) != x.end() &&
+                   x.find(overloaded_constructor(1))->second ==
+                       overloaded_constructor());
+
+        x.try_emplace(x.begin(), overloaded_constructor(2, 3), 4, 5, 6);
+        BOOST_TEST(x.find(overloaded_constructor(2, 3)) != x.end() &&
+                   x.find(overloaded_constructor(2, 3))->second ==
+                       overloaded_constructor(4, 5, 6));
+    }
+
+    {
+        boost::unordered_multimap<overloaded_constructor,
+            overloaded_constructor, boost::hash<overloaded_constructor>,
+            std::equal_to<overloaded_constructor>,
+            test::allocator1<std::pair<overloaded_constructor const,
+                overloaded_constructor> > >
+            x;
+
+        x.emplace(boost::unordered::piecewise_construct, boost::make_tuple(),
+            boost::make_tuple());
+        BOOST_TEST(x.find(overloaded_constructor()) != x.end() &&
+                   x.find(overloaded_constructor())->second ==
+                       overloaded_constructor());
+
+        x.emplace(convertible_to_piecewise(), boost::make_tuple(1),
+            boost::make_tuple());
+        BOOST_TEST(x.find(overloaded_constructor(1)) != x.end() &&
+                   x.find(overloaded_constructor(1))->second ==
+                       overloaded_constructor());
+
+        x.emplace(piecewise_rvalue(), boost::make_tuple(2, 3),
+            boost::make_tuple(4, 5, 6));
+        BOOST_TEST(x.find(overloaded_constructor(2, 3)) != x.end() &&
+                   x.find(overloaded_constructor(2, 3))->second ==
+                       overloaded_constructor(4, 5, 6));
+
+        derived_from_piecewise_construct_t d;
+        x.emplace(d, boost::make_tuple(9, 3, 1), boost::make_tuple(10));
+        BOOST_TEST(x.find(overloaded_constructor(9, 3, 1)) != x.end() &&
+                   x.find(overloaded_constructor(9, 3, 1))->second ==
+                       overloaded_constructor(10));
+    }
 }
 
 UNORDERED_AUTO_TEST(set_emplace_test2)
@@ -1158,9 +1313,171 @@ UNORDERED_AUTO_TEST(set_emplace_test2)
         boost::make_tuple(2, 3));
     check =
         std::make_pair(overloaded_constructor(1), overloaded_constructor(2, 3));
-    ;
     BOOST_TEST(x.find(check) != x.end() && *x.find(check) == check);
 }
+
+// Use the preprocessor to generate tests using different combinations of
+// boost/std piecewise_construct_t/tuple.
+
+#define PIECEWISE_TEST_NAME boost_tuple_piecewise_tests
+#define PIECEWISE_NAMESPACE boost::unordered
+#define TUPLE_NAMESPACE boost
+#define EMULATING_PIECEWISE_CONSTRUCTION 1
+#include "./insert_tests.cpp"
+
+#if BOOST_UNORDERED_HAVE_PIECEWISE_CONSTRUCT
+
+#define PIECEWISE_TEST_NAME boost_tuple_std_piecewise_tests
+#define PIECEWISE_NAMESPACE std
+#define TUPLE_NAMESPACE boost
+#define EMULATING_PIECEWISE_CONSTRUCTION 1
+#include "./insert_tests.cpp"
+
+#endif
+
+#if !defined(BOOST_NO_CXX11_HDR_TUPLE)
+
+#define PIECEWISE_TEST_NAME std_tuple_boost_piecewise_tests
+#define PIECEWISE_NAMESPACE boost::unordered
+#define TUPLE_NAMESPACE std
+#define EMULATING_PIECEWISE_CONSTRUCTION 0
+#include "./insert_tests.cpp"
+
+#endif
+
+#if !defined(BOOST_NO_CXX11_HDR_TUPLE) &&                                      \
+    BOOST_UNORDERED_HAVE_PIECEWISE_CONSTRUCT
+
+#define PIECEWISE_TEST_NAME std_piecewise_tests
+#define PIECEWISE_NAMESPACE std
+#define TUPLE_NAMESPACE std
+#define EMULATING_PIECEWISE_CONSTRUCTION 0
+#include "./insert_tests.cpp"
+
+#endif
 }
 
-RUN_TESTS()
+RUN_TESTS_QUIET()
+
+#else // PIECEWISE_TEST_NAME
+
+UNORDERED_AUTO_TEST(PIECEWISE_TEST_NAME)
+{
+#if EMULATING_PIECEWISE_CONSTRUCTION
+    test::detail::disable_construction_tracking _scoped;
+#endif
+
+    {
+        boost::unordered_map<overloaded_constructor, overloaded_constructor,
+            boost::hash<overloaded_constructor>,
+            std::equal_to<overloaded_constructor>,
+            test::allocator1<std::pair<overloaded_constructor const,
+                overloaded_constructor> > >
+            x;
+
+        x.emplace(PIECEWISE_NAMESPACE::piecewise_construct,
+            TUPLE_NAMESPACE::make_tuple(), TUPLE_NAMESPACE::make_tuple());
+        BOOST_TEST(x.find(overloaded_constructor()) != x.end() &&
+                   x.find(overloaded_constructor())->second ==
+                       overloaded_constructor());
+
+        x.emplace(convertible_to_piecewise(), TUPLE_NAMESPACE::make_tuple(1),
+            TUPLE_NAMESPACE::make_tuple());
+        BOOST_TEST(x.find(overloaded_constructor(1)) != x.end() &&
+                   x.find(overloaded_constructor(1))->second ==
+                       overloaded_constructor());
+
+        x.emplace(piecewise_rvalue(), TUPLE_NAMESPACE::make_tuple(2, 3),
+            TUPLE_NAMESPACE::make_tuple(4, 5, 6));
+        BOOST_TEST(x.find(overloaded_constructor(2, 3)) != x.end() &&
+                   x.find(overloaded_constructor(2, 3))->second ==
+                       overloaded_constructor(4, 5, 6));
+
+        derived_from_piecewise_construct_t d;
+        x.emplace(d, TUPLE_NAMESPACE::make_tuple(9, 3, 1),
+            TUPLE_NAMESPACE::make_tuple(10));
+        BOOST_TEST(x.find(overloaded_constructor(9, 3, 1)) != x.end() &&
+                   x.find(overloaded_constructor(9, 3, 1))->second ==
+                       overloaded_constructor(10));
+
+        x.clear();
+
+        x.try_emplace(overloaded_constructor());
+        BOOST_TEST(x.find(overloaded_constructor()) != x.end() &&
+                   x.find(overloaded_constructor())->second ==
+                       overloaded_constructor());
+
+        x.try_emplace(1);
+        BOOST_TEST(x.find(overloaded_constructor(1)) != x.end() &&
+                   x.find(overloaded_constructor(1))->second ==
+                       overloaded_constructor());
+
+        x.try_emplace(overloaded_constructor(2, 3), 4, 5, 6);
+        BOOST_TEST(x.find(overloaded_constructor(2, 3)) != x.end() &&
+                   x.find(overloaded_constructor(2, 3))->second ==
+                       overloaded_constructor(4, 5, 6));
+    }
+    {
+        boost::unordered_multimap<overloaded_constructor,
+            overloaded_constructor, boost::hash<overloaded_constructor>,
+            std::equal_to<overloaded_constructor>,
+            test::allocator1<std::pair<overloaded_constructor const,
+                overloaded_constructor> > >
+            x;
+
+        x.emplace(PIECEWISE_NAMESPACE::piecewise_construct,
+            TUPLE_NAMESPACE::make_tuple(), TUPLE_NAMESPACE::make_tuple());
+        BOOST_TEST(x.find(overloaded_constructor()) != x.end() &&
+                   x.find(overloaded_constructor())->second ==
+                       overloaded_constructor());
+
+        x.emplace(convertible_to_piecewise(), TUPLE_NAMESPACE::make_tuple(1),
+            TUPLE_NAMESPACE::make_tuple());
+        BOOST_TEST(x.find(overloaded_constructor(1)) != x.end() &&
+                   x.find(overloaded_constructor(1))->second ==
+                       overloaded_constructor());
+
+        x.emplace(piecewise_rvalue(), TUPLE_NAMESPACE::make_tuple(2, 3),
+            TUPLE_NAMESPACE::make_tuple(4, 5, 6));
+        BOOST_TEST(x.find(overloaded_constructor(2, 3)) != x.end() &&
+                   x.find(overloaded_constructor(2, 3))->second ==
+                       overloaded_constructor(4, 5, 6));
+
+        derived_from_piecewise_construct_t d;
+        x.emplace(d, TUPLE_NAMESPACE::make_tuple(9, 3, 1),
+            TUPLE_NAMESPACE::make_tuple(10));
+        BOOST_TEST(x.find(overloaded_constructor(9, 3, 1)) != x.end() &&
+                   x.find(overloaded_constructor(9, 3, 1))->second ==
+                       overloaded_constructor(10));
+    }
+}
+
+UNORDERED_AUTO_TEST(BOOST_PP_CAT(PIECEWISE_TEST_NAME, 2))
+{
+#if EMULATING_PIECEWISE_CONSTRUCTION
+    test::detail::disable_construction_tracking _scoped;
+#endif
+
+    boost::unordered_set<
+        std::pair<overloaded_constructor, overloaded_constructor> >
+        x;
+    std::pair<overloaded_constructor, overloaded_constructor> check;
+
+    x.emplace(PIECEWISE_NAMESPACE::piecewise_construct,
+        TUPLE_NAMESPACE::make_tuple(), TUPLE_NAMESPACE::make_tuple());
+    BOOST_TEST(x.find(check) != x.end() && *x.find(check) == check);
+
+    x.clear();
+    x.emplace(PIECEWISE_NAMESPACE::piecewise_construct,
+        TUPLE_NAMESPACE::make_tuple(1), TUPLE_NAMESPACE::make_tuple(2, 3));
+    check =
+        std::make_pair(overloaded_constructor(1), overloaded_constructor(2, 3));
+    BOOST_TEST(x.find(check) != x.end() && *x.find(check) == check);
+}
+
+#undef PIECEWISE_TEST_NAME
+#undef PIECEWISE_NAMESPACE
+#undef TUPLE_NAMESPACE
+#undef EMULATING_PIECEWISE_CONSTRUCTION
+
+#endif

@@ -7,6 +7,7 @@
 
 #include "../helpers/invariants.hpp"
 #include "../helpers/random_values.hpp"
+#include "../helpers/tracker.hpp"
 
 #if defined(BOOST_MSVC)
 #pragma warning(disable : 4512) // assignment operator could not be generated
@@ -17,11 +18,22 @@ test::seed_t initialize_seed(9387);
 template <class T> struct self_swap_base : public test::exception_base
 {
     test::random_values<T> values;
-    self_swap_base(std::size_t count = 0) : values(count) {}
+    self_swap_base(std::size_t count = 0) : values(count, test::limited_range)
+    {
+    }
 
     typedef T data_type;
     T init() const { return T(values.begin(), values.end()); }
-    void run(T& x) const { x.swap(x); }
+
+    void run(T& x) const
+    {
+        x.swap(x);
+
+        DISABLE_EXCEPTIONS;
+        test::check_container(x, this->values);
+        test::check_equivalent_keys(x);
+    }
+
     void check BOOST_PREVENT_MACRO_SUBSTITUTION(T const& x) const
     {
         std::string scope(test::scope);
@@ -55,7 +67,8 @@ template <class T> struct swap_base : public test::exception_base
     typedef BOOST_DEDUCED_TYPENAME T::allocator_type allocator_type;
 
     swap_base(unsigned int count1, unsigned int count2, int tag1, int tag2)
-        : x_values(count1), y_values(count2),
+        : x_values(count1, test::limited_range),
+          y_values(count2, test::limited_range),
           initial_x(x_values.begin(), x_values.end(), 0, hasher(tag1),
               key_equal(tag1), allocator_type(tag1)),
           initial_y(
@@ -82,7 +95,14 @@ template <class T> struct swap_base : public test::exception_base
             d.x.swap(d.y);
         } catch (std::runtime_error) {
         }
+
+        DISABLE_EXCEPTIONS;
+        test::check_container(d.x, this->y_values);
+        test::check_equivalent_keys(d.x);
+        test::check_container(d.y, this->x_values);
+        test::check_equivalent_keys(d.y);
     }
+
     void check BOOST_PREVENT_MACRO_SUBSTITUTION(data_type const& d) const
     {
         std::string scope(test::scope);

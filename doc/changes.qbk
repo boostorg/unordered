@@ -99,7 +99,7 @@ First official release.
   has been rewritten to use templates instead of macros for the implementation
   classes.
 
-* The container objcet is now smaller thanks to using `boost::compressed_pair`
+* The container object is now smaller thanks to using `boost::compressed_pair`
   for EBO and a slightly different function buffer - now using a bool instead
   of a member pointer.
 
@@ -170,7 +170,7 @@ C++11 support has resulted in some breaking changes:
   longer does so. It does emulate the new `piecewise_construct`
   pair constructors - only you need to use
   `boost::piecewise_construct`. To use the old emulation of
-  the variadic consturctors define
+  the variadic constructors define
   `BOOST_UNORDERED_DEPRECATED_PAIR_CONSTRUCT`.
 
 [h2 Boost 1.49.0]
@@ -207,7 +207,7 @@ C++11 support has resulted in some breaking changes:
 * Fix construction/destruction issue when using a C++11 compiler with a
   C++03 allocator ([ticket 7100]).
 * Remove a `try..catch` to support compiling without exceptions.
-* Adjust SFINAE use to try to supprt g++ 3.4 ([ticket 7175]).
+* Adjust SFINAE use to try to support g++ 3.4 ([ticket 7175]).
 * Updated to use the new config macros.
 
 [h2 Boost 1.52.0]
@@ -307,9 +307,17 @@ C++11 support has resulted in some breaking changes:
 * Initial support for new C++17 member functions:
   `insert_or_assign` and `try_emplace` in `unordered_map`,
 * Initial support for `merge` and `extract`.
-  Does not include transfering nodes between
+  Does not include transferring nodes between
   `unordered_map` and `unordered_multimap` or between `unordered_set` and
   `unordered_multiset` yet. That will hopefully be in the next version of
   Boost.
+
+[h2 Boost 1.65.0]
+
+* Add deprecated attributes to `quick_erase` and `erase_return_void`.
+  I really will remove them in a future version this time.
+* Small standards compliance fixes:
+  * `noexpect` specs for `swap` free functions.
+  * Add missing `insert(P&&)` methods.
 
 [endsect]

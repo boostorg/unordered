@@ -19,8 +19,6 @@
 #include "../objects/test.hpp"
 #include <boost/next_prior.hpp>
 
-#include <iostream>
-
 namespace extract_tests {
 
 test::seed_t initialize_seed(85638);
@@ -28,7 +26,7 @@ test::seed_t initialize_seed(85638);
 template <class Container>
 void extract_tests1(Container*, test::random_generator generator)
 {
-    std::cerr << "Extract by key.\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Extract by key.\n";
     {
         test::check_instances check_;
 
@@ -58,7 +56,7 @@ void extract_tests1(Container*, test::random_generator generator)
         BOOST_TEST(x.empty());
     }
 
-    std::cerr << "extract(begin()).\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "extract(begin()).\n";
     {
         test::check_instances check_;
 
@@ -81,7 +79,7 @@ void extract_tests1(Container*, test::random_generator generator)
         BOOST_TEST(x.empty());
     }
 
-    std::cerr << "extract(random position).\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "extract(random position).\n";
     {
         test::check_instances check_;
 
@@ -117,7 +115,7 @@ void extract_tests1(Container*, test::random_generator generator)
         BOOST_TEST(x.empty());
     }
 
-    std::cerr << "\n";
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "\n";
 }
 
 boost::unordered_set<test::object, test::hash, test::equal_to,

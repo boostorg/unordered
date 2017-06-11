@@ -12,8 +12,6 @@
 
 #include "../helpers/test.hpp"
 
-#include <iostream>
-
 namespace insert_stable {
 struct member
 {
@@ -47,9 +45,9 @@ std::size_t hash_value(insert_stable::member const& x)
 }
 }
 
-// This is now only supported when using grouped nodes. I can't see any
-// efficient way to do it otherwise.
-#if !BOOST_UNORDERED_INTEROPERABLE_NODES
+// This is no longer supported, as there's no longer an efficient way to get to
+// the end of a group of equivalent nodes.
+#if 0
 
 UNORDERED_AUTO_TEST(stable_insert_test1)
 {
