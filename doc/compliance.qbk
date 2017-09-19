@@ -4,7 +4,7 @@
 
 [section:compliance Standard Compliance]
 
-The intent of Boost.Unordered is to implement a close (but inperfect)
+The intent of Boost.Unordered is to implement a close (but imperfect)
 implementation of the C++17 standard, that will work with C++98 upwards.
 The wide compatibility does mean some comprimises have to be made.
 With a compiler and library that fully support C++11, the differences should
@@ -117,7 +117,7 @@ first part of the pair, and the remaining for the second part.
 
 When swapping, `Pred` and `Hash` are not currently swapped by calling
 `swap`, their copy constructors are used. As a consequence when swapping
-an exception may be throw from their  copy constructor.
+an exception may be thrown from their copy constructor.
 
 Variadic constructor arguments for `emplace` are only used when both
 rvalue references and variadic template parameters are available.
