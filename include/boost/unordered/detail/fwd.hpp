@@ -43,17 +43,17 @@
 #endif
 
 namespace boost {
-namespace unordered {
+  namespace unordered {
 #if BOOST_UNORDERED_HAVE_PIECEWISE_CONSTRUCT
-using std::piecewise_construct_t;
-using std::piecewise_construct;
+    using std::piecewise_construct_t;
+    using std::piecewise_construct;
 #else
-struct piecewise_construct_t
-{
-};
-const piecewise_construct_t piecewise_construct = piecewise_construct_t();
+    struct piecewise_construct_t
+    {
+    };
+    const piecewise_construct_t piecewise_construct = piecewise_construct_t();
 #endif
-}
+  }
 }
 
 #endif

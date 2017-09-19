@@ -11,23 +11,23 @@
 #include <boost/type_traits/is_same.hpp>
 
 namespace test {
-template <class T1> struct check_return_type
-{
+  template <class T1> struct check_return_type
+  {
     template <class T2> static void equals(T2)
     {
-        BOOST_STATIC_ASSERT((boost::is_same<T1, T2>::value));
+      BOOST_STATIC_ASSERT((boost::is_same<T1, T2>::value));
     }
 
     template <class T2> static void equals_ref(T2&)
     {
-        BOOST_STATIC_ASSERT((boost::is_same<T1, T2>::value));
+      BOOST_STATIC_ASSERT((boost::is_same<T1, T2>::value));
     }
 
     template <class T2> static void convertible(T2)
     {
-        BOOST_STATIC_ASSERT((boost::is_convertible<T2, T1>::value));
+      BOOST_STATIC_ASSERT((boost::is_convertible<T2, T1>::value));
     }
-};
+  };
 }
 
 #endif

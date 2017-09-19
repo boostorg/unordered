@@ -9,8 +9,8 @@
 #include <boost/detail/lightweight_test.hpp>
 
 namespace test {
-struct object_count
-{
+  struct object_count
+  {
     int instances;
     int constructions;
 
@@ -19,52 +19,52 @@ struct object_count
 
     void construct()
     {
-        ++instances;
-        ++constructions;
+      ++instances;
+      ++constructions;
     }
 
     void destruct()
     {
-        if (instances == 0) {
-            BOOST_ERROR("Unbalanced constructions.");
-        } else {
-            --instances;
-        }
+      if (instances == 0) {
+        BOOST_ERROR("Unbalanced constructions.");
+      } else {
+        --instances;
+      }
     }
 
     bool operator==(object_count const& x) const
     {
-        return instances == x.instances && constructions == x.constructions;
+      return instances == x.instances && constructions == x.constructions;
     }
 
     bool operator!=(object_count const& x) const { return !(*this == x); }
 
     friend std::ostream& operator<<(std::ostream& out, object_count const& c)
     {
-        out << "[instances: " << c.instances
-            << ", constructions: " << c.constructions << "]";
-        return out;
+      out << "[instances: " << c.instances
+          << ", constructions: " << c.constructions << "]";
+      return out;
     }
-};
+  };
 
-// This won't be a problem as I'm only using a single compile unit
-// in each test (this is actually require by the minimal test
-// framework).
-//
-// boostinspect:nounnamed
-namespace {
-object_count global_object_count;
-}
+  // This won't be a problem as I'm only using a single compile unit
+  // in each test (this is actually require by the minimal test
+  // framework).
+  //
+  // boostinspect:nounnamed
+  namespace {
+    object_count global_object_count;
+  }
 
-struct counted_object
-{
+  struct counted_object
+  {
     counted_object() { global_object_count.construct(); }
     counted_object(counted_object const&) { global_object_count.construct(); }
     ~counted_object() { global_object_count.destruct(); }
-};
+  };
 
-struct check_instances
-{
+  struct check_instances
+  {
     int instances_;
     int constructions_;
 
@@ -75,15 +75,15 @@ struct check_instances
     }
     ~check_instances()
     {
-        BOOST_TEST(global_object_count.instances == instances_);
+      BOOST_TEST(global_object_count.instances == instances_);
     }
 
     int instances() const { return global_object_count.instances - instances_; }
     int constructions() const
     {
-        return global_object_count.constructions - constructions_;
+      return global_object_count.constructions - constructions_;
     }
-};
+  };
 }
 
 #endif

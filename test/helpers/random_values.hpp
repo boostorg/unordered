@@ -13,8 +13,8 @@
 #include <boost/detail/select_type.hpp>
 
 namespace test {
-template <class X> struct unordered_generator_set
-{
+  template <class X> struct unordered_generator_set
+  {
     typedef BOOST_DEDUCED_TYPENAME X::value_type value_type;
 
     random_generator type_;
@@ -23,24 +23,24 @@ template <class X> struct unordered_generator_set
 
     template <class T> void fill(T& x, std::size_t len)
     {
-        value_type* value_ptr = 0;
-        len += x.size();
+      value_type* value_ptr = 0;
+      len += x.size();
 
-        for (std::size_t i = 0; i < len; ++i) {
-            value_type value = generate(value_ptr, type_);
+      for (std::size_t i = 0; i < len; ++i) {
+        value_type value = generate(value_ptr, type_);
 
-            std::size_t count =
-                type_ == generate_collisions ? random_value(5) + 1 : 1;
+        std::size_t count =
+          type_ == generate_collisions ? random_value(5) + 1 : 1;
 
-            for (std::size_t j = 0; j < count; ++j) {
-                x.push_back(value);
-            }
+        for (std::size_t j = 0; j < count; ++j) {
+          x.push_back(value);
         }
+      }
     }
-};
+  };
 
-template <class X> struct unordered_generator_map
-{
+  template <class X> struct unordered_generator_map
+  {
     typedef BOOST_DEDUCED_TYPENAME X::key_type key_type;
     typedef BOOST_DEDUCED_TYPENAME X::mapped_type mapped_type;
 
@@ -50,60 +50,60 @@ template <class X> struct unordered_generator_map
 
     template <class T> void fill(T& x, std::size_t len)
     {
-        key_type* key_ptr = 0;
-        mapped_type* mapped_ptr = 0;
+      key_type* key_ptr = 0;
+      mapped_type* mapped_ptr = 0;
 
-        for (std::size_t i = 0; i < len; ++i) {
-            key_type key = generate(key_ptr, type_);
+      for (std::size_t i = 0; i < len; ++i) {
+        key_type key = generate(key_ptr, type_);
 
-            std::size_t count =
-                type_ == generate_collisions ? random_value(5) + 1 : 1;
+        std::size_t count =
+          type_ == generate_collisions ? random_value(5) + 1 : 1;
 
-            for (std::size_t j = 0; j < count; ++j) {
-                x.push_back(std::pair<key_type const, mapped_type>(
-                    key, generate(mapped_ptr, type_)));
-            }
+        for (std::size_t j = 0; j < count; ++j) {
+          x.push_back(std::pair<key_type const, mapped_type>(
+            key, generate(mapped_ptr, type_)));
         }
+      }
     }
-};
+  };
 
-template <class X>
-struct unordered_generator_base
+  template <class X>
+  struct unordered_generator_base
     : public boost::detail::if_true<test::is_set<X>::value>::
-          BOOST_NESTED_TEMPLATE then<test::unordered_generator_set<X>,
-              test::unordered_generator_map<X> >
-{
-};
+        BOOST_NESTED_TEMPLATE then<test::unordered_generator_set<X>,
+          test::unordered_generator_map<X> >
+  {
+  };
 
-template <class X>
-struct unordered_generator : public unordered_generator_base<X>::type
-{
+  template <class X>
+  struct unordered_generator : public unordered_generator_base<X>::type
+  {
     typedef BOOST_DEDUCED_TYPENAME unordered_generator_base<X>::type base;
 
     unordered_generator(random_generator const& type = default_generator)
         : base(type)
     {
     }
-};
+  };
 
-template <class X>
-struct random_values : public test::list<BOOST_DEDUCED_TYPENAME X::value_type>
-{
+  template <class X>
+  struct random_values : public test::list<BOOST_DEDUCED_TYPENAME X::value_type>
+  {
     random_values() {}
 
     explicit random_values(std::size_t count,
-        test::random_generator const& generator = test::default_generator)
+      test::random_generator const& generator = test::default_generator)
     {
-        fill(count, generator);
+      fill(count, generator);
     }
 
     void fill(std::size_t count,
-        test::random_generator const& generator = test::default_generator)
+      test::random_generator const& generator = test::default_generator)
     {
-        test::unordered_generator<X> gen(generator);
-        gen.fill(*this, count);
+      test::unordered_generator<X> gen(generator);
+      gen.fill(*this, count);
     }
-};
+  };
 }
 
 #endif

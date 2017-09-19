@@ -13,8 +13,8 @@
 #include <iterator>
 
 namespace test {
-template <class X> class strong
-{
+  template <class X> class strong
+  {
     typedef test::list<BOOST_DEDUCED_TYPENAME X::value_type> values_type;
     values_type values_;
     unsigned int allocations_;
@@ -22,22 +22,21 @@ template <class X> class strong
   public:
     void store(X const& x, unsigned int allocations = 0)
     {
-        DISABLE_EXCEPTIONS;
-        values_.clear();
-        values_.insert(x.cbegin(), x.cend());
-        allocations_ = allocations;
+      DISABLE_EXCEPTIONS;
+      values_.clear();
+      values_.insert(x.cbegin(), x.cend());
+      allocations_ = allocations;
     }
 
     void test(X const& x, unsigned int allocations = 0) const
     {
-        if (!(x.size() == values_.size() &&
-                test::equal(
-                    x.cbegin(), x.cend(), values_.begin(), test::equivalent)))
-            BOOST_ERROR("Strong exception safety failure.");
-        if (allocations != allocations_)
-            BOOST_ERROR("Strong exception failure: extra allocations.");
+      if (!(x.size() == values_.size() && test::equal(x.cbegin(), x.cend(),
+                                            values_.begin(), test::equivalent)))
+        BOOST_ERROR("Strong exception safety failure.");
+      if (allocations != allocations_)
+        BOOST_ERROR("Strong exception failure: extra allocations.");
     }
-};
+  };
 }
 
 #endif
