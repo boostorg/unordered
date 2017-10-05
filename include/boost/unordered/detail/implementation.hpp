@@ -3197,6 +3197,31 @@ namespace boost {
           other.max_load_ = 0;
         }
 
+        // For use in the constructor when allocators might be different.
+        void move_construct_buckets(table& src)
+        {
+          if (this->node_alloc() == src.node_alloc()) {
+            move_buckets_from(src);
+          } else {
+            this->create_buckets(this->bucket_count_);
+            link_pointer prev = this->get_previous_start();
+            std::size_t last_bucket = this->bucket_count_;
+            for (node_pointer n = src.begin(); n; n = next_node(n)) {
+              std::size_t bucket = n->get_bucket();
+              if (bucket != last_bucket) {
+                this->get_bucket(bucket)->next_ = prev;
+              }
+              node_pointer n2 = boost::unordered::detail::func::construct_node(
+                this->node_alloc(), boost::move(n->value()));
+              n2->bucket_info_ = n->bucket_info_;
+              prev->next_ = n2;
+              ++size_;
+              prev = n2;
+              last_bucket = bucket;
+            }
+          }
+        }
+
         ////////////////////////////////////////////////////////////////////////
         // Delete/destruct
 
@@ -3921,20 +3946,6 @@ namespace boost {
           }
         }
 
-        // TODO: Should be move_buckets_uniq
-        void move_buckets(table const& src)
-        {
-          this->create_buckets(this->bucket_count_);
-
-          for (node_pointer n = src.begin(); n; n = next_node(n)) {
-            std::size_t key_hash = this->hash(this->get_key(n));
-            this->add_node_unique(
-              boost::unordered::detail::func::construct_node(
-                this->node_alloc(), boost::move(n->value())),
-              key_hash);
-          }
-        }
-
         void assign_buckets(table const& src, true_type)
         {
           node_holder<node_allocator> holder(*this);
@@ -4322,26 +4333,6 @@ namespace boost {
               this->add_node_equiv(
                 boost::unordered::detail::func::construct_node(
                   this->node_alloc(), n->value()),
-                key_hash, pos);
-            }
-          }
-        }
-
-        void move_buckets_equiv(table const& src)
-        {
-          this->create_buckets(this->bucket_count_);
-
-          for (node_pointer n = src.begin(); n;) {
-            std::size_t key_hash = this->hash(this->get_key(n));
-            node_pointer group_end(next_group(n));
-            node_pointer pos = this->add_node_equiv(
-              boost::unordered::detail::func::construct_node(
-                this->node_alloc(), boost::move(n->value())),
-              key_hash, node_pointer());
-            for (n = next_node(n); n != group_end; n = next_node(n)) {
-              this->add_node_equiv(
-                boost::unordered::detail::func::construct_node(
-                  this->node_alloc(), boost::move(n->value())),
                 key_hash, pos);
             }
           }

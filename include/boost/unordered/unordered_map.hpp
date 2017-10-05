@@ -1424,12 +1424,7 @@ namespace boost {
       BOOST_RV_REF(unordered_map) other, allocator_type const& a)
         : table_(other.table_, a, boost::unordered::detail::move_tag())
     {
-      if (table_.node_alloc() == other.table_.node_alloc()) {
-        table_.move_buckets_from(other.table_);
-      } else if (other.table_.size_) {
-        // TODO: Could pick new bucket size?
-        table_.move_buckets(other.table_);
-      }
+      table_.move_construct_buckets(other.table_);
     }
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
@@ -1908,12 +1903,7 @@ namespace boost {
       BOOST_RV_REF(unordered_multimap) other, allocator_type const& a)
         : table_(other.table_, a, boost::unordered::detail::move_tag())
     {
-      if (table_.node_alloc() == other.table_.node_alloc()) {
-        table_.move_buckets_from(other.table_);
-      } else if (other.table_.size_) {
-        // TODO: Could pick new bucket size?
-        table_.move_buckets_equiv(other.table_);
-      }
+      table_.move_construct_buckets(other.table_);
     }
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
