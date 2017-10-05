@@ -255,7 +255,7 @@ namespace assign_tests {
       test_multimap_prop_assign)(test_set_no_prop_assign)(
       test_multiset_no_prop_assign)(test_map_no_prop_assign)(
       test_multimap_no_prop_assign))(
-                   (default_generator)(generate_collisions)(limited_range)))
+      (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(
     assign_tests2, ((test_set)(test_multiset)(test_map)(test_multimap)(

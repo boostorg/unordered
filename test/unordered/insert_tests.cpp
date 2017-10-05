@@ -917,11 +917,11 @@ namespace insert_tests {
 
   UNORDERED_TEST(unique_insert_tests1,
     ((test_set_std_alloc)(test_set)(test_map))(
-                   (default_generator)(generate_collisions)(limited_range)))
+      (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(equivalent_insert_tests1,
     ((test_multimap_std_alloc)(test_multiset)(test_multimap))(
-                   (default_generator)(generate_collisions)(limited_range)))
+      (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(insert_tests2,
     ((test_multimap_std_alloc)(test_set)(test_multiset)(test_map)(
@@ -929,21 +929,21 @@ namespace insert_tests {
 
   UNORDERED_TEST(unique_emplace_tests1,
     ((test_set_std_alloc)(test_set)(test_map))(
-                   (default_generator)(generate_collisions)(limited_range)))
+      (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(equivalent_emplace_tests1,
     ((test_multimap_std_alloc)(test_multiset)(test_multimap))(
-                   (default_generator)(generate_collisions)(limited_range)))
+      (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(move_emplace_tests,
     ((test_set_std_alloc)(test_multimap_std_alloc)(test_set)(test_map)(
       test_multiset)(test_multimap))(
-                   (default_generator)(generate_collisions)(limited_range)))
+      (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(default_emplace_tests,
     ((test_set_std_alloc)(test_multimap_std_alloc)(test_set)(test_map)(
       test_multiset)(test_multimap))(
-                   (default_generator)(generate_collisions)(limited_range)))
+      (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(map_tests,
     ((test_map))((default_generator)(generate_collisions)(limited_range)))
@@ -953,11 +953,11 @@ namespace insert_tests {
 
   UNORDERED_TEST(map_insert_range_test1,
     ((test_multimap_std_alloc)(test_map)(test_multimap))(
-                   (default_generator)(generate_collisions)(limited_range)))
+      (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(map_insert_range_test2,
     ((test_multimap_std_alloc)(test_map)(test_multimap))(
-                   (default_generator)(generate_collisions)(limited_range)))
+      (default_generator)(generate_collisions)(limited_range)))
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
 
@@ -1179,8 +1179,8 @@ namespace insert_tests {
       boost::unordered_map<overloaded_constructor, overloaded_constructor,
         boost::hash<overloaded_constructor>,
         std::equal_to<overloaded_constructor>,
-        test::allocator1<std::pair<overloaded_constructor const,
-          overloaded_constructor> > >
+        test::allocator1<
+          std::pair<overloaded_constructor const, overloaded_constructor> > >
         x;
 
       x.emplace(boost::unordered::piecewise_construct, boost::make_tuple(),
@@ -1246,8 +1246,8 @@ namespace insert_tests {
       boost::unordered_multimap<overloaded_constructor, overloaded_constructor,
         boost::hash<overloaded_constructor>,
         std::equal_to<overloaded_constructor>,
-        test::allocator1<std::pair<overloaded_constructor const,
-          overloaded_constructor> > >
+        test::allocator1<
+          std::pair<overloaded_constructor const, overloaded_constructor> > >
         x;
 
       x.emplace(boost::unordered::piecewise_construct, boost::make_tuple(),
@@ -1350,8 +1350,8 @@ UNORDERED_AUTO_TEST(PIECEWISE_TEST_NAME)
     boost::unordered_map<overloaded_constructor, overloaded_constructor,
       boost::hash<overloaded_constructor>,
       std::equal_to<overloaded_constructor>,
-      test::allocator1<std::pair<overloaded_constructor const,
-        overloaded_constructor> > >
+      test::allocator1<
+        std::pair<overloaded_constructor const, overloaded_constructor> > >
       x;
 
     x.emplace(PIECEWISE_NAMESPACE::piecewise_construct,
@@ -1400,8 +1400,8 @@ UNORDERED_AUTO_TEST(PIECEWISE_TEST_NAME)
     boost::unordered_multimap<overloaded_constructor, overloaded_constructor,
       boost::hash<overloaded_constructor>,
       std::equal_to<overloaded_constructor>,
-      test::allocator1<std::pair<overloaded_constructor const,
-        overloaded_constructor> > >
+      test::allocator1<
+        std::pair<overloaded_constructor const, overloaded_constructor> > >
       x;
 
     x.emplace(PIECEWISE_NAMESPACE::piecewise_construct,

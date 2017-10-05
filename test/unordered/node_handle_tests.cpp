@@ -156,8 +156,7 @@ bool node_handle_compare(
 }
 
 template <typename NodeHandle>
-bool node_handle_compare(
-  NodeHandle const& nh,
+bool node_handle_compare(NodeHandle const& nh,
   std::pair<BOOST_DEDUCED_TYPENAME NodeHandle::key_type const,
     BOOST_DEDUCED_TYPENAME NodeHandle::mapped_type> const& x)
 {

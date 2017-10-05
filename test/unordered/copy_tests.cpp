@@ -195,7 +195,7 @@ namespace copy_tests {
       test_multimap_select_copy)(test_set_no_select_copy)(
       test_multiset_no_select_copy)(test_map_no_select_copy)(
       test_multimap_no_select_copy))(
-                   (default_generator)(generate_collisions)(limited_range)))
+      (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(copy_construct_tests2,
     ((test_set)(test_multiset)(test_map)(test_multimap)(test_set_select_copy)(
@@ -203,7 +203,7 @@ namespace copy_tests {
       test_multimap_select_copy)(test_set_no_select_copy)(
       test_multiset_no_select_copy)(test_map_no_select_copy)(
       test_multimap_no_select_copy))(
-                   (default_generator)(generate_collisions)(limited_range)))
+      (default_generator)(generate_collisions)(limited_range)))
 }
 
 RUN_TESTS()

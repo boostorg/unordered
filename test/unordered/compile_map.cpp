@@ -97,7 +97,7 @@ UNORDERED_AUTO_TEST(equality_tests)
     test::minimal::copy_constructible_equality_comparable,
     test::minimal::hash<test::minimal::copy_constructible_equality_comparable>,
     test::minimal::equal_to<
-                         test::minimal::copy_constructible_equality_comparable>,
+      test::minimal::copy_constructible_equality_comparable>,
     test::minimal::allocator<value_type> >
     map;
 

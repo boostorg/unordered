@@ -347,26 +347,26 @@ namespace move_tests {
       test_multimap_prop_move)(test_set_no_prop_move)(
       test_multiset_no_prop_move)(test_map_no_prop_move)(
       test_multimap_no_prop_move))(
-                   (default_generator)(generate_collisions)(limited_range)))
+      (default_generator)(generate_collisions)(limited_range)))
   UNORDERED_TEST(move_assign_tests1,
     ((test_map_std_alloc)(test_set)(test_multiset)(test_map)(test_multimap)(
       test_set_prop_move)(test_multiset_prop_move)(test_map_prop_move)(
       test_multimap_prop_move)(test_set_no_prop_move)(
       test_multiset_no_prop_move)(test_map_no_prop_move)(
       test_multimap_no_prop_move))(
-                   (default_generator)(generate_collisions)(limited_range)))
+      (default_generator)(generate_collisions)(limited_range)))
   UNORDERED_TEST(move_construct_tests2,
     ((test_set)(test_multiset)(test_map)(test_multimap)(test_set_prop_move)(
       test_multiset_prop_move)(test_map_prop_move)(test_multimap_prop_move)(
       test_set_no_prop_move)(test_multiset_no_prop_move)(test_map_no_prop_move)(
       test_multimap_no_prop_move))(
-                   (default_generator)(generate_collisions)(limited_range)))
+      (default_generator)(generate_collisions)(limited_range)))
   UNORDERED_TEST(move_assign_tests2,
     ((test_set)(test_multiset)(test_map)(test_multimap)(test_set_prop_move)(
       test_multiset_prop_move)(test_map_prop_move)(test_multimap_prop_move)(
       test_set_no_prop_move)(test_multiset_no_prop_move)(test_map_no_prop_move)(
       test_multimap_no_prop_move))(
-                   (default_generator)(generate_collisions)(limited_range)))
+      (default_generator)(generate_collisions)(limited_range)))
 }
 
 RUN_TESTS()

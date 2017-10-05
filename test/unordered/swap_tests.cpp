@@ -207,6 +207,6 @@ namespace swap_tests {
       test_multiset_prop_swap)(test_map_prop_swap)(test_multimap_prop_swap)(
       test_set_no_prop_swap)(test_multiset_no_prop_swap)(test_map_no_prop_swap)(
       test_multimap_no_prop_swap))(
-                   (default_generator)(generate_collisions)(limited_range)))
+      (default_generator)(generate_collisions)(limited_range)))
 }
 RUN_TESTS()

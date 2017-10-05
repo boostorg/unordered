@@ -56,6 +56,7 @@ namespace test {
       destructible(constructor_param const&) {}
       ~destructible() {}
       void dummy_member() const {}
+
     private:
       destructible(destructible const&);
       destructible& operator=(destructible const&);
@@ -68,6 +69,7 @@ namespace test {
       copy_constructible(copy_constructible const&) {}
       ~copy_constructible() {}
       void dummy_member() const {}
+
     private:
       copy_constructible& operator=(copy_constructible const&);
       copy_constructible() {}
@@ -86,6 +88,7 @@ namespace test {
       ~copy_constructible_equality_comparable() {}
 
       void dummy_member() const {}
+
     private:
       copy_constructible_equality_comparable& operator=(
         copy_constructible_equality_comparable const&);
@@ -141,6 +144,7 @@ namespace test {
       assignable& operator=(assignable const&) { return *this; }
       ~assignable() {}
       void dummy_member() const {}
+
     private:
       assignable() {}
 #if BOOST_UNORDERED_CHECK_ADDR_OPERATOR_NOT_USED
@@ -179,6 +183,7 @@ namespace test {
       ~movable2() {}
       movable2& operator=(movable2&&) { return *this; }
       void dummy_member() const {}
+
     private:
       movable2() {}
       movable2(movable2 const&);
@@ -285,6 +290,7 @@ namespace test {
       T* ptr_;
 
       ptr(T* x) : ptr_(x) {}
+
     public:
       ptr() : ptr_(0) {}
       explicit ptr(void_ptr const& x) : ptr_((T*)x.ptr_) {}
@@ -336,6 +342,7 @@ namespace test {
       T const* ptr_;
 
       const_ptr(T const* ptr) : ptr_(ptr) {}
+
     public:
       const_ptr() : ptr_(0) {}
       const_ptr(ptr<T> const& x) : ptr_(x.ptr_) {}

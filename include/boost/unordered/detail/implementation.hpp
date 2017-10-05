@@ -356,9 +356,9 @@ namespace boost {
       }
 
       template <class I>
-      inline std::size_t initial_size(
-        I i, I j, std::size_t num_buckets =
-                    boost::unordered::detail::default_bucket_count)
+      inline std::size_t initial_size(I i, I j,
+        std::size_t num_buckets =
+          boost::unordered::detail::default_bucket_count)
       {
         // TODO: Why +1?
         return (std::max)(
@@ -384,6 +384,7 @@ namespace boost {
 
         T& get() { return value_; }
         T const& get() const { return value_; }
+
       private:
         T value_;
       };
@@ -1027,17 +1028,17 @@ namespace boost {
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
       template <typename T, typename ValueType, typename... Args>
-      BOOST_UNORDERED_HAS_FUNCTION(
-        construct, U, (boost::unordered::detail::make<ValueType*>(),
-                        boost::unordered::detail::make<Args const>()...),
+      BOOST_UNORDERED_HAS_FUNCTION(construct, U,
+        (boost::unordered::detail::make<ValueType*>(),
+          boost::unordered::detail::make<Args const>()...),
         2);
 
 #else
 
       template <typename T, typename ValueType>
-      BOOST_UNORDERED_HAS_FUNCTION(
-        construct, U, (boost::unordered::detail::make<ValueType*>(),
-                        boost::unordered::detail::make<ValueType const>()),
+      BOOST_UNORDERED_HAS_FUNCTION(construct, U,
+        (boost::unordered::detail::make<ValueType*>(),
+          boost::unordered::detail::make<ValueType const>()),
         2);
 
 #endif
@@ -2686,7 +2687,7 @@ namespace boost {
         {
           construct(current_, bf.current(),
             boost::unordered::detail::integral_constant<bool,
-                      nothrow_move_constructible>());
+              nothrow_move_constructible>());
         }
 
         ~functions() { this->destroy(current_); }
@@ -3169,9 +3170,10 @@ namespace boost {
 
           // I think swap can throw if Propagate::value,
           // since the allocators' swap can throw. Not sure though.
-          swap_allocators(x, boost::unordered::detail::integral_constant<bool,
-                               allocator_traits<node_allocator>::
-                                 propagate_on_container_swap::value>());
+          swap_allocators(
+            x, boost::unordered::detail::integral_constant<bool,
+                 allocator_traits<
+                   node_allocator>::propagate_on_container_swap::value>());
 
           boost::swap(buckets_, x.buckets_);
           boost::swap(bucket_count_, x.bucket_count_);
@@ -3294,8 +3296,8 @@ namespace boost {
           if (this != &x) {
             assign(x, is_unique,
               boost::unordered::detail::integral_constant<bool,
-                     allocator_traits<node_allocator>::
-                       propagate_on_container_copy_assignment::value>());
+                allocator_traits<node_allocator>::
+                  propagate_on_container_copy_assignment::value>());
           }
         }
 
@@ -3350,8 +3352,8 @@ namespace boost {
           if (this != &x) {
             move_assign(x, is_unique,
               boost::unordered::detail::integral_constant<bool,
-                          allocator_traits<node_allocator>::
-                            propagate_on_container_move_assignment::value>());
+                allocator_traits<node_allocator>::
+                  propagate_on_container_move_assignment::value>());
           }
         }
 
@@ -4211,9 +4213,9 @@ namespace boost {
         }
 
         template <class I>
-        void insert_range_equiv(
-          I i, I j, typename boost::unordered::detail::disable_if_forward<I,
-                      void*>::type = 0)
+        void insert_range_equiv(I i, I j,
+          typename boost::unordered::detail::disable_if_forward<I,
+            void*>::type = 0)
         {
           for (; i != j; ++i) {
             emplace_equiv(boost::unordered::detail::func::construct_node(
@@ -4680,8 +4682,9 @@ namespace boost {
       template <typename A, typename T>
       struct node : boost::unordered::detail::value_base<T>
       {
-        typedef typename ::boost::unordered::detail::rebind_wrap<A,
-          node<A, T> >::type allocator;
+        typedef
+          typename ::boost::unordered::detail::rebind_wrap<A, node<A, T> >::type
+            allocator;
         typedef typename ::boost::unordered::detail::allocator_traits<
           allocator>::pointer node_pointer;
         typedef node_pointer link_pointer;

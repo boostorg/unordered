@@ -497,6 +497,7 @@ namespace test {
     T* ptr_;
 
     ptr(T* x) : ptr_(x) {}
+
   public:
     ptr() : ptr_(0) {}
     explicit ptr(void_ptr const& x) : ptr_((T*)x.ptr_) {}
@@ -539,6 +540,7 @@ namespace test {
     T const* ptr_;
 
     const_ptr(T const* ptr) : ptr_(ptr) {}
+
   public:
     const_ptr() : ptr_(0) {}
     const_ptr(ptr<T> const& x) : ptr_(x.ptr_) {}
