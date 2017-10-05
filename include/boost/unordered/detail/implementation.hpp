@@ -2571,7 +2571,6 @@ namespace boost {
         typedef prime_policy<std::size_t> type;
       };
 
-// TODO: Maybe not if std::size_t is smaller than long long.
 #if !defined(BOOST_NO_LONG_LONG)
       template <> struct pick_policy2<boost::long_long_type>
       {
