@@ -360,9 +360,8 @@ namespace boost {
         std::size_t num_buckets =
           boost::unordered::detail::default_bucket_count)
       {
-        // TODO: Why +1?
         return (std::max)(
-          boost::unordered::detail::insert_size(i, j) + 1, num_buckets);
+          boost::unordered::detail::insert_size(i, j), num_buckets);
       }
 
       //////////////////////////////////////////////////////////////////////////
@@ -3309,7 +3308,7 @@ namespace boost {
           mlf_ = x.mlf_;
           recalculate_max_load();
 
-          if (x.size_ >= max_load_) {
+          if (x.size_ > max_load_) {
             create_buckets(min_buckets_for_size(x.size_));
           } else if (size_) {
             clear_buckets();
@@ -3384,7 +3383,7 @@ namespace boost {
             mlf_ = x.mlf_;
             recalculate_max_load();
 
-            if (x.size_ >= max_load_) {
+            if (x.size_ > max_load_) {
               create_buckets(min_buckets_for_size(x.size_));
             } else if (size_) {
               clear_buckets();
