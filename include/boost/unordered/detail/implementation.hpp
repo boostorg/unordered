@@ -3524,9 +3524,8 @@ namespace boost {
           std::size_t bucket_index = this->hash_to_bucket(key_hash);
           bucket_pointer b = this->get_bucket(bucket_index);
 
-          // TODO: Do this need to set_first_in_group ?
           n->bucket_info_ = bucket_index;
-          // n->set_first_in_group();
+          n->set_first_in_group();
 
           if (!b->next_) {
             link_pointer start_node = this->get_previous_start();
@@ -4062,7 +4061,7 @@ namespace boost {
               }
             }
           } else {
-            // n->set_first_in_group();
+            n->set_first_in_group();
             bucket_pointer b = this->get_bucket(bucket_index);
 
             if (!b->next_) {
