@@ -167,8 +167,7 @@ namespace emplace_tests {
     emplace_value(emplace_value const&);
   };
 
-  UNORDERED_AUTO_TEST(emplace_set)
-  {
+  UNORDERED_AUTO_TEST (emplace_set) {
     test::check_instances check_;
 
     typedef boost::unordered_set<emplace_value, boost::hash<emplace_value> >
@@ -249,8 +248,7 @@ namespace emplace_tests {
     BOOST_TEST(x.count(v4) == 1);
   }
 
-  UNORDERED_AUTO_TEST(emplace_multiset)
-  {
+  UNORDERED_AUTO_TEST (emplace_multiset) {
     test::check_instances check_;
 
     typedef boost::unordered_multiset<emplace_value,
@@ -328,8 +326,7 @@ namespace emplace_tests {
     BOOST_TEST_EQ(x.count(v3), 2u);
   }
 
-  UNORDERED_AUTO_TEST(emplace_map)
-  {
+  UNORDERED_AUTO_TEST (emplace_map) {
     test::check_instances check_;
 
     typedef boost::unordered_map<emplace_value, emplace_value,
@@ -400,8 +397,7 @@ namespace emplace_tests {
     BOOST_TEST_EQ(check_.constructions(), 16);
   }
 
-  UNORDERED_AUTO_TEST(emplace_multimap)
-  {
+  UNORDERED_AUTO_TEST (emplace_multimap) {
     test::check_instances check_;
 
     typedef boost::unordered_multimap<emplace_value, emplace_value,
@@ -466,8 +462,7 @@ namespace emplace_tests {
     BOOST_TEST_EQ(check_.constructions(), 20);
   }
 
-  UNORDERED_AUTO_TEST(try_emplace)
-  {
+  UNORDERED_AUTO_TEST (try_emplace) {
     test::check_instances check_;
 
     typedef boost::unordered_map<int, emplace_value> container;

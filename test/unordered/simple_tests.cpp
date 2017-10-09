@@ -88,8 +88,7 @@ template <class X> void simple_test(X const& a)
   }
 }
 
-UNORDERED_AUTO_TEST(simple_tests)
-{
+UNORDERED_AUTO_TEST (simple_tests) {
   using namespace std;
   srand(14878);
 

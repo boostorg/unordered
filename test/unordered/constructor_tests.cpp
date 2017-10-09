@@ -427,8 +427,7 @@ namespace constructor_tests {
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
 
-  UNORDERED_AUTO_TEST(test_default_initializer_list)
-  {
+  UNORDERED_AUTO_TEST (test_default_initializer_list) {
     std::initializer_list<int> init;
     boost::unordered_set<int> x1 = init;
     BOOST_TEST(x1.empty());
@@ -438,8 +437,7 @@ namespace constructor_tests {
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
 
-  UNORDERED_AUTO_TEST(test_initializer_list)
-  {
+  UNORDERED_AUTO_TEST (test_initializer_list) {
     boost::unordered_set<int> x1 = {2, 10, 45, -5};
     BOOST_TEST(x1.find(10) != x1.end());
     BOOST_TEST(x1.find(46) == x1.end());

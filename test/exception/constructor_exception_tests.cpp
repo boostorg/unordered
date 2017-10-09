@@ -199,11 +199,14 @@ template <class T> struct copy_range_construct_test : public range<T>, objects
   }
 };
 
+// clang-format off
 EXCEPTION_TESTS(
-  (construct_test1)(construct_test2)(construct_test3)(construct_test4)(
-    construct_test5)(construct_test6)(range_construct_test1)(
-    range_construct_test2)(range_construct_test3)(range_construct_test4)(
-    range_construct_test5)(input_range_construct_test)(
-    copy_range_construct_test),
+  (construct_test1)(construct_test2)(construct_test3)(construct_test4)
+  (construct_test5)(construct_test6)(range_construct_test1)
+  (range_construct_test2)(range_construct_test3)(range_construct_test4)
+  (range_construct_test5)(input_range_construct_test)
+  (copy_range_construct_test),
   CONTAINER_SEQ)
+// clang-format on
+
 RUN_TESTS()

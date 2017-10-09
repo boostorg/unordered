@@ -121,8 +121,12 @@ template <class T> struct equivalent_test1 : move_assign_base<T>
   }
 };
 
+// clang-format off
 EXCEPTION_TESTS(
-  (move_assign_test1)(move_assign_test2)(move_assign_test3)(move_assign_test4)(
-    move_assign_test4a)(move_assign_test5)(equivalent_test1),
+  (move_assign_test1)(move_assign_test2)(move_assign_test3)
+  (move_assign_test4)(move_assign_test4a)(move_assign_test5)
+  (equivalent_test1),
   CONTAINER_SEQ)
+// clang-format on
+
 RUN_TESTS()

@@ -976,8 +976,7 @@ namespace insert_tests {
     }
   };
 
-  UNORDERED_AUTO_TEST(insert_initializer_list_set)
-  {
+  UNORDERED_AUTO_TEST (insert_initializer_list_set) {
     boost::unordered_set<int> set;
     set.insert({1, 2, 3, 1});
     BOOST_TEST_EQ(set.size(), 3u);
@@ -1015,8 +1014,7 @@ namespace insert_tests {
 
 #if !BOOST_WORKAROUND(BOOST_MSVC, == 1800)
 
-  UNORDERED_AUTO_TEST(insert_initializer_list_multiset)
-  {
+  UNORDERED_AUTO_TEST (insert_initializer_list_multiset) {
     boost::unordered_multiset<std::string> multiset;
     // multiset.insert({});
     BOOST_TEST(multiset.empty());
@@ -1033,8 +1031,7 @@ namespace insert_tests {
 
 #endif
 
-  UNORDERED_AUTO_TEST(insert_initializer_list_map)
-  {
+  UNORDERED_AUTO_TEST (insert_initializer_list_map) {
     boost::unordered_map<std::string, std::string> map;
     // map.insert({});
     BOOST_TEST(map.empty());
@@ -1042,8 +1039,7 @@ namespace insert_tests {
     BOOST_TEST_EQ(map.size(), 2u);
   }
 
-  UNORDERED_AUTO_TEST(insert_initializer_list_multimap)
-  {
+  UNORDERED_AUTO_TEST (insert_initializer_list_multimap) {
     boost::unordered_multimap<std::string, std::string> multimap;
     // multimap.insert({});
     BOOST_TEST(multimap.empty());
@@ -1079,8 +1075,7 @@ namespace insert_tests {
     }
   };
 
-  UNORDERED_AUTO_TEST(map_emplace_test)
-  {
+  UNORDERED_AUTO_TEST (map_emplace_test) {
     {
       boost::unordered_map<int, overloaded_constructor, test::hash,
         test::equal_to,
@@ -1120,8 +1115,7 @@ namespace insert_tests {
     }
   }
 
-  UNORDERED_AUTO_TEST(set_emplace_test)
-  {
+  UNORDERED_AUTO_TEST (set_emplace_test) {
     boost::unordered_set<overloaded_constructor> x;
     overloaded_constructor check;
 
@@ -1169,8 +1163,7 @@ namespace insert_tests {
     }
   };
 
-  UNORDERED_AUTO_TEST(map_emplace_test2)
-  {
+  UNORDERED_AUTO_TEST (map_emplace_test2) {
     // Emulating piecewise construction with boost::tuple bypasses the
     // allocator's construct method, but still uses test destroy method.
     test::detail::disable_construction_tracking _scoped;
@@ -1276,8 +1269,7 @@ namespace insert_tests {
     }
   }
 
-  UNORDERED_AUTO_TEST(set_emplace_test2)
-  {
+  UNORDERED_AUTO_TEST (set_emplace_test2) {
     boost::unordered_set<
       std::pair<overloaded_constructor, overloaded_constructor> >
       x;
@@ -1340,8 +1332,7 @@ RUN_TESTS_QUIET()
 
 #else // PIECEWISE_TEST_NAME
 
-UNORDERED_AUTO_TEST(PIECEWISE_TEST_NAME)
-{
+UNORDERED_AUTO_TEST (PIECEWISE_TEST_NAME) {
 #if EMULATING_PIECEWISE_CONSTRUCTION
   test::detail::disable_construction_tracking _scoped;
 #endif
@@ -1431,8 +1422,7 @@ UNORDERED_AUTO_TEST(PIECEWISE_TEST_NAME)
   }
 }
 
-UNORDERED_AUTO_TEST(BOOST_PP_CAT(PIECEWISE_TEST_NAME, 2))
-{
+UNORDERED_AUTO_TEST (BOOST_PP_CAT(PIECEWISE_TEST_NAME, 2)) {
 #if EMULATING_PIECEWISE_CONSTRUCTION
   test::detail::disable_construction_tracking _scoped;
 #endif

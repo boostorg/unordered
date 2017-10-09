@@ -67,23 +67,20 @@ bool call_not_equals(
 typedef boost::unordered_set<int> int_set;
 typedef boost::unordered_multiset<int> int_multiset;
 
-UNORDERED_AUTO_TEST(use_fwd_declared_trait_without_definition)
-{
+UNORDERED_AUTO_TEST (use_fwd_declared_trait_without_definition) {
   BOOST_TEST(sizeof(is_unordered_set_impl((int_set*)0)) == sizeof(true_type));
 }
 
 #include <boost/unordered_set.hpp>
 
-UNORDERED_AUTO_TEST(use_fwd_declared_trait)
-{
+UNORDERED_AUTO_TEST (use_fwd_declared_trait) {
   boost::unordered_set<int> x;
   BOOST_TEST(sizeof(is_unordered_set_impl(&x)) == sizeof(true_type));
 
   BOOST_TEST(sizeof(is_unordered_set_impl((int*)0)) == sizeof(false_type));
 }
 
-UNORDERED_AUTO_TEST(use_set_fwd_declared_function)
-{
+UNORDERED_AUTO_TEST (use_set_fwd_declared_function) {
   int_set x, y;
   x.insert(1);
   y.insert(2);
@@ -99,8 +96,7 @@ UNORDERED_AUTO_TEST(use_set_fwd_declared_function)
   BOOST_TEST(call_not_equals(x, y));
 }
 
-UNORDERED_AUTO_TEST(use_multiset_fwd_declared_function)
-{
+UNORDERED_AUTO_TEST (use_multiset_fwd_declared_function) {
   int_multiset x, y;
   call_swap(x, y);
   BOOST_TEST(call_equals(x, y));

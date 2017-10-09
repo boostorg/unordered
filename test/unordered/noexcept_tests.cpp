@@ -100,8 +100,7 @@ namespace noexcept_tests {
 
   bool have_is_nothrow_move = false;
 
-  UNORDERED_AUTO_TEST(check_is_nothrow_move)
-  {
+  UNORDERED_AUTO_TEST (check_is_nothrow_move) {
     BOOST_TEST(
       !boost::is_nothrow_move_constructible<hash_possible_exception>::value);
     have_is_nothrow_move =
@@ -119,8 +118,7 @@ namespace noexcept_tests {
 #endif
   }
 
-  UNORDERED_AUTO_TEST(test_noexcept)
-  {
+  UNORDERED_AUTO_TEST (test_noexcept) {
     if (have_is_nothrow_move) {
       BOOST_TEST((boost::is_nothrow_move_constructible<
         boost::unordered_set<int> >::value));
@@ -139,8 +137,7 @@ namespace noexcept_tests {
           boost::hash<int>, equal_to_possible_exception> >::value));
   }
 
-  UNORDERED_AUTO_TEST(test_no_throw_when_noexcept)
-  {
+  UNORDERED_AUTO_TEST (test_no_throw_when_noexcept) {
     typedef boost::unordered_set<int, hash_nothrow_move, equal_to_nothrow_move>
       throwing_set;
 

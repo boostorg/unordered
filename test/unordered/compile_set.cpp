@@ -35,8 +35,7 @@ INSTANTIATE(multiset)<test::minimal::assignable,
   test::minimal::equal_to<test::minimal::assignable>,
   test::minimal::allocator<int> >;
 
-UNORDERED_AUTO_TEST(test0)
-{
+UNORDERED_AUTO_TEST (test0) {
   test::minimal::constructor_param x;
 
   test::minimal::assignable assignable(x);
@@ -78,8 +77,7 @@ UNORDERED_AUTO_TEST(test0)
   container_test(multiset, assignable);
 }
 
-UNORDERED_AUTO_TEST(equality_tests)
-{
+UNORDERED_AUTO_TEST (equality_tests) {
   typedef test::minimal::copy_constructible_equality_comparable value_type;
 
   boost::unordered_set<int> int_set;
@@ -118,8 +116,7 @@ UNORDERED_AUTO_TEST(equality_tests)
   equality_test(multiset);
 }
 
-UNORDERED_AUTO_TEST(test1)
-{
+UNORDERED_AUTO_TEST (test1) {
   boost::hash<int> hash;
   std::equal_to<int> equal_to;
   int value = 0;
@@ -157,8 +154,7 @@ UNORDERED_AUTO_TEST(test1)
   unordered_copyable_test(multiset2, value, value, hash, equal_to);
 }
 
-UNORDERED_AUTO_TEST(test2)
-{
+UNORDERED_AUTO_TEST (test2) {
   test::minimal::constructor_param x;
 
   test::minimal::assignable assignable(x);
@@ -193,8 +189,7 @@ UNORDERED_AUTO_TEST(test2)
   unordered_set_member_test(multiset, assignable);
 }
 
-UNORDERED_AUTO_TEST(movable1_tests)
-{
+UNORDERED_AUTO_TEST (movable1_tests) {
   test::minimal::constructor_param x;
 
   test::minimal::movable1 movable1(x);
@@ -226,8 +221,7 @@ UNORDERED_AUTO_TEST(movable1_tests)
   unordered_movable_test(multiset, movable1, movable1, hash, equal_to);
 }
 
-UNORDERED_AUTO_TEST(movable2_tests)
-{
+UNORDERED_AUTO_TEST (movable2_tests) {
   test::minimal::constructor_param x;
 
   test::minimal::movable2 movable2(x);
@@ -259,8 +253,7 @@ UNORDERED_AUTO_TEST(movable2_tests)
   unordered_movable_test(multiset, movable2, movable2, hash, equal_to);
 }
 
-UNORDERED_AUTO_TEST(destructible_tests)
-{
+UNORDERED_AUTO_TEST (destructible_tests) {
   test::minimal::constructor_param x;
 
   test::minimal::destructible destructible(x);
@@ -303,8 +296,7 @@ std::size_t hash_value(lwg2059_key x)
 
 bool operator==(lwg2059_key x, lwg2059_key y) { return x.value == y.value; }
 
-UNORDERED_AUTO_TEST(lwg2059)
-{
+UNORDERED_AUTO_TEST (lwg2059) {
   {
     boost::unordered_set<lwg2059_key> x;
     x.emplace(lwg2059_key(10));

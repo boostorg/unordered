@@ -14,8 +14,7 @@
 
 namespace at_tests {
 
-  UNORDERED_AUTO_TEST(at_tests)
-  {
+  UNORDERED_AUTO_TEST (at_tests) {
     BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Create Map" << std::endl;
 
     boost::unordered_map<std::string, int> x;

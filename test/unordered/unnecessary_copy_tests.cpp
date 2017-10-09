@@ -341,8 +341,7 @@ namespace unnecessary_copy_tests {
   UNORDERED_TEST(
     unnecessary_copy_emplace_boost_move_map_test, ((map)(multimap)))
 
-  UNORDERED_AUTO_TEST(unnecessary_copy_emplace_set_test)
-  {
+  UNORDERED_AUTO_TEST (unnecessary_copy_emplace_set_test) {
     // When calling 'source' the object is moved on some compilers, but not
     // others. So count that here to adjust later.
 
@@ -425,8 +424,7 @@ namespace unnecessary_copy_tests {
     MOVE_COUNT(0);
   }
 
-  UNORDERED_AUTO_TEST(unnecessary_copy_emplace_map_test)
-  {
+  UNORDERED_AUTO_TEST (unnecessary_copy_emplace_map_test) {
     // When calling 'source' the object is moved on some compilers, but not
     // others. So count that here to adjust later.
 

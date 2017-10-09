@@ -16,8 +16,7 @@
 #include <set>
 #include <string>
 
-UNORDERED_AUTO_TEST(example1)
-{
+UNORDERED_AUTO_TEST (example1) {
   typedef boost::unordered_map<int, std::string>::insert_return_type
     insert_return_type;
 
@@ -42,8 +41,7 @@ UNORDERED_AUTO_TEST(example1)
   BOOST_TEST(r.node.mapped() == "buckle my shoe");
 }
 
-UNORDERED_AUTO_TEST(example2)
-{
+UNORDERED_AUTO_TEST (example2) {
   boost::unordered_set<int> src;
   src.insert(1);
   src.insert(3);
@@ -58,8 +56,7 @@ UNORDERED_AUTO_TEST(example2)
   // dst == {1, 2, 3, 4, 5}
 }
 
-UNORDERED_AUTO_TEST(example3)
-{
+UNORDERED_AUTO_TEST (example3) {
   typedef boost::unordered_set<int>::iterator iterator;
 
   boost::unordered_set<int> src;
@@ -90,8 +87,7 @@ UNORDERED_AUTO_TEST(example3)
   BOOST_TEST(it == dst2.end());
 }
 
-UNORDERED_AUTO_TEST(failed_insertion_with_hint)
-{
+UNORDERED_AUTO_TEST (failed_insertion_with_hint) {
   {
     boost::unordered_set<int> src;
     boost::unordered_set<int> dst;
@@ -234,8 +230,7 @@ template <typename Container> void node_handle_tests_impl(Container& c)
   BOOST_TEST(!n4);
 }
 
-UNORDERED_AUTO_TEST(node_handle_tests)
-{
+UNORDERED_AUTO_TEST (node_handle_tests) {
   boost::unordered_set<int> x1;
   x1.emplace(100);
   x1.emplace(140);
@@ -363,8 +358,7 @@ struct hash_thing
   }
 };
 
-UNORDERED_AUTO_TEST(insert_node_handle_unique_tests)
-{
+UNORDERED_AUTO_TEST (insert_node_handle_unique_tests) {
   {
     boost::unordered_set<int> x1;
     boost::unordered_set<int> x2;
@@ -389,8 +383,7 @@ UNORDERED_AUTO_TEST(insert_node_handle_unique_tests)
   }
 }
 
-UNORDERED_AUTO_TEST(insert_node_handle_equiv_tests)
-{
+UNORDERED_AUTO_TEST (insert_node_handle_equiv_tests) {
   {
     boost::unordered_multimap<int, int, hash_thing> x1;
     boost::unordered_multimap<int, int> x2;
@@ -405,8 +398,7 @@ UNORDERED_AUTO_TEST(insert_node_handle_equiv_tests)
   }
 }
 
-UNORDERED_AUTO_TEST(insert_node_handle_unique_tests2)
-{
+UNORDERED_AUTO_TEST (insert_node_handle_unique_tests2) {
   {
     boost::unordered_set<int> x1;
     boost::unordered_set<int> x2;

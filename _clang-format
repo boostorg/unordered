@@ -35,4 +35,4 @@ BraceWrapping:
 PointerAlignment: Left
 
 # Boost specific stuff
-ForEachMacros: [ BOOST_FOREACH ]
+ForEachMacros: [ BOOST_FOREACH, UNORDERED_AUTO_TEST ]

@@ -242,8 +242,7 @@ namespace assign_tests {
     return T::allocator_type::is_propagate_on_assign;
   }
 
-  UNORDERED_AUTO_TEST(check_traits)
-  {
+  UNORDERED_AUTO_TEST (check_traits) {
     BOOST_TEST(!is_propagate(test_set));
     BOOST_TEST(is_propagate(test_set_prop_assign));
     BOOST_TEST(!is_propagate(test_set_no_prop_assign));
@@ -267,8 +266,7 @@ namespace assign_tests {
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
 
-  UNORDERED_AUTO_TEST(assign_default_initializer_list)
-  {
+  UNORDERED_AUTO_TEST (assign_default_initializer_list) {
     BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Initializer List Tests\n";
     std::initializer_list<std::pair<int const, int> > init;
     boost::unordered_map<int, int> x1;
@@ -282,8 +280,7 @@ namespace assign_tests {
 #endif
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
-  UNORDERED_AUTO_TEST(assign_initializer_list)
-  {
+  UNORDERED_AUTO_TEST (assign_initializer_list) {
     BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Initializer List Tests\n";
 
     boost::unordered_set<int> x;
