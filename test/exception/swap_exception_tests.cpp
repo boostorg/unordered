@@ -135,7 +135,11 @@ template <class T> struct swap_test4 : swap_base<T>
   swap_test4() : swap_base<T>(10, 10, 1, 2) {}
 };
 
-EXCEPTION_TESTS((self_swap_test1)(self_swap_test2)(swap_test1)(swap_test2)(
-                  swap_test3)(swap_test4),
+// clang-format off
+EXCEPTION_TESTS(
+  (self_swap_test1)(self_swap_test2)
+  (swap_test1)(swap_test2)(swap_test3)(swap_test4),
   CONTAINER_SEQ)
+// clang-format on
+
 RUN_TESTS()

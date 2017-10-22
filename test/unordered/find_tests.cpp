@@ -155,7 +155,7 @@ namespace find_tests {
                    (default_generator)(generate_collisions)(limited_range)))
   UNORDERED_TEST(find_compatible_keys_test,
     ((test_set)(test_multiset)(test_map)(test_multimap))(
-                   (default_generator)(generate_collisions)(limited_range)))
+      (default_generator)(generate_collisions)(limited_range)))
 }
 
 RUN_TESTS()

@@ -19,8 +19,7 @@
 
 namespace merge_tests {
 
-  UNORDERED_AUTO_TEST(merge_set)
-  {
+  UNORDERED_AUTO_TEST (merge_set) {
     boost::unordered_set<int> x;
     boost::unordered_set<int> y;
 
@@ -59,8 +58,7 @@ namespace merge_tests {
     test::check_equivalent_keys(y);
   }
 
-  UNORDERED_AUTO_TEST(merge_multiset)
-  {
+  UNORDERED_AUTO_TEST (merge_multiset) {
     boost::unordered_multiset<int> x;
     boost::unordered_multiset<int> y;
 
@@ -99,8 +97,7 @@ namespace merge_tests {
     test::check_equivalent_keys(y);
   }
 
-  UNORDERED_AUTO_TEST(merge_set_and_multiset)
-  {
+  UNORDERED_AUTO_TEST (merge_set_and_multiset) {
     boost::unordered_set<int> x;
     boost::unordered_multiset<int> y;
 

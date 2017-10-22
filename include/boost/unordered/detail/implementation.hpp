@@ -356,13 +356,12 @@ namespace boost {
       }
 
       template <class I>
-      inline std::size_t initial_size(
-        I i, I j, std::size_t num_buckets =
-                    boost::unordered::detail::default_bucket_count)
+      inline std::size_t initial_size(I i, I j,
+        std::size_t num_buckets =
+          boost::unordered::detail::default_bucket_count)
       {
-        // TODO: Why +1?
         return (std::max)(
-          boost::unordered::detail::insert_size(i, j) + 1, num_buckets);
+          boost::unordered::detail::insert_size(i, j), num_buckets);
       }
 
       //////////////////////////////////////////////////////////////////////////
@@ -384,6 +383,7 @@ namespace boost {
 
         T& get() { return value_; }
         T const& get() const { return value_; }
+
       private:
         T value_;
       };
@@ -1027,17 +1027,17 @@ namespace boost {
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
       template <typename T, typename ValueType, typename... Args>
-      BOOST_UNORDERED_HAS_FUNCTION(
-        construct, U, (boost::unordered::detail::make<ValueType*>(),
-                        boost::unordered::detail::make<Args const>()...),
+      BOOST_UNORDERED_HAS_FUNCTION(construct, U,
+        (boost::unordered::detail::make<ValueType*>(),
+          boost::unordered::detail::make<Args const>()...),
         2);
 
 #else
 
       template <typename T, typename ValueType>
-      BOOST_UNORDERED_HAS_FUNCTION(
-        construct, U, (boost::unordered::detail::make<ValueType*>(),
-                        boost::unordered::detail::make<ValueType const>()),
+      BOOST_UNORDERED_HAS_FUNCTION(construct, U,
+        (boost::unordered::detail::make<ValueType*>(),
+          boost::unordered::detail::make<ValueType const>()),
         2);
 
 #endif
@@ -2571,7 +2571,6 @@ namespace boost {
         typedef prime_policy<std::size_t> type;
       };
 
-// TODO: Maybe not if std::size_t is smaller than long long.
 #if !defined(BOOST_NO_LONG_LONG)
       template <> struct pick_policy2<boost::long_long_type>
       {
@@ -2686,7 +2685,7 @@ namespace boost {
         {
           construct(current_, bf.current(),
             boost::unordered::detail::integral_constant<bool,
-                      nothrow_move_constructible>());
+              nothrow_move_constructible>());
         }
 
         ~functions() { this->destroy(current_); }
@@ -3169,9 +3168,10 @@ namespace boost {
 
           // I think swap can throw if Propagate::value,
           // since the allocators' swap can throw. Not sure though.
-          swap_allocators(x, boost::unordered::detail::integral_constant<bool,
-                               allocator_traits<node_allocator>::
-                                 propagate_on_container_swap::value>());
+          swap_allocators(
+            x, boost::unordered::detail::integral_constant<bool,
+                 allocator_traits<
+                   node_allocator>::propagate_on_container_swap::value>());
 
           boost::swap(buckets_, x.buckets_);
           boost::swap(bucket_count_, x.bucket_count_);
@@ -3195,6 +3195,31 @@ namespace boost {
           other.buckets_ = bucket_pointer();
           other.size_ = 0;
           other.max_load_ = 0;
+        }
+
+        // For use in the constructor when allocators might be different.
+        void move_construct_buckets(table& src)
+        {
+          if (this->node_alloc() == src.node_alloc()) {
+            move_buckets_from(src);
+          } else {
+            this->create_buckets(this->bucket_count_);
+            link_pointer prev = this->get_previous_start();
+            std::size_t last_bucket = this->bucket_count_;
+            for (node_pointer n = src.begin(); n; n = next_node(n)) {
+              std::size_t bucket = n->get_bucket();
+              if (bucket != last_bucket) {
+                this->get_bucket(bucket)->next_ = prev;
+              }
+              node_pointer n2 = boost::unordered::detail::func::construct_node(
+                this->node_alloc(), boost::move(n->value()));
+              n2->bucket_info_ = n->bucket_info_;
+              prev->next_ = n2;
+              ++size_;
+              prev = n2;
+              last_bucket = bucket;
+            }
+          }
         }
 
         ////////////////////////////////////////////////////////////////////////
@@ -3294,8 +3319,8 @@ namespace boost {
           if (this != &x) {
             assign(x, is_unique,
               boost::unordered::detail::integral_constant<bool,
-                     allocator_traits<node_allocator>::
-                       propagate_on_container_copy_assignment::value>());
+                allocator_traits<node_allocator>::
+                  propagate_on_container_copy_assignment::value>());
           }
         }
 
@@ -3307,7 +3332,7 @@ namespace boost {
           mlf_ = x.mlf_;
           recalculate_max_load();
 
-          if (x.size_ >= max_load_) {
+          if (x.size_ > max_load_) {
             create_buckets(min_buckets_for_size(x.size_));
           } else if (size_) {
             clear_buckets();
@@ -3350,8 +3375,8 @@ namespace boost {
           if (this != &x) {
             move_assign(x, is_unique,
               boost::unordered::detail::integral_constant<bool,
-                          allocator_traits<node_allocator>::
-                            propagate_on_container_move_assignment::value>());
+                allocator_traits<node_allocator>::
+                  propagate_on_container_move_assignment::value>());
           }
         }
 
@@ -3382,7 +3407,7 @@ namespace boost {
             mlf_ = x.mlf_;
             recalculate_max_load();
 
-            if (x.size_ >= max_load_) {
+            if (x.size_ > max_load_) {
               create_buckets(min_buckets_for_size(x.size_));
             } else if (size_) {
               clear_buckets();
@@ -3524,9 +3549,8 @@ namespace boost {
           std::size_t bucket_index = this->hash_to_bucket(key_hash);
           bucket_pointer b = this->get_bucket(bucket_index);
 
-          // TODO: Do this need to set_first_in_group ?
           n->bucket_info_ = bucket_index;
-          // n->set_first_in_group();
+          n->set_first_in_group();
 
           if (!b->next_) {
             link_pointer start_node = this->get_previous_start();
@@ -3922,20 +3946,6 @@ namespace boost {
           }
         }
 
-        // TODO: Should be move_buckets_uniq
-        void move_buckets(table const& src)
-        {
-          this->create_buckets(this->bucket_count_);
-
-          for (node_pointer n = src.begin(); n; n = next_node(n)) {
-            std::size_t key_hash = this->hash(this->get_key(n));
-            this->add_node_unique(
-              boost::unordered::detail::func::construct_node(
-                this->node_alloc(), boost::move(n->value())),
-              key_hash);
-          }
-        }
-
         void assign_buckets(table const& src, true_type)
         {
           node_holder<node_allocator> holder(*this);
@@ -4062,7 +4072,7 @@ namespace boost {
               }
             }
           } else {
-            // n->set_first_in_group();
+            n->set_first_in_group();
             bucket_pointer b = this->get_bucket(bucket_index);
 
             if (!b->next_) {
@@ -4211,9 +4221,9 @@ namespace boost {
         }
 
         template <class I>
-        void insert_range_equiv(
-          I i, I j, typename boost::unordered::detail::disable_if_forward<I,
-                      void*>::type = 0)
+        void insert_range_equiv(I i, I j,
+          typename boost::unordered::detail::disable_if_forward<I,
+            void*>::type = 0)
         {
           for (; i != j; ++i) {
             emplace_equiv(boost::unordered::detail::func::construct_node(
@@ -4323,26 +4333,6 @@ namespace boost {
               this->add_node_equiv(
                 boost::unordered::detail::func::construct_node(
                   this->node_alloc(), n->value()),
-                key_hash, pos);
-            }
-          }
-        }
-
-        void move_buckets_equiv(table const& src)
-        {
-          this->create_buckets(this->bucket_count_);
-
-          for (node_pointer n = src.begin(); n;) {
-            std::size_t key_hash = this->hash(this->get_key(n));
-            node_pointer group_end(next_group(n));
-            node_pointer pos = this->add_node_equiv(
-              boost::unordered::detail::func::construct_node(
-                this->node_alloc(), boost::move(n->value())),
-              key_hash, node_pointer());
-            for (n = next_node(n); n != group_end; n = next_node(n)) {
-              this->add_node_equiv(
-                boost::unordered::detail::func::construct_node(
-                  this->node_alloc(), boost::move(n->value())),
                 key_hash, pos);
             }
           }
@@ -4680,8 +4670,9 @@ namespace boost {
       template <typename A, typename T>
       struct node : boost::unordered::detail::value_base<T>
       {
-        typedef typename ::boost::unordered::detail::rebind_wrap<A,
-          node<A, T> >::type allocator;
+        typedef
+          typename ::boost::unordered::detail::rebind_wrap<A, node<A, T> >::type
+            allocator;
         typedef typename ::boost::unordered::detail::allocator_traits<
           allocator>::pointer node_pointer;
         typedef node_pointer link_pointer;

@@ -14,16 +14,14 @@
 #include <boost/preprocessor/seq/for_each_product.hpp>
 
 #define UNORDERED_EXCEPTION_TEST_CASE(name, test_func, type)                   \
-  UNORDERED_AUTO_TEST(name)                                                    \
-  {                                                                            \
+  UNORDERED_AUTO_TEST (name) {                                                 \
     test_func<type> fixture;                                                   \
     ::test::lightweight::exception_safety(                                     \
       fixture, BOOST_STRINGIZE(test_func<type>));                              \
   }
 
 #define UNORDERED_EXCEPTION_TEST_CASE_REPEAT(name, test_func, n, type)         \
-  UNORDERED_AUTO_TEST(name)                                                    \
-  {                                                                            \
+  UNORDERED_AUTO_TEST (name) {                                                 \
     for (unsigned i = 0; i < n; ++i) {                                         \
       test_func<type> fixture;                                                 \
       ::test::lightweight::exception_safety(                                   \

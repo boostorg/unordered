@@ -73,8 +73,7 @@ typedef boost::unordered_multimap<int, int, collision3_hash, std::equal_to<int>,
 typedef collide_map::value_type collide_value;
 typedef test::list<collide_value> collide_list;
 
-UNORDERED_AUTO_TEST(empty_range_tests)
-{
+UNORDERED_AUTO_TEST (empty_range_tests) {
   collide_map x;
   x.erase(x.begin(), x.end());
   x.erase(x.begin(), x.begin());
@@ -82,8 +81,7 @@ UNORDERED_AUTO_TEST(empty_range_tests)
   test::check_equivalent_keys(x);
 }
 
-UNORDERED_AUTO_TEST(single_item_tests)
-{
+UNORDERED_AUTO_TEST (single_item_tests) {
   collide_list init;
   init.push_back(collide_value(1, 1));
 
@@ -99,8 +97,7 @@ UNORDERED_AUTO_TEST(single_item_tests)
   test::check_equivalent_keys(x);
 }
 
-UNORDERED_AUTO_TEST(two_equivalent_item_tests)
-{
+UNORDERED_AUTO_TEST (two_equivalent_item_tests) {
   collide_list init;
   init.push_back(collide_value(1, 1));
   init.push_back(collide_value(1, 2));
@@ -198,23 +195,20 @@ void exhaustive_erase_tests(Container* x, int num_values, int num_duplicated)
   }
 }
 
-UNORDERED_AUTO_TEST(exhaustive_collide_tests)
-{
+UNORDERED_AUTO_TEST (exhaustive_collide_tests) {
   BOOST_LIGHTWEIGHT_TEST_OSTREAM << "exhaustive_collide_tests:\n";
   collide_map m;
   exhaustive_erase_tests((collide_map*)0, 4, 4);
   BOOST_LIGHTWEIGHT_TEST_OSTREAM << "\n";
 }
 
-UNORDERED_AUTO_TEST(exhaustive_collide2_tests)
-{
+UNORDERED_AUTO_TEST (exhaustive_collide2_tests) {
   BOOST_LIGHTWEIGHT_TEST_OSTREAM << "exhaustive_collide2_tests:\n";
   exhaustive_erase_tests((collide_map2*)0, 8, 4);
   BOOST_LIGHTWEIGHT_TEST_OSTREAM << "\n";
 }
 
-UNORDERED_AUTO_TEST(exhaustive_collide3_tests)
-{
+UNORDERED_AUTO_TEST (exhaustive_collide3_tests) {
   BOOST_LIGHTWEIGHT_TEST_OSTREAM << "exhaustive_collide3_tests:\n";
   exhaustive_erase_tests((collide_map3*)0, 8, 4);
   BOOST_LIGHTWEIGHT_TEST_OSTREAM << "\n";

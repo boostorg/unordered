@@ -36,8 +36,7 @@ INSTANTIATE(multimap)<test::minimal::assignable, test::minimal::assignable,
   test::minimal::equal_to<test::minimal::assignable>,
   test::minimal::allocator<int> >;
 
-UNORDERED_AUTO_TEST(test0)
-{
+UNORDERED_AUTO_TEST (test0) {
   test::minimal::constructor_param x;
 
   typedef std::pair<test::minimal::assignable const, test::minimal::assignable>
@@ -81,8 +80,7 @@ UNORDERED_AUTO_TEST(test0)
   container_test(multimap, value);
 }
 
-UNORDERED_AUTO_TEST(equality_tests)
-{
+UNORDERED_AUTO_TEST (equality_tests) {
   typedef std::pair<test::minimal::copy_constructible_equality_comparable const,
     test::minimal::copy_constructible_equality_comparable>
     value_type;
@@ -97,7 +95,7 @@ UNORDERED_AUTO_TEST(equality_tests)
     test::minimal::copy_constructible_equality_comparable,
     test::minimal::hash<test::minimal::copy_constructible_equality_comparable>,
     test::minimal::equal_to<
-                         test::minimal::copy_constructible_equality_comparable>,
+      test::minimal::copy_constructible_equality_comparable>,
     test::minimal::allocator<value_type> >
     map;
 
@@ -125,8 +123,7 @@ UNORDERED_AUTO_TEST(equality_tests)
   equality_test(multimap);
 }
 
-UNORDERED_AUTO_TEST(test1)
-{
+UNORDERED_AUTO_TEST (test1) {
   boost::hash<int> hash;
   std::equal_to<int> equal_to;
   int value = 0;
@@ -167,8 +164,7 @@ UNORDERED_AUTO_TEST(test1)
   unordered_copyable_test(multimap2, value, map_value, hash, equal_to);
 }
 
-UNORDERED_AUTO_TEST(test2)
-{
+UNORDERED_AUTO_TEST (test2) {
   test::minimal::constructor_param x;
 
   test::minimal::assignable assignable(x);
@@ -235,8 +231,7 @@ std::size_t hash_value(lwg2059_key x)
 
 bool operator==(lwg2059_key x, lwg2059_key y) { return x.value == y.value; }
 
-UNORDERED_AUTO_TEST(lwg2059)
-{
+UNORDERED_AUTO_TEST (lwg2059) {
   {
     boost::unordered_map<lwg2059_key, int> x;
     x.emplace(lwg2059_key(10), 5);

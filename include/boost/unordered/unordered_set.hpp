@@ -307,7 +307,7 @@ namespace boost {
         return table_.emplace_hint_unique(hint,
           table::extractor::extract(boost::forward<A0>(a0)),
           boost::unordered::detail::create_emplace_args(
-                                            boost::forward<A0>(a0)));
+            boost::forward<A0>(a0)));
       }
 
       template <typename A0, typename A1>
@@ -315,19 +315,19 @@ namespace boost {
         const_iterator hint, BOOST_FWD_REF(A0) a0, BOOST_FWD_REF(A1) a1)
       {
         return table_.emplace_hint_unique(hint,
-          table::extractor::extract(boost::forward<A0>(a0),
-                                            boost::forward<A1>(a1)),
-          boost::unordered::detail::create_emplace_args(boost::forward<A0>(a0),
-                                            boost::forward<A1>(a1)));
+          table::extractor::extract(
+            boost::forward<A0>(a0), boost::forward<A1>(a1)),
+          boost::unordered::detail::create_emplace_args(
+            boost::forward<A0>(a0), boost::forward<A1>(a1)));
       }
 
       template <typename A0, typename A1, typename A2>
       iterator emplace_hint(const_iterator hint, BOOST_FWD_REF(A0) a0,
         BOOST_FWD_REF(A1) a1, BOOST_FWD_REF(A2) a2)
       {
-        return table_.emplace_hint_unique(
-          hint, table::extractor::extract(
-                  boost::forward<A0>(a0), boost::forward<A1>(a1)),
+        return table_.emplace_hint_unique(hint,
+          table::extractor::extract(
+            boost::forward<A0>(a0), boost::forward<A1>(a1)),
           boost::unordered::detail::create_emplace_args(boost::forward<A0>(a0),
             boost::forward<A1>(a1), boost::forward<A2>(a2)));
       }
@@ -352,9 +352,9 @@ namespace boost {
   iterator emplace_hint(                                                       \
     const_iterator hint, BOOST_PP_ENUM_##z(n, BOOST_UNORDERED_FWD_PARAM, a))   \
   {                                                                            \
-    return table_.emplace_hint_unique(                                         \
-      hint, table::extractor::extract(                                         \
-              boost::forward<A0>(a0), boost::forward<A1>(a1)),                 \
+    return table_.emplace_hint_unique(hint,                                    \
+      table::extractor::extract(                                               \
+        boost::forward<A0>(a0), boost::forward<A1>(a1)),                       \
       boost::unordered::detail::create_emplace_args(                           \
         BOOST_PP_ENUM_##z(n, BOOST_UNORDERED_CALL_FORWARD, a)));               \
   }
@@ -813,8 +813,7 @@ namespace boost {
       template <typename A0>
       iterator emplace_hint(const_iterator hint, BOOST_FWD_REF(A0) a0)
       {
-        return iterator(table_.emplace_hint_equiv(
-          hint,
+        return iterator(table_.emplace_hint_equiv(hint,
           boost::unordered::detail::func::construct_node_from_args(
             table_.node_alloc(), boost::unordered::detail::create_emplace_args(
                                    boost::forward<A0>(a0)))));
@@ -1109,12 +1108,7 @@ namespace boost {
       BOOST_RV_REF(unordered_set) other, allocator_type const& a)
         : table_(other.table_, a, boost::unordered::detail::move_tag())
     {
-      if (table_.node_alloc() == other.table_.node_alloc()) {
-        table_.move_buckets_from(other.table_);
-      } else if (other.table_.size_) {
-        // TODO: Could pick new bucket size?
-        table_.move_buckets(other.table_);
-      }
+      table_.move_construct_buckets(other.table_);
     }
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
@@ -1511,12 +1505,7 @@ namespace boost {
       BOOST_RV_REF(unordered_multiset) other, allocator_type const& a)
         : table_(other.table_, a, boost::unordered::detail::move_tag())
     {
-      if (table_.node_alloc() == other.table_.node_alloc()) {
-        table_.move_buckets_from(other.table_);
-      } else if (other.table_.size_) {
-        // TODO: Could pick new bucket size?
-        table_.move_buckets_equiv(other.table_);
-      }
+      table_.move_construct_buckets(other.table_);
     }
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)

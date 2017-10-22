@@ -415,20 +415,19 @@ namespace constructor_tests {
 
   UNORDERED_TEST(constructor_tests1,
     ((test_map_std_alloc)(test_set)(test_multiset)(test_map)(test_multimap))(
-                   (default_generator)(generate_collisions)(limited_range)))
+      (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(constructor_tests2,
     ((test_set)(test_multiset)(test_map)(test_multimap))(
-                   (default_generator)(generate_collisions)(limited_range)))
+      (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(map_constructor_test,
     ((test_map_std_alloc)(test_map)(test_multimap))(
-                   (default_generator)(generate_collisions)(limited_range)))
+      (default_generator)(generate_collisions)(limited_range)))
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
 
-  UNORDERED_AUTO_TEST(test_default_initializer_list)
-  {
+  UNORDERED_AUTO_TEST (test_default_initializer_list) {
     std::initializer_list<int> init;
     boost::unordered_set<int> x1 = init;
     BOOST_TEST(x1.empty());
@@ -438,8 +437,7 @@ namespace constructor_tests {
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
 
-  UNORDERED_AUTO_TEST(test_initializer_list)
-  {
+  UNORDERED_AUTO_TEST (test_initializer_list) {
     boost::unordered_set<int> x1 = {2, 10, 45, -5};
     BOOST_TEST(x1.find(10) != x1.end());
     BOOST_TEST(x1.find(46) == x1.end());

@@ -163,9 +163,8 @@ namespace test {
     BOOST_PP_SEQ_TAIL(BOOST_PP_SEQ_TAIL(product)))
 
 #define UNORDERED_TEST_OP2(name, n, params)                                    \
-  UNORDERED_AUTO_TEST(                                                         \
-    BOOST_PP_SEQ_FOLD_LEFT(UNORDERED_TEST_OP_JOIN, name, params))              \
-  {                                                                            \
+  UNORDERED_AUTO_TEST (                                                        \
+    BOOST_PP_SEQ_FOLD_LEFT(UNORDERED_TEST_OP_JOIN, name, params)) {            \
     for (int i = 0; i < n; ++i)                                                \
       name BOOST_PP_SEQ_TO_TUPLE(params);                                      \
   }
@@ -177,8 +176,7 @@ namespace test {
   UNORDERED_MULTI_TEST_REPEAT(name, impl, 1, parameters)
 
 #define UNORDERED_MULTI_TEST_REPEAT(name, impl, n, parameters)                 \
-  UNORDERED_AUTO_TEST(name)                                                    \
-  {                                                                            \
+  UNORDERED_AUTO_TEST (name) {                                                 \
     BOOST_PP_SEQ_FOR_EACH_PRODUCT(                                             \
       UNORDERED_MULTI_TEST_OP, ((impl))((n))parameters)                        \
   }

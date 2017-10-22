@@ -18,8 +18,9 @@ namespace boost {
         typedef P key_equal;
         typedef T const const_key_type;
 
-        typedef typename ::boost::unordered::detail::rebind_wrap<A,
-          value_type>::type value_allocator;
+        typedef
+          typename ::boost::unordered::detail::rebind_wrap<A, value_type>::type
+            value_allocator;
         typedef boost::unordered::detail::allocator_traits<value_allocator>
           value_allocator_traits;
 

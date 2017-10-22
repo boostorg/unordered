@@ -51,8 +51,7 @@ void test_prev_prime(std::size_t value)
   }
 }
 
-UNORDERED_AUTO_TEST(next_prime_test)
-{
+UNORDERED_AUTO_TEST (next_prime_test) {
   BOOST_TEST(!is_prime(0));
   BOOST_TEST(!is_prime(1));
   BOOST_TEST(is_prime(2));

@@ -187,8 +187,7 @@ namespace swap_tests {
   using test::generate_collisions;
   using test::limited_range;
 
-  UNORDERED_AUTO_TEST(check_traits)
-  {
+  UNORDERED_AUTO_TEST (check_traits) {
     BOOST_TEST(!is_propagate(test_set));
     BOOST_TEST(is_propagate(test_set_prop_swap));
     BOOST_TEST(!is_propagate(test_set_no_prop_swap));
@@ -207,6 +206,6 @@ namespace swap_tests {
       test_multiset_prop_swap)(test_map_prop_swap)(test_multimap_prop_swap)(
       test_set_no_prop_swap)(test_multiset_no_prop_swap)(test_map_no_prop_swap)(
       test_multimap_no_prop_swap))(
-                   (default_generator)(generate_collisions)(limited_range)))
+      (default_generator)(generate_collisions)(limited_range)))
 }
 RUN_TESTS()

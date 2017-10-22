@@ -55,8 +55,7 @@ bool call_not_equals(
 typedef boost::unordered_map<int, int> int_map;
 typedef boost::unordered_multimap<int, int> int_multimap;
 
-UNORDERED_AUTO_TEST(use_map_fwd_declared_function)
-{
+UNORDERED_AUTO_TEST (use_map_fwd_declared_function) {
   int_map x, y;
   x[1] = 2;
   y[2] = 1;
@@ -72,8 +71,7 @@ UNORDERED_AUTO_TEST(use_map_fwd_declared_function)
   BOOST_TEST(call_not_equals(x, y));
 }
 
-UNORDERED_AUTO_TEST(use_multimap_fwd_declared_function)
-{
+UNORDERED_AUTO_TEST (use_multimap_fwd_declared_function) {
   int_multimap x, y;
   call_swap(x, y);
   BOOST_TEST(call_equals(x, y));

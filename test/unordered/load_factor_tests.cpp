@@ -87,7 +87,7 @@ namespace load_factor_tests {
 
   UNORDERED_TEST(load_factor_insert_tests,
     ((int_set_ptr)(int_multiset_ptr)(int_map_ptr)(int_multimap_ptr))(
-                   (default_generator)(generate_collisions)(limited_range)))
+      (default_generator)(generate_collisions)(limited_range)))
 }
 
 RUN_TESTS()

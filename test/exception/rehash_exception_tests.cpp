@@ -123,7 +123,11 @@ template <class T> struct rehash_test5 : rehash_test_base<T>
   }
 };
 
-EXCEPTION_TESTS((rehash_test0)(rehash_test1)(rehash_test2)(rehash_test3)(
-                  rehash_test4)(rehash_test5),
+// clang-format off
+EXCEPTION_TESTS(
+  (rehash_test0)(rehash_test1)(rehash_test2)(rehash_test3)(rehash_test4)
+  (rehash_test5),
   CONTAINER_SEQ)
+// clang-format on
+
 RUN_TESTS()

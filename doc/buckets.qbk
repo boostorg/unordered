@@ -160,12 +160,9 @@ the expensive rehashing out of the way and let you store iterators, safe in
 the knowledge that they won't be invalidated. If you are inserting `n`
 elements into container `x`, you could first call:
 
-    x.rehash((x.size() + n) / x.max_load_factor() + 1);
+    x.rehash((x.size() + n) / x.max_load_factor());
 
 [blurb Note: `rehash`'s argument is the minimum number of buckets, not the
-number of elements, which is why the new size is divided by the maximum load factor.  The
-`+ 1` guarantees there is no invalidation; without it, reallocation could occur
-if the number of bucket exactly divides the target size, since the container is
-allowed to rehash when the load factor is equal to the maximum load factor.]
+number of elements, which is why the new size is divided by the maximum load factor.]
 
 [endsect]

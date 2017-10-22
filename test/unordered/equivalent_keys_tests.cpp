@@ -35,8 +35,7 @@ void test_equal_insertion(Iterator begin, Iterator end)
   test::check_equivalent_keys(x1);
 }
 
-UNORDERED_AUTO_TEST(set_tests)
-{
+UNORDERED_AUTO_TEST (set_tests) {
   int values[][5] = {{1}, {54, 23}, {-13, 65}, {77, 77}, {986, 25, 986}};
 
   typedef boost::unordered_set<int> set;
@@ -55,8 +54,7 @@ UNORDERED_AUTO_TEST(set_tests)
   test_equal_insertion<multiset>(values[4], values[4] + 3);
 }
 
-UNORDERED_AUTO_TEST(map_tests)
-{
+UNORDERED_AUTO_TEST (map_tests) {
   typedef test::list<std::pair<int const, int> > values_type;
   values_type v[5];
   v[0].push_back(std::pair<int const, int>(1, 1));
