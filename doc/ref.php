@@ -1677,7 +1677,7 @@ function echo_node_handle_docs($map)
               defined, and should be obtained using the <code>node_type</code>
               member typedef from the appropriate container.
             </para>
-          </description>
+          </purpose>
 <?php if ($map): ?>
           <typedef name="key_type">
             <type>typename Container::key_type</type>
