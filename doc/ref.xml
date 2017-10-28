@@ -2845,7 +2845,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               defined, and should be obtained using the <code>node_type</code>
               member typedef from the appropriate container.
             </para>
-          </description>
+          </purpose>
           <typedef name="value_type">
             <type>typename Container::value_type></type>
           </typedef>
@@ -5815,7 +5815,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               defined, and should be obtained using the <code>node_type</code>
               member typedef from the appropriate container.
             </para>
-          </description>
+          </purpose>
           <typedef name="key_type">
             <type>typename Container::key_type</type>
           </typedef>
