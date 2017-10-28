@@ -2840,18 +2840,12 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <classname>unordered_multiset</classname>, that
               can then be inserted into a compatible container type.
             </para>
-            <notes>
-              <para>
-                The name and template parameters of this type is implementation
-                defined, and should be obtained using the <code>node_type</code>
-                member typedef from the appropriate container.
-              </para>
-              <para>
-                In this version of Boost, <code>node_type</code> is different
-                for <code>unordered_set</code> and <code>unordered_multiset</code>, this will be fixed in a future version of Boost.
-              </para>
-            </notes>
-          </purpose>
+            <para>
+              The name and template parameters of this type are implementation
+              defined, and should be obtained using the <code>node_type</code>
+              member typedef from the appropriate container.
+            </para>
+          </description>
           <typedef name="value_type">
             <type>typename Container::value_type></type>
           </typedef>
@@ -5816,18 +5810,12 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
               <classname>unordered_multimap</classname>, that
               can then be inserted into a compatible container type.
             </para>
-            <notes>
-              <para>
-                The name and template parameters of this type is implementation
-                defined, and should be obtained using the <code>node_type</code>
-                member typedef from the appropriate container.
-              </para>
-              <para>
-                In this version of Boost, <code>node_type</code> is different
-                for <code>unordered_map</code> and <code>unordered_multimap</code>, this will be fixed in a future version of Boost.
-              </para>
-            </notes>
-          </purpose>
+            <para>
+              The name and template parameters of this type are implementation
+              defined, and should be obtained using the <code>node_type</code>
+              member typedef from the appropriate container.
+            </para>
+          </description>
           <typedef name="key_type">
             <type>typename Container::key_type</type>
           </typedef>
