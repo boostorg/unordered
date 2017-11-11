@@ -6,6 +6,8 @@
 [template ticket[number]'''<ulink
     url="https://svn.boost.org/trac/boost/ticket/'''[number]'''">'''#[number]'''</ulink>''']
 
+[template pull_request[number][@https://github.com/boostorg/unordered/pull/[number] GitHub #[number]]]
+
 [section:changes Change Log]
 
 [h2 Review Version]
@@ -319,5 +321,10 @@ C++11 support has resulted in some breaking changes:
 * Small standards compliance fixes:
   * `noexpect` specs for `swap` free functions.
   * Add missing `insert(P&&)` methods.
+
+[h2 Boost 1.66.0]
+
+* Simpler move construction implementation.
+* Documentation fixes ([pull_request 6]).
 
 [endsect]

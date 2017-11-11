@@ -1672,20 +1672,11 @@ function echo_node_handle_docs($map)
               <classname>unordered_multi<?php echo $type ?></classname>, that
               can then be inserted into a compatible container type.
             </para>
-            <notes>
-              <para>
-                The name and template parameters of this type is implementation
-                defined, and should be obtained using the <code>node_type</code>
-                member typedef from the appropriate container.
-              </para>
-              <para>
-                In this version of Boost, <code>node_type</code> is different
-                for <?php echo $map ?
-                  '<code>unordered_map</code> and <code>unordered_multimap</code>,' :
-                  '<code>unordered_set</code> and <code>unordered_multiset</code>,';
-                ?> this will be fixed in a future version of Boost.
-              </para>
-            </notes>
+            <para>
+              The name and template parameters of this type are implementation
+              defined, and should be obtained using the <code>node_type</code>
+              member typedef from the appropriate container.
+            </para>
           </purpose>
 <?php if ($map): ?>
           <typedef name="key_type">

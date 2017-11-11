@@ -3,8 +3,8 @@
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-# Using clang format 3.8
-# http://llvm.org/releases/3.8.0/tools/clang/docs/ClangFormatStyleOptions.html
+# Using clang format 4.0
+# http://llvm.org/releases/4.0.0/tools/clang/docs/ClangFormatStyleOptions.html
 
 # Becuase you have to start somewhere.
 BasedOnStyle: LLVM
