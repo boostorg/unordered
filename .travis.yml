@@ -45,20 +45,54 @@ before_install:
     - if [ -n $enable_coverage ]; then pip install --user cpp-coveralls; fi
 
 before_script:
+    - export BOOST_VERSION=1.64.0
+    - export BOOST_FILENAME=boost_1_64_0
+    - export BOOST_ROOT=${HOME}/boost
     - cd ${TRAVIS_BUILD_DIR}
     - touch Jamroot.jam
     - cd $HOME
     - echo $user_config > ~/user-config.jam
     - cat ~/user-config.jam
-    - wget -O boost.tar.bz2 https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.tar.bz2
-    - tar -xjf boost.tar.bz2
-    - mv boost_1_64_0 boost
-    - rm -r boost/boost/unordered
+    - |
+        # Pick snapshot to use
+        if [ "$TRAVIS_EVENT_TYPE" == "cron" ]
+        then
+            if [ "$TRAVIS_BRANCH" == "master" ]
+            then
+                snapshot=master
+            else
+                snapshot=develop
+            fi
+        else
+            snapshot=stable
+        fi
+
+        # Set download_url for snapshot
+        if [ $snapshot == "stable" ]
+        then
+            download_url=https://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION}/${BOOST_FILENAME}.tar.bz2/download
+        else
+            download_url=$(curl https://api.bintray.com/packages/boostorg/$snapshot/snapshot/files |
+                    python -c "import os.path, sys, json; x = json.load(sys.stdin); print '\n'.join(a['path'] for a in x if os.path.splitext(a['path'])[1] == '.bz2')" |
+                    head -n 1 |
+                    sed "s/^/http:\/\/dl.bintray.com\/boostorg\/$snapshot\//")
+        fi
+
+        # Download and extract snapshot
+        echo "Downloading ${download_url}"
+        mkdir $HOME/download
+        mkdir $HOME/extract
+        cd $HOME/download
+        wget -O boost.tar.bz2 $download_url
+        cd $HOME/extract
+        tar -xjf $HOME/download/boost.tar.bz2
+        mv * ${BOOST_ROOT}
+    - rm -r ${BOOST_ROOT}/boost/unordered
 
 after_success:
     if [ -n $enable_coverage ]; then coveralls -r ${TRAVIS_BUILD_DIR} -b ${TRAVIS_BUILD_DIR}/test --gcov-options '\-lp' --include include/boost/unordered/ ; fi
 
 script:
     - cd ${TRAVIS_BUILD_DIR}/test
-    - bjam -q include=${HOME}/boost include=${TRAVIS_BUILD_DIR}/include
+    - bjam -q include=${BOOST_ROOT} include=${TRAVIS_BUILD_DIR}/include
     - xmllint --noout ${TRAVIS_BUILD_DIR}/doc/ref.xml
