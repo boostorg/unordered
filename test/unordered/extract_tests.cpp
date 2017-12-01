@@ -17,7 +17,6 @@
 #include "../helpers/test.hpp"
 #include "../helpers/tracker.hpp"
 #include "../objects/test.hpp"
-#include <boost/next_prior.hpp>
 
 namespace extract_tests {
 
@@ -94,10 +93,10 @@ namespace extract_tests {
         if (index == 0) {
           prev = pos = x.begin();
         } else {
-          prev = boost::next(x.begin(), index - 1);
-          pos = boost::next(prev);
+          prev = test::next(x.begin(), index - 1);
+          pos = test::next(prev);
         }
-        next = boost::next(pos);
+        next = test::next(pos);
         BOOST_DEDUCED_TYPENAME Container::key_type key =
           test::get_key<Container>(*pos);
         std::size_t count = x.count(key);
@@ -106,7 +105,7 @@ namespace extract_tests {
         --size;
         if (size > 0)
           BOOST_TEST(
-            index == 0 ? next == x.begin() : next == boost::next(prev));
+            index == 0 ? next == x.begin() : next == test::next(prev));
         BOOST_TEST(x.count(key) == count - 1);
         BOOST_TEST(x.size() == size);
         if (++iterations % 20 == 0)
