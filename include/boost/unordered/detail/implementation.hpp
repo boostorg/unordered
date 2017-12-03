@@ -13,7 +13,7 @@
 #endif
 
 #include <boost/assert.hpp>
-#include <boost/detail/no_exceptions_support.hpp>
+#include <boost/core/no_exceptions_support.hpp>
 #include <boost/detail/select_type.hpp>
 #include <boost/iterator/iterator_categories.hpp>
 #include <boost/limits.hpp>

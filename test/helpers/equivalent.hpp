@@ -10,7 +10,7 @@
 #include "./list.hpp"
 #include "./metafunctions.hpp"
 #include <algorithm>
-#include <boost/detail/lightweight_test.hpp>
+#include <boost/core/lightweight_test.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>
 

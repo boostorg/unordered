@@ -104,8 +104,7 @@ namespace extract_tests {
         BOOST_TEST(n);
         --size;
         if (size > 0)
-          BOOST_TEST(
-            index == 0 ? next == x.begin() : next == test::next(prev));
+          BOOST_TEST(index == 0 ? next == x.begin() : next == test::next(prev));
         BOOST_TEST(x.count(key) == count - 1);
         BOOST_TEST(x.size() == size);
         if (++iterations % 20 == 0)
