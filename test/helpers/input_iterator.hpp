@@ -7,7 +7,6 @@
 #define BOOST_UNORDERED_TEST_HELPERS_INPUT_ITERATOR_HEADER
 
 #include <boost/config.hpp>
-#include <boost/iterator/iterator_traits.hpp>
 #include <iterator>
 
 namespace test {
@@ -28,12 +27,12 @@ namespace test {
   template <class Iterator>
   struct input_iterator_adaptor
     : public std::iterator<std::input_iterator_tag,
-        BOOST_DEDUCED_TYPENAME boost::iterator_value<Iterator>::type,
+        BOOST_DEDUCED_TYPENAME std::iterator_traits<Iterator>::value_type,
         std::ptrdiff_t,
-        BOOST_DEDUCED_TYPENAME boost::iterator_pointer<Iterator>::type,
+        BOOST_DEDUCED_TYPENAME std::iterator_traits<Iterator>::pointer,
         proxy<Iterator> >
   {
-    typedef BOOST_DEDUCED_TYPENAME boost::iterator_value<Iterator>::type
+    typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<Iterator>::value_type
       value_type;
 
     input_iterator_adaptor() : base_() {}
@@ -68,17 +67,17 @@ namespace test {
 
   template <class Iterator>
   struct copy_iterator_adaptor
-    : public std::iterator<
-        BOOST_DEDUCED_TYPENAME boost::iterator_category<Iterator>::type,
-        BOOST_DEDUCED_TYPENAME boost::iterator_value<Iterator>::type,
-        BOOST_DEDUCED_TYPENAME boost::iterator_difference<Iterator>::type,
-        BOOST_DEDUCED_TYPENAME boost::iterator_pointer<Iterator>::type,
+    : public std::iterator<BOOST_DEDUCED_TYPENAME
+                             std::iterator_traits<Iterator>::iterator_category,
+        BOOST_DEDUCED_TYPENAME std::iterator_traits<Iterator>::value_type,
+        BOOST_DEDUCED_TYPENAME std::iterator_traits<Iterator>::difference_type,
+        BOOST_DEDUCED_TYPENAME std::iterator_traits<Iterator>::pointer,
         proxy<Iterator> >
   {
-    typedef BOOST_DEDUCED_TYPENAME boost::iterator_value<Iterator>::type
+    typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<Iterator>::value_type
       value_type;
-    typedef BOOST_DEDUCED_TYPENAME boost::iterator_difference<Iterator>::type
-      difference_type;
+    typedef BOOST_DEDUCED_TYPENAME
+      std::iterator_traits<Iterator>::difference_type difference_type;
 
     copy_iterator_adaptor() : base_() {}
     explicit copy_iterator_adaptor(Iterator const& it) : base_(it) {}

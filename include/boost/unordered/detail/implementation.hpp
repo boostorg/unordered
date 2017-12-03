@@ -15,7 +15,6 @@
 #include <boost/assert.hpp>
 #include <boost/core/no_exceptions_support.hpp>
 #include <boost/detail/select_type.hpp>
-#include <boost/iterator/iterator_categories.hpp>
 #include <boost/limits.hpp>
 #include <boost/move/move.hpp>
 #include <boost/predef.h>
@@ -33,8 +32,8 @@
 #include <boost/type_traits/add_lvalue_reference.hpp>
 #include <boost/type_traits/aligned_storage.hpp>
 #include <boost/type_traits/alignment_of.hpp>
+#include <boost/type_traits/is_base_of.hpp>
 #include <boost/type_traits/is_class.hpp>
-#include <boost/type_traits/is_convertible.hpp>
 #include <boost/type_traits/is_empty.hpp>
 #include <boost/type_traits/is_nothrow_move_assignable.hpp>
 #include <boost/type_traits/is_nothrow_move_constructible.hpp>
@@ -244,9 +243,8 @@ namespace boost {
       // iterator SFINAE
 
       template <typename I>
-      struct is_forward
-        : boost::is_convertible<typename boost::iterator_traversal<I>::type,
-            boost::forward_traversal_tag>
+      struct is_forward : boost::is_base_of<std::forward_iterator_tag,
+                            typename std::iterator_traits<I>::iterator_category>
       {
       };
 

@@ -17,7 +17,6 @@
 #endif
 
 #include "../helpers/check_return_type.hpp"
-#include <boost/iterator/iterator_traits.hpp>
 #include <boost/limits.hpp>
 #include <boost/predef.h>
 #include <boost/static_assert.hpp>
@@ -56,14 +55,14 @@ template <class X, class T> void container_test(X& r, T const&)
   typedef BOOST_DEDUCED_TYPENAME X::difference_type difference_type;
   typedef BOOST_DEDUCED_TYPENAME X::size_type size_type;
 
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_value<iterator>::type
+  typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<iterator>::value_type
     iterator_value_type;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_value<const_iterator>::type
-    const_iterator_value_type;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_difference<iterator>::type
+  typedef BOOST_DEDUCED_TYPENAME
+    std::iterator_traits<const_iterator>::value_type const_iterator_value_type;
+  typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<iterator>::difference_type
     iterator_difference_type;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_difference<
-    const_iterator>::type const_iterator_difference_type;
+  typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<
+    const_iterator>::difference_type const_iterator_difference_type;
 
   typedef BOOST_DEDUCED_TYPENAME X::value_type value_type;
   typedef BOOST_DEDUCED_TYPENAME X::reference reference;
@@ -263,14 +262,14 @@ template <class X, class Key> void unordered_set_test(X& r, Key const&)
   typedef BOOST_DEDUCED_TYPENAME X::const_iterator const_iterator;
   typedef BOOST_DEDUCED_TYPENAME X::local_iterator local_iterator;
   typedef BOOST_DEDUCED_TYPENAME X::const_local_iterator const_local_iterator;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_pointer<iterator>::type
+  typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<iterator>::pointer
     iterator_pointer;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_pointer<const_iterator>::type
+  typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<const_iterator>::pointer
     const_iterator_pointer;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_pointer<local_iterator>::type
+  typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<local_iterator>::pointer
     local_iterator_pointer;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_pointer<
-    const_local_iterator>::type const_local_iterator_pointer;
+  typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<
+    const_local_iterator>::pointer const_local_iterator_pointer;
 
   BOOST_STATIC_ASSERT(
     (boost::is_same<value_type const*, iterator_pointer>::value));
@@ -309,14 +308,14 @@ void unordered_map_test(X& r, Key const& k, T const& v)
   typedef BOOST_DEDUCED_TYPENAME X::const_iterator const_iterator;
   typedef BOOST_DEDUCED_TYPENAME X::local_iterator local_iterator;
   typedef BOOST_DEDUCED_TYPENAME X::const_local_iterator const_local_iterator;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_pointer<iterator>::type
+  typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<iterator>::pointer
     iterator_pointer;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_pointer<const_iterator>::type
+  typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<const_iterator>::pointer
     const_iterator_pointer;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_pointer<local_iterator>::type
+  typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<local_iterator>::pointer
     local_iterator_pointer;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_pointer<
-    const_local_iterator>::type const_local_iterator_pointer;
+  typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<
+    const_local_iterator>::pointer const_local_iterator_pointer;
 
   BOOST_STATIC_ASSERT((boost::is_same<value_type*, iterator_pointer>::value));
   BOOST_STATIC_ASSERT(
@@ -482,41 +481,41 @@ void unordered_test(X& x, Key& k, Hash& hf, Pred& eq)
   typedef BOOST_DEDUCED_TYPENAME X::local_iterator local_iterator;
   typedef BOOST_DEDUCED_TYPENAME X::const_local_iterator const_local_iterator;
 
-  typedef BOOST_DEDUCED_TYPENAME boost::BOOST_ITERATOR_CATEGORY<iterator>::type
-    iterator_category;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_difference<iterator>::type
+  typedef BOOST_DEDUCED_TYPENAME
+    std::iterator_traits<iterator>::iterator_category iterator_category;
+  typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<iterator>::difference_type
     iterator_difference;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_pointer<iterator>::type
+  typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<iterator>::pointer
     iterator_pointer;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_reference<iterator>::type
+  typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<iterator>::reference
     iterator_reference;
 
-  typedef BOOST_DEDUCED_TYPENAME boost::BOOST_ITERATOR_CATEGORY<
-    local_iterator>::type local_iterator_category;
-  typedef BOOST_DEDUCED_TYPENAME
-    boost::iterator_difference<local_iterator>::type local_iterator_difference;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_pointer<local_iterator>::type
+  typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<
+    local_iterator>::iterator_category local_iterator_category;
+  typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<
+    local_iterator>::difference_type local_iterator_difference;
+  typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<local_iterator>::pointer
     local_iterator_pointer;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_reference<local_iterator>::type
+  typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<local_iterator>::reference
     local_iterator_reference;
 
-  typedef BOOST_DEDUCED_TYPENAME boost::BOOST_ITERATOR_CATEGORY<
-    const_iterator>::type const_iterator_category;
-  typedef BOOST_DEDUCED_TYPENAME
-    boost::iterator_difference<const_iterator>::type const_iterator_difference;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_pointer<const_iterator>::type
+  typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<
+    const_iterator>::iterator_category const_iterator_category;
+  typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<
+    const_iterator>::difference_type const_iterator_difference;
+  typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<const_iterator>::pointer
     const_iterator_pointer;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_reference<const_iterator>::type
+  typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<const_iterator>::reference
     const_iterator_reference;
 
-  typedef BOOST_DEDUCED_TYPENAME boost::BOOST_ITERATOR_CATEGORY<
-    const_local_iterator>::type const_local_iterator_category;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_difference<
-    const_local_iterator>::type const_local_iterator_difference;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_pointer<
-    const_local_iterator>::type const_local_iterator_pointer;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_reference<
-    const_local_iterator>::type const_local_iterator_reference;
+  typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<
+    const_local_iterator>::iterator_category const_local_iterator_category;
+  typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<
+    const_local_iterator>::difference_type const_local_iterator_difference;
+  typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<
+    const_local_iterator>::pointer const_local_iterator_pointer;
+  typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<
+    const_local_iterator>::reference const_local_iterator_reference;
   typedef BOOST_DEDUCED_TYPENAME X::allocator_type allocator_type;
 
   BOOST_STATIC_ASSERT((boost::is_same<Key, key_type>::value));
