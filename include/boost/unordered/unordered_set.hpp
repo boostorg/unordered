@@ -545,6 +545,52 @@ namespace boost {
 #endif
     }; // class template unordered_set
 
+#if BOOST_UNORDERED_TEMPLATE_DEDUCTION_GUIDES
+
+    template <class InputIterator,
+      class Hash =
+        boost::hash<typename std::iterator_traits<InputIterator>::value_type>,
+      class Pred =
+        std::equal_to<typename std::iterator_traits<InputIterator>::value_type>,
+      class Allocator = std::allocator<
+        typename std::iterator_traits<InputIterator>::value_type> >
+    unordered_set(InputIterator, InputIterator,
+      std::size_t = boost::unordered::detail::default_bucket_count,
+      Hash = Hash(), Pred = Pred(), Allocator = Allocator())
+      ->unordered_set<typename std::iterator_traits<InputIterator>::value_type,
+        Hash, Pred, Allocator>;
+
+    template <class T, class Hash = boost::hash<T>,
+      class Pred = std::equal_to<T>, class Allocator = std::allocator<T> >
+    unordered_set(std::initializer_list<T>,
+      std::size_t = boost::unordered::detail::default_bucket_count,
+      Hash = Hash(), Pred = Pred(), Allocator = Allocator())
+      ->unordered_set<T, Hash, Pred, Allocator>;
+
+    template <class InputIterator, class Allocator>
+    unordered_set(InputIterator, InputIterator, std::size_t, Allocator)
+      ->unordered_set<typename std::iterator_traits<InputIterator>::value_type,
+        boost::hash<typename std::iterator_traits<InputIterator>::value_type>,
+        std::equal_to<typename std::iterator_traits<InputIterator>::value_type>,
+        Allocator>;
+
+    template <class InputIterator, class Hash, class Allocator>
+    unordered_set(InputIterator, InputIterator, std::size_t, Hash, Allocator)
+      ->unordered_set<typename std::iterator_traits<InputIterator>::value_type,
+        Hash,
+        std::equal_to<typename std::iterator_traits<InputIterator>::value_type>,
+        Allocator>;
+
+    template <class T, class Allocator>
+    unordered_set(std::initializer_list<T>, std::size_t, Allocator)
+      ->unordered_set<T, boost::hash<T>, std::equal_to<T>, Allocator>;
+
+    template <class T, class Hash, class Allocator>
+    unordered_set(std::initializer_list<T>, std::size_t, Hash, Allocator)
+      ->unordered_set<T, Hash, std::equal_to<T>, Allocator>;
+
+#endif
+
     template <class T, class H, class P, class A> class unordered_multiset
     {
 #if defined(BOOST_UNORDERED_USE_MOVE)
@@ -1048,6 +1094,55 @@ namespace boost {
         <T, H, P, A>(unordered_multiset const&, unordered_multiset const&);
 #endif
     }; // class template unordered_multiset
+
+#if BOOST_UNORDERED_TEMPLATE_DEDUCTION_GUIDES
+
+    template <class InputIterator,
+      class Hash =
+        boost::hash<typename std::iterator_traits<InputIterator>::value_type>,
+      class Pred =
+        std::equal_to<typename std::iterator_traits<InputIterator>::value_type>,
+      class Allocator = std::allocator<
+        typename std::iterator_traits<InputIterator>::value_type> >
+    unordered_multiset(InputIterator, InputIterator,
+      std::size_t = boost::unordered::detail::default_bucket_count,
+      Hash = Hash(), Pred = Pred(), Allocator = Allocator())
+      ->unordered_multiset<
+        typename std::iterator_traits<InputIterator>::value_type, Hash, Pred,
+        Allocator>;
+
+    template <class T, class Hash = boost::hash<T>,
+      class Pred = std::equal_to<T>, class Allocator = std::allocator<T> >
+    unordered_multiset(std::initializer_list<T>,
+      std::size_t = boost::unordered::detail::default_bucket_count,
+      Hash = Hash(), Pred = Pred(), Allocator = Allocator())
+      ->unordered_multiset<T, Hash, Pred, Allocator>;
+
+    template <class InputIterator, class Allocator>
+    unordered_multiset(InputIterator, InputIterator, std::size_t, Allocator)
+      ->unordered_multiset<
+        typename std::iterator_traits<InputIterator>::value_type,
+        boost::hash<typename std::iterator_traits<InputIterator>::value_type>,
+        std::equal_to<typename std::iterator_traits<InputIterator>::value_type>,
+        Allocator>;
+
+    template <class InputIterator, class Hash, class Allocator>
+    unordered_multiset(
+      InputIterator, InputIterator, std::size_t, Hash, Allocator)
+      ->unordered_multiset<
+        typename std::iterator_traits<InputIterator>::value_type, Hash,
+        std::equal_to<typename std::iterator_traits<InputIterator>::value_type>,
+        Allocator>;
+
+    template <class T, class Allocator>
+    unordered_multiset(std::initializer_list<T>, std::size_t, Allocator)
+      ->unordered_multiset<T, boost::hash<T>, std::equal_to<T>, Allocator>;
+
+    template <class T, class Hash, class Allocator>
+    unordered_multiset(std::initializer_list<T>, std::size_t, Hash, Allocator)
+      ->unordered_multiset<T, Hash, std::equal_to<T>, Allocator>;
+
+#endif
 
     ////////////////////////////////////////////////////////////////////////////
     template <class T, class H, class P, class A>

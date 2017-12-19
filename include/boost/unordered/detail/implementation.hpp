@@ -193,6 +193,18 @@
 #endif
 #endif
 
+// BOOST_UNORDERED_TEMPLATE_DEDUCTION_GUIDES
+
+#if !defined(BOOST_UNORDERED_TEMPLATE_DEDUCTION_GUIDES)
+#if BOOST_COMP_CLANG && __cplusplus >= 201703
+#define BOOST_UNORDERED_TEMPLATE_DEDUCTION_GUIDES 1
+#endif
+#endif
+
+#if !defined(BOOST_UNORDERED_TEMPLATE_DEDUCTION_GUIDES)
+#define BOOST_UNORDERED_TEMPLATE_DEDUCTION_GUIDES 0
+#endif
+
 namespace boost {
   namespace unordered {
     namespace iterator_detail {
