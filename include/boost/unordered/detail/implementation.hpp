@@ -17,7 +17,6 @@
 #include <boost/detail/select_type.hpp>
 #include <boost/limits.hpp>
 #include <boost/move/move.hpp>
-#include <boost/predef.h>
 #include <boost/preprocessor/arithmetic/inc.hpp>
 #include <boost/preprocessor/cat.hpp>
 #include <boost/preprocessor/repetition/enum.hpp>
