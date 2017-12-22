@@ -3216,9 +3216,9 @@ namespace boost {
             link_pointer prev = this->get_previous_start();
             std::size_t last_bucket = this->bucket_count_;
             for (node_pointer n = src.begin(); n; n = next_node(n)) {
-              std::size_t bucket = n->get_bucket();
-              if (bucket != last_bucket) {
-                this->get_bucket_pointer(bucket)->next_ = prev;
+              std::size_t n_bucket = n->get_bucket();
+              if (n_bucket != last_bucket) {
+                this->get_bucket_pointer(n_bucket)->next_ = prev;
               }
               node_pointer n2 = boost::unordered::detail::func::construct_node(
                 this->node_alloc(), boost::move(n->value()));
@@ -3226,7 +3226,7 @@ namespace boost {
               prev->next_ = n2;
               ++size_;
               prev = n2;
-              last_bucket = bucket;
+              last_bucket = n_bucket;
             }
           }
         }
