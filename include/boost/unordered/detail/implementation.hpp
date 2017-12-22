@@ -2960,7 +2960,7 @@ namespace boost {
             bucket_allocator_traits::max_size(bucket_alloc()) - 1);
         }
 
-        bucket_pointer get_bucket(std::size_t bucket_index) const
+        bucket_pointer get_bucket_pointer(std::size_t bucket_index) const
         {
           BOOST_ASSERT(buckets_);
           return buckets_ + static_cast<std::ptrdiff_t>(bucket_index);
@@ -2968,12 +2968,12 @@ namespace boost {
 
         link_pointer get_previous_start() const
         {
-          return get_bucket(bucket_count_)->first_from_start();
+          return get_bucket_pointer(bucket_count_)->first_from_start();
         }
 
         link_pointer get_previous_start(std::size_t bucket_index) const
         {
-          return get_bucket(bucket_index)->next_;
+          return get_bucket_pointer(bucket_index)->next_;
         }
 
         node_pointer begin() const
@@ -3102,7 +3102,7 @@ namespace boost {
         // Clear the bucket pointers.
         void clear_buckets()
         {
-          bucket_pointer end = get_bucket(bucket_count_);
+          bucket_pointer end = get_bucket_pointer(bucket_count_);
           for (bucket_pointer it = buckets_; it != end; ++it) {
             it->next_ = node_pointer();
           }
@@ -3218,7 +3218,7 @@ namespace boost {
             for (node_pointer n = src.begin(); n; n = next_node(n)) {
               std::size_t bucket = n->get_bucket();
               if (bucket != last_bucket) {
-                this->get_bucket(bucket)->next_ = prev;
+                this->get_bucket_pointer(bucket)->next_ = prev;
               }
               node_pointer n2 = boost::unordered::detail::func::construct_node(
                 this->node_alloc(), boost::move(n->value()));
@@ -3248,7 +3248,7 @@ namespace boost {
         {
           if (buckets_) {
             node_pointer n =
-              static_cast<node_pointer>(get_bucket(bucket_count_)->next_);
+              static_cast<node_pointer>(get_bucket_pointer(bucket_count_)->next_);
 
             if (bucket::extra_node) {
               node_pointer next = next_node(n);
@@ -3272,7 +3272,7 @@ namespace boost {
 
         void destroy_buckets()
         {
-          bucket_pointer end = get_bucket(bucket_count_ + 1);
+          bucket_pointer end = get_bucket_pointer(bucket_count_ + 1);
           for (bucket_pointer it = buckets_; it != end; ++it) {
             boost::unordered::detail::func::destroy(pointer<bucket>::get(it));
           }
@@ -3302,11 +3302,11 @@ namespace boost {
             }
 
             // Update the bucket containing next.
-            get_bucket(bucket_index2)->next_ = prev;
+            get_bucket_pointer(bucket_index2)->next_ = prev;
           }
 
           // Check if this bucket is now empty.
-          bucket_pointer this_bucket = get_bucket(bucket_index);
+          bucket_pointer this_bucket = get_bucket_pointer(bucket_index);
           if (this_bucket->next_ == prev) {
             this_bucket->next_ = link_pointer();
           }
@@ -3556,7 +3556,7 @@ namespace boost {
           node_pointer n, std::size_t key_hash)
         {
           std::size_t bucket_index = this->hash_to_bucket(key_hash);
-          bucket_pointer b = this->get_bucket(bucket_index);
+          bucket_pointer b = this->get_bucket_pointer(bucket_index);
 
           n->bucket_info_ = bucket_index;
           n->set_first_in_group();
@@ -3565,7 +3565,7 @@ namespace boost {
             link_pointer start_node = this->get_previous_start();
 
             if (start_node->next_) {
-              this->get_bucket(node_bucket(next_node(start_node)))->next_ = n;
+              this->get_bucket_pointer(node_bucket(next_node(start_node)))->next_ = n;
             }
 
             b->next_ = start_node;
@@ -4077,18 +4077,18 @@ namespace boost {
             if (n->next_) {
               std::size_t next_bucket = this->node_bucket(next_node(n));
               if (next_bucket != bucket_index) {
-                this->get_bucket(next_bucket)->next_ = n;
+                this->get_bucket_pointer(next_bucket)->next_ = n;
               }
             }
           } else {
             n->set_first_in_group();
-            bucket_pointer b = this->get_bucket(bucket_index);
+            bucket_pointer b = this->get_bucket_pointer(bucket_index);
 
             if (!b->next_) {
               link_pointer start_node = this->get_previous_start();
 
               if (start_node->next_) {
-                this->get_bucket(this->node_bucket(next_node(start_node)))
+                this->get_bucket_pointer(this->node_bucket(next_node(start_node)))
                   ->next_ = n;
               }
 
@@ -4114,7 +4114,7 @@ namespace boost {
           if (n->next_) {
             std::size_t next_bucket = this->node_bucket(next_node(n));
             if (next_bucket != this->node_bucket(n)) {
-              this->get_bucket(next_bucket)->next_ = n;
+              this->get_bucket_pointer(next_bucket)->next_ = n;
             }
           }
           ++this->size_;
@@ -4383,7 +4383,7 @@ namespace boost {
       template <typename Types> inline void table<Types>::clear_impl()
       {
         if (size_) {
-          bucket_pointer end = get_bucket(bucket_count_);
+          bucket_pointer end = get_bucket_pointer(bucket_count_);
           for (bucket_pointer it = buckets_; it != end; ++it) {
             it->next_ = node_pointer();
           }
@@ -4471,7 +4471,7 @@ namespace boost {
             }
 
             // n is now the last node in the group
-            bucket_pointer b = this->get_bucket(bucket_index);
+            bucket_pointer b = this->get_bucket_pointer(bucket_index);
             if (!b->next_) {
               b->next_ = prev;
               prev = n;
