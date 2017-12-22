@@ -25,13 +25,13 @@ namespace at_tests {
     try {
       x.at("one");
       BOOST_ERROR("Should have thrown.");
-    } catch (std::out_of_range) {
+    } catch (std::out_of_range&) {
     }
 
     try {
       x_const.at("one");
       BOOST_ERROR("Should have thrown.");
-    } catch (std::out_of_range) {
+    } catch (std::out_of_range&) {
     }
 
     BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Add elements" << std::endl;
@@ -51,13 +51,13 @@ namespace at_tests {
     try {
       x.at("three");
       BOOST_ERROR("Should have thrown.");
-    } catch (std::out_of_range) {
+    } catch (std::out_of_range&) {
     }
 
     try {
       x_const.at("three");
       BOOST_ERROR("Should have thrown.");
-    } catch (std::out_of_range) {
+    } catch (std::out_of_range&) {
     }
 
     BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Finished" << std::endl;

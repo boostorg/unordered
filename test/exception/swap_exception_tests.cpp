@@ -90,7 +90,7 @@ template <class T> struct swap_base : public test::exception_base
   {
     try {
       d.x.swap(d.y);
-    } catch (std::runtime_error) {
+    } catch (std::runtime_error&) {
     }
 
     DISABLE_EXCEPTIONS;
