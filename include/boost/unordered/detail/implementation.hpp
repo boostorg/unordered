@@ -2097,8 +2097,7 @@ namespace boost {
       //
       // all no throw
 
-      template <typename Node>
-      struct l_iterator
+      template <typename Node> struct l_iterator
       {
 #if !defined(BOOST_NO_MEMBER_TEMPLATE_FRIENDS)
         template <typename Node2>
@@ -2157,8 +2156,7 @@ namespace boost {
         }
       };
 
-      template <typename Node>
-      struct cl_iterator
+      template <typename Node> struct cl_iterator
       {
         friend struct boost::unordered::iterator_detail::l_iterator<Node>;
 
@@ -2224,8 +2222,7 @@ namespace boost {
         }
       };
 
-      template <typename Node>
-      struct iterator
+      template <typename Node> struct iterator
       {
 #if !defined(BOOST_NO_MEMBER_TEMPLATE_FRIENDS)
         template <typename>
@@ -2279,8 +2276,7 @@ namespace boost {
         }
       };
 
-      template <typename Node>
-      struct c_iterator
+      template <typename Node> struct c_iterator
       {
         friend struct boost::unordered::iterator_detail::iterator<Node>;
 
@@ -3251,8 +3247,8 @@ namespace boost {
         void delete_buckets()
         {
           if (buckets_) {
-            node_pointer n =
-              static_cast<node_pointer>(get_bucket_pointer(bucket_count_)->next_);
+            node_pointer n = static_cast<node_pointer>(
+              get_bucket_pointer(bucket_count_)->next_);
 
             if (bucket::extra_node) {
               node_pointer next = next_node(n);
@@ -3569,7 +3565,8 @@ namespace boost {
             link_pointer start_node = this->get_previous_start();
 
             if (start_node->next_) {
-              this->get_bucket_pointer(node_bucket(next_node(start_node)))->next_ = n;
+              this->get_bucket_pointer(node_bucket(next_node(start_node)))
+                ->next_ = n;
             }
 
             b->next_ = start_node;
@@ -4092,7 +4089,8 @@ namespace boost {
               link_pointer start_node = this->get_previous_start();
 
               if (start_node->next_) {
-                this->get_bucket_pointer(this->node_bucket(next_node(start_node)))
+                this
+                  ->get_bucket_pointer(this->node_bucket(next_node(start_node)))
                   ->next_ = n;
               }
 

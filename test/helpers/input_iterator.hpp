@@ -24,8 +24,7 @@ namespace test {
     proxy& operator=(proxy const&);
   };
 
-  template <class Iterator>
-  struct input_iterator_adaptor
+  template <class Iterator> struct input_iterator_adaptor
   {
     typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<Iterator>::value_type
       value_type;
@@ -65,8 +64,7 @@ namespace test {
     return input_iterator_adaptor<Iterator>(it);
   }
 
-  template <class Iterator>
-  struct copy_iterator_adaptor
+  template <class Iterator> struct copy_iterator_adaptor
   {
     typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<Iterator>::value_type
       value_type;

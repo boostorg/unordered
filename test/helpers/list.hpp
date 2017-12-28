@@ -81,8 +81,7 @@ namespace test {
       list_data& operator=(list_data const&);
     };
 
-    template <typename T>
-    class list_iterator
+    template <typename T> class list_iterator
     {
       friend class list_const_iterator<T>;
       friend class test::list<T>;
@@ -118,8 +117,7 @@ namespace test {
       bool operator!=(const_iterator y) const { return ptr_ != y.ptr_; }
     };
 
-    template <typename T>
-    class list_const_iterator
+    template <typename T> class list_const_iterator
     {
       friend class list_iterator<T>;
       friend class test::list<T>;
