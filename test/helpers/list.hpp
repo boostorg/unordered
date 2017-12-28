@@ -83,7 +83,6 @@ namespace test {
 
     template <typename T>
     class list_iterator
-      : public std::iterator<std::forward_iterator_tag, T, int, T*, T&>
     {
       friend class list_const_iterator<T>;
       friend class test::list<T>;
@@ -93,6 +92,12 @@ namespace test {
       node* ptr_;
 
     public:
+      typedef T value_type;
+      typedef T* pointer;
+      typedef T& reference;
+      typedef int difference_type;
+      typedef std::forward_iterator_tag iterator_category;
+
       list_iterator() : ptr_(0) {}
       explicit list_iterator(node* x) : ptr_(x) {}
 
@@ -114,8 +119,7 @@ namespace test {
     };
 
     template <typename T>
-    class list_const_iterator : public std::iterator<std::forward_iterator_tag,
-                                  T, int, T const*, T const&>
+    class list_const_iterator
     {
       friend class list_iterator<T>;
       friend class test::list<T>;
@@ -126,6 +130,12 @@ namespace test {
       node* ptr_;
 
     public:
+      typedef T value_type;
+      typedef T const* pointer;
+      typedef T const& reference;
+      typedef int difference_type;
+      typedef std::forward_iterator_tag iterator_category;
+
       list_const_iterator() : ptr_(0) {}
       list_const_iterator(list_iterator<T> const& x) : ptr_(x.ptr_) {}
 
