@@ -26,14 +26,14 @@ namespace test {
 
   template <class Iterator>
   struct input_iterator_adaptor
-    : public std::iterator<std::input_iterator_tag,
-        BOOST_DEDUCED_TYPENAME std::iterator_traits<Iterator>::value_type,
-        std::ptrdiff_t,
-        BOOST_DEDUCED_TYPENAME std::iterator_traits<Iterator>::pointer,
-        proxy<Iterator> >
   {
     typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<Iterator>::value_type
       value_type;
+    typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<Iterator>::pointer
+      pointer;
+    typedef proxy<Iterator> reference;
+    typedef std::ptrdiff_t difference_type;
+    typedef std::input_iterator_tag iterator_category;
 
     input_iterator_adaptor() : base_() {}
     explicit input_iterator_adaptor(Iterator& it) : base_(&it) {}
@@ -67,17 +67,16 @@ namespace test {
 
   template <class Iterator>
   struct copy_iterator_adaptor
-    : public std::iterator<BOOST_DEDUCED_TYPENAME
-                             std::iterator_traits<Iterator>::iterator_category,
-        BOOST_DEDUCED_TYPENAME std::iterator_traits<Iterator>::value_type,
-        BOOST_DEDUCED_TYPENAME std::iterator_traits<Iterator>::difference_type,
-        BOOST_DEDUCED_TYPENAME std::iterator_traits<Iterator>::pointer,
-        proxy<Iterator> >
   {
     typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<Iterator>::value_type
       value_type;
     typedef BOOST_DEDUCED_TYPENAME
       std::iterator_traits<Iterator>::difference_type difference_type;
+    typedef BOOST_DEDUCED_TYPENAME
+      std::iterator_traits<Iterator>::iterator_category iterator_category;
+    typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<Iterator>::pointer
+      pointer;
+    typedef proxy<Iterator> reference;
 
     copy_iterator_adaptor() : base_() {}
     explicit copy_iterator_adaptor(Iterator const& it) : base_(it) {}
