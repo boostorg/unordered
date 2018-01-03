@@ -750,6 +750,118 @@ namespace boost {
 #if defined(BOOST_MSVC)
 #pragma warning(pop)
 #endif
+
+      //////////////////////////////////////////////////////////////////////////
+      // value_base
+      //
+      // Space used to store values.
+
+      template <typename ValueType> struct value_base
+      {
+        typedef ValueType value_type;
+
+        typename boost::aligned_storage<sizeof(value_type),
+          boost::alignment_of<value_type>::value>::type data_;
+
+        value_base() : data_() {}
+
+        void* address() { return this; }
+
+        value_type& value() { return *(ValueType*)this; }
+
+        value_type const& value() const { return *(ValueType const*)this; }
+
+        value_type* value_ptr() { return (ValueType*)this; }
+
+        value_type const* value_ptr() const { return (ValueType const*)this; }
+
+      private:
+        value_base& operator=(value_base const&);
+      };
+
+      //////////////////////////////////////////////////////////////////////////
+      // optional
+      // TODO: Use std::optional when available.
+
+      template <typename T> class optional
+      {
+        BOOST_MOVABLE_BUT_NOT_COPYABLE(optional<T>)
+
+        boost::unordered::detail::value_base<T> value_;
+        bool has_value_;
+
+        void destroy()
+        {
+          if (has_value_) {
+            boost::unordered::detail::func::destroy(value_.value_ptr());
+            has_value_ = false;
+          }
+        }
+
+        void move(optional<T>& x)
+        {
+          BOOST_ASSERT(!has_value_ && x.has_value_);
+          new (value_.value_ptr()) T(boost::move(x.value_.value()));
+          boost::unordered::detail::func::destroy(x.value_.value_ptr());
+          has_value_ = true;
+          x.has_value_ = false;
+        }
+
+      public:
+        optional() BOOST_NOEXCEPT : has_value_(false) {}
+
+        optional(BOOST_RV_REF(optional<T>) x) : has_value_(false)
+        {
+          if (x.has_value_) {
+            move(x);
+          }
+        }
+
+        explicit optional(T const& x) : has_value_(true)
+        {
+          new (value_.value_ptr()) T(x);
+        }
+
+        optional& operator=(BOOST_RV_REF(optional<T>) x)
+        {
+          destroy();
+          if (x.has_value_) {
+            move(x);
+          }
+          return *this;
+        }
+
+        ~optional() { destroy(); }
+
+        bool has_value() const { return has_value_; }
+        T& operator*() { return value_.value(); }
+        T const& operator*() const { return value_.value(); }
+        T* operator->() { return value_.value_ptr(); }
+        T const* operator->() const { return value_.value_ptr(); }
+
+        bool operator==(optional<T> const& x)
+        {
+          return has_value_ ? x.has_value_ && value_.value() == x.value_.value()
+                            : !x.has_value_;
+        }
+
+        bool operator!=(optional<T> const& x) { return !((*this) == x); }
+
+        void swap(optional<T>& x)
+        {
+          if (has_value_ != x.has_value_) {
+            if (has_value_) {
+              x.move(*this);
+            } else {
+              move(x);
+            }
+          } else if (has_value_) {
+            boost::swap(value_.value(), x.value_.value());
+          }
+        }
+
+        friend void swap(optional<T>& x, optional<T>& y) { x.swap(y); }
+      };
     }
   }
 }
@@ -2830,31 +2942,6 @@ namespace boost {
                  ? (std::numeric_limits<std::size_t>::max)()
                  : static_cast<std::size_t>(f);
       }
-
-      // The space used to store values in a node.
-
-      template <typename ValueType> struct value_base
-      {
-        typedef ValueType value_type;
-
-        typename boost::aligned_storage<sizeof(value_type),
-          boost::alignment_of<value_type>::value>::type data_;
-
-        value_base() : data_() {}
-
-        void* address() { return this; }
-
-        value_type& value() { return *(ValueType*)this; }
-
-        value_type const& value() const { return *(ValueType const*)this; }
-
-        value_type* value_ptr() { return (ValueType*)this; }
-
-        value_type const* value_ptr() const { return (ValueType const*)this; }
-
-      private:
-        value_base& operator=(value_base const&);
-      };
 
       template <typename Types>
       struct table : boost::unordered::detail::functions<typename Types::hasher,

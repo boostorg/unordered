@@ -1970,15 +1970,11 @@ namespace boost {
     private:
       node_pointer ptr_;
       bool has_alloc_;
-      boost::unordered::detail::value_base<value_allocator> alloc_;
+      boost::unordered::detail::optional<value_allocator> alloc_;
 
       node_handle_set(node_pointer ptr, allocator_type const& a)
-          : ptr_(ptr), has_alloc_(false)
+          : ptr_(ptr), alloc_(a)
       {
-        if (ptr_) {
-          new ((void*)&alloc_) value_allocator(a);
-          has_alloc_ = true;
-        }
       }
 
     public:
@@ -1989,52 +1985,39 @@ namespace boost {
 
       ~node_handle_set()
       {
-        if (has_alloc_ && ptr_) {
-          node_allocator node_alloc(alloc_.value());
+        if (ptr_) {
+          node_allocator node_alloc(*alloc_);
           boost::unordered::detail::node_tmp<node_allocator> tmp(
             ptr_, node_alloc);
-        }
-        if (has_alloc_) {
-          alloc_.value_ptr()->~value_allocator();
         }
       }
 
       node_handle_set(BOOST_RV_REF(node_handle_set) n) BOOST_NOEXCEPT
         : ptr_(n.ptr_),
-          has_alloc_(false)
+          alloc_(boost::move(n.alloc_))
       {
-        if (n.has_alloc_) {
-          new ((void*)&alloc_) value_allocator(boost::move(n.alloc_.value()));
-          has_alloc_ = true;
-          n.ptr_ = node_pointer();
-          n.alloc_.value_ptr()->~value_allocator();
-          n.has_alloc_ = false;
-        }
+        n.ptr_ = node_pointer();
       }
 
       node_handle_set& operator=(BOOST_RV_REF(node_handle_set) n)
       {
-        BOOST_ASSERT(!has_alloc_ ||
+        BOOST_ASSERT(!alloc_.has_value() ||
                      value_allocator_traits::
                        propagate_on_container_move_assignment::value ||
-                     (n.has_alloc_ && alloc_.value() == n.alloc_.value()));
+                     (n.alloc_.has_value() && alloc_ == n.alloc_));
 
         if (ptr_) {
-          node_allocator node_alloc(alloc_.value());
+          node_allocator node_alloc(*alloc_);
           boost::unordered::detail::node_tmp<node_allocator> tmp(
             ptr_, node_alloc);
           ptr_ = node_pointer();
         }
 
-        if (has_alloc_) {
-          alloc_.value_ptr()->~value_allocator();
-          has_alloc_ = false;
+        if (!alloc_.has_value() ||
+            value_allocator_traits::propagate_on_container_move_assignment::
+              value) {
+          alloc_ = boost::move(n.alloc_);
         }
-
-        if (!has_alloc_ && n.has_alloc_) {
-          move_allocator(n);
-        }
-
         ptr_ = n.ptr_;
         n.ptr_ = node_pointer();
 
@@ -2043,7 +2026,7 @@ namespace boost {
 
       value_type& value() const { return ptr_->value(); }
 
-      allocator_type get_allocator() const { return alloc_.value(); }
+      allocator_type get_allocator() const { return *alloc_; }
 
       BOOST_EXPLICIT_OPERATOR_BOOL_NOEXCEPT()
 
@@ -2052,37 +2035,18 @@ namespace boost {
       bool empty() const BOOST_NOEXCEPT { return ptr_ ? 0 : 1; }
 
       void swap(node_handle_set& n) BOOST_NOEXCEPT_IF(
-        value_allocator_traits::propagate_on_container_swap::value
-        /* || value_allocator_traits::is_always_equal::value */)
+        value_allocator_traits::propagate_on_container_swap::value ||
+        value_allocator_traits::is_always_equal::value)
       {
-        if (!has_alloc_) {
-          if (n.has_alloc_) {
-            move_allocator(n);
-          }
-        } else if (!n.has_alloc_) {
-          n.move_allocator(*this);
-        } else {
-          swap_impl(
-            n, boost::unordered::detail::integral_constant<bool,
-                 value_allocator_traits::propagate_on_container_swap::value>());
+        BOOST_ASSERT(
+          !alloc_.has_value() || !n.alloc_.has_value() ||
+          value_allocator_traits::propagate_on_container_swap::value ||
+          alloc_ == n.alloc_);
+        if (value_allocator_traits::propagate_on_container_swap::value ||
+            !alloc_.has_value() || !n.alloc_.has_value()) {
+          boost::swap(alloc_, n.alloc_);
         }
         boost::swap(ptr_, n.ptr_);
-      }
-
-    private:
-      void move_allocator(node_handle_set& n)
-      {
-        new ((void*)&alloc_) value_allocator(boost::move(n.alloc_.value()));
-        n.alloc_.value_ptr()->~value_allocator();
-        has_alloc_ = true;
-        n.has_alloc_ = false;
-      }
-
-      void swap_impl(node_handle_set&, boost::unordered::detail::false_type) {}
-
-      void swap_impl(node_handle_set& n, boost::unordered::detail::true_type)
-      {
-        boost::swap(alloc_, n.alloc_);
       }
     };
 
