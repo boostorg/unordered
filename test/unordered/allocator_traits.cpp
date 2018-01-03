@@ -126,6 +126,7 @@ void test_empty_allocator()
   BOOST_TEST(!traits::propagate_on_container_copy_assignment::value);
   BOOST_TEST(!traits::propagate_on_container_move_assignment::value);
   BOOST_TEST(!traits::propagate_on_container_swap::value);
+  BOOST_TEST(traits::is_always_equal::value);
   BOOST_TEST(call_select<allocator>() == 0);
 }
 
@@ -139,6 +140,7 @@ template <typename T> struct allocator1
   typedef yes_type propagate_on_container_copy_assignment;
   typedef yes_type propagate_on_container_move_assignment;
   typedef yes_type propagate_on_container_swap;
+  typedef yes_type is_always_equal;
 
   allocator1<T> select_on_container_copy_construction() const
   {
@@ -166,6 +168,7 @@ void test_allocator1()
   BOOST_TEST(traits::propagate_on_container_copy_assignment::value);
   BOOST_TEST(traits::propagate_on_container_move_assignment::value);
   BOOST_TEST(traits::propagate_on_container_swap::value);
+  BOOST_TEST(traits::is_always_equal::value);
   BOOST_TEST(call_select<allocator>() == 1);
 }
 
@@ -192,6 +195,7 @@ template <typename T> struct allocator2 : allocator2_base<allocator2<T> >
   typedef no_type propagate_on_container_copy_assignment;
   typedef no_type propagate_on_container_move_assignment;
   typedef no_type propagate_on_container_swap;
+  typedef no_type is_always_equal;
 };
 
 void test_allocator2()
@@ -208,6 +212,7 @@ void test_allocator2()
   BOOST_TEST(!traits::propagate_on_container_copy_assignment::value);
   BOOST_TEST(!traits::propagate_on_container_move_assignment::value);
   BOOST_TEST(!traits::propagate_on_container_swap::value);
+  BOOST_TEST(!traits::is_always_equal::value);
   BOOST_TEST(call_select<allocator>() == 1);
 }
 
@@ -240,6 +245,8 @@ template <typename T> struct allocator3
   typedef ptr<T const> const_pointer;
   typedef unsigned short size_type;
 
+  int x; // Just to make it non-empty, so that is_always_equal is false.
+
   ALLOCATOR_METHODS_TYPEDEFS(allocator3)
 
   typedef yes_type propagate_on_container_copy_assignment;
@@ -267,6 +274,7 @@ void test_allocator3()
   BOOST_TEST(traits::propagate_on_container_copy_assignment::value);
   BOOST_TEST(!traits::propagate_on_container_move_assignment::value);
   BOOST_TEST(!traits::propagate_on_container_swap::value);
+  BOOST_TEST(!traits::is_always_equal::value);
   BOOST_TEST(call_select<allocator>() == 1);
 }
 

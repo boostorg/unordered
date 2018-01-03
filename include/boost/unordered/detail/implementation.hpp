@@ -864,6 +864,78 @@ namespace boost {
 
 #endif
 
+////////////////////////////////////////////////////////////////////////////
+// TRAITS TYPE DEDETION MECHANISM
+//
+// Used to implement traits that use a type if present, or a
+// default otherwise.
+
+#if defined(BOOST_MSVC) && BOOST_MSVC <= 1400
+
+#define BOOST_UNORDERED_DEFAULT_TYPE_TMPLT(tname)                              \
+  template <typename Tp, typename Default> struct default_type_##tname         \
+  {                                                                            \
+                                                                               \
+    template <typename X>                                                      \
+    static choice1::type test(choice1, typename X::tname* = 0);                \
+                                                                               \
+    template <typename X> static choice2::type test(choice2, void* = 0);       \
+                                                                               \
+    struct DefaultWrap                                                         \
+    {                                                                          \
+      typedef Default tname;                                                   \
+    };                                                                         \
+                                                                               \
+    enum                                                                       \
+    {                                                                          \
+      value = (1 == sizeof(test<Tp>(choose())))                                \
+    };                                                                         \
+                                                                               \
+    typedef typename boost::detail::if_true<value>::BOOST_NESTED_TEMPLATE      \
+      then<Tp, DefaultWrap>::type::tname type;                                 \
+  }
+
+#else
+
+namespace boost {
+  namespace unordered {
+    namespace detail {
+      template <typename T, typename T2> struct sfinae : T2
+      {
+      };
+    }
+  }
+}
+
+#define BOOST_UNORDERED_DEFAULT_TYPE_TMPLT(tname)                              \
+  template <typename Tp, typename Default> struct default_type_##tname         \
+  {                                                                            \
+                                                                               \
+    template <typename X>                                                      \
+    static typename boost::unordered::detail::sfinae<typename X::tname,        \
+      choice1>::type test(choice1);                                            \
+                                                                               \
+    template <typename X> static choice2::type test(choice2);                  \
+                                                                               \
+    struct DefaultWrap                                                         \
+    {                                                                          \
+      typedef Default tname;                                                   \
+    };                                                                         \
+                                                                               \
+    enum                                                                       \
+    {                                                                          \
+      value = (1 == sizeof(test<Tp>(choose())))                                \
+    };                                                                         \
+                                                                               \
+    typedef typename boost::detail::if_true<value>::BOOST_NESTED_TEMPLATE      \
+      then<Tp, DefaultWrap>::type::tname type;                                 \
+  }
+
+#endif
+
+#define BOOST_UNORDERED_DEFAULT_TYPE(T, tname, arg)                            \
+  typename default_type_##tname<T, arg>::type
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Allocator traits
@@ -943,72 +1015,6 @@ namespace boost {
   }
 }
 
-#if defined(BOOST_MSVC) && BOOST_MSVC <= 1400
-
-#define BOOST_UNORDERED_DEFAULT_TYPE_TMPLT(tname)                              \
-  template <typename Tp, typename Default> struct default_type_##tname         \
-  {                                                                            \
-                                                                               \
-    template <typename X>                                                      \
-    static choice1::type test(choice1, typename X::tname* = 0);                \
-                                                                               \
-    template <typename X> static choice2::type test(choice2, void* = 0);       \
-                                                                               \
-    struct DefaultWrap                                                         \
-    {                                                                          \
-      typedef Default tname;                                                   \
-    };                                                                         \
-                                                                               \
-    enum                                                                       \
-    {                                                                          \
-      value = (1 == sizeof(test<Tp>(choose())))                                \
-    };                                                                         \
-                                                                               \
-    typedef typename boost::detail::if_true<value>::BOOST_NESTED_TEMPLATE      \
-      then<Tp, DefaultWrap>::type::tname type;                                 \
-  }
-
-#else
-
-namespace boost {
-  namespace unordered {
-    namespace detail {
-      template <typename T, typename T2> struct sfinae : T2
-      {
-      };
-    }
-  }
-}
-
-#define BOOST_UNORDERED_DEFAULT_TYPE_TMPLT(tname)                              \
-  template <typename Tp, typename Default> struct default_type_##tname         \
-  {                                                                            \
-                                                                               \
-    template <typename X>                                                      \
-    static typename boost::unordered::detail::sfinae<typename X::tname,        \
-      choice1>::type test(choice1);                                            \
-                                                                               \
-    template <typename X> static choice2::type test(choice2);                  \
-                                                                               \
-    struct DefaultWrap                                                         \
-    {                                                                          \
-      typedef Default tname;                                                   \
-    };                                                                         \
-                                                                               \
-    enum                                                                       \
-    {                                                                          \
-      value = (1 == sizeof(test<Tp>(choose())))                                \
-    };                                                                         \
-                                                                               \
-    typedef typename boost::detail::if_true<value>::BOOST_NESTED_TEMPLATE      \
-      then<Tp, DefaultWrap>::type::tname type;                                 \
-  }
-
-#endif
-
-#define BOOST_UNORDERED_DEFAULT_TYPE(T, tname, arg)                            \
-  typename default_type_##tname<T, arg>::type
-
 namespace boost {
   namespace unordered {
     namespace detail {
@@ -1023,6 +1029,7 @@ namespace boost {
       BOOST_UNORDERED_DEFAULT_TYPE_TMPLT(
         propagate_on_container_move_assignment);
       BOOST_UNORDERED_DEFAULT_TYPE_TMPLT(propagate_on_container_swap);
+      BOOST_UNORDERED_DEFAULT_TYPE_TMPLT(is_always_equal);
 
 #if !defined(BOOST_NO_SFINAE_EXPR)
 
@@ -1319,6 +1326,9 @@ namespace boost {
           false_type) propagate_on_container_move_assignment;
         typedef BOOST_UNORDERED_DEFAULT_TYPE(Alloc, propagate_on_container_swap,
           false_type) propagate_on_container_swap;
+
+        typedef BOOST_UNORDERED_DEFAULT_TYPE(Alloc, is_always_equal,
+          typename boost::is_empty<Alloc>::type) is_always_equal;
       };
     }
   }
@@ -1339,9 +1349,20 @@ namespace boost {
   namespace unordered {
     namespace detail {
 
+      BOOST_UNORDERED_DEFAULT_TYPE_TMPLT(is_always_equal);
+
       template <typename Alloc>
       struct allocator_traits : std::allocator_traits<Alloc>
       {
+        // As is_always_equal was introduced in C++17, std::allocator_traits
+        // doesn't always have it. So use it when available, implement it
+        // ourselves when not. Would be simpler not to bother with
+        // std::allocator_traits, but I feel like I should try to use
+        // it where possible.
+        typedef BOOST_UNORDERED_DEFAULT_TYPE(std::allocator_traits<Alloc>,
+          is_always_equal,
+          BOOST_UNORDERED_DEFAULT_TYPE(Alloc, is_always_equal,
+            typename boost::is_empty<Alloc>::type)) is_always_equal;
       };
 
       template <typename Alloc, typename T> struct rebind_wrap
