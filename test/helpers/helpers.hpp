@@ -47,7 +47,8 @@ namespace test {
   template <typename Iterator, typename IntType>
   Iterator next(Iterator it, IntType x)
   {
-    std::advance(it, x);
+    std::advance(it,
+      static_cast<typename std::iterator_traits<Iterator>::difference_type>(x));
     return it;
   }
 }
