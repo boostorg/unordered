@@ -715,11 +715,10 @@ namespace boost {
       BOOST_UNORDERED_DEPRECATED("Use erase instead")
       void erase_return_void(const_iterator it) { erase(it); }
 
-      void swap(unordered_map&);
-      // C++17 support: BOOST_NOEXCEPT_IF(
-      //    value_allocator_traits::is_always_equal::value &&
-      //    is_nothrow_move_assignable_v<H> &&
-      //    is_nothrow_move_assignable_v<P>)
+      void swap(unordered_map&)
+        BOOST_NOEXCEPT_IF(value_allocator_traits::is_always_equal::value&&
+            boost::unordered::detail::is_nothrow_swappable<H>::value&&
+              boost::unordered::detail::is_nothrow_swappable<P>::value);
       void clear() BOOST_NOEXCEPT { table_.clear_impl(); }
 
       template <typename H2, typename P2>
@@ -1327,11 +1326,10 @@ namespace boost {
       BOOST_UNORDERED_DEPRECATED("Use erase instead")
       void erase_return_void(const_iterator it) { erase(it); }
 
-      void swap(unordered_multimap&);
-      // C++17 support: BOOST_NOEXCEPT_IF(
-      //    value_allocator_traits::is_always_equal::value &&
-      //    is_nothrow_move_assignable_v<H> &&
-      //    is_nothrow_move_assignable_v<P>)
+      void swap(unordered_multimap&)
+        BOOST_NOEXCEPT_IF(value_allocator_traits::is_always_equal::value&&
+            boost::unordered::detail::is_nothrow_swappable<H>::value&&
+              boost::unordered::detail::is_nothrow_swappable<P>::value);
       void clear() BOOST_NOEXCEPT { table_.clear_impl(); }
 
       template <typename H2, typename P2>
@@ -1740,10 +1738,9 @@ namespace boost {
 
     template <class K, class T, class H, class P, class A>
     void unordered_map<K, T, H, P, A>::swap(unordered_map& other)
-    // C++17 support: BOOST_NOEXCEPT_IF(
-    //    value_allocator_traits::is_always_equal::value &&
-    //    is_nothrow_move_assignable_v<H> &&
-    //    is_nothrow_move_assignable_v<P>)
+      BOOST_NOEXCEPT_IF(value_allocator_traits::is_always_equal::value&&
+          boost::unordered::detail::is_nothrow_swappable<H>::value&&
+            boost::unordered::detail::is_nothrow_swappable<P>::value)
     {
       table_.swap(other.table_);
     }
@@ -2217,10 +2214,9 @@ namespace boost {
 
     template <class K, class T, class H, class P, class A>
     void unordered_multimap<K, T, H, P, A>::swap(unordered_multimap& other)
-    // C++17 support: BOOST_NOEXCEPT_IF(
-    //    value_allocator_traits::is_always_equal::value &&
-    //    is_nothrow_move_assignable_v<H> &&
-    //    is_nothrow_move_assignable_v<P>)
+      BOOST_NOEXCEPT_IF(value_allocator_traits::is_always_equal::value&&
+          boost::unordered::detail::is_nothrow_swappable<H>::value&&
+            boost::unordered::detail::is_nothrow_swappable<P>::value)
     {
       table_.swap(other.table_);
     }

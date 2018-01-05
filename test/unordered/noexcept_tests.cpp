@@ -89,6 +89,7 @@ namespace noexcept_tests {
   };
 
   typedef hash_nothrow<true, false, false> hash_nothrow_move;
+  typedef hash_nothrow<false, false, true> hash_nothrow_swap;
 
   template <bool nothrow_move_construct, bool nothrow_move_assign,
     bool nothrow_swap>
@@ -137,14 +138,18 @@ namespace noexcept_tests {
   };
 
   typedef equal_to_nothrow<true, false, false> equal_to_nothrow_move;
+  typedef equal_to_nothrow<false, false, true> equal_to_nothrow_swap;
 
   bool have_is_nothrow_move = false;
+  bool have_is_nothrow_swap = false;
 
   UNORDERED_AUTO_TEST (check_is_nothrow_move) {
     BOOST_TEST(
       !boost::is_nothrow_move_constructible<hash_possible_exception>::value);
     have_is_nothrow_move =
       boost::is_nothrow_move_constructible<hash_nothrow_move>::value;
+    have_is_nothrow_swap =
+      boost::unordered::detail::is_nothrow_swappable<hash_nothrow_swap>::value;
 
 // Copied from boost::is_nothrow_move_constructible implementation
 // to make sure this does actually detect it when expected.
@@ -156,6 +161,17 @@ namespace noexcept_tests {
   !BOOST_WORKAROUND(BOOST_GCC_VERSION, < 40800)
     BOOST_TEST(have_is_nothrow_move);
 #endif
+
+#if !defined(BOOST_NO_SFINAE_EXPR) && !defined(BOOST_NO_CXX11_NOEXCEPT) &&     \
+  !defined(BOOST_NO_CXX11_DECLTYPE) &&                                         \
+  !defined(BOOST_NO_CXX11_FUNCTION_TEMPLATE_DEFAULT_ARGS)
+// TODO: Turn test on when unordered starts to use is_nothrow_swap
+// BOOST_TEST(have_is_nothrow_swap);
+#endif
+
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM
+      << "have_is_nothrow_move: " << have_is_nothrow_move << std::endl
+      << "have_is_nothrow_swap: " << have_is_nothrow_swap << std::endl;
   }
 
   UNORDERED_AUTO_TEST (test_noexcept) {
@@ -202,6 +218,40 @@ namespace noexcept_tests {
 
       throwing_test_exception = false;
     }
+  }
+
+  UNORDERED_AUTO_TEST (test_nothrow_swap_when_noexcept) {
+    typedef boost::unordered_set<int, hash_nothrow_swap, equal_to_nothrow_swap>
+      throwing_set;
+
+    if (have_is_nothrow_swap) {
+      BOOST_TEST(
+        boost::unordered::detail::is_nothrow_swappable<throwing_set>::value);
+    }
+
+    throwing_test_exception = false;
+
+    throwing_set x1;
+    throwing_set x2;
+    x1.insert(10);
+    x1.insert(50);
+    for (int i = 0; i < 100; ++i) {
+      x2.insert(i);
+    }
+
+    try {
+      throwing_test_exception = true;
+
+      x1.swap(x2);
+      BOOST_TEST(x1.size() == 100);
+      BOOST_TEST(x2.size() == 2);
+      BOOST_TEST(*x2.begin() == 10 || *x2.begin() == 50);
+      BOOST_TEST(have_is_nothrow_swap);
+    } catch (test_exception) {
+      BOOST_TEST(!have_is_nothrow_swap);
+    }
+
+    throwing_test_exception = false;
   }
 }
 

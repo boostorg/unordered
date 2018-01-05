@@ -31,12 +31,15 @@
 #include <boost/type_traits/add_lvalue_reference.hpp>
 #include <boost/type_traits/aligned_storage.hpp>
 #include <boost/type_traits/alignment_of.hpp>
+#include <boost/type_traits/integral_constant.hpp>
 #include <boost/type_traits/is_base_of.hpp>
 #include <boost/type_traits/is_class.hpp>
+#include <boost/type_traits/is_const.hpp>
 #include <boost/type_traits/is_empty.hpp>
 #include <boost/type_traits/is_nothrow_move_assignable.hpp>
 #include <boost/type_traits/is_nothrow_move_constructible.hpp>
 #include <boost/type_traits/is_same.hpp>
+#include <boost/type_traits/is_scalar.hpp>
 #include <boost/type_traits/remove_const.hpp>
 #include <boost/unordered/detail/fwd.hpp>
 #include <boost/utility/addressof.hpp>
@@ -750,6 +753,19 @@ namespace boost {
 #if defined(BOOST_MSVC)
 #pragma warning(pop)
 #endif
+
+      ////////////////////////////////////////////////////////////////////////////
+      // is_nothrow_swappable
+      //
+      // TODO: Replace this very basic implementation when the full type_traits
+      // implementation is available.
+
+      template <class T>
+      struct is_nothrow_swappable
+        : boost::integral_constant<bool,
+            boost::is_scalar<T>::value && !boost::is_const<T>::value>
+      {
+      };
 
       //////////////////////////////////////////////////////////////////////////
       // value_base
@@ -2756,6 +2772,9 @@ namespace boost {
         static const bool nothrow_move_constructible =
           boost::is_nothrow_move_constructible<H>::value &&
           boost::is_nothrow_move_constructible<P>::value;
+        static const bool nothrow_swappable =
+          boost::unordered::detail::is_nothrow_swappable<H>::value &&
+          boost::unordered::detail::is_nothrow_swappable<P>::value;
 
       private:
         friend class boost::unordered::detail::set_hash_functions<H, P,
@@ -3279,14 +3298,12 @@ namespace boost {
           allocators_.swap(other.allocators_);
         }
 
-        // Only swaps the allocators if propagate_on_container_swap
-        void swap(table& x)
+        // Not nothrow swappable
+        void swap(table& x, false_type)
         {
           set_hash_functions op1(*this, x);
           set_hash_functions op2(x, *this);
 
-          // I think swap can throw if Propagate::value,
-          // since the allocators' swap can throw. Not sure though.
           swap_allocators(
             x, boost::unordered::detail::integral_constant<bool,
                  allocator_traits<
@@ -3299,6 +3316,34 @@ namespace boost {
           std::swap(max_load_, x.max_load_);
           op1.commit();
           op2.commit();
+        }
+
+        // Nothrow swappable
+        void swap(table& x, true_type)
+        {
+          swap_allocators(
+            x, boost::unordered::detail::integral_constant<bool,
+                 allocator_traits<
+                   node_allocator>::propagate_on_container_swap::value>());
+
+          boost::swap(buckets_, x.buckets_);
+          boost::swap(bucket_count_, x.bucket_count_);
+          boost::swap(size_, x.size_);
+          std::swap(mlf_, x.mlf_);
+          std::swap(max_load_, x.max_load_);
+          this->current_functions().swap(x.current_functions());
+        }
+
+        // Only swaps the allocators if propagate_on_container_swap.
+        // If not propagate_on_container_swap and allocators aren't
+        // equal, behaviour is undefined.
+        void swap(table& x)
+        {
+          BOOST_ASSERT(allocator_traits<
+                         node_allocator>::propagate_on_container_swap::value ||
+                       node_alloc() == x.node_alloc());
+          swap(x, boost::unordered::detail::integral_constant<bool,
+                    functions::nothrow_swappable>());
         }
 
         // Only call with nodes allocated with the currect allocator, or
