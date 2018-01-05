@@ -42,25 +42,36 @@ namespace noexcept_tests {
     }
   }
 
-  class hash_nothrow_move : boost::hash<int>
+  template <bool nothrow_move_construct, bool nothrow_move_assign,
+    bool nothrow_swap>
+  class hash_nothrow : boost::hash<int>
   {
-    BOOST_COPYABLE_AND_MOVABLE(hash_nothrow_move)
+    BOOST_COPYABLE_AND_MOVABLE(hash_nothrow)
 
     typedef boost::hash<int> base;
 
   public:
-    hash_nothrow_move(BOOST_RV_REF(hash_nothrow_move)) BOOST_NOEXCEPT {}
+    hash_nothrow(BOOST_RV_REF(hash_nothrow))
+      BOOST_NOEXCEPT_IF(nothrow_move_construct)
+    {
+      if (!nothrow_move_construct) {
+        test_throw("Move Constructor");
+      }
+    }
 
-    hash_nothrow_move() { test_throw("Constructor"); }
-    hash_nothrow_move(hash_nothrow_move const&) { test_throw("Copy"); }
-    hash_nothrow_move& operator=(BOOST_COPY_ASSIGN_REF(hash_nothrow_move))
+    hash_nothrow() { test_throw("Constructor"); }
+    hash_nothrow(hash_nothrow const&) { test_throw("Copy"); }
+    hash_nothrow& operator=(BOOST_COPY_ASSIGN_REF(hash_nothrow))
     {
       test_throw("Assign");
       return *this;
     }
-    hash_nothrow_move& operator=(BOOST_RV_REF(hash_nothrow_move))
+    hash_nothrow& operator=(BOOST_RV_REF(hash_nothrow))
+      BOOST_NOEXCEPT_IF(nothrow_move_assign)
     {
-      test_throw("Move Assign");
+      if (!nothrow_move_assign) {
+        test_throw("Move Assign");
+      }
       return *this;
     }
     std::size_t operator()(int x) const
@@ -68,35 +79,64 @@ namespace noexcept_tests {
       test_throw("Operator");
       return static_cast<base const&>(*this)(x);
     }
+    friend void swap(hash_nothrow&, hash_nothrow&)
+      BOOST_NOEXCEPT_IF(nothrow_swap)
+    {
+      if (!nothrow_swap) {
+        test_throw("Swap");
+      }
+    }
   };
 
-  class equal_to_nothrow_move : std::equal_to<int>
-  {
-    BOOST_COPYABLE_AND_MOVABLE(equal_to_nothrow_move)
+  typedef hash_nothrow<true, false, false> hash_nothrow_move;
 
-    typedef std::equal_to<int> base;
+  template <bool nothrow_move_construct, bool nothrow_move_assign,
+    bool nothrow_swap>
+  class equal_to_nothrow
+  {
+    BOOST_COPYABLE_AND_MOVABLE(equal_to_nothrow)
+
+    typedef boost::hash<int> base;
 
   public:
-    equal_to_nothrow_move(BOOST_RV_REF(equal_to_nothrow_move)) BOOST_NOEXCEPT {}
-    equal_to_nothrow_move() { test_throw("Constructor"); }
-    equal_to_nothrow_move(equal_to_nothrow_move const&) { test_throw("Copy"); }
-    equal_to_nothrow_move& operator=(
-      BOOST_COPY_ASSIGN_REF(equal_to_nothrow_move))
+    equal_to_nothrow(BOOST_RV_REF(equal_to_nothrow))
+      BOOST_NOEXCEPT_IF(nothrow_move_construct)
+    {
+      if (!nothrow_move_construct) {
+        test_throw("Move Constructor");
+      }
+    }
+
+    equal_to_nothrow() { test_throw("Constructor"); }
+    equal_to_nothrow(equal_to_nothrow const&) { test_throw("Copy"); }
+    equal_to_nothrow& operator=(BOOST_COPY_ASSIGN_REF(equal_to_nothrow))
     {
       test_throw("Assign");
       return *this;
     }
-    equal_to_nothrow_move& operator=(BOOST_RV_REF(equal_to_nothrow_move))
+    equal_to_nothrow& operator=(BOOST_RV_REF(equal_to_nothrow))
+      BOOST_NOEXCEPT_IF(nothrow_move_assign)
     {
-      test_throw("Move Assign");
+      if (!nothrow_move_assign) {
+        test_throw("Move Assign");
+      }
       return *this;
     }
     std::size_t operator()(int x, int y) const
     {
       test_throw("Operator");
-      return static_cast<base const&>(*this)(x, y);
+      return x == y;
+    }
+    friend void swap(equal_to_nothrow&, equal_to_nothrow&)
+      BOOST_NOEXCEPT_IF(nothrow_swap)
+    {
+      if (!nothrow_swap) {
+        test_throw("Swap");
+      }
     }
   };
+
+  typedef equal_to_nothrow<true, false, false> equal_to_nothrow_move;
 
   bool have_is_nothrow_move = false;
 
