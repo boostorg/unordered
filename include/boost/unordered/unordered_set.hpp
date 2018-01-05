@@ -149,10 +149,9 @@ namespace boost {
       }
 
       unordered_set& operator=(BOOST_RV_REF(unordered_set) x)
-      // C++17 support: BOOST_NOEXCEPT_IF(
-      //    value_allocator_traits::is_always_equal::value &&
-      //    is_nothrow_move_assignable_v<H> &&
-      //    is_nothrow_move_assignable_v<P>)
+        BOOST_NOEXCEPT_IF(value_allocator_traits::is_always_equal::value&&
+            boost::is_nothrow_move_assignable<H>::value&&
+              boost::is_nothrow_move_assignable<P>::value)
       {
         table_.move_assign(x.table_, boost::unordered::detail::true_type());
         return *this;
@@ -166,10 +165,9 @@ namespace boost {
 
 #if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
       unordered_set& operator=(unordered_set&& x)
-      // C++17 support: BOOST_NOEXCEPT_IF(
-      //    value_allocator_traits::is_always_equal::value &&
-      //    is_nothrow_move_assignable_v<H> &&
-      //    is_nothrow_move_assignable_v<P>)
+        BOOST_NOEXCEPT_IF(value_allocator_traits::is_always_equal::value&&
+            boost::is_nothrow_move_assignable<H>::value&&
+              boost::is_nothrow_move_assignable<P>::value)
       {
         table_.move_assign(x.table_, boost::unordered::detail::true_type());
         return *this;
@@ -706,10 +704,9 @@ namespace boost {
       }
 
       unordered_multiset& operator=(BOOST_RV_REF(unordered_multiset) x)
-      // C++17 support: BOOST_NOEXCEPT_IF(
-      //    value_allocator_traits::is_always_equal::value &&
-      //    is_nothrow_move_assignable_v<H> &&
-      //    is_nothrow_move_assignable_v<P>)
+        BOOST_NOEXCEPT_IF(value_allocator_traits::is_always_equal::value&&
+            boost::is_nothrow_move_assignable<H>::value&&
+              boost::is_nothrow_move_assignable<P>::value)
       {
         table_.move_assign(x.table_, boost::unordered::detail::false_type());
         return *this;
@@ -723,10 +720,9 @@ namespace boost {
 
 #if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
       unordered_multiset& operator=(unordered_multiset&& x)
-      // C++17 support: BOOST_NOEXCEPT_IF(
-      //    value_allocator_traits::is_always_equal::value &&
-      //    is_nothrow_move_assignable_v<H> &&
-      //    is_nothrow_move_assignable_v<P>)
+        BOOST_NOEXCEPT_IF(value_allocator_traits::is_always_equal::value&&
+            boost::is_nothrow_move_assignable<H>::value&&
+              boost::is_nothrow_move_assignable<P>::value)
       {
         table_.move_assign(x.table_, boost::unordered::detail::false_type());
         return *this;

@@ -18,11 +18,19 @@ namespace noexcept_tests {
   struct hash_possible_exception : boost::hash<int>
   {
     hash_possible_exception(hash_possible_exception const&) {}
+    hash_possible_exception& operator=(hash_possible_exception const&)
+    {
+      return *this;
+    }
   };
 
   struct equal_to_possible_exception : std::equal_to<int>
   {
     equal_to_possible_exception(equal_to_possible_exception const&) {}
+    equal_to_possible_exception& operator=(equal_to_possible_exception const&)
+    {
+      return *this;
+    }
   };
 
   // Test that the move constructor does actually move without throwing
@@ -88,7 +96,8 @@ namespace noexcept_tests {
     }
   };
 
-  typedef hash_nothrow<true, false, false> hash_nothrow_move;
+  typedef hash_nothrow<true, false, false> hash_nothrow_move_construct;
+  typedef hash_nothrow<false, true, false> hash_nothrow_move_assign;
   typedef hash_nothrow<false, false, true> hash_nothrow_swap;
 
   template <bool nothrow_move_construct, bool nothrow_move_assign,
@@ -137,29 +146,40 @@ namespace noexcept_tests {
     }
   };
 
-  typedef equal_to_nothrow<true, false, false> equal_to_nothrow_move;
+  typedef equal_to_nothrow<true, false, false> equal_to_nothrow_move_construct;
+  typedef equal_to_nothrow<false, true, false> equal_to_nothrow_move_assign;
   typedef equal_to_nothrow<false, false, true> equal_to_nothrow_swap;
 
   bool have_is_nothrow_move = false;
+  bool have_is_nothrow_move_assign = false;
   bool have_is_nothrow_swap = false;
 
   UNORDERED_AUTO_TEST (check_is_nothrow_move) {
     BOOST_TEST(
       !boost::is_nothrow_move_constructible<hash_possible_exception>::value);
+    BOOST_TEST(
+      !boost::is_nothrow_move_assignable<hash_possible_exception>::value);
+    BOOST_TEST(!boost::unordered::detail::is_nothrow_swappable<
+               hash_possible_exception>::value);
+    BOOST_TEST((!boost::is_nothrow_move_constructible<
+                equal_to_nothrow<false, false, false> >::value));
+    BOOST_TEST((!boost::is_nothrow_move_assignable<
+                equal_to_nothrow<false, false, false> >::value));
+    BOOST_TEST((!boost::unordered::detail::is_nothrow_swappable<
+                equal_to_nothrow<false, false, false> >::value));
+
     have_is_nothrow_move =
-      boost::is_nothrow_move_constructible<hash_nothrow_move>::value;
+      boost::is_nothrow_move_constructible<hash_nothrow_move_construct>::value;
+    have_is_nothrow_move_assign =
+      boost::is_nothrow_move_assignable<hash_nothrow_move_assign>::value;
     have_is_nothrow_swap =
       boost::unordered::detail::is_nothrow_swappable<hash_nothrow_swap>::value;
 
-// Copied from boost::is_nothrow_move_constructible implementation
-// to make sure this does actually detect it when expected.
-//
-// The type trait is also available when BOOST_IS_NOTHROW_MOVE_CONSTRUCT
-// is defined (for some versions of Visual C++?) but detects 'throw()',
-// not noexcept.
+// Check that the traits work when expected.
 #if !defined(BOOST_NO_CXX11_NOEXCEPT) && !defined(BOOST_NO_SFINAE_EXPR) &&     \
   !BOOST_WORKAROUND(BOOST_GCC_VERSION, < 40800)
     BOOST_TEST(have_is_nothrow_move);
+    BOOST_TEST(have_is_nothrow_move_assign);
 #endif
 
 #if !defined(BOOST_NO_SFINAE_EXPR) && !defined(BOOST_NO_CXX11_NOEXCEPT) &&     \
@@ -193,31 +213,66 @@ namespace noexcept_tests {
           boost::hash<int>, equal_to_possible_exception> >::value));
   }
 
-  UNORDERED_AUTO_TEST (test_no_throw_when_noexcept) {
-    typedef boost::unordered_set<int, hash_nothrow_move, equal_to_nothrow_move>
+  UNORDERED_AUTO_TEST (test_nothrow_move_when_noexcept) {
+    typedef boost::unordered_set<int, hash_nothrow_move_construct,
+      equal_to_nothrow_move_construct>
       throwing_set;
 
     if (have_is_nothrow_move) {
       BOOST_TEST(boost::is_nothrow_move_constructible<throwing_set>::value);
-
-      throwing_test_exception = false;
-
-      throwing_set x1;
-      x1.insert(10);
-      x1.insert(50);
-
-      try {
-        throwing_test_exception = true;
-
-        throwing_set x2 = boost::move(x1);
-        BOOST_TEST(x2.size() == 2);
-        BOOST_TEST(*x2.begin() == 10 || *x2.begin() == 50);
-      } catch (test_exception) {
-        BOOST_TEST(false);
-      }
-
-      throwing_test_exception = false;
     }
+
+    throwing_test_exception = false;
+
+    throwing_set x1;
+    x1.insert(10);
+    x1.insert(50);
+
+    try {
+      throwing_test_exception = true;
+
+      throwing_set x2 = boost::move(x1);
+      BOOST_TEST(x2.size() == 2);
+      BOOST_TEST(*x2.begin() == 10 || *x2.begin() == 50);
+      BOOST_TEST(have_is_nothrow_move);
+    } catch (test_exception) {
+      BOOST_TEST(!have_is_nothrow_move);
+    }
+
+    throwing_test_exception = false;
+  }
+
+  UNORDERED_AUTO_TEST (test_nothrow_move_assign_when_noexcept) {
+    typedef boost::unordered_set<int, hash_nothrow_move_assign,
+      equal_to_nothrow_move_assign>
+      throwing_set;
+
+    if (have_is_nothrow_move_assign) {
+      BOOST_TEST(boost::is_nothrow_move_assignable<throwing_set>::value);
+    }
+
+    throwing_test_exception = false;
+
+    throwing_set x1;
+    throwing_set x2;
+    x1.insert(10);
+    x1.insert(50);
+    for (int i = 0; i < 100; ++i) {
+      x2.insert(i);
+    }
+
+    try {
+      throwing_test_exception = true;
+
+      x2 = boost::move(x1);
+      BOOST_TEST(x2.size() == 2);
+      BOOST_TEST(*x2.begin() == 10 || *x2.begin() == 50);
+      BOOST_TEST(have_is_nothrow_move_assign);
+    } catch (test_exception) {
+      BOOST_TEST(!have_is_nothrow_move_assign);
+    }
+
+    throwing_test_exception = false;
   }
 
   UNORDERED_AUTO_TEST (test_nothrow_swap_when_noexcept) {

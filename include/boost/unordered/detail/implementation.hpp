@@ -3540,47 +3540,84 @@ namespace boost {
             move_assign(x, is_unique,
               boost::unordered::detail::integral_constant<bool,
                 allocator_traits<node_allocator>::
-                  propagate_on_container_move_assignment::value>());
+                  propagate_on_container_move_assignment::value>(),
+              boost::unordered::detail::integral_constant<bool,
+                functions::nothrow_move_assignable>());
           }
         }
 
+        // Propagate allocator, move assign functions throwable
         template <typename UniqueType>
-        void move_assign(table& x, UniqueType, true_type)
+        void move_assign(table& x, UniqueType, true_type, false_type)
         {
-          delete_buckets();
           set_hash_functions new_func_this(*this, x);
+          // TODO: Can this throw? If so then breaks noexcept spec.
+          //       Maybe don't do it if allocators are equal.
+          delete_buckets();
           allocators_.move_assign(x.allocators_);
-          // No throw from here.
           mlf_ = x.mlf_;
           move_buckets_from(x);
           new_func_this.commit();
         }
 
+        // Propagate allocator, move assign functions noexcept
         template <typename UniqueType>
-        void move_assign(table& x, UniqueType is_unique, false_type)
+        void move_assign(table& x, UniqueType, true_type, true_type)
+        {
+          delete_buckets();
+          allocators_.move_assign(x.allocators_);
+          mlf_ = x.mlf_;
+          move_buckets_from(x);
+          this->current_functions().move_assign(x.current_functions());
+        }
+
+        // Don't propagate allocator
+        template <typename UniqueType, typename IsNoExcept>
+        void move_assign(
+          table& x, UniqueType is_unique, false_type, IsNoExcept is_noexcept)
         {
           if (node_alloc() == x.node_alloc()) {
-            delete_buckets();
-            set_hash_functions new_func_this(*this, x);
-            // No throw from here.
-            mlf_ = x.mlf_;
-            move_buckets_from(x);
-            new_func_this.commit();
+            move_assign_equal_alloc(x, is_noexcept);
           } else {
-            set_hash_functions new_func_this(*this, x);
-            mlf_ = x.mlf_;
-            recalculate_max_load();
-
-            if (x.size_ > max_load_) {
-              create_buckets(min_buckets_for_size(x.size_));
-            } else if (size_) {
-              clear_buckets();
-            }
-
-            new_func_this.commit();
-
-            move_assign_buckets(x, is_unique);
+            move_assign_realloc(x, is_unique);
           }
+        }
+
+        // Move assign functions throwable
+        void move_assign_equal_alloc(table& x, false_type)
+        {
+          set_hash_functions new_func_this(*this, x);
+          delete_buckets();
+          mlf_ = x.mlf_;
+          move_buckets_from(x);
+          new_func_this.commit();
+        }
+
+        // Move assign functions noexcept
+        void move_assign_equal_alloc(table& x, true_type)
+        {
+          delete_buckets();
+          mlf_ = x.mlf_;
+          move_buckets_from(x);
+          this->current_functions().move_assign(x.current_functions());
+        }
+
+        template <typename UniqueType>
+        void move_assign_realloc(table& x, UniqueType is_unique)
+        {
+          set_hash_functions new_func_this(*this, x);
+          mlf_ = x.mlf_;
+          recalculate_max_load();
+
+          if (x.size_ > max_load_) {
+            create_buckets(min_buckets_for_size(x.size_));
+          } else if (size_) {
+            clear_buckets();
+          }
+
+          new_func_this.commit();
+
+          move_assign_buckets(x, is_unique);
         }
 
         // Accessors
