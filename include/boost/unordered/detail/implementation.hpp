@@ -2770,18 +2770,20 @@ namespace boost {
         bool current_; // The currently active functions.
         aligned_function funcs_[2];
 
-        function_pair const& current() const
+      public:
+        function_pair const& current_functions() const
         {
           return *static_cast<function_pair const*>(
             static_cast<void const*>(funcs_[current_].address()));
         }
 
-        function_pair& current()
+        function_pair& current_functions()
         {
           return *static_cast<function_pair*>(
             static_cast<void*>(funcs_[current_].address()));
         }
 
+      private:
         void construct(bool which, H const& hf, P const& eq)
         {
           new ((void*)&funcs_[which]) function_pair(hf, eq);
@@ -2819,22 +2821,22 @@ namespace boost {
 
         functions(functions const& bf) : current_(false)
         {
-          construct(current_, bf.current());
+          construct(current_, bf.current_functions());
         }
 
         functions(functions& bf, boost::unordered::detail::move_tag)
             : current_(false)
         {
-          construct(current_, bf.current(),
+          construct(current_, bf.current_functions(),
             boost::unordered::detail::integral_constant<bool,
               nothrow_move_constructible>());
         }
 
         ~functions() { this->destroy(current_); }
 
-        H const& hash_function() const { return current().first(); }
+        H const& hash_function() const { return current_functions().first(); }
 
-        P const& key_eq() const { return current().second(); }
+        P const& key_eq() const { return current_functions().second(); }
       };
 
       template <class H, class P> class set_hash_functions<H, P, false>
@@ -2857,7 +2859,7 @@ namespace boost {
         set_hash_functions(functions_type& f, functions_type const& other)
             : functions_(f), tmp_functions_(!f.current_)
         {
-          f.construct(tmp_functions_, other.current());
+          f.construct(tmp_functions_, other.current_functions());
         }
 
         ~set_hash_functions() { functions_.destroy(tmp_functions_); }
@@ -2893,8 +2895,8 @@ namespace boost {
 
         void commit()
         {
-          functions_.current().first() = boost::move(hash_);
-          functions_.current().second() = boost::move(pred_);
+          functions_.current_functions().first() = boost::move(hash_);
+          functions_.current_functions().second() = boost::move(pred_);
         }
       };
 
