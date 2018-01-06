@@ -36,7 +36,8 @@ matrix:
       - compiler: clang
         env: |
             label="clang 32 bit";
-            user_config="using clang : : clang++ -m32 -Werror --std=c++03 ;"
+            user_config="using clang : : clang++ -m32 -Werror ;"
+            CXXSTD=03
 
 before_install:
     - if [ -n $enable_coverage ]; then pip install --user cpp-coveralls; fi
