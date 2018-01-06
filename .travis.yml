@@ -19,26 +19,20 @@ matrix:
     include:
       - compiler: gcc
         env: |
-            label="gcc C++03";
-            user_config="using gcc : : g++-4.8 --coverage -fsanitize=address -Werror --std=c++03 ;"
+            label="gcc C++03/11";
+            user_config="using gcc : : g++-4.8 --coverage -fsanitize=address -Werror ;"
             enable_coverage=1
-      - compiler: gcc
-        env: |
-            label="gcc C++11";
-            user_config="using gcc : : g++-4.8 --coverage -fsanitize=address -Werror --std=c++11 ;"
-            enable_coverage=1
+            CXXSTD=03,11
       - compiler: gcc
         env: |
             label="gcc 32 bit C++11";
-            user_config="using gcc : : g++-4.8 -m32 -fsanitize=address -Werror --std=c++11 ;"
+            user_config="using gcc : : g++-4.8 -m32 -fsanitize=address -Werror ;"
+            CXXSTD=11
       - compiler: clang
         env: |
-            label="clang C++17";
-            user_config="using clang : : clang++ -fsanitize=address -Werror --std=c++17 ;"
-      - compiler: clang
-        env: |
-            label="clang C++11";
-            user_config="using clang : : clang++ -fsanitize=address -Werror --std=c++11 ;"
+            label="clang C++11/17";
+            user_config="using clang : : clang++ -fsanitize=address -Werror ;"
+            CXXSTD=11,17
         # sanitized=address not available for 32-bit clang on travis.
       - compiler: clang
         env: |
@@ -98,5 +92,5 @@ after_success:
 
 script:
     - cd ${TRAVIS_BUILD_DIR}/test
-    - bjam -q include=${BOOST_ROOT} include=${TRAVIS_BUILD_DIR}/include
+    - bjam cxxstd=$CXXSTD -q include=${BOOST_ROOT} include=${TRAVIS_BUILD_DIR}/include
     - xmllint --noout ${TRAVIS_BUILD_DIR}/doc/ref.xml
