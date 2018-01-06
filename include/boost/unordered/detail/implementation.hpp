@@ -2748,20 +2748,13 @@ namespace boost {
 
       //////////////////////////////////////////////////////////////////////////
       // Functions
-
-      // Assigning and swapping the equality and hash function objects
-      // needs strong exception safety. To implement that normally we'd
-      // require one of them to be known to not throw and the other to
-      // guarantee strong exception safety. Unfortunately they both only
-      // have basic exception safety. So to acheive strong exception
-      // safety we have storage space for two copies, and assign the new
-      // copies to the unused space. Then switch to using that to use
-      // them. This is implemented in 'set_hash_functions' which
-      // atomically assigns the new function objects in a strongly
-      // exception safe manner.
-
-      template <class H, class P, bool NoThrowMoveAssign>
-      class set_hash_functions;
+      //
+      // This double buffers the storage for the hash function and key equality
+      // predicate in order to have exception safe copy/swap. To do so,
+      // use 'construct_spare' to construct in the spare space, and then when
+      // ready to use 'switch_functions' to switch to the new functions.
+      // If an exception is thrown between these two calls, use
+      // 'cleanup_spare_functions' to destroy the unused constructed functions.
 
       template <class H, class P> class functions
       {
@@ -2777,8 +2770,6 @@ namespace boost {
           boost::unordered::detail::is_nothrow_swappable<P>::value;
 
       private:
-        friend class boost::unordered::detail::set_hash_functions<H, P,
-          nothrow_move_assignable>;
         functions& operator=(functions const&);
 
         typedef compressed<H, P> function_pair;
@@ -2786,136 +2777,97 @@ namespace boost {
         typedef typename boost::aligned_storage<sizeof(function_pair),
           boost::alignment_of<function_pair>::value>::type aligned_function;
 
-        bool current_; // The currently active functions.
+        unsigned char current_; // 0/1 - Currently active functions
+                                // +2 - Both constructed
         aligned_function funcs_[2];
 
       public:
+        functions(H const& hf, P const& eq) : current_(0)
+        {
+          construct_functions(current_, hf, eq);
+        }
+
+        functions(functions const& bf) : current_(0)
+        {
+          construct_functions(current_, bf.current_functions());
+        }
+
+        functions(functions& bf, boost::unordered::detail::move_tag)
+            : current_(0)
+        {
+          construct_functions(current_, bf.current_functions(),
+            boost::unordered::detail::integral_constant<bool,
+              nothrow_move_constructible>());
+        }
+
+        ~functions()
+        {
+          BOOST_ASSERT(!(current_ & 2));
+          destroy_functions(current_);
+        }
+
+        H const& hash_function() const { return current_functions().first(); }
+
+        P const& key_eq() const { return current_functions().second(); }
+
         function_pair const& current_functions() const
         {
           return *static_cast<function_pair const*>(
-            static_cast<void const*>(funcs_[current_].address()));
+            static_cast<void const*>(funcs_[current_ & 1].address()));
         }
 
         function_pair& current_functions()
         {
           return *static_cast<function_pair*>(
-            static_cast<void*>(funcs_[current_].address()));
+            static_cast<void*>(funcs_[current_ & 1].address()));
+        }
+
+        void construct_spare_functions(function_pair const& f)
+        {
+          BOOST_ASSERT(!(current_ & 2));
+          construct_functions(current_ ^ 1, f);
+          current_ |= 2;
+        }
+
+        void cleanup_spare_functions()
+        {
+          if (current_ & 2) {
+            current_ &= 1;
+            destroy_functions(current_ ^ 1);
+          }
+        }
+
+        void switch_functions()
+        {
+          BOOST_ASSERT(current_ & 2);
+          destroy_functions(current_ & 1);
+          current_ ^= 3;
         }
 
       private:
-        void construct(bool which, H const& hf, P const& eq)
+        void construct_functions(bool which, H const& hf, P const& eq)
         {
           new ((void*)&funcs_[which]) function_pair(hf, eq);
         }
 
-        void construct(bool which, function_pair const& f,
+        void construct_functions(bool which, function_pair const& f,
           boost::unordered::detail::false_type =
             boost::unordered::detail::false_type())
         {
           new ((void*)&funcs_[which]) function_pair(f);
         }
 
-        void construct(
+        void construct_functions(
           bool which, function_pair& f, boost::unordered::detail::true_type)
         {
           new ((void*)&funcs_[which])
             function_pair(f, boost::unordered::detail::move_tag());
         }
 
-        void destroy(bool which)
+        void destroy_functions(bool which)
         {
           boost::unordered::detail::func::destroy(
             (function_pair*)(&funcs_[which]));
-        }
-
-      public:
-        typedef boost::unordered::detail::set_hash_functions<H, P,
-          nothrow_move_assignable>
-          set_hash_functions;
-
-        functions(H const& hf, P const& eq) : current_(false)
-        {
-          construct(current_, hf, eq);
-        }
-
-        functions(functions const& bf) : current_(false)
-        {
-          construct(current_, bf.current_functions());
-        }
-
-        functions(functions& bf, boost::unordered::detail::move_tag)
-            : current_(false)
-        {
-          construct(current_, bf.current_functions(),
-            boost::unordered::detail::integral_constant<bool,
-              nothrow_move_constructible>());
-        }
-
-        ~functions() { this->destroy(current_); }
-
-        H const& hash_function() const { return current_functions().first(); }
-
-        P const& key_eq() const { return current_functions().second(); }
-      };
-
-      template <class H, class P> class set_hash_functions<H, P, false>
-      {
-        set_hash_functions(set_hash_functions const&);
-        set_hash_functions& operator=(set_hash_functions const&);
-
-        typedef functions<H, P> functions_type;
-
-        functions_type& functions_;
-        bool tmp_functions_;
-
-      public:
-        set_hash_functions(functions_type& f, H const& h, P const& p)
-            : functions_(f), tmp_functions_(!f.current_)
-        {
-          f.construct(tmp_functions_, h, p);
-        }
-
-        set_hash_functions(functions_type& f, functions_type const& other)
-            : functions_(f), tmp_functions_(!f.current_)
-        {
-          f.construct(tmp_functions_, other.current_functions());
-        }
-
-        ~set_hash_functions() { functions_.destroy(tmp_functions_); }
-
-        void commit()
-        {
-          functions_.current_ = tmp_functions_;
-          tmp_functions_ = !tmp_functions_;
-        }
-      };
-
-      template <class H, class P> class set_hash_functions<H, P, true>
-      {
-        set_hash_functions(set_hash_functions const&);
-        set_hash_functions& operator=(set_hash_functions const&);
-
-        typedef functions<H, P> functions_type;
-
-        functions_type& functions_;
-        H hash_;
-        P pred_;
-
-      public:
-        set_hash_functions(functions_type& f, H const& h, P const& p)
-            : functions_(f), hash_(h), pred_(p)
-        {
-        }
-
-        set_hash_functions(functions_type& f, functions_type const& other)
-            : functions_(f), hash_(other.hash_function()), pred_(other.key_eq())
-        {
-        }
-
-        void commit()
-        {
-          functions_.current_functions().first() = boost::move(hash_);
-          functions_.current_functions().second() = boost::move(pred_);
         }
       };
 
@@ -2991,7 +2943,6 @@ namespace boost {
         typedef boost::unordered::detail::functions<typename Types::hasher,
           typename Types::key_equal>
           functions;
-        typedef typename functions::set_hash_functions set_hash_functions;
 
         typedef typename Types::value_allocator value_allocator;
         typedef typename boost::unordered::detail::rebind_wrap<value_allocator,
@@ -3301,8 +3252,18 @@ namespace boost {
         // Not nothrow swappable
         void swap(table& x, false_type)
         {
-          set_hash_functions op1(*this, x);
-          set_hash_functions op2(x, *this);
+          if (this == &x) { return; }
+
+          this->construct_spare_functions(x.current_functions());
+          BOOST_TRY {
+            x.construct_spare_functions(this->current_functions());
+          } BOOST_CATCH(...) {
+            this->cleanup_spare_functions();
+            BOOST_RETHROW
+          }
+          BOOST_CATCH_END
+          this->switch_functions();
+          x.switch_functions();
 
           swap_allocators(
             x, boost::unordered::detail::integral_constant<bool,
@@ -3314,8 +3275,6 @@ namespace boost {
           boost::swap(size_, x.size_);
           std::swap(mlf_, x.mlf_);
           std::swap(max_load_, x.max_load_);
-          op1.commit();
-          op2.commit();
         }
 
         // Nothrow swappable
@@ -3492,18 +3451,25 @@ namespace boost {
         void assign(table const& x, UniqueType is_unique, false_type)
         {
           // Strong exception safety.
-          set_hash_functions new_func_this(*this, x);
-          mlf_ = x.mlf_;
-          recalculate_max_load();
+          this->construct_spare_functions(x.current_functions());
+          BOOST_TRY
+          {
+            mlf_ = x.mlf_;
+            recalculate_max_load();
 
-          if (x.size_ > max_load_) {
-            create_buckets(min_buckets_for_size(x.size_));
-          } else if (size_) {
-            clear_buckets();
+            if (x.size_ > max_load_) {
+              create_buckets(min_buckets_for_size(x.size_));
+            } else if (size_) {
+              clear_buckets();
+            }
           }
-
-          new_func_this.commit();
-
+          BOOST_CATCH(...)
+          {
+            this->cleanup_spare_functions();
+            BOOST_RETHROW
+          }
+          BOOST_CATCH_END
+          this->switch_functions();
           assign_buckets(x, is_unique);
         }
 
@@ -3514,7 +3480,8 @@ namespace boost {
             allocators_.assign(x.allocators_);
             assign(x, is_unique, false_type());
           } else {
-            set_hash_functions new_func_this(*this, x);
+            this->construct_spare_functions(x.current_functions());
+            this->switch_functions();
 
             // Delete everything with current allocators before assigning
             // the new ones.
@@ -3522,7 +3489,6 @@ namespace boost {
             allocators_.assign(x.allocators_);
 
             // Copy over other data, all no throw.
-            new_func_this.commit();
             mlf_ = x.mlf_;
             bucket_count_ = min_buckets_for_size(x.size_);
 
@@ -3540,83 +3506,72 @@ namespace boost {
             move_assign(x, is_unique,
               boost::unordered::detail::integral_constant<bool,
                 allocator_traits<node_allocator>::
-                  propagate_on_container_move_assignment::value>(),
-              boost::unordered::detail::integral_constant<bool,
-                functions::nothrow_move_assignable>());
+                  propagate_on_container_move_assignment::value>());
           }
         }
 
-        // Propagate allocator, move assign functions throwable
+        // Propagate allocator
         template <typename UniqueType>
-        void move_assign(table& x, UniqueType, true_type, false_type)
+        void move_assign(table& x, UniqueType, true_type)
         {
-          set_hash_functions new_func_this(*this, x);
-          // TODO: Can this throw? If so then breaks noexcept spec.
-          //       Maybe don't do it if allocators are equal.
+          if (!functions::nothrow_move_assignable) {
+            this->construct_spare_functions(x.current_functions());
+            this->switch_functions();
+          } else {
+            this->current_functions().move_assign(x.current_functions());
+          }
           delete_buckets();
           allocators_.move_assign(x.allocators_);
           mlf_ = x.mlf_;
           move_buckets_from(x);
-          new_func_this.commit();
-        }
-
-        // Propagate allocator, move assign functions noexcept
-        template <typename UniqueType>
-        void move_assign(table& x, UniqueType, true_type, true_type)
-        {
-          delete_buckets();
-          allocators_.move_assign(x.allocators_);
-          mlf_ = x.mlf_;
-          move_buckets_from(x);
-          this->current_functions().move_assign(x.current_functions());
         }
 
         // Don't propagate allocator
-        template <typename UniqueType, typename IsNoExcept>
-        void move_assign(
-          table& x, UniqueType is_unique, false_type, IsNoExcept is_noexcept)
+        template <typename UniqueType>
+        void move_assign(table& x, UniqueType is_unique, false_type)
         {
           if (node_alloc() == x.node_alloc()) {
-            move_assign_equal_alloc(x, is_noexcept);
+            move_assign_equal_alloc(x);
           } else {
             move_assign_realloc(x, is_unique);
           }
         }
 
-        // Move assign functions throwable
-        void move_assign_equal_alloc(table& x, false_type)
+        void move_assign_equal_alloc(table& x)
         {
-          set_hash_functions new_func_this(*this, x);
+          if (!functions::nothrow_move_assignable) {
+            this->construct_spare_functions(x.current_functions());
+            this->switch_functions();
+          } else {
+            this->current_functions().move_assign(x.current_functions());
+          }
           delete_buckets();
           mlf_ = x.mlf_;
           move_buckets_from(x);
-          new_func_this.commit();
-        }
-
-        // Move assign functions noexcept
-        void move_assign_equal_alloc(table& x, true_type)
-        {
-          delete_buckets();
-          mlf_ = x.mlf_;
-          move_buckets_from(x);
-          this->current_functions().move_assign(x.current_functions());
         }
 
         template <typename UniqueType>
         void move_assign_realloc(table& x, UniqueType is_unique)
         {
-          set_hash_functions new_func_this(*this, x);
-          mlf_ = x.mlf_;
-          recalculate_max_load();
+          this->construct_spare_functions(x.current_functions());
+          BOOST_TRY
+          {
+            mlf_ = x.mlf_;
+            recalculate_max_load();
 
-          if (x.size_ > max_load_) {
-            create_buckets(min_buckets_for_size(x.size_));
-          } else if (size_) {
-            clear_buckets();
+            if (x.size_ > max_load_) {
+              create_buckets(min_buckets_for_size(x.size_));
+            } else if (size_) {
+              clear_buckets();
+            }
           }
-
-          new_func_this.commit();
-
+          BOOST_CATCH(...)
+          {
+            this->cleanup_spare_functions();
+            BOOST_RETHROW
+          }
+          BOOST_CATCH_END
+          this->switch_functions();
           move_assign_buckets(x, is_unique);
         }
 
