@@ -96,5 +96,5 @@ after_success:
 
 script:
     - cd ${TRAVIS_BUILD_DIR}/test
-    - ${HOME}/opt/bin/b2 cxxstd=$CXXSTD -q include=${BOOST_ROOT} include=${TRAVIS_BUILD_DIR}/include
+    - ${HOME}/opt/bin/b2 -j 3 cxxstd=$CXXSTD -q include=${BOOST_ROOT} include=${TRAVIS_BUILD_DIR}/include
     - xmllint --noout ${TRAVIS_BUILD_DIR}/doc/ref.xml
