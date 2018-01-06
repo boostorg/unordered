@@ -11,7 +11,6 @@ language: c++
 addons:
     apt:
         packages:
-            - libboost-tools-dev
             - libxml2-utils
             - g++-multilib
 
@@ -86,11 +85,15 @@ before_script:
         tar -xjf $HOME/download/boost.tar.bz2
         mv * ${BOOST_ROOT}
     - rm -r ${BOOST_ROOT}/boost/unordered
+    - cd ${BOOST_ROOT}/tools/build
+    - mkdir ${HOME}/opt
+    - ./bootstrap.sh
+    - ./b2 install --prefix=$HOME/opt
 
 after_success:
     if [ -n $enable_coverage ]; then coveralls -r ${TRAVIS_BUILD_DIR} -b ${TRAVIS_BUILD_DIR}/test --gcov-options '\-lp' --include include/boost/unordered/ ; fi
 
 script:
     - cd ${TRAVIS_BUILD_DIR}/test
-    - bjam cxxstd=$CXXSTD -q include=${BOOST_ROOT} include=${TRAVIS_BUILD_DIR}/include
+    - ${HOME}/opt/bin/b2 cxxstd=$CXXSTD -q include=${BOOST_ROOT} include=${TRAVIS_BUILD_DIR}/include
     - xmllint --noout ${TRAVIS_BUILD_DIR}/doc/ref.xml
