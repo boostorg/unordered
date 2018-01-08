@@ -2845,27 +2845,31 @@ namespace boost {
         }
 
       private:
-        void construct_functions(bool which, H const& hf, P const& eq)
+        void construct_functions(unsigned char which, H const& hf, P const& eq)
         {
+          BOOST_ASSERT(!(which & 2));
           new ((void*)&funcs_[which]) function_pair(hf, eq);
         }
 
-        void construct_functions(bool which, function_pair const& f,
+        void construct_functions(unsigned char which, function_pair const& f,
           boost::unordered::detail::false_type =
             boost::unordered::detail::false_type())
         {
+          BOOST_ASSERT(!(which & 2));
           new ((void*)&funcs_[which]) function_pair(f);
         }
 
-        void construct_functions(
-          bool which, function_pair& f, boost::unordered::detail::true_type)
+        void construct_functions(unsigned char which, function_pair& f,
+          boost::unordered::detail::true_type)
         {
+          BOOST_ASSERT(!(which & 2));
           new ((void*)&funcs_[which])
             function_pair(f, boost::unordered::detail::move_tag());
         }
 
-        void destroy_functions(bool which)
+        void destroy_functions(unsigned char which)
         {
+          BOOST_ASSERT(!(which & 2));
           boost::unordered::detail::func::destroy(
             (function_pair*)(&funcs_[which]));
         }
