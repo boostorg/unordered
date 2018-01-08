@@ -3256,12 +3256,14 @@ namespace boost {
         // Not nothrow swappable
         void swap(table& x, false_type)
         {
-          if (this == &x) { return; }
+          if (this == &x) {
+            return;
+          }
 
           this->construct_spare_functions(x.current_functions());
-          BOOST_TRY {
-            x.construct_spare_functions(this->current_functions());
-          } BOOST_CATCH(...) {
+          BOOST_TRY { x.construct_spare_functions(this->current_functions()); }
+          BOOST_CATCH(...)
+          {
             this->cleanup_spare_functions();
             BOOST_RETHROW
           }
