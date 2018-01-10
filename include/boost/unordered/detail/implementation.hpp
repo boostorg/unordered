@@ -2832,7 +2832,7 @@ namespace boost {
         void cleanup_spare_functions()
         {
           if (current_ & 2) {
-            current_ &= 1;
+            current_ = static_cast<unsigned char>(current_ & 1);
             destroy_functions(current_ ^ 1);
           }
         }
@@ -2840,7 +2840,7 @@ namespace boost {
         void switch_functions()
         {
           BOOST_ASSERT(current_ & 2);
-          destroy_functions(current_ & 1);
+          destroy_functions(static_cast<unsigned char>(current_ & 1));
           current_ ^= 3;
         }
 
