@@ -801,7 +801,7 @@ namespace boost {
 
       template <typename T> class optional
       {
-        BOOST_MOVABLE_BUT_NOT_COPYABLE(optional<T>)
+        BOOST_MOVABLE_BUT_NOT_COPYABLE(optional)
 
         boost::unordered::detail::value_base<T> value_;
         bool has_value_;
