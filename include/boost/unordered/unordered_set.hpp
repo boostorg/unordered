@@ -26,9 +26,11 @@
 #if defined(BOOST_MSVC)
 #pragma warning(push)
 #if BOOST_MSVC >= 1400
-#pragma warning(disable : 4396) // the inline specifier cannot be used when a
-// friend declaration refers to a specialization
-// of a function template
+// conditional expression is constant
+#pragma warning(disable : 4127)
+// the inline specifier cannot be used when a friend declaration refers to a
+// specialization of a function template
+#pragma warning(disable : 4396)
 #endif
 #endif
 
