@@ -249,8 +249,8 @@ void insert_node_handle_unique(Container1& c1, Container2& c2)
 {
   typedef BOOST_DEDUCED_TYPENAME Container1::node_type node_type;
   typedef BOOST_DEDUCED_TYPENAME Container1::value_type value_type;
-  BOOST_STATIC_ASSERT(boost::is_same<node_type,
-    BOOST_DEDUCED_TYPENAME Container2::node_type>::value);
+  BOOST_STATIC_ASSERT((boost::is_same<node_type,
+    BOOST_DEDUCED_TYPENAME Container2::node_type>::value));
 
   typedef BOOST_DEDUCED_TYPENAME Container1::insert_return_type
     insert_return_type1;
@@ -294,8 +294,8 @@ void insert_node_handle_unique2(Container1& c1, Container2& c2)
 {
   typedef BOOST_DEDUCED_TYPENAME Container1::node_type node_type;
   typedef BOOST_DEDUCED_TYPENAME Container1::value_type value_type;
-  BOOST_STATIC_ASSERT(boost::is_same<node_type,
-    BOOST_DEDUCED_TYPENAME Container2::node_type>::value);
+  BOOST_STATIC_ASSERT((boost::is_same<node_type,
+    BOOST_DEDUCED_TYPENAME Container2::node_type>::value));
 
   // typedef BOOST_DEDUCED_TYPENAME Container1::insert_return_type
   // insert_return_type1;
@@ -328,8 +328,8 @@ void insert_node_handle_equiv(Container1& c1, Container2& c2)
 {
   typedef BOOST_DEDUCED_TYPENAME Container1::node_type node_type;
   typedef BOOST_DEDUCED_TYPENAME Container1::value_type value_type;
-  BOOST_STATIC_ASSERT(boost::is_same<node_type,
-    BOOST_DEDUCED_TYPENAME Container2::node_type>::value);
+  BOOST_STATIC_ASSERT((boost::is_same<node_type,
+    BOOST_DEDUCED_TYPENAME Container2::node_type>::value));
 
   typedef BOOST_DEDUCED_TYPENAME Container1::iterator iterator1;
   typedef BOOST_DEDUCED_TYPENAME Container2::iterator iterator2;
