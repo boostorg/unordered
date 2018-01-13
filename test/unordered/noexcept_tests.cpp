@@ -12,6 +12,12 @@
 
 #include "../helpers/test.hpp"
 
+#if defined(BOOST_MSVC)
+#pragma warning(push)
+// conditional expression is constant
+#pragma warning(disable : 4127)
+#endif
+
 namespace noexcept_tests {
   // Test the noexcept is set correctly for the move constructor.
 
@@ -309,5 +315,9 @@ namespace noexcept_tests {
     throwing_test_exception = false;
   }
 }
+
+#if defined(BOOST_MSVC)
+#pragma warning(pop)
+#endif
 
 RUN_TESTS()
