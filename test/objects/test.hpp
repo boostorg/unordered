@@ -354,7 +354,12 @@ namespace test {
       typedef allocator1<U> other;
     };
 
-    explicit allocator1(int t = 0) : tag_(t)
+    allocator1() : tag_(0)
+    {
+      detail::tracker.allocator_ref();
+    }
+
+    explicit allocator1(int t) : tag_(t)
     {
       detail::tracker.allocator_ref();
     }
@@ -601,7 +606,12 @@ namespace test {
       typedef allocator2<U> other;
     };
 
-    explicit allocator2(int t = 0) : tag_(t)
+    allocator2() : tag_(0)
+    {
+      detail::tracker.allocator_ref();
+    }
+
+    explicit allocator2(int t) : tag_(t)
     {
       detail::tracker.allocator_ref();
     }
