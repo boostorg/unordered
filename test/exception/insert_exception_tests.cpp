@@ -162,7 +162,8 @@ struct insert_lvalue_pos_type
 
   template <typename T> friend impl<T> generate(insert_lvalue_pos_type, T& x)
   {
-    return impl<T>(x);
+    impl<T> r(x);
+    return r;
   }
 } insert_lvalue_pos;
 
@@ -214,7 +215,8 @@ struct emplace_lvalue_pos_type
 
   template <typename T> friend impl<T> generate(emplace_lvalue_pos_type, T& x)
   {
-    return impl<T>(x);
+    impl<T> r(x);
+    return r;
   }
 } emplace_lvalue_pos;
 
