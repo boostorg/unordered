@@ -146,24 +146,24 @@ struct insert_lvalue_end_type : inserter_base
   }
 } insert_lvalue_end;
 
+template <typename T> struct insert_lvalue_pos_type_impl : inserter_base
+{
+  typename T::iterator pos;
+
+  insert_lvalue_pos_type_impl(T& x) : pos(x.begin()) {}
+
+  template <typename Iterator> void operator()(T& x, Iterator it)
+  {
+    pos = get_iterator(x.insert(pos, *it));
+  }
+};
+
 struct insert_lvalue_pos_type
 {
-  template <typename T> struct impl : inserter_base
+  template <typename T>
+  friend insert_lvalue_pos_type_impl<T> generate(insert_lvalue_pos_type, T& x)
   {
-    typename T::iterator pos;
-
-    impl(T& x) : pos(x.begin()) {}
-
-    template <typename Iterator> void operator()(T& x, Iterator it)
-    {
-      pos = get_iterator(x.insert(pos, *it));
-    }
-  };
-
-  template <typename T> friend impl<T> generate(insert_lvalue_pos_type, T& x)
-  {
-    impl<T> r(x);
-    return r;
+    return insert_lvalue_pos_type_impl<T>(x);
   }
 } insert_lvalue_pos;
 
@@ -199,24 +199,24 @@ struct emplace_lvalue_end_type : inserter_base
   }
 } emplace_lvalue_end;
 
+template <typename T> struct emplace_lvalue_pos_type_impl : inserter_base
+{
+  typename T::iterator pos;
+
+  emplace_lvalue_pos_type_impl(T& x) : pos(x.begin()) {}
+
+  template <typename Iterator> void operator()(T& x, Iterator it)
+  {
+    pos = get_iterator(x.emplace_hint(pos, *it));
+  }
+};
+
 struct emplace_lvalue_pos_type
 {
-  template <typename T> struct impl : inserter_base
+  template <typename T>
+  friend emplace_lvalue_pos_type_impl<T> generate(emplace_lvalue_pos_type, T& x)
   {
-    typename T::iterator pos;
-
-    impl(T& x) : pos(x.begin()) {}
-
-    template <typename Iterator> void operator()(T& x, Iterator it)
-    {
-      pos = get_iterator(x.emplace_hint(pos, *it));
-    }
-  };
-
-  template <typename T> friend impl<T> generate(emplace_lvalue_pos_type, T& x)
-  {
-    impl<T> r(x);
-    return r;
+    return emplace_lvalue_pos_type_impl<T>(x);
   }
 } emplace_lvalue_pos;
 
