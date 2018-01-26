@@ -2260,6 +2260,7 @@ namespace boost {
         std::size_t bucket_count_;
 
       public:
+        typedef typename Node::value_type element_type;
         typedef typename Node::value_type value_type;
         typedef value_type* pointer;
         typedef value_type& reference;
@@ -2316,6 +2317,7 @@ namespace boost {
         std::size_t bucket_count_;
 
       public:
+        typedef typename Node::value_type const element_type;
         typedef typename Node::value_type value_type;
         typedef value_type const* pointer;
         typedef value_type const& reference;
@@ -2384,6 +2386,7 @@ namespace boost {
         node_pointer node_;
 
       public:
+        typedef typename Node::value_type element_type;
         typedef typename Node::value_type value_type;
         typedef value_type* pointer;
         typedef value_type& reference;
@@ -2439,6 +2442,7 @@ namespace boost {
         node_pointer node_;
 
       public:
+        typedef typename Node::value_type const element_type;
         typedef typename Node::value_type value_type;
         typedef value_type const* pointer;
         typedef value_type const& reference;

@@ -18,6 +18,7 @@
 
 #include "../helpers/check_return_type.hpp"
 #include <boost/limits.hpp>
+#include <boost/core/pointer_traits.hpp>
 #include <boost/predef.h>
 #include <boost/static_assert.hpp>
 #include <boost/type_traits/cv_traits.hpp>
@@ -280,6 +281,42 @@ template <class X, class Key> void unordered_set_test(X& r, Key const&)
   BOOST_STATIC_ASSERT(
     (boost::is_same<value_type const*, const_local_iterator_pointer>::value));
 
+  // pointer_traits<iterator>
+
+  BOOST_STATIC_ASSERT((boost::is_same<iterator,
+    BOOST_DEDUCED_TYPENAME boost::pointer_traits<iterator>::pointer>::value));
+  BOOST_STATIC_ASSERT((boost::is_same<value_type const,
+    BOOST_DEDUCED_TYPENAME boost::pointer_traits<iterator>::element_type>::value));
+  BOOST_STATIC_ASSERT((boost::is_same<std::ptrdiff_t,
+    BOOST_DEDUCED_TYPENAME boost::pointer_traits<iterator>::difference_type>::value));
+
+  // pointer_traits<const_iterator>
+
+  BOOST_STATIC_ASSERT((boost::is_same<const_iterator,
+    BOOST_DEDUCED_TYPENAME boost::pointer_traits<const_iterator>::pointer>::value));
+  BOOST_STATIC_ASSERT((boost::is_same<value_type const,
+    BOOST_DEDUCED_TYPENAME boost::pointer_traits<const_iterator>::element_type>::value));
+  BOOST_STATIC_ASSERT((boost::is_same<std::ptrdiff_t,
+    BOOST_DEDUCED_TYPENAME boost::pointer_traits<const_iterator>::difference_type>::value));
+
+  // pointer_traits<local_iterator>
+
+  BOOST_STATIC_ASSERT((boost::is_same<local_iterator,
+    BOOST_DEDUCED_TYPENAME boost::pointer_traits<local_iterator>::pointer>::value));
+  BOOST_STATIC_ASSERT((boost::is_same<value_type const,
+    BOOST_DEDUCED_TYPENAME boost::pointer_traits<local_iterator>::element_type>::value));
+  BOOST_STATIC_ASSERT((boost::is_same<std::ptrdiff_t,
+    BOOST_DEDUCED_TYPENAME boost::pointer_traits<local_iterator>::difference_type>::value));
+
+  // pointer_traits<const_local_iterator>
+
+  BOOST_STATIC_ASSERT((boost::is_same<const_local_iterator,
+    BOOST_DEDUCED_TYPENAME boost::pointer_traits<const_local_iterator>::pointer>::value));
+  BOOST_STATIC_ASSERT((boost::is_same<value_type const,
+    BOOST_DEDUCED_TYPENAME boost::pointer_traits<const_local_iterator>::element_type>::value));
+  BOOST_STATIC_ASSERT((boost::is_same<std::ptrdiff_t,
+    BOOST_DEDUCED_TYPENAME boost::pointer_traits<const_local_iterator>::difference_type>::value));
+
   typedef BOOST_DEDUCED_TYPENAME X::node_type node_type;
   typedef BOOST_DEDUCED_TYPENAME node_type::value_type node_value_type;
   BOOST_STATIC_ASSERT((boost::is_same<value_type, node_value_type>::value));
@@ -324,6 +361,42 @@ void unordered_map_test(X& r, Key const& k, T const& v)
     (boost::is_same<value_type*, local_iterator_pointer>::value));
   BOOST_STATIC_ASSERT(
     (boost::is_same<value_type const*, const_local_iterator_pointer>::value));
+
+  // pointer_traits<iterator>
+
+  BOOST_STATIC_ASSERT((boost::is_same<iterator,
+    BOOST_DEDUCED_TYPENAME boost::pointer_traits<iterator>::pointer>::value));
+  BOOST_STATIC_ASSERT((boost::is_same<value_type,
+    BOOST_DEDUCED_TYPENAME boost::pointer_traits<iterator>::element_type>::value));
+  BOOST_STATIC_ASSERT((boost::is_same<std::ptrdiff_t,
+    BOOST_DEDUCED_TYPENAME boost::pointer_traits<iterator>::difference_type>::value));
+
+  // pointer_traits<const_iterator>
+
+  BOOST_STATIC_ASSERT((boost::is_same<const_iterator,
+    BOOST_DEDUCED_TYPENAME boost::pointer_traits<const_iterator>::pointer>::value));
+  BOOST_STATIC_ASSERT((boost::is_same<value_type const,
+    BOOST_DEDUCED_TYPENAME boost::pointer_traits<const_iterator>::element_type>::value));
+  BOOST_STATIC_ASSERT((boost::is_same<std::ptrdiff_t,
+    BOOST_DEDUCED_TYPENAME boost::pointer_traits<const_iterator>::difference_type>::value));
+
+  // pointer_traits<local_iterator>
+
+  BOOST_STATIC_ASSERT((boost::is_same<local_iterator,
+    BOOST_DEDUCED_TYPENAME boost::pointer_traits<local_iterator>::pointer>::value));
+  BOOST_STATIC_ASSERT((boost::is_same<value_type,
+    BOOST_DEDUCED_TYPENAME boost::pointer_traits<local_iterator>::element_type>::value));
+  BOOST_STATIC_ASSERT((boost::is_same<std::ptrdiff_t,
+    BOOST_DEDUCED_TYPENAME boost::pointer_traits<local_iterator>::difference_type>::value));
+
+  // pointer_traits<const_local_iterator>
+
+  BOOST_STATIC_ASSERT((boost::is_same<const_local_iterator,
+    BOOST_DEDUCED_TYPENAME boost::pointer_traits<const_local_iterator>::pointer>::value));
+  BOOST_STATIC_ASSERT((boost::is_same<value_type const,
+    BOOST_DEDUCED_TYPENAME boost::pointer_traits<const_local_iterator>::element_type>::value));
+  BOOST_STATIC_ASSERT((boost::is_same<std::ptrdiff_t,
+    BOOST_DEDUCED_TYPENAME boost::pointer_traits<const_local_iterator>::difference_type>::value));
 
   typedef BOOST_DEDUCED_TYPENAME X::node_type node_type;
   typedef BOOST_DEDUCED_TYPENAME node_type::key_type node_key_type;
