@@ -14,6 +14,7 @@
 
 #include <boost/assert.hpp>
 #include <boost/core/no_exceptions_support.hpp>
+#include <boost/core/pointer_traits.hpp>
 #include <boost/detail/select_type.hpp>
 #include <boost/limits.hpp>
 #include <boost/move/move.hpp>
@@ -552,21 +553,6 @@ namespace boost {
       struct convert_from_anything
       {
         template <typename T> convert_from_anything(T const&);
-      };
-
-      // Get a pointer from a smart pointer, a bit simpler than pointer_traits
-      // as we already know the pointer type that we want.
-      template <typename T> struct pointer
-      {
-        template <typename Ptr> static T* get(Ptr const& x)
-        {
-          return static_cast<T*>(x.operator->());
-        }
-
-        template <typename T2> static T* get(T2* x)
-        {
-          return static_cast<T*>(x);
-        }
       };
     }
   }
@@ -1814,7 +1800,7 @@ namespace boost {
           BOOST_FWD_REF(A0), BOOST_FWD_REF(A1) a1, BOOST_FWD_REF(A2) a2)
         {
           boost::unordered::detail::func::construct_from_tuple(
-            alloc, boost::addressof(address->first), boost::forward<A1>(a1));
+            alloc, boost::addressof (address->first), boost::forward<A1>(a1));
           BOOST_TRY
           {
             boost::unordered::detail::func::construct_from_tuple(
@@ -2002,7 +1988,7 @@ namespace boost {
       template <typename Alloc> node_constructor<Alloc>::~node_constructor()
       {
         if (node_) {
-          boost::unordered::detail::func::destroy(pointer<node>::get(node_));
+          boost::unordered::detail::func::destroy(boost::to_pointer(node_));
           node_allocator_traits::deallocate(alloc_, node_, 1);
         }
       }
@@ -2011,7 +1997,7 @@ namespace boost {
       {
         BOOST_ASSERT(!node_);
         node_ = node_allocator_traits::allocate(alloc_, 1);
-        new (pointer<void>::get(node_)) node();
+        new ((void*) boost::to_pointer(node_)) node();
       }
 
       template <typename NodeAlloc> struct node_tmp
@@ -2042,7 +2028,7 @@ namespace boost {
         if (node_) {
           BOOST_UNORDERED_CALL_DESTROY(
             node_allocator_traits, alloc_, node_->value_ptr());
-          boost::unordered::detail::func::destroy(pointer<node>::get(node_));
+          boost::unordered::detail::func::destroy(boost::to_pointer(node_));
           node_allocator_traits::deallocate(alloc_, node_, 1);
         }
       }
@@ -2574,7 +2560,7 @@ namespace boost {
 
           BOOST_UNORDERED_CALL_DESTROY(
             node_allocator_traits, constructor_.alloc_, p->value_ptr());
-          boost::unordered::detail::func::destroy(pointer<node>::get(p));
+          boost::unordered::detail::func::destroy(boost::to_pointer(p));
           node_allocator_traits::deallocate(constructor_.alloc_, p, 1);
         }
       }
@@ -3234,9 +3220,9 @@ namespace boost {
           bucket_pointer end =
             buckets_ + static_cast<std::ptrdiff_t>(new_count);
           for (bucket_pointer i = buckets_; i != end; ++i) {
-            new (pointer<void>::get(i)) bucket();
+            new ((void*) boost::to_pointer(i)) bucket();
           }
-          new (pointer<void>::get(end)) bucket(dummy_node);
+          new ((void*) boost::to_pointer(end)) bucket(dummy_node);
         }
 
         ////////////////////////////////////////////////////////////////////////
@@ -3364,7 +3350,7 @@ namespace boost {
         {
           BOOST_UNORDERED_CALL_DESTROY(
             node_allocator_traits, node_alloc(), n->value_ptr());
-          boost::unordered::detail::func::destroy(pointer<node>::get(n));
+          boost::unordered::detail::func::destroy(boost::to_pointer(n));
           node_allocator_traits::deallocate(node_alloc(), n, 1);
         }
 
@@ -3376,7 +3362,7 @@ namespace boost {
 
             if (bucket::extra_node) {
               node_pointer next = next_node(n);
-              boost::unordered::detail::func::destroy(pointer<node>::get(n));
+              boost::unordered::detail::func::destroy(boost::to_pointer(n));
               node_allocator_traits::deallocate(node_alloc(), n, 1);
               n = next;
             }
@@ -3398,7 +3384,7 @@ namespace boost {
         {
           bucket_pointer end = get_bucket_pointer(bucket_count_ + 1);
           for (bucket_pointer it = buckets_; it != end; ++it) {
-            boost::unordered::detail::func::destroy(pointer<bucket>::get(it));
+            boost::unordered::detail::func::destroy(boost::to_pointer(it));
           }
 
           bucket_allocator_traits::deallocate(
