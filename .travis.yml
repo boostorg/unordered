@@ -62,7 +62,8 @@ before_script:
                 snapshot=develop
             fi
         else
-            snapshot=stable
+            #snapshot=stable
+            snapshot=master
         fi
 
         # Set download_url for snapshot
