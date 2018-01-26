@@ -11,6 +11,7 @@
 #include "../helpers/helpers.hpp"
 #include "../helpers/metafunctions.hpp"
 #include "../helpers/test.hpp"
+#include <boost/core/pointer_traits.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <set>
@@ -268,14 +269,14 @@ void insert_node_handle_unique(Container1& c1, Container2& c2)
 
   while (!c1.empty()) {
     value_type v = *c1.begin();
-    value_type const* v_ptr = boost::addressof(*c1.begin());
+    value_type const* v_ptr = boost::to_address(c1.begin());
     std::size_t count = c2.count(test::get_key<Container1>(v));
     insert_return_type2 r = c2.insert(c1.extract(c1.begin()));
     if (!count) {
       BOOST_TEST(r.inserted);
       BOOST_TEST_EQ(c2.count(test::get_key<Container1>(v)), count + 1);
       BOOST_TEST(r.position != c2.end());
-      BOOST_TEST(boost::addressof(*r.position) == v_ptr);
+      BOOST_TEST(boost::to_address(r.position) == v_ptr);
       BOOST_TEST(!r.node);
     } else {
       BOOST_TEST(!r.inserted);
@@ -304,13 +305,13 @@ void insert_node_handle_unique2(Container1& c1, Container2& c2)
 
   while (!c1.empty()) {
     value_type v = *c1.begin();
-    value_type const* v_ptr = boost::addressof(*c1.begin());
+    value_type const* v_ptr = boost::to_address(c1.begin());
     std::size_t count = c2.count(test::get_key<Container1>(v));
     insert_return_type2 r = c2.insert(c1.extract(test::get_key<Container1>(v)));
     if (r.inserted) {
       BOOST_TEST_EQ(c2.count(test::get_key<Container1>(v)), count + 1);
       BOOST_TEST(r.position != c2.end());
-      BOOST_TEST(boost::addressof(*r.position) == v_ptr);
+      BOOST_TEST(boost::to_address(r.position) == v_ptr);
       BOOST_TEST(!r.node);
     } else {
       BOOST_TEST_EQ(c2.count(test::get_key<Container1>(v)), count);
@@ -341,12 +342,12 @@ void insert_node_handle_equiv(Container1& c1, Container2& c2)
 
   while (!c1.empty()) {
     value_type v = *c1.begin();
-    value_type const* v_ptr = boost::addressof(*c1.begin());
+    value_type const* v_ptr = boost::to_address(c1.begin());
     std::size_t count = c2.count(test::get_key<Container1>(v));
     iterator2 r = c2.insert(c1.extract(c1.begin()));
     BOOST_TEST_EQ(c2.count(test::get_key<Container1>(v)), count + 1);
     BOOST_TEST(r != c2.end());
-    BOOST_TEST(boost::addressof(*r) == v_ptr);
+    BOOST_TEST(boost::to_address(r) == v_ptr);
   }
 }
 
