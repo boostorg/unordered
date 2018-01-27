@@ -35,12 +35,11 @@
 #include <boost/type_traits/integral_constant.hpp>
 #include <boost/type_traits/is_base_of.hpp>
 #include <boost/type_traits/is_class.hpp>
-#include <boost/type_traits/is_const.hpp>
 #include <boost/type_traits/is_empty.hpp>
 #include <boost/type_traits/is_nothrow_move_assignable.hpp>
 #include <boost/type_traits/is_nothrow_move_constructible.hpp>
+#include <boost/type_traits/is_nothrow_swappable.hpp>
 #include <boost/type_traits/is_same.hpp>
-#include <boost/type_traits/is_scalar.hpp>
 #include <boost/type_traits/remove_const.hpp>
 #include <boost/unordered/detail/fwd.hpp>
 #include <boost/utility/addressof.hpp>
@@ -739,19 +738,6 @@ namespace boost {
 #if defined(BOOST_MSVC)
 #pragma warning(pop)
 #endif
-
-      ////////////////////////////////////////////////////////////////////////////
-      // is_nothrow_swappable
-      //
-      // TODO: Replace this very basic implementation when the full type_traits
-      // implementation is available.
-
-      template <class T>
-      struct is_nothrow_swappable
-        : boost::integral_constant<bool,
-            boost::is_scalar<T>::value && !boost::is_const<T>::value>
-      {
-      };
 
       //////////////////////////////////////////////////////////////////////////
       // value_base
@@ -1800,7 +1786,7 @@ namespace boost {
           BOOST_FWD_REF(A0), BOOST_FWD_REF(A1) a1, BOOST_FWD_REF(A2) a2)
         {
           boost::unordered::detail::func::construct_from_tuple(
-            alloc, boost::addressof (address->first), boost::forward<A1>(a1));
+            alloc, boost::addressof(address->first), boost::forward<A1>(a1));
           BOOST_TRY
           {
             boost::unordered::detail::func::construct_from_tuple(
@@ -1997,7 +1983,7 @@ namespace boost {
       {
         BOOST_ASSERT(!node_);
         node_ = node_allocator_traits::allocate(alloc_, 1);
-        new ((void*) boost::to_address(node_)) node();
+        new ((void*)boost::to_address(node_)) node();
       }
 
       template <typename NodeAlloc> struct node_tmp
@@ -2756,8 +2742,8 @@ namespace boost {
           boost::is_nothrow_move_constructible<H>::value &&
           boost::is_nothrow_move_constructible<P>::value;
         static const bool nothrow_swappable =
-          boost::unordered::detail::is_nothrow_swappable<H>::value &&
-          boost::unordered::detail::is_nothrow_swappable<P>::value;
+          boost::is_nothrow_swappable<H>::value &&
+          boost::is_nothrow_swappable<P>::value;
 
       private:
         functions& operator=(functions const&);
@@ -3220,9 +3206,9 @@ namespace boost {
           bucket_pointer end =
             buckets_ + static_cast<std::ptrdiff_t>(new_count);
           for (bucket_pointer i = buckets_; i != end; ++i) {
-            new ((void*) boost::to_address(i)) bucket();
+            new ((void*)boost::to_address(i)) bucket();
           }
-          new ((void*) boost::to_address(end)) bucket(dummy_node);
+          new ((void*)boost::to_address(end)) bucket(dummy_node);
         }
 
         ////////////////////////////////////////////////////////////////////////

@@ -443,8 +443,8 @@ namespace boost {
 
       void swap(unordered_set&)
         BOOST_NOEXCEPT_IF(value_allocator_traits::is_always_equal::value&&
-            boost::unordered::detail::is_nothrow_swappable<H>::value&&
-              boost::unordered::detail::is_nothrow_swappable<P>::value);
+            boost::is_nothrow_swappable<H>::value&&
+              boost::is_nothrow_swappable<P>::value);
       void clear() BOOST_NOEXCEPT { table_.clear_impl(); }
 
       template <typename H2, typename P2>
@@ -990,8 +990,8 @@ namespace boost {
 
       void swap(unordered_multiset&)
         BOOST_NOEXCEPT_IF(value_allocator_traits::is_always_equal::value&&
-            boost::unordered::detail::is_nothrow_swappable<H>::value&&
-              boost::unordered::detail::is_nothrow_swappable<P>::value);
+            boost::is_nothrow_swappable<H>::value&&
+              boost::is_nothrow_swappable<P>::value);
       void clear() BOOST_NOEXCEPT { table_.clear_impl(); }
 
       template <typename H2, typename P2>
@@ -1362,8 +1362,8 @@ namespace boost {
     template <class T, class H, class P, class A>
     void unordered_set<T, H, P, A>::swap(unordered_set& other)
       BOOST_NOEXCEPT_IF(value_allocator_traits::is_always_equal::value&&
-          boost::unordered::detail::is_nothrow_swappable<H>::value&&
-            boost::unordered::detail::is_nothrow_swappable<P>::value)
+          boost::is_nothrow_swappable<H>::value&&
+            boost::is_nothrow_swappable<P>::value)
     {
       table_.swap(other.table_);
     }
@@ -1756,8 +1756,8 @@ namespace boost {
     template <class T, class H, class P, class A>
     void unordered_multiset<T, H, P, A>::swap(unordered_multiset& other)
       BOOST_NOEXCEPT_IF(value_allocator_traits::is_always_equal::value&&
-          boost::unordered::detail::is_nothrow_swappable<H>::value&&
-            boost::unordered::detail::is_nothrow_swappable<P>::value)
+          boost::is_nothrow_swappable<H>::value&&
+            boost::is_nothrow_swappable<P>::value)
     {
       table_.swap(other.table_);
     }

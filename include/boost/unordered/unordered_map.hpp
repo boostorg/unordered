@@ -717,8 +717,8 @@ namespace boost {
 
       void swap(unordered_map&)
         BOOST_NOEXCEPT_IF(value_allocator_traits::is_always_equal::value&&
-            boost::unordered::detail::is_nothrow_swappable<H>::value&&
-              boost::unordered::detail::is_nothrow_swappable<P>::value);
+            boost::is_nothrow_swappable<H>::value&&
+              boost::is_nothrow_swappable<P>::value);
       void clear() BOOST_NOEXCEPT { table_.clear_impl(); }
 
       template <typename H2, typename P2>
@@ -1326,8 +1326,8 @@ namespace boost {
 
       void swap(unordered_multimap&)
         BOOST_NOEXCEPT_IF(value_allocator_traits::is_always_equal::value&&
-            boost::unordered::detail::is_nothrow_swappable<H>::value&&
-              boost::unordered::detail::is_nothrow_swappable<P>::value);
+            boost::is_nothrow_swappable<H>::value&&
+              boost::is_nothrow_swappable<P>::value);
       void clear() BOOST_NOEXCEPT { table_.clear_impl(); }
 
       template <typename H2, typename P2>
@@ -1737,8 +1737,8 @@ namespace boost {
     template <class K, class T, class H, class P, class A>
     void unordered_map<K, T, H, P, A>::swap(unordered_map& other)
       BOOST_NOEXCEPT_IF(value_allocator_traits::is_always_equal::value&&
-          boost::unordered::detail::is_nothrow_swappable<H>::value&&
-            boost::unordered::detail::is_nothrow_swappable<P>::value)
+          boost::is_nothrow_swappable<H>::value&&
+            boost::is_nothrow_swappable<P>::value)
     {
       table_.swap(other.table_);
     }
@@ -2213,8 +2213,8 @@ namespace boost {
     template <class K, class T, class H, class P, class A>
     void unordered_multimap<K, T, H, P, A>::swap(unordered_multimap& other)
       BOOST_NOEXCEPT_IF(value_allocator_traits::is_always_equal::value&&
-          boost::unordered::detail::is_nothrow_swappable<H>::value&&
-            boost::unordered::detail::is_nothrow_swappable<P>::value)
+          boost::is_nothrow_swappable<H>::value&&
+            boost::is_nothrow_swappable<P>::value)
     {
       table_.swap(other.table_);
     }

@@ -165,13 +165,12 @@ namespace noexcept_tests {
       !boost::is_nothrow_move_constructible<hash_possible_exception>::value);
     BOOST_TEST(
       !boost::is_nothrow_move_assignable<hash_possible_exception>::value);
-    BOOST_TEST(!boost::unordered::detail::is_nothrow_swappable<
-               hash_possible_exception>::value);
+    BOOST_TEST(!boost::is_nothrow_swappable<hash_possible_exception>::value);
     BOOST_TEST((!boost::is_nothrow_move_constructible<
                 equal_to_nothrow<false, false, false> >::value));
     BOOST_TEST((!boost::is_nothrow_move_assignable<
                 equal_to_nothrow<false, false, false> >::value));
-    BOOST_TEST((!boost::unordered::detail::is_nothrow_swappable<
+    BOOST_TEST((!boost::is_nothrow_swappable<
                 equal_to_nothrow<false, false, false> >::value));
 
     have_is_nothrow_move =
@@ -179,7 +178,7 @@ namespace noexcept_tests {
     have_is_nothrow_move_assign =
       boost::is_nothrow_move_assignable<hash_nothrow_move_assign>::value;
     have_is_nothrow_swap =
-      boost::unordered::detail::is_nothrow_swappable<hash_nothrow_swap>::value;
+      boost::is_nothrow_swappable<hash_nothrow_swap>::value;
 
 // Check that the traits work when expected.
 #if !defined(BOOST_NO_CXX11_NOEXCEPT) && !defined(BOOST_NO_SFINAE_EXPR) &&     \
@@ -191,8 +190,7 @@ namespace noexcept_tests {
 #if !defined(BOOST_NO_SFINAE_EXPR) && !defined(BOOST_NO_CXX11_NOEXCEPT) &&     \
   !defined(BOOST_NO_CXX11_DECLTYPE) &&                                         \
   !defined(BOOST_NO_CXX11_FUNCTION_TEMPLATE_DEFAULT_ARGS)
-// TODO: Turn test on when unordered starts to use is_nothrow_swap
-// BOOST_TEST(have_is_nothrow_swap);
+    BOOST_TEST(have_is_nothrow_swap);
 #endif
 
     BOOST_LIGHTWEIGHT_TEST_OSTREAM
@@ -286,8 +284,7 @@ namespace noexcept_tests {
       throwing_set;
 
     if (have_is_nothrow_swap) {
-      BOOST_TEST(
-        boost::unordered::detail::is_nothrow_swappable<throwing_set>::value);
+      BOOST_TEST(boost::is_nothrow_swappable<throwing_set>::value);
     }
 
     throwing_test_exception = false;
