@@ -24,12 +24,12 @@
 namespace test {
   template <class X> void check_equivalent_keys(X const& x1)
   {
-    BOOST_DEDUCED_TYPENAME X::key_equal eq = x1.key_eq();
-    typedef BOOST_DEDUCED_TYPENAME X::key_type key_type;
+    typename X::key_equal eq = x1.key_eq();
+    typedef typename X::key_type key_type;
     std::set<key_type, std::less<key_type> > found_;
 
-    BOOST_DEDUCED_TYPENAME X::const_iterator it = x1.begin(), end = x1.end();
-    BOOST_DEDUCED_TYPENAME X::size_type size = 0;
+    typename X::const_iterator it = x1.begin(), end = x1.end();
+    typename X::size_type size = 0;
     while (it != end) {
       // First test that the current key has not occurred before, required
       // to test either that keys are unique or that equivalent keys are
@@ -60,9 +60,9 @@ namespace test {
 
       // Check that the keys are in the correct bucket and are
       // adjacent in the bucket.
-      BOOST_DEDUCED_TYPENAME X::size_type bucket = x1.bucket(key);
-      BOOST_DEDUCED_TYPENAME X::const_local_iterator lit = x1.begin(bucket),
-                                                     lend = x1.end(bucket);
+      typename X::size_type bucket = x1.bucket(key);
+      typename X::const_local_iterator lit = x1.begin(bucket),
+                                       lend = x1.end(bucket);
 
       unsigned int count_checked = 0;
       for (; lit != lend && !eq(get_key<X>(*lit), key); ++lit) {
@@ -106,12 +106,11 @@ namespace test {
 
     // Check that size in the buckets matches up.
 
-    BOOST_DEDUCED_TYPENAME X::size_type bucket_size = 0;
+    typename X::size_type bucket_size = 0;
 
-    for (BOOST_DEDUCED_TYPENAME X::size_type i = 0; i < x1.bucket_count();
-         ++i) {
-      for (BOOST_DEDUCED_TYPENAME X::const_local_iterator begin2 = x1.begin(i),
-                                                          end2 = x1.end(i);
+    for (typename X::size_type i = 0; i < x1.bucket_count(); ++i) {
+      for (typename X::const_local_iterator begin2 = x1.begin(i),
+                                            end2 = x1.end(i);
            begin2 != end2; ++begin2) {
         ++bucket_size;
       }

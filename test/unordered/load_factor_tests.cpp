@@ -47,12 +47,11 @@ namespace load_factor_tests {
 
     test::random_values<X> values(1000, generator);
 
-    for (BOOST_DEDUCED_TYPENAME test::random_values<X>::const_iterator
-           it = values.begin(),
-           end = values.end();
+    for (typename test::random_values<X>::const_iterator it = values.begin(),
+                                                         end = values.end();
          it != end; ++it) {
-      BOOST_DEDUCED_TYPENAME X::size_type old_size = x.size(),
-                                          old_bucket_count = x.bucket_count();
+      typename X::size_type old_size = x.size(),
+                            old_bucket_count = x.bucket_count();
       x.insert(*it);
       if (static_cast<double>(old_size + 1) <=
           b * static_cast<double>(old_bucket_count))

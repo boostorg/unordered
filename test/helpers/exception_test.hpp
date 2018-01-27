@@ -176,21 +176,18 @@ namespace test {
       DISABLE_EXCEPTIONS;
       test::check_instances check;
       test::scope = "";
-      BOOST_DEDUCED_TYPENAME Test::data_type x(test_.init());
-      BOOST_DEDUCED_TYPENAME Test::strong_type strong;
+      typename Test::data_type x(test_.init());
+      typename Test::strong_type strong;
       strong.store(x);
       try {
         ENABLE_EXCEPTIONS;
-        call_ignore_extra_parameters<Test,
-          BOOST_DEDUCED_TYPENAME Test::data_type,
-          BOOST_DEDUCED_TYPENAME Test::strong_type>(
-          &Test::run, test_, x, strong);
+        call_ignore_extra_parameters<Test, typename Test::data_type,
+          typename Test::strong_type>(&Test::run, test_, x, strong);
       } catch (...) {
         try {
           DISABLE_EXCEPTIONS;
-          call_ignore_extra_parameters<Test,
-            BOOST_DEDUCED_TYPENAME Test::data_type const,
-            BOOST_DEDUCED_TYPENAME Test::strong_type const>(
+          call_ignore_extra_parameters<Test, typename Test::data_type const,
+            typename Test::strong_type const>(
             &Test::check, test_, constant(x), constant(strong));
         } catch (...) {
           exception_in_check_ = true;

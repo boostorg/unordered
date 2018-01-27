@@ -11,7 +11,7 @@
 namespace test {
   template <class Container> struct get_key_impl
   {
-    typedef BOOST_DEDUCED_TYPENAME Container::key_type key_type;
+    typedef typename Container::key_type key_type;
 
     static key_type const& get_key(key_type const& x) { return x; }
 
@@ -30,7 +30,7 @@ namespace test {
   };
 
   template <class Container, class T>
-  inline BOOST_DEDUCED_TYPENAME Container::key_type const& get_key(T const& x)
+  inline typename Container::key_type const& get_key(T const& x)
   {
     return get_key_impl<Container>::get_key(x);
   }

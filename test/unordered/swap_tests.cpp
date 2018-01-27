@@ -78,9 +78,9 @@ namespace swap_tests {
   {
     swap_tests1(ptr, generator);
 
-    typedef BOOST_DEDUCED_TYPENAME X::hasher hasher;
-    typedef BOOST_DEDUCED_TYPENAME X::key_equal key_equal;
-    typedef BOOST_DEDUCED_TYPENAME X::allocator_type allocator_type;
+    typedef typename X::hasher hasher;
+    typedef typename X::key_equal key_equal;
+    typedef typename X::allocator_type allocator_type;
 
     {
       test::check_instances check_;

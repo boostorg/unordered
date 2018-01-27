@@ -177,7 +177,7 @@ namespace unnecessary_copy_tests {
   template <class T> void unnecessary_copy_insert_test(T*)
   {
     T x;
-    BOOST_DEDUCED_TYPENAME T::value_type a;
+    typename T::value_type a;
     reset();
     x.insert(a);
     COPY_COUNT(1);
@@ -187,13 +187,13 @@ namespace unnecessary_copy_tests {
   template <class T> void unnecessary_copy_insert_rvalue_set_test(T*)
   {
     T x;
-    BOOST_DEDUCED_TYPENAME T::value_type a;
+    typename T::value_type a;
     reset();
     x.insert(boost::move(a));
     COPY_COUNT(0);
     MOVE_COUNT(1);
 
-    BOOST_DEDUCED_TYPENAME T::value_type a2;
+    typename T::value_type a2;
     reset();
     x.insert(boost::move(a));
     COPY_COUNT(0);
@@ -207,7 +207,7 @@ namespace unnecessary_copy_tests {
     // construct_from_args.
 
     T x;
-    BOOST_DEDUCED_TYPENAME T::value_type a;
+    typename T::value_type a;
     reset();
     x.insert(boost::move(a));
 #if defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
@@ -218,7 +218,7 @@ namespace unnecessary_copy_tests {
     MOVE_COUNT(1);
 #endif
 
-    BOOST_DEDUCED_TYPENAME T::value_type a2;
+    typename T::value_type a2;
     reset();
     x.insert(boost::move(a));
 #if defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
@@ -243,7 +243,7 @@ namespace unnecessary_copy_tests {
   {
     reset();
     T x;
-    BOOST_DEDUCED_TYPENAME T::value_type a;
+    typename T::value_type a;
     COPY_COUNT(1);
     x.emplace(a);
     COPY_COUNT(2);
@@ -253,7 +253,7 @@ namespace unnecessary_copy_tests {
   {
     reset();
     T x;
-    x.emplace(source<BOOST_DEDUCED_TYPENAME T::value_type>());
+    x.emplace(source<typename T::value_type>());
 #if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
     COPY_COUNT(1);
 #else
@@ -271,7 +271,7 @@ namespace unnecessary_copy_tests {
   {
     reset();
     T x;
-    BOOST_DEDUCED_TYPENAME T::value_type a;
+    typename T::value_type a;
     COPY_COUNT(1);
     MOVE_COUNT(0);
     x.emplace(std::move(a));
@@ -287,7 +287,7 @@ namespace unnecessary_copy_tests {
   {
     reset();
     T x;
-    BOOST_DEDUCED_TYPENAME T::value_type a;
+    typename T::value_type a;
     COPY_COUNT(1);
     MOVE_COUNT_EXTRA(0, 1);
     x.emplace(boost::move(a));
@@ -308,7 +308,7 @@ namespace unnecessary_copy_tests {
   {
     reset();
     T x;
-    BOOST_DEDUCED_TYPENAME T::value_type a;
+    typename T::value_type a;
     COPY_COUNT(1);
     MOVE_COUNT(0);
     x.emplace(boost::move(a));
@@ -325,7 +325,7 @@ namespace unnecessary_copy_tests {
     T x;
     COPY_COUNT(0);
     MOVE_COUNT(0);
-    BOOST_DEDUCED_TYPENAME T::value_type a;
+    typename T::value_type a;
     COPY_COUNT(1);
     MOVE_COUNT_EXTRA(0, 1);
     x.emplace(boost::move(a));

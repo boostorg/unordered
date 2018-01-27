@@ -27,8 +27,8 @@ namespace assign_tests {
 
   template <class T> void assign_tests1(T*, test::random_generator generator)
   {
-    BOOST_DEDUCED_TYPENAME T::hasher hf;
-    BOOST_DEDUCED_TYPENAME T::key_equal eq;
+    typename T::hasher hf;
+    typename T::key_equal eq;
 
     BOOST_LIGHTWEIGHT_TEST_OSTREAM << "assign_tests1.1\n";
     {
@@ -68,14 +68,14 @@ namespace assign_tests {
 
   template <class T> void assign_tests2(T*, test::random_generator generator)
   {
-    BOOST_DEDUCED_TYPENAME T::hasher hf1(1);
-    BOOST_DEDUCED_TYPENAME T::hasher hf2(2);
-    BOOST_DEDUCED_TYPENAME T::key_equal eq1(1);
-    BOOST_DEDUCED_TYPENAME T::key_equal eq2(2);
-    BOOST_DEDUCED_TYPENAME T::allocator_type al1(1);
-    BOOST_DEDUCED_TYPENAME T::allocator_type al2(2);
+    typename T::hasher hf1(1);
+    typename T::hasher hf2(2);
+    typename T::key_equal eq1(1);
+    typename T::key_equal eq2(2);
+    typename T::allocator_type al1(1);
+    typename T::allocator_type al2(2);
 
-    typedef BOOST_DEDUCED_TYPENAME T::allocator_type allocator_type;
+    typedef typename T::allocator_type allocator_type;
 
     BOOST_LIGHTWEIGHT_TEST_OSTREAM << "assign_tests2.0 - empty container\n";
     {

@@ -15,7 +15,7 @@
 namespace test {
   template <class X> class strong
   {
-    typedef test::list<BOOST_DEDUCED_TYPENAME X::value_type> values_type;
+    typedef test::list<typename X::value_type> values_type;
     values_type values_;
     unsigned int allocations_;
 

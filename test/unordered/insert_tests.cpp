@@ -30,7 +30,7 @@ namespace insert_tests {
   {
     test::check_instances check_;
 
-    typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
+    typedef typename X::iterator iterator;
     typedef test::ordered<X> ordered;
 
     UNORDERED_SUB_TEST("insert(value) tests for containers with unique keys")
@@ -40,16 +40,14 @@ namespace insert_tests {
 
       test::random_values<X> v(1000, generator);
 
-      for (BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator it =
-             v.begin();
+      for (typename test::random_values<X>::iterator it = v.begin();
            it != v.end(); ++it) {
 
-        BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count = x.bucket_count();
+        typename X::size_type old_bucket_count = x.bucket_count();
         float b = x.max_load_factor();
 
         std::pair<iterator, bool> r1 = x.insert(*it);
-        std::pair<BOOST_DEDUCED_TYPENAME ordered::iterator, bool> r2 =
-          tracker.insert(*it);
+        std::pair<typename ordered::iterator, bool> r2 = tracker.insert(*it);
 
         BOOST_TEST(r1.second == r2.second);
         BOOST_TEST(*r1.first == *r2.first);
@@ -71,17 +69,15 @@ namespace insert_tests {
 
       test::random_values<X> v(1000, generator);
 
-      for (BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator it =
-             v.begin();
+      for (typename test::random_values<X>::iterator it = v.begin();
            it != v.end(); ++it) {
 
-        BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count = x.bucket_count();
+        typename X::size_type old_bucket_count = x.bucket_count();
         float b = x.max_load_factor();
 
         typename X::value_type value = *it;
         std::pair<iterator, bool> r1 = x.insert(boost::move(value));
-        std::pair<BOOST_DEDUCED_TYPENAME ordered::iterator, bool> r2 =
-          tracker.insert(*it);
+        std::pair<typename ordered::iterator, bool> r2 = tracker.insert(*it);
 
         BOOST_TEST(r1.second == r2.second);
         BOOST_TEST(*r1.first == *r2.first);
@@ -109,15 +105,13 @@ namespace insert_tests {
       test::ordered<X> tracker = test::create_ordered(x);
 
       test::random_values<X> v(1000, generator);
-      for (BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator it =
-             v.begin();
+      for (typename test::random_values<X>::iterator it = v.begin();
            it != v.end(); ++it) {
-        BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count = x.bucket_count();
+        typename X::size_type old_bucket_count = x.bucket_count();
         float b = x.max_load_factor();
 
-        BOOST_DEDUCED_TYPENAME X::iterator r1 = x.insert(*it);
-        BOOST_DEDUCED_TYPENAME test::ordered<X>::iterator r2 =
-          tracker.insert(*it);
+        typename X::iterator r1 = x.insert(*it);
+        typename test::ordered<X>::iterator r2 = tracker.insert(*it);
 
         BOOST_TEST(*r1 == *r2);
 
@@ -138,16 +132,14 @@ namespace insert_tests {
       test::ordered<X> tracker = test::create_ordered(x);
 
       test::random_values<X> v(1000, generator);
-      for (BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator it =
-             v.begin();
+      for (typename test::random_values<X>::iterator it = v.begin();
            it != v.end(); ++it) {
-        BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count = x.bucket_count();
+        typename X::size_type old_bucket_count = x.bucket_count();
         float b = x.max_load_factor();
 
         typename X::value_type value = *it;
-        BOOST_DEDUCED_TYPENAME X::iterator r1 = x.insert(boost::move(value));
-        BOOST_DEDUCED_TYPENAME test::ordered<X>::iterator r2 =
-          tracker.insert(*it);
+        typename X::iterator r1 = x.insert(boost::move(value));
+        typename test::ordered<X>::iterator r2 = tracker.insert(*it);
 
         BOOST_TEST(*r1 == *r2);
 
@@ -164,10 +156,10 @@ namespace insert_tests {
 
   template <class X> void insert_tests2(X*, test::random_generator generator)
   {
-    typedef BOOST_DEDUCED_TYPENAME test::ordered<X> tracker_type;
-    typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
-    typedef BOOST_DEDUCED_TYPENAME X::const_iterator const_iterator;
-    typedef BOOST_DEDUCED_TYPENAME tracker_type::iterator tracker_iterator;
+    typedef typename test::ordered<X> tracker_type;
+    typedef typename X::iterator iterator;
+    typedef typename X::const_iterator const_iterator;
+    typedef typename tracker_type::iterator tracker_iterator;
 
     UNORDERED_SUB_TEST("insert(begin(), value) tests")
     {
@@ -177,10 +169,9 @@ namespace insert_tests {
       tracker_type tracker = test::create_ordered(x);
 
       test::random_values<X> v(1000, generator);
-      for (BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator it =
-             v.begin();
+      for (typename test::random_values<X>::iterator it = v.begin();
            it != v.end(); ++it) {
-        BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count = x.bucket_count();
+        typename X::size_type old_bucket_count = x.bucket_count();
         float b = x.max_load_factor();
 
         iterator r1 = x.insert(x.begin(), *it);
@@ -206,10 +197,9 @@ namespace insert_tests {
       tracker_type tracker = test::create_ordered(x);
 
       test::random_values<X> v(100, generator);
-      for (BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator it =
-             v.begin();
+      for (typename test::random_values<X>::iterator it = v.begin();
            it != v.end(); ++it) {
-        BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count = x.bucket_count();
+        typename X::size_type old_bucket_count = x.bucket_count();
         float b = x.max_load_factor();
 
         const_iterator r1 = x.insert(x_const.end(), *it);
@@ -235,10 +225,9 @@ namespace insert_tests {
       tracker_type tracker = test::create_ordered(x);
 
       test::random_values<X> v(1000, generator);
-      for (BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator it =
-             v.begin();
+      for (typename test::random_values<X>::iterator it = v.begin();
            it != v.end(); ++it) {
-        BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count = x.bucket_count();
+        typename X::size_type old_bucket_count = x.bucket_count();
         float b = x.max_load_factor();
 
         pos = x.insert(pos, *it);
@@ -264,10 +253,9 @@ namespace insert_tests {
       tracker_type tracker = test::create_ordered(x);
 
       test::random_values<X> v(1000, generator);
-      for (BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator it =
-             v.begin();
+      for (typename test::random_values<X>::iterator it = v.begin();
            it != v.end(); ++it) {
-        BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count = x.bucket_count();
+        typename X::size_type old_bucket_count = x.bucket_count();
         float b = x.max_load_factor();
 
         typename X::value_type value = *it;
@@ -293,10 +281,9 @@ namespace insert_tests {
       tracker_type tracker = test::create_ordered(x);
 
       test::random_values<X> v(1000, generator);
-      for (BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator it =
-             v.begin();
+      for (typename test::random_values<X>::iterator it = v.begin();
            it != v.end(); ++it) {
-        BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count = x.bucket_count();
+        typename X::size_type old_bucket_count = x.bucket_count();
         float b = x.max_load_factor();
 
         x.insert(it, test::next(it));
@@ -349,10 +336,8 @@ namespace insert_tests {
       X x;
 
       test::random_values<X> v(1000, generator);
-      BOOST_DEDUCED_TYPENAME test::random_values<X>::const_iterator begin =
-                                                                      v.begin(),
-                                                                    end =
-                                                                      v.end();
+      typename test::random_values<X>::const_iterator begin = v.begin(),
+                                                      end = v.end();
       x.insert(test::input_iterator(begin), test::input_iterator(end));
       test::check_container(x, v);
 
@@ -394,14 +379,12 @@ namespace insert_tests {
 
         test::random_values<X> v(1000, generator);
 
-        for (BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator it =
-               v.begin();
+        for (typename test::random_values<X>::iterator it = v.begin();
              it != v.end();) {
-          BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count =
-            x.bucket_count();
+          typename X::size_type old_bucket_count = x.bucket_count();
           float b = x.max_load_factor();
 
-          BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator next = it;
+          typename test::random_values<X>::iterator next = it;
           for (std::size_t j = test::random_value(20); j > 0; ++j) {
             ++next;
             if (next == v.end()) {
@@ -428,7 +411,7 @@ namespace insert_tests {
   template <class X>
   void unique_emplace_tests1(X*, test::random_generator generator)
   {
-    typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
+    typedef typename X::iterator iterator;
     typedef test::ordered<X> ordered;
 
     X x;
@@ -436,15 +419,14 @@ namespace insert_tests {
 
     test::random_values<X> v(1000, generator);
 
-    for (BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator it = v.begin();
+    for (typename test::random_values<X>::iterator it = v.begin();
          it != v.end(); ++it) {
 
-      BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count = x.bucket_count();
+      typename X::size_type old_bucket_count = x.bucket_count();
       float b = x.max_load_factor();
 
       std::pair<iterator, bool> r1 = x.emplace(*it);
-      std::pair<BOOST_DEDUCED_TYPENAME ordered::iterator, bool> r2 =
-        tracker.insert(*it);
+      std::pair<typename ordered::iterator, bool> r2 = tracker.insert(*it);
 
       BOOST_TEST(r1.second == r2.second);
       BOOST_TEST(*r1.first == *r2.first);
@@ -467,14 +449,13 @@ namespace insert_tests {
     test::ordered<X> tracker = test::create_ordered(x);
 
     test::random_values<X> v(1000, generator);
-    for (BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator it = v.begin();
+    for (typename test::random_values<X>::iterator it = v.begin();
          it != v.end(); ++it) {
-      BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count = x.bucket_count();
+      typename X::size_type old_bucket_count = x.bucket_count();
       float b = x.max_load_factor();
 
-      BOOST_DEDUCED_TYPENAME X::iterator r1 = x.emplace(*it);
-      BOOST_DEDUCED_TYPENAME test::ordered<X>::iterator r2 =
-        tracker.insert(*it);
+      typename X::iterator r1 = x.emplace(*it);
+      typename test::ordered<X>::iterator r2 = tracker.insert(*it);
 
       BOOST_TEST(*r1 == *r2);
 
@@ -497,10 +478,10 @@ namespace insert_tests {
 
     test::random_values<X> v(1000, generator);
 
-    for (BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator it = v.begin();
+    for (typename test::random_values<X>::iterator it = v.begin();
          it != v.end(); ++it) {
 
-      BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count = x.bucket_count();
+      typename X::size_type old_bucket_count = x.bucket_count();
       float b = x.max_load_factor();
 
       typename X::value_type value = *it;
@@ -558,9 +539,9 @@ namespace insert_tests {
     test::ordered<X> tracker = test::create_ordered(x);
 
     test::random_values<X> v(1000, generator);
-    for (BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator it = v.begin();
+    for (typename test::random_values<X>::iterator it = v.begin();
          it != v.end(); ++it) {
-      BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count = x.bucket_count();
+      typename X::size_type old_bucket_count = x.bucket_count();
       float b = x.max_load_factor();
 
       x[it->first] = it->second;
@@ -579,7 +560,7 @@ namespace insert_tests {
 
   template <class X> void map_tests2(X*, test::random_generator generator)
   {
-    typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
+    typedef typename X::iterator iterator;
 
     UNORDERED_SUB_TEST("insert_or_assign")
     {
@@ -589,10 +570,9 @@ namespace insert_tests {
       test::ordered<X> tracker = test::create_ordered(x);
 
       test::random_values<X> v(1000, generator);
-      for (BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator it =
-             v.begin();
+      for (typename test::random_values<X>::iterator it = v.begin();
            it != v.end(); ++it) {
-        BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count = x.bucket_count();
+        typename X::size_type old_bucket_count = x.bucket_count();
         float b = x.max_load_factor();
 
         std::pair<iterator, bool> r = x.insert_or_assign(it->first, it->second);
@@ -618,10 +598,9 @@ namespace insert_tests {
       test::ordered<X> tracker = test::create_ordered(x);
 
       test::random_values<X> v(1000, generator);
-      for (BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator it =
-             v.begin();
+      for (typename test::random_values<X>::iterator it = v.begin();
            it != v.end(); ++it) {
-        BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count = x.bucket_count();
+        typename X::size_type old_bucket_count = x.bucket_count();
         float b = x.max_load_factor();
 
         iterator r = x.insert_or_assign(x.begin(), it->first, it->second);
@@ -647,10 +626,9 @@ namespace insert_tests {
       test::ordered<X> tracker = test::create_ordered(x);
 
       test::random_values<X> v(1000, generator);
-      for (BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator it =
-             v.begin();
+      for (typename test::random_values<X>::iterator it = v.begin();
            it != v.end(); ++it) {
-        BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count = x.bucket_count();
+        typename X::size_type old_bucket_count = x.bucket_count();
         float b = x.max_load_factor();
 
         iterator r = x.insert_or_assign(x.end(), it->first, it->second);
@@ -677,10 +655,9 @@ namespace insert_tests {
       iterator last = x.begin();
 
       test::random_values<X> v(1000, generator);
-      for (BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator it =
-             v.begin();
+      for (typename test::random_values<X>::iterator it = v.begin();
            it != v.end(); ++it) {
-        BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count = x.bucket_count();
+        typename X::size_type old_bucket_count = x.bucket_count();
         float b = x.max_load_factor();
 
         iterator r = x.insert_or_assign(last, it->first, it->second);
@@ -704,7 +681,7 @@ namespace insert_tests {
   template <class X>
   void try_emplace_tests(X*, test::random_generator generator)
   {
-    typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
+    typedef typename X::iterator iterator;
 
     UNORDERED_SUB_TEST("try_emplace(key, value)")
     {
@@ -714,10 +691,9 @@ namespace insert_tests {
       test::ordered<X> tracker = test::create_ordered(x);
 
       test::random_values<X> v(1000, generator);
-      for (BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator it =
-             v.begin();
+      for (typename test::random_values<X>::iterator it = v.begin();
            it != v.end(); ++it) {
-        BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count = x.bucket_count();
+        typename X::size_type old_bucket_count = x.bucket_count();
         float b = x.max_load_factor();
 
         iterator pos = x.find(it->first);
@@ -745,7 +721,7 @@ namespace insert_tests {
       test::check_equivalent_keys(x);
     }
 
-    typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
+    typedef typename X::iterator iterator;
 
     UNORDERED_SUB_TEST("try_emplace(begin(), key, value)")
     {
@@ -755,10 +731,9 @@ namespace insert_tests {
       test::ordered<X> tracker = test::create_ordered(x);
 
       test::random_values<X> v(1000, generator);
-      for (BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator it =
-             v.begin();
+      for (typename test::random_values<X>::iterator it = v.begin();
            it != v.end(); ++it) {
-        BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count = x.bucket_count();
+        typename X::size_type old_bucket_count = x.bucket_count();
         float b = x.max_load_factor();
 
         iterator pos = x.find(it->first);
@@ -783,7 +758,7 @@ namespace insert_tests {
       test::check_equivalent_keys(x);
     }
 
-    typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
+    typedef typename X::iterator iterator;
 
     UNORDERED_SUB_TEST("try_emplace(end(), key, value)")
     {
@@ -793,10 +768,9 @@ namespace insert_tests {
       test::ordered<X> tracker = test::create_ordered(x);
 
       test::random_values<X> v(1000, generator);
-      for (BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator it =
-             v.begin();
+      for (typename test::random_values<X>::iterator it = v.begin();
            it != v.end(); ++it) {
-        BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count = x.bucket_count();
+        typename X::size_type old_bucket_count = x.bucket_count();
         float b = x.max_load_factor();
 
         iterator pos = x.find(it->first);
@@ -820,7 +794,7 @@ namespace insert_tests {
       test::check_equivalent_keys(x);
     }
 
-    typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
+    typedef typename X::iterator iterator;
 
     UNORDERED_SUB_TEST("try_emplace(pos, key, value)")
     {
@@ -830,10 +804,9 @@ namespace insert_tests {
       test::ordered<X> tracker = test::create_ordered(x);
 
       test::random_values<X> v(1000, generator);
-      for (BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator it =
-             v.begin();
+      for (typename test::random_values<X>::iterator it = v.begin();
            it != v.end(); ++it) {
-        BOOST_DEDUCED_TYPENAME X::size_type old_bucket_count = x.bucket_count();
+        typename X::size_type old_bucket_count = x.bucket_count();
         float b = x.max_load_factor();
 
         iterator pos = x.find(it->first);
@@ -866,8 +839,8 @@ namespace insert_tests {
   {
     test::check_instances check_;
 
-    typedef test::list<std::pair<BOOST_DEDUCED_TYPENAME X::key_type,
-      BOOST_DEDUCED_TYPENAME X::mapped_type> >
+    typedef test::list<
+      std::pair<typename X::key_type, typename X::mapped_type> >
       list;
     test::random_values<X> v(1000, generator);
     list l(v.begin(), v.end());
@@ -883,11 +856,11 @@ namespace insert_tests {
   {
     test::check_instances check_;
 
-    typedef test::list<std::pair<BOOST_DEDUCED_TYPENAME X::key_type const,
-      test::implicitly_convertible> >
+    typedef test::list<
+      std::pair<typename X::key_type const, test::implicitly_convertible> >
       list;
-    test::random_values<boost::unordered_map<BOOST_DEDUCED_TYPENAME X::key_type,
-      test::implicitly_convertible> >
+    test::random_values<
+      boost::unordered_map<typename X::key_type, test::implicitly_convertible> >
       v(1000, generator);
     list l(v.begin(), v.end());
 

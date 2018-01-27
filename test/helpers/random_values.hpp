@@ -15,7 +15,7 @@
 namespace test {
   template <class X> struct unordered_generator_set
   {
-    typedef BOOST_DEDUCED_TYPENAME X::value_type value_type;
+    typedef typename X::value_type value_type;
 
     random_generator type_;
 
@@ -41,8 +41,8 @@ namespace test {
 
   template <class X> struct unordered_generator_map
   {
-    typedef BOOST_DEDUCED_TYPENAME X::key_type key_type;
-    typedef BOOST_DEDUCED_TYPENAME X::mapped_type mapped_type;
+    typedef typename X::key_type key_type;
+    typedef typename X::mapped_type mapped_type;
 
     random_generator type_;
 
@@ -78,7 +78,7 @@ namespace test {
   template <class X>
   struct unordered_generator : public unordered_generator_base<X>::type
   {
-    typedef BOOST_DEDUCED_TYPENAME unordered_generator_base<X>::type base;
+    typedef typename unordered_generator_base<X>::type base;
 
     unordered_generator(random_generator const& type = default_generator)
         : base(type)
@@ -87,7 +87,7 @@ namespace test {
   };
 
   template <class X>
-  struct random_values : public test::list<BOOST_DEDUCED_TYPENAME X::value_type>
+  struct random_values : public test::list<typename X::value_type>
   {
     random_values() {}
 

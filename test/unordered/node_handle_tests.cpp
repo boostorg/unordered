@@ -147,24 +147,24 @@ UNORDERED_AUTO_TEST (failed_insertion_with_hint) {
 
 template <typename NodeHandle>
 bool node_handle_compare(
-  NodeHandle const& nh, BOOST_DEDUCED_TYPENAME NodeHandle::value_type const& x)
+  NodeHandle const& nh, typename NodeHandle::value_type const& x)
 {
   return x == nh.value();
 }
 
 template <typename NodeHandle>
-bool node_handle_compare(NodeHandle const& nh,
-  std::pair<BOOST_DEDUCED_TYPENAME NodeHandle::key_type const,
-    BOOST_DEDUCED_TYPENAME NodeHandle::mapped_type> const& x)
+bool node_handle_compare(
+  NodeHandle const& nh, std::pair<typename NodeHandle::key_type const,
+                          typename NodeHandle::mapped_type> const& x)
 {
   return x.first == nh.key() && x.second == nh.mapped();
 }
 
 template <typename Container> void node_handle_tests_impl(Container& c)
 {
-  typedef BOOST_DEDUCED_TYPENAME Container::node_type node_type;
+  typedef typename Container::node_type node_type;
 
-  BOOST_DEDUCED_TYPENAME Container::value_type value = *c.begin();
+  typename Container::value_type value = *c.begin();
 
   node_type n1;
   BOOST_TEST(!n1);
@@ -195,9 +195,9 @@ template <typename Container> void node_handle_tests_impl(Container& c)
   n3 = boost::move(n3);
   BOOST_TEST(!n3);
 
-  BOOST_DEDUCED_TYPENAME Container::value_type value1 = *c.begin();
+  typename Container::value_type value1 = *c.begin();
   n1 = c.extract(c.begin());
-  BOOST_DEDUCED_TYPENAME Container::value_type value2 = *c.begin();
+  typename Container::value_type value2 = *c.begin();
   n2 = c.extract(c.begin());
   n3 = node_type();
 
@@ -248,15 +248,13 @@ UNORDERED_AUTO_TEST (node_handle_tests) {
 template <typename Container1, typename Container2>
 void insert_node_handle_unique(Container1& c1, Container2& c2)
 {
-  typedef BOOST_DEDUCED_TYPENAME Container1::node_type node_type;
-  typedef BOOST_DEDUCED_TYPENAME Container1::value_type value_type;
-  BOOST_STATIC_ASSERT((boost::is_same<node_type,
-    BOOST_DEDUCED_TYPENAME Container2::node_type>::value));
+  typedef typename Container1::node_type node_type;
+  typedef typename Container1::value_type value_type;
+  BOOST_STATIC_ASSERT(
+    (boost::is_same<node_type, typename Container2::node_type>::value));
 
-  typedef BOOST_DEDUCED_TYPENAME Container1::insert_return_type
-    insert_return_type1;
-  typedef BOOST_DEDUCED_TYPENAME Container2::insert_return_type
-    insert_return_type2;
+  typedef typename Container1::insert_return_type insert_return_type1;
+  typedef typename Container2::insert_return_type insert_return_type2;
 
   insert_return_type1 r1 = c1.insert(node_type());
   insert_return_type2 r2 = c2.insert(node_type());
@@ -293,15 +291,14 @@ void insert_node_handle_unique(Container1& c1, Container2& c2)
 template <typename Container1, typename Container2>
 void insert_node_handle_unique2(Container1& c1, Container2& c2)
 {
-  typedef BOOST_DEDUCED_TYPENAME Container1::node_type node_type;
-  typedef BOOST_DEDUCED_TYPENAME Container1::value_type value_type;
-  BOOST_STATIC_ASSERT((boost::is_same<node_type,
-    BOOST_DEDUCED_TYPENAME Container2::node_type>::value));
+  typedef typename Container1::node_type node_type;
+  typedef typename Container1::value_type value_type;
+  BOOST_STATIC_ASSERT(
+    (boost::is_same<node_type, typename Container2::node_type>::value));
 
-  // typedef BOOST_DEDUCED_TYPENAME Container1::insert_return_type
+  // typedef typename Container1::insert_return_type
   // insert_return_type1;
-  typedef BOOST_DEDUCED_TYPENAME Container2::insert_return_type
-    insert_return_type2;
+  typedef typename Container2::insert_return_type insert_return_type2;
 
   while (!c1.empty()) {
     value_type v = *c1.begin();
@@ -327,13 +324,13 @@ void insert_node_handle_unique2(Container1& c1, Container2& c2)
 template <typename Container1, typename Container2>
 void insert_node_handle_equiv(Container1& c1, Container2& c2)
 {
-  typedef BOOST_DEDUCED_TYPENAME Container1::node_type node_type;
-  typedef BOOST_DEDUCED_TYPENAME Container1::value_type value_type;
-  BOOST_STATIC_ASSERT((boost::is_same<node_type,
-    BOOST_DEDUCED_TYPENAME Container2::node_type>::value));
+  typedef typename Container1::node_type node_type;
+  typedef typename Container1::value_type value_type;
+  BOOST_STATIC_ASSERT(
+    (boost::is_same<node_type, typename Container2::node_type>::value));
 
-  typedef BOOST_DEDUCED_TYPENAME Container1::iterator iterator1;
-  typedef BOOST_DEDUCED_TYPENAME Container2::iterator iterator2;
+  typedef typename Container1::iterator iterator1;
+  typedef typename Container2::iterator iterator2;
 
   iterator1 r1 = c1.insert(node_type());
   iterator2 r2 = c2.insert(node_type());

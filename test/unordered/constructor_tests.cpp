@@ -25,9 +25,9 @@ namespace constructor_tests {
   template <class T>
   void constructor_tests1(T*, test::random_generator generator)
   {
-    BOOST_DEDUCED_TYPENAME T::hasher hf;
-    BOOST_DEDUCED_TYPENAME T::key_equal eq;
-    BOOST_DEDUCED_TYPENAME T::allocator_type al;
+    typename T::hasher hf;
+    typename T::key_equal eq;
+    typename T::allocator_type al;
 
     UNORDERED_SUB_TEST("Construct 1")
     {
@@ -176,15 +176,15 @@ namespace constructor_tests {
   template <class T>
   void constructor_tests2(T*, test::random_generator const& generator)
   {
-    BOOST_DEDUCED_TYPENAME T::hasher hf;
-    BOOST_DEDUCED_TYPENAME T::hasher hf1(1);
-    BOOST_DEDUCED_TYPENAME T::hasher hf2(2);
-    BOOST_DEDUCED_TYPENAME T::key_equal eq;
-    BOOST_DEDUCED_TYPENAME T::key_equal eq1(1);
-    BOOST_DEDUCED_TYPENAME T::key_equal eq2(2);
-    BOOST_DEDUCED_TYPENAME T::allocator_type al;
-    BOOST_DEDUCED_TYPENAME T::allocator_type al1(1);
-    BOOST_DEDUCED_TYPENAME T::allocator_type al2(2);
+    typename T::hasher hf;
+    typename T::hasher hf1(1);
+    typename T::hasher hf2(2);
+    typename T::key_equal eq;
+    typename T::key_equal eq1(1);
+    typename T::key_equal eq2(2);
+    typename T::allocator_type al;
+    typename T::allocator_type al1(1);
+    typename T::allocator_type al2(2);
 
     UNORDERED_SUB_TEST("Construct 1")
     {
@@ -274,14 +274,11 @@ namespace constructor_tests {
     {
       test::check_instances check_;
       test::random_values<T> v(100, generator);
-      BOOST_DEDUCED_TYPENAME test::random_values<T>::const_iterator v_begin =
-                                                                      v.begin(),
-                                                                    v_end =
-                                                                      v.end();
+      typename test::random_values<T>::const_iterator v_begin = v.begin(),
+                                                      v_end = v.end();
       T x(test::input_iterator(v_begin), test::input_iterator(v_end), 0, hf1,
         eq1);
-      BOOST_DEDUCED_TYPENAME T::const_iterator x_begin = x.begin(),
-                                               x_end = x.end();
+      typename T::const_iterator x_begin = x.begin(), x_end = x.end();
       T y(test::input_iterator(x_begin), test::input_iterator(x_end), 0, hf2,
         eq2);
       test::check_container(x, v);
@@ -320,7 +317,7 @@ namespace constructor_tests {
     }
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
-    std::initializer_list<BOOST_DEDUCED_TYPENAME T::value_type> list;
+    std::initializer_list<typename T::value_type> list;
 
     UNORDERED_SUB_TEST("Initializer list construct 1")
     {
@@ -386,8 +383,8 @@ namespace constructor_tests {
   template <class T>
   void map_constructor_test(T*, test::random_generator const& generator)
   {
-    typedef test::list<std::pair<BOOST_DEDUCED_TYPENAME T::key_type,
-      BOOST_DEDUCED_TYPENAME T::mapped_type> >
+    typedef test::list<
+      std::pair<typename T::key_type, typename T::mapped_type> >
       list;
     test::random_values<T> v(1000, generator);
     list l(v.begin(), v.end());

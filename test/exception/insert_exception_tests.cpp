@@ -18,7 +18,7 @@ test::seed_t initialize_seed(747373);
 template <typename T> void rehash_prep(T& x)
 {
   using namespace std;
-  typedef BOOST_DEDUCED_TYPENAME T::size_type size_type;
+  typedef typename T::size_type size_type;
 
   x.max_load_factor(0.25);
   size_type bucket_count = x.bucket_count();

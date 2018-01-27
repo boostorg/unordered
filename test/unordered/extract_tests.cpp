@@ -32,8 +32,7 @@ namespace extract_tests {
       test::random_values<Container> v(1000, generator);
       Container x(v.begin(), v.end());
       int iterations = 0;
-      for (BOOST_DEDUCED_TYPENAME test::random_values<Container>::iterator it =
-             v.begin();
+      for (typename test::random_values<Container>::iterator it = v.begin();
            it != v.end(); ++it) {
         std::size_t count = x.count(test::get_key<Container>(*it));
         std::size_t old_size = x.size();
@@ -64,8 +63,7 @@ namespace extract_tests {
       std::size_t size = x.size();
       int iterations = 0;
       while (size > 0 && !x.empty()) {
-        BOOST_DEDUCED_TYPENAME Container::key_type key =
-          test::get_key<Container>(*x.begin());
+        typename Container::key_type key = test::get_key<Container>(*x.begin());
         std::size_t count = x.count(key);
         typename Container::node_type n = x.extract(x.begin());
         BOOST_TEST(n);
@@ -89,7 +87,7 @@ namespace extract_tests {
       while (size > 0 && !x.empty()) {
         using namespace std;
         int index = rand() % (int)x.size();
-        BOOST_DEDUCED_TYPENAME Container::const_iterator prev, pos, next;
+        typename Container::const_iterator prev, pos, next;
         if (index == 0) {
           prev = pos = x.begin();
         } else {
@@ -97,8 +95,7 @@ namespace extract_tests {
           pos = test::next(prev);
         }
         next = test::next(pos);
-        BOOST_DEDUCED_TYPENAME Container::key_type key =
-          test::get_key<Container>(*pos);
+        typename Container::key_type key = test::get_key<Container>(*pos);
         std::size_t count = x.count(key);
         typename Container::node_type n = x.extract(pos);
         BOOST_TEST(n);
