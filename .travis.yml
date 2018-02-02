@@ -66,25 +66,11 @@ before_script:
             snapshot=master
         fi
 
-        # Set download_url for snapshot
-        if [ $snapshot == "stable" ]
-        then
-            download_url=https://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION}/${BOOST_FILENAME}.tar.bz2/download
-        else
-            download_url=$(curl https://api.bintray.com/packages/boostorg/$snapshot/snapshot/files |
-                    python -c "import os.path, sys, json; x = json.load(sys.stdin); print '\n'.join(a['path'] for a in x if os.path.splitext(a['path'])[1] == '.bz2')" |
-                    head -n 1 |
-                    sed "s/^/http:\/\/dl.bintray.com\/boostorg\/$snapshot\//")
-        fi
-
         # Download and extract snapshot
         echo "Downloading ${download_url}"
         mkdir $HOME/download
-        mkdir $HOME/extract
         cd $HOME/download
-        wget -O boost.tar.bz2 $download_url
-        cd $HOME/extract
-        tar -xjf $HOME/download/boost.tar.bz2
+        python ${TRAVIS_BUILD_DIR}/build/download-boost-snapshot.py $snapshot
         mv * ${BOOST_ROOT}
     - rm -r ${BOOST_ROOT}/boost/unordered
     - cd ${BOOST_ROOT}/tools/build

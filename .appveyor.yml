@@ -16,10 +16,9 @@ environment:
       TOOLSET: msvc-14.1
 
 install:
-  - cd c:\projects
-  - curl -sSL -o boost.7z https://dl.bintray.com/boostorg/master/boost_1_67_0-snapshot.7z
-  - 7z x boost.7z
-  - set BOOST_ROOT=c:\projects\boost_1_67_0
+  - set BOOST_ROOT=c:\projects\boost
+  - cd c:\projects\
+  - python %APPVEYOR_BUILD_FOLDER%\build\download-boost-snapshot.py master
   - rd /s /q %BOOST_ROOT%\boost\unordered
   - cd %BOOST_ROOT%\tools\build
   - cmd /c bootstrap
