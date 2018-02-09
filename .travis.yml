@@ -75,7 +75,7 @@ before_script:
     - rm -r ${BOOST_ROOT}/boost/unordered
     - cd ${BOOST_ROOT}/tools/build
     - mkdir ${HOME}/opt
-    - ./bootstrap.sh
+    - bash bootstrap.sh
     - ./b2 install --prefix=$HOME/opt
 
 after_success:
