@@ -10,7 +10,7 @@
 #include "./list.hpp"
 #include "./metafunctions.hpp"
 #include <algorithm>
-#include <boost/detail/lightweight_test.hpp>
+#include <boost/core/lightweight_test.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>
 
@@ -58,12 +58,12 @@ namespace test {
 
   template <class Container> class unordered_equivalence_tester
   {
-    BOOST_DEDUCED_TYPENAME Container::size_type size_;
-    BOOST_DEDUCED_TYPENAME Container::hasher hasher_;
-    BOOST_DEDUCED_TYPENAME Container::key_equal key_equal_;
+    typename Container::size_type size_;
+    typename Container::hasher hasher_;
+    typename Container::key_equal key_equal_;
     float max_load_factor_;
 
-    typedef test::list<BOOST_DEDUCED_TYPENAME Container::value_type> value_list;
+    typedef test::list<typename Container::value_type> value_list;
     value_list values_;
 
   public:

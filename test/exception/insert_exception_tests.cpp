@@ -18,7 +18,7 @@ test::seed_t initialize_seed(747373);
 template <typename T> void rehash_prep(T& x)
 {
   using namespace std;
-  typedef BOOST_DEDUCED_TYPENAME T::size_type size_type;
+  typedef typename T::size_type size_type;
 
   x.max_load_factor(0.25);
   size_type bucket_count = x.bucket_count();
@@ -146,23 +146,24 @@ struct insert_lvalue_end_type : inserter_base
   }
 } insert_lvalue_end;
 
+template <typename T> struct insert_lvalue_pos_type_impl : inserter_base
+{
+  typename T::iterator pos;
+
+  insert_lvalue_pos_type_impl(T& x) : pos(x.begin()) {}
+
+  template <typename Iterator> void operator()(T& x, Iterator it)
+  {
+    pos = get_iterator(x.insert(pos, *it));
+  }
+};
+
 struct insert_lvalue_pos_type
 {
-  template <typename T> struct impl : inserter_base
+  template <typename T>
+  friend insert_lvalue_pos_type_impl<T> generate(insert_lvalue_pos_type, T& x)
   {
-    typename T::iterator pos;
-
-    impl(T& x) : pos(x.begin()) {}
-
-    template <typename Iterator> void operator()(T& x, Iterator it)
-    {
-      pos = get_iterator(x.insert(pos, *it));
-    }
-  };
-
-  template <typename T> friend impl<T> generate(insert_lvalue_pos_type, T& x)
-  {
-    return impl<T>(x);
+    return insert_lvalue_pos_type_impl<T>(x);
   }
 } insert_lvalue_pos;
 
@@ -198,23 +199,24 @@ struct emplace_lvalue_end_type : inserter_base
   }
 } emplace_lvalue_end;
 
+template <typename T> struct emplace_lvalue_pos_type_impl : inserter_base
+{
+  typename T::iterator pos;
+
+  emplace_lvalue_pos_type_impl(T& x) : pos(x.begin()) {}
+
+  template <typename Iterator> void operator()(T& x, Iterator it)
+  {
+    pos = get_iterator(x.emplace_hint(pos, *it));
+  }
+};
+
 struct emplace_lvalue_pos_type
 {
-  template <typename T> struct impl : inserter_base
+  template <typename T>
+  friend emplace_lvalue_pos_type_impl<T> generate(emplace_lvalue_pos_type, T& x)
   {
-    typename T::iterator pos;
-
-    impl(T& x) : pos(x.begin()) {}
-
-    template <typename Iterator> void operator()(T& x, Iterator it)
-    {
-      pos = get_iterator(x.emplace_hint(pos, *it));
-    }
-  };
-
-  template <typename T> friend impl<T> generate(emplace_lvalue_pos_type, T& x)
-  {
-    return impl<T>(x);
+    return emplace_lvalue_pos_type_impl<T>(x);
   }
 } emplace_lvalue_pos;
 

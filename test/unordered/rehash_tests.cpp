@@ -20,8 +20,7 @@ namespace rehash_tests {
 
   test::seed_t initialize_seed(2974);
 
-  template <class X>
-  bool postcondition(X const& x, BOOST_DEDUCED_TYPENAME X::size_type n)
+  template <class X> bool postcondition(X const& x, typename X::size_type n)
   {
     return static_cast<double>(x.bucket_count()) >=
              static_cast<double>(x.size()) / x.max_load_factor() &&

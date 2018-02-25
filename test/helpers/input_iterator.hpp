@@ -7,13 +7,12 @@
 #define BOOST_UNORDERED_TEST_HELPERS_INPUT_ITERATOR_HEADER
 
 #include <boost/config.hpp>
-#include <boost/iterator/iterator_traits.hpp>
 #include <iterator>
 
 namespace test {
   template <class Iterator> struct proxy
   {
-    typedef BOOST_DEDUCED_TYPENAME Iterator::value_type value_type;
+    typedef typename Iterator::value_type value_type;
 
     explicit proxy(value_type const& v) : v_(v) {}
     proxy(proxy const& x) : v_(x.v_) {}
@@ -25,16 +24,13 @@ namespace test {
     proxy& operator=(proxy const&);
   };
 
-  template <class Iterator>
-  struct input_iterator_adaptor
-    : public std::iterator<std::input_iterator_tag,
-        BOOST_DEDUCED_TYPENAME boost::iterator_value<Iterator>::type,
-        std::ptrdiff_t,
-        BOOST_DEDUCED_TYPENAME boost::iterator_pointer<Iterator>::type,
-        proxy<Iterator> >
+  template <class Iterator> struct input_iterator_adaptor
   {
-    typedef BOOST_DEDUCED_TYPENAME boost::iterator_value<Iterator>::type
-      value_type;
+    typedef typename std::iterator_traits<Iterator>::value_type value_type;
+    typedef typename std::iterator_traits<Iterator>::pointer pointer;
+    typedef proxy<Iterator> reference;
+    typedef std::ptrdiff_t difference_type;
+    typedef std::input_iterator_tag iterator_category;
 
     input_iterator_adaptor() : base_() {}
     explicit input_iterator_adaptor(Iterator& it) : base_(&it) {}
@@ -66,19 +62,15 @@ namespace test {
     return input_iterator_adaptor<Iterator>(it);
   }
 
-  template <class Iterator>
-  struct copy_iterator_adaptor
-    : public std::iterator<
-        BOOST_DEDUCED_TYPENAME boost::iterator_category<Iterator>::type,
-        BOOST_DEDUCED_TYPENAME boost::iterator_value<Iterator>::type,
-        BOOST_DEDUCED_TYPENAME boost::iterator_difference<Iterator>::type,
-        BOOST_DEDUCED_TYPENAME boost::iterator_pointer<Iterator>::type,
-        proxy<Iterator> >
+  template <class Iterator> struct copy_iterator_adaptor
   {
-    typedef BOOST_DEDUCED_TYPENAME boost::iterator_value<Iterator>::type
-      value_type;
-    typedef BOOST_DEDUCED_TYPENAME boost::iterator_difference<Iterator>::type
-      difference_type;
+    typedef typename std::iterator_traits<Iterator>::value_type value_type;
+    typedef
+      typename std::iterator_traits<Iterator>::difference_type difference_type;
+    typedef typename std::iterator_traits<Iterator>::iterator_category
+      iterator_category;
+    typedef typename std::iterator_traits<Iterator>::pointer pointer;
+    typedef proxy<Iterator> reference;
 
     copy_iterator_adaptor() : base_() {}
     explicit copy_iterator_adaptor(Iterator const& it) : base_(it) {}

@@ -17,11 +17,12 @@
 #endif
 
 #include "../helpers/check_return_type.hpp"
-#include <boost/iterator/iterator_traits.hpp>
+#include <boost/core/pointer_traits.hpp>
 #include <boost/limits.hpp>
 #include <boost/predef.h>
 #include <boost/static_assert.hpp>
 #include <boost/type_traits/cv_traits.hpp>
+#include <boost/type_traits/is_const.hpp>
 #include <boost/type_traits/is_convertible.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/utility/swap.hpp>
@@ -51,27 +52,27 @@ template <class T> int implicit_construct()
 
 template <class X, class T> void container_test(X& r, T const&)
 {
-  typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
-  typedef BOOST_DEDUCED_TYPENAME X::const_iterator const_iterator;
-  typedef BOOST_DEDUCED_TYPENAME X::difference_type difference_type;
-  typedef BOOST_DEDUCED_TYPENAME X::size_type size_type;
+  typedef typename X::iterator iterator;
+  typedef typename X::const_iterator const_iterator;
+  typedef typename X::difference_type difference_type;
+  typedef typename X::size_type size_type;
 
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_value<iterator>::type
-    iterator_value_type;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_value<const_iterator>::type
+  typedef
+    typename std::iterator_traits<iterator>::value_type iterator_value_type;
+  typedef typename std::iterator_traits<const_iterator>::value_type
     const_iterator_value_type;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_difference<iterator>::type
+  typedef typename std::iterator_traits<iterator>::difference_type
     iterator_difference_type;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_difference<
-    const_iterator>::type const_iterator_difference_type;
+  typedef typename std::iterator_traits<const_iterator>::difference_type
+    const_iterator_difference_type;
 
-  typedef BOOST_DEDUCED_TYPENAME X::value_type value_type;
-  typedef BOOST_DEDUCED_TYPENAME X::reference reference;
-  typedef BOOST_DEDUCED_TYPENAME X::const_reference const_reference;
+  typedef typename X::value_type value_type;
+  typedef typename X::reference reference;
+  typedef typename X::const_reference const_reference;
 
-  typedef BOOST_DEDUCED_TYPENAME X::node_type node_type;
+  typedef typename X::node_type node_type;
 
-  typedef BOOST_DEDUCED_TYPENAME X::allocator_type allocator_type;
+  typedef typename X::allocator_type allocator_type;
 
   // value_type
 
@@ -96,8 +97,8 @@ template <class X, class T> void container_test(X& r, T const&)
 
   // node_type
 
-  BOOST_STATIC_ASSERT((boost::is_same<allocator_type,
-    BOOST_DEDUCED_TYPENAME node_type::allocator_type>::value));
+  BOOST_STATIC_ASSERT((
+    boost::is_same<allocator_type, typename node_type::allocator_type>::value));
 
   // difference_type
 
@@ -207,9 +208,9 @@ template <class X, class T> void container_test(X& r, T const&)
 
 template <class X> void unordered_destructible_test(X&)
 {
-  typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
-  typedef BOOST_DEDUCED_TYPENAME X::const_iterator const_iterator;
-  typedef BOOST_DEDUCED_TYPENAME X::size_type size_type;
+  typedef typename X::iterator iterator;
+  typedef typename X::const_iterator const_iterator;
+  typedef typename X::size_type size_type;
 
   X x1;
 
@@ -246,31 +247,30 @@ template <class X> void unordered_destructible_test(X&)
 
   // Allocator
 
-  typedef BOOST_DEDUCED_TYPENAME X::allocator_type allocator_type;
+  typedef typename X::allocator_type allocator_type;
   test::check_return_type<allocator_type>::equals(a_const.get_allocator());
 }
 
 template <class X, class Key> void unordered_set_test(X& r, Key const&)
 {
-  typedef BOOST_DEDUCED_TYPENAME X::value_type value_type;
-  typedef BOOST_DEDUCED_TYPENAME X::key_type key_type;
+  typedef typename X::value_type value_type;
+  typedef typename X::key_type key_type;
 
   BOOST_STATIC_ASSERT((boost::is_same<value_type, key_type>::value));
 
   // iterator pointer / const_pointer_type
 
-  typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
-  typedef BOOST_DEDUCED_TYPENAME X::const_iterator const_iterator;
-  typedef BOOST_DEDUCED_TYPENAME X::local_iterator local_iterator;
-  typedef BOOST_DEDUCED_TYPENAME X::const_local_iterator const_local_iterator;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_pointer<iterator>::type
-    iterator_pointer;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_pointer<const_iterator>::type
+  typedef typename X::iterator iterator;
+  typedef typename X::const_iterator const_iterator;
+  typedef typename X::local_iterator local_iterator;
+  typedef typename X::const_local_iterator const_local_iterator;
+  typedef typename std::iterator_traits<iterator>::pointer iterator_pointer;
+  typedef typename std::iterator_traits<const_iterator>::pointer
     const_iterator_pointer;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_pointer<local_iterator>::type
+  typedef typename std::iterator_traits<local_iterator>::pointer
     local_iterator_pointer;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_pointer<
-    const_local_iterator>::type const_local_iterator_pointer;
+  typedef typename std::iterator_traits<const_local_iterator>::pointer
+    const_local_iterator_pointer;
 
   BOOST_STATIC_ASSERT(
     (boost::is_same<value_type const*, iterator_pointer>::value));
@@ -281,8 +281,46 @@ template <class X, class Key> void unordered_set_test(X& r, Key const&)
   BOOST_STATIC_ASSERT(
     (boost::is_same<value_type const*, const_local_iterator_pointer>::value));
 
-  typedef BOOST_DEDUCED_TYPENAME X::node_type node_type;
-  typedef BOOST_DEDUCED_TYPENAME node_type::value_type node_value_type;
+  // pointer_traits<iterator>
+
+  BOOST_STATIC_ASSERT((boost::is_same<iterator,
+    typename boost::pointer_traits<iterator>::pointer>::value));
+  BOOST_STATIC_ASSERT((boost::is_same<value_type const,
+    typename boost::pointer_traits<iterator>::element_type>::value));
+  BOOST_STATIC_ASSERT((boost::is_same<std::ptrdiff_t,
+    typename boost::pointer_traits<iterator>::difference_type>::value));
+
+  // pointer_traits<const_iterator>
+
+  BOOST_STATIC_ASSERT((boost::is_same<const_iterator,
+    typename boost::pointer_traits<const_iterator>::pointer>::value));
+  BOOST_STATIC_ASSERT((boost::is_same<value_type const,
+    typename boost::pointer_traits<const_iterator>::element_type>::value));
+  BOOST_STATIC_ASSERT((boost::is_same<std::ptrdiff_t,
+    typename boost::pointer_traits<const_iterator>::difference_type>::value));
+
+  // pointer_traits<local_iterator>
+
+  BOOST_STATIC_ASSERT((boost::is_same<local_iterator,
+    typename boost::pointer_traits<local_iterator>::pointer>::value));
+  BOOST_STATIC_ASSERT((boost::is_same<value_type const,
+    typename boost::pointer_traits<local_iterator>::element_type>::value));
+  BOOST_STATIC_ASSERT((boost::is_same<std::ptrdiff_t,
+    typename boost::pointer_traits<local_iterator>::difference_type>::value));
+
+  // pointer_traits<const_local_iterator>
+
+  BOOST_STATIC_ASSERT((boost::is_same<const_local_iterator,
+    typename boost::pointer_traits<const_local_iterator>::pointer>::value));
+  BOOST_STATIC_ASSERT((boost::is_same<value_type const,
+    typename boost::pointer_traits<const_local_iterator>::element_type>::
+      value));
+  BOOST_STATIC_ASSERT((boost::is_same<std::ptrdiff_t,
+    typename boost::pointer_traits<const_local_iterator>::difference_type>::
+      value));
+
+  typedef typename X::node_type node_type;
+  typedef typename node_type::value_type node_value_type;
   BOOST_STATIC_ASSERT((boost::is_same<value_type, node_value_type>::value));
 
   // Call node_type functions.
@@ -297,26 +335,25 @@ template <class X, class Key> void unordered_set_test(X& r, Key const&)
 template <class X, class Key, class T>
 void unordered_map_test(X& r, Key const& k, T const& v)
 {
-  typedef BOOST_DEDUCED_TYPENAME X::value_type value_type;
-  typedef BOOST_DEDUCED_TYPENAME X::key_type key_type;
+  typedef typename X::value_type value_type;
+  typedef typename X::key_type key_type;
 
   BOOST_STATIC_ASSERT(
     (boost::is_same<value_type, std::pair<key_type const, T> >::value));
 
   // iterator pointer / const_pointer_type
 
-  typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
-  typedef BOOST_DEDUCED_TYPENAME X::const_iterator const_iterator;
-  typedef BOOST_DEDUCED_TYPENAME X::local_iterator local_iterator;
-  typedef BOOST_DEDUCED_TYPENAME X::const_local_iterator const_local_iterator;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_pointer<iterator>::type
-    iterator_pointer;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_pointer<const_iterator>::type
+  typedef typename X::iterator iterator;
+  typedef typename X::const_iterator const_iterator;
+  typedef typename X::local_iterator local_iterator;
+  typedef typename X::const_local_iterator const_local_iterator;
+  typedef typename std::iterator_traits<iterator>::pointer iterator_pointer;
+  typedef typename std::iterator_traits<const_iterator>::pointer
     const_iterator_pointer;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_pointer<local_iterator>::type
+  typedef typename std::iterator_traits<local_iterator>::pointer
     local_iterator_pointer;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_pointer<
-    const_local_iterator>::type const_local_iterator_pointer;
+  typedef typename std::iterator_traits<const_local_iterator>::pointer
+    const_local_iterator_pointer;
 
   BOOST_STATIC_ASSERT((boost::is_same<value_type*, iterator_pointer>::value));
   BOOST_STATIC_ASSERT(
@@ -326,9 +363,47 @@ void unordered_map_test(X& r, Key const& k, T const& v)
   BOOST_STATIC_ASSERT(
     (boost::is_same<value_type const*, const_local_iterator_pointer>::value));
 
-  typedef BOOST_DEDUCED_TYPENAME X::node_type node_type;
-  typedef BOOST_DEDUCED_TYPENAME node_type::key_type node_key_type;
-  typedef BOOST_DEDUCED_TYPENAME node_type::mapped_type node_mapped_type;
+  // pointer_traits<iterator>
+
+  BOOST_STATIC_ASSERT((boost::is_same<iterator,
+    typename boost::pointer_traits<iterator>::pointer>::value));
+  BOOST_STATIC_ASSERT((boost::is_same<value_type,
+    typename boost::pointer_traits<iterator>::element_type>::value));
+  BOOST_STATIC_ASSERT((boost::is_same<std::ptrdiff_t,
+    typename boost::pointer_traits<iterator>::difference_type>::value));
+
+  // pointer_traits<const_iterator>
+
+  BOOST_STATIC_ASSERT((boost::is_same<const_iterator,
+    typename boost::pointer_traits<const_iterator>::pointer>::value));
+  BOOST_STATIC_ASSERT((boost::is_same<value_type const,
+    typename boost::pointer_traits<const_iterator>::element_type>::value));
+  BOOST_STATIC_ASSERT((boost::is_same<std::ptrdiff_t,
+    typename boost::pointer_traits<const_iterator>::difference_type>::value));
+
+  // pointer_traits<local_iterator>
+
+  BOOST_STATIC_ASSERT((boost::is_same<local_iterator,
+    typename boost::pointer_traits<local_iterator>::pointer>::value));
+  BOOST_STATIC_ASSERT((boost::is_same<value_type,
+    typename boost::pointer_traits<local_iterator>::element_type>::value));
+  BOOST_STATIC_ASSERT((boost::is_same<std::ptrdiff_t,
+    typename boost::pointer_traits<local_iterator>::difference_type>::value));
+
+  // pointer_traits<const_local_iterator>
+
+  BOOST_STATIC_ASSERT((boost::is_same<const_local_iterator,
+    typename boost::pointer_traits<const_local_iterator>::pointer>::value));
+  BOOST_STATIC_ASSERT((boost::is_same<value_type const,
+    typename boost::pointer_traits<const_local_iterator>::element_type>::
+      value));
+  BOOST_STATIC_ASSERT((boost::is_same<std::ptrdiff_t,
+    typename boost::pointer_traits<const_local_iterator>::difference_type>::
+      value));
+
+  typedef typename X::node_type node_type;
+  typedef typename node_type::key_type node_key_type;
+  typedef typename node_type::mapped_type node_mapped_type;
 
   BOOST_STATIC_ASSERT((boost::is_same<Key, node_key_type>::value));
   BOOST_STATIC_ASSERT((boost::is_same<T, node_mapped_type>::value));
@@ -400,12 +475,12 @@ template <class X> void equality_test(X& r)
 
 template <class X, class T> void unordered_unique_test(X& r, T const& t)
 {
-  typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
+  typedef typename X::iterator iterator;
   test::check_return_type<std::pair<iterator, bool> >::equals(r.insert(t));
   test::check_return_type<std::pair<iterator, bool> >::equals(r.emplace(t));
 
-  typedef BOOST_DEDUCED_TYPENAME X::node_type node_type;
-  typedef BOOST_DEDUCED_TYPENAME X::insert_return_type insert_return_type;
+  typedef typename X::node_type node_type;
+  typedef typename X::insert_return_type insert_return_type;
 
   // insert_return_type
 
@@ -432,7 +507,7 @@ template <class X, class T> void unordered_unique_test(X& r, T const& t)
 
 template <class X, class T> void unordered_equivalent_test(X& r, T const& t)
 {
-  typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
+  typedef typename X::iterator iterator;
   test::check_return_type<iterator>::equals(r.insert(t));
   test::check_return_type<iterator>::equals(r.emplace(t));
 }
@@ -440,8 +515,8 @@ template <class X, class T> void unordered_equivalent_test(X& r, T const& t)
 template <class X, class Key, class T>
 void unordered_map_functions(X&, Key const& k, T const& v)
 {
-  typedef BOOST_DEDUCED_TYPENAME X::mapped_type mapped_type;
-  typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
+  typedef typename X::mapped_type mapped_type;
+  typedef typename X::iterator iterator;
 
   X a;
   test::check_return_type<mapped_type>::equals_ref(a[k]);
@@ -472,52 +547,50 @@ void unordered_test(X& x, Key& k, Hash& hf, Pred& eq)
 {
   unordered_destructible_test(x);
 
-  typedef BOOST_DEDUCED_TYPENAME X::key_type key_type;
-  typedef BOOST_DEDUCED_TYPENAME X::hasher hasher;
-  typedef BOOST_DEDUCED_TYPENAME X::key_equal key_equal;
-  typedef BOOST_DEDUCED_TYPENAME X::size_type size_type;
+  typedef typename X::key_type key_type;
+  typedef typename X::hasher hasher;
+  typedef typename X::key_equal key_equal;
+  typedef typename X::size_type size_type;
 
-  typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
-  typedef BOOST_DEDUCED_TYPENAME X::const_iterator const_iterator;
-  typedef BOOST_DEDUCED_TYPENAME X::local_iterator local_iterator;
-  typedef BOOST_DEDUCED_TYPENAME X::const_local_iterator const_local_iterator;
+  typedef typename X::iterator iterator;
+  typedef typename X::const_iterator const_iterator;
+  typedef typename X::local_iterator local_iterator;
+  typedef typename X::const_local_iterator const_local_iterator;
 
-  typedef BOOST_DEDUCED_TYPENAME boost::BOOST_ITERATOR_CATEGORY<iterator>::type
+  typedef typename std::iterator_traits<iterator>::iterator_category
     iterator_category;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_difference<iterator>::type
+  typedef typename std::iterator_traits<iterator>::difference_type
     iterator_difference;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_pointer<iterator>::type
-    iterator_pointer;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_reference<iterator>::type
-    iterator_reference;
+  typedef typename std::iterator_traits<iterator>::pointer iterator_pointer;
+  typedef typename std::iterator_traits<iterator>::reference iterator_reference;
 
-  typedef BOOST_DEDUCED_TYPENAME boost::BOOST_ITERATOR_CATEGORY<
-    local_iterator>::type local_iterator_category;
-  typedef BOOST_DEDUCED_TYPENAME
-    boost::iterator_difference<local_iterator>::type local_iterator_difference;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_pointer<local_iterator>::type
+  typedef typename std::iterator_traits<local_iterator>::iterator_category
+    local_iterator_category;
+  typedef typename std::iterator_traits<local_iterator>::difference_type
+    local_iterator_difference;
+  typedef typename std::iterator_traits<local_iterator>::pointer
     local_iterator_pointer;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_reference<local_iterator>::type
+  typedef typename std::iterator_traits<local_iterator>::reference
     local_iterator_reference;
 
-  typedef BOOST_DEDUCED_TYPENAME boost::BOOST_ITERATOR_CATEGORY<
-    const_iterator>::type const_iterator_category;
-  typedef BOOST_DEDUCED_TYPENAME
-    boost::iterator_difference<const_iterator>::type const_iterator_difference;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_pointer<const_iterator>::type
+  typedef typename std::iterator_traits<const_iterator>::iterator_category
+    const_iterator_category;
+  typedef typename std::iterator_traits<const_iterator>::difference_type
+    const_iterator_difference;
+  typedef typename std::iterator_traits<const_iterator>::pointer
     const_iterator_pointer;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_reference<const_iterator>::type
+  typedef typename std::iterator_traits<const_iterator>::reference
     const_iterator_reference;
 
-  typedef BOOST_DEDUCED_TYPENAME boost::BOOST_ITERATOR_CATEGORY<
-    const_local_iterator>::type const_local_iterator_category;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_difference<
-    const_local_iterator>::type const_local_iterator_difference;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_pointer<
-    const_local_iterator>::type const_local_iterator_pointer;
-  typedef BOOST_DEDUCED_TYPENAME boost::iterator_reference<
-    const_local_iterator>::type const_local_iterator_reference;
-  typedef BOOST_DEDUCED_TYPENAME X::allocator_type allocator_type;
+  typedef typename std::iterator_traits<const_local_iterator>::iterator_category
+    const_local_iterator_category;
+  typedef typename std::iterator_traits<const_local_iterator>::difference_type
+    const_local_iterator_difference;
+  typedef typename std::iterator_traits<const_local_iterator>::pointer
+    const_local_iterator_pointer;
+  typedef typename std::iterator_traits<const_local_iterator>::reference
+    const_local_iterator_reference;
+  typedef typename X::allocator_type allocator_type;
 
   BOOST_STATIC_ASSERT((boost::is_same<Key, key_type>::value));
   // boost::function_requires<boost::CopyConstructibleConcept<key_type> >();
@@ -636,15 +709,15 @@ void unordered_copyable_test(X& x, Key& k, T& t, Hash& hf, Pred& eq)
 {
   unordered_test(x, k, hf, eq);
 
-  typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
-  typedef BOOST_DEDUCED_TYPENAME X::const_iterator const_iterator;
-  typedef BOOST_DEDUCED_TYPENAME X::allocator_type allocator_type;
+  typedef typename X::iterator iterator;
+  typedef typename X::const_iterator const_iterator;
+  typedef typename X::allocator_type allocator_type;
 
   X a;
   allocator_type m = a.get_allocator();
 
-  BOOST_DEDUCED_TYPENAME X::value_type* i = 0;
-  BOOST_DEDUCED_TYPENAME X::value_type* j = 0;
+  typename X::value_type* i = 0;
+  typename X::value_type* j = 0;
 
   // Constructors
 
@@ -734,8 +807,8 @@ void unordered_copyable_test(X& x, Key& k, T& t, Hash& hf, Pred& eq)
   sink(a7a);
   sink(a9a);
 
-  typedef BOOST_DEDUCED_TYPENAME X::node_type node_type;
-  typedef BOOST_DEDUCED_TYPENAME X::allocator_type allocator_type;
+  typedef typename X::node_type node_type;
+  typedef typename X::allocator_type allocator_type;
   node_type const n_const = a.extract(a.begin());
   test::check_return_type<allocator_type>::equals(n_const.get_allocator());
 }
@@ -745,9 +818,9 @@ void unordered_movable_test(X& x, Key& k, T& /* t */, Hash& hf, Pred& eq)
 {
   unordered_test(x, k, hf, eq);
 
-  typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
-  typedef BOOST_DEDUCED_TYPENAME X::const_iterator const_iterator;
-  typedef BOOST_DEDUCED_TYPENAME X::allocator_type allocator_type;
+  typedef typename X::iterator iterator;
+  typedef typename X::const_iterator const_iterator;
+  typedef typename X::allocator_type allocator_type;
 
 #if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
   X x1(rvalue_default<X>());

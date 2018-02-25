@@ -11,7 +11,6 @@ language: c++
 addons:
     apt:
         packages:
-            - libboost-tools-dev
             - libxml2-utils
             - g++-multilib
 
@@ -19,46 +18,70 @@ matrix:
     include:
       - compiler: gcc
         env: |
-            label="gcc C++03";
-            user_config="using gcc : : g++-4.8 --coverage -fsanitize=address -Werror --std=c++03 ;"
+            label="gcc C++03/11";
+            user_config="using gcc : : g++-4.8 --coverage -fsanitize=address -Werror ;"
             enable_coverage=1
-      - compiler: gcc
-        env: |
-            label="gcc C++11";
-            user_config="using gcc : : g++-4.8 --coverage -fsanitize=address -Werror --std=c++11 ;"
-            enable_coverage=1
+            CXXSTD=03,11
       - compiler: gcc
         env: |
             label="gcc 32 bit C++11";
-            user_config="using gcc : : g++-4.8 -m32 -fsanitize=address -Werror --std=c++11 ;"
+            user_config="using gcc : : g++-4.8 -m32 -fsanitize=address -Werror ;"
+            CXXSTD=11
       - compiler: clang
         env: |
-            label="clang C++11";
-            user_config="using clang : : clang++ -fsanitize=address -Werror --std=c++11 ;"
+            label="clang C++11/17";
+            user_config="using clang : : clang++ -fsanitize=address -Werror ;"
+            CXXSTD=11,17
         # sanitized=address not available for 32-bit clang on travis.
       - compiler: clang
         env: |
             label="clang 32 bit";
-            user_config="using clang : : clang++ -m32 -Werror --std=c++03 ;"
+            user_config="using clang : : clang++ -m32 -Werror ;"
+            CXXSTD=03
 
 before_install:
     - if [ -n $enable_coverage ]; then pip install --user cpp-coveralls; fi
 
 before_script:
+    - export BOOST_VERSION=1.66.0
+    - export BOOST_FILENAME=boost_1_66_0
+    - export BOOST_ROOT=${HOME}/boost
     - cd ${TRAVIS_BUILD_DIR}
     - touch Jamroot.jam
     - cd $HOME
     - echo $user_config > ~/user-config.jam
     - cat ~/user-config.jam
-    - wget -O boost.tar.bz2 https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.tar.bz2
-    - tar -xjf boost.tar.bz2
-    - mv boost_1_64_0 boost
-    - rm -r boost/boost/unordered
+    - |
+        # Pick snapshot to use
+        if [ "$TRAVIS_EVENT_TYPE" == "cron" ]
+        then
+            if [ "$TRAVIS_BRANCH" == "master" ]
+            then
+                snapshot=master
+            else
+                snapshot=develop
+            fi
+        else
+            #snapshot=stable
+            snapshot=master
+        fi
+
+        # Download and extract snapshot
+        echo "Downloading ${download_url}"
+        mkdir $HOME/download
+        cd $HOME/download
+        python ${TRAVIS_BUILD_DIR}/build/download-boost-snapshot.py $snapshot
+        mv * ${BOOST_ROOT}
+    - rm -r ${BOOST_ROOT}/boost/unordered
+    - cd ${BOOST_ROOT}/tools/build
+    - mkdir ${HOME}/opt
+    - bash bootstrap.sh
+    - ./b2 install --prefix=$HOME/opt
 
 after_success:
     if [ -n $enable_coverage ]; then coveralls -r ${TRAVIS_BUILD_DIR} -b ${TRAVIS_BUILD_DIR}/test --gcov-options '\-lp' --include include/boost/unordered/ ; fi
 
 script:
     - cd ${TRAVIS_BUILD_DIR}/test
-    - bjam -q include=${HOME}/boost include=${TRAVIS_BUILD_DIR}/include
+    - ${HOME}/opt/bin/b2 -j 3 cxxstd=$CXXSTD -q include=${BOOST_ROOT} include=${TRAVIS_BUILD_DIR}/include
     - xmllint --noout ${TRAVIS_BUILD_DIR}/doc/ref.xml

@@ -189,7 +189,9 @@ namespace test {
     int type_;
 
   public:
-    explicit hash(int t = 0) : type_(t) {}
+    hash() : type_(0) {}
+
+    explicit hash(int t) : type_(t) {}
 
     std::size_t operator()(object const& x) const
     {
@@ -298,7 +300,9 @@ namespace test {
     int type_;
 
   public:
-    explicit equal_to(int t = 0) : type_(t) {}
+    equal_to() : type_(0) {}
+
+    explicit equal_to(int t) : type_(t) {}
 
     bool operator()(object const& x1, object const& x2) const
     {
@@ -354,10 +358,9 @@ namespace test {
       typedef allocator1<U> other;
     };
 
-    explicit allocator1(int t = 0) : tag_(t)
-    {
-      detail::tracker.allocator_ref();
-    }
+    allocator1() : tag_(0) { detail::tracker.allocator_ref(); }
+
+    explicit allocator1(int t) : tag_(t) { detail::tracker.allocator_ref(); }
 
     template <class Y> allocator1(allocator1<Y> const& x) : tag_(x.tag_)
     {
@@ -601,10 +604,9 @@ namespace test {
       typedef allocator2<U> other;
     };
 
-    explicit allocator2(int t = 0) : tag_(t)
-    {
-      detail::tracker.allocator_ref();
-    }
+    allocator2() : tag_(0) { detail::tracker.allocator_ref(); }
+
+    explicit allocator2(int t) : tag_(t) { detail::tracker.allocator_ref(); }
 
     template <class Y> allocator2(allocator2<Y> const& x) : tag_(x.tag_)
     {

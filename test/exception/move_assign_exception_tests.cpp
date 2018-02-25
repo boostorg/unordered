@@ -21,9 +21,9 @@ template <class T> struct move_assign_base : public test::exception_base
   test::random_values<T> x_values, y_values;
   T x, y;
 
-  typedef BOOST_DEDUCED_TYPENAME T::hasher hasher;
-  typedef BOOST_DEDUCED_TYPENAME T::key_equal key_equal;
-  typedef BOOST_DEDUCED_TYPENAME T::allocator_type allocator_type;
+  typedef typename T::hasher hasher;
+  typedef typename T::key_equal key_equal;
+  typedef typename T::allocator_type allocator_type;
 
   move_assign_base(int tag1, int tag2, float mlf1 = 1.0, float mlf2 = 1.0)
       : x_values(), y_values(),

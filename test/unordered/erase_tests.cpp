@@ -27,8 +27,8 @@ namespace erase_tests {
   template <class Container>
   void erase_tests1(Container*, test::random_generator generator)
   {
-    typedef BOOST_DEDUCED_TYPENAME Container::iterator iterator;
-    typedef BOOST_DEDUCED_TYPENAME Container::const_iterator c_iterator;
+    typedef typename Container::iterator iterator;
+    typedef typename Container::const_iterator c_iterator;
 
     BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Erase by key.\n";
     {
@@ -37,8 +37,7 @@ namespace erase_tests {
       test::random_values<Container> v(1000, generator);
       Container x(v.begin(), v.end());
       int iterations = 0;
-      for (BOOST_DEDUCED_TYPENAME test::random_values<Container>::iterator it =
-             v.begin();
+      for (typename test::random_values<Container>::iterator it = v.begin();
            it != v.end(); ++it) {
         std::size_t count = x.count(test::get_key<Container>(*it));
         std::size_t old_size = x.size();
@@ -60,8 +59,7 @@ namespace erase_tests {
       std::size_t size = x.size();
       int iterations = 0;
       while (size > 0 && !x.empty()) {
-        BOOST_DEDUCED_TYPENAME Container::key_type key =
-          test::get_key<Container>(*x.begin());
+        typename Container::key_type key = test::get_key<Container>(*x.begin());
         std::size_t count = x.count(key);
         iterator pos = x.erase(x.begin());
         --size;
@@ -92,8 +90,7 @@ namespace erase_tests {
           pos = test::next(prev);
         }
         next = test::next(pos);
-        BOOST_DEDUCED_TYPENAME Container::key_type key =
-          test::get_key<Container>(*pos);
+        typename Container::key_type key = test::get_key<Container>(*pos);
         std::size_t count = x.count(key);
         BOOST_TEST(count > 0);
         BOOST_TEST(next == x.erase(pos));
@@ -163,7 +160,7 @@ namespace erase_tests {
             test::next(iterators.begin(), start + length));
 
           BOOST_TEST(x.size() == iterators.size() - 1);
-          BOOST_DEDUCED_TYPENAME std::vector<c_iterator>::const_iterator i2 =
+          typename std::vector<c_iterator>::const_iterator i2 =
             iterators.begin();
           for (c_iterator i1 = x.cbegin(); i1 != x.cend(); ++i1) {
             BOOST_TEST(i1 == *i2);
@@ -186,8 +183,7 @@ namespace erase_tests {
       std::size_t size = x.size();
       int iterations = 0;
       while (size > 0 && !x.empty()) {
-        BOOST_DEDUCED_TYPENAME Container::key_type key =
-          test::get_key<Container>(*x.begin());
+        typename Container::key_type key = test::get_key<Container>(*x.begin());
         std::size_t count = x.count(key);
         x.quick_erase(x.begin());
         --size;
@@ -209,7 +205,7 @@ namespace erase_tests {
       int iterations = 0;
       while (size > 0 && !x.empty()) {
         std::size_t index = test::random_value(x.size());
-        BOOST_DEDUCED_TYPENAME Container::const_iterator prev, pos, next;
+        typename Container::const_iterator prev, pos, next;
         if (index == 0) {
           prev = pos = x.begin();
         } else {
@@ -217,8 +213,7 @@ namespace erase_tests {
           pos = test::next(prev);
         }
         next = test::next(pos);
-        BOOST_DEDUCED_TYPENAME Container::key_type key =
-          test::get_key<Container>(*pos);
+        typename Container::key_type key = test::get_key<Container>(*pos);
         std::size_t count = x.count(key);
         BOOST_TEST(count > 0);
         x.quick_erase(pos);

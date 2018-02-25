@@ -25,11 +25,11 @@ namespace copy_tests {
   template <class T>
   void copy_construct_tests1(T*, test::random_generator const& generator)
   {
-    typedef BOOST_DEDUCED_TYPENAME T::allocator_type allocator_type;
+    typedef typename T::allocator_type allocator_type;
 
-    BOOST_DEDUCED_TYPENAME T::hasher hf;
-    BOOST_DEDUCED_TYPENAME T::key_equal eq;
-    BOOST_DEDUCED_TYPENAME T::allocator_type al;
+    typename T::hasher hf;
+    typename T::key_equal eq;
+    typename T::allocator_type al;
 
     {
       test::check_instances check_;
@@ -84,12 +84,12 @@ namespace copy_tests {
   template <class T>
   void copy_construct_tests2(T*, test::random_generator const& generator)
   {
-    BOOST_DEDUCED_TYPENAME T::hasher hf(1);
-    BOOST_DEDUCED_TYPENAME T::key_equal eq(1);
-    BOOST_DEDUCED_TYPENAME T::allocator_type al(1);
-    BOOST_DEDUCED_TYPENAME T::allocator_type al2(2);
+    typename T::hasher hf(1);
+    typename T::key_equal eq(1);
+    typename T::allocator_type al(1);
+    typename T::allocator_type al2(2);
 
-    typedef BOOST_DEDUCED_TYPENAME T::allocator_type allocator_type;
+    typedef typename T::allocator_type allocator_type;
 
     {
       test::check_instances check_;

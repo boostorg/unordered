@@ -22,7 +22,7 @@ namespace find_tests {
 
   template <class X> void find_tests1(X*, test::random_generator generator)
   {
-    typedef BOOST_DEDUCED_TYPENAME X::iterator iterator;
+    typedef typename X::iterator iterator;
 
     {
       test::check_instances check_;
@@ -33,11 +33,10 @@ namespace find_tests {
       test::ordered<X> tracker = test::create_ordered(x);
       tracker.insert_range(v.begin(), v.end());
 
-      for (BOOST_DEDUCED_TYPENAME test::ordered<X>::const_iterator it1 =
-             tracker.begin();
+      for (typename test::ordered<X>::const_iterator it1 = tracker.begin();
            it1 != tracker.end(); ++it1) {
-        BOOST_DEDUCED_TYPENAME X::key_type key = test::get_key<X>(*it1);
-        BOOST_DEDUCED_TYPENAME X::const_iterator const_pos = x_const.find(key);
+        typename X::key_type key = test::get_key<X>(*it1);
+        typename X::const_iterator const_pos = x_const.find(key);
         iterator pos = x.find(key);
         BOOST_TEST(const_pos != x_const.end());
         BOOST_TEST(const_pos != x_const.end() &&
@@ -48,16 +47,15 @@ namespace find_tests {
         BOOST_TEST(x.count(key) == tracker.count(key));
 
         test::compare_pairs(x.equal_range(key), tracker.equal_range(key),
-          (BOOST_DEDUCED_TYPENAME X::value_type*)0);
+          (typename X::value_type*)0);
         test::compare_pairs(x_const.equal_range(key), tracker.equal_range(key),
-          (BOOST_DEDUCED_TYPENAME X::value_type*)0);
+          (typename X::value_type*)0);
       }
 
       test::random_values<X> v2(500, generator);
-      for (BOOST_DEDUCED_TYPENAME test::random_values<X>::const_iterator it2 =
-             v2.begin();
+      for (typename test::random_values<X>::const_iterator it2 = v2.begin();
            it2 != v2.end(); ++it2) {
-        BOOST_DEDUCED_TYPENAME X::key_type key = test::get_key<X>(*it2);
+        typename X::key_type key = test::get_key<X>(*it2);
         if (tracker.find(test::get_key<X>(key)) == tracker.end()) {
           BOOST_TEST(x.find(key) == x.end());
           BOOST_TEST(x_const.find(key) == x_const.end());
@@ -74,10 +72,9 @@ namespace find_tests {
       X x;
 
       test::random_values<X> v2(5, generator);
-      for (BOOST_DEDUCED_TYPENAME test::random_values<X>::const_iterator it3 =
-             v2.begin();
+      for (typename test::random_values<X>::const_iterator it3 = v2.begin();
            it3 != v2.end(); ++it3) {
-        BOOST_DEDUCED_TYPENAME X::key_type key = test::get_key<X>(*it3);
+        typename X::key_type key = test::get_key<X>(*it3);
         BOOST_TEST(x.find(key) == x.end());
         BOOST_TEST(x.count(key) == 0);
         std::pair<iterator, iterator> range = x.equal_range(key);
@@ -116,8 +113,7 @@ namespace find_tests {
   template <class X>
   void find_compatible_keys_test(X*, test::random_generator generator)
   {
-    typedef BOOST_DEDUCED_TYPENAME test::random_values<X>::iterator
-      value_iterator;
+    typedef typename test::random_values<X>::iterator value_iterator;
     test::random_values<X> v(500, generator);
     X x(v.begin(), v.end());
 
@@ -125,14 +121,14 @@ namespace find_tests {
     compatible_predicate eq;
 
     for (value_iterator it = v.begin(), end = v.end(); it != end; ++it) {
-      BOOST_DEDUCED_TYPENAME X::key_type key = test::get_key<X>(*it);
+      typename X::key_type key = test::get_key<X>(*it);
       BOOST_TEST(x.find(key) == x.find(compatible_key(key), h, eq));
     }
 
     test::random_values<X> v2(20, generator);
 
     for (value_iterator it = v2.begin(), end = v2.end(); it != end; ++it) {
-      BOOST_DEDUCED_TYPENAME X::key_type key = test::get_key<X>(*it);
+      typename X::key_type key = test::get_key<X>(*it);
       BOOST_TEST(x.find(key) == x.find(compatible_key(key), h, eq));
     }
   }

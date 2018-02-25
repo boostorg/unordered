@@ -172,9 +172,9 @@ template <class T> struct input_range_construct_test : public range<T>, objects
 
   void run() const
   {
-    BOOST_DEDUCED_TYPENAME test::random_values<T>::const_iterator
-      begin = this->values.begin(),
-      end = this->values.end();
+    typename test::random_values<T>::const_iterator begin =
+                                                      this->values.begin(),
+                                                    end = this->values.end();
     T x(test::input_iterator(begin), test::input_iterator(end), 0, hash,
       equal_to, allocator);
 

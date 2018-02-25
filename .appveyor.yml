@@ -1,0 +1,32 @@
+# Copyright 2017 Daniel James
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at http://boost.org/LICENSE_1_0.txt)
+
+version: 1.0.{build}-{branch}
+
+shallow_clone: true
+
+environment:
+  matrix:
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+      TOOLSET: msvc-10.0,msvc-11.0,msvc-12.0
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      TOOLSET: msvc-14.0
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      TOOLSET: msvc-14.1
+
+install:
+  - set BOOST_ROOT=c:\projects\boost
+  - cd c:\projects\
+  - python %APPVEYOR_BUILD_FOLDER%\build\download-boost-snapshot.py master
+  - rd /s /q %BOOST_ROOT%\boost\unordered
+  - cd %BOOST_ROOT%\tools\build
+  - cmd /c bootstrap
+  - cd %APPVEYOR_BUILD_FOLDER%
+  - echo. 2>Jamroot.jam
+
+build: off
+
+test_script:
+  - cd %APPVEYOR_BUILD_FOLDER%\test
+  - cmd /c %BOOST_ROOT%\tools\build\b2 -j 3 toolset=%TOOLSET% include=%APPVEYOR_BUILD_FOLDER%\include include=%BOOST_ROOT%

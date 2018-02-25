@@ -60,9 +60,9 @@ template <class T> struct swap_base : public test::exception_base
   const test::random_values<T> x_values, y_values;
   const T initial_x, initial_y;
 
-  typedef BOOST_DEDUCED_TYPENAME T::hasher hasher;
-  typedef BOOST_DEDUCED_TYPENAME T::key_equal key_equal;
-  typedef BOOST_DEDUCED_TYPENAME T::allocator_type allocator_type;
+  typedef typename T::hasher hasher;
+  typedef typename T::key_equal key_equal;
+  typedef typename T::allocator_type allocator_type;
 
   swap_base(unsigned int count1, unsigned int count2, int tag1, int tag2)
       : x_values(count1, test::limited_range),
@@ -90,7 +90,7 @@ template <class T> struct swap_base : public test::exception_base
   {
     try {
       d.x.swap(d.y);
-    } catch (std::runtime_error) {
+    } catch (std::runtime_error&) {
     }
 
     DISABLE_EXCEPTIONS;

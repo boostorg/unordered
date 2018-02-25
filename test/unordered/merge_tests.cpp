@@ -15,7 +15,6 @@
 #include "../helpers/test.hpp"
 #include "../helpers/tracker.hpp"
 #include "../objects/test.hpp"
-#include <boost/next_prior.hpp>
 
 namespace merge_tests {
 
@@ -174,8 +173,8 @@ namespace merge_tests {
 
     test::random_values<X1> v1(1000, generator);
     test::random_values<X2> v2(1000, generator);
-    v1.insert(v2.begin(), boost::next(v2.begin(), 100));
-    v2.insert(v1.begin(), boost::next(v1.begin(), 100));
+    v1.insert(v2.begin(), test::next(v2.begin(), 100));
+    v2.insert(v1.begin(), test::next(v1.begin(), 100));
 
     X1 x1(v1.begin(), v1.end(), 0, test::hash(hash_equal1),
       test::equal_to(hash_equal1));
@@ -207,8 +206,8 @@ namespace merge_tests {
 
     test::random_values<X1> v1(1000, generator);
     test::random_values<X2> v2(1000, generator);
-    v1.insert(v2.begin(), boost::next(v2.begin(), 100));
-    v2.insert(v1.begin(), boost::next(v1.begin(), 100));
+    v1.insert(v2.begin(), test::next(v2.begin(), 100));
+    v2.insert(v1.begin(), test::next(v1.begin(), 100));
 
     X1 x1(v1.begin(), v1.end(), 0, test::hash(hash_equal1),
       test::equal_to(hash_equal1));

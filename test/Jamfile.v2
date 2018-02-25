@@ -63,6 +63,7 @@ test-suite unordered
         [ run unordered/equality_tests.cpp ]
         [ run unordered/swap_tests.cpp ]
         [ run unordered/detail_tests.cpp ]
+        [ run unordered/deduction_tests.cpp ]
 
         [ run unordered/compile_set.cpp : :
             : <define>BOOST_UNORDERED_USE_MOVE

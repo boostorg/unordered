@@ -29,8 +29,8 @@ namespace bucket_tests {
   {
     test::check_instances check_;
 
-    typedef BOOST_DEDUCED_TYPENAME X::size_type size_type;
-    typedef BOOST_DEDUCED_TYPENAME X::const_local_iterator const_local_iterator;
+    typedef typename X::size_type size_type;
+    typedef typename X::const_local_iterator const_local_iterator;
     test::random_values<X> v(1000, generator);
 
     X x(v.begin(), v.end());
@@ -41,9 +41,8 @@ namespace bucket_tests {
                                      << "<=" << x.max_bucket_count() << "\n";
     }
 
-    for (BOOST_DEDUCED_TYPENAME test::random_values<X>::const_iterator
-           it = v.begin(),
-           end = v.end();
+    for (typename test::random_values<X>::const_iterator it = v.begin(),
+                                                         end = v.end();
          it != end; ++it) {
       size_type bucket = x.bucket(test::get_key<X>(*it));
 

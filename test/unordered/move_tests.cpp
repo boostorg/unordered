@@ -43,8 +43,8 @@ namespace move_tests {
 
   template <class T>
   T create(test::random_values<T> const& v, test::object_count& count,
-    BOOST_DEDUCED_TYPENAME T::hasher hf, BOOST_DEDUCED_TYPENAME T::key_equal eq,
-    BOOST_DEDUCED_TYPENAME T::allocator_type al, float mlf)
+    typename T::hasher hf, typename T::key_equal eq,
+    typename T::allocator_type al, float mlf)
   {
     T x(0, hf, eq, al);
     x.max_load_factor(mlf);
@@ -56,9 +56,9 @@ namespace move_tests {
   template <class T>
   void move_construct_tests1(T* ptr, test::random_generator const& generator)
   {
-    BOOST_DEDUCED_TYPENAME T::hasher hf;
-    BOOST_DEDUCED_TYPENAME T::key_equal eq;
-    BOOST_DEDUCED_TYPENAME T::allocator_type al;
+    typename T::hasher hf;
+    typename T::key_equal eq;
+    typename T::allocator_type al;
 
     {
       test::check_instances check_;
@@ -107,10 +107,10 @@ namespace move_tests {
   template <class T>
   void move_construct_tests2(T*, test::random_generator const& generator)
   {
-    BOOST_DEDUCED_TYPENAME T::hasher hf(1);
-    BOOST_DEDUCED_TYPENAME T::key_equal eq(1);
-    BOOST_DEDUCED_TYPENAME T::allocator_type al(1);
-    BOOST_DEDUCED_TYPENAME T::allocator_type al2(2);
+    typename T::hasher hf(1);
+    typename T::key_equal eq(1);
+    typename T::allocator_type al(1);
+    typename T::allocator_type al2(2);
 
     test::object_count count;
 
@@ -180,11 +180,11 @@ namespace move_tests {
   template <class T>
   void move_assign_tests2(T*, test::random_generator const& generator)
   {
-    BOOST_DEDUCED_TYPENAME T::hasher hf(1);
-    BOOST_DEDUCED_TYPENAME T::key_equal eq(1);
-    BOOST_DEDUCED_TYPENAME T::allocator_type al1(1);
-    BOOST_DEDUCED_TYPENAME T::allocator_type al2(2);
-    typedef BOOST_DEDUCED_TYPENAME T::allocator_type allocator_type;
+    typename T::hasher hf(1);
+    typename T::key_equal eq(1);
+    typename T::allocator_type al1(1);
+    typename T::allocator_type al2(2);
+    typedef typename T::allocator_type allocator_type;
 
     {
       test::random_values<T> v(500, generator);

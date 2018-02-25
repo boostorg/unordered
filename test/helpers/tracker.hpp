@@ -22,7 +22,7 @@
 namespace test {
   template <typename X> struct equals_to_compare
   {
-    typedef std::less<BOOST_DEDUCED_TYPENAME X::first_argument_type> type;
+    typedef std::less<typename X::first_argument_type> type;
   };
 
   template <> struct equals_to_compare<test::equal_to>
@@ -32,7 +32,7 @@ namespace test {
 
   template <class X1, class X2> void compare_range(X1 const& x1, X2 const& x2)
   {
-    typedef test::list<BOOST_DEDUCED_TYPENAME X1::value_type> value_list;
+    typedef test::list<typename X1::value_type> value_list;
     value_list values1(x1.begin(), x1.end());
     value_list values2(x2.begin(), x2.end());
     values1.sort();
@@ -60,44 +60,38 @@ namespace test {
 
   template <typename X> struct ordered_base<X, true, true>
   {
-    typedef std::set<BOOST_DEDUCED_TYPENAME X::value_type,
-      BOOST_DEDUCED_TYPENAME
-        equals_to_compare<BOOST_DEDUCED_TYPENAME X::key_equal>::type>
+    typedef std::set<typename X::value_type,
+      typename equals_to_compare<typename X::key_equal>::type>
       type;
   };
 
   template <typename X> struct ordered_base<X, true, false>
   {
-    typedef std::multiset<BOOST_DEDUCED_TYPENAME X::value_type,
-      BOOST_DEDUCED_TYPENAME
-        equals_to_compare<BOOST_DEDUCED_TYPENAME X::key_equal>::type>
+    typedef std::multiset<typename X::value_type,
+      typename equals_to_compare<typename X::key_equal>::type>
       type;
   };
 
   template <typename X> struct ordered_base<X, false, true>
   {
-    typedef std::map<BOOST_DEDUCED_TYPENAME X::key_type,
-      BOOST_DEDUCED_TYPENAME X::mapped_type,
-      BOOST_DEDUCED_TYPENAME
-        equals_to_compare<BOOST_DEDUCED_TYPENAME X::key_equal>::type>
+    typedef std::map<typename X::key_type, typename X::mapped_type,
+      typename equals_to_compare<typename X::key_equal>::type>
       type;
   };
 
   template <typename X> struct ordered_base<X, false, false>
   {
-    typedef std::multimap<BOOST_DEDUCED_TYPENAME X::key_type,
-      BOOST_DEDUCED_TYPENAME X::mapped_type,
-      BOOST_DEDUCED_TYPENAME
-        equals_to_compare<BOOST_DEDUCED_TYPENAME X::key_equal>::type>
+    typedef std::multimap<typename X::key_type, typename X::mapped_type,
+      typename equals_to_compare<typename X::key_equal>::type>
       type;
   };
 
   template <class X> class ordered : public ordered_base<X>::type
   {
-    typedef BOOST_DEDUCED_TYPENAME ordered_base<X>::type base;
+    typedef typename ordered_base<X>::type base;
 
   public:
-    typedef BOOST_DEDUCED_TYPENAME base::key_compare key_compare;
+    typedef typename base::key_compare key_compare;
 
     ordered() : base() {}
 
@@ -105,12 +99,10 @@ namespace test {
 
     void compare(X const& x) { compare_range(x, *this); }
 
-    void compare_key(
-      X const& x, BOOST_DEDUCED_TYPENAME X::value_type const& val)
+    void compare_key(X const& x, typename X::value_type const& val)
     {
       compare_pairs(x.equal_range(get_key<X>(val)),
-        this->equal_range(get_key<X>(val)),
-        (BOOST_DEDUCED_TYPENAME X::value_type*)0);
+        this->equal_range(get_key<X>(val)), (typename X::value_type*)0);
     }
 
     template <class It> void insert_range(It b, It e)
@@ -123,10 +115,9 @@ namespace test {
   };
 
   template <class Equals>
-  BOOST_DEDUCED_TYPENAME equals_to_compare<Equals>::type create_compare(
-    Equals const&)
+  typename equals_to_compare<Equals>::type create_compare(Equals const&)
   {
-    BOOST_DEDUCED_TYPENAME equals_to_compare<Equals>::type x;
+    typename equals_to_compare<Equals>::type x;
     return x;
   }
 

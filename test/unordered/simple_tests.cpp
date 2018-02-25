@@ -73,7 +73,7 @@ template <class X> void simple_test(X const& a)
   }
 
   {
-    BOOST_TEST(a.size() == static_cast<BOOST_DEDUCED_TYPENAME X::size_type>(
+    BOOST_TEST(a.size() == static_cast<typename X::size_type>(
                              std::distance(a.begin(), a.end())));
   }
 
