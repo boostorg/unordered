@@ -965,7 +965,7 @@ namespace boost {
 #endif
 
 ////////////////////////////////////////////////////////////////////////////
-// TRAITS TYPE DEDETION MECHANISM
+// TRAITS TYPE DETECTION MECHANISM
 //
 // Used to implement traits that use a type if present, or a
 // default otherwise.
