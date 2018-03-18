@@ -70,7 +70,7 @@ before_script:
         echo "Downloading ${download_url}"
         mkdir $HOME/download
         cd $HOME/download
-        python ${TRAVIS_BUILD_DIR}/build/download-boost-snapshot.py $snapshot
+        python ${TRAVIS_BUILD_DIR}/ci/download-boost-snapshot.py $snapshot
         mv * ${BOOST_ROOT}
     - rm -r ${BOOST_ROOT}/boost/unordered
     - cd ${BOOST_ROOT}/tools/build

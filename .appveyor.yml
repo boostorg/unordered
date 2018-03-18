@@ -18,7 +18,7 @@ environment:
 install:
   - set BOOST_ROOT=c:\projects\boost
   - cd c:\projects\
-  - python %APPVEYOR_BUILD_FOLDER%\build\download-boost-snapshot.py master
+  - python %APPVEYOR_BUILD_FOLDER%\ci\download-boost-snapshot.py master
   - rd /s /q %BOOST_ROOT%\boost\unordered
   - cd %BOOST_ROOT%\tools\build
   - cmd /c bootstrap
