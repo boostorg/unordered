@@ -43,8 +43,8 @@ before_install:
     - if [ -n $enable_coverage ]; then pip install --user cpp-coveralls; fi
 
 before_script:
-    - export BOOST_VERSION=1.66.0
-    - export BOOST_FILENAME=boost_1_66_0
+    - export BOOST_VERSION=1.67.0
+    - export BOOST_FILENAME=boost_1_67_0
     - export BOOST_ROOT=${HOME}/boost
     - cd ${TRAVIS_BUILD_DIR}
     - touch Jamroot.jam
