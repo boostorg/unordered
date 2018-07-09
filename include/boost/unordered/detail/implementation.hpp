@@ -353,7 +353,7 @@ namespace boost {
 
       template <class I>
       inline std::size_t insert_size(I i, I j,
-        typename boost::unordered::detail::enable_if_forward<I, void*>::type =
+        typename boost::unordered::detail::enable_if_forward<I, int>::type =
           0)
       {
         return static_cast<std::size_t>(std::distance(i, j));
@@ -361,7 +361,7 @@ namespace boost {
 
       template <class I>
       inline std::size_t insert_size(I, I,
-        typename boost::unordered::detail::disable_if_forward<I, void*>::type =
+        typename boost::unordered::detail::disable_if_forward<I, int>::type =
           0)
       {
         return 1;
@@ -1191,7 +1191,7 @@ namespace boost {
           typename boost::enable_if_c<
             boost::unordered::detail::has_select_on_container_copy_construction<
               Alloc>::value,
-            void*>::type = 0)
+            int>::type = 0)
         {
           return rhs.select_on_container_copy_construction();
         }
@@ -1202,7 +1202,7 @@ namespace boost {
           typename boost::disable_if_c<
             boost::unordered::detail::has_select_on_container_copy_construction<
               Alloc>::value,
-            void*>::type = 0)
+            int>::type = 0)
         {
           return rhs;
         }
@@ -1210,7 +1210,7 @@ namespace boost {
         template <typename SizeType, typename Alloc>
         inline SizeType call_max_size(const Alloc& a,
           typename boost::enable_if_c<
-            boost::unordered::detail::has_max_size<Alloc>::value, void*>::type =
+            boost::unordered::detail::has_max_size<Alloc>::value, int>::type =
             0)
         {
           return a.max_size();
@@ -1219,7 +1219,7 @@ namespace boost {
         template <typename SizeType, typename Alloc>
         inline SizeType call_max_size(const Alloc&,
           typename boost::disable_if_c<
-            boost::unordered::detail::has_max_size<Alloc>::value, void*>::type =
+            boost::unordered::detail::has_max_size<Alloc>::value, int>::type =
             0)
         {
           return (std::numeric_limits<SizeType>::max)();
@@ -1366,7 +1366,7 @@ namespace boost {
           typename boost::enable_if_c<
             boost::unordered::detail::has_construct<Alloc, T>::value &&
               boost::is_same<T, value_type>::value,
-            void*>::type = 0)
+            int>::type = 0)
         {
           a.construct(p, x);
         }
@@ -1376,7 +1376,7 @@ namespace boost {
           typename boost::disable_if_c<
             boost::unordered::detail::has_construct<Alloc, T>::value &&
               boost::is_same<T, value_type>::value,
-            void*>::type = 0)
+            int>::type = 0)
         {
           new (static_cast<void*>(p)) T(x);
         }
@@ -1386,7 +1386,7 @@ namespace boost {
           typename boost::enable_if_c<
             boost::unordered::detail::has_destroy<Alloc, T>::value &&
               boost::is_same<T, value_type>::value,
-            void*>::type = 0)
+            int>::type = 0)
         {
           a.destroy(p);
         }
@@ -1396,7 +1396,7 @@ namespace boost {
           typename boost::disable_if_c<
             boost::unordered::detail::has_destroy<Alloc, T>::value &&
               boost::is_same<T, value_type>::value,
-            void*>::type = 0)
+            int>::type = 0)
         {
           boost::unordered::detail::func::destroy(p);
         }
@@ -1899,7 +1899,7 @@ namespace boost {
           typename A1, typename A2>
         inline void construct_from_args(Alloc& alloc, std::pair<A, B>* address,
           boost::unordered::detail::emplace_args3<A0, A1, A2> const& args,
-          typename enable_if<use_piecewise<A0>, void*>::type = 0)
+          typename enable_if<use_piecewise<A0>, int>::type = 0)
         {
           boost::unordered::detail::func::construct_from_tuple(
             alloc, boost::addressof(address->first), args.a1);
@@ -4338,7 +4338,7 @@ namespace boost {
         // safety. Strong otherwise
         template <class I>
         void insert_range_equiv(I i, I j,
-          typename boost::unordered::detail::enable_if_forward<I, void*>::type =
+          typename boost::unordered::detail::enable_if_forward<I, int>::type =
             0)
         {
           if (i == j)
@@ -4363,7 +4363,7 @@ namespace boost {
         template <class I>
         void insert_range_equiv(I i, I j,
           typename boost::unordered::detail::disable_if_forward<I,
-            void*>::type = 0)
+            int>::type = 0)
         {
           for (; i != j; ++i) {
             emplace_equiv(boost::unordered::detail::func::construct_node(

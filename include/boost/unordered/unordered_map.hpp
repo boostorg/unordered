@@ -388,7 +388,7 @@ namespace boost {
       std::pair<iterator, bool> insert(BOOST_RV_REF(P2) obj,
         typename boost::enable_if_c<
           boost::is_constructible<value_type, BOOST_RV_REF(P2)>::value,
-          void*>::type = 0)
+          int>::type = 0)
       {
         return this->emplace(boost::forward<P2>(obj));
       }
@@ -407,7 +407,7 @@ namespace boost {
       iterator insert(const_iterator hint, BOOST_RV_REF(P2) obj,
         typename boost::enable_if_c<
           boost::is_constructible<value_type, BOOST_RV_REF(P2)>::value,
-          void*>::type = 0)
+          int>::type = 0)
       {
         return this->emplace_hint(hint, boost::forward<P2>(obj));
       }
@@ -1252,7 +1252,7 @@ namespace boost {
       iterator insert(BOOST_RV_REF(P2) obj,
         typename boost::enable_if_c<
           boost::is_constructible<value_type, BOOST_RV_REF(P2)>::value,
-          void*>::type = 0)
+          int>::type = 0)
       {
         return this->emplace(boost::forward<P2>(obj));
       }
@@ -1271,7 +1271,7 @@ namespace boost {
       iterator insert(const_iterator hint, BOOST_RV_REF(P2) obj,
         typename boost::enable_if_c<
           boost::is_constructible<value_type, BOOST_RV_REF(P2)>::value,
-          void*>::type = 0)
+          int>::type = 0)
       {
         return this->emplace_hint(hint, boost::forward<P2>(obj));
       }
