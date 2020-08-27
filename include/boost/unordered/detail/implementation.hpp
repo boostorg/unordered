@@ -2936,6 +2936,8 @@ namespace boost {
         typedef typename node_allocator_traits::pointer node_pointer;
         typedef
           typename node_allocator_traits::const_pointer const_node_pointer;
+        typedef
+          typename node_allocator_traits::size_type node_allocator_size_type;
         typedef typename bucket_allocator_traits::pointer bucket_pointer;
         typedef boost::unordered::detail::node_constructor<node_allocator>
           node_constructor;
@@ -2948,10 +2950,10 @@ namespace boost {
 
         boost::unordered::detail::compressed<bucket_allocator, node_allocator>
           allocators_;
-        std::size_t bucket_count_;
-        std::size_t size_;
+        node_allocator_size_type bucket_count_;
+        node_allocator_size_type size_;
         float mlf_;
-        std::size_t max_load_;
+        node_allocator_size_type max_load_;
         bucket_pointer buckets_;
 
         ////////////////////////////////////////////////////////////////////////
@@ -4540,10 +4542,10 @@ namespace boost {
       inline void table<Types>::reserve_for_insert(std::size_t size)
       {
         if (!buckets_) {
-          create_buckets((std::max)(bucket_count_, min_buckets_for_size(size)));
+          create_buckets((std::max)(static_cast<std::size_t>(bucket_count_), min_buckets_for_size(size)));
         } else if (size > max_load_) {
           std::size_t num_buckets =
-            min_buckets_for_size((std::max)(size, size_ + (size_ >> 1)));
+            min_buckets_for_size((std::max)(size, static_cast<std::size_t>(size_ + (size_ >> 1))));
 
           if (num_buckets != bucket_count_)
             this->rehash_impl(num_buckets);
