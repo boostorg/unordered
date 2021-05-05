@@ -40,9 +40,6 @@ matrix:
             CXXSTD=03
 
 before_install:
-    - sudo apt-get install python3
-    - if [ -n $enable_coverage ]; then pip install --user cpp-coveralls; fi
-    - if [ -n $enable_coverage ]; then pip install --user cpp-coveralls; fi
 
 before_script:
     - export BOOST_VERSION=1.67.0
@@ -81,7 +78,6 @@ before_script:
     - ./b2 install --prefix=$HOME/opt
 
 after_success:
-    if [ -n $enable_coverage ]; then coveralls -r ${TRAVIS_BUILD_DIR} -b ${TRAVIS_BUILD_DIR}/test --gcov-options '\-lp' --include include/boost/unordered/ ; fi
 
 script:
     - cd ${TRAVIS_BUILD_DIR}/test
