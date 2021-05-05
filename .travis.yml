@@ -32,11 +32,12 @@ matrix:
             label="clang C++11/17";
             user_config="using clang : : clang++ -fsanitize=address ;"
             CXXSTD=11,17
-        # sanitized=address not available for 32-bit clang on travis.
+        # sanitized=address not available for 32-bit clang on travis
+        # prune source-location since log-output got to big and led to error
       - compiler: clang
         env: |
             label="clang 32 bit";
-            user_config="using clang : : clang++ -m32 ;"
+            user_config="using clang : : clang++ -m32 -fno-show-column -fno-show-source-location;"
             CXXSTD=03
 
 before_install:
