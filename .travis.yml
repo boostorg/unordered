@@ -41,6 +41,8 @@ matrix:
             CXXSTD=03
 
 before_install:
+    - sudo apt-get install python3
+    - if [ -n $enable_coverage ]; then pip install --user cpp-coveralls; fi
     - if [ -n $enable_coverage ]; then pip install --user cpp-coveralls; fi
 
 before_script:
