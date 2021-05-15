@@ -30,7 +30,7 @@ namespace test {
     typedef test::less type;
   };
 
-  template <typename T> struct equals_to_compare<std::equal_to<T>>
+  template <typename T> struct equals_to_compare< std::equal_to<T> >
   {
     typedef std::less<T> type;
   };
