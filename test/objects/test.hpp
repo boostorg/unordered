@@ -186,12 +186,12 @@ namespace test {
   // Note: This is a deliberately bad hash function.
   class hash
   {
-    std::size_t type_;
+    int type_;
 
   public:
     hash() : type_(0) {}
 
-    explicit hash(std::size_t t) : type_(t) {}
+    explicit hash(int t) : type_(t) {}
 
     std::size_t operator()(object const& x) const
     {
@@ -204,7 +204,7 @@ namespace test {
         result = x.tag2_;
         break;
       default:
-        result = x.tag1_ + x.tag2_;
+        result = static_cast<std::size_t>(x.tag1_) + static_cast<std::size_t>(x.tag2_);
       }
       return static_cast<std::size_t>(result);
     }
@@ -220,12 +220,12 @@ namespace test {
         result = x.tag2_;
         break;
       default:
-        result = x.tag1_ + x.tag2_;
+        result = static_cast<std::size_t>(x.tag1_) + static_cast<std::size_t>(x.tag2_);
       }
       return static_cast<std::size_t>(result);
     }
 
-    std::size_t operator()(std::size_t x) const
+    std::size_t operator()(int x) const
     {
       std::size_t result;
       switch (type_) {
@@ -233,12 +233,12 @@ namespace test {
         result = x;
         break;
       case 2:
-        result = x * 7;
+        result = static_cast<std::size_t>(x) * 7;
         break;
       default:
-        result = x * 256;
+        result = static_cast<std::size_t>(x) * 256;
       }
-      return result;
+      return static_cast<std::size_t>(result);
     }
 
     friend bool operator==(hash const& x1, hash const& x2)
