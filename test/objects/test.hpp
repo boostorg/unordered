@@ -186,12 +186,12 @@ namespace test {
   // Note: This is a deliberately bad hash function.
   class hash
   {
-    int type_;
+    std::size_t type_;
 
   public:
     hash() : type_(0) {}
 
-    explicit hash(int t) : type_(t) {}
+    explicit hash(std::size_t t) : type_(t) {}
 
     std::size_t operator()(object const& x) const
     {
@@ -225,7 +225,7 @@ namespace test {
       return static_cast<std::size_t>(result);
     }
 
-    std::size_t operator()(int x) const
+    std::size_t operator()(std::size_t x) const
     {
       int result;
       switch (type_) {
