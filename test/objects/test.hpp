@@ -195,7 +195,7 @@ namespace test {
 
     std::size_t operator()(object const& x) const
     {
-      int result;
+      std::size_t result;
       switch (type_) {
       case 1:
         result = x.tag1_;
@@ -211,7 +211,7 @@ namespace test {
 
     std::size_t operator()(movable const& x) const
     {
-      int result;
+      std::size_t result;
       switch (type_) {
       case 1:
         result = x.tag1_;
@@ -227,7 +227,7 @@ namespace test {
 
     std::size_t operator()(std::size_t x) const
     {
-      int result;
+      std::size_t result;
       switch (type_) {
       case 1:
         result = x;
@@ -238,7 +238,7 @@ namespace test {
       default:
         result = x * 256;
       }
-      return static_cast<std::size_t>(result);
+      return result;
     }
 
     friend bool operator==(hash const& x1, hash const& x2)
