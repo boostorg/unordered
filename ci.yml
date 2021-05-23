@@ -138,7 +138,7 @@ jobs:
           BOOST_BRANCH=develop && [ "$REF" == "master" ] && BOOST_BRANCH=master || true
           echo BOOST_BRANCH: $BOOST_BRANCH
           cd ..
-          git clone -b $BOOST_BRANCH --depth 1 https://github.com/boostorg/boost.git boost-root
+          git clone https://github.com/tobias-loew/boost-ci.git boost-root --depth 1 -b fix_stdlib
           cd boost-root
           cp -r $GITHUB_WORKSPACE/* libs/$LIBRARY
           git submodule update --init tools/boostdep
@@ -193,7 +193,7 @@ jobs:
           for /f %%i in ("%GITHUB_BASE_REF%") do if "%%~nxi" == "master" set BOOST_BRANCH=master
           echo BOOST_BRANCH: %BOOST_BRANCH%
           cd ..
-          git clone -b %BOOST_BRANCH% --depth 1 https://github.com/boostorg/boost.git boost-root
+          git clone https://github.com/tobias-loew/boost-ci.git boost-root --depth 1 -b fix_stdlib
           cd boost-root
           xcopy /s /e /q %GITHUB_WORKSPACE% libs\%LIBRARY%\
           git submodule update --init tools/boostdep
