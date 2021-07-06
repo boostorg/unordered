@@ -195,7 +195,7 @@ namespace test {
 
     std::size_t operator()(object const& x) const
     {
-      int result;
+      std::size_t result;
       switch (type_) {
       case 1:
         result = x.tag1_;
@@ -204,14 +204,14 @@ namespace test {
         result = x.tag2_;
         break;
       default:
-        result = x.tag1_ + x.tag2_;
+        result = static_cast<std::size_t>(x.tag1_) + static_cast<std::size_t>(x.tag2_);
       }
       return static_cast<std::size_t>(result);
     }
 
     std::size_t operator()(movable const& x) const
     {
-      int result;
+      std::size_t result;
       switch (type_) {
       case 1:
         result = x.tag1_;
@@ -220,23 +220,23 @@ namespace test {
         result = x.tag2_;
         break;
       default:
-        result = x.tag1_ + x.tag2_;
+        result = static_cast<std::size_t>(x.tag1_) + static_cast<std::size_t>(x.tag2_);
       }
       return static_cast<std::size_t>(result);
     }
 
     std::size_t operator()(int x) const
     {
-      int result;
+      std::size_t result;
       switch (type_) {
       case 1:
         result = x;
         break;
       case 2:
-        result = x * 7;
+        result = static_cast<std::size_t>(x) * 7;
         break;
       default:
-        result = x * 256;
+        result = static_cast<std::size_t>(x) * 256;
       }
       return static_cast<std::size_t>(result);
     }

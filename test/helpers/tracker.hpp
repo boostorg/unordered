@@ -30,6 +30,11 @@ namespace test {
     typedef test::less type;
   };
 
+  template <typename T> struct equals_to_compare< std::equal_to<T> >
+  {
+    typedef std::less<T> type;
+  };
+
   template <class X1, class X2> void compare_range(X1 const& x1, X2 const& x2)
   {
     typedef test::list<typename X1::value_type> value_list;
