@@ -215,7 +215,7 @@ namespace emplace_tests {
     BOOST_TEST(!r2.second);
     BOOST_TEST(i1 == r2.first);
     // The container has to construct an object in order to check
-    // whether it can emplace, so there's an extra cosntruction
+    // whether it can emplace, so there's an extra construction
     // here.
     BOOST_TEST_EQ(check_.instances(), 6);
     BOOST_TEST_EQ(check_.constructions(), 7);
