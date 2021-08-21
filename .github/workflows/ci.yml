@@ -45,6 +45,9 @@ jobs:
             install: g++-8
           - toolset: gcc-9
             cxxstd: "03,11,14,17,2a"
+            os: ubuntu-18.04
+          - toolset: gcc-9
+            cxxstd: "03,11,14,17,2a"
             os: ubuntu-20.04
           - toolset: gcc-10
             cxxstd: "03,11,14,17,2a"
