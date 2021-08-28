@@ -6,27 +6,44 @@ version: 1.0.{build}-{branch}
 
 shallow_clone: true
 
+branches:
+  only:
+    - master
+    - develop
+    - /feature\/.*/
+
 environment:
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-      TOOLSET: msvc-10.0,msvc-11.0,msvc-12.0,msvc-14.0
+      TOOLSET: msvc-9.0,msvc-10.0,msvc-11.0
+      ADDRMD: 32
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      TOOLSET: msvc-12.0,msvc-14.0
+      ADDRMD: 32,64
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-      TOOLSET: msvc-14.1
+      TOOLSET: msvc-14.1,clang-win
+      CXXSTD: 14,17
+      ADDRMD: 32,64
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       TOOLSET: msvc-14.2
+      CXXSTD: 14,17,latest
+      ADDRMD: 32,64
 
 install:
-  - set BOOST_ROOT=c:\projects\boost
-  - cd c:\projects\
-  - python %APPVEYOR_BUILD_FOLDER%\ci\download-boost-snapshot.py master
-  - rd /s /q %BOOST_ROOT%\boost\unordered
-  - cd %BOOST_ROOT%\tools\build
+  - set BOOST_BRANCH=develop
+  - if "%APPVEYOR_REPO_BRANCH%" == "master" set BOOST_BRANCH=master
+  - cd ..
+  - git clone -b %BOOST_BRANCH% --depth 1 https://github.com/boostorg/boost.git boost-root
+  - cd boost-root
+  - git submodule update --init tools/boostdep
+  - xcopy /s /e /q %APPVEYOR_BUILD_FOLDER% libs\unordered\
+  - python tools/boostdep/depinst/depinst.py unordered
   - cmd /c bootstrap
-  - cd %APPVEYOR_BUILD_FOLDER%
-  - echo. 2>Jamroot.jam
+  - b2 -d0 headers
 
 build: off
 
 test_script:
-  - cd %APPVEYOR_BUILD_FOLDER%\test
-  - cmd /c %BOOST_ROOT%\tools\build\b2 -j 3 toolset=%TOOLSET% include=%APPVEYOR_BUILD_FOLDER%\include include=%BOOST_ROOT%
+  - if not "%CXXSTD%" == "" set CXXSTD=cxxstd=%CXXSTD%
+  - if not "%ADDRMD%" == "" set ADDRMD=address-model=%ADDRMD%
+  - b2 -j3 libs/unordered/test toolset=%TOOLSET% %CXXSTD% %ADDRMD% variant=debug,release
