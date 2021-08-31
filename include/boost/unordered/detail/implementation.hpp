@@ -1145,7 +1145,7 @@ namespace boost {
       template <typename T, typename ValueType, typename... Args>
       BOOST_UNORDERED_HAS_FUNCTION(construct, U,
         (boost::unordered::detail::make<ValueType*>(),
-          boost::unordered::detail::make<Args const>()...),
+          std::declval<Args>()...),
         2);
 
 #else
