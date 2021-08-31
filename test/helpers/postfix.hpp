@@ -5,6 +5,6 @@
 
 // Include this after the boost headers, but before other test headers.
 
-#if defined(__GNUC__)
+#if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
