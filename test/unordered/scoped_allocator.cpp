@@ -13,6 +13,7 @@
 #include "../helpers/test.hpp"
 
 #include <boost/config.hpp>
+#include <boost/cstdint.hpp>
 
 #include <boost/container/scoped_allocator.hpp>
 #include <boost/container/uses_allocator.hpp>
@@ -24,8 +25,6 @@
 
 #include <utility>
 #include <vector>
-
-#include <stdint.h>
 
 // This test is based on a user-submitted issue found here:
 // https://github.com/boostorg/unordered/issues/22
@@ -39,16 +38,17 @@ template <typename T> struct node_alloc
     type;
 };
 
-typedef std::vector<uint64_t, node_alloc<uint64_t>::type> vector_type;
+typedef std::vector<boost::uint64_t, node_alloc<boost::uint64_t>::type>
+  vector_type;
 
-typedef std::pair<uint64_t, vector_type> pair_type;
+typedef std::pair<boost::uint64_t, vector_type> pair_type;
 
 typedef boost::container::scoped_allocator_adaptor<node_alloc<pair_type>::type,
-  node_alloc<uint64_t>::type>
+  node_alloc<boost::uint64_t>::type>
   allocator_type;
 
-typedef boost::unordered_map<const uint64_t, vector_type, boost::hash<uint64_t>,
-  std::equal_to<uint64_t>, allocator_type>
+typedef boost::unordered_map<const boost::uint64_t, vector_type,
+  boost::hash<boost::uint64_t>, std::equal_to<boost::uint64_t>, allocator_type>
   map_type;
 
 namespace scoped_allocator {
@@ -60,7 +60,7 @@ namespace scoped_allocator {
       bi::create_only, "unordered-shared-mem-test", 65536);
 
     allocator_type alloc(node_alloc<pair_type>::type(s.get_segment_manager()),
-      node_alloc<uint64_t>::type(s.get_segment_manager()));
+      node_alloc<boost::uint64_t>::type(s.get_segment_manager()));
 
     map_type map(alloc);
 
