@@ -8,6 +8,7 @@ import testing ;
 project unordered-test/unordered
     : requirements
         <warnings>all
+        <library>/boost/filesystem//boost_filesystem
         <toolset>intel:<warnings>on
         # Would be nice to define -Wundef, but I'm getting warnings from
         # Boost.Preprocessor on trunk.

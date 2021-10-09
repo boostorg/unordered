@@ -22,9 +22,12 @@
 
 #include <boost/core/ignore_unused.hpp>
 
+#include <boost/filesystem.hpp>
+
 #include <boost/interprocess/allocators/node_allocator.hpp>
 #include <boost/interprocess/managed_shared_memory.hpp>
 
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -61,9 +64,12 @@ typedef boost::unordered_map<const boost::uint64_t, vector_type,
   boost::hash<boost::uint64_t>, std::equal_to<boost::uint64_t>, allocator_type>
   map_type;
 
+std::string make_uuid() { return boost::filesystem::unique_path().string(); }
+
 UNORDERED_AUTO_TEST (scoped_allocator) {
-  bi::managed_shared_memory s(
-    bi::create_only, "unordered-shared-mem-test", 65536);
+  std::string uuid = make_uuid();
+
+  bi::managed_shared_memory s(bi::create_only, uuid.c_str(), 65536);
 
   allocator_type alloc(node_alloc<pair_type>::type(s.get_segment_manager()),
     node_alloc<boost::uint64_t>::type(s.get_segment_manager()));
@@ -76,7 +82,7 @@ UNORDERED_AUTO_TEST (scoped_allocator) {
 
   BOOST_TEST(map.size() == 10);
 
-  bi::shared_memory_object::remove("unordered-shared-mem-test");
+  bi::shared_memory_object::remove(uuid.c_str());
 }
 
 RUN_TESTS()
