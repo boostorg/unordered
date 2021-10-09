@@ -13,6 +13,8 @@
 #include "../helpers/test.hpp"
 
 #include <boost/config.hpp>
+#include <boost/config/pragma_message.hpp>
+
 #include <boost/cstdint.hpp>
 
 #include <boost/container/scoped_allocator.hpp>
@@ -29,6 +31,14 @@
 // This test is based on a user-submitted issue found here:
 // https://github.com/boostorg/unordered/issues/22
 //
+
+#if BOOST_CXX_VERSION <= 199711L
+
+BOOST_PRAGMA_MESSAGE(
+  "scoped allocator adaptor tests only work under C++11 and above")
+int main() {}
+
+#else
 
 namespace bi = boost::interprocess;
 
@@ -52,7 +62,6 @@ typedef boost::unordered_map<const boost::uint64_t, vector_type,
   map_type;
 
 UNORDERED_AUTO_TEST (scoped_allocator) {
-#if BOOST_CXX_VERSION > 199711L
   bi::managed_shared_memory s(
     bi::create_only, "unordered-shared-mem-test", 65536);
 
@@ -68,7 +77,8 @@ UNORDERED_AUTO_TEST (scoped_allocator) {
   BOOST_TEST(map.size() == 10);
 
   bi::shared_memory_object::remove("unordered-shared-mem-test");
-#endif
 }
 
 RUN_TESTS()
+
+#endif
