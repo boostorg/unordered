@@ -8,7 +8,6 @@ import testing ;
 project unordered-test/unordered
     : requirements
         <warnings>all
-        <library>/boost/filesystem//boost_filesystem
         <toolset>intel:<warnings>on
         # Would be nice to define -Wundef, but I'm getting warnings from
         # Boost.Preprocessor on trunk.
@@ -65,7 +64,7 @@ test-suite unordered
         [ run unordered/swap_tests.cpp ]
         [ run unordered/detail_tests.cpp ]
         [ run unordered/deduction_tests.cpp ]
-        [ run unordered/scoped_allocator.cpp ]
+        [ run unordered/scoped_allocator.cpp /boost/filesystem//boost_filesystem ]
 
         [ run unordered/compile_set.cpp : :
             : <define>BOOST_UNORDERED_USE_MOVE
