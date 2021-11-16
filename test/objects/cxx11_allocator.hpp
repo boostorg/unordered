@@ -180,6 +180,23 @@ namespace test {
 
     ~cxx11_allocator_base() { detail::tracker.allocator_unref(); }
 
+    cxx11_allocator_base& operator=(cxx11_allocator_base const& other)
+    {
+      tag_ = other.tag_;
+      selected_ = other.selected_;
+      detail::tracker.allocator_ref();
+      return *this;
+    }
+
+    cxx11_allocator_base& operator=(cxx11_allocator_base&& other)
+    {
+      tag_ = other.tag_;
+      selected_ = other.selected_;
+      other.tag_ = -1;
+      other.selected_ = -1;
+      return *this;
+    }
+
     pointer address(reference r) { return pointer(&r); }
 
     const_pointer address(const_reference r) { return const_pointer(&r); }
@@ -241,11 +258,11 @@ namespace test {
   template <typename T, typename Flags>
   struct cxx11_allocator<T, Flags,
     typename boost::disable_if_c<Flags::is_select_on_copy>::type>
-    : public cxx11_allocator_base<T>,
-      public swap_allocator_base<Flags>,
-      public assign_allocator_base<Flags>,
-      public move_allocator_base<Flags>,
-      Flags
+      : public cxx11_allocator_base<T>,
+        public swap_allocator_base<Flags>,
+        public assign_allocator_base<Flags>,
+        public move_allocator_base<Flags>,
+        Flags
   {
 #if BOOST_WORKAROUND(BOOST_GCC_VERSION, < 402000)
     template <typename U> struct rebind
@@ -264,6 +281,9 @@ namespace test {
 
     cxx11_allocator(cxx11_allocator const& x) : cxx11_allocator_base<T>(x) {}
 
+    cxx11_allocator& operator=(cxx11_allocator const& other) = default;
+    cxx11_allocator& operator=(cxx11_allocator&& other) = default;
+
     // When not propagating swap, allocators are always equal
     // to avoid undefined behaviour.
     bool operator==(cxx11_allocator const& x) const
@@ -277,11 +297,11 @@ namespace test {
   template <typename T, typename Flags>
   struct cxx11_allocator<T, Flags,
     typename boost::enable_if_c<Flags::is_select_on_copy>::type>
-    : public cxx11_allocator_base<T>,
-      public swap_allocator_base<Flags>,
-      public assign_allocator_base<Flags>,
-      public move_allocator_base<Flags>,
-      Flags
+      : public cxx11_allocator_base<T>,
+        public swap_allocator_base<Flags>,
+        public assign_allocator_base<Flags>,
+        public move_allocator_base<Flags>,
+        Flags
   {
     cxx11_allocator select_on_container_copy_construction() const
     {
@@ -306,6 +326,9 @@ namespace test {
     }
 
     cxx11_allocator(cxx11_allocator const& x) : cxx11_allocator_base<T>(x) {}
+
+    cxx11_allocator& operator=(cxx11_allocator const& other) = default;
+    cxx11_allocator& operator=(cxx11_allocator&& other) = default;
 
     // When not propagating swap, allocators are always equal
     // to avoid undefined behaviour.
