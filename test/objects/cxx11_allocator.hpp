@@ -178,7 +178,23 @@ namespace test {
       detail::tracker.allocator_ref();
     }
 
-    ~cxx11_allocator_base() { detail::tracker.allocator_unref(); }
+#if defined(BOOST_HAS_RVALUE_REFS)
+    cxx11_allocator_base(cxx11_allocator_base&& x)
+        : tag_(x.tag_), selected_(x.selected_)
+    {
+      x.tag_ = -1;
+      x.selected_ = -1;
+    }
+#endif
+
+    ~cxx11_allocator_base()
+    {
+      if (tag_ < 0 && selected_ < 0) {
+        return;
+      }
+
+      detail::tracker.allocator_unref();
+    }
 
     cxx11_allocator_base& operator=(cxx11_allocator_base const& other)
     {
@@ -188,6 +204,7 @@ namespace test {
       return *this;
     }
 
+#if defined(BOOST_HAS_RVALUE_REFS)
     cxx11_allocator_base& operator=(cxx11_allocator_base&& other)
     {
       tag_ = other.tag_;
@@ -196,6 +213,7 @@ namespace test {
       other.selected_ = -1;
       return *this;
     }
+#endif
 
     pointer address(reference r) { return pointer(&r); }
 
@@ -280,9 +298,31 @@ namespace test {
     }
 
     cxx11_allocator(cxx11_allocator const& x) : cxx11_allocator_base<T>(x) {}
+#if defined(BOOST_HAS_RVALUE_REFS)
+    cxx11_allocator(cxx11_allocator&& x) : cxx11_allocator_base<T>(std::move(x))
+    {
+    }
+#endif
 
-    cxx11_allocator& operator=(cxx11_allocator const& other) = default;
-    cxx11_allocator& operator=(cxx11_allocator&& other) = default;
+    cxx11_allocator& operator=(cxx11_allocator const& other)
+    {
+      static_cast<cxx11_allocator_base<T>&>(*this) =
+        static_cast<cxx11_allocator_base<T> const&>(other);
+
+      return *this;
+    }
+
+#if defined(BOOST_HAS_RVALUE_REFS)
+    cxx11_allocator& operator=(cxx11_allocator&& other)
+    {
+      {
+        static_cast<cxx11_allocator_base<T>&>(*this) =
+          std::move(static_cast<cxx11_allocator_base<T>&>(other));
+
+        return *this;
+      }
+    }
+#endif
 
     // When not propagating swap, allocators are always equal
     // to avoid undefined behaviour.
@@ -327,8 +367,31 @@ namespace test {
 
     cxx11_allocator(cxx11_allocator const& x) : cxx11_allocator_base<T>(x) {}
 
-    cxx11_allocator& operator=(cxx11_allocator const& other) = default;
-    cxx11_allocator& operator=(cxx11_allocator&& other) = default;
+#if defined(BOOST_HAS_RVALUE_REFS)
+    cxx11_allocator(cxx11_allocator&& x) : cxx11_allocator_base<T>(std::move(x))
+    {
+    }
+#endif
+
+    cxx11_allocator& operator=(cxx11_allocator const& other)
+    {
+      static_cast<cxx11_allocator_base<T>&>(*this) =
+        static_cast<cxx11_allocator_base<T> const&>(other);
+
+      return *this;
+    }
+
+#if defined(BOOST_HAS_RVALUE_REFS)
+    cxx11_allocator& operator=(cxx11_allocator&& other)
+    {
+      {
+        static_cast<cxx11_allocator_base<T>&>(*this) =
+          std::move(static_cast<cxx11_allocator_base<T>&>(other));
+
+        return *this;
+      }
+    }
+#endif
 
     // When not propagating swap, allocators are always equal
     // to avoid undefined behaviour.
