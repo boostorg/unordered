@@ -264,15 +264,15 @@ namespace boost {
 
       template <typename I, typename ReturnType>
       struct enable_if_forward
-        : boost::enable_if_c<boost::unordered::detail::is_forward<I>::value,
-            ReturnType>
+          : boost::enable_if_c<boost::unordered::detail::is_forward<I>::value,
+              ReturnType>
       {
       };
 
       template <typename I, typename ReturnType>
       struct disable_if_forward
-        : boost::disable_if_c<boost::unordered::detail::is_forward<I>::value,
-            ReturnType>
+          : boost::disable_if_c<boost::unordered::detail::is_forward<I>::value,
+              ReturnType>
       {
       };
     }
@@ -372,8 +372,8 @@ namespace boost {
         std::size_t num_buckets =
           boost::unordered::detail::default_bucket_count)
       {
-        return (std::max)(
-          boost::unordered::detail::insert_size(i, j), num_buckets);
+        return (
+          std::max)(boost::unordered::detail::insert_size(i, j), num_buckets);
       }
 
       //////////////////////////////////////////////////////////////////////////
@@ -402,17 +402,17 @@ namespace boost {
 
       template <typename T, int Index>
       struct generate_base
-        : boost::detail::if_true<
-            boost::is_empty<T>::value>::BOOST_NESTED_TEMPLATE
-            then<boost::unordered::detail::compressed_base<T, Index>,
-              boost::unordered::detail::uncompressed_base<T, Index> >
+          : boost::detail::if_true<
+              boost::is_empty<T>::value>::BOOST_NESTED_TEMPLATE
+              then<boost::unordered::detail::compressed_base<T, Index>,
+                boost::unordered::detail::uncompressed_base<T, Index> >
       {
       };
 
       template <typename T1, typename T2>
       struct compressed
-        : private boost::unordered::detail::generate_base<T1, 1>::type,
-          private boost::unordered::detail::generate_base<T2, 2>::type
+          : private boost::unordered::detail::generate_base<T1, 1>::type,
+            private boost::unordered::detail::generate_base<T2, 2>::type
       {
         typedef typename generate_base<T1, 1>::type base1;
         typedef typename generate_base<T2, 2>::type base2;
@@ -696,16 +696,16 @@ namespace boost {
   namespace unordered {
     namespace detail {
 
-////////////////////////////////////////////////////////////////////////////
-// Integral_constrant, true_type, false_type
-//
-// Uses the standard versions if available.
+      ////////////////////////////////////////////////////////////////////////////
+      // Integral_constrant, true_type, false_type
+      //
+      // Uses the standard versions if available.
 
 #if !defined(BOOST_NO_CXX11_HDR_TYPE_TRAITS)
 
+      using std::false_type;
       using std::integral_constant;
       using std::true_type;
-      using std::false_type;
 
 #else
 
@@ -723,8 +723,8 @@ namespace boost {
 
 #endif
 
-////////////////////////////////////////////////////////////////////////////
-// Explicitly call a destructor
+      ////////////////////////////////////////////////////////////////////////////
+      // Explicitly call a destructor
 
 #if defined(BOOST_MSVC)
 #pragma warning(push)
@@ -827,13 +827,13 @@ namespace boost {
         T* operator->() { return value_.value_ptr(); }
         T const* operator->() const { return value_.value_ptr(); }
 
-        bool operator==(optional<T> const& x)
+        bool operator==(optional<T> const& x) const
         {
           return has_value_ ? x.has_value_ && value_.value() == x.value_.value()
                             : !x.has_value_;
         }
 
-        bool operator!=(optional<T> const& x) { return !((*this) == x); }
+        bool operator!=(optional<T> const& x) const { return !((*this) == x); }
 
         void swap(optional<T>& x)
         {
@@ -1144,8 +1144,7 @@ namespace boost {
 
       template <typename T, typename ValueType, typename... Args>
       BOOST_UNORDERED_HAS_FUNCTION(construct, U,
-        (boost::unordered::detail::make<ValueType*>(),
-          std::declval<Args>()...),
+        (boost::unordered::detail::make<ValueType*>(), std::declval<Args>()...),
         2);
 
 #else
@@ -1869,7 +1868,7 @@ namespace boost {
             boost::forward<A1>(args.a1), boost::forward<A2>(args.a2));
         }
 
-// Use a macro for the rest.
+        // Use a macro for the rest.
 
 #define BOOST_UNORDERED_CONSTRUCT_IMPL(z, num_params, _)                       \
   template <typename Alloc, typename T,                                        \
@@ -2242,9 +2241,9 @@ namespace boost {
         l_iterator() BOOST_NOEXCEPT : ptr_() {}
 
         l_iterator(node_pointer n, std::size_t b, std::size_t c) BOOST_NOEXCEPT
-          : ptr_(n),
-            bucket_(b),
-            bucket_count_(c)
+            : ptr_(n),
+              bucket_(b),
+              bucket_count_(c)
         {
         }
 
@@ -2299,9 +2298,9 @@ namespace boost {
         cl_iterator() BOOST_NOEXCEPT : ptr_() {}
 
         cl_iterator(node_pointer n, std::size_t b, std::size_t c) BOOST_NOEXCEPT
-          : ptr_(n),
-            bucket_(b),
-            bucket_count_(c)
+            : ptr_(n),
+              bucket_(b),
+              bucket_count_(c)
         {
         }
 
@@ -2368,7 +2367,7 @@ namespace boost {
         iterator() BOOST_NOEXCEPT : node_() {}
 
         explicit iterator(typename Node::link_pointer x) BOOST_NOEXCEPT
-          : node_(static_cast<node_pointer>(x))
+            : node_(static_cast<node_pointer>(x))
         {
         }
 
@@ -2424,7 +2423,7 @@ namespace boost {
         c_iterator() BOOST_NOEXCEPT : node_() {}
 
         explicit c_iterator(typename Node::link_pointer x) BOOST_NOEXCEPT
-          : node_(static_cast<node_pointer>(x))
+            : node_(static_cast<node_pointer>(x))
         {
         }
 
@@ -2674,8 +2673,8 @@ namespace boost {
 
       template <typename T>
       struct pick_policy2
-        : pick_policy_impl<std::numeric_limits<std::size_t>::digits,
-            std::numeric_limits<std::size_t>::radix>
+          : pick_policy_impl<std::numeric_limits<std::size_t>::digits,
+              std::numeric_limits<std::size_t>::radix>
       {
       };
 
@@ -2851,9 +2850,9 @@ namespace boost {
         }
       };
 
-////////////////////////////////////////////////////////////////////////////
-// rvalue parameters when type can't be a BOOST_RV_REF(T) parameter
-// e.g. for int
+      ////////////////////////////////////////////////////////////////////////////
+      // rvalue parameters when type can't be a BOOST_RV_REF(T) parameter
+      // e.g. for int
 
 #if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
 #define BOOST_UNORDERED_RV_REF(T) BOOST_RV_REF(T)
@@ -2869,10 +2868,10 @@ namespace boost {
       };
 
       template <typename T>
-      struct rv_ref
-        : boost::detail::if_true<boost::is_class<T>::value>::
-            BOOST_NESTED_TEMPLATE then<boost::unordered::detail::rv_ref_impl<T>,
-              please_ignore_this_overload>::type
+      struct rv_ref : boost::detail::if_true<
+                        boost::is_class<T>::value>::BOOST_NESTED_TEMPLATE
+                        then<boost::unordered::detail::rv_ref_impl<T>,
+                          please_ignore_this_overload>::type
       {
       };
 

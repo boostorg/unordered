@@ -30,8 +30,8 @@ template <typename T> struct test_allocator
   template <typename T2> test_allocator(test_allocator<T2> const&) {}
   T* allocate(std::size_t n) const { return (T*)malloc(sizeof(T) * n); }
   void deallocate(T* ptr, std::size_t) const { free(ptr); }
-  bool operator==(test_allocator const&) { return true; }
-  bool operator!=(test_allocator const&) { return false; }
+  bool operator==(test_allocator const&) const { return true; }
+  bool operator!=(test_allocator const&) const { return false; }
 };
 #endif
 
@@ -338,15 +338,15 @@ int main()
         test_allocator<std::pair<const int, int> > > >::value);
   }
 
-/* Ambiguous
-{
-  boost::unordered_multimap m({std::pair<int const, int>(1,2)}, 0, f,
-pair_allocator);
-  static_assert(std::is_same<decltype(m),boost::unordered_multimap<int, int,
-boost::hash<int>, std::equal_to<int>, test_allocator<std::pair<const int,
-int>>>>::value);
-}
-*/
+  /* Ambiguous
+  {
+    boost::unordered_multimap m({std::pair<int const, int>(1,2)}, 0, f,
+  pair_allocator);
+    static_assert(std::is_same<decltype(m),boost::unordered_multimap<int, int,
+  boost::hash<int>, std::equal_to<int>, test_allocator<std::pair<const int,
+  int>>>>::value);
+  }
+  */
 
 #endif
 }
