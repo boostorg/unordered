@@ -13,7 +13,7 @@ project unordered-test/unordered
         # Boost.Preprocessor on trunk.
         <toolset>gcc:<cxxflags>"-pedantic -Wstrict-aliasing -fstrict-aliasing -Wextra -Wsign-promo -Wunused-parameter -Wconversion -Wfloat-equal -Wshadow -Wno-variadic-macros"
         <toolset>darwin:<cxxflags>"-pedantic -Wstrict-aliasing -fstrict-aliasing -Wextra -Wsign-promo -Wunused-parameter -Wconversion -Wfloat-equal -Wshadow"
-        <toolset>clang:<cxxflags>"-pedantic -Wstrict-aliasing -fstrict-aliasing -Wextra -Wsign-promo -Wunused-parameter -Wsign-conversion -Wconversion -Wfloat-equal -Wshadow -Wno-c99-extensions -Wno-variadic-macros"
+        <toolset>clang:<cxxflags>"-pedantic -Wstrict-aliasing -fstrict-aliasing -Wextra -Wsign-promo -Wunused-parameter -Wsign-conversion -Wconversion -Wfloat-equal -Wshadow -Wno-c99-extensions -Wno-variadic-macros -Wno-self-assign-overloaded"
         <toolset>msvc:<cxxflags>"/wd4494"
         <toolset>gcc:<c++-template-depth>500
     ;
