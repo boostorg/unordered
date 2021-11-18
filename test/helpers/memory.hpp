@@ -68,7 +68,7 @@ namespace test {
       {
       }
 
-      ~memory_tracker() { BOOST_TEST(count_allocators == 0); }
+      ~memory_tracker() { BOOST_ASSERT(count_allocators == 0); }
 
       void allocator_ref()
       {
