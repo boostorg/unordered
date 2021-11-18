@@ -113,6 +113,10 @@ namespace test {
         ptr_ = ptr_->next_;
         return tmp;
       }
+
+      bool operator==(list_iterator y) const { return ptr_ == y.ptr_; }
+      bool operator!=(list_iterator y) const { return ptr_ != y.ptr_; }
+
       bool operator==(const_iterator y) const { return ptr_ == y.ptr_; }
       bool operator!=(const_iterator y) const { return ptr_ != y.ptr_; }
     };
