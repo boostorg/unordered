@@ -65,9 +65,9 @@
   {                                                                            \
     return (std::numeric_limits<size_type>::max)();                            \
   }                                                                            \
-  bool operator==(name<T> const&) { return true; }                             \
-  bool operator!=(name<T> const&) { return false; }                            \
-/**/
+  bool operator==(name<T> const&) const { return true; }                       \
+  bool operator!=(name<T> const&) const { return false; }                      \
+  /**/
 
 struct yes_type
 {
