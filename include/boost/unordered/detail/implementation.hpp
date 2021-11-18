@@ -827,13 +827,13 @@ namespace boost {
         T* operator->() { return value_.value_ptr(); }
         T const* operator->() const { return value_.value_ptr(); }
 
-        bool operator==(optional<T> const& x)
+        bool operator==(optional<T> const& x) const
         {
           return has_value_ ? x.has_value_ && value_.value() == x.value_.value()
                             : !x.has_value_;
         }
 
-        bool operator!=(optional<T> const& x) { return !((*this) == x); }
+        bool operator!=(optional<T> const& x) const { return !((*this) == x); }
 
         void swap(optional<T>& x)
         {
