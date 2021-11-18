@@ -385,10 +385,9 @@ namespace boost {
       }
 
       template <class P2>
-      std::pair<iterator, bool> insert(BOOST_RV_REF(P2) obj,
-        typename boost::enable_if_c<
-          boost::is_constructible<value_type, BOOST_RV_REF(P2)>::value,
-          void*>::type = 0)
+      typename boost::enable_if<
+        boost::is_constructible<value_type, BOOST_RV_REF(P2)>,
+        std::pair<iterator, bool> >::type insert(BOOST_RV_REF(P2) obj)
       {
         return this->emplace(boost::forward<P2>(obj));
       }
@@ -404,10 +403,9 @@ namespace boost {
       }
 
       template <class P2>
-      iterator insert(const_iterator hint, BOOST_RV_REF(P2) obj,
-        typename boost::enable_if_c<
-          boost::is_constructible<value_type, BOOST_RV_REF(P2)>::value,
-          void*>::type = 0)
+      typename boost::enable_if<
+        boost::is_constructible<value_type, BOOST_RV_REF(P2)>, iterator>::type
+      insert(const_iterator hint, BOOST_RV_REF(P2) obj)
       {
         return this->emplace_hint(hint, boost::forward<P2>(obj));
       }
@@ -1249,10 +1247,9 @@ namespace boost {
       }
 
       template <class P2>
-      iterator insert(BOOST_RV_REF(P2) obj,
-        typename boost::enable_if_c<
-          boost::is_constructible<value_type, BOOST_RV_REF(P2)>::value,
-          void*>::type = 0)
+      typename boost::enable_if<
+        boost::is_constructible<value_type, BOOST_RV_REF(P2)>,
+        iterator>::type insert(BOOST_RV_REF(P2) obj)
       {
         return this->emplace(boost::forward<P2>(obj));
       }
@@ -1268,10 +1265,10 @@ namespace boost {
       }
 
       template <class P2>
-      iterator insert(const_iterator hint, BOOST_RV_REF(P2) obj,
-        typename boost::enable_if_c<
-          boost::is_constructible<value_type, BOOST_RV_REF(P2)>::value,
-          void*>::type = 0)
+      typename boost::enable_if<
+        boost::is_constructible<value_type, BOOST_RV_REF(P2)>,
+        iterator>::type
+      insert(const_iterator hint, BOOST_RV_REF(P2) obj)
       {
         return this->emplace_hint(hint, boost::forward<P2>(obj));
       }
