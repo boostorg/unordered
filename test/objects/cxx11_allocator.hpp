@@ -13,12 +13,6 @@
 #include "../helpers/fwd.hpp"
 #include "../helpers/memory.hpp"
 
-#if defined(BOOST_NO_CXX11_NOEXCEPT)
-#define BOOST_UNORDERED_NOEXCEPT
-#else
-#define BOOST_UNORDERED_NOEXCEPT noexcept
-#endif
-
 namespace test
 {
   struct allocator_false
@@ -186,7 +180,7 @@ namespace test
     }
 
 #if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-    cxx11_allocator_base(cxx11_allocator_base&& x) BOOST_UNORDERED_NOEXCEPT
+    cxx11_allocator_base(cxx11_allocator_base&& x) BOOST_NOEXCEPT
     {
       tag_ = x.tag_;
       selected_ = x.selected_;
@@ -207,7 +201,7 @@ namespace test
 
 #if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
     cxx11_allocator_base& operator=(
-      cxx11_allocator_base&& x) BOOST_UNORDERED_NOEXCEPT
+      cxx11_allocator_base&& x) BOOST_NOEXCEPT
     {
       tag_ = x.tag_;
       selected_ = x.selected_;
@@ -307,7 +301,7 @@ namespace test
     }
 
 #if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-    cxx11_allocator& operator=(cxx11_allocator&& x) BOOST_UNORDERED_NOEXCEPT
+    cxx11_allocator& operator=(cxx11_allocator&& x) BOOST_NOEXCEPT
     {
       cxx11_allocator_base<T>::operator=(static_cast<cxx11_allocator&&>(x));
       return *this;
@@ -364,7 +358,7 @@ namespace test
     }
 
 #if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-    cxx11_allocator& operator=(cxx11_allocator&& x) BOOST_UNORDERED_NOEXCEPT
+    cxx11_allocator& operator=(cxx11_allocator&& x) BOOST_NOEXCEPT
     {
       cxx11_allocator_base<T>::operator=(static_cast<cxx11_allocator&&>(x));
       return *this;
