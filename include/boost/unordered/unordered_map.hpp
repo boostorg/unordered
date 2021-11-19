@@ -757,6 +757,8 @@ namespace boost {
 
       size_type count(const key_type&) const;
 
+      template <class TransparentKey> size_type count(const TransparentKey&) const;
+
       std::pair<iterator, iterator> equal_range(const key_type&);
       std::pair<const_iterator, const_iterator> equal_range(
         const key_type&) const;
@@ -1835,6 +1837,21 @@ namespace boost {
     unordered_map<K, T, H, P, A>::count(const key_type& k) const
     {
       return table_.find_node(k) ? 1 : 0;
+    }
+
+    template <class K, class T, class H, class P, class A>
+    template <class TransparentKey>
+    typename unordered_map<K, T, H, P, A>::size_type
+    unordered_map<K, T, H, P, A>::count(const TransparentKey& k) const
+    {
+      std::size_t const key_hash =
+        table::policy::apply_hash(this->hash_function(), k);
+
+      P const& eq = this->key_eq();
+
+      node_pointer p = table_.find_node_impl(key_hash, k, eq);
+
+      return (p ? 1 : 0);
     }
 
     template <class K, class T, class H, class P, class A>
