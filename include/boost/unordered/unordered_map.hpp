@@ -757,7 +757,12 @@ namespace boost {
 
       size_type count(const key_type&) const;
 
-      template <class TransparentKey> size_type count(const TransparentKey&) const;
+      template <class Key>
+      typename boost::enable_if_c<detail::make_dependent<Key>::value &&
+                                    detail::is_transparent<H>::value &&
+                                    detail::is_transparent<P>::value,
+        size_type>::type
+      count(const Key&) const;
 
       std::pair<iterator, iterator> equal_range(const key_type&);
       std::pair<const_iterator, const_iterator> equal_range(
@@ -1840,9 +1845,12 @@ namespace boost {
     }
 
     template <class K, class T, class H, class P, class A>
-    template <class TransparentKey>
-    typename unordered_map<K, T, H, P, A>::size_type
-    unordered_map<K, T, H, P, A>::count(const TransparentKey& k) const
+    template <class Key>
+    typename boost::enable_if_c<detail::make_dependent<Key>::value &&
+                                  detail::is_transparent<H>::value &&
+                                  detail::is_transparent<P>::value,
+      typename unordered_map<K, T, H, P, A>::size_type>::type
+    unordered_map<K, T, H, P, A>::count(const Key& k) const
     {
       std::size_t const key_hash =
         table::policy::apply_hash(this->hash_function(), k);
