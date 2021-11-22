@@ -761,7 +761,17 @@ namespace boost {
       typename boost::enable_if_c<detail::is_transparent<Key, H>::value &&
                                     detail::is_transparent<Key, P>::value,
         size_type>::type
-      count(const Key&) const;
+      count(const Key& k) const
+      {
+        std::size_t const key_hash =
+          table::policy::apply_hash(this->hash_function(), k);
+
+        P const& eq = this->key_eq();
+
+        node_pointer p = table_.find_node_impl(key_hash, k, eq);
+
+        return (p ? 1 : 0);
+      }
 
       std::pair<iterator, iterator> equal_range(const key_type&);
       std::pair<const_iterator, const_iterator> equal_range(
@@ -1841,23 +1851,6 @@ namespace boost {
     unordered_map<K, T, H, P, A>::count(const key_type& k) const
     {
       return table_.find_node(k) ? 1 : 0;
-    }
-
-    template <class K, class T, class H, class P, class A>
-    template <class Key>
-    typename boost::enable_if_c<detail::is_transparent<Key, H>::value &&
-                                  detail::is_transparent<Key, P>::value,
-      typename unordered_map<K, T, H, P, A>::size_type>::type
-    unordered_map<K, T, H, P, A>::count(const Key& k) const
-    {
-      std::size_t const key_hash =
-        table::policy::apply_hash(this->hash_function(), k);
-
-      P const& eq = this->key_eq();
-
-      node_pointer p = table_.find_node_impl(key_hash, k, eq);
-
-      return (p ? 1 : 0);
     }
 
     template <class K, class T, class H, class P, class A>
