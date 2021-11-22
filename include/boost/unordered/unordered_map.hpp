@@ -758,9 +758,8 @@ namespace boost {
       size_type count(const key_type&) const;
 
       template <class Key>
-      typename boost::enable_if_c<detail::make_dependent<Key>::value &&
-                                    detail::is_transparent<H>::value &&
-                                    detail::is_transparent<P>::value,
+      typename boost::enable_if_c<detail::is_transparent<Key, H>::value &&
+                                    detail::is_transparent<Key, P>::value,
         size_type>::type
       count(const Key&) const;
 
@@ -1846,9 +1845,8 @@ namespace boost {
 
     template <class K, class T, class H, class P, class A>
     template <class Key>
-    typename boost::enable_if_c<detail::make_dependent<Key>::value &&
-                                  detail::is_transparent<H>::value &&
-                                  detail::is_transparent<P>::value,
+    typename boost::enable_if_c<detail::is_transparent<Key, H>::value &&
+                                  detail::is_transparent<Key, P>::value,
       typename unordered_map<K, T, H, P, A>::size_type>::type
     unordered_map<K, T, H, P, A>::count(const Key& k) const
     {

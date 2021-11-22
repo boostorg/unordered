@@ -726,16 +726,15 @@ namespace boost {
 ////////////////////////////////////////////////////////////////////////////
 // Type checkers used for the transparent member functions added by C++20 and up
 
-      template <class>
-      struct make_dependent : public true_type {};
-
-      template <class, class = void> struct is_transparent : public false_type
+      template <class, class, class = void>
+      struct is_transparent : public false_type
       {
       };
 
-      template <class T>
-      struct is_transparent<T,
-        typename boost::make_void<typename T::is_transparent>::type> : public true_type
+      template <class X, class T>
+      struct is_transparent<X, T,
+        typename boost::make_void<typename T::is_transparent>::type>
+          : public true_type
       {
       };
 
