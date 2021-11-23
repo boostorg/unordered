@@ -40,6 +40,7 @@
 #include <boost/type_traits/is_nothrow_move_constructible.hpp>
 #include <boost/type_traits/is_nothrow_swappable.hpp>
 #include <boost/type_traits/is_same.hpp>
+#include <boost/type_traits/make_void.hpp>
 #include <boost/type_traits/remove_const.hpp>
 #include <boost/unordered/detail/fwd.hpp>
 #include <boost/utility/addressof.hpp>
@@ -721,6 +722,21 @@ namespace boost {
         false_type;
 
 #endif
+
+////////////////////////////////////////////////////////////////////////////
+// Type checkers used for the transparent member functions added by C++20 and up
+
+      template <class, class, class = void>
+      struct is_transparent : public false_type
+      {
+      };
+
+      template <class X, class T>
+      struct is_transparent<X, T,
+        typename boost::make_void<typename T::is_transparent>::type>
+          : public true_type
+      {
+      };
 
 ////////////////////////////////////////////////////////////////////////////
 // Explicitly call a destructor

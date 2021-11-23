@@ -757,6 +757,22 @@ namespace boost {
 
       size_type count(const key_type&) const;
 
+      template <class Key>
+      typename boost::enable_if_c<detail::is_transparent<Key, H>::value &&
+                                    detail::is_transparent<Key, P>::value,
+        size_type>::type
+      count(const Key& k) const
+      {
+        std::size_t const key_hash =
+          table::policy::apply_hash(this->hash_function(), k);
+
+        P const& eq = this->key_eq();
+
+        node_pointer p = table_.find_node_impl(key_hash, k, eq);
+
+        return (p ? 1 : 0);
+      }
+
       std::pair<iterator, iterator> equal_range(const key_type&);
       std::pair<const_iterator, const_iterator> equal_range(
         const key_type&) const;
