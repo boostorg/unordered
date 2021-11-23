@@ -20,13 +20,6 @@ struct key
 
   key(int x) : x_(x) { ++count_; }
   key(key const& k) : x_(k.x_) { ++count_; }
-
-  key& operator=(key const& k)
-  {
-    x_ = k.x_;
-    ++count_;
-    return *this;
-  }
 };
 
 int key::count_;
