@@ -181,12 +181,9 @@ namespace test
 
     ~cxx11_allocator_base() { detail::tracker.allocator_unref(); }
 
-    cxx11_allocator_base& operator=(cxx11_allocator_base const& x)
-    {
-      tag_ = x.tag_;
-      selected_ = x.selected_;
-      return *this;
-    }
+#if !defined(BOOST_NO_CXX11_DEFAULTED_FUNCTIONS)
+    cxx11_allocator_base& operator=(cxx11_allocator_base const& x) = default;
+#endif
 
     pointer address(reference r) { return pointer(&r); }
 
@@ -272,11 +269,9 @@ namespace test
 
     cxx11_allocator(cxx11_allocator const& x) : cxx11_allocator_base<T>(x) {}
 
-    cxx11_allocator& operator=(cxx11_allocator const& x)
-    {
-      cxx11_allocator_base<T>::operator=(x);
-      return *this;
-    }
+#if !defined(BOOST_NO_CXX11_DEFAULTED_FUNCTIONS)
+    cxx11_allocator& operator=(cxx11_allocator const& x) = default;
+#endif 
 
     // When not propagating swap, allocators are always equal
     // to avoid undefined behaviour.
@@ -321,11 +316,9 @@ namespace test
 
     cxx11_allocator(cxx11_allocator const& x) : cxx11_allocator_base<T>(x) {}
 
-    cxx11_allocator& operator=(cxx11_allocator const& x)
-    {
-      cxx11_allocator_base<T>::operator=(x);
-      return *this;
-    }
+#if !defined(BOOST_NO_CXX11_DEFAULTED_FUNCTIONS)
+    cxx11_allocator& operator=(cxx11_allocator const& x) = default;
+#endif
 
     // When not propagating swap, allocators are always equal
     // to avoid undefined behaviour.
