@@ -13,7 +13,8 @@
 #include "../helpers/fwd.hpp"
 #include "../helpers/memory.hpp"
 
-namespace test {
+namespace test
+{
   struct allocator_false
   {
     enum
@@ -180,6 +181,10 @@ namespace test {
 
     ~cxx11_allocator_base() { detail::tracker.allocator_unref(); }
 
+#if !defined(BOOST_NO_CXX11_DEFAULTED_FUNCTIONS)
+    cxx11_allocator_base& operator=(cxx11_allocator_base const& x) = default;
+#endif
+
     pointer address(reference r) { return pointer(&r); }
 
     const_pointer address(const_reference r) { return const_pointer(&r); }
@@ -264,6 +269,10 @@ namespace test {
 
     cxx11_allocator(cxx11_allocator const& x) : cxx11_allocator_base<T>(x) {}
 
+#if !defined(BOOST_NO_CXX11_DEFAULTED_FUNCTIONS)
+    cxx11_allocator& operator=(cxx11_allocator const& x) = default;
+#endif 
+
     // When not propagating swap, allocators are always equal
     // to avoid undefined behaviour.
     bool operator==(cxx11_allocator const& x) const
@@ -306,6 +315,10 @@ namespace test {
     }
 
     cxx11_allocator(cxx11_allocator const& x) : cxx11_allocator_base<T>(x) {}
+
+#if !defined(BOOST_NO_CXX11_DEFAULTED_FUNCTIONS)
+    cxx11_allocator& operator=(cxx11_allocator const& x) = default;
+#endif
 
     // When not propagating swap, allocators are always equal
     // to avoid undefined behaviour.
