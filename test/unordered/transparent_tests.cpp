@@ -74,14 +74,51 @@ struct key_equal
 
 bool key_equal::was_called_;
 
+void count_reset()
+{
+  key::count_ = 0;
+  transparent_key_equal::was_called_ = false;
+  key_equal::was_called_ = false;
+}
+
+template <class UnorderedMap> void test_non_transparent_count()
+{
+  count_reset();
+
+  UnorderedMap map;
+
+  // initial `key(0)` expression increases the count
+  // then copying into the `unordered_map` increments the count again thus we
+  // have 2
+  //
+  map[key(0)] = 1337;
+  BOOST_TEST(key::count_ == 2);
+
+  // rely on the implicit constructor here to spawn a new object which
+  // increases the count
+  //
+  std::size_t count = 0;
+  count = map.count(0);
+
+  BOOST_TEST(count == 1);
+  BOOST_TEST(key::count_ == 3);
+  BOOST_TEST(!map.key_eq().was_called_);
+
+  count = map.count(1);
+
+  BOOST_TEST(count == 0);
+  BOOST_TEST(key::count_ == 4);
+
+  count = map.count(key(0));
+  BOOST_TEST(count == 1);
+  BOOST_TEST(key::count_ == 5);
+}
+
 UNORDERED_AUTO_TEST (unordered_map_transparent_count) {
   {
     // transparent Hash, transparent KeyEqual
     //
-
-    key::count_ = 0;
-    transparent_key_equal::was_called_ = false;
-    key_equal::was_called_ = false;
+    count_reset();
 
     boost::unordered_map<key, int, transparent_hasher, transparent_key_equal>
       map;
@@ -110,119 +147,23 @@ UNORDERED_AUTO_TEST (unordered_map_transparent_count) {
 
     count = map.count(key(0));
     BOOST_TEST(count == 1);
-    BOOST_TEST(key::count_ > 2);
-  }
-
-  {
-    // non-transparent Hash, non-transparent KeyEqual
-    //
-
-    key::count_ = 0;
-    transparent_key_equal::was_called_ = false;
-    key_equal::was_called_ = false;
-
-    boost::unordered_map<key, int, hasher, key_equal> map;
-
-    // initial `key(0)` expression increases the count
-    // then copying into the `unordered_map` increments the count again thus we
-    // have 2
-    //
-    map[key(0)] = 1337;
-    BOOST_TEST(key::count_ == 2);
-
-    // rely on the implicit constructor here to spawn a new object which
-    // increases the count
-    //
-    std::size_t count = 0;
-    count = map.count(0);
-
-    BOOST_TEST(count == 1);
     BOOST_TEST(key::count_ == 3);
-    BOOST_TEST(!map.key_eq().was_called_);
-
-    count = map.count(1);
-
-    BOOST_TEST(count == 0);
-    BOOST_TEST(key::count_ == 4);
-
-    count = map.count(key(0));
-    BOOST_TEST(count == 1);
-    BOOST_TEST(key::count_ == 5);
   }
 
-  {
-    // transparent Hash, non-transparent KeyEqual
-    //
+  // non-transparent Hash, non-transparent KeyEqual
+  //
+  test_non_transparent_count<
+    boost::unordered_map<key, int, hasher, key_equal> >();
 
-    key::count_ = 0;
-    transparent_key_equal::was_called_ = false;
-    key_equal::was_called_ = false;
+  // transparent Hash, non-transparent KeyEqual
+  //
+  test_non_transparent_count<
+    boost::unordered_map<key, int, transparent_hasher, key_equal> >();
 
-    boost::unordered_map<key, int, transparent_hasher, key_equal> map;
-
-    // initial `key(0)` expression increases the count
-    // then copying into the `unordered_map` increments the count again thus we
-    // have 2
-    //
-    map[key(0)] = 1337;
-    BOOST_TEST(key::count_ == 2);
-
-    // rely on the implicit constructor here to spawn a new object which
-    // increases the count
-    //
-    std::size_t count = 0;
-    count = map.count(0);
-
-    BOOST_TEST(count == 1);
-    BOOST_TEST(key::count_ == 3);
-    BOOST_TEST(!map.key_eq().was_called_);
-
-    count = map.count(1);
-
-    BOOST_TEST(count == 0);
-    BOOST_TEST(key::count_ == 4);
-
-    count = map.count(key(0));
-    BOOST_TEST(count == 1);
-    BOOST_TEST(key::count_ == 5);
-  }
-
-  {
-    // non-transparent Hash, transparent KeyEqual
-    //
-
-    key::count_ = 0;
-    transparent_key_equal::was_called_ = false;
-    key_equal::was_called_ = false;
-
-    boost::unordered_map<key, int, hasher, transparent_key_equal> map;
-
-    // initial `key(0)` expression increases the count
-    // then copying into the `unordered_map` increments the count again thus we
-    // have 2
-    //
-    map[key(0)] = 1337;
-    BOOST_TEST(key::count_ == 2);
-
-    // rely on the implicit constructor here to spawn a new object which
-    // increases the count
-    //
-    std::size_t count = 0;
-    count = map.count(0);
-
-    BOOST_TEST(count == 1);
-    BOOST_TEST(key::count_ == 3);
-    BOOST_TEST(!map.key_eq().was_called_);
-
-    count = map.count(1);
-
-    BOOST_TEST(count == 0);
-    BOOST_TEST(key::count_ == 4);
-
-    count = map.count(key(0));
-    BOOST_TEST(count == 1);
-    BOOST_TEST(key::count_ == 5);
-  }
+  // non-transparent Hash, transparent KeyEqual
+  //
+  test_non_transparent_count<
+    boost::unordered_map<key, int, hasher, transparent_key_equal> >();
 }
 
 RUN_TESTS()
