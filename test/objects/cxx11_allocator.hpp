@@ -179,17 +179,6 @@ namespace test
       detail::tracker.allocator_ref();
     }
 
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-    cxx11_allocator_base(cxx11_allocator_base&& x) BOOST_NOEXCEPT
-    {
-      tag_ = x.tag_;
-      selected_ = x.selected_;
-
-      x.tag_ = -1;
-      x.selected_ = -1;
-    }
-#endif
-
     ~cxx11_allocator_base() { detail::tracker.allocator_unref(); }
 
     cxx11_allocator_base& operator=(cxx11_allocator_base const& x)
@@ -198,17 +187,6 @@ namespace test
       selected_ = x.selected_;
       return *this;
     }
-
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-    cxx11_allocator_base& operator=(
-      cxx11_allocator_base&& x) BOOST_NOEXCEPT
-    {
-      tag_ = x.tag_;
-      selected_ = x.selected_;
-
-      return *this;
-    }
-#endif
 
     pointer address(reference r) { return pointer(&r); }
 
@@ -300,14 +278,6 @@ namespace test
       return *this;
     }
 
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-    cxx11_allocator& operator=(cxx11_allocator&& x) BOOST_NOEXCEPT
-    {
-      cxx11_allocator_base<T>::operator=(static_cast<cxx11_allocator&&>(x));
-      return *this;
-    }
-#endif
-
     // When not propagating swap, allocators are always equal
     // to avoid undefined behaviour.
     bool operator==(cxx11_allocator const& x) const
@@ -356,14 +326,6 @@ namespace test
       cxx11_allocator_base<T>::operator=(x);
       return *this;
     }
-
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-    cxx11_allocator& operator=(cxx11_allocator&& x) BOOST_NOEXCEPT
-    {
-      cxx11_allocator_base<T>::operator=(static_cast<cxx11_allocator&&>(x));
-      return *this;
-    }
-#endif
 
     // When not propagating swap, allocators are always equal
     // to avoid undefined behaviour.
