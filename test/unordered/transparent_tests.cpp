@@ -81,6 +81,39 @@ void count_reset()
   key_equal::was_called_ = false;
 }
 
+template <class UnorderedMap> void test_transparent_count()
+{
+  count_reset();
+
+  UnorderedMap map;
+
+  // initial `key(0)` expression increases the count
+  // then copying into the `unordered_map` increments the count again thus we
+  // have 2
+  //
+  map[key(0)] = 1337;
+  BOOST_TEST(key::count_ == 2);
+
+  // now the number of `key` objects created should be a constant and never
+  // touched again
+  //
+  std::size_t count = 0;
+  count = map.count(0);
+
+  BOOST_TEST(count == 1);
+  BOOST_TEST(key::count_ == 2);
+  BOOST_TEST(map.key_eq().was_called_);
+
+  count = map.count(1);
+
+  BOOST_TEST(count == 0);
+  BOOST_TEST(key::count_ == 2);
+
+  count = map.count(key(0));
+  BOOST_TEST(count == 1);
+  BOOST_TEST(key::count_ == 3);
+}
+
 template <class UnorderedMap> void test_non_transparent_count()
 {
   count_reset();
@@ -115,40 +148,8 @@ template <class UnorderedMap> void test_non_transparent_count()
 }
 
 UNORDERED_AUTO_TEST (unordered_map_transparent_count) {
-  {
-    // transparent Hash, transparent KeyEqual
-    //
-    count_reset();
-
-    boost::unordered_map<key, int, transparent_hasher, transparent_key_equal>
-      map;
-
-    // initial `key(0)` expression increases the count
-    // then copying into the `unordered_map` increments the count again thus we
-    // have 2
-    //
-    map[key(0)] = 1337;
-    BOOST_TEST(key::count_ == 2);
-
-    // now the number of `key` objects created should be a constant and never
-    // touched again
-    //
-    std::size_t count = 0;
-    count = map.count(0);
-
-    BOOST_TEST(count == 1);
-    BOOST_TEST(key::count_ == 2);
-    BOOST_TEST(map.key_eq().was_called_);
-
-    count = map.count(1);
-
-    BOOST_TEST(count == 0);
-    BOOST_TEST(key::count_ == 2);
-
-    count = map.count(key(0));
-    BOOST_TEST(count == 1);
-    BOOST_TEST(key::count_ == 3);
-  }
+  test_transparent_count<boost::unordered_map<key, int, transparent_hasher,
+    transparent_key_equal> >();
 
   // non-transparent Hash, non-transparent KeyEqual
   //
