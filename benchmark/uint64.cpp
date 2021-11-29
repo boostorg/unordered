@@ -33,29 +33,55 @@ static void print_time( std::chrono::steady_clock::time_point & t1, char const* 
 constexpr unsigned N = 2'000'000;
 constexpr int K = 10;
 
-template<class Map> void test_insert( Map& map, std::chrono::steady_clock::time_point & t1 )
+static std::vector< std::uint64_t > indices1, indices2, indices3;
+
+static void init_indices()
 {
-    for( unsigned i = 1; i <= N; ++i )
+    indices1.push_back( 0 );
+
+    for( unsigned i = 1; i <= N*2; ++i )
     {
-        map.insert( { i, i } );
+        indices1.push_back( i );
     }
 
-    print_time( t1, "Consecutive insert",  0, map.size() );
+    indices2.push_back( 0 );
 
     {
         boost::detail::splitmix64 rng;
 
-        for( unsigned i = 1; i <= N; ++i )
+        for( unsigned i = 1; i <= N*2; ++i )
         {
-            map.insert( { rng(), i } );
+            indices2.push_back( rng() );
         }
+    }
+
+    indices3.push_back( 0 );
+
+    for( unsigned i = 1; i <= N*2; ++i )
+    {
+        indices3.push_back( (std::uint64_t)i << 32 );
+    }
+}
+
+template<class Map> void test_insert( Map& map, std::chrono::steady_clock::time_point & t1 )
+{
+    for( unsigned i = 1; i <= N; ++i )
+    {
+        map.insert( { indices1[ i ], i } );
+    }
+
+    print_time( t1, "Consecutive insert",  0, map.size() );
+
+    for( unsigned i = 1; i <= N; ++i )
+    {
+        map.insert( { indices2[ i ], i } );
     }
 
     print_time( t1, "Random insert",  0, map.size() );
 
     for( unsigned i = 1; i <= N; ++i )
     {
-        map.insert( { (std::uint64_t)i << 32, i } );
+        map.insert( { indices3[ i ], i } );
     }
 
     print_time( t1, "Consecutive shifted insert",  0, map.size() );
@@ -73,7 +99,7 @@ template<class Map> void test_lookup( Map& map, std::chrono::steady_clock::time_
     {
         for( unsigned i = 1; i <= N * 2; ++i )
         {
-            auto it = map.find( i );
+            auto it = map.find( indices1[ i ] );
             if( it != map.end() ) s += it->second;
         }
     }
@@ -84,11 +110,9 @@ template<class Map> void test_lookup( Map& map, std::chrono::steady_clock::time_
 
     for( int j = 0; j < K; ++j )
     {
-        boost::detail::splitmix64 rng;
-
         for( unsigned i = 1; i <= N * 2; ++i )
         {
-            auto it = map.find( rng() );
+            auto it = map.find( indices2[ i ] );
             if( it != map.end() ) s += it->second;
         }
     }
@@ -101,7 +125,7 @@ template<class Map> void test_lookup( Map& map, std::chrono::steady_clock::time_
     {
         for( unsigned i = 1; i <= N * 2; ++i )
         {
-            auto it = map.find( (std::uint64_t)i << 32 );
+            auto it = map.find( indices3[ i ] );
             if( it != map.end() ) s += it->second;
         }
     }
@@ -136,7 +160,7 @@ template<class Map> void test_erase( Map& map, std::chrono::steady_clock::time_p
 {
     for( unsigned i = 1; i <= N; ++i )
     {
-        map.erase( i );
+        map.erase( indices1[ i ] );
     }
 
     print_time( t1, "Consecutive erase",  0, map.size() );
@@ -146,7 +170,7 @@ template<class Map> void test_erase( Map& map, std::chrono::steady_clock::time_p
 
         for( unsigned i = 1; i <= N; ++i )
         {
-            map.erase( rng() );
+            map.erase( indices2[ i ] );
         }
     }
 
@@ -154,7 +178,7 @@ template<class Map> void test_erase( Map& map, std::chrono::steady_clock::time_p
 
     for( unsigned i = 1; i <= N; ++i )
     {
-        map.erase( (std::uint64_t)i << 32 );
+        map.erase( indices3[ i ] );
     }
 
     print_time( t1, "Consecutive shifted erase",  0, map.size() );
@@ -162,7 +186,7 @@ template<class Map> void test_erase( Map& map, std::chrono::steady_clock::time_p
     std::cout << std::endl;
 }
 
-std::vector< std::pair<std::string, long long> > times;
+static std::vector< std::pair<std::string, long long> > times;
 
 template<template<class...> class Map> void test( char const* label )
 {
@@ -204,6 +228,8 @@ template<class K, class V> using multi_index_map = multi_index_container<
 
 int main()
 {
+    init_indices();
+
     test<std::unordered_map>( "std::unordered_map" );
     test<boost::unordered_map>( "boost::unordered_map" );
     test<multi_index_map>( "multi_index_map" );
