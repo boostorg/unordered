@@ -2632,6 +2632,11 @@ namespace boost {
         static inline SizeT apply_hash(Hash const& hf, T const& x)
         {
           SizeT key = hf(x);
+
+          // "Integer Hash Function", Thomas Wang, 1997
+          // https://gist.github.com/badboy/6267743
+          // http://web.archive.org/web/20071223173210/http://www.concentric.net/~Ttwang/tech/inthash.htm
+
           key = (~key) + (key << 21); // key = (key << 21) - key - 1;
           key = key ^ (key >> 24);
           key = (key + (key << 3)) + (key << 8); // key * 265
