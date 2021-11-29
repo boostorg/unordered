@@ -59,7 +59,7 @@ static void init_indices()
 
     for( unsigned i = 1; i <= N*2; ++i )
     {
-        indices3.push_back( (std::uint64_t)i << 32 );
+        indices3.push_back( (std::uint64_t)i << 40 );
     }
 }
 
