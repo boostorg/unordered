@@ -165,6 +165,9 @@ template <class UnorderedMap> void test_transparent_find()
   int const expected_key_count = 2 * n;
   BOOST_TEST(key::count_ == expected_key_count);
 
+  // explicitly test `find()` and `find() const` separately
+  //
+
   {
     UnorderedMap& m = map;
 
@@ -224,6 +227,9 @@ template <class UnorderedMap> void test_non_transparent_find()
   int key_count = 2 * n;
 
   BOOST_TEST(key::count_ == key_count);
+
+  // explicitly test `find()` and `find() const` separately
+  //
 
   {
     UnorderedMap& m = map;
