@@ -147,24 +147,163 @@ template <class UnorderedMap> void test_non_transparent_count()
   BOOST_TEST(key::count_ == 5);
 }
 
+template <class UnorderedMap> void test_transparent_find()
+{
+  count_reset();
+
+  typedef typename UnorderedMap::const_iterator map_iterator;
+  typedef typename UnorderedMap::value_type pair;
+
+  UnorderedMap map;
+
+  int n = 5;
+
+  for (int i = 0; i < n; ++i) {
+    map[key(i)] = i;
+  }
+
+  int const expected_key_count = 2 * n;
+  BOOST_TEST(key::count_ == expected_key_count);
+
+  {
+    UnorderedMap& m = map;
+
+    for (int i = 0; i < n; ++i) {
+      map_iterator pos = m.find(i);
+      BOOST_TEST(pos != m.end());
+
+      pair const& p = *pos;
+      int const v = p.second;
+
+      BOOST_TEST(v == i);
+    }
+
+    BOOST_TEST(key::count_ == expected_key_count);
+
+    map_iterator pos = m.find(1337);
+    BOOST_TEST(pos == m.end());
+    BOOST_TEST(key::count_ == expected_key_count);
+  }
+
+  {
+    UnorderedMap const& m = map;
+
+    for (int i = 0; i < n; ++i) {
+      map_iterator pos = m.find(i);
+      BOOST_TEST(pos != m.end());
+
+      pair const& p = *pos;
+      int const v = p.second;
+
+      BOOST_TEST(v == i);
+    }
+
+    BOOST_TEST(key::count_ == expected_key_count);
+
+    map_iterator pos = m.find(1337);
+    BOOST_TEST(pos == m.end());
+    BOOST_TEST(key::count_ == expected_key_count);
+  }
+}
+
+template <class UnorderedMap> void test_non_transparent_find()
+{
+  count_reset();
+
+  typedef typename UnorderedMap::const_iterator map_iterator;
+  typedef typename UnorderedMap::value_type pair;
+
+  UnorderedMap map;
+
+  int n = 5;
+
+  for (int i = 0; i < n; ++i) {
+    map[key(i)] = i;
+  }
+
+  int key_count = 2 * n;
+
+  BOOST_TEST(key::count_ == key_count);
+
+  {
+    UnorderedMap& m = map;
+
+    for (int i = 0; i < n; ++i) {
+      map_iterator pos = m.find(i);
+      BOOST_TEST(pos != m.end());
+
+      pair const& p = *pos;
+      int const v = p.second;
+
+      BOOST_TEST(v == i);
+    }
+    BOOST_TEST(key::count_ == n + key_count);
+
+    map_iterator pos = m.find(1337);
+    BOOST_TEST(pos == m.end());
+    BOOST_TEST(key::count_ == 1 + n + key_count);
+
+    key_count = key::count_;
+  }
+
+  {
+    UnorderedMap const& m = map;
+
+    for (int i = 0; i < n; ++i) {
+      map_iterator pos = m.find(i);
+      BOOST_TEST(pos != m.end());
+
+      pair const& p = *pos;
+      int const v = p.second;
+
+      BOOST_TEST(v == i);
+    }
+    BOOST_TEST(key::count_ == n + key_count);
+
+    map_iterator pos = m.find(1337);
+    BOOST_TEST(pos == m.end());
+    BOOST_TEST(key::count_ == 1 + n + key_count);
+  }
+}
+
 UNORDERED_AUTO_TEST (unordered_map_transparent_count) {
-  test_transparent_count<boost::unordered_map<key, int, transparent_hasher,
-    transparent_key_equal> >();
+  {
+    typedef boost::unordered_map<key, int, transparent_hasher,
+      transparent_key_equal>
+      unordered_map;
 
-  // non-transparent Hash, non-transparent KeyEqual
-  //
-  test_non_transparent_count<
-    boost::unordered_map<key, int, hasher, key_equal> >();
+    test_transparent_count<unordered_map>();
+    test_transparent_find<unordered_map>();
+  }
 
-  // transparent Hash, non-transparent KeyEqual
-  //
-  test_non_transparent_count<
-    boost::unordered_map<key, int, transparent_hasher, key_equal> >();
+  {
+    // non-transparent Hash, non-transparent KeyEqual
+    //
+    typedef boost::unordered_map<key, int, hasher, key_equal> unordered_map;
 
-  // non-transparent Hash, transparent KeyEqual
-  //
-  test_non_transparent_count<
-    boost::unordered_map<key, int, hasher, transparent_key_equal> >();
+    test_non_transparent_count<unordered_map>();
+    test_non_transparent_find<unordered_map>();
+  }
+
+  {
+    // transparent Hash, non-transparent KeyEqual
+    //
+    typedef boost::unordered_map<key, int, transparent_hasher, key_equal>
+      unordered_map;
+
+    test_non_transparent_count<unordered_map>();
+    test_non_transparent_find<unordered_map>();
+  }
+
+  {
+    // non-transparent Hash, transparent KeyEqual
+    //
+    typedef boost::unordered_map<key, int, hasher, transparent_key_equal>
+      unordered_map;
+
+    test_non_transparent_count<unordered_map>();
+    test_non_transparent_find<unordered_map>();
+  }
 }
 
 RUN_TESTS()
