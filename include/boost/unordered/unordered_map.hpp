@@ -745,6 +745,28 @@ namespace boost {
       iterator find(const key_type&);
       const_iterator find(const key_type&) const;
 
+      template <class Key>
+      typename boost::enable_if_c<detail::is_transparent<Key, H>::value &&
+                                    detail::is_transparent<Key, P>::value,
+        iterator>::type
+      find(const Key& key)
+      {
+        return iterator(table_.find_node_impl(
+          table::policy::apply_hash(this->hash_function(), key), key,
+          this->key_eq()));
+      }
+
+      template <class Key>
+      typename boost::enable_if_c<detail::is_transparent<Key, H>::value &&
+                                    detail::is_transparent<Key, P>::value,
+        const_iterator>::type
+      find(const Key& key) const
+      {
+        return const_iterator(table_.find_node_impl(
+          table::policy::apply_hash(this->hash_function(), key), key,
+          this->key_eq()));
+      }
+
       template <class CompatibleKey, class CompatibleHash,
         class CompatiblePredicate>
       iterator find(CompatibleKey const&, CompatibleHash const&,
