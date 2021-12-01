@@ -1473,7 +1473,8 @@ namespace boost {
         // it where possible.
         typedef BOOST_UNORDERED_DEFAULT_TYPE(std::allocator_traits<Alloc>,
           is_always_equal,
-          BOOST_UNORDERED_DEFAULT_TYPE(boost::allocator_is_always_equal<Alloc>, is_always_equal,
+          BOOST_UNORDERED_DEFAULT_TYPE(typename boost::allocator_is_always_equal<
+            Alloc>::type, is_always_equal,
               typename boost::is_empty<Alloc>::type)) is_always_equal;
       };
 
