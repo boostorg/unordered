@@ -799,6 +799,34 @@ namespace boost {
       std::pair<const_iterator, const_iterator> equal_range(
         const key_type&) const;
 
+      template <class Key>
+      typename boost::enable_if_c<detail::is_transparent<Key, H>::value &&
+                                    detail::is_transparent<Key, P>::value,
+        std::pair<iterator, iterator> >::type
+      equal_range(const Key& key)
+      {
+        node_pointer p = table_.find_node_impl(
+          table::policy::apply_hash(this->hash_function(), key), key,
+          this->key_eq());
+
+        return std::make_pair(
+          iterator(p), iterator(p ? table::next_node(p) : p));
+      }
+
+      template <class Key>
+      typename boost::enable_if_c<detail::is_transparent<Key, H>::value &&
+                                    detail::is_transparent<Key, P>::value,
+        std::pair<const_iterator, const_iterator> >::type
+      equal_range(const Key& key) const
+      {
+        node_pointer p = table_.find_node_impl(
+          table::policy::apply_hash(this->hash_function(), key), key,
+          this->key_eq());
+
+        return std::make_pair(
+          const_iterator(p), const_iterator(p ? table::next_node(p) : p));
+      }
+
       mapped_type& operator[](const key_type&);
       mapped_type& operator[](BOOST_RV_REF(key_type));
       mapped_type& at(const key_type&);
