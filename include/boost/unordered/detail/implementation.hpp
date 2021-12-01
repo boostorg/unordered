@@ -13,6 +13,7 @@
 #endif
 
 #include <boost/assert.hpp>
+#include <boost/core/allocator_access.hpp>
 #include <boost/core/no_exceptions_support.hpp>
 #include <boost/core/pointer_traits.hpp>
 #include <boost/detail/select_type.hpp>
@@ -1472,8 +1473,8 @@ namespace boost {
         // it where possible.
         typedef BOOST_UNORDERED_DEFAULT_TYPE(std::allocator_traits<Alloc>,
           is_always_equal,
-          BOOST_UNORDERED_DEFAULT_TYPE(Alloc, is_always_equal,
-            typename boost::is_empty<Alloc>::type)) is_always_equal;
+          BOOST_UNORDERED_DEFAULT_TYPE(boost::allocator_is_always_equal<Alloc>, is_always_equal,
+              typename boost::is_empty<Alloc>::type)) is_always_equal;
       };
 
       template <typename Alloc, typename T> struct rebind_wrap
