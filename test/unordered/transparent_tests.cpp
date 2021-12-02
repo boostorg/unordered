@@ -272,6 +272,249 @@ template <class UnorderedMap> void test_non_transparent_find()
   }
 }
 
+template <class UnorderedMap> void test_transparent_equal_range()
+{
+  count_reset();
+
+  UnorderedMap unordered_map;
+
+  // empty tests
+  //
+  // explicitly test `equal_range()` vs `equal_range() const`
+  //
+  {
+    typedef typename UnorderedMap::iterator iterator;
+    typedef std::pair<iterator, iterator> iterator_pair;
+
+    UnorderedMap& map = unordered_map;
+    BOOST_TEST(map.empty());
+
+    iterator_pair iters = map.equal_range(0);
+
+    iterator begin = iters.first;
+    iterator end = iters.second;
+
+    BOOST_TEST(begin == end);
+    BOOST_TEST(begin == map.end());
+    BOOST_TEST(std::distance(begin, end) == 0);
+  }
+
+  {
+    typedef typename UnorderedMap::const_iterator iterator;
+    typedef std::pair<iterator, iterator> iterator_pair;
+
+    UnorderedMap const& map = unordered_map;
+    BOOST_TEST(map.empty());
+
+    iterator_pair iters = map.equal_range(0);
+
+    iterator begin = iters.first;
+    iterator end = iters.second;
+
+    BOOST_TEST(begin == end);
+    BOOST_TEST(begin == map.end());
+    BOOST_TEST(std::distance(begin, end) == 0);
+  }
+
+  BOOST_TEST(key::count_ == 0);
+
+  unordered_map[key(0)] = 1337;
+  unordered_map[key(1)] = 1338;
+  unordered_map[key(2)] = 1339;
+
+  int const expected_key_count = 6;
+
+  BOOST_TEST(key::count_ == expected_key_count);
+
+  typedef typename UnorderedMap::value_type value_type;
+
+  // explicitly test `equal_range()` vs `equal_range() const`
+  //
+  {
+    typedef typename UnorderedMap::iterator iterator;
+    typedef std::pair<iterator, iterator> iterator_pair;
+
+    UnorderedMap& map = unordered_map;
+
+    iterator_pair iters = map.equal_range(0);
+
+    iterator begin = iters.first;
+    iterator end = iters.second;
+
+    BOOST_TEST(begin != end);
+    BOOST_TEST(begin != map.end());
+    BOOST_TEST(std::distance(begin, end) == 1);
+
+    value_type const& val = *begin;
+    BOOST_TEST(val.first.x_ == 0);
+    BOOST_TEST(val.second == 1337);
+
+    iters = map.equal_range(1337);
+
+    begin = iters.first;
+    end = iters.second;
+
+    BOOST_TEST(begin == end);
+    BOOST_TEST(begin == map.end());
+    BOOST_TEST(std::distance(begin, end) == 0);
+
+    BOOST_TEST(key::count_ == expected_key_count);
+  }
+
+  {
+    typedef typename UnorderedMap::const_iterator iterator;
+    typedef std::pair<iterator, iterator> iterator_pair;
+
+    UnorderedMap const& map = unordered_map;
+
+    iterator_pair iters = map.equal_range(0);
+
+    iterator begin = iters.first;
+    iterator end = iters.second;
+
+    BOOST_TEST(begin != end);
+    BOOST_TEST(begin != map.end());
+    BOOST_TEST(std::distance(begin, end) == 1);
+
+    value_type const& val = *begin;
+    BOOST_TEST(val.first.x_ == 0);
+    BOOST_TEST(val.second == 1337);
+
+    iters = map.equal_range(1337);
+
+    begin = iters.first;
+    end = iters.second;
+
+    BOOST_TEST(begin == end);
+    BOOST_TEST(begin == map.end());
+    BOOST_TEST(std::distance(begin, end) == 0);
+
+    BOOST_TEST(key::count_ == expected_key_count);
+  }
+}
+
+template <class UnorderedMap> void test_non_transparent_equal_range()
+{
+  count_reset();
+
+  UnorderedMap unordered_map;
+
+  // empty tests
+  //
+  // explicitly test `equal_range()` vs `equal_range() const`
+  //
+  {
+    typedef typename UnorderedMap::iterator iterator;
+    typedef std::pair<iterator, iterator> iterator_pair;
+
+    UnorderedMap& map = unordered_map;
+    BOOST_TEST(map.empty());
+
+    iterator_pair iters = map.equal_range(0);
+
+    iterator begin = iters.first;
+    iterator end = iters.second;
+
+    BOOST_TEST(begin == end);
+    BOOST_TEST(begin == map.end());
+    BOOST_TEST(std::distance(begin, end) == 0);
+  }
+
+  {
+    typedef typename UnorderedMap::const_iterator iterator;
+    typedef std::pair<iterator, iterator> iterator_pair;
+
+    UnorderedMap const& map = unordered_map;
+    BOOST_TEST(map.empty());
+
+    iterator_pair iters = map.equal_range(0);
+
+    iterator begin = iters.first;
+    iterator end = iters.second;
+
+    BOOST_TEST(begin == end);
+    BOOST_TEST(begin == map.end());
+    BOOST_TEST(std::distance(begin, end) == 0);
+  }
+
+  BOOST_TEST(key::count_ == 2);
+
+  unordered_map[key(0)] = 1337;
+  unordered_map[key(1)] = 1338;
+  unordered_map[key(2)] = 1339;
+
+  int key_count = 8;
+
+  BOOST_TEST(key::count_ == key_count);
+
+  typedef typename UnorderedMap::value_type value_type;
+
+  // explicitly test `equal_range()` vs `equal_range() const`
+  //
+  {
+    typedef typename UnorderedMap::iterator iterator;
+    typedef std::pair<iterator, iterator> iterator_pair;
+
+    UnorderedMap& map = unordered_map;
+
+    iterator_pair iters = map.equal_range(0);
+
+    iterator begin = iters.first;
+    iterator end = iters.second;
+
+    BOOST_TEST(begin != end);
+    BOOST_TEST(begin != map.end());
+    BOOST_TEST(std::distance(begin, end) == 1);
+
+    value_type const& val = *begin;
+    BOOST_TEST(val.first.x_ == 0);
+    BOOST_TEST(val.second == 1337);
+
+    iters = map.equal_range(1337);
+
+    begin = iters.first;
+    end = iters.second;
+
+    BOOST_TEST(begin == end);
+    BOOST_TEST(begin == map.end());
+    BOOST_TEST(std::distance(begin, end) == 0);
+
+    BOOST_TEST(key::count_ == 2 + key_count);
+    key_count += 2;
+  }
+
+  {
+    typedef typename UnorderedMap::const_iterator iterator;
+    typedef std::pair<iterator, iterator> iterator_pair;
+
+    UnorderedMap const& map = unordered_map;
+
+    iterator_pair iters = map.equal_range(0);
+
+    iterator begin = iters.first;
+    iterator end = iters.second;
+
+    BOOST_TEST(begin != end);
+    BOOST_TEST(begin != map.end());
+    BOOST_TEST(std::distance(begin, end) == 1);
+
+    value_type const& val = *begin;
+    BOOST_TEST(val.first.x_ == 0);
+    BOOST_TEST(val.second == 1337);
+
+    iters = map.equal_range(1337);
+
+    begin = iters.first;
+    end = iters.second;
+
+    BOOST_TEST(begin == end);
+    BOOST_TEST(begin == map.end());
+    BOOST_TEST(std::distance(begin, end) == 0);
+
+    BOOST_TEST(key::count_ == 2 + key_count);
+  }
+}
+
 UNORDERED_AUTO_TEST (unordered_map_transparent_count) {
   {
     typedef boost::unordered_map<key, int, transparent_hasher,
@@ -280,6 +523,7 @@ UNORDERED_AUTO_TEST (unordered_map_transparent_count) {
 
     test_transparent_count<unordered_map>();
     test_transparent_find<unordered_map>();
+    test_transparent_equal_range<unordered_map>();
   }
 
   {
@@ -289,6 +533,7 @@ UNORDERED_AUTO_TEST (unordered_map_transparent_count) {
 
     test_non_transparent_count<unordered_map>();
     test_non_transparent_find<unordered_map>();
+    test_non_transparent_equal_range<unordered_map>();
   }
 
   {
@@ -299,6 +544,7 @@ UNORDERED_AUTO_TEST (unordered_map_transparent_count) {
 
     test_non_transparent_count<unordered_map>();
     test_non_transparent_find<unordered_map>();
+    test_non_transparent_equal_range<unordered_map>();
   }
 
   {
@@ -309,6 +555,7 @@ UNORDERED_AUTO_TEST (unordered_map_transparent_count) {
 
     test_non_transparent_count<unordered_map>();
     test_non_transparent_find<unordered_map>();
+    test_non_transparent_equal_range<unordered_map>();
   }
 }
 
