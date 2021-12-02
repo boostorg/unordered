@@ -515,6 +515,36 @@ template <class UnorderedMap> void test_non_transparent_equal_range()
   }
 }
 
+template <class UnorderedMap> void test_transparent_erase()
+{
+  count_reset();
+
+  UnorderedMap map;
+
+  int num_erased = 0;
+
+  num_erased = map.erase(0);
+  BOOST_TEST(map.empty());
+  BOOST_TEST(num_erased == 0);
+  BOOST_TEST(key::count_ == 0);
+
+  map[key(0)] = 1337;
+  map[key(1)] = 1338;
+  map[key(2)] = 1339;
+
+  int const expected_key_count = 2 * map.size();
+
+  BOOST_TEST(key::count_ == expected_key_count);
+
+  num_erased = map.erase(0);
+  BOOST_TEST(num_erased == 1);
+
+  num_erased = map.erase(1337);
+  BOOST_TEST(num_erased == 0);
+
+  BOOST_TEST(key::count_ == expected_key_count);
+}
+
 UNORDERED_AUTO_TEST (unordered_map_transparent_count) {
   {
     typedef boost::unordered_map<key, int, transparent_hasher,
