@@ -4055,21 +4055,28 @@ namespace boost {
         // no throw
 
         template <class KeyEqual, class Key>
-        std::size_t erase_key_unique_impl(KeyEqual const& eq, Key const& k) {
+        std::size_t erase_key_unique_impl(KeyEqual const& eq, Key const& k)
+        {
           if (!this->size_)
             return 0;
+
           std::size_t key_hash = this->hash(k);
           std::size_t bucket_index = this->hash_to_bucket(key_hash);
-          link_pointer prev = this->find_previous_node_impl(eq, k, bucket_index);
+
+          link_pointer prev =
+            this->find_previous_node_impl(eq, k, bucket_index);
+
           if (!prev)
             return 0;
+
           node_pointer n = next_node(prev);
           node_pointer n2 = next_node(n);
           prev->next_ = n2;
           --size_;
           this->fix_bucket(bucket_index, prev, n2);
           this->destroy_node(n);
-          return 1;          
+          
+          return 1;
         }
 
         std::size_t erase_key_unique(const_key_type& k)
