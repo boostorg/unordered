@@ -3631,7 +3631,11 @@ namespace boost {
             node_pointer n = next_node(prev);
             if (!n) {
               return link_pointer();
-            } else if (n->is_first_in_group()) {
+            } 
+            // the `first_in_group()` checks are required for the multi-containers
+            // for the unique containers, this condition seems to be always true
+            //
+            else if (n->is_first_in_group()) {
               if (node_bucket(n) != bucket_index) {
                 return link_pointer();
               } else if (eq(k, this->get_key(n))) {
