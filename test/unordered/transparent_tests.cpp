@@ -48,6 +48,11 @@ struct transparent_key_equal
     was_called_ = true;
     return k1.x_ == x;
   }
+  bool operator()(key const& k1, int const x) const
+  {
+    was_called_ = true;
+    return k1.x_ == x;
+  }
 };
 
 bool transparent_key_equal::was_called_;
@@ -515,13 +520,34 @@ template <class UnorderedMap> void test_non_transparent_equal_range()
   }
 }
 
+template <class UnorderedMap> struct convertible_to_iterator
+{
+  operator typename UnorderedMap::iterator()
+  {
+    return typename UnorderedMap::iterator();
+  }
+};
+
+typedef boost::unordered_map<int, int, transparent_hasher,
+  transparent_key_equal>
+  transparent_unordered_map;
+
+transparent_unordered_map::iterator erase_overload_compile_test()
+{
+  convertible_to_iterator<transparent_unordered_map> c;
+  transparent_unordered_map map;
+  transparent_unordered_map::iterator pos = map.begin();
+  pos = c;
+  return map.erase(c);
+}
+
 template <class UnorderedMap> void test_transparent_erase()
 {
   count_reset();
 
   UnorderedMap map;
 
-  int num_erased = 0;
+  unsigned long num_erased = 0;
 
   num_erased = map.erase(0);
   BOOST_TEST(map.empty());
@@ -532,17 +558,60 @@ template <class UnorderedMap> void test_transparent_erase()
   map[key(1)] = 1338;
   map[key(2)] = 1339;
 
-  int const expected_key_count = 2 * map.size();
+  BOOST_TEST(map.size() == 3);
+  BOOST_TEST(map.find(0) != map.end());
 
+  int const expected_key_count = static_cast<int>(2 * map.size());
   BOOST_TEST(key::count_ == expected_key_count);
 
   num_erased = map.erase(0);
+  BOOST_TEST(key::count_ == expected_key_count);
   BOOST_TEST(num_erased == 1);
+  BOOST_TEST(map.size() == 2);
+  BOOST_TEST(map.find(0) == map.end());
+  BOOST_TEST(key::count_ == expected_key_count);
 
   num_erased = map.erase(1337);
   BOOST_TEST(num_erased == 0);
+  BOOST_TEST(map.size() == 2);
 
   BOOST_TEST(key::count_ == expected_key_count);
+}
+
+template <class UnorderedMap> void test_non_transparent_erase()
+{
+  count_reset();
+
+  UnorderedMap map;
+
+  unsigned long num_erased = 0;
+
+  num_erased = map.erase(0);
+  BOOST_TEST(map.empty());
+  BOOST_TEST(num_erased == 0);
+  BOOST_TEST(key::count_ == 1);
+
+  map[key(0)] = 1337;
+  map[key(1)] = 1338;
+  map[key(2)] = 1339;
+
+  BOOST_TEST(map.size() == 3);
+  BOOST_TEST(map.find(0) != map.end());
+
+  int key_count = 2 + static_cast<int>(2 * map.size());
+  BOOST_TEST(key::count_ == key_count);
+
+  num_erased = map.erase(0);
+  BOOST_TEST(key::count_ == ++key_count);
+  BOOST_TEST(num_erased == 1);
+  BOOST_TEST(map.size() == 2);
+  BOOST_TEST(map.find(0) == map.end());
+  BOOST_TEST(key::count_ == ++key_count);
+
+  num_erased = map.erase(1337);
+  BOOST_TEST(num_erased == 0);
+  BOOST_TEST(map.size() == 2);
+  BOOST_TEST(key::count_ == ++key_count);
 }
 
 UNORDERED_AUTO_TEST (unordered_map_transparent_count) {
@@ -554,6 +623,7 @@ UNORDERED_AUTO_TEST (unordered_map_transparent_count) {
     test_transparent_count<unordered_map>();
     test_transparent_find<unordered_map>();
     test_transparent_equal_range<unordered_map>();
+    test_transparent_erase<unordered_map>();
   }
 
   {
@@ -564,6 +634,7 @@ UNORDERED_AUTO_TEST (unordered_map_transparent_count) {
     test_non_transparent_count<unordered_map>();
     test_non_transparent_find<unordered_map>();
     test_non_transparent_equal_range<unordered_map>();
+    test_non_transparent_erase<unordered_map>();
   }
 
   {
@@ -575,6 +646,7 @@ UNORDERED_AUTO_TEST (unordered_map_transparent_count) {
     test_non_transparent_count<unordered_map>();
     test_non_transparent_find<unordered_map>();
     test_non_transparent_equal_range<unordered_map>();
+    test_non_transparent_erase<unordered_map>();
   }
 
   {
@@ -586,6 +658,7 @@ UNORDERED_AUTO_TEST (unordered_map_transparent_count) {
     test_non_transparent_count<unordered_map>();
     test_non_transparent_find<unordered_map>();
     test_non_transparent_equal_range<unordered_map>();
+    test_non_transparent_erase<unordered_map>();
   }
 }
 
