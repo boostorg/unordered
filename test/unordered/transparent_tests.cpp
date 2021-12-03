@@ -522,9 +522,9 @@ template <class UnorderedMap> void test_non_transparent_equal_range()
 
 template <class UnorderedMap> struct convertible_to_iterator
 {
-  operator typename UnorderedMap::iterator()
+  operator typename UnorderedMap::const_iterator()
   {
-    return typename UnorderedMap::iterator();
+    return typename UnorderedMap::const_iterator();
   }
 };
 
@@ -539,7 +539,7 @@ transparent_unordered_map::iterator erase_overload_compile_test()
 {
   convertible_to_iterator<transparent_unordered_map> c;
   transparent_unordered_map map;
-  transparent_unordered_map::iterator pos = map.begin();
+  transparent_unordered_map::const_iterator pos = map.begin();
   pos = c;
   return map.erase(c);
 }
@@ -620,6 +620,103 @@ template <class UnorderedMap> void test_non_transparent_erase()
   BOOST_TEST_EQ(key::count_, key_count);
 }
 
+// test that in the presence of the member function template `extract()`, we still
+// invoke the correct iterator overloads when the type is implicitly convertible
+//
+transparent_unordered_map::node_type extract_overload_compile_test()
+{
+  convertible_to_iterator<transparent_unordered_map> c;
+  transparent_unordered_map map;
+  transparent_unordered_map::const_iterator pos = map.begin();
+  pos = c;
+  return map.extract(c);
+}
+
+template <class UnorderedMap> void test_transparent_extract()
+{
+  typedef typename UnorderedMap::node_type node_type;
+  typedef typename UnorderedMap::const_iterator const_iterator;
+
+  count_reset();
+
+  UnorderedMap map;
+
+  node_type nh = map.extract(0);
+  BOOST_TEST(nh.empty());
+  BOOST_TEST(key::count_ == 0);
+
+  map[key(0)] = 1337;
+  map[key(1)] = 1338;
+  map[key(2)] = 1339;
+  BOOST_TEST(map.size() == 3);
+
+  int const expected_key_count = static_cast<int>(2 * map.size());
+  BOOST_TEST(key::count_ == expected_key_count);
+
+  nh = map.extract(1);
+  BOOST_TEST(map.size() == 2);
+  BOOST_TEST(nh.key().x_ == 1);
+  BOOST_TEST(nh.mapped() == 1338);
+
+  nh.mapped() = 1340;
+
+  map.insert(boost::move(nh));
+
+  BOOST_TEST(map.size() == 3);
+
+  const_iterator pos = map.find(1);
+  BOOST_TEST(pos != map.end());
+  BOOST_TEST(pos->second == 1340);
+
+  nh = map.extract(1337);
+  BOOST_TEST(nh.empty());
+
+  BOOST_TEST(key::count_ == expected_key_count);
+}
+
+template <class UnorderedMap> void test_non_transparent_extract()
+{
+  typedef typename UnorderedMap::node_type node_type;
+  typedef typename UnorderedMap::const_iterator const_iterator;
+
+  count_reset();
+
+  UnorderedMap map;
+
+  node_type nh = map.extract(0);
+  BOOST_TEST(nh.empty());
+  BOOST_TEST(key::count_ == 1);
+
+  map[key(0)] = 1337;
+  map[key(1)] = 1338;
+  map[key(2)] = 1339;
+  BOOST_TEST(map.size() == 3);
+
+  int key_count = 1 + static_cast<int>(2 * map.size());
+  BOOST_TEST(key::count_ == key_count);
+
+  nh = map.extract(1);
+  BOOST_TEST(map.size() == 2);
+  BOOST_TEST(nh.key().x_ == 1);
+  BOOST_TEST(nh.mapped() == 1338);
+  BOOST_TEST(key::count_ == ++key_count);
+
+  nh.mapped() = 1340;
+
+  map.insert(boost::move(nh));
+
+  BOOST_TEST(map.size() == 3);
+
+  const_iterator pos = map.find(1);
+  BOOST_TEST(pos != map.end());
+  BOOST_TEST(pos->second == 1340);
+  BOOST_TEST(key::count_ == ++key_count);
+
+  nh = map.extract(1337);
+  BOOST_TEST(nh.empty());
+  BOOST_TEST(key::count_ == ++key_count);
+}
+
 UNORDERED_AUTO_TEST (unordered_map_transparent_count) {
   {
     typedef boost::unordered_map<key, int, transparent_hasher,
@@ -630,6 +727,7 @@ UNORDERED_AUTO_TEST (unordered_map_transparent_count) {
     test_transparent_find<unordered_map>();
     test_transparent_equal_range<unordered_map>();
     test_transparent_erase<unordered_map>();
+    test_transparent_extract<unordered_map>();
   }
 
   {
@@ -641,6 +739,7 @@ UNORDERED_AUTO_TEST (unordered_map_transparent_count) {
     test_non_transparent_find<unordered_map>();
     test_non_transparent_equal_range<unordered_map>();
     test_non_transparent_erase<unordered_map>();
+    test_non_transparent_extract<unordered_map>();
   }
 
   {
@@ -653,6 +752,7 @@ UNORDERED_AUTO_TEST (unordered_map_transparent_count) {
     test_non_transparent_find<unordered_map>();
     test_non_transparent_equal_range<unordered_map>();
     test_non_transparent_erase<unordered_map>();
+    test_non_transparent_extract<unordered_map>();
   }
 
   {
@@ -665,6 +765,7 @@ UNORDERED_AUTO_TEST (unordered_map_transparent_count) {
     test_non_transparent_find<unordered_map>();
     test_non_transparent_equal_range<unordered_map>();
     test_non_transparent_erase<unordered_map>();
+    test_non_transparent_extract<unordered_map>();
   }
 }
 
