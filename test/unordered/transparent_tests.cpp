@@ -532,6 +532,9 @@ typedef boost::unordered_map<int, int, transparent_hasher,
   transparent_key_equal>
   transparent_unordered_map;
 
+// test that in the presence of the member function template `erase()`, we still
+// invoke the correct iterator overloads when the type is implicitly convertible
+//
 transparent_unordered_map::iterator erase_overload_compile_test()
 {
   convertible_to_iterator<transparent_unordered_map> c;
@@ -565,11 +568,9 @@ template <class UnorderedMap> void test_transparent_erase()
   BOOST_TEST(key::count_ == expected_key_count);
 
   num_erased = map.erase(0);
-  BOOST_TEST(key::count_ == expected_key_count);
   BOOST_TEST(num_erased == 1);
   BOOST_TEST(map.size() == 2);
   BOOST_TEST(map.find(0) == map.end());
-  BOOST_TEST(key::count_ == expected_key_count);
 
   num_erased = map.erase(1337);
   BOOST_TEST(num_erased == 0);
