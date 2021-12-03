@@ -4064,7 +4064,7 @@ namespace boost {
           if (!this->size_)
             return 0;
 
-          std::size_t key_hash = this->hash(k);
+          std::size_t key_hash = policy::apply_hash(this->hash_function(), k);
           std::size_t bucket_index = this->hash_to_bucket(key_hash);
 
           link_pointer prev =
