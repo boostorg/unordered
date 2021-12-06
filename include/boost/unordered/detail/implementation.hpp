@@ -3618,9 +3618,9 @@ namespace boost {
           }
         }
 
-        // Find the node before the key, so that it can be erased.
-        link_pointer find_previous_node(
-          const_key_type& k, std::size_t bucket_index)
+        template <class KeyEqual, class Key>
+        link_pointer find_previous_node_impl(
+          KeyEqual const& eq, Key const& k, std::size_t const bucket_index)
         {
           link_pointer prev = this->get_previous_start(bucket_index);
           if (!prev) {
@@ -3631,15 +3631,26 @@ namespace boost {
             node_pointer n = next_node(prev);
             if (!n) {
               return link_pointer();
-            } else if (n->is_first_in_group()) {
+            } 
+            // the `first_in_group()` checks are required for the multi-containers
+            // for the unique containers, this condition seems to be always true
+            //
+            else if (n->is_first_in_group()) {
               if (node_bucket(n) != bucket_index) {
                 return link_pointer();
-              } else if (this->key_eq()(k, this->get_key(n))) {
+              } else if (eq(k, this->get_key(n))) {
                 return prev;
               }
             }
             prev = n;
           }
+        }
+
+        // Find the node before the key, so that it can be erased.
+        link_pointer find_previous_node(
+          const_key_type& k, std::size_t bucket_index)
+        {
+          return find_previous_node_impl(this->key_eq(), k, bucket_index);
         }
 
         // Extract and erase
@@ -4047,22 +4058,34 @@ namespace boost {
         //
         // no throw
 
-        std::size_t erase_key_unique(const_key_type& k)
+        template <class KeyEqual, class Key>
+        std::size_t erase_key_unique_impl(KeyEqual const& eq, Key const& k)
         {
           if (!this->size_)
             return 0;
-          std::size_t key_hash = this->hash(k);
+
+          std::size_t key_hash = policy::apply_hash(this->hash_function(), k);
           std::size_t bucket_index = this->hash_to_bucket(key_hash);
-          link_pointer prev = this->find_previous_node(k, bucket_index);
+
+          link_pointer prev =
+            this->find_previous_node_impl(eq, k, bucket_index);
+
           if (!prev)
             return 0;
+
           node_pointer n = next_node(prev);
           node_pointer n2 = next_node(n);
           prev->next_ = n2;
           --size_;
           this->fix_bucket(bucket_index, prev, n2);
           this->destroy_node(n);
+          
           return 1;
+        }
+
+        std::size_t erase_key_unique(const_key_type& k)
+        {
+          return this->erase_key_unique_impl(this->key_eq(), k);
         }
 
         void erase_nodes_unique(node_pointer i, node_pointer j)
