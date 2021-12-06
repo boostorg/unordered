@@ -554,29 +554,29 @@ template <class UnorderedMap> void test_transparent_erase()
 
   num_erased = map.erase(0);
   BOOST_TEST(map.empty());
-  BOOST_TEST(num_erased == 0);
-  BOOST_TEST(key::count_ == 0);
+  BOOST_TEST_EQ(num_erased, 0);
+  BOOST_TEST_EQ(key::count_, 0);
 
   map[key(0)] = 1337;
   map[key(1)] = 1338;
   map[key(2)] = 1339;
 
-  BOOST_TEST(map.size() == 3);
+  BOOST_TEST_EQ(map.size(), 3);
   BOOST_TEST(map.find(0) != map.end());
 
   int const expected_key_count = static_cast<int>(2 * map.size());
-  BOOST_TEST(key::count_ == expected_key_count);
+  BOOST_TEST_EQ(key::count_, expected_key_count);
 
   num_erased = map.erase(0);
-  BOOST_TEST(num_erased == 1);
-  BOOST_TEST(map.size() == 2);
+  BOOST_TEST_EQ(num_erased, 1);
+  BOOST_TEST_EQ(map.size(), 2);
   BOOST_TEST(map.find(0) == map.end());
 
   num_erased = map.erase(1337);
-  BOOST_TEST(num_erased == 0);
-  BOOST_TEST(map.size() == 2);
+  BOOST_TEST_EQ(num_erased, 0);
+  BOOST_TEST_EQ(map.size(), 2);
 
-  BOOST_TEST(key::count_ == expected_key_count);
+  BOOST_TEST_EQ(key::count_, expected_key_count);
 }
 
 template <class UnorderedMap> void test_non_transparent_erase()
@@ -589,35 +589,35 @@ template <class UnorderedMap> void test_non_transparent_erase()
 
   num_erased = map.erase(0);
   BOOST_TEST(map.empty());
-  BOOST_TEST(num_erased == 0);
-  BOOST_TEST(key::count_ == 1);
+  BOOST_TEST_EQ(num_erased, 0);
+  BOOST_TEST_EQ(key::count_, 1);
 
   map[key(0)] = 1337;
   map[key(1)] = 1338;
   map[key(2)] = 1339;
 
-  BOOST_TEST(map.size() == 3);
+  BOOST_TEST_EQ(map.size(), 3);
   BOOST_TEST(map.find(0) != map.end());
 
   int key_count = 2 + static_cast<int>(2 * map.size());
-  BOOST_TEST(key::count_ == key_count);
+  BOOST_TEST_EQ(key::count_, key_count);
 
   num_erased = map.erase(0);
   ++key_count;
-  BOOST_TEST(key::count_ == key_count);
-  BOOST_TEST(num_erased == 1);
-  BOOST_TEST(map.size() == 2);
+  BOOST_TEST_EQ(key::count_, key_count);
+  BOOST_TEST_EQ(num_erased, 1);
+  BOOST_TEST_EQ(map.size(), 2);
 
   BOOST_TEST(map.find(0) == map.end());
   ++key_count;
-  
-  BOOST_TEST(key::count_ == key_count);
+
+  BOOST_TEST_EQ(key::count_, key_count);
 
   num_erased = map.erase(1337);
   ++key_count;
-  BOOST_TEST(num_erased == 0);
-  BOOST_TEST(map.size() == 2);
-  BOOST_TEST(key::count_ == key_count);
+  BOOST_TEST_EQ(num_erased, 0);
+  BOOST_TEST_EQ(map.size(), 2);
+  BOOST_TEST_EQ(key::count_, key_count);
 }
 
 UNORDERED_AUTO_TEST (unordered_map_transparent_count) {
