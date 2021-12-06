@@ -603,16 +603,21 @@ template <class UnorderedMap> void test_non_transparent_erase()
   BOOST_TEST(key::count_ == key_count);
 
   num_erased = map.erase(0);
-  BOOST_TEST(key::count_ == ++key_count);
+  ++key_count;
+  BOOST_TEST(key::count_ == key_count);
   BOOST_TEST(num_erased == 1);
   BOOST_TEST(map.size() == 2);
+
   BOOST_TEST(map.find(0) == map.end());
-  BOOST_TEST(key::count_ == ++key_count);
+  ++key_count;
+  
+  BOOST_TEST(key::count_ == key_count);
 
   num_erased = map.erase(1337);
+  ++key_count;
   BOOST_TEST(num_erased == 0);
   BOOST_TEST(map.size() == 2);
-  BOOST_TEST(key::count_ == ++key_count);
+  BOOST_TEST(key::count_ == key_count);
 }
 
 UNORDERED_AUTO_TEST (unordered_map_transparent_count) {
