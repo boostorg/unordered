@@ -620,8 +620,9 @@ template <class UnorderedMap> void test_non_transparent_erase()
   BOOST_TEST_EQ(key::count_, key_count);
 }
 
-// test that in the presence of the member function template `extract()`, we still
-// invoke the correct iterator overloads when the type is implicitly convertible
+// test that in the presence of the member function template `extract()`, we
+// still invoke the correct iterator overloads when the type is implicitly
+// convertible
 //
 transparent_unordered_map::node_type extract_overload_compile_test()
 {
@@ -643,20 +644,20 @@ template <class UnorderedMap> void test_transparent_extract()
 
   node_type nh = map.extract(0);
   BOOST_TEST(nh.empty());
-  BOOST_TEST(key::count_ == 0);
+  BOOST_TEST_EQ(key::count_, 0);
 
   map[key(0)] = 1337;
   map[key(1)] = 1338;
   map[key(2)] = 1339;
-  BOOST_TEST(map.size() == 3);
+  BOOST_TEST_EQ(map.size(), 3);
 
   int const expected_key_count = static_cast<int>(2 * map.size());
-  BOOST_TEST(key::count_ == expected_key_count);
+  BOOST_TEST_EQ(key::count_, expected_key_count);
 
   nh = map.extract(1);
-  BOOST_TEST(map.size() == 2);
-  BOOST_TEST(nh.key().x_ == 1);
-  BOOST_TEST(nh.mapped() == 1338);
+  BOOST_TEST_EQ(map.size(), 2);
+  BOOST_TEST_EQ(nh.key().x_, 1);
+  BOOST_TEST_EQ(nh.mapped(), 1338);
 
   nh.mapped() = 1340;
 
@@ -666,12 +667,12 @@ template <class UnorderedMap> void test_transparent_extract()
 
   const_iterator pos = map.find(1);
   BOOST_TEST(pos != map.end());
-  BOOST_TEST(pos->second == 1340);
+  BOOST_TEST_EQ(pos->second, 1340);
 
   nh = map.extract(1337);
   BOOST_TEST(nh.empty());
 
-  BOOST_TEST(key::count_ == expected_key_count);
+  BOOST_TEST_EQ(key::count_, expected_key_count);
 }
 
 template <class UnorderedMap> void test_non_transparent_extract()
@@ -685,36 +686,39 @@ template <class UnorderedMap> void test_non_transparent_extract()
 
   node_type nh = map.extract(0);
   BOOST_TEST(nh.empty());
-  BOOST_TEST(key::count_ == 1);
+  BOOST_TEST_EQ(key::count_, 1);
 
   map[key(0)] = 1337;
   map[key(1)] = 1338;
   map[key(2)] = 1339;
-  BOOST_TEST(map.size() == 3);
+  BOOST_TEST_EQ(map.size(), 3);
 
   int key_count = 1 + static_cast<int>(2 * map.size());
-  BOOST_TEST(key::count_ == key_count);
+  BOOST_TEST_EQ(key::count_, key_count);
 
   nh = map.extract(1);
-  BOOST_TEST(map.size() == 2);
-  BOOST_TEST(nh.key().x_ == 1);
-  BOOST_TEST(nh.mapped() == 1338);
-  BOOST_TEST(key::count_ == ++key_count);
+  ++key_count;
+  BOOST_TEST_EQ(map.size(), 2);
+  BOOST_TEST_EQ(nh.key().x_, 1);
+  BOOST_TEST_EQ(nh.mapped(), 1338);
+  BOOST_TEST_EQ(key::count_, key_count);
 
   nh.mapped() = 1340;
 
   map.insert(boost::move(nh));
 
-  BOOST_TEST(map.size() == 3);
+  BOOST_TEST_EQ(map.size(), 3);
 
   const_iterator pos = map.find(1);
+  ++key_count;
   BOOST_TEST(pos != map.end());
-  BOOST_TEST(pos->second == 1340);
-  BOOST_TEST(key::count_ == ++key_count);
+  BOOST_TEST_EQ(pos->second, 1340);
+  BOOST_TEST_EQ(key::count_, key_count);
 
   nh = map.extract(1337);
+  ++key_count;
   BOOST_TEST(nh.empty());
-  BOOST_TEST(key::count_ == ++key_count);
+  BOOST_TEST_EQ(key::count_, key_count);
 }
 
 UNORDERED_AUTO_TEST (unordered_map_transparent_count) {
