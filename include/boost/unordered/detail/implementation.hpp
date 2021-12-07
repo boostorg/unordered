@@ -1057,8 +1057,6 @@ namespace boost {
 // Allocator traits
 //
 
-#include <boost/container/allocator_traits.hpp>
-
 namespace boost {
   namespace unordered {
     namespace detail {
