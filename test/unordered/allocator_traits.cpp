@@ -213,7 +213,15 @@ void test_allocator2()
   BOOST_TEST(!traits::propagate_on_container_move_assignment::value);
   BOOST_TEST(!traits::propagate_on_container_swap::value);
   BOOST_TEST(!traits::is_always_equal::value);
+
+#if !defined(BOOST_NO_CXX11_ALLOCATOR)
+  // conditionally compile this assertion as all C++03 emulations of expression
+  // SFINAE are broken one way or another and the benefits of using Core's
+  // `allocator_traits` outweigh the costs of breaking this kind of code (i.e.
+  // inheriting SOCCC via a base)
+  //
   BOOST_TEST(call_select<allocator>() == 1);
+#endif
 }
 
 // allocator 3
