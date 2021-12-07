@@ -522,6 +522,14 @@ template <class UnorderedMap> void test_non_transparent_equal_range()
 
 template <class UnorderedMap> struct convertible_to_iterator
 {
+  operator typename UnorderedMap::iterator()
+  {
+    return typename UnorderedMap::iterator();
+  }
+};
+
+template <class UnorderedMap> struct convertible_to_const_iterator
+{
   operator typename UnorderedMap::const_iterator()
   {
     return typename UnorderedMap::const_iterator();
@@ -538,6 +546,15 @@ typedef boost::unordered_map<int, int, transparent_hasher,
 transparent_unordered_map::iterator erase_overload_compile_test()
 {
   convertible_to_iterator<transparent_unordered_map> c;
+  transparent_unordered_map map;
+  transparent_unordered_map::iterator pos = map.begin();
+  pos = c;
+  return map.erase(c);
+}
+
+transparent_unordered_map::const_iterator erase_const_overload_compile_test()
+{
+  convertible_to_const_iterator<transparent_unordered_map> c;
   transparent_unordered_map map;
   transparent_unordered_map::const_iterator pos = map.begin();
   pos = c;
@@ -624,9 +641,9 @@ template <class UnorderedMap> void test_non_transparent_erase()
 // still invoke the correct iterator overloads when the type is implicitly
 // convertible
 //
-transparent_unordered_map::node_type extract_overload_compile_test()
+transparent_unordered_map::node_type extract_const_overload_compile_test()
 {
-  convertible_to_iterator<transparent_unordered_map> c;
+  convertible_to_const_iterator<transparent_unordered_map> c;
   transparent_unordered_map map;
   transparent_unordered_map::const_iterator pos = map.begin();
   pos = c;
