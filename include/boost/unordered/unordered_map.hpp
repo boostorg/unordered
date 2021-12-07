@@ -427,7 +427,20 @@ namespace boost {
 
       node_type extract(const key_type& k)
       {
-        return node_type(table_.extract_by_key(k), table_.node_alloc());
+        return node_type(table_.extract_by_key_impl(k), table_.node_alloc());
+      }
+
+      template <class Key>
+      typename boost::enable_if_c<
+        detail::is_transparent<Key, H>::value &&
+          detail::is_transparent<Key, P>::value &&
+          !boost::is_convertible<Key, iterator>::value &&
+          !boost::is_convertible<Key, const_iterator>::value,
+        node_type>::type
+      extract(BOOST_FWD_REF(Key) k)
+      {
+        return node_type(table_.extract_by_key_impl(boost::forward<Key>(k)),
+          table_.node_alloc());
       }
 
       insert_return_type insert(BOOST_RV_REF(node_type) np)

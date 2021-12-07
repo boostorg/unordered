@@ -3655,14 +3655,15 @@ namespace boost {
 
         // Extract and erase
 
-        inline node_pointer extract_by_key(const_key_type& k)
+        template <class Key> node_pointer extract_by_key_impl(Key const& k)
         {
           if (!this->size_) {
             return node_pointer();
           }
-          std::size_t key_hash = this->hash(k);
+          std::size_t key_hash = policy::apply_hash(this->hash_function(), k);
           std::size_t bucket_index = this->hash_to_bucket(key_hash);
-          link_pointer prev = this->find_previous_node(k, bucket_index);
+          link_pointer prev =
+            this->find_previous_node_impl(this->key_eq(), k, bucket_index);
           if (!prev) {
             return node_pointer();
           }
@@ -3677,6 +3678,11 @@ namespace boost {
           n->next_ = link_pointer();
 
           return n;
+        }
+
+        inline node_pointer extract_by_key(const_key_type& k)
+        {
+          return extract_by_key_impl(k);
         }
 
         // Reserve and rehash
