@@ -82,29 +82,6 @@
 #define BOOST_UNORDERED_EMPLACE_LIMIT 10
 #endif
 
-// BOOST_UNORDERED_USE_ALLOCATOR_TRAITS - Pick which version of
-// allocator_traits to use.
-//
-// 0 = Own partial implementation
-// 1 = std::allocator_traits
-// 2 = boost::container::allocator_traits
-
-#if !defined(BOOST_UNORDERED_USE_ALLOCATOR_TRAITS)
-#if !defined(BOOST_NO_CXX11_ALLOCATOR)
-#define BOOST_UNORDERED_USE_ALLOCATOR_TRAITS 1
-#elif defined(BOOST_MSVC)
-#if BOOST_MSVC < 1400
-// Use container's allocator_traits for older versions of Visual
-// C++ as I don't test with them.
-#define BOOST_UNORDERED_USE_ALLOCATOR_TRAITS 2
-#endif
-#endif
-#endif
-
-#if !defined(BOOST_UNORDERED_USE_ALLOCATOR_TRAITS)
-#define BOOST_UNORDERED_USE_ALLOCATOR_TRAITS 0
-#endif
-
 // BOOST_UNORDERED_TUPLE_ARGS
 //
 // Maximum number of std::tuple members to support, or 0 if std::tuple
@@ -155,10 +132,7 @@
 #elif BOOST_COMP_GNUC && BOOST_COMP_GNUC < BOOST_VERSION_NUMBER(4, 7, 0)
 // Piecewise construction in GCC 4.6 doesn't work for uncopyable types.
 #define BOOST_UNORDERED_CXX11_CONSTRUCTION 0
-#elif BOOST_UNORDERED_USE_ALLOCATOR_TRAITS == 0 &&                             \
-  !defined(BOOST_NO_SFINAE_EXPR)
-#define BOOST_UNORDERED_CXX11_CONSTRUCTION 1
-#elif BOOST_UNORDERED_USE_ALLOCATOR_TRAITS == 1
+#elif !defined(BOOST_NO_CXX11_ALLOCATOR)
 #define BOOST_UNORDERED_CXX11_CONSTRUCTION 1
 #endif
 #endif

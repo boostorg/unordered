@@ -111,7 +111,7 @@ void test_empty_allocator()
 {
   typedef empty_allocator<int> allocator;
   typedef boost::unordered::detail::allocator_traits<allocator> traits;
-#if BOOST_UNORDERED_USE_ALLOCATOR_TRAITS == 1
+#if !defined(BOOST_NO_CXX11_ALLOCATOR)
   BOOST_STATIC_ASSERT((boost::is_same<traits::size_type,
     std::make_unsigned<std::ptrdiff_t>::type>::value));
 #else
@@ -153,7 +153,7 @@ void test_allocator1()
 {
   typedef allocator1<int> allocator;
   typedef boost::unordered::detail::allocator_traits<allocator> traits;
-#if BOOST_UNORDERED_USE_ALLOCATOR_TRAITS == 1
+#if !defined(BOOST_NO_CXX11_ALLOCATOR)
   BOOST_STATIC_ASSERT((boost::is_same<traits::size_type,
     std::make_unsigned<std::ptrdiff_t>::type>::value));
 #else

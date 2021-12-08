@@ -48,7 +48,7 @@ template <typename T> void test_simple_allocator()
   BOOST_STATIC_ASSERT(
     (boost::is_same<typename traits::difference_type, std::ptrdiff_t>::value));
 
-#if BOOST_UNORDERED_USE_ALLOCATOR_TRAITS == 1
+#if !defined(BOOST_NO_CXX11_ALLOCATOR)
   BOOST_STATIC_ASSERT((boost::is_same<typename traits::size_type,
     std::make_unsigned<std::ptrdiff_t>::type>::value));
 #else

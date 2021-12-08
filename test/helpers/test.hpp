@@ -137,8 +137,6 @@ namespace test {
       << BOOST_UNORDERED_HAVE_PIECEWISE_CONSTRUCT << "\n"                      \
       << "BOOST_UNORDERED_EMPLACE_LIMIT: " << BOOST_UNORDERED_EMPLACE_LIMIT    \
       << "\n"                                                                  \
-      << "BOOST_UNORDERED_USE_ALLOCATOR_TRAITS: "                              \
-      << BOOST_UNORDERED_USE_ALLOCATOR_TRAITS << "\n"                          \
       << "BOOST_UNORDERED_CXX11_CONSTRUCTION: "                                \
       << BOOST_UNORDERED_CXX11_CONSTRUCTION << "\n\n"                          \
       << std::flush;                                                           \
