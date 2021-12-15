@@ -168,7 +168,7 @@ template <class UnorderedMap> void test_transparent_find()
   }
 
   int const expected_key_count = 2 * n;
-  BOOST_TEST(key::count_ == expected_key_count);
+  BOOST_TEST_EQ(key::count_, expected_key_count);
 
   // explicitly test `find()` and `find() const` separately
   //
@@ -183,14 +183,14 @@ template <class UnorderedMap> void test_transparent_find()
       pair const& p = *pos;
       int const v = p.second;
 
-      BOOST_TEST(v == i);
+      BOOST_TEST_EQ(v, i);
     }
 
-    BOOST_TEST(key::count_ == expected_key_count);
+    BOOST_TEST_EQ(key::count_, expected_key_count);
 
     map_iterator pos = m.find(1337);
     BOOST_TEST(pos == m.end());
-    BOOST_TEST(key::count_ == expected_key_count);
+    BOOST_TEST_EQ(key::count_, expected_key_count);
   }
 
   {
@@ -206,11 +206,11 @@ template <class UnorderedMap> void test_transparent_find()
       BOOST_TEST(v == i);
     }
 
-    BOOST_TEST(key::count_ == expected_key_count);
+    BOOST_TEST_EQ(key::count_, expected_key_count);
 
     map_iterator pos = m.find(1337);
     BOOST_TEST(pos == m.end());
-    BOOST_TEST(key::count_ == expected_key_count);
+    BOOST_TEST_EQ(key::count_, expected_key_count);
   }
 }
 
@@ -231,7 +231,7 @@ template <class UnorderedMap> void test_non_transparent_find()
 
   int key_count = 2 * n;
 
-  BOOST_TEST(key::count_ == key_count);
+  BOOST_TEST_EQ(key::count_, key_count);
 
   // explicitly test `find()` and `find() const` separately
   //
@@ -246,13 +246,13 @@ template <class UnorderedMap> void test_non_transparent_find()
       pair const& p = *pos;
       int const v = p.second;
 
-      BOOST_TEST(v == i);
+      BOOST_TEST_EQ(v, i);
     }
-    BOOST_TEST(key::count_ == n + key_count);
+    BOOST_TEST_EQ(key::count_, n + key_count);
 
     map_iterator pos = m.find(1337);
     BOOST_TEST(pos == m.end());
-    BOOST_TEST(key::count_ == 1 + n + key_count);
+    BOOST_TEST_EQ(key::count_, 1 + n + key_count);
 
     key_count = key::count_;
   }
@@ -267,13 +267,13 @@ template <class UnorderedMap> void test_non_transparent_find()
       pair const& p = *pos;
       int const v = p.second;
 
-      BOOST_TEST(v == i);
+      BOOST_TEST_EQ(v, i);
     }
-    BOOST_TEST(key::count_ == n + key_count);
+    BOOST_TEST_EQ(key::count_, n + key_count);
 
     map_iterator pos = m.find(1337);
     BOOST_TEST(pos == m.end());
-    BOOST_TEST(key::count_ == 1 + n + key_count);
+    BOOST_TEST_EQ(key::count_, 1 + n + key_count);
   }
 }
 
