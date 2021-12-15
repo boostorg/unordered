@@ -63,6 +63,7 @@ test-suite unordered
         [ run unordered/deduction_tests.cpp ]
         [ run unordered/scoped_allocator.cpp /boost/filesystem//boost_filesystem ]
         [ run unordered/transparent_tests.cpp ]
+        [ run unordered/reserve_tests.cpp ]
 
         [ run unordered/compile_set.cpp : :
             : <define>BOOST_UNORDERED_USE_MOVE
