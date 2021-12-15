@@ -2486,6 +2486,7 @@ namespace boost {
               bucket_count_(policy::new_bucket_count(num_buckets)), size_(0),
               mlf_(1.0f), max_load_(0), buckets_()
         {
+          this->create_buckets(bucket_count_);
         }
 
         table(table const& x, node_allocator const& a)
@@ -3951,8 +3952,10 @@ namespace boost {
         using namespace std;
 
         if (!size_) {
-          delete_buckets();
-          bucket_count_ = policy::new_bucket_count(min_buckets);
+          min_buckets = policy::new_bucket_count(min_buckets);
+          if (min_buckets != bucket_count_) {
+            this->create_buckets(min_buckets);
+          }
         } else {
           min_buckets = policy::new_bucket_count((std::max)(min_buckets,
             boost::unordered::detail::double_to_size(
