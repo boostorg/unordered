@@ -164,11 +164,10 @@ template <class UnorderedMap> void test_transparent_find()
   int n = 5;
 
   for (int i = 0; i < n; ++i) {
-    map[key(i)] = i;
+    map.insert(std::make_pair(i, i));
   }
 
-  int const expected_key_count = 2 * n;
-  BOOST_TEST(key::count_ == expected_key_count);
+  int const expected_key_count = key::count_;
 
   // explicitly test `find()` and `find() const` separately
   //
@@ -183,14 +182,14 @@ template <class UnorderedMap> void test_transparent_find()
       pair const& p = *pos;
       int const v = p.second;
 
-      BOOST_TEST(v == i);
+      BOOST_TEST_EQ(v, i);
     }
 
-    BOOST_TEST(key::count_ == expected_key_count);
+    BOOST_TEST_EQ(key::count_, expected_key_count);
 
     map_iterator pos = m.find(1337);
     BOOST_TEST(pos == m.end());
-    BOOST_TEST(key::count_ == expected_key_count);
+    BOOST_TEST_EQ(key::count_, expected_key_count);
   }
 
   {
@@ -206,11 +205,11 @@ template <class UnorderedMap> void test_transparent_find()
       BOOST_TEST(v == i);
     }
 
-    BOOST_TEST(key::count_ == expected_key_count);
+    BOOST_TEST_EQ(key::count_, expected_key_count);
 
     map_iterator pos = m.find(1337);
     BOOST_TEST(pos == m.end());
-    BOOST_TEST(key::count_ == expected_key_count);
+    BOOST_TEST_EQ(key::count_, expected_key_count);
   }
 }
 
@@ -226,12 +225,10 @@ template <class UnorderedMap> void test_non_transparent_find()
   int n = 5;
 
   for (int i = 0; i < n; ++i) {
-    map[key(i)] = i;
+    map.insert(std::make_pair(i, i));
   }
 
-  int key_count = 2 * n;
-
-  BOOST_TEST(key::count_ == key_count);
+  int key_count = key::count_;
 
   // explicitly test `find()` and `find() const` separately
   //
@@ -246,13 +243,13 @@ template <class UnorderedMap> void test_non_transparent_find()
       pair const& p = *pos;
       int const v = p.second;
 
-      BOOST_TEST(v == i);
+      BOOST_TEST_EQ(v, i);
     }
-    BOOST_TEST(key::count_ == n + key_count);
+    BOOST_TEST_EQ(key::count_, n + key_count);
 
     map_iterator pos = m.find(1337);
     BOOST_TEST(pos == m.end());
-    BOOST_TEST(key::count_ == 1 + n + key_count);
+    BOOST_TEST_EQ(key::count_, 1 + n + key_count);
 
     key_count = key::count_;
   }
@@ -267,13 +264,13 @@ template <class UnorderedMap> void test_non_transparent_find()
       pair const& p = *pos;
       int const v = p.second;
 
-      BOOST_TEST(v == i);
+      BOOST_TEST_EQ(v, i);
     }
-    BOOST_TEST(key::count_ == n + key_count);
+    BOOST_TEST_EQ(key::count_, n + key_count);
 
     map_iterator pos = m.find(1337);
     BOOST_TEST(pos == m.end());
-    BOOST_TEST(key::count_ == 1 + n + key_count);
+    BOOST_TEST_EQ(key::count_, 1 + n + key_count);
   }
 }
 
@@ -738,7 +735,8 @@ template <class UnorderedMap> void test_non_transparent_extract()
   BOOST_TEST_EQ(key::count_, key_count);
 }
 
-UNORDERED_AUTO_TEST (unordered_map_transparent_count) {
+void test_unordered_map()
+{
   {
     typedef boost::unordered_map<key, int, transparent_hasher,
       transparent_key_equal>
@@ -788,6 +786,49 @@ UNORDERED_AUTO_TEST (unordered_map_transparent_count) {
     test_non_transparent_erase<unordered_map>();
     test_non_transparent_extract<unordered_map>();
   }
+}
+
+void test_unordered_multimap()
+{
+  {
+    typedef boost::unordered_multimap<key, int, transparent_hasher,
+      transparent_key_equal>
+      unordered_multimap;
+
+    test_transparent_find<unordered_multimap>();
+  }
+
+  {
+    // non-transparent Hash, non-transparent KeyEqual
+    //
+    typedef boost::unordered_multimap<key, int, hasher, key_equal>
+      unordered_multimap;
+
+    test_non_transparent_find<unordered_multimap>();
+  }
+
+  {
+    // transparent Hash, non-transparent KeyEqual
+    //
+    typedef boost::unordered_multimap<key, int, transparent_hasher, key_equal>
+      unordered_multimap;
+
+    test_non_transparent_find<unordered_multimap>();
+  }
+
+  {
+    // non-transparent Hash, transparent KeyEqual
+    //
+    typedef boost::unordered_multimap<key, int, hasher, transparent_key_equal>
+      unordered_multimap;
+
+    test_non_transparent_find<unordered_multimap>();
+  }
+}
+
+UNORDERED_AUTO_TEST (transparent_ops) {
+  test_unordered_map();
+  test_unordered_multimap();
 }
 
 RUN_TESTS()
