@@ -432,8 +432,7 @@ namespace boost {
 
       template <class Key>
       typename boost::enable_if_c<
-        detail::is_transparent<Key, H>::value &&
-          detail::is_transparent<Key, P>::value &&
+        detail::are_transparent<Key, H, P>::value &&
           !boost::is_convertible<Key, iterator>::value &&
           !boost::is_convertible<Key, const_iterator>::value,
         node_type>::type
@@ -725,8 +724,7 @@ namespace boost {
 
       template <class Key>
       typename boost::enable_if_c<
-        detail::is_transparent<Key, H>::value &&
-          detail::is_transparent<Key, P>::value &&
+        detail::are_transparent<Key, H, P>::value &&
           !boost::is_convertible<Key, iterator>::value &&
           !boost::is_convertible<Key, const_iterator>::value,
         size_type>::type
@@ -774,8 +772,7 @@ namespace boost {
       const_iterator find(const key_type&) const;
 
       template <class Key>
-      typename boost::enable_if_c<detail::is_transparent<Key, H>::value &&
-                                    detail::is_transparent<Key, P>::value,
+      typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
         iterator>::type
       find(const Key& key)
       {
@@ -785,8 +782,7 @@ namespace boost {
       }
 
       template <class Key>
-      typename boost::enable_if_c<detail::is_transparent<Key, H>::value &&
-                                    detail::is_transparent<Key, P>::value,
+      typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
         const_iterator>::type
       find(const Key& key) const
       {
@@ -808,8 +804,7 @@ namespace boost {
       size_type count(const key_type&) const;
 
       template <class Key>
-      typename boost::enable_if_c<detail::is_transparent<Key, H>::value &&
-                                    detail::is_transparent<Key, P>::value,
+      typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
         size_type>::type
       count(const Key& k) const
       {
@@ -828,8 +823,7 @@ namespace boost {
         const key_type&) const;
 
       template <class Key>
-      typename boost::enable_if_c<detail::is_transparent<Key, H>::value &&
-                                    detail::is_transparent<Key, P>::value,
+      typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
         std::pair<iterator, iterator> >::type
       equal_range(const Key& key)
       {
@@ -842,8 +836,7 @@ namespace boost {
       }
 
       template <class Key>
-      typename boost::enable_if_c<detail::is_transparent<Key, H>::value &&
-                                    detail::is_transparent<Key, P>::value,
+      typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
         std::pair<const_iterator, const_iterator> >::type
       equal_range(const Key& key) const
       {
@@ -1449,8 +1442,7 @@ namespace boost {
       const_iterator find(const key_type&) const;
 
       template <class Key>
-      typename boost::enable_if_c<detail::is_transparent<Key, H>::value &&
-                                    detail::is_transparent<Key, P>::value,
+      typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
         iterator>::type
       find(const Key& key)
       {
@@ -1460,8 +1452,7 @@ namespace boost {
       }
 
       template <class Key>
-      typename boost::enable_if_c<detail::is_transparent<Key, H>::value &&
-                                    detail::is_transparent<Key, P>::value,
+      typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
         const_iterator>::type
       find(const Key& key) const
       {
