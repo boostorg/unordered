@@ -298,7 +298,7 @@ template <class UnorderedMap> void test_transparent_equal_range()
 
     BOOST_TEST(begin == end);
     BOOST_TEST(begin == map.end());
-    BOOST_TEST(std::distance(begin, end) == 0);
+    BOOST_TEST_EQ(std::distance(begin, end), 0);
   }
 
   {
@@ -315,18 +315,23 @@ template <class UnorderedMap> void test_transparent_equal_range()
 
     BOOST_TEST(begin == end);
     BOOST_TEST(begin == map.end());
-    BOOST_TEST(std::distance(begin, end) == 0);
+    BOOST_TEST_EQ(std::distance(begin, end), 0);
   }
 
-  BOOST_TEST(key::count_ == 0);
+  BOOST_TEST_EQ(key::count_, 0);
 
-  unordered_map[key(0)] = 1337;
-  unordered_map[key(1)] = 1338;
-  unordered_map[key(2)] = 1339;
+  unordered_map.insert(std::make_pair(0, 1337));
+  unordered_map.insert(std::make_pair(1, 1338));
+  unordered_map.insert(std::make_pair(2, 1339));
+  unordered_map.insert(std::make_pair(0, 1340));
+  unordered_map.insert(std::make_pair(0, 1341));
+  unordered_map.insert(std::make_pair(0, 1342));
 
-  int const expected_key_count = 6;
+  int const expected_key_count = key::count_;
 
-  BOOST_TEST(key::count_ == expected_key_count);
+  // do this so that multimap tests actually test a range with len > 1
+  //
+  int const expected_range_len = static_cast<int>(unordered_map.size() - 2);
 
   typedef typename UnorderedMap::value_type value_type;
 
@@ -345,11 +350,12 @@ template <class UnorderedMap> void test_transparent_equal_range()
 
     BOOST_TEST(begin != end);
     BOOST_TEST(begin != map.end());
-    BOOST_TEST(std::distance(begin, end) == 1);
+    BOOST_TEST_EQ(std::distance(begin, end), expected_range_len);
 
-    value_type const& val = *begin;
-    BOOST_TEST(val.first.x_ == 0);
-    BOOST_TEST(val.second == 1337);
+    for (iterator pos = begin; pos != end; ++pos) {
+      value_type const& val = *pos;
+      BOOST_TEST_EQ(val.first.x_, 0);
+    }
 
     iters = map.equal_range(1337);
 
@@ -358,9 +364,9 @@ template <class UnorderedMap> void test_transparent_equal_range()
 
     BOOST_TEST(begin == end);
     BOOST_TEST(begin == map.end());
-    BOOST_TEST(std::distance(begin, end) == 0);
+    BOOST_TEST_EQ(std::distance(begin, end), 0);
 
-    BOOST_TEST(key::count_ == expected_key_count);
+    BOOST_TEST_EQ(key::count_, expected_key_count);
   }
 
   {
@@ -376,11 +382,12 @@ template <class UnorderedMap> void test_transparent_equal_range()
 
     BOOST_TEST(begin != end);
     BOOST_TEST(begin != map.end());
-    BOOST_TEST(std::distance(begin, end) == 1);
+    BOOST_TEST_EQ(std::distance(begin, end), expected_range_len);
 
-    value_type const& val = *begin;
-    BOOST_TEST(val.first.x_ == 0);
-    BOOST_TEST(val.second == 1337);
+    for (iterator pos = begin; pos != end; ++pos) {
+      value_type const& val = *begin;
+      BOOST_TEST_EQ(val.first.x_, 0);
+    }
 
     iters = map.equal_range(1337);
 
@@ -389,9 +396,9 @@ template <class UnorderedMap> void test_transparent_equal_range()
 
     BOOST_TEST(begin == end);
     BOOST_TEST(begin == map.end());
-    BOOST_TEST(std::distance(begin, end) == 0);
+    BOOST_TEST_EQ(std::distance(begin, end), 0);
 
-    BOOST_TEST(key::count_ == expected_key_count);
+    BOOST_TEST_EQ(key::count_, expected_key_count);
   }
 }
 
@@ -419,7 +426,7 @@ template <class UnorderedMap> void test_non_transparent_equal_range()
 
     BOOST_TEST(begin == end);
     BOOST_TEST(begin == map.end());
-    BOOST_TEST(std::distance(begin, end) == 0);
+    BOOST_TEST_EQ(std::distance(begin, end), 0);
   }
 
   {
@@ -436,18 +443,23 @@ template <class UnorderedMap> void test_non_transparent_equal_range()
 
     BOOST_TEST(begin == end);
     BOOST_TEST(begin == map.end());
-    BOOST_TEST(std::distance(begin, end) == 0);
+    BOOST_TEST_EQ(std::distance(begin, end), 0);
   }
 
-  BOOST_TEST(key::count_ == 2);
+  BOOST_TEST_EQ(key::count_, 2);
 
-  unordered_map[key(0)] = 1337;
-  unordered_map[key(1)] = 1338;
-  unordered_map[key(2)] = 1339;
+  unordered_map.insert(std::make_pair(0, 1337));
+  unordered_map.insert(std::make_pair(1, 1338));
+  unordered_map.insert(std::make_pair(2, 1339));
+  unordered_map.insert(std::make_pair(0, 1340));
+  unordered_map.insert(std::make_pair(0, 1341));
+  unordered_map.insert(std::make_pair(0, 1342));
 
-  int key_count = 8;
+  int key_count = key::count_;
 
-  BOOST_TEST(key::count_ == key_count);
+  // do this so that multimap tests actually test a range with len > 1
+  //
+  int const expected_range_len = static_cast<int>(unordered_map.size() - 2);
 
   typedef typename UnorderedMap::value_type value_type;
 
@@ -466,11 +478,12 @@ template <class UnorderedMap> void test_non_transparent_equal_range()
 
     BOOST_TEST(begin != end);
     BOOST_TEST(begin != map.end());
-    BOOST_TEST(std::distance(begin, end) == 1);
+    BOOST_TEST_EQ(std::distance(begin, end), expected_range_len);
 
-    value_type const& val = *begin;
-    BOOST_TEST(val.first.x_ == 0);
-    BOOST_TEST(val.second == 1337);
+    for (iterator pos = begin; pos != end; ++pos) {
+      value_type const& val = *begin;
+      BOOST_TEST_EQ(val.first.x_, 0);
+    }
 
     iters = map.equal_range(1337);
 
@@ -479,9 +492,9 @@ template <class UnorderedMap> void test_non_transparent_equal_range()
 
     BOOST_TEST(begin == end);
     BOOST_TEST(begin == map.end());
-    BOOST_TEST(std::distance(begin, end) == 0);
+    BOOST_TEST_EQ(std::distance(begin, end), 0);
 
-    BOOST_TEST(key::count_ == 2 + key_count);
+    BOOST_TEST_EQ(key::count_, 2 + key_count);
     key_count += 2;
   }
 
@@ -498,11 +511,12 @@ template <class UnorderedMap> void test_non_transparent_equal_range()
 
     BOOST_TEST(begin != end);
     BOOST_TEST(begin != map.end());
-    BOOST_TEST(std::distance(begin, end) == 1);
+    BOOST_TEST_EQ(std::distance(begin, end), expected_range_len);
 
-    value_type const& val = *begin;
-    BOOST_TEST(val.first.x_ == 0);
-    BOOST_TEST(val.second == 1337);
+    for (iterator pos = begin; pos != end; ++pos) {
+      value_type const& val = *pos;
+      BOOST_TEST_EQ(val.first.x_, 0);
+    }
 
     iters = map.equal_range(1337);
 
@@ -511,9 +525,9 @@ template <class UnorderedMap> void test_non_transparent_equal_range()
 
     BOOST_TEST(begin == end);
     BOOST_TEST(begin == map.end());
-    BOOST_TEST(std::distance(begin, end) == 0);
+    BOOST_TEST_EQ(std::distance(begin, end), 0);
 
-    BOOST_TEST(key::count_ == 2 + key_count);
+    BOOST_TEST_EQ(key::count_, 2 + key_count);
   }
 }
 
@@ -796,6 +810,7 @@ void test_unordered_multimap()
       unordered_multimap;
 
     test_transparent_find<unordered_multimap>();
+    test_transparent_equal_range<unordered_multimap>();
   }
 
   {
@@ -805,6 +820,7 @@ void test_unordered_multimap()
       unordered_multimap;
 
     test_non_transparent_find<unordered_multimap>();
+    test_non_transparent_equal_range<unordered_multimap>();
   }
 
   {
@@ -814,6 +830,7 @@ void test_unordered_multimap()
       unordered_multimap;
 
     test_non_transparent_find<unordered_multimap>();
+    test_non_transparent_equal_range<unordered_multimap>();
   }
 
   {
@@ -823,6 +840,7 @@ void test_unordered_multimap()
       unordered_multimap;
 
     test_non_transparent_find<unordered_multimap>();
+    test_non_transparent_equal_range<unordered_multimap>();
   }
 }
 
