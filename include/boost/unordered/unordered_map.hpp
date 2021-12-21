@@ -18,7 +18,6 @@
 #include <boost/functional/hash.hpp>
 #include <boost/move/move.hpp>
 #include <boost/type_traits/is_constructible.hpp>
-#include <boost/type_traits/is_convertible.hpp>
 #include <boost/unordered/detail/map.hpp>
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
@@ -432,9 +431,7 @@ namespace boost {
 
       template <class Key>
       typename boost::enable_if_c<
-        detail::are_transparent<Key, H, P>::value &&
-          !boost::is_convertible<Key, iterator>::value &&
-          !boost::is_convertible<Key, const_iterator>::value,
+        detail::transparent_non_iterable<Key, unordered_map>::value,
         node_type>::type
       extract(BOOST_FWD_REF(Key) k)
       {
@@ -724,9 +721,7 @@ namespace boost {
 
       template <class Key>
       typename boost::enable_if_c<
-        detail::are_transparent<Key, H, P>::value &&
-          !boost::is_convertible<Key, iterator>::value &&
-          !boost::is_convertible<Key, const_iterator>::value,
+        detail::transparent_non_iterable<Key, unordered_map>::value,
         size_type>::type
       erase(BOOST_FWD_REF(Key) k)
       {
@@ -1403,6 +1398,16 @@ namespace boost {
       iterator erase(const_iterator);
       size_type erase(const key_type&);
       iterator erase(const_iterator, const_iterator);
+
+      template <class Key>
+      typename boost::enable_if_c<
+        detail::transparent_non_iterable<Key, unordered_multimap>::value,
+        size_type>::type
+      erase(BOOST_FWD_REF(Key) k)
+      {
+        return table_.erase_key_equiv_impl(
+          this->key_eq(), boost::forward<Key>(k));
+      }
 
       BOOST_UNORDERED_DEPRECATED("Use erase instead")
       void quick_erase(const_iterator it) { erase(it); }

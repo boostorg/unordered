@@ -36,6 +36,7 @@
 #include <boost/type_traits/integral_constant.hpp>
 #include <boost/type_traits/is_base_of.hpp>
 #include <boost/type_traits/is_class.hpp>
+#include <boost/type_traits/is_convertible.hpp>
 #include <boost/type_traits/is_empty.hpp>
 #include <boost/type_traits/is_nothrow_move_assignable.hpp>
 #include <boost/type_traits/is_nothrow_move_constructible.hpp>
@@ -716,6 +717,19 @@ namespace boost {
       {
         static bool const value =
           is_transparent<A>::value && is_transparent<B>::value;
+      };
+
+      template <class Key, class UnorderedMap> struct transparent_non_iterable
+      {
+        typedef typename UnorderedMap::hasher hash;
+        typedef typename UnorderedMap::key_equal key_equal;
+        typedef typename UnorderedMap::iterator iterator;
+        typedef typename UnorderedMap::const_iterator const_iterator;
+
+        static bool const value =
+          are_transparent<Key, hash, key_equal>::value &&
+          !boost::is_convertible<Key, iterator>::value &&
+          !boost::is_convertible<Key, const_iterator>::value;
       };
 
 ////////////////////////////////////////////////////////////////////////////
@@ -3800,14 +3814,16 @@ namespace boost {
         //
         // no throw
 
-        std::size_t erase_key_equiv(const_key_type& k)
+        template <class KeyEqual, class Key>
+        std::size_t erase_key_equiv_impl(KeyEqual const& key_eq, Key const& k)
         {
           if (!this->size_)
             return 0;
 
-          std::size_t key_hash = this->hash(k);
+          std::size_t key_hash = policy::apply_hash(this->hash_function(), k);
           std::size_t bucket_index = this->hash_to_bucket(key_hash);
-          link_pointer prev = this->find_previous_node(k, bucket_index);
+          link_pointer prev =
+            this->find_previous_node_impl(key_eq, k, bucket_index);
           if (!prev)
             return 0;
 
@@ -3823,6 +3839,11 @@ namespace boost {
           prev->next_ = n;
           this->fix_bucket(bucket_index, prev, n);
           return deleted_count;
+        }
+
+        std::size_t erase_key_equiv(const_key_type& k)
+        {
+          return this->erase_key_equiv_impl(this->key_eq(), k);
         }
 
         link_pointer erase_nodes_equiv(node_pointer i, node_pointer j)
