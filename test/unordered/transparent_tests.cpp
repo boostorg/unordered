@@ -681,7 +681,7 @@ template <class UnorderedMap> void test_non_transparent_erase()
 // still invoke the correct iterator overloads when the type is implicitly
 // convertible
 //
-transparent_unordered_map::node_type extract_const_overload_compile_test()
+transparent_unordered_map::node_type map_extract_const_overload_compile_test()
 {
   convertible_to_const_iterator<transparent_unordered_map> c;
   transparent_unordered_map map;
@@ -690,10 +690,21 @@ transparent_unordered_map::node_type extract_const_overload_compile_test()
   return map.extract(c);
 }
 
+transparent_unordered_multimap::node_type
+multimap_extract_const_overload_compile_test()
+{
+  convertible_to_const_iterator<transparent_unordered_multimap> c;
+  transparent_unordered_multimap map;
+  transparent_unordered_multimap::const_iterator pos = map.begin();
+  pos = c;
+  return map.extract(c);
+}
+
 template <class UnorderedMap> void test_transparent_extract()
 {
   typedef typename UnorderedMap::node_type node_type;
   typedef typename UnorderedMap::const_iterator const_iterator;
+  typedef std::pair<const_iterator, const_iterator> const_iterator_pair;
 
   count_reset();
 
@@ -703,28 +714,24 @@ template <class UnorderedMap> void test_transparent_extract()
   BOOST_TEST(nh.empty());
   BOOST_TEST_EQ(key::count_, 0);
 
-  map[key(0)] = 1337;
-  map[key(1)] = 1338;
-  map[key(2)] = 1339;
-  BOOST_TEST_EQ(map.size(), 3);
+  map.insert(std::make_pair(0, 1337));
+  map.insert(std::make_pair(1, 1338));
+  map.insert(std::make_pair(2, 1339));
+  map.insert(std::make_pair(0, 1340));
+  map.insert(std::make_pair(0, 1341));
+  map.insert(std::make_pair(0, 1342));
 
-  int const expected_key_count = static_cast<int>(2 * map.size());
-  BOOST_TEST_EQ(key::count_, expected_key_count);
+  std::size_t const map_size = map.size();
+  int const expected_key_count = key::count_;
 
-  nh = map.extract(1);
-  BOOST_TEST_EQ(map.size(), 2);
-  BOOST_TEST_EQ(nh.key().x_, 1);
-  BOOST_TEST_EQ(nh.mapped(), 1338);
+  nh = map.extract(0);
+  BOOST_TEST_EQ(map.size(), map_size - 1);
+  BOOST_TEST_EQ(nh.key().x_, 0);
 
-  nh.mapped() = 1340;
-
-  map.insert(boost::move(nh));
-
-  BOOST_TEST(map.size() == 3);
-
-  const_iterator pos = map.find(1);
-  BOOST_TEST(pos != map.end());
-  BOOST_TEST_EQ(pos->second, 1340);
+  const_iterator_pair rng = map.equal_range(0);
+  for (const_iterator pos = rng.first; pos != rng.second; ++pos) {
+    BOOST_TEST_NE(pos->second, nh.mapped());
+  }
 
   nh = map.extract(1337);
   BOOST_TEST(nh.empty());
@@ -736,6 +743,7 @@ template <class UnorderedMap> void test_non_transparent_extract()
 {
   typedef typename UnorderedMap::node_type node_type;
   typedef typename UnorderedMap::const_iterator const_iterator;
+  typedef std::pair<const_iterator, const_iterator> const_iterator_pair;
 
   count_reset();
 
@@ -745,32 +753,29 @@ template <class UnorderedMap> void test_non_transparent_extract()
   BOOST_TEST(nh.empty());
   BOOST_TEST_EQ(key::count_, 1);
 
-  map[key(0)] = 1337;
-  map[key(1)] = 1338;
-  map[key(2)] = 1339;
-  BOOST_TEST_EQ(map.size(), 3);
+  map.insert(std::make_pair(0, 1337));
+  map.insert(std::make_pair(1, 1338));
+  map.insert(std::make_pair(2, 1339));
+  map.insert(std::make_pair(0, 1340));
+  map.insert(std::make_pair(0, 1341));
+  map.insert(std::make_pair(0, 1342));
 
-  int key_count = 1 + static_cast<int>(2 * map.size());
-  BOOST_TEST_EQ(key::count_, key_count);
+  std::size_t const map_size = map.size();
+  int key_count = key::count_;
 
-  nh = map.extract(1);
+  nh = map.extract(0);
   ++key_count;
-  BOOST_TEST_EQ(map.size(), 2);
-  BOOST_TEST_EQ(nh.key().x_, 1);
-  BOOST_TEST_EQ(nh.mapped(), 1338);
+
+  BOOST_TEST_EQ(map.size(), map_size - 1);
+  BOOST_TEST_EQ(nh.key().x_, 0);
   BOOST_TEST_EQ(key::count_, key_count);
 
-  nh.mapped() = 1340;
-
-  map.insert(boost::move(nh));
-
-  BOOST_TEST_EQ(map.size(), 3);
-
-  const_iterator pos = map.find(1);
+  const_iterator_pair rng = map.equal_range(0);
   ++key_count;
-  BOOST_TEST(pos != map.end());
-  BOOST_TEST_EQ(pos->second, 1340);
-  BOOST_TEST_EQ(key::count_, key_count);
+  
+  for (const_iterator pos = rng.first; pos != rng.second; ++pos) {
+    BOOST_TEST_NE(pos->second, nh.mapped());
+  }
 
   nh = map.extract(1337);
   ++key_count;
@@ -841,6 +846,7 @@ void test_unordered_multimap()
     test_transparent_find<unordered_multimap>();
     test_transparent_equal_range<unordered_multimap>();
     test_transparent_erase<unordered_multimap>();
+    test_transparent_extract<unordered_multimap>();
   }
 
   {
@@ -852,6 +858,7 @@ void test_unordered_multimap()
     test_non_transparent_find<unordered_multimap>();
     test_non_transparent_equal_range<unordered_multimap>();
     test_non_transparent_erase<unordered_multimap>();
+    test_non_transparent_extract<unordered_multimap>();
   }
 
   {
@@ -863,6 +870,7 @@ void test_unordered_multimap()
     test_non_transparent_find<unordered_multimap>();
     test_non_transparent_equal_range<unordered_multimap>();
     test_non_transparent_erase<unordered_multimap>();
+    test_non_transparent_extract<unordered_multimap>();
   }
 
   {
@@ -874,6 +882,7 @@ void test_unordered_multimap()
     test_non_transparent_find<unordered_multimap>();
     test_non_transparent_equal_range<unordered_multimap>();
     test_non_transparent_erase<unordered_multimap>();
+    test_non_transparent_extract<unordered_multimap>();
   }
 }
 
