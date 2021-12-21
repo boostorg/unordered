@@ -554,7 +554,7 @@ typedef boost::unordered_map<int, int, transparent_hasher,
 // test that in the presence of the member function template `erase()`, we still
 // invoke the correct iterator overloads when the type is implicitly convertible
 //
-transparent_unordered_map::iterator erase_overload_compile_test()
+transparent_unordered_map::iterator map_erase_overload_compile_test()
 {
   convertible_to_iterator<transparent_unordered_map> c;
   transparent_unordered_map map;
@@ -563,11 +563,35 @@ transparent_unordered_map::iterator erase_overload_compile_test()
   return map.erase(c);
 }
 
-transparent_unordered_map::const_iterator erase_const_overload_compile_test()
+transparent_unordered_map::const_iterator
+map_erase_const_overload_compile_test()
 {
   convertible_to_const_iterator<transparent_unordered_map> c;
   transparent_unordered_map map;
   transparent_unordered_map::const_iterator pos = map.begin();
+  pos = c;
+  return map.erase(c);
+}
+
+typedef boost::unordered_multimap<int, int, transparent_hasher,
+  transparent_key_equal>
+  transparent_unordered_multimap;
+
+transparent_unordered_multimap::iterator multimap_erase_overload_compile_test()
+{
+  convertible_to_iterator<transparent_unordered_multimap> c;
+  transparent_unordered_multimap map;
+  transparent_unordered_multimap::iterator pos = map.begin();
+  pos = c;
+  return map.erase(c);
+}
+
+transparent_unordered_multimap::const_iterator
+multimap_erase_const_overload_compile_test()
+{
+  convertible_to_const_iterator<transparent_unordered_multimap> c;
+  transparent_unordered_multimap map;
+  transparent_unordered_multimap::const_iterator pos = map.begin();
   pos = c;
   return map.erase(c);
 }
@@ -585,18 +609,20 @@ template <class UnorderedMap> void test_transparent_erase()
   BOOST_TEST_EQ(num_erased, 0);
   BOOST_TEST_EQ(key::count_, 0);
 
-  map[key(0)] = 1337;
-  map[key(1)] = 1338;
-  map[key(2)] = 1339;
+  map.insert(std::make_pair(0, 1337));
+  map.insert(std::make_pair(1, 1338));
+  map.insert(std::make_pair(2, 1339));
+  map.insert(std::make_pair(0, 1340));
+  map.insert(std::make_pair(0, 1341));
+  map.insert(std::make_pair(0, 1342));
 
-  BOOST_TEST_EQ(map.size(), 3);
   BOOST_TEST(map.find(0) != map.end());
 
-  int const expected_key_count = static_cast<int>(2 * map.size());
-  BOOST_TEST_EQ(key::count_, expected_key_count);
+  int const expected_key_count = key::count_;
+  int const expected_num_erased = static_cast<int>(map.size() - 2);
 
   num_erased = map.erase(0);
-  BOOST_TEST_EQ(num_erased, 1);
+  BOOST_TEST_EQ(num_erased, expected_num_erased);
   BOOST_TEST_EQ(map.size(), 2);
   BOOST_TEST(map.find(0) == map.end());
 
@@ -620,20 +646,23 @@ template <class UnorderedMap> void test_non_transparent_erase()
   BOOST_TEST_EQ(num_erased, 0);
   BOOST_TEST_EQ(key::count_, 1);
 
-  map[key(0)] = 1337;
-  map[key(1)] = 1338;
-  map[key(2)] = 1339;
+  map.insert(std::make_pair(0, 1337));
+  map.insert(std::make_pair(1, 1338));
+  map.insert(std::make_pair(2, 1339));
+  map.insert(std::make_pair(0, 1340));
+  map.insert(std::make_pair(0, 1341));
+  map.insert(std::make_pair(0, 1342));
 
-  BOOST_TEST_EQ(map.size(), 3);
+  int const expected_num_erased = static_cast<int>(map.size() - 2);
+
   BOOST_TEST(map.find(0) != map.end());
 
-  int key_count = 2 + static_cast<int>(2 * map.size());
-  BOOST_TEST_EQ(key::count_, key_count);
+  int key_count = key::count_;
 
   num_erased = map.erase(0);
   ++key_count;
   BOOST_TEST_EQ(key::count_, key_count);
-  BOOST_TEST_EQ(num_erased, 1);
+  BOOST_TEST_EQ(num_erased, expected_num_erased);
   BOOST_TEST_EQ(map.size(), 2);
 
   BOOST_TEST(map.find(0) == map.end());
@@ -811,6 +840,7 @@ void test_unordered_multimap()
 
     test_transparent_find<unordered_multimap>();
     test_transparent_equal_range<unordered_multimap>();
+    test_transparent_erase<unordered_multimap>();
   }
 
   {
@@ -821,6 +851,7 @@ void test_unordered_multimap()
 
     test_non_transparent_find<unordered_multimap>();
     test_non_transparent_equal_range<unordered_multimap>();
+    test_non_transparent_erase<unordered_multimap>();
   }
 
   {
@@ -831,6 +862,7 @@ void test_unordered_multimap()
 
     test_non_transparent_find<unordered_multimap>();
     test_non_transparent_equal_range<unordered_multimap>();
+    test_non_transparent_erase<unordered_multimap>();
   }
 
   {
@@ -841,6 +873,7 @@ void test_unordered_multimap()
 
     test_non_transparent_find<unordered_multimap>();
     test_non_transparent_equal_range<unordered_multimap>();
+    test_non_transparent_erase<unordered_multimap>();
   }
 }
 
