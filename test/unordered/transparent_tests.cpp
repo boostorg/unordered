@@ -66,30 +66,26 @@ template <class UnorderedMap> void test_transparent_count()
 
   UnorderedMap map;
 
-  // initial `key(0)` expression increases the count
-  // then copying into the `unordered_map` increments the count again thus we
-  // have 2
-  //
-  map[key(0)] = 1337;
-  BOOST_TEST(key::count_ == 2);
+  map.insert(std::make_pair(0, 1337));
+  map.insert(std::make_pair(1, 1338));
+  map.insert(std::make_pair(2, 1339));
+  map.insert(std::make_pair(0, 1340));
+  map.insert(std::make_pair(0, 1341));
+  map.insert(std::make_pair(0, 1342));
 
-  // now the number of `key` objects created should be a constant and never
-  // touched again
-  //
+  int const expected_key_count = key::count_;
+
   std::size_t count = 0;
   count = map.count(0);
-
-  BOOST_TEST(count == 1);
-  BOOST_TEST(key::count_ == 2);
+  BOOST_TEST_EQ(count, map.size() - 2);
 
   count = map.count(1);
+  BOOST_TEST_EQ(count, 1);
 
-  BOOST_TEST(count == 0);
-  BOOST_TEST(key::count_ == 2);
+  count = map.count(1337);
+  BOOST_TEST_EQ(count, 0);
 
-  count = map.count(key(0));
-  BOOST_TEST(count == 1);
-  BOOST_TEST(key::count_ == 3);
+  BOOST_TEST_EQ(key::count_, expected_key_count);
 }
 
 template <class UnorderedMap> void test_non_transparent_count()
@@ -98,30 +94,32 @@ template <class UnorderedMap> void test_non_transparent_count()
 
   UnorderedMap map;
 
-  // initial `key(0)` expression increases the count
-  // then copying into the `unordered_map` increments the count again thus we
-  // have 2
-  //
-  map[key(0)] = 1337;
-  BOOST_TEST(key::count_ == 2);
+  map.insert(std::make_pair(0, 1337));
+  map.insert(std::make_pair(1, 1338));
+  map.insert(std::make_pair(2, 1339));
+  map.insert(std::make_pair(0, 1340));
+  map.insert(std::make_pair(0, 1341));
+  map.insert(std::make_pair(0, 1342));
 
-  // rely on the implicit constructor here to spawn a new object which
-  // increases the count
-  //
+  int key_count = key::count_;
+
   std::size_t count = 0;
   count = map.count(0);
+  ++key_count;
 
-  BOOST_TEST(count == 1);
-  BOOST_TEST(key::count_ == 3);
+  BOOST_TEST_EQ(count, map.size() - 2);
+  BOOST_TEST_EQ(key::count_, key_count);
 
   count = map.count(1);
+  ++key_count;
 
-  BOOST_TEST(count == 0);
-  BOOST_TEST(key::count_ == 4);
+  BOOST_TEST_EQ(count, 1);
 
-  count = map.count(key(0));
-  BOOST_TEST(count == 1);
-  BOOST_TEST(key::count_ == 5);
+  count = map.count(1337);
+  ++key_count;
+
+  BOOST_TEST_EQ(count, 0);
+  BOOST_TEST_EQ(key::count_, key_count);
 }
 
 template <class UnorderedMap> void test_transparent_find()
@@ -815,6 +813,7 @@ void test_unordered_multimap()
       transparent_key_equal>
       unordered_multimap;
 
+    test_transparent_count<unordered_multimap>();
     test_transparent_find<unordered_multimap>();
     test_transparent_equal_range<unordered_multimap>();
     test_transparent_erase<unordered_multimap>();
@@ -827,6 +826,7 @@ void test_unordered_multimap()
     typedef boost::unordered_multimap<key, int, hasher, key_equal>
       unordered_multimap;
 
+    test_non_transparent_count<unordered_multimap>();
     test_non_transparent_find<unordered_multimap>();
     test_non_transparent_equal_range<unordered_multimap>();
     test_non_transparent_erase<unordered_multimap>();
@@ -839,6 +839,7 @@ void test_unordered_multimap()
     typedef boost::unordered_multimap<key, int, transparent_hasher, key_equal>
       unordered_multimap;
 
+    test_non_transparent_count<unordered_multimap>();
     test_non_transparent_find<unordered_multimap>();
     test_non_transparent_equal_range<unordered_multimap>();
     test_non_transparent_erase<unordered_multimap>();
@@ -851,6 +852,7 @@ void test_unordered_multimap()
     typedef boost::unordered_multimap<key, int, hasher, transparent_key_equal>
       unordered_multimap;
 
+    test_non_transparent_count<unordered_multimap>();
     test_non_transparent_find<unordered_multimap>();
     test_non_transparent_equal_range<unordered_multimap>();
     test_non_transparent_erase<unordered_multimap>();
