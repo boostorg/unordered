@@ -36,6 +36,7 @@
 #include <boost/type_traits/integral_constant.hpp>
 #include <boost/type_traits/is_base_of.hpp>
 #include <boost/type_traits/is_class.hpp>
+#include <boost/type_traits/is_convertible.hpp>
 #include <boost/type_traits/is_empty.hpp>
 #include <boost/type_traits/is_nothrow_move_assignable.hpp>
 #include <boost/type_traits/is_nothrow_move_constructible.hpp>
@@ -716,6 +717,19 @@ namespace boost {
       {
         static bool const value =
           is_transparent<A>::value && is_transparent<B>::value;
+      };
+
+      template <class Key, class UnorderedMap> struct transparent_non_iterable
+      {
+        typedef typename UnorderedMap::hasher hash;
+        typedef typename UnorderedMap::key_equal key_equal;
+        typedef typename UnorderedMap::iterator iterator;
+        typedef typename UnorderedMap::const_iterator const_iterator;
+
+        static bool const value =
+          are_transparent<Key, hash, key_equal>::value &&
+          !boost::is_convertible<Key, iterator>::value &&
+          !boost::is_convertible<Key, const_iterator>::value;
       };
 
 ////////////////////////////////////////////////////////////////////////////
