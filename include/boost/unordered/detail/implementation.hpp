@@ -3800,14 +3800,16 @@ namespace boost {
         //
         // no throw
 
-        std::size_t erase_key_equiv(const_key_type& k)
+        template <class KeyEqual, class Key>
+        std::size_t erase_key_equiv_impl(KeyEqual const& key_eq, Key const& k)
         {
           if (!this->size_)
             return 0;
 
-          std::size_t key_hash = this->hash(k);
+          std::size_t key_hash = policy::apply_hash(this->hash_function(), k);
           std::size_t bucket_index = this->hash_to_bucket(key_hash);
-          link_pointer prev = this->find_previous_node(k, bucket_index);
+          link_pointer prev =
+            this->find_previous_node_impl(key_eq, k, bucket_index);
           if (!prev)
             return 0;
 
@@ -3823,6 +3825,11 @@ namespace boost {
           prev->next_ = n;
           this->fix_bucket(bucket_index, prev, n);
           return deleted_count;
+        }
+
+        std::size_t erase_key_equiv(const_key_type& k)
+        {
+          return this->erase_key_equiv_impl(this->key_eq(), k);
         }
 
         link_pointer erase_nodes_equiv(node_pointer i, node_pointer j)
