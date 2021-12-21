@@ -40,22 +40,10 @@ struct transparent_key_equal
 {
   typedef void is_transparent;
 
-  static bool was_called_;
-
   bool operator()(key const& k1, key const& k2) const { return k1.x_ == k2.x_; }
-  bool operator()(int const x, key const& k1) const
-  {
-    was_called_ = true;
-    return k1.x_ == x;
-  }
-  bool operator()(key const& k1, int const x) const
-  {
-    was_called_ = true;
-    return k1.x_ == x;
-  }
+  bool operator()(int const x, key const& k1) const { return k1.x_ == x; }
+  bool operator()(key const& k1, int const x) const { return k1.x_ == x; }
 };
-
-bool transparent_key_equal::was_called_;
 
 struct hasher
 {
@@ -67,24 +55,10 @@ struct hasher
 
 struct key_equal
 {
-  static bool was_called_;
-
   bool operator()(key const& k1, key const& k2) const { return k1.x_ == k2.x_; }
-  bool operator()(int const x, key const& k1) const
-  {
-    was_called_ = true;
-    return k1.x_ == x;
-  }
 };
 
-bool key_equal::was_called_;
-
-void count_reset()
-{
-  key::count_ = 0;
-  transparent_key_equal::was_called_ = false;
-  key_equal::was_called_ = false;
-}
+void count_reset() { key::count_ = 0; }
 
 template <class UnorderedMap> void test_transparent_count()
 {
@@ -107,7 +81,6 @@ template <class UnorderedMap> void test_transparent_count()
 
   BOOST_TEST(count == 1);
   BOOST_TEST(key::count_ == 2);
-  BOOST_TEST(map.key_eq().was_called_);
 
   count = map.count(1);
 
@@ -140,7 +113,6 @@ template <class UnorderedMap> void test_non_transparent_count()
 
   BOOST_TEST(count == 1);
   BOOST_TEST(key::count_ == 3);
-  BOOST_TEST(!map.key_eq().was_called_);
 
   count = map.count(1);
 
@@ -772,7 +744,7 @@ template <class UnorderedMap> void test_non_transparent_extract()
 
   const_iterator_pair rng = map.equal_range(0);
   ++key_count;
-  
+
   for (const_iterator pos = rng.first; pos != rng.second; ++pos) {
     BOOST_TEST_NE(pos->second, nh.mapped());
   }
