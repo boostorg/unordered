@@ -1399,6 +1399,16 @@ namespace boost {
       size_type erase(const key_type&);
       iterator erase(const_iterator, const_iterator);
 
+      template <class Key>
+      typename boost::enable_if_c<
+        detail::transparent_non_iterable<Key, unordered_multimap>::value,
+        size_type>::type
+      erase(BOOST_FWD_REF(Key) k)
+      {
+        return table_.erase_key_equiv_impl(
+          this->key_eq(), boost::forward<Key>(k));
+      }
+
       BOOST_UNORDERED_DEPRECATED("Use erase instead")
       void quick_erase(const_iterator it) { erase(it); }
       BOOST_UNORDERED_DEPRECATED("Use erase instead")
