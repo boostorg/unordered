@@ -131,7 +131,7 @@ template <class UnorderedMap> void test_non_transparent_count()
   BOOST_TEST_EQ(key::count_, key_count);
 }
 
-template <class UnorderedMap> void test_transparent_find()
+template <class UnorderedMap> void test_map_transparent_find()
 {
   count_reset();
 
@@ -192,7 +192,7 @@ template <class UnorderedMap> void test_transparent_find()
   }
 }
 
-template <class UnorderedMap> void test_non_transparent_find()
+template <class UnorderedMap> void test_map_non_transparent_find()
 {
   count_reset();
 
@@ -770,7 +770,7 @@ void test_unordered_map()
       unordered_map;
 
     test_transparent_count<unordered_map>();
-    test_transparent_find<unordered_map>();
+    test_map_transparent_find<unordered_map>();
     test_transparent_equal_range<unordered_map>();
     test_transparent_erase<unordered_map>();
     test_transparent_extract<unordered_map>();
@@ -782,7 +782,7 @@ void test_unordered_map()
     typedef boost::unordered_map<key, int, hasher, key_equal> unordered_map;
 
     test_non_transparent_count<unordered_map>();
-    test_non_transparent_find<unordered_map>();
+    test_map_non_transparent_find<unordered_map>();
     test_non_transparent_equal_range<unordered_map>();
     test_non_transparent_erase<unordered_map>();
     test_non_transparent_extract<unordered_map>();
@@ -795,7 +795,7 @@ void test_unordered_map()
       unordered_map;
 
     test_non_transparent_count<unordered_map>();
-    test_non_transparent_find<unordered_map>();
+    test_map_non_transparent_find<unordered_map>();
     test_non_transparent_equal_range<unordered_map>();
     test_non_transparent_erase<unordered_map>();
     test_non_transparent_extract<unordered_map>();
@@ -808,7 +808,7 @@ void test_unordered_map()
       unordered_map;
 
     test_non_transparent_count<unordered_map>();
-    test_non_transparent_find<unordered_map>();
+    test_map_non_transparent_find<unordered_map>();
     test_non_transparent_equal_range<unordered_map>();
     test_non_transparent_erase<unordered_map>();
     test_non_transparent_extract<unordered_map>();
@@ -823,7 +823,7 @@ void test_unordered_multimap()
       unordered_multimap;
 
     test_transparent_count<unordered_multimap>();
-    test_transparent_find<unordered_multimap>();
+    test_map_transparent_find<unordered_multimap>();
     test_transparent_equal_range<unordered_multimap>();
     test_transparent_erase<unordered_multimap>();
     test_transparent_extract<unordered_multimap>();
@@ -836,7 +836,7 @@ void test_unordered_multimap()
       unordered_multimap;
 
     test_non_transparent_count<unordered_multimap>();
-    test_non_transparent_find<unordered_multimap>();
+    test_map_non_transparent_find<unordered_multimap>();
     test_non_transparent_equal_range<unordered_multimap>();
     test_non_transparent_erase<unordered_multimap>();
     test_non_transparent_extract<unordered_multimap>();
@@ -849,7 +849,7 @@ void test_unordered_multimap()
       unordered_multimap;
 
     test_non_transparent_count<unordered_multimap>();
-    test_non_transparent_find<unordered_multimap>();
+    test_map_non_transparent_find<unordered_multimap>();
     test_non_transparent_equal_range<unordered_multimap>();
     test_non_transparent_erase<unordered_multimap>();
     test_non_transparent_extract<unordered_multimap>();
@@ -862,7 +862,7 @@ void test_unordered_multimap()
       unordered_multimap;
 
     test_non_transparent_count<unordered_multimap>();
-    test_non_transparent_find<unordered_multimap>();
+    test_map_non_transparent_find<unordered_multimap>();
     test_non_transparent_equal_range<unordered_multimap>();
     test_non_transparent_erase<unordered_multimap>();
     test_non_transparent_extract<unordered_multimap>();
