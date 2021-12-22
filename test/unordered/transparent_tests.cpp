@@ -24,6 +24,12 @@ struct key
 
 int key::count_;
 
+std::ostream& operator<<(std::ostream& os, key const& k)
+{
+  os << "key { x_: " << k.x_ << " }";
+  return os;
+}
+
 struct transparent_hasher
 {
   typedef void is_transparent;
