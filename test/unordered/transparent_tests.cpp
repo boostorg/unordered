@@ -253,6 +253,118 @@ template <class UnorderedMap> void test_map_non_transparent_find()
   }
 }
 
+template <class UnorderedSet> void test_set_transparent_find()
+{
+  count_reset();
+
+  typedef typename UnorderedSet::const_iterator set_iterator;
+
+  UnorderedSet set;
+
+  int n = 5;
+
+  for (int i = 0; i < n; ++i) {
+    set.insert(i);
+  }
+
+  int const expected_key_count = key::count_;
+
+  // explicitly test `find()` and `find() const` separately
+  //
+
+  {
+    UnorderedSet& m = set;
+
+    for (int i = 0; i < n; ++i) {
+      set_iterator pos = m.find(i);
+      BOOST_TEST(pos != m.end());
+      BOOST_TEST_EQ(*pos, i);
+    }
+
+    BOOST_TEST_EQ(key::count_, expected_key_count);
+
+    set_iterator pos = m.find(1337);
+    BOOST_TEST(pos == m.end());
+    BOOST_TEST_EQ(key::count_, expected_key_count);
+  }
+
+  {
+    UnorderedSet const& m = set;
+
+    for (int i = 0; i < n; ++i) {
+      set_iterator pos = m.find(i);
+      BOOST_TEST(pos != m.end());
+      BOOST_TEST_EQ(*pos, i);
+    }
+
+    BOOST_TEST_EQ(key::count_, expected_key_count);
+
+    set_iterator pos = m.find(1337);
+    BOOST_TEST(pos == m.end());
+    BOOST_TEST_EQ(key::count_, expected_key_count);
+  }
+}
+
+template <class UnorderedSet> void test_set_non_transparent_find()
+{
+  count_reset();
+
+  typedef typename UnorderedSet::const_iterator set_iterator;
+
+  UnorderedSet set;
+
+  int n = 5;
+
+  for (int i = 0; i < n; ++i) {
+    set.insert(i);
+  }
+
+  int key_count = key::count_;
+
+  // explicitly test `find()` and `find() const` separately
+  //
+
+  {
+    UnorderedSet& m = set;
+
+    for (int i = 0; i < n; ++i) {
+      set_iterator pos = m.find(i);
+      ++key_count;
+
+      BOOST_TEST(pos != m.end());
+      BOOST_TEST_EQ(*pos, i);
+    }
+
+    BOOST_TEST_EQ(key::count_, key_count);
+
+    set_iterator pos = m.find(1337);
+    ++key_count;
+
+    BOOST_TEST(pos == m.end());
+    BOOST_TEST_EQ(key::count_, key_count);
+  }
+
+  {
+    UnorderedSet const& m = set;
+
+    for (int i = 0; i < n; ++i) {
+      set_iterator pos = m.find(i);
+      ++key_count;
+
+      BOOST_TEST(pos != m.end());
+      BOOST_TEST_EQ(*pos, i);
+    }
+
+    BOOST_TEST_EQ(key::count_, key_count);
+
+    set_iterator pos = m.find(1337);
+    ++key_count;
+
+    BOOST_TEST(pos == m.end());
+    BOOST_TEST_EQ(key::count_, key_count);
+  }
+}
+
 template <class UnorderedMap> void test_transparent_equal_range()
 {
   count_reset();
@@ -869,9 +981,46 @@ void test_unordered_multimap()
   }
 }
 
+void test_unordered_set()
+{
+  {
+    typedef boost::unordered_set<key, transparent_hasher, transparent_key_equal>
+      unordered_set;
+
+    test_set_transparent_find<unordered_set>();
+  }
+
+  {
+    // non-transparent Hash, non-transparent KeyEqual
+    //
+    typedef boost::unordered_set<key, hasher, key_equal> unordered_set;
+
+    test_set_non_transparent_find<unordered_set>();
+  }
+
+  {
+    // transparent Hash, non-transparent KeyEqual
+    //
+    typedef boost::unordered_set<key, transparent_hasher, key_equal>
+      unordered_set;
+
+    test_set_non_transparent_find<unordered_set>();
+  }
+
+  {
+    // non-transparent Hash, transparent KeyEqual
+    //
+    typedef boost::unordered_set<key, hasher, transparent_key_equal>
+      unordered_set;
+
+    test_set_non_transparent_find<unordered_set>();
+  }
+}
+
 UNORDERED_AUTO_TEST (transparent_ops) {
   test_unordered_map();
   test_unordered_multimap();
+  test_unordered_set();
 }
 
 RUN_TESTS()
