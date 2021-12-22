@@ -30,6 +30,9 @@ std::ostream& operator<<(std::ostream& os, key const& k)
   return os;
 }
 
+bool operator==(key const& k, int const x) { return k.x_ == x; }
+bool operator==(int const x, key const& k) { return k.x_ == x; }
+
 struct transparent_hasher
 {
   typedef void is_transparent;
@@ -47,8 +50,8 @@ struct transparent_key_equal
   typedef void is_transparent;
 
   bool operator()(key const& k1, key const& k2) const { return k1.x_ == k2.x_; }
-  bool operator()(int const x, key const& k1) const { return k1.x_ == x; }
-  bool operator()(key const& k1, int const x) const { return k1.x_ == x; }
+  bool operator()(int const x, key const& k1) const { return k1 == x; }
+  bool operator()(key const& k1, int const x) const { return k1 == x; }
 };
 
 struct hasher
