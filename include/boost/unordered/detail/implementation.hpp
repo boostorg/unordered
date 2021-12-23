@@ -3458,11 +3458,6 @@ namespace boost {
           return 1;
         }
 
-        std::size_t erase_key_unique(const_key_type& k)
-        {
-          return this->erase_key_unique_impl(this->key_eq(), k);
-        }
-
         void erase_nodes_unique(node_pointer i, node_pointer j)
         {
           std::size_t bucket_index = this->node_bucket(i);

@@ -1366,7 +1366,7 @@ namespace boost {
     typename unordered_set<T, H, P, A>::size_type
     unordered_set<T, H, P, A>::erase(const key_type& k)
     {
-      return table_.erase_key_unique(k);
+      return table_.erase_key_unique_impl(this->key_eq(), k);
     }
 
     template <class T, class H, class P, class A>
