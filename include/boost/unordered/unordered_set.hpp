@@ -472,6 +472,16 @@ namespace boost {
 
       const_iterator find(const key_type&) const;
 
+      template <class Key>
+      typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
+        const_iterator>::type
+      find(const Key& k) const
+      {
+        return const_iterator(table_.find_node_impl(
+          table::policy::apply_hash(this->hash_function(), k), k,
+          this->key_eq()));
+      }
+
       template <class CompatibleKey, class CompatibleHash,
         class CompatiblePredicate>
       const_iterator find(CompatibleKey const&, CompatibleHash const&,
