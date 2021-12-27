@@ -503,6 +503,19 @@ namespace boost {
       std::pair<const_iterator, const_iterator> equal_range(
         const key_type&) const;
 
+      template <class Key>
+      typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
+        std::pair<const_iterator, const_iterator> >::type
+      equal_range(Key const& k) const
+      {
+        node_pointer n = table_.find_node_impl(
+          table::policy::apply_hash(this->hash_function(), k), k,
+          this->key_eq());
+
+        return std::make_pair(
+          const_iterator(n), const_iterator(n ? table::next_node(n) : n));
+      }
+
       // bucket interface
 
       size_type bucket_count() const BOOST_NOEXCEPT
