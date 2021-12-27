@@ -622,6 +622,263 @@ template <class UnorderedMap> void test_map_non_transparent_equal_range()
   }
 }
 
+template <class UnorderedSet> void test_set_transparent_equal_range()
+{
+  count_reset();
+
+  UnorderedSet unordered_set;
+
+  // empty tests
+  //
+  // explicitly test `equal_range()` vs `equal_range() const`
+  //
+  {
+    typedef typename UnorderedSet::iterator iterator;
+    typedef std::pair<iterator, iterator> iterator_pair;
+
+    UnorderedSet& set = unordered_set;
+    BOOST_TEST(set.empty());
+
+    iterator_pair iters = set.equal_range(0);
+
+    iterator begin = iters.first;
+    iterator end = iters.second;
+
+    BOOST_TEST(begin == end);
+    BOOST_TEST(begin == set.end());
+    BOOST_TEST_EQ(std::distance(begin, end), 0);
+  }
+
+  {
+    typedef typename UnorderedSet::const_iterator iterator;
+    typedef std::pair<iterator, iterator> iterator_pair;
+
+    UnorderedSet const& set = unordered_set;
+    BOOST_TEST(set.empty());
+
+    iterator_pair iters = set.equal_range(0);
+
+    iterator begin = iters.first;
+    iterator end = iters.second;
+
+    BOOST_TEST(begin == end);
+    BOOST_TEST(begin == set.end());
+    BOOST_TEST_EQ(std::distance(begin, end), 0);
+  }
+
+  BOOST_TEST_EQ(key::count_, 0);
+
+  unordered_set.insert(0);
+  unordered_set.insert(1);
+  unordered_set.insert(2);
+  unordered_set.insert(0);
+  unordered_set.insert(0);
+  unordered_set.insert(0);
+
+  int const expected_key_count = key::count_;
+
+  // do this so that multiset tests actually test a range with len > 1
+  //
+  int const expected_range_len = static_cast<int>(unordered_set.size() - 2);
+
+  typedef typename UnorderedSet::value_type value_type;
+
+  // explicitly test `equal_range()` vs `equal_range() const`
+  //
+  {
+    typedef typename UnorderedSet::iterator iterator;
+    typedef std::pair<iterator, iterator> iterator_pair;
+
+    UnorderedSet& set = unordered_set;
+
+    iterator_pair iters = set.equal_range(0);
+
+    iterator begin = iters.first;
+    iterator end = iters.second;
+
+    BOOST_TEST(begin != end);
+    BOOST_TEST(begin != set.end());
+    BOOST_TEST_EQ(std::distance(begin, end), expected_range_len);
+
+    for (iterator pos = begin; pos != end; ++pos) {
+      value_type const& val = *pos;
+      BOOST_TEST_EQ(val, 0);
+    }
+
+    iters = set.equal_range(1337);
+
+    begin = iters.first;
+    end = iters.second;
+
+    BOOST_TEST(begin == end);
+    BOOST_TEST(begin == set.end());
+    BOOST_TEST_EQ(std::distance(begin, end), 0);
+
+    BOOST_TEST_EQ(key::count_, expected_key_count);
+  }
+
+  {
+    typedef typename UnorderedSet::const_iterator iterator;
+    typedef std::pair<iterator, iterator> iterator_pair;
+
+    UnorderedSet const& set = unordered_set;
+
+    iterator_pair iters = set.equal_range(0);
+
+    iterator begin = iters.first;
+    iterator end = iters.second;
+
+    BOOST_TEST(begin != end);
+    BOOST_TEST(begin != set.end());
+    BOOST_TEST_EQ(std::distance(begin, end), expected_range_len);
+
+    for (iterator pos = begin; pos != end; ++pos) {
+      value_type const& val = *begin;
+      BOOST_TEST_EQ(val, 0);
+    }
+
+    iters = set.equal_range(1337);
+
+    begin = iters.first;
+    end = iters.second;
+
+    BOOST_TEST(begin == end);
+    BOOST_TEST(begin == set.end());
+    BOOST_TEST_EQ(std::distance(begin, end), 0);
+
+    BOOST_TEST_EQ(key::count_, expected_key_count);
+  }
+}
+
+template <class UnorderedSet> void test_set_non_transparent_equal_range()
+{
+  count_reset();
+
+  UnorderedSet unordered_set;
+
+  // empty tests
+  //
+  // explicitly test `equal_range()` vs `equal_range() const`
+  //
+  {
+    typedef typename UnorderedSet::iterator iterator;
+    typedef std::pair<iterator, iterator> iterator_pair;
+
+    UnorderedSet& set = unordered_set;
+    BOOST_TEST(set.empty());
+
+    iterator_pair iters = set.equal_range(0);
+
+    iterator begin = iters.first;
+    iterator end = iters.second;
+
+    BOOST_TEST(begin == end);
+    BOOST_TEST(begin == set.end());
+    BOOST_TEST_EQ(std::distance(begin, end), 0);
+  }
+
+  {
+    typedef typename UnorderedSet::const_iterator iterator;
+    typedef std::pair<iterator, iterator> iterator_pair;
+
+    UnorderedSet const& set = unordered_set;
+    BOOST_TEST(set.empty());
+
+    iterator_pair iters = set.equal_range(0);
+
+    iterator begin = iters.first;
+    iterator end = iters.second;
+
+    BOOST_TEST(begin == end);
+    BOOST_TEST(begin == set.end());
+    BOOST_TEST_EQ(std::distance(begin, end), 0);
+  }
+
+  BOOST_TEST_EQ(key::count_, 2);
+
+  unordered_set.insert(0);
+  unordered_set.insert(1);
+  unordered_set.insert(2);
+  unordered_set.insert(0);
+  unordered_set.insert(0);
+  unordered_set.insert(0);
+
+  int key_count = key::count_;
+
+  // do this so that multiset tests actually test a range with len > 1
+  //
+  int const expected_range_len = static_cast<int>(unordered_set.size() - 2);
+
+  typedef typename UnorderedSet::value_type value_type;
+
+  // explicitly test `equal_range()` vs `equal_range() const`
+  //
+  {
+    typedef typename UnorderedSet::iterator iterator;
+    typedef std::pair<iterator, iterator> iterator_pair;
+
+    UnorderedSet& set = unordered_set;
+
+    iterator_pair iters = set.equal_range(0);
+
+    iterator begin = iters.first;
+    iterator end = iters.second;
+
+    BOOST_TEST(begin != end);
+    BOOST_TEST(begin != set.end());
+    BOOST_TEST_EQ(std::distance(begin, end), expected_range_len);
+
+    for (iterator pos = begin; pos != end; ++pos) {
+      value_type const& val = *begin;
+      BOOST_TEST_EQ(val, 0);
+    }
+
+    iters = set.equal_range(1337);
+
+    begin = iters.first;
+    end = iters.second;
+
+    BOOST_TEST(begin == end);
+    BOOST_TEST(begin == set.end());
+    BOOST_TEST_EQ(std::distance(begin, end), 0);
+
+    BOOST_TEST_EQ(key::count_, 2 + key_count);
+    key_count += 2;
+  }
+
+  {
+    typedef typename UnorderedSet::const_iterator iterator;
+    typedef std::pair<iterator, iterator> iterator_pair;
+
+    UnorderedSet const& set = unordered_set;
+
+    iterator_pair iters = set.equal_range(0);
+
+    iterator begin = iters.first;
+    iterator end = iters.second;
+
+    BOOST_TEST(begin != end);
+    BOOST_TEST(begin != set.end());
+    BOOST_TEST_EQ(std::distance(begin, end), expected_range_len);
+
+    for (iterator pos = begin; pos != end; ++pos) {
+      value_type const& val = *pos;
+      BOOST_TEST_EQ(val, 0);
+    }
+
+    iters = set.equal_range(1337);
+
+    begin = iters.first;
+    end = iters.second;
+
+    BOOST_TEST(begin == end);
+    BOOST_TEST(begin == set.end());
+    BOOST_TEST_EQ(std::distance(begin, end), 0);
+
+    BOOST_TEST_EQ(key::count_, 2 + key_count);
+  }
+}
+
 template <class UnorderedMap> struct convertible_to_iterator
 {
   operator typename UnorderedMap::iterator()
@@ -1092,6 +1349,7 @@ void test_unordered_set()
 
     test_set_transparent_find<unordered_set>();
     test_set_transparent_erase<unordered_set>();
+    test_set_transparent_equal_range<unordered_set>();
   }
 
   {
@@ -1101,6 +1359,7 @@ void test_unordered_set()
 
     test_set_non_transparent_find<unordered_set>();
     test_set_non_transparent_erase<unordered_set>();
+    test_set_non_transparent_equal_range<unordered_set>();
   }
 
   {
@@ -1111,6 +1370,7 @@ void test_unordered_set()
 
     test_set_non_transparent_find<unordered_set>();
     test_set_non_transparent_erase<unordered_set>();
+    test_set_non_transparent_equal_range<unordered_set>();
   }
 
   {
@@ -1121,6 +1381,7 @@ void test_unordered_set()
 
     test_set_non_transparent_find<unordered_set>();
     test_set_non_transparent_erase<unordered_set>();
+    test_set_non_transparent_equal_range<unordered_set>();
   }
 }
 
