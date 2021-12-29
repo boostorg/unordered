@@ -1488,6 +1488,7 @@ void test_unordered_multiset()
       transparent_key_equal>
       unordered_set;
 
+    test_set_transparent_find<unordered_set>();
     test_set_transparent_equal_range<unordered_set>();
   }
 
@@ -1496,6 +1497,7 @@ void test_unordered_multiset()
     //
     typedef boost::unordered_multiset<key, hasher, key_equal> unordered_set;
 
+    test_set_non_transparent_find<unordered_set>();
     test_set_non_transparent_equal_range<unordered_set>();
   }
 
@@ -1505,6 +1507,7 @@ void test_unordered_multiset()
     typedef boost::unordered_multiset<key, transparent_hasher, key_equal>
       unordered_set;
 
+    test_set_non_transparent_find<unordered_set>();
     test_set_non_transparent_equal_range<unordered_set>();
   }
 
@@ -1514,6 +1517,7 @@ void test_unordered_multiset()
     typedef boost::unordered_multiset<key, hasher, transparent_key_equal>
       unordered_set;
 
+    test_set_non_transparent_find<unordered_set>();
     test_set_non_transparent_equal_range<unordered_set>();
   }
 }
