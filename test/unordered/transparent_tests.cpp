@@ -1481,10 +1481,48 @@ void test_unordered_set()
   }
 }
 
+void test_unordered_multiset()
+{
+  {
+    typedef boost::unordered_multiset<key, transparent_hasher,
+      transparent_key_equal>
+      unordered_set;
+
+    test_set_transparent_equal_range<unordered_set>();
+  }
+
+  {
+    // non-transparent Hash, non-transparent KeyEqual
+    //
+    typedef boost::unordered_multiset<key, hasher, key_equal> unordered_set;
+
+    test_set_non_transparent_equal_range<unordered_set>();
+  }
+
+  {
+    // transparent Hash, non-transparent KeyEqual
+    //
+    typedef boost::unordered_multiset<key, transparent_hasher, key_equal>
+      unordered_set;
+
+    test_set_non_transparent_equal_range<unordered_set>();
+  }
+
+  {
+    // non-transparent Hash, transparent KeyEqual
+    //
+    typedef boost::unordered_multiset<key, hasher, transparent_key_equal>
+      unordered_set;
+
+    test_set_non_transparent_equal_range<unordered_set>();
+  }
+}
+
 UNORDERED_AUTO_TEST (transparent_ops) {
   test_unordered_map();
   test_unordered_multimap();
   test_unordered_set();
+  test_unordered_multiset();
 }
 
 RUN_TESTS()
