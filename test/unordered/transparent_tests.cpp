@@ -1138,6 +1138,10 @@ template <class UnorderedMap> void test_map_non_transparent_erase()
 typedef boost::unordered_set<int, transparent_hasher, transparent_key_equal>
   transparent_unordered_set;
 
+typedef boost::unordered_multiset<int, transparent_hasher,
+  transparent_key_equal>
+  transparent_unordered_multiset;
+
 transparent_unordered_set::iterator set_erase_overload_compile_test()
 {
   convertible_to_iterator<transparent_unordered_set> c;
@@ -1153,6 +1157,25 @@ set_erase_const_overload_compile_test()
   convertible_to_const_iterator<transparent_unordered_set> c;
   transparent_unordered_set set;
   transparent_unordered_set::const_iterator pos = set.begin();
+  pos = c;
+  return set.erase(c);
+}
+
+transparent_unordered_multiset::iterator multiset_erase_overload_compile_test()
+{
+  convertible_to_iterator<transparent_unordered_multiset> c;
+  transparent_unordered_multiset set;
+  transparent_unordered_multiset::iterator pos = set.begin();
+  pos = c;
+  return set.erase(c);
+}
+
+transparent_unordered_multiset::const_iterator
+multiset_erase_const_overload_compile_test()
+{
+  convertible_to_const_iterator<transparent_unordered_multiset> c;
+  transparent_unordered_multiset set;
+  transparent_unordered_multiset::const_iterator pos = set.begin();
   pos = c;
   return set.erase(c);
 }
@@ -1517,6 +1540,7 @@ void test_unordered_multiset()
       unordered_set;
 
     test_set_transparent_find<unordered_set>();
+    test_set_transparent_erase<unordered_set>();
     test_set_transparent_equal_range<unordered_set>();
   }
 
@@ -1526,6 +1550,7 @@ void test_unordered_multiset()
     typedef boost::unordered_multiset<key, hasher, key_equal> unordered_set;
 
     test_set_non_transparent_find<unordered_set>();
+    test_set_non_transparent_erase<unordered_set>();
     test_set_non_transparent_equal_range<unordered_set>();
   }
 
@@ -1536,6 +1561,7 @@ void test_unordered_multiset()
       unordered_set;
 
     test_set_non_transparent_find<unordered_set>();
+    test_set_non_transparent_erase<unordered_set>();
     test_set_non_transparent_equal_range<unordered_set>();
   }
 
@@ -1546,6 +1572,7 @@ void test_unordered_multiset()
       unordered_set;
 
     test_set_non_transparent_find<unordered_set>();
+    test_set_non_transparent_erase<unordered_set>();
     test_set_non_transparent_equal_range<unordered_set>();
   }
 }
