@@ -448,6 +448,19 @@ template <class UnorderedMap> void test_map_transparent_equal_range()
       BOOST_TEST_EQ(val.first.x_, 0);
     }
 
+    iters = map.equal_range(1);
+
+    begin = iters.first;
+    end = iters.second;
+
+    BOOST_TEST(begin != end);
+    BOOST_TEST(begin != map.end());
+    BOOST_TEST_EQ(std::distance(begin, end), 1);
+
+    value_type const& val = *begin;
+    BOOST_TEST_EQ(val.first, 1);
+    BOOST_TEST_EQ(val.second, 1338);
+
     iters = map.equal_range(1337);
 
     begin = iters.first;
@@ -479,6 +492,19 @@ template <class UnorderedMap> void test_map_transparent_equal_range()
       value_type const& val = *begin;
       BOOST_TEST_EQ(val.first.x_, 0);
     }
+
+    iters = map.equal_range(1);
+
+    begin = iters.first;
+    end = iters.second;
+
+    BOOST_TEST(begin != end);
+    BOOST_TEST(begin != map.end());
+    BOOST_TEST_EQ(std::distance(begin, end), 1);
+
+    value_type const& val = *begin;
+    BOOST_TEST_EQ(val.first, 1);
+    BOOST_TEST_EQ(val.second, 1338);
 
     iters = map.equal_range(1337);
 
@@ -576,6 +602,19 @@ template <class UnorderedMap> void test_map_non_transparent_equal_range()
       BOOST_TEST_EQ(val.first.x_, 0);
     }
 
+    iters = map.equal_range(1);
+
+    begin = iters.first;
+    end = iters.second;
+
+    BOOST_TEST(begin != end);
+    BOOST_TEST(begin != map.end());
+    BOOST_TEST_EQ(std::distance(begin, end), 1);
+
+    value_type const& val = *begin;
+    BOOST_TEST_EQ(val.first, 1);
+    BOOST_TEST_EQ(val.second, 1338);
+
     iters = map.equal_range(1337);
 
     begin = iters.first;
@@ -585,8 +624,8 @@ template <class UnorderedMap> void test_map_non_transparent_equal_range()
     BOOST_TEST(begin == map.end());
     BOOST_TEST_EQ(std::distance(begin, end), 0);
 
-    BOOST_TEST_EQ(key::count_, 2 + key_count);
-    key_count += 2;
+    BOOST_TEST_EQ(key::count_, 3 + key_count);
+    key_count += 3;
   }
 
   {
@@ -609,6 +648,19 @@ template <class UnorderedMap> void test_map_non_transparent_equal_range()
       BOOST_TEST_EQ(val.first.x_, 0);
     }
 
+    iters = map.equal_range(1);
+
+    begin = iters.first;
+    end = iters.second;
+
+    BOOST_TEST(begin != end);
+    BOOST_TEST(begin != map.end());
+    BOOST_TEST_EQ(std::distance(begin, end), 1);
+
+    value_type const& val = *begin;
+    BOOST_TEST_EQ(val.first, 1);
+    BOOST_TEST_EQ(val.second, 1338);
+
     iters = map.equal_range(1337);
 
     begin = iters.first;
@@ -618,7 +670,7 @@ template <class UnorderedMap> void test_map_non_transparent_equal_range()
     BOOST_TEST(begin == map.end());
     BOOST_TEST_EQ(std::distance(begin, end), 0);
 
-    BOOST_TEST_EQ(key::count_, 2 + key_count);
+    BOOST_TEST_EQ(key::count_, 3 + key_count);
   }
 }
 
@@ -705,6 +757,17 @@ template <class UnorderedSet> void test_set_transparent_equal_range()
       BOOST_TEST_EQ(val, 0);
     }
 
+    iters = set.equal_range(1);
+    begin = iters.first;
+    end = iters.second;
+
+    BOOST_TEST(begin != end);
+    BOOST_TEST(begin != set.end());
+    BOOST_TEST_EQ(std::distance(begin, end), 1);
+
+    value_type const& val = *begin;
+    BOOST_TEST_EQ(val, 1);
+
     iters = set.equal_range(1337);
 
     begin = iters.first;
@@ -736,6 +799,17 @@ template <class UnorderedSet> void test_set_transparent_equal_range()
       value_type const& val = *begin;
       BOOST_TEST_EQ(val, 0);
     }
+
+    iters = set.equal_range(1);
+    begin = iters.first;
+    end = iters.second;
+
+    BOOST_TEST(begin != end);
+    BOOST_TEST(begin != set.end());
+    BOOST_TEST_EQ(std::distance(begin, end), 1);
+
+    value_type const& val = *begin;
+    BOOST_TEST_EQ(val, 1);
 
     iters = set.equal_range(1337);
 
@@ -833,6 +907,17 @@ template <class UnorderedSet> void test_set_non_transparent_equal_range()
       BOOST_TEST_EQ(val, 0);
     }
 
+    iters = set.equal_range(1);
+    begin = iters.first;
+    end = iters.second;
+
+    BOOST_TEST(begin != end);
+    BOOST_TEST(begin != set.end());
+    BOOST_TEST_EQ(std::distance(begin, end), 1);
+
+    value_type const& val = *begin;
+    BOOST_TEST_EQ(val, 1);
+
     iters = set.equal_range(1337);
 
     begin = iters.first;
@@ -842,8 +927,8 @@ template <class UnorderedSet> void test_set_non_transparent_equal_range()
     BOOST_TEST(begin == set.end());
     BOOST_TEST_EQ(std::distance(begin, end), 0);
 
-    BOOST_TEST_EQ(key::count_, 2 + key_count);
-    key_count += 2;
+    BOOST_TEST_EQ(key::count_, 3 + key_count);
+    key_count += 3;
   }
 
   {
@@ -866,6 +951,17 @@ template <class UnorderedSet> void test_set_non_transparent_equal_range()
       BOOST_TEST_EQ(val, 0);
     }
 
+    iters = set.equal_range(1);
+    begin = iters.first;
+    end = iters.second;
+
+    BOOST_TEST(begin != end);
+    BOOST_TEST(begin != set.end());
+    BOOST_TEST_EQ(std::distance(begin, end), 1);
+
+    value_type const& val = *begin;
+    BOOST_TEST_EQ(val, 1);
+
     iters = set.equal_range(1337);
 
     begin = iters.first;
@@ -875,7 +971,7 @@ template <class UnorderedSet> void test_set_non_transparent_equal_range()
     BOOST_TEST(begin == set.end());
     BOOST_TEST_EQ(std::distance(begin, end), 0);
 
-    BOOST_TEST_EQ(key::count_, 2 + key_count);
+    BOOST_TEST_EQ(key::count_, 3 + key_count);
   }
 }
 
@@ -1385,10 +1481,48 @@ void test_unordered_set()
   }
 }
 
+void test_unordered_multiset()
+{
+  {
+    typedef boost::unordered_multiset<key, transparent_hasher,
+      transparent_key_equal>
+      unordered_set;
+
+    test_set_transparent_equal_range<unordered_set>();
+  }
+
+  {
+    // non-transparent Hash, non-transparent KeyEqual
+    //
+    typedef boost::unordered_multiset<key, hasher, key_equal> unordered_set;
+
+    test_set_non_transparent_equal_range<unordered_set>();
+  }
+
+  {
+    // transparent Hash, non-transparent KeyEqual
+    //
+    typedef boost::unordered_multiset<key, transparent_hasher, key_equal>
+      unordered_set;
+
+    test_set_non_transparent_equal_range<unordered_set>();
+  }
+
+  {
+    // non-transparent Hash, transparent KeyEqual
+    //
+    typedef boost::unordered_multiset<key, hasher, transparent_key_equal>
+      unordered_set;
+
+    test_set_non_transparent_equal_range<unordered_set>();
+  }
+}
+
 UNORDERED_AUTO_TEST (transparent_ops) {
   test_unordered_map();
   test_unordered_multimap();
   test_unordered_set();
+  test_unordered_multiset();
 }
 
 RUN_TESTS()
