@@ -131,6 +131,68 @@ template <class UnorderedMap> void test_map_non_transparent_count()
   BOOST_TEST_EQ(key::count_, key_count);
 }
 
+template <class UnorderedSet> void test_set_transparent_count()
+{
+  count_reset();
+
+  UnorderedSet set;
+
+  set.insert(0);
+  set.insert(1);
+  set.insert(2);
+  set.insert(0);
+  set.insert(0);
+  set.insert(0);
+
+  int const expected_key_count = key::count_;
+
+  std::size_t count = 0;
+  count = set.count(0);
+  BOOST_TEST_EQ(count, set.size() - 2);
+
+  count = set.count(1);
+  BOOST_TEST_EQ(count, 1);
+
+  count = set.count(1337);
+  BOOST_TEST_EQ(count, 0);
+
+  BOOST_TEST_EQ(key::count_, expected_key_count);
+}
+
+template <class UnorderedSet> void test_set_non_transparent_count()
+{
+  count_reset();
+
+  UnorderedSet set;
+
+  set.insert(0);
+  set.insert(1);
+  set.insert(2);
+  set.insert(0);
+  set.insert(0);
+  set.insert(0);
+
+  int key_count = key::count_;
+
+  std::size_t count = 0;
+  count = set.count(0);
+  ++key_count;
+
+  BOOST_TEST_EQ(count, set.size() - 2);
+  BOOST_TEST_EQ(key::count_, key_count);
+
+  count = set.count(1);
+  ++key_count;
+
+  BOOST_TEST_EQ(count, 1);
+
+  count = set.count(1337);
+  ++key_count;
+
+  BOOST_TEST_EQ(count, 0);
+  BOOST_TEST_EQ(key::count_, key_count);
+}
+
 template <class UnorderedMap> void test_map_transparent_find()
 {
   count_reset();
@@ -1494,6 +1556,7 @@ void test_unordered_set()
     typedef boost::unordered_set<key, transparent_hasher, transparent_key_equal>
       unordered_set;
 
+    test_set_transparent_count<unordered_set>();
     test_set_transparent_find<unordered_set>();
     test_set_transparent_erase<unordered_set>();
     test_set_transparent_equal_range<unordered_set>();
@@ -1504,6 +1567,7 @@ void test_unordered_set()
     //
     typedef boost::unordered_set<key, hasher, key_equal> unordered_set;
 
+    test_set_non_transparent_count<unordered_set>();
     test_set_non_transparent_find<unordered_set>();
     test_set_non_transparent_erase<unordered_set>();
     test_set_non_transparent_equal_range<unordered_set>();
@@ -1515,6 +1579,7 @@ void test_unordered_set()
     typedef boost::unordered_set<key, transparent_hasher, key_equal>
       unordered_set;
 
+    test_set_non_transparent_count<unordered_set>();
     test_set_non_transparent_find<unordered_set>();
     test_set_non_transparent_erase<unordered_set>();
     test_set_non_transparent_equal_range<unordered_set>();
@@ -1526,6 +1591,7 @@ void test_unordered_set()
     typedef boost::unordered_set<key, hasher, transparent_key_equal>
       unordered_set;
 
+    test_set_non_transparent_count<unordered_set>();
     test_set_non_transparent_find<unordered_set>();
     test_set_non_transparent_erase<unordered_set>();
     test_set_non_transparent_equal_range<unordered_set>();
