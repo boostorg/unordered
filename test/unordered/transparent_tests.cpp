@@ -69,7 +69,7 @@ struct key_equal
 
 void count_reset() { key::count_ = 0; }
 
-template <class UnorderedMap> void test_transparent_count()
+template <class UnorderedMap> void test_map_transparent_count()
 {
   count_reset();
 
@@ -97,7 +97,7 @@ template <class UnorderedMap> void test_transparent_count()
   BOOST_TEST_EQ(key::count_, expected_key_count);
 }
 
-template <class UnorderedMap> void test_non_transparent_count()
+template <class UnorderedMap> void test_map_non_transparent_count()
 {
   count_reset();
 
@@ -1388,7 +1388,7 @@ void test_unordered_map()
       transparent_key_equal>
       unordered_map;
 
-    test_transparent_count<unordered_map>();
+    test_map_transparent_count<unordered_map>();
     test_map_transparent_find<unordered_map>();
     test_map_transparent_equal_range<unordered_map>();
     test_map_transparent_erase<unordered_map>();
@@ -1400,7 +1400,7 @@ void test_unordered_map()
     //
     typedef boost::unordered_map<key, int, hasher, key_equal> unordered_map;
 
-    test_non_transparent_count<unordered_map>();
+    test_map_non_transparent_count<unordered_map>();
     test_map_non_transparent_find<unordered_map>();
     test_map_non_transparent_equal_range<unordered_map>();
     test_map_non_transparent_erase<unordered_map>();
@@ -1413,7 +1413,7 @@ void test_unordered_map()
     typedef boost::unordered_map<key, int, transparent_hasher, key_equal>
       unordered_map;
 
-    test_non_transparent_count<unordered_map>();
+    test_map_non_transparent_count<unordered_map>();
     test_map_non_transparent_find<unordered_map>();
     test_map_non_transparent_equal_range<unordered_map>();
     test_map_non_transparent_erase<unordered_map>();
@@ -1426,7 +1426,7 @@ void test_unordered_map()
     typedef boost::unordered_map<key, int, hasher, transparent_key_equal>
       unordered_map;
 
-    test_non_transparent_count<unordered_map>();
+    test_map_non_transparent_count<unordered_map>();
     test_map_non_transparent_find<unordered_map>();
     test_map_non_transparent_equal_range<unordered_map>();
     test_map_non_transparent_erase<unordered_map>();
@@ -1441,7 +1441,7 @@ void test_unordered_multimap()
       transparent_key_equal>
       unordered_multimap;
 
-    test_transparent_count<unordered_multimap>();
+    test_map_transparent_count<unordered_multimap>();
     test_map_transparent_find<unordered_multimap>();
     test_map_transparent_equal_range<unordered_multimap>();
     test_map_transparent_erase<unordered_multimap>();
@@ -1454,7 +1454,7 @@ void test_unordered_multimap()
     typedef boost::unordered_multimap<key, int, hasher, key_equal>
       unordered_multimap;
 
-    test_non_transparent_count<unordered_multimap>();
+    test_map_non_transparent_count<unordered_multimap>();
     test_map_non_transparent_find<unordered_multimap>();
     test_map_non_transparent_equal_range<unordered_multimap>();
     test_map_non_transparent_erase<unordered_multimap>();
@@ -1467,7 +1467,7 @@ void test_unordered_multimap()
     typedef boost::unordered_multimap<key, int, transparent_hasher, key_equal>
       unordered_multimap;
 
-    test_non_transparent_count<unordered_multimap>();
+    test_map_non_transparent_count<unordered_multimap>();
     test_map_non_transparent_find<unordered_multimap>();
     test_map_non_transparent_equal_range<unordered_multimap>();
     test_map_non_transparent_erase<unordered_multimap>();
@@ -1480,7 +1480,7 @@ void test_unordered_multimap()
     typedef boost::unordered_multimap<key, int, hasher, transparent_key_equal>
       unordered_multimap;
 
-    test_non_transparent_count<unordered_multimap>();
+    test_map_non_transparent_count<unordered_multimap>();
     test_map_non_transparent_find<unordered_multimap>();
     test_map_non_transparent_equal_range<unordered_multimap>();
     test_map_non_transparent_erase<unordered_multimap>();
