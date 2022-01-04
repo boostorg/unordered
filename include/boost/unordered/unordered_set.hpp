@@ -1015,6 +1015,15 @@ namespace boost {
         return node_type(table_.extract_by_key(k), table_.node_alloc());
       }
 
+      template <class Key>
+      typename boost::enable_if_c<
+        detail::transparent_non_iterable<Key, unordered_multiset>::value,
+        node_type>::type
+      extract(const Key& k)
+      {
+        return node_type(table_.extract_by_key_impl(k), table_.node_alloc());
+      }
+
       iterator insert(BOOST_RV_REF(node_type) np)
       {
         return table_.move_insert_node_type_equiv(np);
