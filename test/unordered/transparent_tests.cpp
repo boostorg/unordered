@@ -1185,7 +1185,7 @@ template <class UnorderedMap> void test_map_non_transparent_erase()
   ++key_count;
   BOOST_TEST_EQ(num_erased, 1);
   BOOST_TEST_EQ(map.size(), 1);
-  
+
   BOOST_TEST(map.find(1) == map.end());
   ++key_count;
 
@@ -1360,7 +1360,7 @@ multimap_extract_const_overload_compile_test()
   return map.extract(c);
 }
 
-template <class UnorderedMap> void test_transparent_extract()
+template <class UnorderedMap> void test_map_transparent_extract()
 {
   typedef typename UnorderedMap::node_type node_type;
   typedef typename UnorderedMap::const_iterator const_iterator;
@@ -1399,7 +1399,7 @@ template <class UnorderedMap> void test_transparent_extract()
   BOOST_TEST_EQ(key::count_, expected_key_count);
 }
 
-template <class UnorderedMap> void test_non_transparent_extract()
+template <class UnorderedMap> void test_map_non_transparent_extract()
 {
   typedef typename UnorderedMap::node_type node_type;
   typedef typename UnorderedMap::const_iterator const_iterator;
@@ -1443,6 +1443,128 @@ template <class UnorderedMap> void test_non_transparent_extract()
   BOOST_TEST_EQ(key::count_, key_count);
 }
 
+transparent_unordered_set::node_type set_extract_overload_compile_test()
+{
+  convertible_to_iterator<transparent_unordered_set> c;
+  transparent_unordered_set set;
+  transparent_unordered_set::iterator pos = set.begin();
+  pos = c;
+  return set.extract(c);
+}
+
+transparent_unordered_set::node_type set_extract_const_overload_compile_test()
+{
+  convertible_to_const_iterator<transparent_unordered_set> c;
+  transparent_unordered_set set;
+  transparent_unordered_set::const_iterator pos = set.begin();
+  pos = c;
+  return set.extract(c);
+}
+
+template <class UnorderedSet> void test_set_transparent_extract()
+{
+  typedef typename UnorderedSet::node_type node_type;
+
+  count_reset();
+
+  UnorderedSet set;
+
+  node_type nh = set.extract(0);
+  BOOST_TEST(nh.empty());
+  BOOST_TEST_EQ(key::count_, 0);
+
+  set.insert(0);
+  set.insert(1);
+  set.insert(2);
+  set.insert(0);
+  set.insert(0);
+  set.insert(0);
+
+  std::size_t const set_size = set.size();
+  int const expected_key_count = key::count_;
+
+  std::size_t count = 0;
+
+  nh = set.extract(0);
+  count = set.count(0);
+  BOOST_TEST_EQ(set.size(), set_size - 1);
+  BOOST_TEST_EQ(nh.value(), 0);
+  BOOST_TEST_EQ(count, set_size - 3);
+
+  set.insert(boost::move(nh));
+
+  nh = set.extract(1);
+  count = set.count(1);
+  BOOST_TEST_EQ(set.size(), set_size - 1);
+  BOOST_TEST_EQ(nh.value(), 1);
+  BOOST_TEST_EQ(count, 0);
+
+  set.insert(boost::move(nh));
+
+  nh = set.extract(1337);
+  BOOST_TEST(nh.empty());
+  BOOST_TEST_EQ(set.size(), set_size);
+
+  BOOST_TEST_EQ(key::count_, expected_key_count);
+}
+
+template <class UnorderedSet> void test_set_non_transparent_extract()
+{
+  typedef typename UnorderedSet::node_type node_type;
+
+  count_reset();
+
+  UnorderedSet set;
+
+  node_type nh = set.extract(0);
+  BOOST_TEST(nh.empty());
+  BOOST_TEST_EQ(key::count_, 1);
+
+  set.insert(0);
+  set.insert(1);
+  set.insert(2);
+  set.insert(0);
+  set.insert(0);
+  set.insert(0);
+
+  std::size_t const set_size = set.size();
+
+  int key_count = key::count_;
+  std::size_t count = 0;
+
+  nh = set.extract(0);
+  ++key_count;
+
+  count = set.count(0);
+  ++key_count;
+
+  BOOST_TEST_EQ(set.size(), set_size - 1);
+  BOOST_TEST_EQ(nh.value(), 0);
+  BOOST_TEST_EQ(count, set_size - 3);
+
+  set.insert(boost::move(nh));
+
+  nh = set.extract(1);
+  ++key_count;
+
+  count = set.count(1);
+  ++key_count;
+
+  BOOST_TEST_EQ(set.size(), set_size - 1);
+  BOOST_TEST_EQ(nh.value(), 1);
+  BOOST_TEST_EQ(count, 0);
+
+  set.insert(boost::move(nh));
+
+  nh = set.extract(1337);
+  ++key_count;
+
+  BOOST_TEST(nh.empty());
+  BOOST_TEST_EQ(set.size(), set_size);
+
+  BOOST_TEST_EQ(key::count_, key_count);
+}
+
 void test_unordered_map()
 {
   {
@@ -1454,7 +1576,7 @@ void test_unordered_map()
     test_map_transparent_find<unordered_map>();
     test_map_transparent_equal_range<unordered_map>();
     test_map_transparent_erase<unordered_map>();
-    test_transparent_extract<unordered_map>();
+    test_map_transparent_extract<unordered_map>();
   }
 
   {
@@ -1466,7 +1588,7 @@ void test_unordered_map()
     test_map_non_transparent_find<unordered_map>();
     test_map_non_transparent_equal_range<unordered_map>();
     test_map_non_transparent_erase<unordered_map>();
-    test_non_transparent_extract<unordered_map>();
+    test_map_non_transparent_extract<unordered_map>();
   }
 
   {
@@ -1479,7 +1601,7 @@ void test_unordered_map()
     test_map_non_transparent_find<unordered_map>();
     test_map_non_transparent_equal_range<unordered_map>();
     test_map_non_transparent_erase<unordered_map>();
-    test_non_transparent_extract<unordered_map>();
+    test_map_non_transparent_extract<unordered_map>();
   }
 
   {
@@ -1492,7 +1614,7 @@ void test_unordered_map()
     test_map_non_transparent_find<unordered_map>();
     test_map_non_transparent_equal_range<unordered_map>();
     test_map_non_transparent_erase<unordered_map>();
-    test_non_transparent_extract<unordered_map>();
+    test_map_non_transparent_extract<unordered_map>();
   }
 }
 
@@ -1507,7 +1629,7 @@ void test_unordered_multimap()
     test_map_transparent_find<unordered_multimap>();
     test_map_transparent_equal_range<unordered_multimap>();
     test_map_transparent_erase<unordered_multimap>();
-    test_transparent_extract<unordered_multimap>();
+    test_map_transparent_extract<unordered_multimap>();
   }
 
   {
@@ -1520,7 +1642,7 @@ void test_unordered_multimap()
     test_map_non_transparent_find<unordered_multimap>();
     test_map_non_transparent_equal_range<unordered_multimap>();
     test_map_non_transparent_erase<unordered_multimap>();
-    test_non_transparent_extract<unordered_multimap>();
+    test_map_non_transparent_extract<unordered_multimap>();
   }
 
   {
@@ -1533,7 +1655,7 @@ void test_unordered_multimap()
     test_map_non_transparent_find<unordered_multimap>();
     test_map_non_transparent_equal_range<unordered_multimap>();
     test_map_non_transparent_erase<unordered_multimap>();
-    test_non_transparent_extract<unordered_multimap>();
+    test_map_non_transparent_extract<unordered_multimap>();
   }
 
   {
@@ -1546,7 +1668,7 @@ void test_unordered_multimap()
     test_map_non_transparent_find<unordered_multimap>();
     test_map_non_transparent_equal_range<unordered_multimap>();
     test_map_non_transparent_erase<unordered_multimap>();
-    test_non_transparent_extract<unordered_multimap>();
+    test_map_non_transparent_extract<unordered_multimap>();
   }
 }
 
@@ -1560,6 +1682,7 @@ void test_unordered_set()
     test_set_transparent_find<unordered_set>();
     test_set_transparent_erase<unordered_set>();
     test_set_transparent_equal_range<unordered_set>();
+    test_set_transparent_extract<unordered_set>();
   }
 
   {
@@ -1571,6 +1694,7 @@ void test_unordered_set()
     test_set_non_transparent_find<unordered_set>();
     test_set_non_transparent_erase<unordered_set>();
     test_set_non_transparent_equal_range<unordered_set>();
+    test_set_non_transparent_extract<unordered_set>();
   }
 
   {
@@ -1583,6 +1707,7 @@ void test_unordered_set()
     test_set_non_transparent_find<unordered_set>();
     test_set_non_transparent_erase<unordered_set>();
     test_set_non_transparent_equal_range<unordered_set>();
+    test_set_non_transparent_extract<unordered_set>();
   }
 
   {
@@ -1595,6 +1720,7 @@ void test_unordered_set()
     test_set_non_transparent_find<unordered_set>();
     test_set_non_transparent_erase<unordered_set>();
     test_set_non_transparent_equal_range<unordered_set>();
+    test_set_non_transparent_extract<unordered_set>();
   }
 }
 
