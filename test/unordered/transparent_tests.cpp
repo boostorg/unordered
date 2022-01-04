@@ -1461,6 +1461,26 @@ transparent_unordered_set::node_type set_extract_const_overload_compile_test()
   return set.extract(c);
 }
 
+transparent_unordered_multiset::node_type
+multiset_extract_overload_compile_test()
+{
+  convertible_to_iterator<transparent_unordered_multiset> c;
+  transparent_unordered_multiset set;
+  transparent_unordered_multiset::iterator pos = set.begin();
+  pos = c;
+  return set.extract(c);
+}
+
+transparent_unordered_multiset::node_type
+multiset_extract_const_overload_compile_test()
+{
+  convertible_to_const_iterator<transparent_unordered_multiset> c;
+  transparent_unordered_multiset set;
+  transparent_unordered_multiset::const_iterator pos = set.begin();
+  pos = c;
+  return set.extract(c);
+}
+
 template <class UnorderedSet> void test_set_transparent_extract()
 {
   typedef typename UnorderedSet::node_type node_type;
@@ -1735,6 +1755,7 @@ void test_unordered_multiset()
     test_set_transparent_find<unordered_set>();
     test_set_transparent_erase<unordered_set>();
     test_set_transparent_equal_range<unordered_set>();
+    test_set_transparent_extract<unordered_set>();
   }
 
   {
@@ -1746,6 +1767,7 @@ void test_unordered_multiset()
     test_set_non_transparent_find<unordered_set>();
     test_set_non_transparent_erase<unordered_set>();
     test_set_non_transparent_equal_range<unordered_set>();
+    test_set_non_transparent_extract<unordered_set>();
   }
 
   {
@@ -1758,6 +1780,7 @@ void test_unordered_multiset()
     test_set_non_transparent_find<unordered_set>();
     test_set_non_transparent_erase<unordered_set>();
     test_set_non_transparent_equal_range<unordered_set>();
+    test_set_non_transparent_extract<unordered_set>();
   }
 
   {
@@ -1770,6 +1793,7 @@ void test_unordered_multiset()
     test_set_non_transparent_find<unordered_set>();
     test_set_non_transparent_erase<unordered_set>();
     test_set_non_transparent_equal_range<unordered_set>();
+    test_set_non_transparent_extract<unordered_set>();
   }
 }
 
