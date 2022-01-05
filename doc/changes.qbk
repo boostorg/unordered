@@ -10,7 +10,7 @@
 
 [section:changes Change Log]
 
-[h2 Boost 1.67.0]
+[section Changes in 1.67.0]
 
 * Improved C++17 support:
   * Add template deduction guides from the standard.
@@ -40,12 +40,16 @@
 * Various testing improvements.
 * Miscellaneous internal changes.
 
-[h2 Boost 1.66.0]
+[endsect]
+
+[section Changes in 1.66.0]
 
 * Simpler move construction implementation.
 * Documentation fixes ([pull_request 6]).
 
-[h2 Boost 1.65.0]
+[endsect]
+
+[section Changes in 1.65.0]
 
 * Add deprecated attributes to `quick_erase` and `erase_return_void`.
   I really will remove them in a future version this time.
@@ -53,7 +57,10 @@
   * `noexpect` specs for `swap` free functions.
   * Add missing `insert(P&&)` methods.
 
-[h2 Boost 1.64.0]
+[endsect]
+
+[section Changes in 1.64.0]
+
 * Initial support for new C++17 member functions:
   `insert_or_assign` and `try_emplace` in `unordered_map`,
 * Initial support for `merge` and `extract`.
@@ -62,7 +69,9 @@
   `unordered_multiset` yet. That will hopefully be in the next version of
   Boost.
 
-[h2 Boost 1.63.0]
+[endsect]
+
+[section Changes in 1.63.0]
 
 * Check hint iterator in `insert`/`emplace_hint`.
 * Fix some warnings, mostly in the tests.
@@ -86,7 +95,9 @@
   arguments, but an off by one error in the preprocessor code meant it only
   supported up to 9.
 
-[h2 Boost 1.62.0]
+[endsect]
+
+[section Changes in 1.62.0]
 
 * Remove use of deprecated `boost::iterator`.
 * Remove `BOOST_NO_STD_DISTANCE` workaround.
@@ -96,7 +107,9 @@
 * Stop using return value SFINAE which some older compilers have issues
   with.
 
-[h2 Boost 1.58.0]
+[endsect]
+
+[section Changes in 1.58.0]
 
 * Remove unnecessary template parameter from const iterators.
 * Rename private `iterator` typedef in some iterator classes, as it
@@ -107,13 +120,17 @@
 * Fix potential overflow when calculating number of buckets to allocate
   ([@https://github.com/boostorg/unordered/pull/4 GitHub #4]).
 
-[h2 Boost 1.57.0]
+[endsect]
+
+[section Changes in 1.57.0]
 
 * Fix the `pointer` typedef in iterators ([ticket 10672]).
 * Fix Coverity warning
   ([@https://github.com/boostorg/unordered/pull/2 GitHub #2]).
 
-[h2 Boost 1.56.0]
+[endsect]
+
+[section Changes in 1.56.0]
 
 * Fix some shadowed variable warnings ([ticket 9377]).
 * Fix allocator use in documentation ([ticket 9719]).
@@ -122,7 +139,9 @@
   uses slower ([ticket 9282]).
 * Only construct elements using allocators, as specified in C++11 standard.
 
-[h2 Boost 1.55.0]
+[endsect]
+
+[section Changes in 1.55.0]
 
 * Avoid some warnings ([ticket 8851], [ticket 8874]).
 * Avoid exposing some detail functions via. ADL on the iterators.
@@ -130,14 +149,18 @@
   methods to construct and destroy stored elements. Don't use them for internal
   data like pointers.
 
-[h2 Boost 1.54.0]
+[endsect]
+
+[section Changes in 1.54.0]
 
 * Mark methods specified in standard as `noexpect`. More to come in the next
   release.
 * If the hash function and equality predicate are known to both have nothrow
   move assignment or construction then use them.
 
-[h2 Boost 1.53.0]
+[endsect]
+
+[section Changes in 1.53.0]
 
 * Remove support for the old pre-standard variadic pair constructors, and
   equality implementation. Both have been deprecated since Boost 1.48.
@@ -145,7 +168,9 @@
 * More internal implementation changes, including a much simpler
   implementation of `erase`.
 
-[h2 Boost 1.52.0]
+[endsect]
+
+[section Changes in 1.52.0]
 
 * Faster assign, which assigns to existing nodes where possible, rather than
   creating entirely new nodes and copy constructing.
@@ -155,7 +180,9 @@
   for C++11 allocators.
 * Simplified the implementation a bit. Hopefully more robust.
 
-[h2 Boost 1.51.0]
+[endsect]
+
+[section Changes in 1.51.0]
 
 * Fix construction/destruction issue when using a C++11 compiler with a
   C++03 allocator ([ticket 7100]).
@@ -163,7 +190,9 @@
 * Adjust SFINAE use to try to support g++ 3.4 ([ticket 7175]).
 * Updated to use the new config macros.
 
-[h2 Boost 1.50.0]
+[endsect]
+
+[section Changes in 1.50.0]
 
 * Fix equality for `unordered_multiset` and `unordered_multimap`.
 * [@https://svn.boost.org/trac/boost/ticket/6857 Ticket 6857]:
@@ -187,12 +216,16 @@
   for 64 bit values.
 * Some internal changes.
 
-[h2 Boost 1.49.0]
+[endsect]
+
+[section Changes in 1.49.0]
 
 * Fix warning due to accidental odd assignment.
 * Slightly better error messages.
 
-[h2 Boost 1.48.0 - Major update]
+[endsect]
+
+[section Changes in 1.48.0 - Major update]
 
 This is major change which has been converted to use Boost.Move's move
 emulation, and be more compliant with the C++11 standard. See the
@@ -228,12 +261,16 @@ C++11 support has resulted in some breaking changes:
   the variadic constructors define
   `BOOST_UNORDERED_DEPRECATED_PAIR_CONSTRUCT`.
 
-[h2 Boost 1.45.0]
+[endsect]
+
+[section Changes in 1.45.0]
 
 * Fix a bug when inserting into an `unordered_map` or `unordered_set` using
   iterators which returns `value_type` by copy.
 
-[h2 Boost 1.43.0]
+[endsect]
+
+[section Changes in 1.43.0]
 
 * [@http://svn.boost.org/trac/boost/ticket/3966 Ticket 3966]:
   `erase_return_void` is now `quick_erase`, which is the
@@ -245,7 +282,9 @@ C++11 support has resulted in some breaking changes:
 * Use Boost.Exception.
 * Stop using deprecated `BOOST_HAS_*` macros.
 
-[h2 Boost 1.42.0]
+[endsect]
+
+[section Changes in 1.42.0]
 
 * Support instantiating the containers with incomplete value types.
 * Reduced the number of warnings (mostly in tests).
@@ -259,7 +298,9 @@ C++11 support has resulted in some breaking changes:
   Add missing `std` qualifier to `ptrdiff_t`.
 * Some code formatting changes to fit almost all lines into 80 characters.
 
-[h2 Boost 1.41.0 - Major update]
+[endsect]
+
+[section Changes in 1.41.0 - Major update]
 
 * The original version made heavy use of macros to sidestep some of the older
   compilers' poor template support. But since I no longer support those
@@ -274,7 +315,9 @@ C++11 support has resulted in some breaking changes:
 * Buckets are allocated lazily which means that constructing an empty container
   will not allocate any memory.
 
-[h2 Boost 1.40.0]
+[endsect]
+
+[section Changes in 1.40.0]
 
 * [@https://svn.boost.org/trac/boost/ticket/2975 Ticket 2975]:
   Store the prime list as a preprocessor sequence - so that it will always get
@@ -290,7 +333,9 @@ C++11 support has resulted in some breaking changes:
 * Better configuration for C++0x features when the headers aren't available.
 * Create less buckets by default.
 
-[h2 Boost 1.39.0]
+[endsect]
+
+[section Changes in 1.39.0]
 
 * [@https://svn.boost.org/trac/boost/ticket/2756 Ticket 2756]: Avoid a warning
   on Visual C++ 2009.
@@ -300,7 +345,9 @@ C++11 support has resulted in some breaking changes:
 * [@https://svn.boost.org/trac/boost/ticket/2975 Ticket 2975]: Fix length of
   prime number list.
 
-[h2 Boost 1.38.0]
+[endsect]
+
+[section Changes in 1.38.0]
 
 * Use [@boost:/libs/core/swap.html `boost::swap`].
 * [@https://svn.boost.org/trac/boost/ticket/2237 Ticket 2237]:
@@ -320,7 +367,9 @@ C++11 support has resulted in some breaking changes:
 * Add support for C++0x initializer lists where they're available (currently
   only g++ 4.4 in C++0x mode).
 
-[h2 Boost 1.37.0]
+[endsect]
+
+[section Changes in 1.37.0]
 
 * Rename overload of `emplace` with hint, to `emplace_hint` as specified in
   [@http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2008/n2691.pdf n2691].
@@ -329,7 +378,9 @@ C++11 support has resulted in some breaking changes:
 * Move all the implementation inside `boost/unordered`, to assist
   modularization and hopefully make it easier to track changes in subversion.
 
-[h2 Boost 1.36.0]
+[endsect]
+
+[section Changes in 1.36.0]
 
 First official release.
 
@@ -341,7 +392,9 @@ First official release.
   are available.
 * Added equality operators.
 
-[h2 1.35.0 Add-on - 31st March 2008]
+[endsect]
+
+[section 1.35.0 Add-on - 31st March 2008]
 
 Unofficial release uploaded to vault, to be used with Boost 1.35.0. Incorporated
 many of the suggestions from the review.
@@ -352,9 +405,13 @@ many of the suggestions from the review.
   the max load factor, and use `double` in the calculation for greater accuracy.
 * Fix some errors in the examples.
 
-[h2 Review Version]
+[endsect]
+
+[section Review Version]
 
 Initial review version, for the review conducted from 7th December 2007 to
 16th December 2007.
+
+[endsect]
 
 [endsect]
