@@ -10,6 +10,21 @@
 
 [section:changes Change Log]
 
+[section Changes in 1.79.0]
+
+* Improved C++20 support:
+  * All containers have been updated to support 
+    heterogeneous `count`, `equal_range` and `find`.
+* Improved C++23 support:
+  * All containers have been updated to support
+    heterogeneous `erase` and `extract`.
+* Changed behavior of `reserve` to eagerly 
+  allocate ([@https://github.com/boostorg/unordered/pull/59 PR#59]).
+* Various warning fixes in the test suite.
+* Update code to internally use `boost::allocator_traits`.
+
+[endsect]
+
 [section Changes in 1.67.0]
 
 * Improved C++17 support:
