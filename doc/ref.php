@@ -953,6 +953,38 @@ EOL;
                 </para>
               </notes>
             </method>
+            <method name="extract">
+              <template>
+                <template-type-parameter name="K" />
+              </template>
+              <parameter name="k">
+                <paramtype>K&amp;&amp;</paramtype>
+              </parameter>
+              <type>node_type</type>
+              <description>
+                <para>Removes an element with key equivalent to <code>k</code>.</para>
+                <para>
+                  This overload only participates in overload resolution if <code>Hash::is_transparent</code>
+                  and <code>Pred::is_transparent</code> are valid member typedefs and neither <code>iterator</code>
+                  nor <code>const_iterator</code> are implicitly convertible from <code>K</code>. The library
+                  assumes that <code>Hash</code> is callable with both <code>K</code> and <code>Key</code> and
+                  that <code>Pred</code> is transparent. This enables heterogeneous lookup which avoids the cost of
+                  instantiating an instance of the <code>Key</code> type.
+                </para>
+              </description>
+              <returns>
+                <para>A <code>node_type</code> owning the element if found, otherwise an empty <code>node_type</code>.</para>
+              </returns>
+              <throws>
+                <para>Only throws an exception if it is thrown by <code>hasher</code> or <code>key_equal</code>.</para>
+              </throws>
+              <notes>
+                <para>
+                  In C++17 a node extracted using this method can be inserted into a compatible <code><?php echo $node_partner; ?></code>,
+                  but that is not supported yet.
+                </para>
+              </notes>
+            </method>
             <method name="insert">
               <parameter name="nh">
                 <paramtype>node_type&amp;&amp;</paramtype>
