@@ -1348,15 +1348,37 @@ EOL;
                 </para>
               </notes>
             </overloaded-method>            
-            <method name="count" cv="const">
-              <parameter name="k">
-                <paramtype>key_type const&amp;</paramtype>
-              </parameter>
-              <type>size_type</type>
+            <overloaded-method name="count">
+              <signature cv="const">
+                <parameter name="k">
+                  <paramtype>key_type const&amp;</paramtype>
+                </parameter>
+                <type>size_type</type>
+              </signature>
+              <signature cv="const">
+                <template>
+                  <template-type-parameter name="K" />
+                </template>
+                <parameter name="k">
+                  <paramtype>K const&amp;</paramtype>
+                </parameter>
+                <type>size_type</type>
+              </signature>
               <returns>
                 <para>The number of elements with key equivalent to <code>k</code>.</para>
               </returns>
-            </method>
+              <notes>
+                <para>
+                  The <code>template &lt;typename K&gt;</code> overload only participates
+                  in overload resolution if <code>Hash::is_transparent</code> and
+                  <code>Pred::is_transparent</code> are valid member typedefs. The
+                  library assumes that <code>Hash</code> is callable with both
+                  <code>K</code> and <code>Key</code> and that <code>Pred</code> is
+                  transparent. This enables heterogeneous lookup which avoids the cost of
+                  instantiating an instance of the <code>Key</code> type.
+                </para>
+              </notes>
+            </overloaded-method>
             <overloaded-method name="equal_range">
               <signature>
                 <parameter name="k">
