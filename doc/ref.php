@@ -1117,6 +1117,32 @@ EOL;
               </throws>
             </method>
             <method name="erase">
+              <template>
+                <template-type-parameter name="K" />
+              </template>
+              <parameter name="k">
+                <paramtype>K&amp;&amp;</paramtype>
+              </parameter>
+              <type>size_type</type>
+              <returns>
+                <para>The number of elements erased.</para>
+              </returns>
+              <throws>
+                <para>Only throws an exception if it is thrown by <code>hasher</code> or <code>key_equal</code>.</para>
+              </throws>
+              <description>
+                <para>Erase all elements with key equivalent to <code>k</code>.</para>
+                <para>
+                  This overload only participates in overload resolution if <code>Hash::is_transparent</code>
+                  and <code>Pred::is_transparent</code> are valid member typedefs and neither <code>iterator</code>
+                  nor <code>const_iterator</code> are implicitly convertible from <code>K</code>. The library
+                  assumes that <code>Hash</code> is callable with both <code>K</code> and <code>Key</code> and
+                  that <code>Pred</code> is transparent. This enables heterogeneous lookup which avoids the cost of
+                  instantiating an instance of the <code>Key</code> type.
+                </para>
+              </description>
+            </method>            
+            <method name="erase">
               <parameter name="first">
                 <paramtype>const_iterator</paramtype>
               </parameter>
