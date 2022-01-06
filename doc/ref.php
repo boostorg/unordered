@@ -1392,12 +1392,41 @@ EOL;
                 </parameter>
                 <type>std::pair&lt;const_iterator, const_iterator&gt;</type>
               </signature>
+              <signature>
+                <template>
+                  <template-type-parameter name="K" />
+                </template>
+                <parameter name="k">
+                  <paramtype>K const&amp;</paramtype>
+                </parameter>
+                <type>std::pair&lt;iterator, iterator&gt;</type>
+              </signature>
+              <signature cv="const">
+                <template>
+                  <template-type-parameter name="K" />
+                </template>
+                <parameter name="k">
+                  <paramtype>K const&amp;</paramtype>
+                </parameter>
+                <type>std::pair&lt;const_iterator, const_iterator&gt;</type>
+              </signature>              
               <returns>
                 <para>A range containing all elements with key equivalent to <code>k</code>.
-                  If the container doesn't container any such elements, returns
+                  If the container doesn't contain any such elements, returns
                   <code><functionname>std::make_pair</functionname>(<methodname>b.end</methodname>(),<methodname>b.end</methodname>())</code>.
-                  </para>
+                </para>
               </returns>
+              <notes>
+                <para>
+                  The <code>template &lt;typename K&gt;</code> overloads only participate
+                  in overload resolution if <code>Hash::is_transparent</code> and
+                  <code>Pred::is_transparent</code> are valid member typedefs. The
+                  library assumes that <code>Hash</code> is callable with both
+                  <code>K</code> and <code>Key</code> and that <code>Pred</code> is
+                  transparent. This enables heterogeneous lookup which avoids the cost of
+                  instantiating an instance of the <code>Key</code> type.
+                </para>
+              </notes>
             </overloaded-method>
 <?php if ($map && !$equivalent_keys): ?>
             <method name="operator[]">
