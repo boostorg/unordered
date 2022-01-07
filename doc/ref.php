@@ -953,6 +953,38 @@ EOL;
                 </para>
               </notes>
             </method>
+            <method name="extract">
+              <template>
+                <template-type-parameter name="K" />
+              </template>
+              <parameter name="k">
+                <paramtype>K&amp;&amp;</paramtype>
+              </parameter>
+              <type>node_type</type>
+              <description>
+                <para>Removes an element with key equivalent to <code>k</code>.</para>
+                <para>
+                  This overload only participates in overload resolution if <code>Hash::is_transparent</code>
+                  and <code>Pred::is_transparent</code> are valid member typedefs and neither <code>iterator</code>
+                  nor <code>const_iterator</code> are implicitly convertible from <code>K</code>. The library
+                  assumes that <code>Hash</code> is callable with both <code>K</code> and <code>Key</code> and
+                  that <code>Pred</code> is transparent. This enables heterogeneous lookup which avoids the cost of
+                  instantiating an instance of the <code>Key</code> type.
+                </para>
+              </description>
+              <returns>
+                <para>A <code>node_type</code> owning the element if found, otherwise an empty <code>node_type</code>.</para>
+              </returns>
+              <throws>
+                <para>Only throws an exception if it is thrown by <code>hasher</code> or <code>key_equal</code>.</para>
+              </throws>
+              <notes>
+                <para>
+                  In C++17 a node extracted using this method can be inserted into a compatible <code><?php echo $node_partner; ?></code>,
+                  but that is not supported yet.
+                </para>
+              </notes>
+            </method>
             <method name="insert">
               <parameter name="nh">
                 <paramtype>node_type&amp;&amp;</paramtype>
@@ -1084,6 +1116,32 @@ EOL;
                 <para>Only throws an exception if it is thrown by <code>hasher</code> or <code>key_equal</code>.</para>
               </throws>
             </method>
+            <method name="erase">
+              <template>
+                <template-type-parameter name="K" />
+              </template>
+              <parameter name="k">
+                <paramtype>K&amp;&amp;</paramtype>
+              </parameter>
+              <type>size_type</type>
+              <returns>
+                <para>The number of elements erased.</para>
+              </returns>
+              <throws>
+                <para>Only throws an exception if it is thrown by <code>hasher</code> or <code>key_equal</code>.</para>
+              </throws>
+              <description>
+                <para>Erase all elements with key equivalent to <code>k</code>.</para>
+                <para>
+                  This overload only participates in overload resolution if <code>Hash::is_transparent</code>
+                  and <code>Pred::is_transparent</code> are valid member typedefs and neither <code>iterator</code>
+                  nor <code>const_iterator</code> are implicitly convertible from <code>K</code>. The library
+                  assumes that <code>Hash</code> is callable with both <code>K</code> and <code>Key</code> and
+                  that <code>Pred</code> is transparent. This enables heterogeneous lookup which avoids the cost of
+                  instantiating an instance of the <code>Key</code> type.
+                </para>
+              </description>
+            </method>            
             <method name="erase">
               <parameter name="first">
                 <paramtype>const_iterator</paramtype>
@@ -1274,6 +1332,24 @@ EOL;
               </signature>
               <signature>
                 <template>
+                  <template-type-parameter name="K" />
+                </template>
+                <parameter name="k">
+                  <paramtype>K const&amp;</paramtype>
+                </parameter>
+                <type>iterator</type>
+              </signature>
+              <signature cv="const">
+                <template>
+                  <template-type-parameter name="K" />
+                </template>
+                <parameter name="k">
+                  <paramtype>K const&amp;</paramtype>
+                </parameter>
+                <type>const_iterator</type>
+              </signature>
+              <signature>
+                <template>
                   <template-type-parameter name="CompatibleKey"/>
                   <template-type-parameter name="CompatibleHash"/>
                   <template-type-parameter name="CompatiblePredicate"/>
@@ -1309,22 +1385,58 @@ EOL;
               <returns>
                 <para>An iterator pointing to an element with key equivalent to <code>k</code>, or <code>b.end()</code> if no such element exists.</para>
               </returns>
-              <notes><para>
-                The templated overloads are a non-standard extensions which
-                allows you to use a compatible hash function and equality
-                predicate for a key of a different type in order to avoid
-                an expensive type cast. In general, its use is not encouraged.
-              </para></notes>
-            </overloaded-method>
-            <method name="count" cv="const">
-              <parameter name="k">
-                <paramtype>key_type const&amp;</paramtype>
-              </parameter>
-              <type>size_type</type>
+              <notes>
+                <para>
+                  The templated overloads containing <code>CompatibleKey</code>,
+                  <code>CompatibleHash</code> and <code>CompatiblePredicate</code>
+                  are non-standard extensions which allow you to use a compatible
+                  hash function and equality predicate for a key of a different type
+                  in order to avoid an expensive type cast. In general, its use is
+                  not encouraged and instead the <code>K</code> member function
+                  templates should be used.
+                </para>
+                <para>
+                  The <code>template &lt;typename K&gt;</code> overloads only participate
+                  in overload resolution if <code>Hash::is_transparent</code> and
+                  <code>Pred::is_transparent</code> are valid member typedefs. The
+                  library assumes that <code>Hash</code> is callable with both
+                  <code>K</code> and <code>Key</code> and that <code>Pred</code> is
+                  transparent. This enables heterogeneous lookup which avoids the cost of
+                  instantiating an instance of the <code>Key</code> type.
+                </para>
+              </notes>
+            </overloaded-method>            
+            <overloaded-method name="count">
+              <signature cv="const">
+                <parameter name="k">
+                  <paramtype>key_type const&amp;</paramtype>
+                </parameter>
+                <type>size_type</type>
+              </signature>
+              <signature cv="const">
+                <template>
+                  <template-type-parameter name="K" />
+                </template>
+                <parameter name="k">
+                  <paramtype>K const&amp;</paramtype>
+                </parameter>
+                <type>size_type</type>
+              </signature>
               <returns>
                 <para>The number of elements with key equivalent to <code>k</code>.</para>
               </returns>
-            </method>
+              <notes>
+                <para>
+                  The <code>template &lt;typename K&gt;</code> overload only participates
+                  in overload resolution if <code>Hash::is_transparent</code> and
+                  <code>Pred::is_transparent</code> are valid member typedefs. The
+                  library assumes that <code>Hash</code> is callable with both
+                  <code>K</code> and <code>Key</code> and that <code>Pred</code> is
+                  transparent. This enables heterogeneous lookup which avoids the cost of
+                  instantiating an instance of the <code>Key</code> type.
+                </para>
+              </notes>
+            </overloaded-method>
             <overloaded-method name="equal_range">
               <signature>
                 <parameter name="k">
@@ -1338,12 +1450,41 @@ EOL;
                 </parameter>
                 <type>std::pair&lt;const_iterator, const_iterator&gt;</type>
               </signature>
+              <signature>
+                <template>
+                  <template-type-parameter name="K" />
+                </template>
+                <parameter name="k">
+                  <paramtype>K const&amp;</paramtype>
+                </parameter>
+                <type>std::pair&lt;iterator, iterator&gt;</type>
+              </signature>
+              <signature cv="const">
+                <template>
+                  <template-type-parameter name="K" />
+                </template>
+                <parameter name="k">
+                  <paramtype>K const&amp;</paramtype>
+                </parameter>
+                <type>std::pair&lt;const_iterator, const_iterator&gt;</type>
+              </signature>              
               <returns>
                 <para>A range containing all elements with key equivalent to <code>k</code>.
-                  If the container doesn't container any such elements, returns
+                  If the container doesn't contain any such elements, returns
                   <code><functionname>std::make_pair</functionname>(<methodname>b.end</methodname>(),<methodname>b.end</methodname>())</code>.
-                  </para>
+                </para>
               </returns>
+              <notes>
+                <para>
+                  The <code>template &lt;typename K&gt;</code> overloads only participate
+                  in overload resolution if <code>Hash::is_transparent</code> and
+                  <code>Pred::is_transparent</code> are valid member typedefs. The
+                  library assumes that <code>Hash</code> is callable with both
+                  <code>K</code> and <code>Key</code> and that <code>Pred</code> is
+                  transparent. This enables heterogeneous lookup which avoids the cost of
+                  instantiating an instance of the <code>Key</code> type.
+                </para>
+              </notes>
             </overloaded-method>
 <?php if ($map && !$equivalent_keys): ?>
             <method name="operator[]">
