@@ -14,7 +14,7 @@ xml unordered : unordered.qbk :
 
 boostbook standalone : unordered :
     <xsl:param>chunk.first.sections=1
-    <xsl:param>chunk.section.depth=2
+    <xsl:param>chunk.section.depth=1
     <xsl:param>generate.section.toc.level=2
     <xsl:param>toc.section.depth=1
     <xsl:param>toc.max.depth=1
