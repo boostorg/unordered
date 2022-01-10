@@ -194,18 +194,19 @@ namespace test {
 
       std::size_t hash_impl(object const& x) const
       {
-        int result;
+        unsigned result;
         switch (tag_) {
         case 1:
-          result = x.tag1_;
+          result = static_cast<unsigned>(x.tag1_);
           break;
         case 2:
-          result = x.tag2_;
+          result = static_cast<unsigned>(x.tag2_);
           break;
         default:
-          result = x.tag1_ + x.tag2_;
+          result =
+            static_cast<unsigned>(x.tag1_) + static_cast<unsigned>(x.tag2_);
         }
-        return static_cast<std::size_t>(result);
+        return result;
       }
 
       friend bool operator==(hash const& x1, hash const& x2)
