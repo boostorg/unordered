@@ -195,34 +195,36 @@ namespace test {
 
     std::size_t operator()(object const& x) const
     {
-      int result;
+      unsigned result;
       switch (type_) {
       case 1:
-        result = x.tag1_;
+        result = static_cast<unsigned>(x.tag1_);
         break;
       case 2:
-        result = x.tag2_;
+        result = static_cast<unsigned>(x.tag2_);
         break;
       default:
-        result = x.tag1_ + x.tag2_;
+        result =
+          static_cast<unsigned>(x.tag1_) + static_cast<unsigned>(x.tag2_);
       }
-      return static_cast<std::size_t>(result);
+      return result;
     }
 
     std::size_t operator()(movable const& x) const
     {
-      int result;
+      unsigned result;
       switch (type_) {
       case 1:
-        result = x.tag1_;
+        result = static_cast<unsigned>(x.tag1_);
         break;
       case 2:
-        result = x.tag2_;
+        result = static_cast<unsigned>(x.tag2_);
         break;
       default:
-        result = x.tag1_ + x.tag2_;
+        result =
+          static_cast<unsigned>(x.tag1_) + static_cast<unsigned>(x.tag2_);
       }
-      return static_cast<std::size_t>(result);
+      return result;
     }
 
     std::size_t operator()(int x) const

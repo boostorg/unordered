@@ -49,6 +49,7 @@ jobs:
             cxxstd: "03,11,14,17,2a"
             os: ubuntu-20.04
             install: g++-11
+            sanitizers: true
           - toolset: clang
             compiler: clang++-3.9
             cxxstd: "03,11,14"
@@ -96,9 +97,11 @@ jobs:
             compiler: clang++-12
             cxxstd: "03,11,14,17,2a"
             os: ubuntu-20.04
+            sanitizers: true
           - toolset: clang
             cxxstd: "03,11,14,17"
             os: macos-10.15
+            sanitizers: true
 
     runs-on: ${{matrix.os}}
 
@@ -139,7 +142,11 @@ jobs:
       - name: Run tests
         run: |
           cd ../boost-root
-          ./b2 -j3 libs/$LIBRARY/test toolset=${{matrix.toolset}} cxxstd=${{matrix.cxxstd}} variant=debug,release
+          ./b2 -j3 libs/$LIBRARY/test \
+                   toolset=${{matrix.toolset}} \
+                   cxxstd=${{matrix.cxxstd}} \
+                   variant=debug,release \
+                   ${{(matrix.sanitizers && 'address-sanitizer=norecover undefined-sanitizer=norecover') || ''}}
 
   windows:
     strategy:
