@@ -148,8 +148,30 @@ void test_map()
   test_map_non_transparent_contains<non_transparent_map3>();
 }
 
+void test_multimap()
+{
+  typedef boost::unordered_multimap<key, int, transparent_hasher,
+    transparent_key_equal>
+    transparent_multimap;
+
+  typedef boost::unordered_multimap<key, int, transparent_hasher, key_equal>
+    non_transparent_multimap1;
+
+  typedef boost::unordered_multimap<key, int, hasher, transparent_key_equal>
+    non_transparent_multimap2;
+
+  typedef boost::unordered_multimap<key, int, hasher, key_equal>
+    non_transparent_multimap3;
+
+  test_map_transparent_contains<transparent_multimap>();
+  test_map_non_transparent_contains<non_transparent_multimap1>();
+  test_map_non_transparent_contains<non_transparent_multimap2>();
+  test_map_non_transparent_contains<non_transparent_multimap3>();
+}
+
 UNORDERED_AUTO_TEST (contains) {
   test_map();
+  test_multimap();
 }
 
 RUN_TESTS()
