@@ -246,6 +246,25 @@ void test_set()
   test_set_non_transparent_contains<non_transparent_set3>();
 }
 
+void test_multiset()
+{
+  typedef boost::unordered_multiset<key, transparent_hasher,
+    transparent_key_equal>
+    transparent_multiset;
+
+  typedef boost::unordered_multiset<key, transparent_hasher, key_equal>
+    non_transparent_multiset1;
+  typedef boost::unordered_multiset<key, hasher, transparent_key_equal>
+    non_transparent_multiset2;
+  typedef boost::unordered_multiset<key, hasher, key_equal>
+    non_transparent_multiset3;
+
+  test_set_transparent_contains<transparent_multiset>();
+  test_set_non_transparent_contains<non_transparent_multiset1>();
+  test_set_non_transparent_contains<non_transparent_multiset2>();
+  test_set_non_transparent_contains<non_transparent_multiset3>();
+}
+
 UNORDERED_AUTO_TEST (contains) {
   test_map();
   test_multimap();
