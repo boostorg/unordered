@@ -169,9 +169,87 @@ void test_multimap()
   test_map_non_transparent_contains<non_transparent_multimap3>();
 }
 
+template <class UnorderedSet> void test_set_transparent_contains()
+{
+  count_reset();
+
+  UnorderedSet set;
+  bool contains = set.contains(0);
+  BOOST_TEST(!contains);
+
+  BOOST_TEST_EQ(key::count_, 0);
+
+  set.insert(0);
+  set.insert(0);
+  set.insert(0);
+  set.insert(1);
+
+  int const expected_key_count = key::count_;
+
+  contains = set.contains(0);
+  BOOST_TEST(contains);
+
+  contains = set.contains(1);
+  BOOST_TEST(contains);
+
+  contains = set.contains(2);
+  BOOST_TEST(!contains);
+
+  BOOST_TEST_EQ(key::count_, expected_key_count);
+}
+
+template <class UnorderedSet> void test_set_non_transparent_contains()
+{
+  count_reset();
+
+  UnorderedSet set;
+  bool contains = set.contains(0);
+  BOOST_TEST(!contains);
+  BOOST_TEST_EQ(key::count_, 1);
+
+  set.insert(0);
+  set.insert(0);
+  set.insert(0);
+  set.insert(1);
+
+  int key_count = key::count_;
+
+  contains = set.contains(0);
+  ++key_count;
+  BOOST_TEST(contains);
+
+  contains = set.contains(1);
+  ++key_count;
+  BOOST_TEST(contains);
+
+  contains = set.contains(2);
+  ++key_count;
+  BOOST_TEST(!contains);
+
+  BOOST_TEST_EQ(key::count_, key_count);
+}
+
+void test_set()
+{
+  typedef boost::unordered_set<key, transparent_hasher, transparent_key_equal>
+    transparent_set;
+
+  typedef boost::unordered_set<key, transparent_hasher, key_equal>
+    non_transparent_set1;
+  typedef boost::unordered_set<key, hasher, transparent_key_equal>
+    non_transparent_set2;
+  typedef boost::unordered_set<key, hasher, key_equal> non_transparent_set3;
+
+  test_set_transparent_contains<transparent_set>();
+  test_set_non_transparent_contains<non_transparent_set1>();
+  test_set_non_transparent_contains<non_transparent_set2>();
+  test_set_non_transparent_contains<non_transparent_set3>();
+}
+
 UNORDERED_AUTO_TEST (contains) {
   test_map();
   test_multimap();
+  test_set();
 }
 
 RUN_TESTS()
