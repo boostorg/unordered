@@ -1233,6 +1233,39 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 </para>
               </notes>
             </overloaded-method>            
+            <overloaded-method name="contains">
+              <signature cv="const">
+                <parameter name="key">
+                  <paramtype>key_type const&amp;</paramtype>
+                </parameter>
+                <type>bool</type>
+              </signature>
+              <signature>
+                <template>
+                  <template-type-parameter name="K" />
+                </template>
+                <parameter name="key">
+                  <paramtype>K const&amp;</paramtype>
+                </parameter>
+                <type>bool</type>
+              </signature>
+              <returns>
+                <para>
+                  A boolean indicating whether or not there is an element with key equal to <code>key</code> in the container
+                </para>
+              </returns>
+              <notes>
+                <para>
+                  The <code>template &lt;typename K&gt;</code> overload only participates
+                  in overload resolution if <code>Hash::is_transparent</code> and
+                  <code>Pred::is_transparent</code> are valid member typedefs. The
+                  library assumes that <code>Hash</code> is callable with both
+                  <code>K</code> and <code>Key</code> and that <code>Pred</code> is
+                  transparent. This enables heterogeneous lookup which avoids the cost of
+                  instantiating an instance of the <code>Key</code> type.
+                </para>
+              </notes>
+            </overloaded-method>
             <overloaded-method name="count">
               <signature cv="const">
                 <parameter name="k">
@@ -2772,6 +2805,39 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 </para>
               </notes>
             </overloaded-method>            
+            <overloaded-method name="contains">
+              <signature cv="const">
+                <parameter name="key">
+                  <paramtype>key_type const&amp;</paramtype>
+                </parameter>
+                <type>bool</type>
+              </signature>
+              <signature>
+                <template>
+                  <template-type-parameter name="K" />
+                </template>
+                <parameter name="key">
+                  <paramtype>K const&amp;</paramtype>
+                </parameter>
+                <type>bool</type>
+              </signature>
+              <returns>
+                <para>
+                  A boolean indicating whether or not there is an element with key equal to <code>key</code> in the container
+                </para>
+              </returns>
+              <notes>
+                <para>
+                  The <code>template &lt;typename K&gt;</code> overload only participates
+                  in overload resolution if <code>Hash::is_transparent</code> and
+                  <code>Pred::is_transparent</code> are valid member typedefs. The
+                  library assumes that <code>Hash</code> is callable with both
+                  <code>K</code> and <code>Key</code> and that <code>Pred</code> is
+                  transparent. This enables heterogeneous lookup which avoids the cost of
+                  instantiating an instance of the <code>Key</code> type.
+                </para>
+              </notes>
+            </overloaded-method>
             <overloaded-method name="count">
               <signature cv="const">
                 <parameter name="k">
@@ -4432,6 +4498,39 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 </para>
               </notes>
             </overloaded-method>            
+            <overloaded-method name="contains">
+              <signature cv="const">
+                <parameter name="key">
+                  <paramtype>key_type const&amp;</paramtype>
+                </parameter>
+                <type>bool</type>
+              </signature>
+              <signature>
+                <template>
+                  <template-type-parameter name="K" />
+                </template>
+                <parameter name="key">
+                  <paramtype>K const&amp;</paramtype>
+                </parameter>
+                <type>bool</type>
+              </signature>
+              <returns>
+                <para>
+                  A boolean indicating whether or not there is an element with key equal to <code>key</code> in the container
+                </para>
+              </returns>
+              <notes>
+                <para>
+                  The <code>template &lt;typename K&gt;</code> overload only participates
+                  in overload resolution if <code>Hash::is_transparent</code> and
+                  <code>Pred::is_transparent</code> are valid member typedefs. The
+                  library assumes that <code>Hash</code> is callable with both
+                  <code>K</code> and <code>Key</code> and that <code>Pred</code> is
+                  transparent. This enables heterogeneous lookup which avoids the cost of
+                  instantiating an instance of the <code>Key</code> type.
+                </para>
+              </notes>
+            </overloaded-method>
             <overloaded-method name="count">
               <signature cv="const">
                 <parameter name="k">
@@ -6018,6 +6117,39 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
                 </para>
               </notes>
             </overloaded-method>            
+            <overloaded-method name="contains">
+              <signature cv="const">
+                <parameter name="key">
+                  <paramtype>key_type const&amp;</paramtype>
+                </parameter>
+                <type>bool</type>
+              </signature>
+              <signature>
+                <template>
+                  <template-type-parameter name="K" />
+                </template>
+                <parameter name="key">
+                  <paramtype>K const&amp;</paramtype>
+                </parameter>
+                <type>bool</type>
+              </signature>
+              <returns>
+                <para>
+                  A boolean indicating whether or not there is an element with key equal to <code>key</code> in the container
+                </para>
+              </returns>
+              <notes>
+                <para>
+                  The <code>template &lt;typename K&gt;</code> overload only participates
+                  in overload resolution if <code>Hash::is_transparent</code> and
+                  <code>Pred::is_transparent</code> are valid member typedefs. The
+                  library assumes that <code>Hash</code> is callable with both
+                  <code>K</code> and <code>Key</code> and that <code>Pred</code> is
+                  transparent. This enables heterogeneous lookup which avoids the cost of
+                  instantiating an instance of the <code>Key</code> type.
+                </para>
+              </notes>
+            </overloaded-method>
             <overloaded-method name="count">
               <signature cv="const">
                 <parameter name="k">

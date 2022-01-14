@@ -15,6 +15,7 @@
 * Improved C++20 support:
   * All containers have been updated to support 
     heterogeneous `count`, `equal_range` and `find`.
+  * All containers now implement the member function `contains`
 * Improved C++23 support:
   * All containers have been updated to support
     heterogeneous `erase` and `extract`.
