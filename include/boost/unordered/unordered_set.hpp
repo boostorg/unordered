@@ -1125,6 +1125,23 @@ namespace boost {
       const_iterator find(CompatibleKey const&, CompatibleHash const&,
         CompatiblePredicate const&) const;
 
+      bool contains(const key_type& k) const
+      {
+        return table_.find_node_impl(
+          table::policy::apply_hash(this->hash_function(), k), k,
+          this->key_eq());
+      }
+
+      template <class Key>
+      typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
+        bool>::type
+      contains(const Key& k) const
+      {
+        return table_.find_node_impl(
+          table::policy::apply_hash(this->hash_function(), k), k,
+          this->key_eq());
+      }
+
       size_type count(const key_type&) const;
 
       template <class Key>
