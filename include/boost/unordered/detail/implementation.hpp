@@ -2063,44 +2063,6 @@ namespace boost {
       {
       };
 
-      // While the mix policy is generally faster, the prime policy is a lot
-      // faster when a large number consecutive integers are used, because
-      // there are no collisions. Since that is probably quite common, use
-      // prime policy for integeral types. But not the smaller ones, as they
-      // don't have enough unique values for this to be an issue.
-
-      template <> struct pick_policy2<int>
-      {
-        typedef prime_policy<std::size_t> type;
-      };
-
-      template <> struct pick_policy2<unsigned int>
-      {
-        typedef prime_policy<std::size_t> type;
-      };
-
-      template <> struct pick_policy2<long>
-      {
-        typedef prime_policy<std::size_t> type;
-      };
-
-      template <> struct pick_policy2<unsigned long>
-      {
-        typedef prime_policy<std::size_t> type;
-      };
-
-#if !defined(BOOST_NO_LONG_LONG)
-      template <> struct pick_policy2<boost::long_long_type>
-      {
-        typedef prime_policy<std::size_t> type;
-      };
-
-      template <> struct pick_policy2<boost::ulong_long_type>
-      {
-        typedef prime_policy<std::size_t> type;
-      };
-#endif
-
       template <typename T>
       struct pick_policy : pick_policy2<typename boost::remove_cv<T>::type>
       {
