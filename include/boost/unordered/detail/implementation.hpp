@@ -2035,6 +2035,45 @@ namespace boost {
         }
       };
 
+      template <typename SizeT> struct mix32_policy
+      {
+        template <typename Hash, typename T>
+        static inline SizeT apply_hash(Hash const& hf, T const& x)
+        {
+          SizeT key = hf(x);
+
+          // "Integer Hash Function", Thomas Wang, 1997
+          // https://gist.github.com/badboy/6267743
+          // http://web.archive.org/web/20071223173210/http://www.concentric.net/~Ttwang/tech/inthash.htm
+
+          key = ~key + (key << 15); // key = (key << 15) - key - 1;
+          key = key ^ (key >> 12);
+          key = key + (key << 2);
+          key = key ^ (key >> 4);
+          key = key * 2057; // key = (key + (key << 3)) + (key << 11);
+          key = key ^ (key >> 16);
+          return key;
+        }
+
+        static inline SizeT to_bucket(SizeT bucket_count, SizeT hash)
+        {
+          BOOST_ASSERT( boost::core::has_single_bit( bucket_count ) );
+          return hash & (bucket_count - 1);
+        }
+
+        static inline SizeT new_bucket_count(SizeT min)
+        {
+          if (min <= 4)
+            return 4;
+          return boost::core::bit_ceil(min);
+        }
+
+        static inline SizeT prev_bucket_count(SizeT max)
+        {
+          return boost::core::bit_floor(max);
+        }
+      };
+
       template <int digits, int radix> struct pick_policy_impl
       {
         typedef prime_policy<std::size_t> type;
@@ -2043,6 +2082,11 @@ namespace boost {
       template <> struct pick_policy_impl<64, 2>
       {
         typedef mix64_policy<std::size_t> type;
+      };
+
+      template <> struct pick_policy_impl<32, 2>
+      {
+        typedef mix32_policy<std::size_t> type;
       };
 
       template <typename T>

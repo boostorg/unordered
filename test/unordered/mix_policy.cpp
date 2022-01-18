@@ -42,5 +42,24 @@ int main()
         }
     }
 
+    {
+        typedef boost::uint32_t SizeT;
+        typedef boost::unordered::detail::mix32_policy<SizeT> policy;
+
+        for( SizeT i = 1; i < 200; ++i )
+        {
+            test<policy>( i );
+        }
+
+        for( int i = 8; i < 32; ++i )
+        {
+            SizeT x = SizeT( 1 ) << i;
+
+            test<policy>( x - 1 );
+            test<policy>( x );
+            test<policy>( x + 1 );
+        }
+    }
+
     return boost::report_errors();
 }
