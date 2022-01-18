@@ -65,6 +65,7 @@ test-suite unordered
         [ run unordered/transparent_tests.cpp ]
         [ run unordered/reserve_tests.cpp ]
         [ run unordered/contains_tests.cpp ]
+        [ run unordered/mix_policy.cpp ]
 
         [ run unordered/compile_set.cpp : :
             : <define>BOOST_UNORDERED_USE_MOVE
