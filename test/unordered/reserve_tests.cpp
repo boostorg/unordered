@@ -160,9 +160,9 @@ template <class UnorderedContainer> void rehash_tests()
     // properly deallocate the current bucket array and then reallocate the
     // larger one
     //
-    std::size_t prev_count = count;
+    std::size_t prev_count = s.bucket_count();
 
-    count = s.bucket_count() + 1;
+    count = s.bucket_count() + 2;
     s.rehash(count);
 
     BOOST_TEST_GT(num_allocations, prev_allocations);
