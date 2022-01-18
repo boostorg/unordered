@@ -2018,6 +2018,7 @@ namespace boost {
 
         static inline SizeT to_bucket(SizeT bucket_count, SizeT hash)
         {
+          BOOST_ASSERT( boost::core::has_single_bit( bucket_count ) );
           return hash & (bucket_count - 1);
         }
 
