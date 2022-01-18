@@ -16,6 +16,7 @@
 #include <boost/core/allocator_traits.hpp>
 #include <boost/core/no_exceptions_support.hpp>
 #include <boost/core/pointer_traits.hpp>
+#include <boost/core/bit.hpp>
 #include <boost/detail/select_type.hpp>
 #include <boost/limits.hpp>
 #include <boost/move/move.hpp>
@@ -2024,25 +2025,12 @@ namespace boost {
         {
           if (min <= 4)
             return 4;
-          --min;
-          min |= min >> 1;
-          min |= min >> 2;
-          min |= min >> 4;
-          min |= min >> 8;
-          min |= min >> 16;
-          min |= min >> 32;
-          return min + 1;
+          return boost::core::bit_ceil(min);
         }
 
         static inline SizeT prev_bucket_count(SizeT max)
         {
-          max |= max >> 1;
-          max |= max >> 2;
-          max |= max >> 4;
-          max |= max >> 8;
-          max |= max >> 16;
-          max |= max >> 32;
-          return (max >> 1) + 1;
+          return boost::core::bit_floor(max);
         }
       };
 
