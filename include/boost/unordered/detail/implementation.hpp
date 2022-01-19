@@ -1979,7 +1979,7 @@ namespace boost {
           return hf(x);
         }
 
-        static inline SizeT to_bucket(SizeT bucket_count, SizeT hash)
+        static inline SizeT to_bucket(SizeT bucket_count, SizeT hash, int /*bcount_log2*/)
         {
           return hash % bucket_count;
         }
@@ -2016,9 +2016,10 @@ namespace boost {
           return key;
         }
 
-        static inline SizeT to_bucket(SizeT bucket_count, SizeT hash)
+        static inline SizeT to_bucket(SizeT bucket_count, SizeT hash, int bcount_log2)
         {
           BOOST_ASSERT( boost::core::has_single_bit( bucket_count ) );
+          BOOST_ASSERT( bucket_count == ( SizeT(1) << bcount_log2 ) );
           return hash & (bucket_count - 1);
         }
 
@@ -2055,9 +2056,10 @@ namespace boost {
           return key;
         }
 
-        static inline SizeT to_bucket(SizeT bucket_count, SizeT hash)
+        static inline SizeT to_bucket(SizeT bucket_count, SizeT hash, int bcount_log2)
         {
           BOOST_ASSERT( boost::core::has_single_bit( bucket_count ) );
+          BOOST_ASSERT( bucket_count == ( SizeT(1) << bcount_log2 ) );
           return hash & (bucket_count - 1);
         }
 
@@ -2328,11 +2330,20 @@ namespace boost {
         boost::unordered::detail::compressed<bucket_allocator, node_allocator>
           allocators_;
         std::size_t bucket_count_;
+        int bcount_log2_;
         std::size_t size_;
         float mlf_;
         std::size_t max_load_;
         bucket_pointer buckets_;
 
+      private:
+        void init_bcount_log2()
+        {
+          BOOST_ASSERT( bucket_count_ > 0 );
+          bcount_log2_ = static_cast<int>( boost::core::bit_width( bucket_count_ ) ) - 1;
+        }
+
+      public:
         ////////////////////////////////////////////////////////////////////////
         // Data access
 
@@ -2430,7 +2441,7 @@ namespace boost {
 
         std::size_t hash_to_bucket(std::size_t hash_value) const
         {
-          return policy::to_bucket(bucket_count_, hash_value);
+          return policy::to_bucket(bucket_count_, hash_value, bcount_log2_);
         }
 
         std::size_t bucket_size(std::size_t index) const
@@ -2500,6 +2511,7 @@ namespace boost {
               bucket_count_(policy::new_bucket_count(num_buckets)), size_(0),
               mlf_(1.0f), max_load_(0), buckets_()
         {
+          init_bcount_log2();
           this->create_buckets(bucket_count_);
         }
 
@@ -2508,6 +2520,7 @@ namespace boost {
               bucket_count_(x.min_buckets_for_size(x.size_)), size_(0),
               mlf_(x.mlf_), max_load_(0), buckets_()
         {
+          init_bcount_log2();
         }
 
         table(table& x, boost::unordered::detail::move_tag m)
@@ -2515,6 +2528,7 @@ namespace boost {
               bucket_count_(x.bucket_count_), size_(x.size_), mlf_(x.mlf_),
               max_load_(x.max_load_), buckets_(x.buckets_)
         {
+          init_bcount_log2();
           x.buckets_ = bucket_pointer();
           x.size_ = 0;
           x.max_load_ = 0;
@@ -2526,6 +2540,7 @@ namespace boost {
               bucket_count_(x.bucket_count_), size_(0), mlf_(x.mlf_),
               max_load_(0), buckets_()
         {
+          init_bcount_log2();
         }
 
         ////////////////////////////////////////////////////////////////////////
@@ -2581,6 +2596,7 @@ namespace boost {
 
           // nothrow from here...
           bucket_count_ = new_count;
+          init_bcount_log2();
           recalculate_max_load();
 
           bucket_pointer end =
@@ -2634,6 +2650,7 @@ namespace boost {
 
           boost::swap(buckets_, x.buckets_);
           boost::swap(bucket_count_, x.bucket_count_);
+          boost::swap(bcount_log2_, x.bcount_log2_);
           boost::swap(size_, x.size_);
           std::swap(mlf_, x.mlf_);
           std::swap(max_load_, x.max_load_);
@@ -2649,6 +2666,7 @@ namespace boost {
 
           boost::swap(buckets_, x.buckets_);
           boost::swap(bucket_count_, x.bucket_count_);
+          boost::swap(bcount_log2_, x.bcount_log2_);
           boost::swap(size_, x.size_);
           std::swap(mlf_, x.mlf_);
           std::swap(max_load_, x.max_load_);
@@ -2675,6 +2693,7 @@ namespace boost {
           BOOST_ASSERT(!buckets_);
           buckets_ = other.buckets_;
           bucket_count_ = other.bucket_count_;
+          init_bcount_log2();
           size_ = other.size_;
           max_load_ = other.max_load_;
           other.buckets_ = bucket_pointer();
@@ -2853,6 +2872,7 @@ namespace boost {
             // Copy over other data, all no throw.
             mlf_ = x.mlf_;
             bucket_count_ = min_buckets_for_size(x.size_);
+            init_bcount_log2();
 
             // Finally copy the elements.
             if (x.size_) {
