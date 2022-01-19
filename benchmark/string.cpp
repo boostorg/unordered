@@ -38,13 +38,14 @@ static std::vector<std::string> indices1, indices2, indices3;
 static std::string make_index( std::uint32_t x )
 {
     char buffer[ 64 ];
-    std::snprintf( buffer, sizeof(buffer), "pfx_%d_sfx", x );
+    std::snprintf( buffer, sizeof(buffer), "pfx_%u_sfx", x );
 
     return buffer;
 }
 
 static void init_indices()
 {
+    indices1.reserve( N*2+1 );
     indices1.push_back( make_index( 0 ) );
 
     for( unsigned i = 1; i <= N*2; ++i )
@@ -52,6 +53,7 @@ static void init_indices()
         indices1.push_back( make_index( i ) );
     }
 
+    indices2.reserve( N*2+1 );
     indices2.push_back( make_index( 0 ) );
 
     {
@@ -63,6 +65,7 @@ static void init_indices()
         }
     }
 
+    indices3.reserve( N*2+1 );
     indices3.push_back( make_index( 0 ) );
 
     for( unsigned i = 1; i <= N*2; ++i )
