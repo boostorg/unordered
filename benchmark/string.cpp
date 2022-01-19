@@ -234,12 +234,62 @@ template<class K, class V> using multi_index_map = multi_index_container<
   >
 >;
 
+// fnv1a_hash
+
+template<int Bits> struct fnv1a_hash_impl;
+
+template<> struct fnv1a_hash_impl<32>
+{
+    std::size_t operator()( std::string const& s ) const
+    {
+        std::size_t h = 0x811C9DC5u;
+
+        char const * first = s.data();
+        char const * last = first + s.size();
+
+        for( ; first != last; ++first )
+        {
+            h ^= static_cast<unsigned char>( *first );
+            h *= 0x01000193ul;
+        }
+
+        return h;
+    }
+};
+
+template<> struct fnv1a_hash_impl<64>
+{
+    std::size_t operator()( std::string const& s ) const
+    {
+        std::size_t h = 0xCBF29CE484222325ull;
+
+        char const * first = s.data();
+        char const * last = first + s.size();
+
+        for( ; first != last; ++first )
+        {
+            h ^= static_cast<unsigned char>( *first );
+            h *= 0x00000100000001B3ull;
+        }
+
+        return h;
+    }
+};
+
+struct fnv1a_hash: fnv1a_hash_impl< std::numeric_limits<std::size_t>::digits > {};
+
+template<class K, class V> using boost_unordered_map_fnv1a =
+    boost::unordered_map<K, V, fnv1a_hash>;
+
+//
+
 int main()
 {
     init_indices();
 
     test<std::unordered_map>( "std::unordered_map" );
     test<boost::unordered_map>( "boost::unordered_map" );
+    test<boost_unordered_map_fnv1a>( "boost::unordered_map, FNV-1a" );
     test<multi_index_map>( "multi_index_map" );
 
     // test<std::map>( "std::map" );
