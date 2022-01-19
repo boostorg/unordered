@@ -552,8 +552,8 @@ namespace unnecessary_copy_tests {
 
     std::pair<count_copies const, count_copies> move_source_trial;
     reset();
-    std::make_tuple(std::move(move_source_trial.first));
-    std::make_tuple(std::move(move_source_trial.second));
+    (void)std::make_tuple(std::move(move_source_trial.first));
+    (void)std::make_tuple(std::move(move_source_trial.second));
     int tuple_move_cost = ::unnecessary_copy_tests::count_copies::moves;
     int tuple_copy_cost = ::unnecessary_copy_tests::count_copies::copies;
 

@@ -1108,7 +1108,7 @@ template <class UnorderedMap> void test_map_transparent_erase()
 
   UnorderedMap map;
 
-  unsigned long num_erased = 0;
+  std::size_t num_erased = 0;
 
   num_erased = map.erase(0);
   BOOST_TEST(map.empty());
@@ -1150,7 +1150,7 @@ template <class UnorderedMap> void test_map_non_transparent_erase()
 
   UnorderedMap map;
 
-  unsigned long num_erased = 0;
+  std::size_t num_erased = 0;
 
   num_erased = map.erase(0);
   BOOST_TEST(map.empty());
@@ -1248,7 +1248,7 @@ template <class UnorderedSet> void test_set_transparent_erase()
 
   UnorderedSet set;
 
-  unsigned long num_erased = 0;
+  std::size_t num_erased = 0;
 
   num_erased = set.erase(0);
   BOOST_TEST(set.empty());
@@ -1290,7 +1290,7 @@ template <class UnorderedSet> void test_set_non_transparent_erase()
 
   UnorderedSet set;
 
-  unsigned long num_erased = 0;
+  std::size_t num_erased = 0;
 
   num_erased = set.erase(0);
   BOOST_TEST(set.empty());

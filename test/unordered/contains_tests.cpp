@@ -265,7 +265,7 @@ void test_multiset()
   test_set_non_transparent_contains<non_transparent_multiset3>();
 }
 
-UNORDERED_AUTO_TEST (contains) {
+UNORDERED_AUTO_TEST (contains_) { // avoid -Wshadow warning with `bool contains`
   test_map();
   test_multimap();
   test_set();
