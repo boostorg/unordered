@@ -35,7 +35,7 @@ constexpr int K = 10;
 
 static std::vector<std::string> indices1, indices2, indices3;
 
-static std::string make_index( std::uint32_t x )
+static std::string make_index( unsigned x )
 {
     char buffer[ 64 ];
     std::snprintf( buffer, sizeof(buffer), "pfx_%u_sfx", x );
@@ -281,8 +281,18 @@ template<> struct fnv1a_hash_impl<64>
 
 struct fnv1a_hash: fnv1a_hash_impl< std::numeric_limits<std::size_t>::digits > {};
 
+template<class K, class V> using std_unordered_map_fnv1a =
+    std::unordered_map<K, V, fnv1a_hash>;
+
 template<class K, class V> using boost_unordered_map_fnv1a =
     boost::unordered_map<K, V, fnv1a_hash>;
+
+template<class K, class V> using multi_index_map_fnv1a = multi_index_container<
+  pair<K, V>,
+  indexed_by<
+    hashed_unique< member<pair<K, V>, K, &pair<K, V>::first>, fnv1a_hash >
+  >
+>;
 
 //
 
@@ -291,9 +301,11 @@ int main()
     init_indices();
 
     test<std::unordered_map>( "std::unordered_map" );
+    test<std_unordered_map_fnv1a>( "std::unordered_map, FNV-1a" );
     test<boost::unordered_map>( "boost::unordered_map" );
     test<boost_unordered_map_fnv1a>( "boost::unordered_map, FNV-1a" );
     test<multi_index_map>( "multi_index_map" );
+    test<multi_index_map_fnv1a>( "multi_index_map, FNV-1a" );
 
     // test<std::map>( "std::map" );
 
