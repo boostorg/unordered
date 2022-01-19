@@ -2041,26 +2041,21 @@ namespace boost {
         template <typename Hash, typename T>
         static inline SizeT apply_hash(Hash const& hf, T const& x)
         {
-          SizeT key = hf(x);
-
-          // "Integer Hash Function", Thomas Wang, 1997
-          // https://gist.github.com/badboy/6267743
-          // http://web.archive.org/web/20071223173210/http://www.concentric.net/~Ttwang/tech/inthash.htm
-
-          key = ~key + (key << 15); // key = (key << 15) - key - 1;
-          key = key ^ (key >> 12);
-          key = key + (key << 2);
-          key = key ^ (key >> 4);
-          key = key * 2057; // key = (key + (key << 3)) + (key << 11);
-          key = key ^ (key >> 16);
-          return key;
+          // https://en.wikipedia.org/wiki/Hash_function#Fibonacci_hashing
+          SizeT const m = 2654435769u; // 2^32 / phi
+          return hf(x) * m;
         }
 
         static inline SizeT to_bucket(SizeT bucket_count, SizeT hash, int bcount_log2)
         {
-          BOOST_ASSERT( boost::core::has_single_bit( bucket_count ) );
           BOOST_ASSERT( bucket_count == ( SizeT(1) << bcount_log2 ) );
-          return hash & (bucket_count - 1);
+          (void)bucket_count;
+
+          SizeT r = hash >> (32 - bcount_log2);
+
+          BOOST_ASSERT( r < bucket_count );
+
+          return r;
         }
 
         static inline SizeT new_bucket_count(SizeT min)
