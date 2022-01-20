@@ -33,12 +33,20 @@ static void print_time( std::chrono::steady_clock::time_point & t1, char const* 
 constexpr unsigned N = 2'000'000;
 constexpr int K = 10;
 
-static std::vector<std::string> indices1, indices2, indices3;
+static std::vector<std::string> indices1, indices2;
 
 static std::string make_index( unsigned x )
 {
     char buffer[ 64 ];
     std::snprintf( buffer, sizeof(buffer), "pfx_%u_sfx", x );
+
+    return buffer;
+}
+
+static std::string make_random_index( unsigned x )
+{
+    char buffer[ 64 ];
+    std::snprintf( buffer, sizeof(buffer), "pfx_%0*d_%u_sfx", x % 8 + 1, 0, x );
 
     return buffer;
 }
@@ -61,16 +69,8 @@ static void init_indices()
 
         for( unsigned i = 1; i <= N*2; ++i )
         {
-            indices2.push_back( make_index( static_cast<std::uint32_t>( rng() ) ) );
+            indices2.push_back( make_random_index( static_cast<std::uint32_t>( rng() ) ) );
         }
-    }
-
-    indices3.reserve( N*2+1 );
-    indices3.push_back( make_index( 0 ) );
-
-    for( unsigned i = 1; i <= N*2; ++i )
-    {
-        indices3.push_back( make_index( (std::uint32_t)i << 11 ) );
     }
 }
 
@@ -89,13 +89,6 @@ template<class Map> void test_insert( Map& map, std::chrono::steady_clock::time_
     }
 
     print_time( t1, "Random insert",  0, map.size() );
-
-    for( unsigned i = 1; i <= N; ++i )
-    {
-        map.insert( { indices3[ i ], i } );
-    }
-
-    print_time( t1, "Consecutive shifted insert",  0, map.size() );
 
     std::cout << std::endl;
 }
@@ -129,19 +122,6 @@ template<class Map> void test_lookup( Map& map, std::chrono::steady_clock::time_
     }
 
     print_time( t1, "Random lookup",  s, map.size() );
-
-    s = 0;
-
-    for( int j = 0; j < K; ++j )
-    {
-        for( unsigned i = 1; i <= N * 2; ++i )
-        {
-            auto it = map.find( indices3[ i ] );
-            if( it != map.end() ) s += it->second;
-        }
-    }
-
-    print_time( t1, "Consecutive shifted lookup",  s, map.size() );
 
     std::cout << std::endl;
 }
@@ -186,13 +166,6 @@ template<class Map> void test_erase( Map& map, std::chrono::steady_clock::time_p
     }
 
     print_time( t1, "Random erase",  0, map.size() );
-
-    for( unsigned i = 1; i <= N; ++i )
-    {
-        map.erase( indices3[ i ] );
-    }
-
-    print_time( t1, "Consecutive shifted erase",  0, map.size() );
 
     std::cout << std::endl;
 }
