@@ -2,3 +2,4 @@
 = Reference
 
 include::unordered_map.adoc[]
+include::unordered_set.adoc[]
