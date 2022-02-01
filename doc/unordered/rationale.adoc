@@ -39,14 +39,30 @@ So chained addressing is used.
 
 == Number of Buckets
 
-There are two popular methods for choosing the number of buckets in a hash table. One is to have a prime number of buckets, another is to use a power of 2.
+There are two popular methods for choosing the number of buckets in a hash
+table. One is to have a prime number of buckets, another is to use a power
+of 2.
 
-Using a prime number of buckets, and choosing a bucket by using the modulus of the hash function's result will usually give a good result. The downside is that the required modulus operation is fairly expensive. This is what the containers do in most cases.
+Using a prime number of buckets, and choosing a bucket by using the modulus
+of the hash function's result will usually give a good result. The downside
+is that the required modulus operation is fairly expensive. This is what the
+containers used to do in most cases.
 
-Using a power of 2 allows for much quicker selection of the bucket to use, but at the expense of losing the upper bits of the hash value. For some specially designed hash functions it is possible to do this and still get a good result but as the containers can take arbitrary hash functions this can't be relied on.
+Using a power of 2 allows for much quicker selection of the bucket to use,
+but at the expense of losing the upper bits of the hash value. For some
+specially designed hash functions it is possible to do this and still get a
+good result but as the containers can take arbitrary hash functions this can't
+be relied on.
 
-To avoid this a transformation could be applied to the hash function, for an example see http://web.archive.org/web/20121102023700/http://www.concentric.net/~Ttwang/tech/inthash.htm[Thomas Wang's article on integer hash functions^]. Unfortunately, a transformation like Wang's requires knowledge of the number of bits in the hash value, so it isn't portable enough to use as a default. It can applicable in certain cases so the containers have a policy based implementation that can use this alternative technique.
+To avoid this a transformation could be applied to the hash function, for an
+example see
+http://web.archive.org/web/20121102023700/http://www.concentric.net/~Ttwang/tech/inthash.htm[Thomas Wang's article on integer hash functions^].
+Unfortunately, a transformation like Wang's requires knowledge of the number
+of bits in the hash value, so it was only used when `size_t` was 64 bit.
 
-Currently this is only done on 64 bit architectures, where prime number modulus can be expensive. Although this varies depending on the architecture, so I probably should revisit it.
-
-I'm also thinking of introducing a mechanism whereby a hash function can indicate that it's safe to be used directly with power of 2 buckets, in which case a faster plain power of 2 implementation can be used.
+Since release 1.79.0, https://en.wikipedia.org/wiki/Hash_function#Fibonacci_hashing[Fibonacci hashing]
+is used instead. With this implementation, the bucket number is determined
+by using `(h * m) >> (w - k)`, where `h` is the hash value, `m` is the golden
+ratio multiplied by `2^w`, `w` is the word size (32 or 64), and `2^k` is the
+number of buckets. This provides a good compromise between speed and
+distribution.

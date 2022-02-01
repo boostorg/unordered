@@ -19,6 +19,7 @@
   allocate ({github-pr-url}/59[PR#59^]).
 * Various warning fixes in the test suite.
 * Update code to internally use `boost::allocator_traits`.
+* Switch to Fibonacci hashing.
 
 == Changes in Boost 1.67.0
 
