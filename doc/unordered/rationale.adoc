@@ -5,7 +5,7 @@
 = Implementation Rationale
 
 The intent of this library is to implement the unordered
-containers in the draft standard, so the interface was fixed. But there are
+containers in the standard, so the interface was fixed. But there are
 still some implementation decisions to make. The priorities are
 conformance to the standard and portability.
 
@@ -21,7 +21,7 @@ It would be conceivable to write a hash table that uses another method. For
 example, it could use open addressing, and use the lookup chain to act as a
 bucket but there are some serious problems with this:
 
-* The draft standard requires that pointers to elements aren't invalidated, so
+* The standard requires that pointers to elements aren't invalidated, so
   the elements can't be stored in one array, but will need a layer of
   indirection instead - losing the efficiency and most of the memory gain,
   the main advantages of open addressing.

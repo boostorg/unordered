@@ -86,7 +86,7 @@ influence it:
 * Suggest a maximum load factor by calling `max_load_factor`.
 
 `max_load_factor` doesn't let you set the maximum load factor yourself, it just
-lets you give a _hint_. And even then, the draft standard doesn't actually
+lets you give a _hint_. And even then, the standard doesn't actually
 require the container to pay much attention to this value. The only time the
 load factor is _required_ to be less than the maximum is following a call to
 `rehash`. But most implementations will try to keep the number of elements
