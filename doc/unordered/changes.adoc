@@ -20,6 +20,7 @@
 * Various warning fixes in the test suite.
 * Update code to internally use `boost::allocator_traits`.
 * Switch to Fibonacci hashing.
+* Update documentation to be written in AsciiDoc instead of QuickBook.
 
 == Release 1.67.0
 
