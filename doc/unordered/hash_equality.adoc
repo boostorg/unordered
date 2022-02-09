@@ -131,7 +131,7 @@ boost::unordered_multiset<point> points;
 ```
 
 See the link:../../../container_hash/index.html[Boost.Hash documentation^] for more detail on how to
-do this. Remember that it relies on extensions to the draft standard - so it
+do this. Remember that it relies on extensions to the standard - so it
 won't work for other implementations of the unordered associative containers,
 you'll need to explicitly use Boost.Hash.
 

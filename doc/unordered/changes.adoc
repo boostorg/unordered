@@ -6,7 +6,7 @@
 :github-pr-url: https://github.com/boostorg/unordered/pull
 :cpp: C++
 
-== Changes in Boost 1.79.0
+== Release 1.79.0
 
 * Improved {cpp}20 support:
   ** All containers have been updated to support 
@@ -20,8 +20,9 @@
 * Various warning fixes in the test suite.
 * Update code to internally use `boost::allocator_traits`.
 * Switch to Fibonacci hashing.
+* Update documentation to be written in AsciiDoc instead of QuickBook.
 
-== Changes in Boost 1.67.0
+== Release 1.67.0
 
 * Improved {cpp}17 support:
   ** Add template deduction guides from the standard.
@@ -51,12 +52,12 @@
 * Various testing improvements.
 * Miscellaneous internal changes.
 
-== Changes in Boost 1.66.0
+== Release 1.66.0
 
 * Simpler move construction implementation.
 * Documentation fixes ({github-pr-url}/6[GitHub #6^]).
 
-== Changes in Boost 1.65.0
+== Release 1.65.0
 
 * Add deprecated attributes to `quick_erase` and `erase_return_void`.
   I really will remove them in a future version this time.
@@ -64,7 +65,7 @@
   ** `noexpect` specs for `swap` free functions.
   ** Add missing `insert(P&&)` methods.
 
-== Changes in Boost 1.64.0
+== Release 1.64.0
 
 * Initial support for new {cpp}17 member functions:
   `insert_or_assign` and `try_emplace` in `unordered_map`,
@@ -74,7 +75,7 @@
   `unordered_multiset` yet. That will hopefully be in the next version of
   Boost.
 
-== Changes in Boost 1.63.0
+== Release 1.63.0
 
 * Check hint iterator in `insert`/`emplace_hint`.
 * Fix some warnings, mostly in the tests.
@@ -98,7 +99,7 @@
   arguments, but an off by one error in the preprocessor code meant it only
   supported up to 9.
 
-== Changes in Boost 1.62.0
+== Release 1.62.0
 
 * Remove use of deprecated `boost::iterator`.
 * Remove `BOOST_NO_STD_DISTANCE` workaround.
@@ -108,7 +109,7 @@
 * Stop using return value SFINAE which some older compilers have issues
   with.
 
-== Changes in Boost 1.58.0
+== Release 1.58.0
 
 * Remove unnecessary template parameter from const iterators.
 * Rename private `iterator` typedef in some iterator classes, as it
@@ -119,13 +120,13 @@
 * Fix potential overflow when calculating number of buckets to allocate
   ({github-pr-url}/4[GitHub #4^]).
 
-== Changes in Boost 1.57.0
+== Release 1.57.0
 
 * Fix the `pointer` typedef in iterators ({svn-ticket-url}/10672[#10672^]).
 * Fix Coverity warning
   ({github-pr-url}/2[GitHub #2^]).
 
-== Changes in Boost 1.56.0
+== Release 1.56.0
 
 * Fix some shadowed variable warnings ({svn-ticket-url}/9377[#9377^]).
 * Fix allocator use in documentation ({svn-ticket-url}/9719[#9719^]).
@@ -134,7 +135,7 @@
   uses slower ({svn-ticket-url}/9282[#9282^]).
 * Only construct elements using allocators, as specified in {cpp}11 standard.
 
-== Changes in Boost 1.55.0
+== Release 1.55.0
 
 * Avoid some warnings ({svn-ticket-url}/8851[#8851^], {svn-ticket-url}/8874[#8874^]).
 * Avoid exposing some detail functions via. ADL on the iterators.
@@ -142,14 +143,14 @@
   methods to construct and destroy stored elements. Don't use them for internal
   data like pointers.
 
-== Changes in Boost 1.54.0
+== Release 1.54.0
 
 * Mark methods specified in standard as `noexpect`. More to come in the next
   release.
 * If the hash function and equality predicate are known to both have nothrow
   move assignment or construction then use them.
 
-== Changes in Boost 1.53.0
+== Release 1.53.0
 
 * Remove support for the old pre-standard variadic pair constructors, and
   equality implementation. Both have been deprecated since Boost 1.48.
@@ -157,7 +158,7 @@
 * More internal implementation changes, including a much simpler
   implementation of `erase`.
 
-== Changes in Boost 1.52.0
+== Release 1.52.0
 
 * Faster assign, which assigns to existing nodes where possible, rather than
   creating entirely new nodes and copy constructing.
@@ -167,7 +168,7 @@
   for {cpp}11 allocators.
 * Simplified the implementation a bit. Hopefully more robust.
 
-== Changes in Boost 1.51.0
+== Release 1.51.0
 
 * Fix construction/destruction issue when using a {cpp}11 compiler with a
   {cpp}03 allocator ({svn-ticket-url}/7100[#7100^]).
@@ -175,7 +176,7 @@
 * Adjust SFINAE use to try to support g++ 3.4 ({svn-ticket-url}/7175[#7175^]).
 * Updated to use the new config macros.
 
-== Changes in Boost 1.50.0
+== Release 1.50.0
 
 * Fix equality for `unordered_multiset` and `unordered_multimap`.
 * {svn-ticket-url}/6857[Ticket 6857^]:
@@ -199,12 +200,12 @@
   for 64 bit values.
 * Some internal changes.
 
-== Changes in Boost 1.49.0
+== Release 1.49.0
 
 * Fix warning due to accidental odd assignment.
 * Slightly better error messages.
 
-== Changes in Boost 1.48.0 - Major update
+== Release 1.48.0 - Major update
 
 This is major change which has been converted to use Boost.Move's move
 emulation, and be more compliant with the {cpp}11 standard. See the
@@ -240,12 +241,12 @@ future version.
   the variadic constructors define
   `BOOST_UNORDERED_DEPRECATED_PAIR_CONSTRUCT`.
 
-== Changes in Boost 1.45.0
+== Release 1.45.0
 
 * Fix a bug when inserting into an `unordered_map` or `unordered_set` using
   iterators which returns `value_type` by copy.
 
-== Changes in Boost 1.43.0
+== Release 1.43.0
 
 * {svn-ticket-url}/3966[Ticket 3966^]:
   `erase_return_void` is now `quick_erase`, which is the
@@ -257,7 +258,7 @@ future version.
 * Use Boost.Exception.
 * Stop using deprecated `BOOST_HAS_*` macros.
 
-== Changes in Boost 1.42.0
+== Release 1.42.0
 
 * Support instantiating the containers with incomplete value types.
 * Reduced the number of warnings (mostly in tests).
@@ -271,7 +272,7 @@ future version.
   Add missing `std` qualifier to `ptrdiff_t`.
 * Some code formatting changes to fit almost all lines into 80 characters.
 
-== Changes in Boost 1.41.0 - Major update
+== Release 1.41.0 - Major update
 
 * The original version made heavy use of macros to sidestep some of the older
   compilers' poor template support. But since I no longer support those
@@ -286,7 +287,7 @@ future version.
 * Buckets are allocated lazily which means that constructing an empty container
   will not allocate any memory.
 
-== Changes in Boost 1.40.0
+== Release 1.40.0
 
 * {svn-ticket-url}/2975[Ticket 2975^]:
   Store the prime list as a preprocessor sequence - so that it will always get
@@ -302,7 +303,7 @@ future version.
 * Better configuration for {cpp}0x features when the headers aren't available.
 * Create less buckets by default.
 
-== Changes in Boost 1.39.0
+== Release 1.39.0
 
 * {svn-ticket-url}/2756[Ticket 2756^]: Avoid a warning
   on Visual {cpp} 2009.
@@ -312,7 +313,7 @@ future version.
 * {svn-ticket-url}/2975[Ticket 2975^]: Fix length of
   prime number list.
 
-== Changes in Boost 1.38.0
+== Release 1.38.0
 
 * Use link:../../../core/swap.html[`boost::swap`^].
 * {svn-ticket-url}/2237[Ticket 2237^]:
@@ -332,16 +333,16 @@ future version.
 * Add support for {cpp}0x initializer lists where they're available (currently
   only g++ 4.4 in {cpp}0x mode).
 
-== Changes in Boost 1.37.0
+== Release 1.37.0
 
 * Rename overload of `emplace` with hint, to `emplace_hint` as specified in
   http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2008/n2691.pdf[n2691^].
 * Provide forwarding headers at `<boost/unordered/unordered_map_fwd.hpp>` and
   `<boost/unordered/unordered_set_fwd.hpp>`.
 * Move all the implementation inside `boost/unordered`, to assist
-  modularization and hopefully make it easier to track Changes in Boost subversion.
+  modularization and hopefully make it easier to track Release subversion.
 
-== Changes in Boost 1.36.0
+== Release 1.36.0
 
 First official release.
 
