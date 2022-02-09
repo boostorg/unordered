@@ -2001,7 +2001,8 @@ namespace boost {
         static inline SizeT apply_hash(Hash const& hf, T const& x)
         {
           // https://en.wikipedia.org/wiki/Hash_function#Fibonacci_hashing
-          SizeT const m = 11400714819323198485ull; // 2^64 / phi
+          // SizeT const m = 11400714819323198485ull; // 2^64 / phi
+          SizeT const m = ( SizeT(0x9e3779b9u) << 32 ) + 0x7f4a7c15u;
           return hf(x) * m;
         }
 
