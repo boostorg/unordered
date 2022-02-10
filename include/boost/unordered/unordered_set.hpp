@@ -509,9 +509,9 @@ namespace boost {
 
       bool contains(key_type const& k) const
       {
-        return table_.find_node_impl(
-          table::policy::apply_hash(this->hash_function(), k), k,
-          this->key_eq());
+        return 0 != table_.find_node_impl(
+                      table::policy::apply_hash(this->hash_function(), k), k,
+                      this->key_eq());
       }
 
       template <class Key>
@@ -519,9 +519,9 @@ namespace boost {
         bool>::type
       contains(const Key& k) const
       {
-        return table_.find_node_impl(
-          table::policy::apply_hash(this->hash_function(), k), k,
-          this->key_eq());
+        return 0 != table_.find_node_impl(
+                      table::policy::apply_hash(this->hash_function(), k), k,
+                      this->key_eq());
       }
 
       size_type count(const key_type&) const;
@@ -1127,9 +1127,9 @@ namespace boost {
 
       bool contains(const key_type& k) const
       {
-        return table_.find_node_impl(
-          table::policy::apply_hash(this->hash_function(), k), k,
-          this->key_eq());
+        return 0 != table_.find_node_impl(
+                      table::policy::apply_hash(this->hash_function(), k), k,
+                      this->key_eq());
       }
 
       template <class Key>
@@ -1137,9 +1137,9 @@ namespace boost {
         bool>::type
       contains(const Key& k) const
       {
-        return table_.find_node_impl(
-          table::policy::apply_hash(this->hash_function(), k), k,
-          this->key_eq());
+        return 0 != table_.find_node_impl(
+                      table::policy::apply_hash(this->hash_function(), k), k,
+                      this->key_eq());
       }
 
       size_type count(const key_type&) const;
