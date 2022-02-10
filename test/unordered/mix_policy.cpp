@@ -11,7 +11,7 @@ template<class Policy, class SizeT> void test( SizeT x )
 {
     if( x <= 4 )
     {
-        BOOST_TEST_EQ( Policy::new_bucket_count( x ), 4 );
+        BOOST_TEST_EQ( Policy::new_bucket_count( x ), 4u );
     }
     else
     {
