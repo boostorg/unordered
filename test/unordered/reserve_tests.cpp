@@ -55,8 +55,8 @@ template <typename T> struct A : B
 
 template <class UnorderedContainer> void bucket_count_constructor()
 {
-  BOOST_TEST_EQ(num_allocations, 0);
-  BOOST_TEST_EQ(total_allocation, 0);
+  BOOST_TEST_EQ(num_allocations, 0u);
+  BOOST_TEST_EQ(total_allocation, 0u);
 
   {
     std::size_t count = 50000;
@@ -67,15 +67,15 @@ template <class UnorderedContainer> void bucket_count_constructor()
     BOOST_TEST_GE(s.bucket_count(), count);
   }
 
-  BOOST_TEST_GT(num_allocations, 0);
-  BOOST_TEST_EQ(total_allocation, 0);
+  BOOST_TEST_GT(num_allocations, 0u);
+  BOOST_TEST_EQ(total_allocation, 0u);
   num_allocations = 0;
 }
 
 template <class UnorderedContainer> void range_bucket_constructor()
 {
-  BOOST_TEST_EQ(num_allocations, 0);
-  BOOST_TEST_EQ(total_allocation, 0);
+  BOOST_TEST_EQ(num_allocations, 0u);
+  BOOST_TEST_EQ(total_allocation, 0u);
 
   {
     UnorderedContainer s1;
@@ -88,15 +88,15 @@ template <class UnorderedContainer> void range_bucket_constructor()
     BOOST_TEST_GE(s2.bucket_count(), count);
   }
 
-  BOOST_TEST_GT(num_allocations, 0);
-  BOOST_TEST_EQ(total_allocation, 0);
+  BOOST_TEST_GT(num_allocations, 0u);
+  BOOST_TEST_EQ(total_allocation, 0u);
   num_allocations = 0;
 }
 
 template <class UnorderedContainer> void reserve_tests()
 {
-  BOOST_TEST_EQ(num_allocations, 0);
-  BOOST_TEST_EQ(total_allocation, 0);
+  BOOST_TEST_EQ(num_allocations, 0u);
+  BOOST_TEST_EQ(total_allocation, 0u);
 
   {
     UnorderedContainer s;
@@ -127,15 +127,15 @@ template <class UnorderedContainer> void reserve_tests()
     BOOST_TEST_EQ(num_allocations, prev_allocations);
   }
 
-  BOOST_TEST_GT(num_allocations, 0);
-  BOOST_TEST_EQ(total_allocation, 0);
+  BOOST_TEST_GT(num_allocations, 0u);
+  BOOST_TEST_EQ(total_allocation, 0u);
   num_allocations = 0;
 }
 
 template <class UnorderedContainer> void rehash_tests()
 {
-  BOOST_TEST_EQ(num_allocations, 0);
-  BOOST_TEST_EQ(total_allocation, 0);
+  BOOST_TEST_EQ(num_allocations, 0u);
+  BOOST_TEST_EQ(total_allocation, 0u);
 
   {
     UnorderedContainer s;
@@ -178,8 +178,8 @@ template <class UnorderedContainer> void rehash_tests()
     BOOST_TEST_LT(total_allocation, (prev_count + count) * sizeof(void*));
   }
 
-  BOOST_TEST_GT(num_allocations, 0);
-  BOOST_TEST_EQ(total_allocation, 0);
+  BOOST_TEST_GT(num_allocations, 0u);
+  BOOST_TEST_EQ(total_allocation, 0u);
   num_allocations = 0;
 }
 
