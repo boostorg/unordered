@@ -21,6 +21,12 @@
 #pragma warning(disable : 4127) // conditional expression is constant
 #endif
 
+#if defined(__clang__) && defined(__has_warning)
+#if __has_warning("-Wself-assign-overloaded")
+#pragma clang diagnostic ignored "-Wself-assign-overloaded"
+#endif
+#endif
+
 namespace assign_tests {
 
   test::seed_t initialize_seed(96785);

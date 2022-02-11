@@ -47,7 +47,7 @@ test-suite unordered
         [ run unordered/constructor_tests.cpp ]
         [ run unordered/copy_tests.cpp ]
         [ run unordered/move_tests.cpp ]
-        [ run unordered/assign_tests.cpp : : : <toolset>clang:<cxxflags>"-Wno-self-assign-overloaded" ]
+        [ run unordered/assign_tests.cpp ]
         [ run unordered/insert_tests.cpp ]
         [ run unordered/insert_stable_tests.cpp ]
         [ run unordered/insert_hint_tests.cpp ]
@@ -90,7 +90,7 @@ test-suite unordered
             : <define>BOOST_UNORDERED_USE_MOVE
             : bmove_move ]
         [ run unordered/assign_tests.cpp : :
-            : <define>BOOST_UNORDERED_USE_MOVE <toolset>clang:<cxxflags>"-Wno-self-assign-overloaded"
+            : <define>BOOST_UNORDERED_USE_MOVE
             : bmove_assign ]
     ;
 
@@ -98,7 +98,7 @@ test-suite unordered-exception
     :
         [ run exception/constructor_exception_tests.cpp framework ]
         [ run exception/copy_exception_tests.cpp framework ]
-        [ run exception/assign_exception_tests.cpp framework : : : <toolset>clang:<cxxflags>"-Wno-self-assign-overloaded" ]
+        [ run exception/assign_exception_tests.cpp framework ]
         [ run exception/move_assign_exception_tests.cpp framework ]
         [ run exception/insert_exception_tests.cpp framework ]
         [ run exception/erase_exception_tests.cpp framework ]
