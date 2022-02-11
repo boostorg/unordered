@@ -89,10 +89,10 @@ template <class UnorderedMap> void test_map_transparent_count()
   BOOST_TEST_EQ(count, map.size() - 2);
 
   count = map.count(1);
-  BOOST_TEST_EQ(count, 1);
+  BOOST_TEST_EQ(count, 1u);
 
   count = map.count(1337);
-  BOOST_TEST_EQ(count, 0);
+  BOOST_TEST_EQ(count, 0u);
 
   BOOST_TEST_EQ(key::count_, expected_key_count);
 }
@@ -122,12 +122,12 @@ template <class UnorderedMap> void test_map_non_transparent_count()
   count = map.count(1);
   ++key_count;
 
-  BOOST_TEST_EQ(count, 1);
+  BOOST_TEST_EQ(count, 1u);
 
   count = map.count(1337);
   ++key_count;
 
-  BOOST_TEST_EQ(count, 0);
+  BOOST_TEST_EQ(count, 0u);
   BOOST_TEST_EQ(key::count_, key_count);
 }
 
@@ -151,10 +151,10 @@ template <class UnorderedSet> void test_set_transparent_count()
   BOOST_TEST_EQ(count, set.size() - 2);
 
   count = set.count(1);
-  BOOST_TEST_EQ(count, 1);
+  BOOST_TEST_EQ(count, 1u);
 
   count = set.count(1337);
-  BOOST_TEST_EQ(count, 0);
+  BOOST_TEST_EQ(count, 0u);
 
   BOOST_TEST_EQ(key::count_, expected_key_count);
 }
@@ -184,12 +184,12 @@ template <class UnorderedSet> void test_set_non_transparent_count()
   count = set.count(1);
   ++key_count;
 
-  BOOST_TEST_EQ(count, 1);
+  BOOST_TEST_EQ(count, 1u);
 
   count = set.count(1337);
   ++key_count;
 
-  BOOST_TEST_EQ(count, 0);
+  BOOST_TEST_EQ(count, 0u);
   BOOST_TEST_EQ(key::count_, key_count);
 }
 
@@ -1112,7 +1112,7 @@ template <class UnorderedMap> void test_map_transparent_erase()
 
   num_erased = map.erase(0);
   BOOST_TEST(map.empty());
-  BOOST_TEST_EQ(num_erased, 0);
+  BOOST_TEST_EQ(num_erased, 0u);
   BOOST_TEST_EQ(key::count_, 0);
 
   map.insert(std::make_pair(0, 1337));
@@ -1125,21 +1125,21 @@ template <class UnorderedMap> void test_map_transparent_erase()
   BOOST_TEST(map.find(0) != map.end());
 
   int const expected_key_count = key::count_;
-  int const expected_num_erased = static_cast<int>(map.size() - 2);
+  std::size_t const expected_num_erased = map.size() - 2;
 
   num_erased = map.erase(0);
   BOOST_TEST_EQ(num_erased, expected_num_erased);
-  BOOST_TEST_EQ(map.size(), 2);
+  BOOST_TEST_EQ(map.size(), 2u);
   BOOST_TEST(map.find(0) == map.end());
 
   num_erased = map.erase(1);
-  BOOST_TEST_EQ(num_erased, 1);
-  BOOST_TEST_EQ(map.size(), 1);
+  BOOST_TEST_EQ(num_erased, 1u);
+  BOOST_TEST_EQ(map.size(), 1u);
   BOOST_TEST(map.find(1) == map.end());
 
   num_erased = map.erase(1337);
-  BOOST_TEST_EQ(num_erased, 0);
-  BOOST_TEST_EQ(map.size(), 1);
+  BOOST_TEST_EQ(num_erased, 0u);
+  BOOST_TEST_EQ(map.size(), 1u);
 
   BOOST_TEST_EQ(key::count_, expected_key_count);
 }
@@ -1154,7 +1154,7 @@ template <class UnorderedMap> void test_map_non_transparent_erase()
 
   num_erased = map.erase(0);
   BOOST_TEST(map.empty());
-  BOOST_TEST_EQ(num_erased, 0);
+  BOOST_TEST_EQ(num_erased, 0u);
   BOOST_TEST_EQ(key::count_, 1);
 
   map.insert(std::make_pair(0, 1337));
@@ -1164,7 +1164,7 @@ template <class UnorderedMap> void test_map_non_transparent_erase()
   map.insert(std::make_pair(0, 1341));
   map.insert(std::make_pair(0, 1342));
 
-  int const expected_num_erased = static_cast<int>(map.size() - 2);
+  std::size_t const expected_num_erased = map.size() - 2;
 
   BOOST_TEST(map.find(0) != map.end());
 
@@ -1174,7 +1174,7 @@ template <class UnorderedMap> void test_map_non_transparent_erase()
   ++key_count;
   BOOST_TEST_EQ(key::count_, key_count);
   BOOST_TEST_EQ(num_erased, expected_num_erased);
-  BOOST_TEST_EQ(map.size(), 2);
+  BOOST_TEST_EQ(map.size(), 2u);
 
   BOOST_TEST(map.find(0) == map.end());
   ++key_count;
@@ -1183,16 +1183,16 @@ template <class UnorderedMap> void test_map_non_transparent_erase()
 
   num_erased = map.erase(1);
   ++key_count;
-  BOOST_TEST_EQ(num_erased, 1);
-  BOOST_TEST_EQ(map.size(), 1);
+  BOOST_TEST_EQ(num_erased, 1u);
+  BOOST_TEST_EQ(map.size(), 1u);
 
   BOOST_TEST(map.find(1) == map.end());
   ++key_count;
 
   num_erased = map.erase(1337);
   ++key_count;
-  BOOST_TEST_EQ(num_erased, 0);
-  BOOST_TEST_EQ(map.size(), 1);
+  BOOST_TEST_EQ(num_erased, 0u);
+  BOOST_TEST_EQ(map.size(), 1u);
 
   BOOST_TEST_EQ(key::count_, key_count);
 }
@@ -1252,7 +1252,7 @@ template <class UnorderedSet> void test_set_transparent_erase()
 
   num_erased = set.erase(0);
   BOOST_TEST(set.empty());
-  BOOST_TEST_EQ(num_erased, 0);
+  BOOST_TEST_EQ(num_erased, 0u);
   BOOST_TEST_EQ(key::count_, 0);
 
   set.insert(0);
@@ -1265,21 +1265,21 @@ template <class UnorderedSet> void test_set_transparent_erase()
   BOOST_TEST(set.find(0) != set.end());
 
   int const expected_key_count = key::count_;
-  int const expected_num_erased = static_cast<int>(set.size() - 2);
+  std::size_t const expected_num_erased = set.size() - 2;
 
   num_erased = set.erase(0);
   BOOST_TEST_EQ(num_erased, expected_num_erased);
-  BOOST_TEST_EQ(set.size(), 2);
+  BOOST_TEST_EQ(set.size(), 2u);
   BOOST_TEST(set.find(0) == set.end());
 
   num_erased = set.erase(1);
-  BOOST_TEST_EQ(num_erased, 1);
-  BOOST_TEST_EQ(set.size(), 1);
+  BOOST_TEST_EQ(num_erased, 1u);
+  BOOST_TEST_EQ(set.size(), 1u);
   BOOST_TEST(set.find(1) == set.end());
 
   num_erased = set.erase(1337);
-  BOOST_TEST_EQ(num_erased, 0);
-  BOOST_TEST_EQ(set.size(), 1);
+  BOOST_TEST_EQ(num_erased, 0u);
+  BOOST_TEST_EQ(set.size(), 1u);
 
   BOOST_TEST_EQ(key::count_, expected_key_count);
 }
@@ -1294,7 +1294,7 @@ template <class UnorderedSet> void test_set_non_transparent_erase()
 
   num_erased = set.erase(0);
   BOOST_TEST(set.empty());
-  BOOST_TEST_EQ(num_erased, 0);
+  BOOST_TEST_EQ(num_erased, 0u);
   BOOST_TEST_EQ(key::count_, 1);
 
   set.insert(0);
@@ -1304,7 +1304,7 @@ template <class UnorderedSet> void test_set_non_transparent_erase()
   set.insert(0);
   set.insert(0);
 
-  int const expected_num_erased = static_cast<int>(set.size() - 2);
+  std::size_t const expected_num_erased = set.size() - 2;
 
   BOOST_TEST(set.find(0) != set.end());
 
@@ -1314,7 +1314,7 @@ template <class UnorderedSet> void test_set_non_transparent_erase()
   ++key_count;
   BOOST_TEST_EQ(key::count_, key_count);
   BOOST_TEST_EQ(num_erased, expected_num_erased);
-  BOOST_TEST_EQ(set.size(), 2);
+  BOOST_TEST_EQ(set.size(), 2u);
 
   BOOST_TEST(set.find(0) == set.end());
   ++key_count;
@@ -1323,16 +1323,16 @@ template <class UnorderedSet> void test_set_non_transparent_erase()
 
   num_erased = set.erase(1);
   ++key_count;
-  BOOST_TEST_EQ(num_erased, 1);
-  BOOST_TEST_EQ(set.size(), 1);
+  BOOST_TEST_EQ(num_erased, 1u);
+  BOOST_TEST_EQ(set.size(), 1u);
 
   BOOST_TEST(set.find(1) == set.end());
   ++key_count;
 
   num_erased = set.erase(1337);
   ++key_count;
-  BOOST_TEST_EQ(num_erased, 0);
-  BOOST_TEST_EQ(set.size(), 1);
+  BOOST_TEST_EQ(num_erased, 0u);
+  BOOST_TEST_EQ(set.size(), 1u);
 
   BOOST_TEST_EQ(key::count_, key_count);
 }
@@ -1517,7 +1517,7 @@ template <class UnorderedSet> void test_set_transparent_extract()
   count = set.count(1);
   BOOST_TEST_EQ(set.size(), set_size - 1);
   BOOST_TEST_EQ(nh.value(), 1);
-  BOOST_TEST_EQ(count, 0);
+  BOOST_TEST_EQ(count, 0u);
 
   set.insert(boost::move(nh));
 
@@ -1572,7 +1572,7 @@ template <class UnorderedSet> void test_set_non_transparent_extract()
 
   BOOST_TEST_EQ(set.size(), set_size - 1);
   BOOST_TEST_EQ(nh.value(), 1);
-  BOOST_TEST_EQ(count, 0);
+  BOOST_TEST_EQ(count, 0u);
 
   set.insert(boost::move(nh));
 
