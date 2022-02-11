@@ -3815,7 +3815,7 @@ namespace boost {
         // no throw
 
         template <class KeyEqual, class Key>
-        std::size_t erase_key_equiv_impl(KeyEqual const& key_eq, Key const& k)
+        std::size_t erase_key_equiv_impl(KeyEqual const& eq, Key const& k)
         {
           if (!this->size_)
             return 0;
@@ -3823,7 +3823,7 @@ namespace boost {
           std::size_t key_hash = policy::apply_hash(this->hash_function(), k);
           std::size_t bucket_index = this->hash_to_bucket(key_hash);
           link_pointer prev =
-            this->find_previous_node_impl(key_eq, k, bucket_index);
+            this->find_previous_node_impl(eq, k, bucket_index);
           if (!prev)
             return 0;
 
