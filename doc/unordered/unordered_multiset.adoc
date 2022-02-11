@@ -105,20 +105,20 @@ public:
 
   // modifiers
   template<typename... Args>
-  std::pair<iterator, bool>
+  iterator
   emplace(Args&&... args);
 
   template<typename... Args>
   iterator
   emplace_hint(const_iterator hint, Args&&... args);
 
-  std::pair<iterator, bool>
+  iterator
   insert(value_type const& obj);
 
-  std::pair<iterator, bool>
+  iterator
   insert(value_type&& obj);
 
-  insert_return_type insert(node_type&& nh);
+  iterator insert(node_type&& nh);
 
   iterator insert(const_iterator hint, value_type const& obj);
   iterator insert(const_iterator hint, value_type&& obj);
@@ -703,7 +703,7 @@ Returns:: A `const_iterator` which refers to the past-the-end value for the cont
 ==== emplace
 ```c++
 template<typename... Args>
-std::pair<iterator, bool>
+iterator
 emplace(Args&&... args);
 ```
 
@@ -749,7 +749,7 @@ Since existing `std::pair` implementations don't support `std::piecewise_constru
 
 ==== Copy Insert
 ```c++
-std::pair<iterator, bool>
+iterator
 insert(value_type const& obj);
 ```
 
@@ -767,7 +767,7 @@ Notes:: Can invalidate iterators, but only if the insert causes the load factor 
 
 ==== Move Insert
 ```c++
-std::pair<iterator, bool>
+iterator
 insert(value_type&& obj);
 ```
 
@@ -785,7 +785,7 @@ Notes:: Can invalidate iterators, but only if the insert causes the load factor 
 
 ==== Insert with `node_handle`
 ```c++
-insert_return_type
+iterator
 insert(node_type&& nh);
 ```
 
