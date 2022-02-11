@@ -120,11 +120,19 @@ public:
   std::pair<iterator, bool>
   insert(value_type&& obj);
 
+  template <class P>
+  iterator
+  insert(P&& value);
+
   insert_return_type insert(node_type&& nh);
 
   iterator insert(const_iterator hint, value_type const& obj);
   iterator insert(const_iterator hint, value_type&& obj);
   iterator insert(const_iterator hint, node_type&& nh);
+
+  template <class P>
+  iterator
+  insert(const_iterator hint, P&& value);
 
   template<typename InputIterator>
   void insert(InputIterator first, InputIterator last);
@@ -787,6 +795,21 @@ Notes:: Can invalidate iterators, but only if the insert causes the load factor 
 
 ---
 
+==== Emplace Insert
+```c++
+template <class P>
+iterator
+insert(P&& value);
+```
+
+Inserts an element into the container by performing `emplace(std::forward<P>(value))`.
+
+Only participates in overload resolution if `std::is_constructible<value_type, P&&>::value` is `true`.
+
+Returns:: An iterator pointing to the inserted element.
+
+---
+
 ==== Insert with `node_handle`
 ```c++
 insert_return_type
@@ -839,6 +862,25 @@ Requires:: `value_type` is https://en.cppreference.com/w/cpp/named_req/MoveInser
 Returns:: An iterator pointing to the inserted element.
 
 Throws:: If an exception is thrown by an operation other than a call to `hasher` the function has no effect.
+
+Notes:: The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same key. Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor. Pointers and references to elements are never invalidated.
+
+---
+
+==== Emplace Insert with Hint
+```c++
+template <class P>
+iterator
+insert(P&& value);
+```
+
+Inserts an element into the container by performing `emplace(std::forward<P>(value))`.
+
+Only participates in overload resolution if `std::is_constructible<value_type, P&&>::value` is `true`.
+
+`hint` is a suggestion to where the element should be inserted.
+
+Returns:: An iterator pointing to the inserted element.
 
 Notes:: The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same key. Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor. Pointers and references to elements are never invalidated.
 
