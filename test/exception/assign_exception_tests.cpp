@@ -13,6 +13,12 @@
 #pragma warning(disable : 4512) // assignment operator could not be generated
 #endif
 
+#if defined(__clang__) && defined(__has_warning)
+#if __has_warning("-Wself-assign-overloaded")
+#pragma clang diagnostic ignored "-Wself-assign-overloaded"
+#endif
+#endif
+
 test::seed_t initialize_seed(12847);
 
 template <class T> struct self_assign_base : public test::exception_base
