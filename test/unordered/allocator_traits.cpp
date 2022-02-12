@@ -263,7 +263,9 @@ template <typename T> struct allocator3
   allocator3<T> select_on_container_copy_construction() const
   {
     ++selected;
-    return allocator3<T>();
+    allocator3<T> a;
+    a.x = 0;
+    return a;
   }
 };
 
