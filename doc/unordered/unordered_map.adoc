@@ -7,276 +7,197 @@
 
 === Synopsis
 
-[source,c++,subs=+quotes]
+[listing,subs="+macros,+quotes"]
 -----
 // #include <boost/unordered_map.hpp>
 
-template<
-  typename Key,
-  typename Mapped,
-  typename Hash = boost::hash<Key>,
-  typename Pred = std::equal_to<Key>,
-  typename Alloc = std::allocator<std::pair<Key const, Mapped>> >
-class unordered_map {
-public:
-  // types
-  typedef Key                                    key_type;
-  typedef std::pair<Key const, Mapped>           value_type;
-  typedef Mapped                                 mapped_type;
-  typedef Hash                                   hasher;
-  typedef Pred                                   key_equal;
-  typedef Alloc                                  allocator_type;
-  typedef typename allocator_type::pointer       pointer;
-  typedef typename allocator_type::const_pointer const_pointer;
-  typedef value_type&                            reference;
-  typedef value_type const&                      const_reference;
-  typedef _implementation-defined_                 size_type;
-  typedef _implementation-defined_                 difference_type;
-  typedef _implementation-defined_                 iterator;
-  typedef _implementation-defined_                 const_iterator;
-  typedef _implementation-defined_                 local_iterator;
-  typedef _implementation-defined_                 const_local_iterator;
-  typedef _implementation-defined_                 node_type;
-  typedef _implementation-defined_                 insert_return_type;
+namespace boost {
+  template<class Key,
+           class T,
+           class Hash = boost::hash<Key>,
+           class Pred = std::equal_to<Key>,
+           class Allocator = std::allocator<std::pair<const Key, T>>>
+  class unordered_map {
+  public:
+    // types
+    using key_type             = Key;
+    using mapped_type          = T;
+    using value_type           = std::pair<const Key, T>;
+    using hasher               = Hash;
+    using key_equal            = Pred;
+    using allocator_type       = Allocator;
+    using pointer              = typename boost::allocator_traits<Allocator>::pointer;
+    using const_pointer        = typename boost::allocator_traits<Allocator>::const_pointer;
+    using reference            = value_type&;
+    using const_reference      = const value_type&;
+    using size_type            = _implementation-defined_;
+    using difference_type      = _implementation-defined_;
 
-  // construct/copy/destruct
-  unordered_map();
+    using iterator             = _implementation-defined_;
+    using const_iterator       = _implementation-defined_;
+    using local_iterator       = _implementation-defined_;
+    using const_local_iterator = _implementation-defined_;
+    using node_type            = _implementation-defined_;
+    using insert_return_type   = _implementation-defined_;
 
-  explicit unordered_map(size_type n,
-                         hasher const& hf = hasher(),
-                         key_equal const& eq = key_equal(),
-                         allocator_type const& a  = allocator_type());
+    // construct/copy/destroy
+    xref:#unordered_map_default_constructor[unordered_map]();
+    explicit xref:#unordered_map_bucket_count_constructor[unordered_map](size_type n,
+                           const hasher& hf = hasher(),
+                           const key_equal& eql = key_equal(),
+                           const allocator_type& a = allocator_type());
+    template<class InputIterator>
+      xref:#unordered_map_iterator_range_constructor[unordered_map](InputIterator f, InputIterator l,
+                    size_type n = _implementation-defined_,
+                    const hasher& hf = hasher(),
+                    const key_equal& eql = key_equal(),
+                    const allocator_type& a = allocator_type());
+    xref:#unordered_map_copy_constructor[unordered_map](const unordered_map& other);
+    xref:#unordered_map_move_constructor[unordered_map](unordered_map&& other);
+    explicit xref:#unordered_map_allocator_constructor[unordered_map](const Allocator& a);
+    xref:#unordered_map_copy_constructor_with_allocator[unordered_map](const unordered_map& other, const Allocator& a);
+    xref:#unordered_map_move_constructor_with_allocator[unordered_map](unordered_map&& other, const Allocator& a);
+    xref:#unordered_map_initializer_list_constructor[unordered_map](initializer_list<value_type> il,
+                  size_type n = _implementation-defined_
+                  const hasher& hf = hasher(),
+                  const key_equal& eql = key_equal(),
+                  const allocator_type& a = allocator_type());
+    xref:#unordered_map_bucket_count_constructor_with_allocator[unordered_map](size_type n, const allocator_type& a);
+    xref:#unordered_map_bucket_count_constructor_with_hasher_and_allocator[unordered_map](size_type n, const hasher& hf, const allocator_type& a);
+    template<class InputIterator>
+      xref:#unordered_map_iterator_range_constructor_with_bucket_count_and_allocator[unordered_map](InputIterator f, InputIterator l, size_type n, const allocator_type& a);
+    template<class InputIterator>
+      xref:#unordered_map_iterator_range_constructor_with_bucket_count_and_hasher[unordered_map](InputIterator f, InputIterator l, size_type n, const hasher& hf,
+                    const allocator_type& a);
+    xref:#unordered_map_destructor[~unordered_map]();
+    unordered_map& xref:#unordered_map_copy_assignment[operator++=++](const unordered_map& other);
+    unordered_map& xref:#unordered_map_move_assignment[operator++=++](unordered_map&& other)
+      noexcept(boost::allocator_traits<Allocator>::is_always_equal::value &&
+               boost::is_nothrow_move_assignable_v<Hash> &&
+               boost::is_nothrow_move_assignable_v<Pred>);
+    unordered_map& xref:#unordered_map_initializer_list_assignment[operator++=++](initializer_list<value_type>);
+    allocator_type xref:#unordered_map_get_allocator[get_allocator]() const noexcept;
 
-  unordered_map(unordered_map const& other);
-  unordered_map(unordered_map&& other);
+    // iterators
+    iterator       xref:#unordered_map_begin[begin]() noexcept;
+    const_iterator xref:#unordered_map_begin[begin]() const noexcept;
+    iterator       xref:#unordered_map_end[end]() noexcept;
+    const_iterator xref:#unordered_map_end[end]() const noexcept;
+    const_iterator xref:#unordered_map_cbegin[cbegin]() const noexcept;
+    const_iterator xref:#unordered_map_cend[cend]() const noexcept;
 
-  explicit unordered_map(Allocator const& a);
-  unordered_map(unordered_map const& other, Allocator const& a);
-  unordered_map(unordered_map&& other, Allocator const& a);
+    // capacity
+    bool xref:#unordered_map_empty[empty]() const noexcept;
+    size_type xref:#unordered_map_size[size]() const noexcept;
+    size_type xref:#unordered_map_max_size[max_size]() const noexcept;
 
-  unordered_map(size_type n, allocator_type const& a);
-  unordered_map(size_type n, hasher const& hf, allocator_type const& a);
+    // modifiers
+    template<class... Args> std::pair<iterator, bool> xref:#unordered_map_emplace[emplace](Args&&... args);
+    template<class... Args> iterator xref:#unordered_map_emplace_hint[emplace_hint](const_iterator position, Args&&... args);
+    std::pair<iterator, bool> xref:#unordered_map_copy_insert[insert](const value_type& obj);
+    std::pair<iterator, bool> xref:#unordered_map_move_insert[insert](value_type&& obj);
+    template<class P> std::pair<iterator, bool> xref:#unordered_map_emplace_insert[insert](P&& obj);
+    iterator       xref:#unordered_map_copy_insert_with_hint[insert](const_iterator hint, const value_type& obj);
+    iterator       xref:#unordered_map_move_insert_with_hint[insert](const_iterator hint, value_type&& obj);
+    template<class P> iterator xref:#unordered_map_emplace_insert_with_hint[insert](const_iterator hint, P&& obj);
+    template<class InputIterator> void xref:#unordered_map_insert_iterator_range[insert](InputIterator first, InputIterator last);
+    void xref:#unordered_map_insert_initializer_list[insert](initializer_list<value_type>);
 
-  unordered_map(initializer_list<value_type> il,
-                size_type n = _implementation-defined_,
-                hasher const& hf = hasher(),
-                key_equal const& eq = key_equal(),
-                allocator_type const& a = allocator_type());
+    node_type xref:#unordered_map_extract_by_iterator[extract](const_iterator position);
+    node_type xref:#unordered_map_extract_by_key[extract](const key_type& k);
+    template<class K> node_type xref:#unordered_map_transparent_extract_by_key[extract](K&& k);
+    insert_return_type xref:#unordered_map_insert_with_node_handle[insert](node_type&& nh);
+    iterator           xref:#unordered_map_insert_with_hint_and_node_handle[insert](const_iterator hint, node_type&& nh);
 
-  template<typename InputIterator>
-  unordered_map(InputIterator f,
-                InputIterator l,
-                size_type n = _implementation-defined_,
-                hasher const& hf = hasher(),
-                key_equal const& eq = key_equal(),
-                allocator_type const& a  = allocator_type());
+    iterator  xref:#unordered_map_erase_by_position[erase](iterator position);
+    iterator  xref:#unordered_map_erase_by_position[erase](const_iterator position);
+    size_type xref:#unordered_map_erase_by_key[erase](const key_type& k);
+    template<class K> size_type xref:#unordered_map_transparent_erase_by_key[erase](K&& k);
+    iterator  xref:#unordered_map_erase_range[erase](const_iterator first, const_iterator last);
+    void      xref:#unordered_map_quick_erase[quick_erase](const_iterator position);
+    void      xref:#unordered_map_erase_return_void[erase_return_void](const_iterator position);
+    void      xref:#unordered_map_swap[swap](unordered_map& other)
+      noexcept(boost::allocator_traits<Allocator>::is_always_equal::value &&
+               boost::is_nothrow_swappable_v<Hash> &&
+               boost::is_nothrow_swappable_v<Pred>);
+    void      xref:#unordered_map_clear[clear]() noexcept;
 
-  template<typename InputIterator>
-  unordered_map(InputIterator f,
-                InputIterator l,
-                size_type n,
-                allocator_type const& a);
+    template<class H2, class P2>
+      void xref:#unordered_map_merge[merge](unordered_map<Key, T, H2, P2, Allocator>& source);
+    template<class H2, class P2>
+      void xref:#unordered_map_merge_rvalue_reference[merge](unordered_map<Key, T, H2, P2, Allocator>&& source);
 
-  template<typename InputIterator>
-  unordered_map(InputIterator f,
-                InputIterator l,
-                size_type n,
-                hasher const& hf,
-                allocator_type const& a);
+    // observers
+    hasher xref:#unordered_map_hash_function[hash_function]() const;
+    key_equal xref:#unordered_map_key_eq[key_eq]() const;
 
-  ~unordered_map();
+    // map operations
+    iterator         xref:#unordered_map_find[find](const key_type& k);
+    const_iterator   xref:#unordered_map_find[find](const key_type& k) const;
+    template<class K>
+      iterator       xref:#unordered_map_find[find](const K& k);
+    template<class K>
+      const_iterator xref:#unordered_map_find[find](const K& k) const;
+    template<typename CompatibleKey, typename CompatibleHash, typename CompatiblePredicate>
+      iterator       xref:#unordered_map_find[find](CompatibleKey const& k, CompatibleHash const& hash,
+                          CompatiblePredicate const& eq);
+    template<typename CompatibleKey, typename CompatibleHash, typename CompatiblePredicate>
+      const_iterator xref:#unordered_map_find[find](CompatibleKey const& k, CompatibleHash const& hash,
+                          CompatiblePredicate const& eq) const;      
+    size_type        xref:#unordered_map_count[count](const key_type& k) const;
+    template<class K>
+      size_type      xref:#unordered_map_count[count](const K& k) const;
+    bool             xref:#unordered_map_contains[contains](const key_type& k) const;
+    template<class K>
+      bool           xref:#unordered_map_contains[contains](const K& k) const;
+    pair<iterator, iterator>               xref:#unordered_map_equal_range[equal_range](const key_type& k);
+    pair<const_iterator, const_iterator>   xref:#unordered_map_equal_range[equal_range](const key_type& k) const;
+    template<class K>
+      pair<iterator, iterator>             xref:#unordered_map_equal_range[equal_range](const K& k);
+    template<class K>
+      pair<const_iterator, const_iterator> xref:#unordered_map_equal_range[equal_range](const K& k) const;
 
-  unordered_map& operator=(unordered_map const& other);
-  unordered_map& operator=(unordered_map&& other);
-  unordered_map& operator=(initializer_list<value_type> il);
+    // element access
+    mapped_type& xref:#unordered_map_operator[operator[+]+](const key_type& k);
+    mapped_type& xref:#unordered_map_operator[operator[+]+](key_type&& k);
+    mapped_type& xref:#unordered_map_at[at](const key_type& k);
+    const mapped_type& xref:#unordered_map_at[at](const key_type& k) const;
 
-  // size and capacity
-  bool empty() const;
-  size_type size() const;
-  size_type max_size() const;
+    // bucket interface
+    size_type xref:#unordered_map_bucket_count[bucket_count]() const noexcept;
+    size_type xref:#unordered_map_max_bucket_count[max_bucket_count]() const noexcept;
+    size_type xref:#unordered_map_bucket_size[bucket_size](size_type n) const;
+    size_type xref:#unordered_map_bucket[bucket](const key_type& k) const;
+    local_iterator xref:#unordered_map_begin_2[begin](size_type n);
+    const_local_iterator xref:#unordered_map_begin_2[begin](size_type n) const;
+    local_iterator xref:#unordered_map_end_2[end](size_type n);
+    const_local_iterator xref:#unordered_map_end_2[end](size_type n) const;
+    const_local_iterator xref:#unordered_map_cbegin_2[cbegin](size_type n) const;
+    const_local_iterator xref:#unordered_map_cend_2[cend](size_type n) const;
 
-  // iterators
-  iterator begin();
-  const_iterator begin() const;
-
-  iterator end();
-  const_iterator end() const;
-
-  const_iterator cbegin() const;
-  const_iterator cend() const;
-
-  // modifiers
-  template<typename... Args>
-  std::pair<iterator, bool>
-  emplace(Args&&... args);
-
-  template<typename... Args>
-  iterator
-  emplace_hint(const_iterator hint, Args&&... args);
-
-  std::pair<iterator, bool>
-  insert(value_type const& obj);
-
-  std::pair<iterator, bool>
-  insert(value_type&& obj);
-
-  template <class P>
-  std::pair<iterator, bool>
-  insert(P&& value);
-
-  insert_return_type insert(node_type&& nh);
-
-  iterator insert(const_iterator hint, value_type const& obj);
-  iterator insert(const_iterator hint, value_type&& obj);
-  iterator insert(const_iterator hint, node_type&& nh);
-
-  template <class P>
-  iterator
-  insert(const_iterator hint, P&& value);
-
-  template<typename InputIterator>
-  void insert(InputIterator first, InputIterator last);
-
-  void insert(initializer_list<value_type> il);
-
-  node_type extract(const_iterator position);
-  node_type extract(key_type const& k);
-
-  template<typename K>
-  node_type extract(K&& k);
-
-  iterator erase(const_iterator position);
-  iterator erase(const_iterator first, const_iterator last);
-  size_type erase(key_type const& k);
-
-  template<typename K>
-  size_type erase(K&& k);
-
-  void quick_erase(const_iterator position);
-  void erase_return_void(const_iterator position);
-
-  void clear();
-  void swap(unordered_map& other);
-
-  template<typename H2, typename P2>
-  void merge(unordered_map<Key, Mapped, H2, P2, Alloc>& source);
-
-  template<typename H2, typename P2>
-  void merge(unordered_map<Key, Mapped, H2, P2, Alloc>&& source);
-
-  // observers
-  allocator_type get_allocator() const;
-  hasher hash_function() const;
-  key_equal key_eq() const;
-
-  // lookup
-  iterator find(key_type const& k);
-  const_iterator find(key_type const& k) const;
-
-  template<typename K>
-  iterator
-  find(K const& k);
-
-  template<typename K>
-  const_iterator
-  find(K const& k) const;
-
-  template<
-    typename CompatibleKey,
-    typename CompatibleHash,
-    typename CompatiblePredicate>
-  iterator
-  find(CompatibleKey const& k,
-       CompatibleHash const& hash,
-       CompatiblePredicate const&) eq;
-
-  template<
-    typename CompatibleKey,
-    typename CompatibleHash,
-    typename CompatiblePredicate>
-  const_iterator
-  find(CompatibleKey const& k,
-       CompatibleHash const& hash,
-       CompatiblePredicate const& eq) const;
-
-  bool contains(key_type const& key) const;
-
-  template<typename K>
-  bool contains(K const& key);
-
-  size_type count(key_type const& k) const;
-
-  template<typename K>
-  size_type count(K const& k) const;
-
-  std::pair<iterator, iterator>
-  equal_range(key_type const& k);
-
-  std::pair<const_iterator, const_iterator>
-  equal_range(key_type const& k) const;
-
-  template<typename K>
-  std::pair<iterator, iterator>
-  equal_range(K const& k);
-
-  template<typename K>
-  std::pair<const_iterator, const_iterator>
-  equal_range(K const& k) const;
-
-  mapped_type& operator[](key_type const& k);
-
-  Mapped& at(key_type const& k);
-  Mapped const& at(key_type const& k) const;
-
-  // bucket interface
-  size_type bucket_count() const;
-  size_type max_bucket_count() const;
-  size_type bucket_size(size_type n) const;
-  size_type bucket(key_type const& k) const;
-
-  local_iterator begin(size_type n);
-  const_local_iterator begin(size_type n) const;
-
-  local_iterator end(size_type n);
-  const_local_iterator end(size_type n) const;
-
-  const_local_iterator cbegin(size_type n) const;
-  const_local_iterator cend(size_type n) const;
-
-  // hash policy
-  float load_factor() const;
-  float max_load_factor() const;
-
-  void max_load_factor(float z);
-
-  void rehash(size_type n);
-  void reserve(size_type n);
-};
+    // hash policy
+    float xref:#unordered_map_load_factor[load_factor]() const noexcept;
+    float xref:#unordered_map_max_load_factor[max_load_factor]() const noexcept;
+    void xref:#unordered_map_set_max_load_factor[max_load_factor](float z);
+    void xref:#unordered_map_rehash[rehash](size_type n);
+    void xref:#unordered_map_reserve[reserve](size_type n);
+  };
+}
 
 // Equality Comparisons
-template<
-  typename Key,
-  typename Mapped,
-  typename Hash,
-  typename Pred,
-  typename Alloc>
-bool operator==(unordered_map<Key, Mapped, Hash, Pred, Alloc> const& x,
-                unordered_map<Key, Mapped, Hash, Pred, Alloc> const& y);
+template<class Key, class T, class Hash, class Pred, class Alloc>
+  bool xref:#unordered_map_operator_2[operator==](const unordered_map<Key, T, Hash, Pred, Alloc>& x,
+                  const unordered_map<Key, T, Hash, Pred, Alloc>& y);
 
-template<
-  typename Key,
-  typename Mapped,
-  typename Hash,
-  typename Pred,
-  typename Alloc>
-bool operator!=(unordered_map<Key, Mapped, Hash, Pred, Alloc> const& x,
-                unordered_map<Key, Mapped, Hash, Pred, Alloc> const& y);
+template<class Key, class T, class Hash, class Pred, class Alloc>
+  bool xref:#unordered_map_operator_3[operator!=](const unordered_map<Key, T, Hash, Pred, Alloc>& x,
+                  const unordered_map<Key, T, Hash, Pred, Alloc>& y);
 
 // swap
-template<typename Key, typename Mapped, typename Hash, typename Pred,
-         typename Alloc>
-void swap(unordered_map<Key, Mapped, Hash, Pred, Alloc>& x,
-          unordered_map<Key, Mapped, Hash, Pred, Alloc>& y);
+template<class Key, class T, class Hash, class Pred, class Alloc>
+  void xref:#unordered_map_swap_2[swap](unordered_map<Key, T, Hash, Pred, Alloc>& x,
+            unordered_map<Key, T, Hash, Pred, Alloc>& y)
+    noexcept(noexcept(x.swap(y)));
 -----
 
 ---
@@ -579,8 +500,10 @@ unordered_map(InputIterator f,
 
 Constructs an empty container with at least `n` buckets, using `a` as the allocator, with the default hash function and key equality predicate and a maximum load factor of `1.0` and inserts the elements from `[f, l)` into it.
 
+---
 Requires:: `hasher`, `key_equal` need to be https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[DefaultConstructible^].
 
+---
 ==== Iterator Range Constructor with Bucket Count and Hasher
 [source,c++,subs="quotes,macros"]
 ----
