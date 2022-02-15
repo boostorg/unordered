@@ -351,8 +351,8 @@ Constructs an empty container using `hasher()` as the hash function,
 and a maximum load factor of `1.0`.
 
 [horizontal]
-Postconditions:: `size() == 0`
-Requires:: If the defaults are used, `hasher`, `key_equal` and `allocator_type` need to be https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[DefaultConstructible^].
+Postconditions:;; `size() == 0`
+Requires:;; If the defaults are used, `hasher`, `key_equal` and `allocator_type` need to be https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[DefaultConstructible^].
 
 ---
 
@@ -369,8 +369,8 @@ function, `eql` as the key equality predicate, `a` as the allocator and a maximu
 load factor of `1.0`.
 
 [horizontal]
-Postconditions:: `size() == 0`
-Requires:: If the defaults are used, `hasher`, `key_equal` and `allocator_type` need to be https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[DefaultConstructible^].
+Postconditions:;; `size() == 0`
+Requires:;; If the defaults are used, `hasher`, `key_equal` and `allocator_type` need to be https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[DefaultConstructible^].
 
 ---
 
@@ -388,7 +388,7 @@ template<class InputIterator>
 Constructs an empty container with at least `n` buckets, using `hf` as the hash function, `eql` as the key equality predicate, `a` as the allocator and a maximum load factor of `1.0` and inserts the elements from `[f, l)` into it.
 
 [horizontal]
-Requires:: If the defaults are used, `hasher`, `key_equal` and `allocator_type` need to be https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[DefaultConstructible^].
+Requires:;; If the defaults are used, `hasher`, `key_equal` and `allocator_type` need to be https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[DefaultConstructible^].
 
 ---
 
@@ -402,7 +402,7 @@ The copy constructor. Copies the contained elements, hash function, predicate, m
 If `Allocator::select_on_container_copy_construction` exists and has the right signature, the allocator will be constructed from its result.
 
 [horizontal]
-Requires:: `value_type` is copy constructible
+Requires:;; `value_type` is copy constructible
 
 ---
 
@@ -414,8 +414,8 @@ unordered_map(unordered_map&& other);
 The move constructor.
 
 [horizontal]
-Notes:: This is implemented using Boost.Move.
-Requires:: `value_type` is move-constructible. +
+Notes:;; This is implemented using Boost.Move.
+Requires:;; `value_type` is move-constructible. +
 +
 On compilers without rvalue reference support the emulation does not support moving without calling `boost::move` if `value_type` is not copyable.
 So, for example, you can't return the container from a function.
@@ -448,8 +448,8 @@ unordered_map(unordered_map&& other, Allocator const& a);
 Construct a container moving ``other``'s contained elements, and having the hash function, predicate and maximum load factor, but using allocate `a`.
 
 [horizontal]
-Notes:: This is implemented using Boost.Move.
-Requires:: `value_type` is move insertable.
+Notes:;; This is implemented using Boost.Move.
+Requires:;; `value_type` is move insertable.
 
 ---
 
@@ -466,7 +466,7 @@ unordered_map(initializer_list<value_type> il,
 Constructs an empty container with at least `n` buckets, using `hf` as the hash function, `eql` as the key equality predicate, `a` as the allocator and a maximum load factor of `1.0` and inserts the elements from `il` into it.
 
 [horizontal]
-Requires:: If the defaults are used, `hasher`, `key_equal` and `allocator_type` need to be https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[DefaultConstructible^].
+Requires:;; If the defaults are used, `hasher`, `key_equal` and `allocator_type` need to be https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[DefaultConstructible^].
 
 ---
 
@@ -478,8 +478,8 @@ unordered_map(size_type n, allocator_type const& a);
 Constructs an empty container with at least `n` buckets, using `hf` as the hash function, the default hash function and key equality predicate, `a` as the allocator and a maximum load factor of `1.0`.
 
 [horizontal]
-Postconditions:: `size() == 0`
-Requires:: `hasher` and `key_equal` need to be https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[DefaultConstructible^].
+Postconditions:;; `size() == 0`
+Requires:;; `hasher` and `key_equal` need to be https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[DefaultConstructible^].
 
 ---
 
@@ -491,8 +491,8 @@ unordered_map(size_type n, hasher const& hf, allocator_type const& a);
 Constructs an empty container with at least `n` buckets, using `hf` as the hash function, the default key equality predicate, `a` as the allocator and a maximum load factor of `1.0`.
 
 [horizontal]
-Postconditions:: `size() == 0`
-Requires:: `key_equal` needs to be https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[DefaultConstructible^].
+Postconditions:;; `size() == 0`
+Requires:;; `key_equal` needs to be https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[DefaultConstructible^].
 
 ---
 
@@ -506,7 +506,7 @@ template<class InputIterator>
 Constructs an empty container with at least `n` buckets, using `a` as the allocator, with the default hash function and key equality predicate and a maximum load factor of `1.0` and inserts the elements from `[f, l)` into it.
 
 [horizontal]
-Requires:: `hasher`, `key_equal` need to be https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[DefaultConstructible^].
+Requires:;; `hasher`, `key_equal` need to be https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[DefaultConstructible^].
 
 ---
 
@@ -521,7 +521,7 @@ Requires:: `hasher`, `key_equal` need to be https://en.cppreference.com/w/cpp/na
 Constructs an empty container with at least `n` buckets, using `hf` as the hash function, `a` as the allocator, with the default key equality predicate and a maximum load factor of `1.0` and inserts the elements from `[f, l)` into it.
 
 [horizontal]
-Requires:: `key_equal` needs to be https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[DefaultConstructible^].
+Requires:;; `key_equal` needs to be https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[DefaultConstructible^].
 
 ---
 
@@ -532,7 +532,7 @@ Requires:: `key_equal` needs to be https://en.cppreference.com/w/cpp/named_req/D
 ```
 
 [horizontal]
-Note:: The destructor is applied to every element, and all memory is deallocated
+Note:;; The destructor is applied to every element, and all memory is deallocated
 
 ---
 
@@ -549,7 +549,7 @@ The assignment operator. Copies the contained elements, hash function, predicate
 If `Alloc::propagate_on_container_copy_assignment` exists and `Alloc::propagate_on_container_copy_assignment::value` is `true`, the allocator is overwritten, if not the copied elements are created using the existing allocator.
 
 [horizontal]
-Requires:: `value_type` is copy constructible
+Requires:;; `value_type` is copy constructible
 
 ---
 
@@ -565,8 +565,8 @@ The move assignment operator.
 If `Alloc::propagate_on_container_move_assignment` exists and `Alloc::propagate_on_container_move_assignment::value` is `true`, the allocator is overwritten, if not the moved elements are created using the existing allocator.
 
 [horizontal]
-Notes:: On compilers without rvalue references, this is emulated using Boost.Move. Note that on some compilers the copy assignment operator may be used in some circumstances.
-Requires:: `value_type` is move constructible.
+Notes:;; On compilers without rvalue references, this is emulated using Boost.Move. Note that on some compilers the copy assignment operator may be used in some circumstances.
+Requires:;; `value_type` is move constructible.
 
 ---
 
@@ -578,7 +578,7 @@ unordered_map& operator=(initializer_list<value_type> il);
 Assign from values in initializer list. All existing elements are either overwritten by the new elements or destroyed.
 
 [horizontal]
-Requires:: `value_type` is https://en.cppreference.com/w/cpp/named_req/CopyInsertable[CopyInsertable^] into the container and https://en.cppreference.com/w/cpp/named_req/CopyAssignable[CopyAssignable^].
+Requires:;; `value_type` is https://en.cppreference.com/w/cpp/named_req/CopyInsertable[CopyInsertable^] into the container and https://en.cppreference.com/w/cpp/named_req/CopyAssignable[CopyAssignable^].
 
 === Iterators
 
@@ -589,7 +589,7 @@ const_iterator begin() const noexcept;
 ```
 
 [horizontal]
-Returns:: An iterator referring to the first element of the container, or if the container is empty the past-the-end value for the container.
+Returns:;; An iterator referring to the first element of the container, or if the container is empty the past-the-end value for the container.
 
 ---
 
@@ -600,7 +600,7 @@ const_iterator end() const noexcept;
 ```
 
 [horizontal]
-Returns:: An iterator which refers to the past-the-end value for the container.
+Returns:;; An iterator which refers to the past-the-end value for the container.
 
 ---
 
@@ -610,7 +610,7 @@ const_iterator cbegin() const noexcept;
 ```
 
 [horizontal]
-Returns:: A `const_iterator` referring to the first element of the container, or if the container is empty the past-the-end value for the container.
+Returns:;; A `const_iterator` referring to the first element of the container, or if the container is empty the past-the-end value for the container.
 
 ---
 
@@ -620,7 +620,7 @@ const_iterator cend() const noexcept;
 ```
 
 [horizontal]
-Returns:: A `const_iterator` which refers to the past-the-end value for the container.
+Returns:;; A `const_iterator` which refers to the past-the-end value for the container.
 
 ---
 
@@ -633,7 +633,7 @@ bool empty() const noexcept;
 ```
 
 [horizontal]
-Returns:: `size() == 0`
+Returns:;; `size() == 0`
 
 ---
 
@@ -644,7 +644,7 @@ size_type size() const noexcept;
 ```
 
 [horizontal]
-Returns:: `std::distance(begin(), end())`
+Returns:;; `std::distance(begin(), end())`
 
 ---
 
@@ -655,7 +655,7 @@ size_type max_size() const noexcept;
 ```
 
 [horizontal]
-Returns:: `size()` of the largest possible container.
+Returns:;; `size()` of the largest possible container.
 
 ---
 
@@ -669,12 +669,12 @@ template<class... Args> std::pair<iterator, bool> emplace(Args&&... args);
 Inserts an object, constructed with the arguments `args`, in the container if and only if there is no element in the container with an equivalent key.
 
 [horizontal]
-Requires:: `value_type` is https://en.cppreference.com/w/cpp/named_req/EmplaceConstructible[EmplaceConstructible^] into `X` from `args`.
-Returns:: The bool component of the return type is true if an insert took place. +
+Requires:;; `value_type` is https://en.cppreference.com/w/cpp/named_req/EmplaceConstructible[EmplaceConstructible^] into `X` from `args`.
+Returns:;; The bool component of the return type is true if an insert took place. +
 +
 If an insert took place, then the iterator points to the newly inserted element. Otherwise, it points to the element with equivalent key.
-Throws:: If an exception is thrown by an operation other than a call to `hasher` the function has no effect.
-Notes:: Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor. +
+Throws:;; If an exception is thrown by an operation other than a call to `hasher` the function has no effect.
+Notes:;; Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor. +
 +
 Pointers and references to elements are never invalidated. +
 +
@@ -694,10 +694,10 @@ Inserts an object, constructed with the arguments `args`, in the container if an
 `position` is a suggestion to where the element should be inserted.
 
 [horizontal]
-Requires:: `value_type` is https://en.cppreference.com/w/cpp/named_req/EmplaceConstructible[EmplaceConstructible^] into `X` from `args`.
-Returns:: If an insert took place, then the iterator points to the newly inserted element. Otherwise, it points to the element with equivalent key.
-Throws:: If an exception is thrown by an operation other than a call to `hasher` the function has no effect.
-Notes:: The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same key. +
+Requires:;; `value_type` is https://en.cppreference.com/w/cpp/named_req/EmplaceConstructible[EmplaceConstructible^] into `X` from `args`.
+Returns:;; If an insert took place, then the iterator points to the newly inserted element. Otherwise, it points to the element with equivalent key.
+Throws:;; If an exception is thrown by an operation other than a call to `hasher` the function has no effect.
+Notes:;; The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same key. +
 +
 Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor. +
 +
@@ -717,12 +717,12 @@ std::pair<iterator, bool> insert(const value_type& obj);
 Inserts `obj` in the container if and only if there is no element in the container with an equivalent key.
 
 [horizontal]
-Requires:: `value_type` is https://en.cppreference.com/w/cpp/named_req/CopyInsertable[CopyInsertable^].
-Returns:: The bool component of the return type is true if an insert took place. +
+Requires:;; `value_type` is https://en.cppreference.com/w/cpp/named_req/CopyInsertable[CopyInsertable^].
+Returns:;; The bool component of the return type is true if an insert took place. +
 +
 If an insert took place, then the iterator points to the newly inserted element. Otherwise, it points to the element with equivalent key.
-Throws:: If an exception is thrown by an operation other than a call to `hasher` the function has no effect.
-Notes:: Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor. +
+Throws:;; If an exception is thrown by an operation other than a call to `hasher` the function has no effect.
+Notes:;; Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor. +
 +
 Pointers and references to elements are never invalidated.
 
@@ -736,12 +736,12 @@ std::pair<iterator, bool> insert(value_type&& obj);
 Inserts `obj` in the container if and only if there is no element in the container with an equivalent key.
 
 [horizontal]
-Requires:: `value_type` is https://en.cppreference.com/w/cpp/named_req/MoveInsertable[MoveInsertable^].
-Returns:: The bool component of the return type is true if an insert took place. +
+Requires:;; `value_type` is https://en.cppreference.com/w/cpp/named_req/MoveInsertable[MoveInsertable^].
+Returns:;; The bool component of the return type is true if an insert took place. +
 +
 If an insert took place, then the iterator points to the newly inserted element. Otherwise, it points to the element with equivalent key.
-Throws:: If an exception is thrown by an operation other than a call to `hasher` the function has no effect.
-Notes:: Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor. +
+Throws:;; If an exception is thrown by an operation other than a call to `hasher` the function has no effect.
+Notes:;; Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor. +
 +
 Pointers and references to elements are never invalidated.
 
@@ -757,7 +757,7 @@ Inserts an element into the container by performing `emplace(std::forward<P>(val
 Only participates in overload resolution if `std::is_constructible<value_type, P&&>::value` is `true`.
 
 [horizontal]
-Returns:: The bool component of the return type is true if an insert took place. +
+Returns:;; The bool component of the return type is true if an insert took place. +
 +
 If an insert took place, then the iterator points to the newly inserted element. Otherwise, it points to the element with equivalent key.
 
@@ -772,10 +772,10 @@ Inserts `obj` in the container if and only if there is no element in the contain
 `hint` is a suggestion to where the element should be inserted.
 
 [horizontal]
-Requires:: `value_type` is https://en.cppreference.com/w/cpp/named_req/CopyInsertable[CopyInsertable^].
-Returns:: If an insert took place, then the iterator points to the newly inserted element. Otherwise, it points to the element with equivalent key.
-Throws:: If an exception is thrown by an operation other than a call to `hasher` the function has no effect.
-Notes:: The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same key. +
+Requires:;; `value_type` is https://en.cppreference.com/w/cpp/named_req/CopyInsertable[CopyInsertable^].
+Returns:;; If an insert took place, then the iterator points to the newly inserted element. Otherwise, it points to the element with equivalent key.
+Throws:;; If an exception is thrown by an operation other than a call to `hasher` the function has no effect.
+Notes:;; The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same key. +
 +
 Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor. +
 +
@@ -793,10 +793,10 @@ Inserts `obj` in the container if and only if there is no element in the contain
 `hint` is a suggestion to where the element should be inserted.
 
 [horizontal]
-Requires:: `value_type` is https://en.cppreference.com/w/cpp/named_req/MoveInsertable[MoveInsertable^].
-Returns:: If an insert took place, then the iterator points to the newly inserted element. Otherwise, it points to the element with equivalent key.
-Throws:: If an exception is thrown by an operation other than a call to `hasher` the function has no effect.
-Notes:: The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same key. +
+Requires:;; `value_type` is https://en.cppreference.com/w/cpp/named_req/MoveInsertable[MoveInsertable^].
+Returns:;; If an insert took place, then the iterator points to the newly inserted element. Otherwise, it points to the element with equivalent key.
+Throws:;; If an exception is thrown by an operation other than a call to `hasher` the function has no effect.
+Notes:;; The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same key. +
 +
 Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor. +
 +
@@ -817,8 +817,8 @@ Only participates in overload resolution if `std::is_constructible<value_type, P
 `hint` is a suggestion to where the element should be inserted.
 
 [horizontal]
-Returns:: If an insert took place, then the iterator points to the newly inserted element. Otherwise, it points to the element with equivalent key.
-Notes:: The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same key. +
+Returns:;; If an insert took place, then the iterator points to the newly inserted element. Otherwise, it points to the element with equivalent key.
+Notes:;; The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same key. +
 +
 Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor. +
 +
@@ -834,9 +834,9 @@ template<class InputIterator> void insert(InputIterator first, InputIterator las
 Inserts a range of elements into the container. Elements are inserted if and only if there is no element in the container with an equivalent key.
 
 [horizontal]
-Requires:: `value_type` is https://en.cppreference.com/w/cpp/named_req/EmplaceConstructible[EmplaceConstructible^] into `X` from `*first`.
-Throws:: When inserting a single element, if an exception is thrown by an operation other than a call to `hasher` the function has no effect.
-Notes:: Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor. +
+Requires:;; `value_type` is https://en.cppreference.com/w/cpp/named_req/EmplaceConstructible[EmplaceConstructible^] into `X` from `*first`.
+Throws:;; When inserting a single element, if an exception is thrown by an operation other than a call to `hasher` the function has no effect.
+Notes:;; Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor. +
 +
 Pointers and references to elements are never invalidated.
 
@@ -850,9 +850,9 @@ void insert(initializer_list<value_type>);
 Inserts a range of elements into the container. Elements are inserted if and only if there is no element in the container with an equivalent key.
 
 [horizontal]
-Requires:: `value_type` is https://en.cppreference.com/w/cpp/named_req/EmplaceConstructible[EmplaceConstructible^] into `X` from `*first`.
-Throws:: When inserting a single element, if an exception is thrown by an operation other than a call to `hasher` the function has no effect.
-Notes:: Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor. +
+Requires:;; `value_type` is https://en.cppreference.com/w/cpp/named_req/EmplaceConstructible[EmplaceConstructible^] into `X` from `*first`.
+Throws:;; When inserting a single element, if an exception is thrown by an operation other than a call to `hasher` the function has no effect.
+Notes:;; Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor. +
 +
 Pointers and references to elements are never invalidated.
 
@@ -866,8 +866,8 @@ node_type extract(const_iterator position);
 Removes the element pointed to by `position`.
 
 [horizontal]
-Returns:: A `node_type` owning the element.
-Notes:: In C++17 a node extracted using this method can be inserted into a compatible `unordered_multimap`, but that is not supported yet.
+Returns:;; A `node_type` owning the element.
+Notes:;; In C++17 a node extracted using this method can be inserted into a compatible `unordered_multimap`, but that is not supported yet.
 
 ---
 
@@ -879,9 +879,9 @@ node_type extract(const key_type& k);
 Removes an element with key equivalent to `k`.
 
 [horizontal]
-Returns:: A `node_type` owning the element if found, otherwise an empty `node_type`.
-Throws:: Only throws an exception if it is thrown by `hasher` or `key_equal`.
-Notes:: In C++17 a node extracted using this method can be inserted into a compatible `unordered_multimap`, but that is not supported yet.
+Returns:;; A `node_type` owning the element if found, otherwise an empty `node_type`.
+Throws:;; Only throws an exception if it is thrown by `hasher` or `key_equal`.
+Notes:;; In C++17 a node extracted using this method can be inserted into a compatible `unordered_multimap`, but that is not supported yet.
 
 ---
 
@@ -895,9 +895,9 @@ Removes an element with key equivalent to `k`.
 This overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs and neither `iterator` nor `const_iterator` are implicitly convertible from `K`. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
 
 [horizontal]
-Returns:: A `node_type` owning the element if found, otherwise an empty `node_type`.
-Throws:: Only throws an exception if it is thrown by `hasher` or `key_equal`.
-Notes:: In C++17 a node extracted using this method can be inserted into a compatible `unordered_multimap`, but that is not supported yet.
+Returns:;; A `node_type` owning the element if found, otherwise an empty `node_type`.
+Throws:;; Only throws an exception if it is thrown by `hasher` or `key_equal`.
+Notes:;; In C++17 a node extracted using this method can be inserted into a compatible `unordered_multimap`, but that is not supported yet.
 
 ---
 
@@ -911,14 +911,14 @@ If `nh` is empty, has no effect.
 Otherwise inserts the element owned by `nh` if and only if there is no element in the container with an equivalent key.
 
 [horizontal]
-Requires:: `nh` is empty or `nh.get_allocator()` is equal to the container's allocator.
-Returns:: If `nh` was empty, returns an `insert_return_type` with: `inserted` equal to `false`, `position` equal to `end()` and `node` empty. +
+Requires:;; `nh` is empty or `nh.get_allocator()` is equal to the container's allocator.
+Returns:;; If `nh` was empty, returns an `insert_return_type` with: `inserted` equal to `false`, `position` equal to `end()` and `node` empty. +
 +
 Otherwise if there was already an element with an equivalent key, returns an `insert_return_type` with: `inserted` equal to `false`, `position` pointing to a matching element and `node` contains the node from `nh`. +
 +
 Otherwise if the insertion succeeded, returns an `insert_return_type` with: `inserted` equal to `true`, `position` pointing to the newly inserted element and `node` empty.
-Throws:: If an exception is thrown by an operation other than a call to `hasher` the function has no effect.
-Notes:: Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor. +
+Throws:;; If an exception is thrown by an operation other than a call to `hasher` the function has no effect.
+Notes:;; Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor. +
 +
 Pointers and references to elements are never invalidated. +
 +
@@ -940,14 +940,14 @@ If there is already an element in the container with an equivalent key has no ef
 `hint` is a suggestion to where the element should be inserted.
 
 [horizontal]
-Requires:: `nh` is empty or `nh.get_allocator()` is equal to the container's allocator.
-Returns:: If `nh` was empty returns `end()`. +
+Requires:;; `nh` is empty or `nh.get_allocator()` is equal to the container's allocator.
+Returns:;; If `nh` was empty returns `end()`. +
 +
 If there was already an element in the container with an equivalent key returns an iterator pointing to that. +
 +
 Otherwise returns an iterator pointing to the newly inserted element.
-Throws:: If an exception is thrown by an operation other than a call to hasher the function has no effect.
-Notes:: The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same key. +
+Throws:;; If an exception is thrown by an operation other than a call to hasher the function has no effect.
+Notes:;; The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same key. +
 +
 Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor. +
 +
@@ -967,9 +967,9 @@ iterator erase(const_iterator position);
 Erase the element pointed to by `position`.
 
 [horizontal]
-Returns:: The iterator following `position` before the erasure.
-Throws:: Only throws an exception if it is thrown by `hasher` or `key_equal`.
-Notes:: In older versions this could be inefficient because it had to search through several buckets to find the position of the returned iterator. The data structure has been changed so that this is no longer the case, and the alternative erase methods have been deprecated.
+Returns:;; The iterator following `position` before the erasure.
+Throws:;; Only throws an exception if it is thrown by `hasher` or `key_equal`.
+Notes:;; In older versions this could be inefficient because it had to search through several buckets to find the position of the returned iterator. The data structure has been changed so that this is no longer the case, and the alternative erase methods have been deprecated.
 
 ---
 
@@ -981,8 +981,8 @@ size_type erase(const key_type& k);
 Erase all elements with key equivalent to `k`.
 
 [horizontal]
-Returns:: The number of elements erased.
-Throws:: Only throws an exception if it is thrown by `hasher` or `key_equal`.
+Returns:;; The number of elements erased.
+Throws:;; Only throws an exception if it is thrown by `hasher` or `key_equal`.
 
 ---
 
@@ -996,8 +996,8 @@ Erase all elements with key equivalent to `k`.
 This overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs and neither `iterator` nor `const_iterator` are implicitly convertible from `K`. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
 
 [horizontal]
-Returns:: The number of elements erased.
-Throws:: Only throws an exception if it is thrown by `hasher` or `key_equal`.
+Returns:;; The number of elements erased.
+Throws:;; Only throws an exception if it is thrown by `hasher` or `key_equal`.
 
 ---
 
@@ -1010,8 +1010,8 @@ iterator erase(const_iterator first, const_iterator last);
 Erases the elements in the range from `first` to `last`.
 
 [horizontal]
-Returns:: The iterator following the erased elements - i.e. `last`.
-Throws:: Only throws an exception if it is thrown by `hasher` or `key_equal`. +
+Returns:;; The iterator following the erased elements - i.e. `last`.
+Throws:;; Only throws an exception if it is thrown by `hasher` or `key_equal`. +
 +
 In this implementation, this overload doesn't call either function object's methods so it is no throw, but this might not be true in other implementations.
 
@@ -1025,10 +1025,10 @@ void quick_erase(const_iterator position);
 Erase the element pointed to by `position`.
 
 [horizontal]
-Throws:: Only throws an exception if it is thrown by `hasher` or `key_equal`. +
+Throws:;; Only throws an exception if it is thrown by `hasher` or `key_equal`. +
 +
 In this implementation, this overload doesn't call either function object's methods so it is no throw, but this might not be true in other implementations.
-Notes:: This method was implemented because returning an iterator to the next element from erase was expensive, but the container has been redesigned so that is no longer the case. So this method is now deprecated.
+Notes:;; This method was implemented because returning an iterator to the next element from erase was expensive, but the container has been redesigned so that is no longer the case. So this method is now deprecated.
 
 ---
 
@@ -1040,10 +1040,10 @@ void erase_return_void(const_iterator position);
 Erase the element pointed to by `position`.
 
 [horizontal]
-Throws:: Only throws an exception if it is thrown by `hasher` or `key_equal`. +
+Throws:;; Only throws an exception if it is thrown by `hasher` or `key_equal`. +
 +
 In this implementation, this overload doesn't call either function object's methods so it is no throw, but this might not be true in other implementations.
-Notes:: This method was implemented because returning an iterator to the next element from erase was expensive, but the container has been redesigned so that is no longer the case. So this method is now deprecated.
+Notes:;; This method was implemented because returning an iterator to the next element from erase was expensive, but the container has been redesigned so that is no longer the case. So this method is now deprecated.
 
 ---
 
@@ -1060,8 +1060,8 @@ Swaps the contents of the container with the parameter.
 If `Allocator::propagate_on_container_swap` is declared and `Allocator::propagate_on_container_swap::value` is `true` then the containers' allocators are swapped. Otherwise, swapping with unequal allocators results in undefined behavior.
 
 [horizontal]
-Throws:: Doesn't throw an exception unless it is thrown by the copy constructor or copy assignment operator of `key_equal` or `hasher`.
-Notes:: The exception specifications aren't quite the same as the C++11 standard, as the equality predicate and hash function are swapped using their copy constructors.
+Throws:;; Doesn't throw an exception unless it is thrown by the copy constructor or copy assignment operator of `key_equal` or `hasher`.
+Notes:;; The exception specifications aren't quite the same as the C++11 standard, as the equality predicate and hash function are swapped using their copy constructors.
 
 ---
 
@@ -1073,8 +1073,8 @@ void clear();
 Erases all elements in the container.
 
 [horizontal]
-Postconditions:: `size() == 0`
-Throws:: Never throws an exception.
+Postconditions:;; `size() == 0`
+Throws:;; Never throws an exception.
 
 ---
 
@@ -1085,7 +1085,7 @@ void merge(unordered_map<Key, T, H2, P2, Alloc>& source);
 ```
 
 [horizontal]
-Notes:: Does not support merging with a compatible `unordered_multimap` yet.
+Notes:;; Does not support merging with a compatible `unordered_multimap` yet.
 
 ---
 
@@ -1096,7 +1096,7 @@ void merge(unordered_map<Key, T, H2, P2, Alloc>&& source);
 ```
 
 [horizontal]
-Notes:: Does not support merging with a compatible `unordered_multimap` yet.
+Notes:;; Does not support merging with a compatible `unordered_multimap` yet.
 
 ---
 
@@ -1115,7 +1115,7 @@ hasher hash_function() const;
 ```
 
 [horizontal]
-Returns:: The container's hash function.
+Returns:;; The container's hash function.
 
 ---
 
@@ -1125,7 +1125,7 @@ key_equal key_eq() const;
 ```
 
 [horizontal]
-Returns:: The container's key equality predicate
+Returns:;; The container's key equality predicate
 
 ---
 
@@ -1149,8 +1149,8 @@ template<typename CompatibleKey, typename CompatibleHash, typename CompatiblePre
 ```
 
 [horizontal]
-Returns:: An iterator pointing to an element with key equivalent to `k`, or `b.end()` if no such element exists.
-Notes:: The templated overloads containing `CompatibleKey`, `CompatibleHash` and `CompatiblePredicate` are non-standard extensions which allow you to use a compatible hash function and equality predicate for a key of a different type in order to avoid an expensive type cast. In general, its use is not encouraged and instead the `K` member function templates should be used. +
+Returns:;; An iterator pointing to an element with key equivalent to `k`, or `b.end()` if no such element exists.
+Notes:;; The templated overloads containing `CompatibleKey`, `CompatibleHash` and `CompatiblePredicate` are non-standard extensions which allow you to use a compatible hash function and equality predicate for a key of a different type in order to avoid an expensive type cast. In general, its use is not encouraged and instead the `K` member function templates should be used. +
 +
 The `template <typename K>` overloads only participate in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
 
@@ -1164,8 +1164,8 @@ template<class K>
 ```
 
 [horizontal]
-Returns:: The number of elements with key equivalent to `k`.
-Notes:: The `template <typename K>` overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
+Returns:;; The number of elements with key equivalent to `k`.
+Notes:;; The `template <typename K>` overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
 
 ---
 
@@ -1177,8 +1177,8 @@ template<class K>
 ```
 
 [horizontal]
-Returns:: A boolean indicating whether or not there is an element with key equal to `key` in the container
-Notes:: The `template <typename K>` overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
+Returns:;; A boolean indicating whether or not there is an element with key equal to `key` in the container
+Notes:;; The `template <typename K>` overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
 
 ---
 
@@ -1193,8 +1193,8 @@ template<class K>
 ```
 
 [horizontal]
-Returns:: A range containing all elements with key equivalent to `k`. If the container doesn't contain any such elements, returns `std::make_pair(b.end(), b.end())`.
-Notes:: The `template <typename K>` overloads only participate in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
+Returns:;; A range containing all elements with key equivalent to `k`. If the container doesn't contain any such elements, returns `std::make_pair(b.end(), b.end())`.
+Notes:;; The `template <typename K>` overloads only participate in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
 
 ---
 
@@ -1205,10 +1205,10 @@ mapped_type& operator[](key_type&& k);
 ```
 
 [horizontal]
-Effects:: If the container does not already contain an elements with a key equivalent to `k`, inserts the value `std::pair<key_type const, mapped_type>(k, mapped_type())`.
-Returns:: A reference to `x.second` where `x` is the element already in the container, or the newly inserted element with a key equivalent to `k`.
-Throws:: If an exception is thrown by an operation other than a call to `hasher` the function has no effect.
-Notes:: Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor. +
+Effects:;; If the container does not already contain an elements with a key equivalent to `k`, inserts the value `std::pair<key_type const, mapped_type>(k, mapped_type())`.
+Returns:;; A reference to `x.second` where `x` is the element already in the container, or the newly inserted element with a key equivalent to `k`.
+Throws:;; If an exception is thrown by an operation other than a call to `hasher` the function has no effect.
+Notes:;; Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor. +
 +
 Pointers and references to elements are never invalidated.
 
@@ -1221,8 +1221,8 @@ const mapped_type& at(const key_type& k) const;
 ```
 
 [horizontal]
-Returns:: A reference to `x.second` where `x` is the (unique) element whose key is equivalent to `k`.
-Throws:: An exception object of type `std::out_of_range` if no such element is present.
+Returns:;; A reference to `x.second` where `x` is the (unique) element whose key is equivalent to `k`.
+Throws:;; An exception object of type `std::out_of_range` if no such element is present.
 
 ---
 
@@ -1234,7 +1234,7 @@ size_type bucket_count() const noexcept;
 ```
 
 [horizontal]
-Returns:: The number of buckets.
+Returns:;; The number of buckets.
 
 ---
 
@@ -1244,7 +1244,7 @@ size_type max_bucket_count() const noexcept;
 ```
 
 [horizontal]
-Returns:: An upper bound on the number of buckets.
+Returns:;; An upper bound on the number of buckets.
 
 ---
 
@@ -1254,8 +1254,8 @@ size_type bucket_size(size_type n) const;
 ```
 
 [horizontal]
-Requires:: `n < bucket_count()`
-Returns:: The number of elements in bucket `n`.
+Requires:;; `n < bucket_count()`
+Returns:;; The number of elements in bucket `n`.
 
 ---
 
@@ -1265,8 +1265,8 @@ size_type bucket(const key_type& k) const;
 ```
 
 [horizontal]
-Returns:: The index of the bucket which would contain an element with key `k`.
-Postconditions:: The return value is less than `bucket_count()`.
+Returns:;; The index of the bucket which would contain an element with key `k`.
+Postconditions:;; The return value is less than `bucket_count()`.
 
 ---
 
@@ -1278,8 +1278,8 @@ const_local_iterator begin(size_type n) const;
 ```
 
 [horizontal]
-Requires:: `n` shall be in the range `[0, bucket_count())`.
-Returns:: A local iterator pointing the first element in the bucket with index `n`.
+Requires:;; `n` shall be in the range `[0, bucket_count())`.
+Returns:;; A local iterator pointing the first element in the bucket with index `n`.
 
 ---
 
@@ -1290,8 +1290,8 @@ const_local_iterator end(size_type n) const;
 ```
 
 [horizontal]
-Requires:: `n` shall be in the range `[0, bucket_count())`.
-Returns:: A local iterator pointing the 'one past the end' element in the bucket with index `n`.
+Requires:;; `n` shall be in the range `[0, bucket_count())`.
+Returns:;; A local iterator pointing the 'one past the end' element in the bucket with index `n`.
 
 ---
 
@@ -1301,8 +1301,8 @@ const_local_iterator cbegin(size_type n) const;
 ```
 
 [horizontal]
-Requires:: `n` shall be in the range `[0, bucket_count())`.
-Returns:: A constant local iterator pointing the first element in the bucket with index `n`.
+Requires:;; `n` shall be in the range `[0, bucket_count())`.
+Returns:;; A constant local iterator pointing the first element in the bucket with index `n`.
 
 ---
 
@@ -1312,8 +1312,8 @@ const_local_iterator cend(size_type n) const;
 ```
 
 [horizontal]
-Requires:: `n` shall be in the range `[0, bucket_count())`.
-Returns:: A constant local iterator pointing the 'one past the end' element in the bucket with index `n`.
+Requires:;; `n` shall be in the range `[0, bucket_count())`.
+Returns:;; A constant local iterator pointing the 'one past the end' element in the bucket with index `n`.
 
 ---
 
@@ -1325,7 +1325,7 @@ float load_factor() const noexcept;
 ```
 
 [horizontal]
-Returns:: The average number of elements per bucket.
+Returns:;; The average number of elements per bucket.
 
 ---
 
@@ -1336,7 +1336,7 @@ float max_load_factor() const noexcept;
 ```
 
 [horizontal]
-Returns:: Returns the current maximum load factor.
+Returns:;; Returns the current maximum load factor.
 
 ---
 
@@ -1346,7 +1346,7 @@ void max_load_factor(float z);
 ```
 
 [horizontal]
-Effects:: Changes the container's maximum load factor, using `z` as a hint.
+Effects:;; Changes the container's maximum load factor, using `z` as a hint.
 
 ---
 
@@ -1361,7 +1361,7 @@ Changes the number of buckets so that there at least `n` buckets, and so that th
 Invalidates iterators, and changes the order of elements. Pointers and references to elements are not invalidated.
 
 [horizontal]
-Throws:: The function has no effect if an exception is thrown, unless it is thrown by the container's hash function or comparison function.
+Throws:;; The function has no effect if an exception is thrown, unless it is thrown by the container's hash function or comparison function.
 
 ---
 
@@ -1373,7 +1373,7 @@ void reserve(size_type n);
 Invalidates iterators, and changes the order of elements. Pointers and references to elements are not invalidated.
 
 [horizontal]
-Throws:: The function has no effect if an exception is thrown, unless it is thrown by the container's hash function or comparison function.
+Throws:;; The function has no effect if an exception is thrown, unless it is thrown by the container's hash function or comparison function.
 
 === Equality Comparisons
 
@@ -1387,7 +1387,7 @@ template<class Key, class T, class Hash, class Pred, class Alloc>
 Return `true` if `x.size() == y.size()` and for every element in `x`, there is an element in `y` with the same key, with an equal value (using `operator==` to compare the value types).
 
 [horizontal]
-Notes:: The behavior of this function was changed to match the C++11 standard in Boost 1.48. +
+Notes:;; The behavior of this function was changed to match the C++11 standard in Boost 1.48. +
 +
 Behavior is undefined if the two containers don't have equivalent equality predicates.
 
@@ -1403,7 +1403,7 @@ template<class Key, class T, class Hash, class Pred, class Alloc>
 Return `false` if `x.size() == y.size()` and for every element in `x`, there is an element in `y` with the same key, with an equal value (using `operator==` to compare the value types).
 
 [horizontal]
-Notes:: The behavior of this function was changed to match the C++11 standard in Boost 1.48. +
+Notes:;; The behavior of this function was changed to match the C++11 standard in Boost 1.48. +
 +
 Behavior is undefined if the two containers don't have equivalent equality predicates.
 
@@ -1420,8 +1420,8 @@ Swaps the contents of `x` and `y`.
 If `Allocator::propagate_on_container_swap` is declared and `Allocator::propagate_on_container_swap::value` is `true` then the containers' allocators are swapped. Otherwise, swapping with unequal allocators results in undefined behavior.
 
 [horizontal]
-Effects:: `x.swap(y)`
-Throws:: Doesn't throw an exception unless it is thrown by the copy constructor or copy assignment operator of `key_equal` or `hasher`.
-Notes:: The exception specifications aren't quite the same as the C++11 standard, as the equality predicate and hash function are swapped using their copy constructors.
+Effects:;; `x.swap(y)`
+Throws:;; Doesn't throw an exception unless it is thrown by the copy constructor or copy assignment operator of `key_equal` or `hasher`.
+Notes:;; The exception specifications aren't quite the same as the C++11 standard, as the equality predicate and hash function are swapped using their copy constructors.
 
 
