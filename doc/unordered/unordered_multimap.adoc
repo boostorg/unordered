@@ -7,271 +7,192 @@
 
 === Synopsis
 
-[source,c++,subs=+quotes]
+[listing,subs="+macros,+quotes"]
 -----
 // #include <boost/unordered_map.hpp>
 
-template<
-  typename Key,
-  typename Mapped,
-  typename Hash = boost::hash<Key>,
-  typename Pred = std::equal_to<Key>,
-  typename Alloc = std::allocator<std::pair<Key const, Mapped>> >
-class unordered_multimap {
-public:
-  // types
-  typedef Key                                    key_type;
-  typedef std::pair<Key const, Mapped>           value_type;
-  typedef Mapped                                 mapped_type;
-  typedef Hash                                   hasher;
-  typedef Pred                                   key_equal;
-  typedef Alloc                                  allocator_type;
-  typedef typename allocator_type::pointer       pointer;
-  typedef typename allocator_type::const_pointer const_pointer;
-  typedef value_type&                            reference;
-  typedef value_type const&                      const_reference;
-  typedef _implementation-defined_                 size_type;
-  typedef _implementation-defined_                 difference_type;
-  typedef _implementation-defined_                 iterator;
-  typedef _implementation-defined_                 const_iterator;
-  typedef _implementation-defined_                 local_iterator;
-  typedef _implementation-defined_                 const_local_iterator;
-  typedef _implementation-defined_                 node_type;
-  typedef _implementation-defined_                 insert_return_type;
+namespace boost {
+  template<class Key,
+           class T,
+           class Hash = boost::hash<Key>,
+           class Pred = std::equal_to<Key>,
+           class Allocator = std::allocator<std::pair<const Key, T>>>
+  class unordered_multimap {
+  public:
+    // types
+    using key_type             = Key;
+    using mapped_type          = T;
+    using value_type           = std::pair<const Key, T>;
+    using hasher               = Hash;
+    using key_equal            = Pred;
+    using allocator_type       = Allocator;
+    using pointer              = typename boost::allocator_traits<Allocator>::pointer;
+    using const_pointer        = typename boost::allocator_traits<Allocator>::const_pointer;
+    using reference            = value_type&;
+    using const_reference      = const value_type&;
+    using size_type            = _implementation-defined_;
+    using difference_type      = _implementation-defined_;
 
-  // construct/copy/destruct
-  unordered_multimap();
+    using iterator             = _implementation-defined_;
+    using const_iterator       = _implementation-defined_;
+    using local_iterator       = _implementation-defined_;
+    using const_local_iterator = _implementation-defined_;
+    using node_type            = _implementation-defined_;
 
-  explicit unordered_multimap(size_type n,
-                              hasher const& hf = hasher(),
-                              key_equal const& eq = key_equal(),
-                              allocator_type const& a  = allocator_type());
+    // construct/copy/destroy
+    xref:#unordered_multimap_default_constructor[unordered_multimap]();
+    explicit xref:#unordered_multimap_bucket_count_constructor[unordered_multimap](size_type n,
+                                const hasher& hf = hasher(),
+                                const key_equal& eql = key_equal(),
+                                const allocator_type& a = allocator_type());
+    template<class InputIterator>
+      xref:#unordered_multimap_iterator_range_constructor[unordered_multimap](InputIterator f, InputIterator l,
+                         size_type n = _implementation-defined_,
+                         const hasher& hf = hasher(),
+                         const key_equal& eql = key_equal(),
+                         const allocator_type& a = allocator_type());
+    xref:#unordered_multimap_copy_constructor[unordered_multimap](const unordered_multimap& other);
+    xref:#unordered_multimap_move_constructor[unordered_multimap](unordered_multimap&& other);
+    explicit xref:#unordered_multimap_allocator_constructor[unordered_multimap](const Allocator& a);
+    xref:#unordered_multimap_copy_constructor_with_allocator[unordered_multimap](const unordered_multimap& other, const Allocator& a);
+    xref:#unordered_multimap_move_constructor_with_allocator[unordered_multimap](unordered_multimap&& other, const Allocator& a);
+    xref:#unordered_multimap_initializer_list_constructor[unordered_multimap](initializer_list<value_type> il,
+                       size_type n = _implementation-defined_,
+                       const hasher& hf = hasher(),
+                       const key_equal& eql = key_equal(),
+                       const allocator_type& a = allocator_type());
+    xref:#unordered_multimap_bucket_count_constructor_with_allocator[unordered_multimap](size_type n, const allocator_type& a);
+    xref:#unordered_multimap_bucket_count_constructor_with_hasher_and_allocator[unordered_multimap](size_type n, const hasher& hf, const allocator_type& a);
+    template<class InputIterator>
+      xref:#unordered_multimap_iterator_range_constructor_with_bucket_count_and_allocator[unordered_multimap](InputIterator f, InputIterator l, size_type n, const allocator_type& a);
+    template<class InputIterator>
+      xref:#unordered_multimap_iterator_range_constructor_with_bucket_count_and_hasher[unordered_multimap](InputIterator f, InputIterator l, size_type n, const hasher& hf,
+                         const allocator_type& a);
+    xref:#unordered_multimap_initializer_list_constructor[unordered_multimap](initializer_list<value_type> il, size_type n, const hasher& hf,
+                       const allocator_type& a);
+    xref:#unordered_multimap_destructor[~unordered_multimap]();
+    unordered_multimap& xref:#unordered_multimap_copy_assignment[operator++=++](const unordered_multimap& other);
+    unordered_multimap& xref:#unordered_multimap_move_assignment[operator++=++](unordered_multimap&& other)
+      noexcept(boost::allocator_traits<Allocator>::is_always_equal::value &&
+               boost::is_nothrow_move_assignable_v<Hash> &&
+               boost::is_nothrow_move_assignable_v<Pred>);
+    unordered_multimap& xref:#unordered_multimap_initializer_list_assignment[operator++=++](initializer_list<value_type> il);
+    allocator_type xref:#unordered_multimap_get_allocator[get_allocator]() const noexcept;
 
-  unordered_multimap(unordered_multimap const& other);
-  unordered_multimap(unordered_multimap&& other);
+    // iterators
+    iterator       xref:#unordered_multimap_begin[begin]() noexcept;
+    const_iterator xref:#unordered_multimap_begin[begin]() const noexcept;
+    iterator       xref:#unordered_multimap_end[end]() noexcept;
+    const_iterator xref:#unordered_multimap_end[end]() const noexcept;
+    const_iterator xref:#unordered_multimap_cbegin[cbegin]() const noexcept;
+    const_iterator xref:#unordered_multimap_cend[cend]() const noexcept;
 
-  explicit unordered_multimap(Allocator const& a);
-  unordered_multimap(unordered_multimap const& other, Allocator const& a);
-  unordered_multimap(unordered_multimap&& other, Allocator const& a);
+    // capacity
+    bool xref:#unordered_multimap_empty[empty]() const noexcept;
+    size_type xref:#unordered_multimap_size[size]() const noexcept;
+    size_type xref:#unordered_multimap_max_size[max_size]() const noexcept;
 
-  unordered_multimap(size_type n, allocator_type const& a);
-  unordered_multimap(size_type n, hasher const& hf, allocator_type const& a);
+    // modifiers
+    template<class... Args> iterator xref:#unordered_multimap_emplace[emplace](Args&&... args);
+    template<class... Args> iterator xref:#unordered_multimap_emplace_hint[emplace_hint](const_iterator position, Args&&... args);
+    iterator xref:#unordered_multimap_copy_insert[insert](const value_type& obj);
+    iterator xref:#unordered_multimap_move_insert[insert](value_type&& obj);
+    template<class P> iterator xref:#unordered_multimap_emplace_insert[insert](P&& obj);
+    iterator xref:#unordered_multimap_copy_insert_with_hint[insert](const_iterator hint, const value_type& obj);
+    iterator xref:#unordered_multimap_move_insert_with_hint[insert](const_iterator hint, value_type&& obj);
+    template<class P> iterator xref:#unordered_multimap_emplace_insert_with_hint[insert](const_iterator hint, P&& obj);
+    template<class InputIterator> void xref:#unordered_multimap_insert_iterator_range[insert](InputIterator first, InputIterator last);
+    void xref:#unordered_multimap_insert_initializer_list[insert](initializer_list<value_type> il);
 
-  unordered_multimap(initializer_list<value_type> il,
-                     size_type n = _implementation-defined_,
-                     hasher const& hf = hasher(),
-                     key_equal const& eq = key_equal(),
-                     allocator_type const& a = allocator_type());
+    node_type xref:#unordered_multimap_extract_by_iterator[extract](const_iterator position);
+    node_type xref:#unordered_multimap_extract_by_key[extract](const key_type& k);
+    template<class K> node_type xref:#unordered_multimap_transparent_extract_by_key[extract](K&& k);
+    iterator xref:#unordered_multimap_insert_with_node_handle[insert](node_type&& nh);
+    iterator xref:#unordered_multimap_insert_with_hint_and_node_handle[insert](const_iterator hint, node_type&& nh);
 
-  template<typename InputIterator>
-  unordered_multimap(InputIterator f,
-                     InputIterator l,
-                     size_type n = _implementation-defined_,
-                     hasher const& hf = hasher(),
-                     key_equal const& eq = key_equal(),
-                     allocator_type const& a  = allocator_type());
+    iterator  xref:#unordered_multimap_erase_by_position[erase](iterator position);
+    iterator  xref:#unordered_multimap_erase_by_position[erase](const_iterator position);
+    size_type xref:#unordered_multimap_erase_by_key[erase](const key_type& k);
+    template<class K> size_type xref:#unordered_multimap_transparent_erase_by_key[erase](K&& k);
+    iterator  xref:#unordered_multimap_erase_range[erase](const_iterator first, const_iterator last);
+    void      xref:#unordered_multimap_quick_erase[quick_erase](const_iterator position);
+    void      xref:#unordered_multimap_erase_return_void[erase_return_void](const_iterator position);
+    void      xref:#unordered_multimap_swap[swap](unordered_multimap& other)
+      noexcept(boost::allocator_traits<Allocator>::is_always_equal::value &&
+               boost::is_nothrow_swappable_v<Hash> &&
+               boost::is_nothrow_swappable_v<Pred>);
+    void      xref:#unordered_multimap_clear[clear]() noexcept;
 
-  template<typename InputIterator>
-  unordered_multimap(InputIterator f,
-                     InputIterator l,
-                     size_type n,
-                     allocator_type const& a);
+    template<class H2, class P2>
+      void xref:#unordered_multimap_merge[merge](unordered_multimap<Key, T, H2, P2, Allocator>& source);
+    template<class H2, class P2>
+      void xref:#unordered_multimap_merge_rvalue_reference[merge](unordered_multimap<Key, T, H2, P2, Allocator>&& source);
 
-  template<typename InputIterator>
-  unordered_multimap(InputIterator f,
-                     InputIterator l,
-                     size_type n,
-                     hasher const& hf,
-                     allocator_type const& a);
+    // observers
+    hasher xref:#unordered_multimap_hash_function[hash_function]() const;
+    key_equal xref:#unordered_multimap_key_eq[key_eq]() const;
 
-  ~unordered_multimap();
+    // map operations
+    iterator         xref:#unordered_multimap_find[find](const key_type& k);
+    const_iterator   xref:#unordered_multimap_find[find](const key_type& k) const;
+    template<class K>
+      iterator       xref:#unordered_multimap_find[find](const K& k);
+    template<class K>
+      const_iterator xref:#unordered_multimap_find[find](const K& k) const;
+    template<typename CompatibleKey, typename CompatibleHash, typename CompatiblePredicate>
+      iterator       xref:#unordered_multimap_find[find](CompatibleKey const& k, CompatibleHash const& hash,
+                          CompatiblePredicate const& eq);
+    template<typename CompatibleKey, typename CompatibleHash, typename CompatiblePredicate>
+      const_iterator xref:#unordered_multimap_find[find](CompatibleKey const& k, CompatibleHash const& hash,
+                          CompatiblePredicate const& eq) const;
+    size_type        xref:#unordered_multimap_count[count](const key_type& k) const;
+    template<class K>
+      size_type      xref:#unordered_multimap_count[count](const K& k) const;
+    bool             xref:#unordered_multimap_contains[contains](const key_type& k) const;
+    template<class K>
+      bool           xref:#unordered_multimap_contains[contains](const K& k) const;
+    pair<iterator, iterator>               xref:#unordered_multimap_equal_range[equal_range](const key_type& k);
+    pair<const_iterator, const_iterator>   xref:#unordered_multimap_equal_range[equal_range](const key_type& k) const;
+    template<class K>
+      pair<iterator, iterator>             xref:#unordered_multimap_equal_range[equal_range](const K& k);
+    template<class K>
+      pair<const_iterator, const_iterator> xref:#unordered_multimap_equal_range[equal_range](const K& k) const;
 
-  unordered_multimap& operator=(unordered_multimap const& other);
-  unordered_multimap& operator=(unordered_multimap&& other);
-  unordered_multimap& operator=(initializer_list<value_type> il);
+    // bucket interface
+    size_type xref:#unordered_multimap_bucket_count[bucket_count]() const noexcept;
+    size_type xref:#unordered_multimap_max_bucket_count[max_bucket_count]() const noexcept;
+    size_type xref:#unordered_multimap_bucket_size[bucket_size](size_type n) const;
+    size_type xref:#unordered_multimap_bucket[bucket](const key_type& k) const;
+    local_iterator xref:#unordered_multimap_begin_2[begin](size_type n);
+    const_local_iterator xref:#unordered_multimap_begin_2[begin](size_type n) const;
+    local_iterator xref:#unordered_multimap_end_2[end](size_type n);
+    const_local_iterator xref:#unordered_multimap_end_2[end](size_type n) const;
+    const_local_iterator xref:#unordered_multimap_cbegin_2[cbegin](size_type n) const;
+    const_local_iterator xref:#unordered_multimap_cend_2[cend](size_type n) const;
 
-  // size and capacity
-  bool empty() const;
-  size_type size() const;
-  size_type max_size() const;
-
-  // iterators
-  iterator begin();
-  const_iterator begin() const;
-
-  iterator end();
-  const_iterator end() const;
-
-  const_iterator cbegin() const;
-  const_iterator cend() const;
-
-  // modifiers
-  template<typename... Args>
-  iterator
-  emplace(Args&&... args);
-
-  template<typename... Args>
-  iterator
-  emplace_hint(const_iterator hint, Args&&... args);
-
-  iterator
-  insert(value_type const& obj);
-
-  iterator
-  insert(value_type&& obj);
-
-  template <class P>
-  iterator
-  insert(P&& value);
-
-  insert_return_type insert(node_type&& nh);
-
-  iterator insert(const_iterator hint, value_type const& obj);
-  iterator insert(const_iterator hint, value_type&& obj);
-  iterator insert(const_iterator hint, node_type&& nh);
-
-  template <class P>
-  iterator
-  insert(const_iterator hint, P&& value);
-
-  template<typename InputIterator>
-  void insert(InputIterator first, InputIterator last);
-
-  void insert(initializer_list<value_type> il);
-
-  node_type extract(const_iterator position);
-  node_type extract(key_type const& k);
-
-  template<typename K>
-  node_type extract(K&& k);
-
-  iterator erase(const_iterator position);
-  iterator erase(const_iterator first, const_iterator last);
-  size_type erase(key_type const& k);
-
-  template<typename K>
-  size_type erase(K&& k);
-
-  void quick_erase(const_iterator position);
-  void erase_return_void(const_iterator position);
-
-  void clear();
-  void swap(unordered_multimap& other);
-
-  template<typename H2, typename P2>
-  void merge(unordered_multimap<Key, Mapped, H2, P2, Alloc>& source);
-
-  template<typename H2, typename P2>
-  void merge(unordered_multimap<Key, Mapped, H2, P2, Alloc>&& source);
-
-  // observers
-  allocator_type get_allocator() const;
-  hasher hash_function() const;
-  key_equal key_eq() const;
-
-  // lookup
-  iterator find(key_type const& k);
-  const_iterator find(key_type const& k) const;
-
-  template<typename K>
-  iterator
-  find(K const& k);
-
-  template<typename K>
-  const_iterator
-  find(K const& k) const;
-
-  template<
-    typename CompatibleKey,
-    typename CompatibleHash,
-    typename CompatiblePredicate>
-  iterator
-  find(CompatibleKey const& k,
-       CompatibleHash const& hash,
-       CompatiblePredicate const&) eq;
-
-  template<
-    typename CompatibleKey,
-    typename CompatibleHash,
-    typename CompatiblePredicate>
-  const_iterator
-  find(CompatibleKey const& k,
-       CompatibleHash const& hash,
-       CompatiblePredicate const& eq) const;
-
-  bool contains(key_type const& key) const;
-
-  template<typename K>
-  bool contains(K const& key);
-
-  size_type count(key_type const& k) const;
-
-  template<typename K>
-  size_type count(K const& k) const;
-
-  std::pair<iterator, iterator>
-  equal_range(key_type const& k);
-
-  std::pair<const_iterator, const_iterator>
-  equal_range(key_type const& k) const;
-
-  template<typename K>
-  std::pair<iterator, iterator>
-  equal_range(K const& k);
-
-  template<typename K>
-  std::pair<const_iterator, const_iterator>
-  equal_range(K const& k) const;
-
-  // bucket interface
-  size_type bucket_count() const;
-  size_type max_bucket_count() const;
-  size_type bucket_size(size_type n) const;
-  size_type bucket(key_type const& k) const;
-
-  local_iterator begin(size_type n);
-  const_local_iterator begin(size_type n) const;
-
-  local_iterator end(size_type n);
-  const_local_iterator end(size_type n) const;
-
-  const_local_iterator cbegin(size_type n) const;
-  const_local_iterator cend(size_type n) const;
-
-  // hash policy
-  float load_factor() const;
-  float max_load_factor() const;
-
-  void max_load_factor(float z);
-
-  void rehash(size_type n);
-  void reserve(size_type n);
-};
+    // hash policy
+    float xref:#unordered_multimap_load_factor[load_factor]() const noexcept;
+    float xref:#unordered_multimap_max_load_factor[max_load_factor]() const noexcept;
+    void xref:#unordered_multimap_max_load_factor[max_load_factor](float z);
+    void xref:#unordered_multimap_rehash[rehash](size_type n);
+    void xref:#unordered_multimap_reserve[reserve](size_type n);
+  };
+}
 
 // Equality Comparisons
-template<
-  typename Key,
-  typename Mapped,
-  typename Hash,
-  typename Pred,
-  typename Alloc>
-bool operator==(unordered_multimap<Key, Mapped, Hash, Pred, Alloc> const& x,
-                unordered_multimap<Key, Mapped, Hash, Pred, Alloc> const& y);
+template<class Key, class T, class Hash, class Pred, class Alloc>
+  bool xref:#unordered_multimap_operator[operator++==++](const unordered_multimap<Key, T, Hash, Pred, Alloc>& x,
+                  const unordered_multimap<Key, T, Hash, Pred, Alloc>& y);
 
-template<
-  typename Key,
-  typename Mapped,
-  typename Hash,
-  typename Pred,
-  typename Alloc>
-bool operator!=(unordered_multimap<Key, Mapped, Hash, Pred, Alloc> const& x,
-                unordered_multimap<Key, Mapped, Hash, Pred, Alloc> const& y);
+template<class Key, class T, class Hash, class Pred, class Alloc>
+  bool xref:#unordered_multimap_operator_2[operator!=](const unordered_multimap<Key, T, Hash, Pred, Alloc>& x,
+                  const unordered_multimap<Key, T, Hash, Pred, Alloc>& y);
 
 // swap
-template<typename Key, typename Mapped, typename Hash, typename Pred,
-         typename Alloc>
-void swap(unordered_multimap<Key, Mapped, Hash, Pred, Alloc>& x,
-          unordered_multimap<Key, Mapped, Hash, Pred, Alloc>& y);
+template<class Key, class T, class Hash, class Pred, class Alloc>
+  void xref:#unordered_multimap_swap_2[swap](unordered_multimap<Key, T, Hash, Pred, Alloc>& x,
+            unordered_multimap<Key, T, Hash, Pred, Alloc>& y)
+    noexcept(noexcept(x.swap(y)));
 -----
 
 ---
