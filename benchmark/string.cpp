@@ -267,6 +267,15 @@ template<class K, class V> using multi_index_map_fnv1a = multi_index_container<
   >
 >;
 
+#ifdef HAVE_ABSEIL
+
+template<class K, class V> using absl_node_hash_map_fnv1a =
+    absl::node_hash_map<K, V, fnv1a_hash>;
+
+template<class K, class V> using absl_flat_hash_map_fnv1a =
+    absl::flat_hash_map<K, V, fnv1a_hash>;
+
+#endif
 //
 
 int main()
@@ -285,7 +294,10 @@ int main()
 #ifdef HAVE_ABSEIL
 
     test<absl::node_hash_map>( "absl::node_hash_map" );
+    test<absl_node_hash_map_fnv1a>( "absl::node_hash_map, FNV-1a" );
+
     test<absl::flat_hash_map>( "absl::flat_hash_map" );
+    test<absl_flat_hash_map_fnv1a>( "absl::flat_hash_map, FNV-1a" );
 
 #endif
 
