@@ -4360,6 +4360,25 @@ namespace boost {
         typedef typename pick::bucket bucket;
         typedef typename pick::link_pointer link_pointer;
       };
+
+      template <class Container, class Predicate>
+      typename Container::size_type erase_if(Container& c, Predicate& pred)
+      {
+        typedef typename Container::size_type size_type;
+        typedef typename Container::iterator iterator;
+
+        size_type const size = c.size();
+
+        for (iterator pos = c.begin(), end = c.end(); pos != end;) {
+          if (pred(*pos)) {
+            pos = c.erase(pos);
+          } else {
+            ++pos;
+          }
+        }
+
+        return (size - c.size());
+      }
     }
   }
 }
