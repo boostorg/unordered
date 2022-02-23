@@ -87,7 +87,7 @@ namespace boost {
     const_iterator xref:#unordered_map_cend[cend]() const noexcept;
 
     // capacity
-    bool xref:#unordered_map_empty[empty]() const noexcept;
+    ++[[nodiscard]]++ bool xref:#unordered_map_empty[empty]() const noexcept;
     size_type xref:#unordered_map_size[size]() const noexcept;
     size_type xref:#unordered_map_max_size[max_size]() const noexcept;
 
@@ -629,7 +629,7 @@ Returns:;; A `const_iterator` which refers to the past-the-end value for the con
 ==== empty
 
 ```c++
-bool empty() const noexcept;
+[[nodiscard]] bool empty() const noexcept;
 ```
 
 [horizontal]
