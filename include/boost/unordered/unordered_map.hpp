@@ -210,7 +210,10 @@ namespace boost {
 
       // size and capacity
 
-      bool empty() const BOOST_NOEXCEPT { return table_.size_ == 0; }
+      BOOST_ATTRIBUTE_NODISCARD bool empty() const BOOST_NOEXCEPT
+      {
+        return table_.size_ == 0;
+      }
 
       size_type size() const BOOST_NOEXCEPT { return table_.size_; }
 
@@ -1177,7 +1180,10 @@ namespace boost {
 
       // size and capacity
 
-      bool empty() const BOOST_NOEXCEPT { return table_.size_ == 0; }
+      BOOST_ATTRIBUTE_NODISCARD bool empty() const BOOST_NOEXCEPT
+      {
+        return table_.size_ == 0;
+      }
 
       size_type size() const BOOST_NOEXCEPT { return table_.size_; }
 
@@ -2705,7 +2711,10 @@ namespace boost {
 
       bool operator!() const BOOST_NOEXCEPT { return ptr_ ? 0 : 1; }
 
-      bool empty() const BOOST_NOEXCEPT { return ptr_ ? 0 : 1; }
+      BOOST_ATTRIBUTE_NODISCARD bool empty() const BOOST_NOEXCEPT
+      {
+        return ptr_ ? 0 : 1;
+      }
 
       void swap(node_handle_map& n) BOOST_NOEXCEPT_IF(
         value_allocator_traits::propagate_on_container_swap::value ||
