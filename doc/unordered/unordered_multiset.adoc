@@ -187,6 +187,10 @@ template<class Key, class Hash, class Pred, class Alloc>
   void xref:#unordered_multiset_swap_2[swap](unordered_multiset<Key, Hash, Pred, Alloc>& x,
             unordered_multiset<Key, Hash, Pred, Alloc>& y)
     noexcept(noexcept(x.swap(y)));
+
+template<class K, class H, class P, class A, class Predicate>
+  typename unordered_multiset<K, H, P, A>::size_type
+    xref:#unordered_multiset_erase_if[erase_if](unordered_multiset<K, H, P, A>& c, Predicate pred);
 -----
 
 ---
@@ -1326,4 +1330,31 @@ Effects:;; `x.swap(y)`
 Throws:;; Doesn't throw an exception unless it is thrown by the copy constructor or copy assignment operator of `key_equal` or `hasher`.
 Notes:;; The exception specifications aren't quite the same as the C++11 standard, as the equality predicate and hash function are swapped using their copy constructors.
 
+---
 
+=== erase_if
+```c++
+template<class K, class H, class P, class A, class Predicate>
+  typename unordered_multiset<K, H, P, A>::size_type
+    erase_if(unordered_multiset<K, H, P, A>& c, Predicate pred);
+```
+
+Traverses the container `c` and removes all elements for which the supplied predicate returns `true`.
+
+[horizontal]
+Returns:;; The number of erased elements.
+Notes:;; Equivalent to: +
++
+```c++
+auto original_size = c.size();
+for (auto i = c.begin(), last = c.end(); i != last; ) {
+  if (pred(*i)) {
+    i = c.erase(i);
+  } else {
+    ++i;
+  }
+}
+return original_size - c.size();
+```
+
+---

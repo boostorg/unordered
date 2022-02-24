@@ -11,7 +11,8 @@
 * Improved {cpp}20 support:
   ** All containers have been updated to support 
     heterogeneous `count`, `equal_range` and `find`.
-  ** All containers now implement the member function `contains`
+  ** All containers now implement the member function `contains`.
+  ** `erase_if` has been implemented for all containers.
 * Improved {cpp}23 support:
   ** All containers have been updated to support
     heterogeneous `erase` and `extract`.

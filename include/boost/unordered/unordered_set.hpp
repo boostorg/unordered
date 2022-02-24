@@ -1676,6 +1676,13 @@ namespace boost {
       m1.swap(m2);
     }
 
+    template <class K, class H, class P, class A, class Predicate>
+    typename unordered_set<K, H, P, A>::size_type erase_if(
+      unordered_set<K, H, P, A>& c, Predicate pred)
+    {
+      return detail::erase_if(c, pred);
+    }
+
     ////////////////////////////////////////////////////////////////////////////
 
     template <class T, class H, class P, class A>
@@ -2077,6 +2084,13 @@ namespace boost {
       };
 #endif
       m1.swap(m2);
+    }
+
+    template <class K, class H, class P, class A, class Predicate>
+    typename unordered_multiset<K, H, P, A>::size_type erase_if(
+      unordered_multiset<K, H, P, A>& c, Predicate pred)
+    {
+      return detail::erase_if(c, pred);
     }
 
     template <typename N, typename T, typename A> class node_handle_set
