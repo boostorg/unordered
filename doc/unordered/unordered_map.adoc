@@ -125,7 +125,11 @@ namespace boost {
     template<class H2, class P2>
       void xref:#unordered_map_merge[merge](unordered_map<Key, T, H2, P2, Allocator>& source);
     template<class H2, class P2>
-      void xref:#unordered_map_merge_rvalue_reference[merge](unordered_map<Key, T, H2, P2, Allocator>&& source);
+      void xref:#unordered_map_merge[merge](unordered_map<Key, T, H2, P2, Allocator>&& source);
+    template<class H2, class P2>
+      void xref:#unordered_map_merge[merge](unordered_multimap<Key, T, H2, P2, Allocator>& source);
+    template<class H2, class P2>
+      void xref:#unordered_map_merge[merge](unordered_multimap<Key, T, H2, P2, Allocator>&& source);
 
     // observers
     hasher xref:#unordered_map_hash_function[hash_function]() const;
@@ -1084,23 +1088,36 @@ Throws:;; Never throws an exception.
 
 ==== merge
 ```c++
-template<typename H2, typename P2>
-void merge(unordered_map<Key, T, H2, P2, Alloc>& source);
+template<class H2, class P2>
+  void merge(unordered_map<Key, T, H2, P2, Allocator>& source);
+template<class H2, class P2>
+  void merge(unordered_map<Key, T, H2, P2, Allocator>&& source);
+template<class H2, class P2>
+  void merge(unordered_multimap<Key, T, H2, P2, Allocator>& source);
+template<class H2, class P2>
+  void merge(unordered_multimap<Key, T, H2, P2, Allocator>&& source);
 ```
 
+Attempt to "merge" two containers by iterating `source` and extracting any node in `source` that is not contained
+in `*this` and then inserting it into `*this`.
+
+Because `source` can have a different hash function and key equality predicate, the key of each node in
+`source` is rehashed using `this\->hash_function()` and then, if required, compared using `this\->key_eq()`.
+
+The behavior of this function is undefined if `this\->get_allocator() != source.get_allocator()`.
+
+This function does not copy or move any elements and instead simply relocates the nodes from `source`
+into `*this`.
+
 [horizontal]
-Notes:;; Does not support merging with a compatible `unordered_multimap` yet.
-
----
-
-==== merge (rvalue reference)
-```c++
-template<typename H2, typename P2>
-void merge(unordered_map<Key, T, H2, P2, Alloc>&& source);
-```
-
-[horizontal]
-Notes:;; Does not support merging with a compatible `unordered_multimap` yet.
+Notes:;;
++
+--
+* Pointers and references to transferred elements remain valid.
+* Invalidates iterators to transferred elements.
+* Invalidates iterators belonging to `*this`.
+* Iterators to non-transferred elements in `source` remain valid.
+--
 
 ---
 
