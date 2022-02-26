@@ -875,7 +875,7 @@ Removes the element pointed to by `position`.
 
 [horizontal]
 Returns:;; A `node_type` owning the element.
-Notes:;; In C++17 a node extracted using this method can be inserted into a compatible `unordered_multimap`, but that is not supported yet.
+Notes:;; A node extracted using this method can be inserted into a compatible `unordered_multimap`.
 
 ---
 
@@ -889,7 +889,7 @@ Removes an element with key equivalent to `k`.
 [horizontal]
 Returns:;; A `node_type` owning the element if found, otherwise an empty `node_type`.
 Throws:;; Only throws an exception if it is thrown by `hasher` or `key_equal`.
-Notes:;; In C++17 a node extracted using this method can be inserted into a compatible `unordered_multimap`, but that is not supported yet.
+Notes:;; A node extracted using this method can be inserted into a compatible `unordered_multimap`.
 
 ---
 
@@ -905,7 +905,7 @@ This overload only participates in overload resolution if `Hash::is_transparent`
 [horizontal]
 Returns:;; A `node_type` owning the element if found, otherwise an empty `node_type`.
 Throws:;; Only throws an exception if it is thrown by `hasher` or `key_equal`.
-Notes:;; In C++17 a node extracted using this method can be inserted into a compatible `unordered_multimap`, but that is not supported yet.
+Notes:;; A node extracted using this method can be inserted into a compatible `unordered_multimap`.
 
 ---
 
@@ -930,7 +930,7 @@ Notes:;; Can invalidate iterators, but only if the insert causes the load factor
 +
 Pointers and references to elements are never invalidated. +
 +
-In C++17 this can be used to insert a node extracted from a compatible `unordered_multimap`, but that is not supported yet.
+This can be used to insert a node extracted from a compatible `unordered_multimap`.
 
 ---
 
@@ -961,7 +961,7 @@ Can invalidate iterators, but only if the insert causes the load factor to be gr
 +
 Pointers and references to elements are never invalidated. +
 +
-In C++17 this can be used to insert a node extracted from a compatible `unordered_multimap`, but that is not supported yet.
+This can be used to insert a node extracted from a compatible `unordered_multimap`.
 
 ---
 

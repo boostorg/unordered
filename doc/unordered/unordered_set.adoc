@@ -912,7 +912,7 @@ Can invalidate iterators, but only if the insert causes the load factor to be gr
 +
 Pointers and references to elements are never invalidated. +
 +
-In C++17 this can be used to insert a node extracted from a compatible `unordered_multiset`, but that is not supported yet.
+This can be used to insert a node extracted from a compatible `unordered_multiset`.
 
 ---
 
