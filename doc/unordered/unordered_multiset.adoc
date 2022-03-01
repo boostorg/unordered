@@ -66,6 +66,9 @@ namespace boost {
     template<class InputIterator>
       xref:#unordered_multiset_iterator_range_constructor_with_bucket_count_and_hasher[unordered_multiset](InputIterator f, InputIterator l, size_type n, const hasher& hf,
                          const allocator_type& a);
+    xref:#unordered_multiset_initializer_list_constructor_with_bucket_count_and_allocator[unordered_multiset](std::initializer_list<value_type> il, size_type n, const allocator_type& a)
+    xref:#unordered_multiset_initializer_list_constructor_with_bucket_count_and_hasher_and_allocator[unordered_multiset](std::initializer_list<value_type> il, size_type n, const hasher& hf,
+                       const allocator_type& a);
     xref:#unordered_multiset_destructor[~unordered_multiset()];
     unordered_multiset& xref:#unordered_multiset_copy_assignment[operator++=++](const unordered_multiset& other);
     unordered_multiset& xref:#unordered_multiset_move_assignment[operator++=++](unordered_multiset&& other)
@@ -503,6 +506,33 @@ template<class InputIterator>
 ----
 
 Constructs an empty container with at least `n` buckets, using `hf` as the hash function, `a` as the allocator, with the default key equality predicate and a maximum load factor of `1.0` and inserts the elements from `[f, l)` into it.
+
+[horizontal]
+Requires:;; `key_equal` needs to be https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[DefaultConstructible^].
+
+---
+
+==== initializer_list Constructor with Bucket Count and Allocator
+
+```c++
+unordered_multiset(std::initializer_list<value_type> il, size_type n, const allocator_type& a)
+```
+
+Constructs an empty container with at least `n` buckets, using `a` as the allocator and a maximum load factor of 1.0 and inserts the elements from `il` into it.
+
+[horizontal]
+Requires:;; `hasher` and `key_equal` need to be https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[DefaultConstructible^].
+
+---
+
+==== initializer_list Constructor with Bucket Count and Hasher and Allocator
+
+```c++
+    unordered_multiset(std::initializer_list<value_type> il, size_type n, const hasher& hf,
+                       const allocator_type& a);
+```
+
+Constructs an empty container with at least `n` buckets, using `hf` as the hash function, `a` as the allocator and a maximum load factor of 1.0 and inserts the elements from `il` into it.
 
 [horizontal]
 Requires:;; `key_equal` needs to be https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[DefaultConstructible^].
