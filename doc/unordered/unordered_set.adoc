@@ -150,12 +150,12 @@ namespace boost {
     bool             xref:#unordered_set_contains[contains](const key_type& k) const;
     template<class K>
       bool           xref:#unordered_set_contains[contains](const K& k) const;
-    pair<iterator, iterator>               xref:#unordered_set_equal_range[equal_range](const key_type& k);
-    pair<const_iterator, const_iterator>   xref:#unordered_set_equal_range[equal_range](const key_type& k) const;
+    std::pair<iterator, iterator>               xref:#unordered_set_equal_range[equal_range](const key_type& k);
+    std::pair<const_iterator, const_iterator>   xref:#unordered_set_equal_range[equal_range](const key_type& k) const;
     template<class K>
-      pair<iterator, iterator>             xref:#unordered_set_equal_range[equal_range](const K& k);
+      std::pair<iterator, iterator>             xref:#unordered_set_equal_range[equal_range](const K& k);
     template<class K>
-      pair<const_iterator, const_iterator> xref:#unordered_set_equal_range[equal_range](const K& k) const;
+      std::pair<const_iterator, const_iterator> xref:#unordered_set_equal_range[equal_range](const K& k) const;
 
     // bucket interface
     size_type xref:#unordered_set_bucket_count[bucket_count]() const noexcept;
@@ -660,7 +660,7 @@ Returns:;; `size()` of the largest possible container.
 
 ==== emplace
 ```c++
-template<class... Args> pair<iterator, bool> emplace(Args&&... args);
+template<class... Args> std::pair<iterator, bool> emplace(Args&&... args);
 ```
 
 Inserts an object, constructed with the arguments `args`, in the container if and only if there is no element in the container with an equivalent value.
@@ -1156,12 +1156,12 @@ Notes:;; The `template <typename K>` overload only participates in overload reso
 
 ==== equal_range
 ```c++
-pair<iterator, iterator>               equal_range(const key_type& k);
-pair<const_iterator, const_iterator>   equal_range(const key_type& k) const;
+std::pair<iterator, iterator>               equal_range(const key_type& k);
+std::pair<const_iterator, const_iterator>   equal_range(const key_type& k) const;
 template<class K>
-  pair<iterator, iterator>             equal_range(const K& k);
+  std::pair<iterator, iterator>             equal_range(const K& k);
 template<class K>
-  pair<const_iterator, const_iterator> equal_range(const K& k) const;
+  std::pair<const_iterator, const_iterator> equal_range(const K& k) const;
 ```
 
 [horizontal]

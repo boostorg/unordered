@@ -154,12 +154,12 @@ namespace boost {
     bool             xref:#unordered_map_contains[contains](const key_type& k) const;
     template<class K>
       bool           xref:#unordered_map_contains[contains](const K& k) const;
-    pair<iterator, iterator>               xref:#unordered_map_equal_range[equal_range](const key_type& k);
-    pair<const_iterator, const_iterator>   xref:#unordered_map_equal_range[equal_range](const key_type& k) const;
+    std::pair<iterator, iterator>               xref:#unordered_map_equal_range[equal_range](const key_type& k);
+    std::pair<const_iterator, const_iterator>   xref:#unordered_map_equal_range[equal_range](const key_type& k) const;
     template<class K>
-      pair<iterator, iterator>             xref:#unordered_map_equal_range[equal_range](const K& k);
+      std::pair<iterator, iterator>             xref:#unordered_map_equal_range[equal_range](const K& k);
     template<class K>
-      pair<const_iterator, const_iterator> xref:#unordered_map_equal_range[equal_range](const K& k) const;
+      std::pair<const_iterator, const_iterator> xref:#unordered_map_equal_range[equal_range](const K& k) const;
 
     // element access
     mapped_type& xref:#unordered_map_operator[operator[+]+](const key_type& k);
@@ -1205,12 +1205,12 @@ Notes:;; The `template <typename K>` overload only participates in overload reso
 
 ==== equal_range
 ```c++
-pair<iterator, iterator>               equal_range(const key_type& k);
-pair<const_iterator, const_iterator>   equal_range(const key_type& k) const;
+std::pair<iterator, iterator>               equal_range(const key_type& k);
+std::pair<const_iterator, const_iterator>   equal_range(const key_type& k) const;
 template<class K>
-  pair<iterator, iterator>             equal_range(const K& k);
+  std::pair<iterator, iterator>             equal_range(const K& k);
 template<class K>
-  pair<const_iterator, const_iterator> equal_range(const K& k) const;
+  std::pair<const_iterator, const_iterator> equal_range(const K& k) const;
 ```
 
 [horizontal]
