@@ -57,7 +57,7 @@ namespace boost {
     explicit xref:#unordered_map_allocator_constructor[unordered_map](const Allocator& a);
     xref:#unordered_map_copy_constructor_with_allocator[unordered_map](const unordered_map& other, const Allocator& a);
     xref:#unordered_map_move_constructor_with_allocator[unordered_map](unordered_map&& other, const Allocator& a);
-    xref:#unordered_map_initializer_list_constructor[unordered_map](initializer_list<value_type> il,
+    xref:#unordered_map_initializer_list_constructor[unordered_map](std::initializer_list<value_type> il,
                   size_type n = _implementation-defined_
                   const hasher& hf = hasher(),
                   const key_equal& eql = key_equal(),
@@ -75,7 +75,7 @@ namespace boost {
       noexcept(boost::allocator_traits<Allocator>::is_always_equal::value &&
                boost::is_nothrow_move_assignable_v<Hash> &&
                boost::is_nothrow_move_assignable_v<Pred>);
-    unordered_map& xref:#unordered_map_initializer_list_assignment[operator++=++](initializer_list<value_type>);
+    unordered_map& xref:#unordered_map_initializer_list_assignment[operator++=++](std::initializer_list<value_type>);
     allocator_type xref:#unordered_map_get_allocator[get_allocator]() const noexcept;
 
     // iterators
@@ -101,7 +101,7 @@ namespace boost {
     iterator       xref:#unordered_map_move_insert_with_hint[insert](const_iterator hint, value_type&& obj);
     template<class P> iterator xref:#unordered_map_emplace_insert_with_hint[insert](const_iterator hint, P&& obj);
     template<class InputIterator> void xref:#unordered_map_insert_iterator_range[insert](InputIterator first, InputIterator last);
-    void xref:#unordered_map_insert_initializer_list[insert](initializer_list<value_type>);
+    void xref:#unordered_map_insert_initializer_list[insert](std::initializer_list<value_type>);
 
     template<class... Args>
       std::pair<iterator, bool> xref:#unordered_map_try_emplace[try_emplace](const key_type& k, Args&&... args);
@@ -171,12 +171,12 @@ namespace boost {
     bool             xref:#unordered_map_contains[contains](const key_type& k) const;
     template<class K>
       bool           xref:#unordered_map_contains[contains](const K& k) const;
-    pair<iterator, iterator>               xref:#unordered_map_equal_range[equal_range](const key_type& k);
-    pair<const_iterator, const_iterator>   xref:#unordered_map_equal_range[equal_range](const key_type& k) const;
+    std::pair<iterator, iterator>               xref:#unordered_map_equal_range[equal_range](const key_type& k);
+    std::pair<const_iterator, const_iterator>   xref:#unordered_map_equal_range[equal_range](const key_type& k) const;
     template<class K>
-      pair<iterator, iterator>             xref:#unordered_map_equal_range[equal_range](const K& k);
+      std::pair<iterator, iterator>             xref:#unordered_map_equal_range[equal_range](const K& k);
     template<class K>
-      pair<const_iterator, const_iterator> xref:#unordered_map_equal_range[equal_range](const K& k) const;
+      std::pair<const_iterator, const_iterator> xref:#unordered_map_equal_range[equal_range](const K& k) const;
 
     // element access
     mapped_type& xref:#unordered_map_operator[operator[+]+](const key_type& k);
@@ -481,7 +481,7 @@ Requires:;; `value_type` is move insertable.
 ==== Initializer List Constructor
 [source,c++,subs="+quotes"]
 ----
-unordered_map(initializer_list<value_type> il,
+unordered_map(std::initializer_list<value_type> il,
               size_type n = _implementation-defined_
               const hasher& hf = hasher(),
               const key_equal& eql = key_equal(),
@@ -597,7 +597,7 @@ Requires:;; `value_type` is move constructible.
 
 ==== Initializer List Assignment
 ```c++
-unordered_map& operator=(initializer_list<value_type> il);
+unordered_map& operator=(std::initializer_list<value_type> il);
 ```
 
 Assign from values in initializer list. All existing elements are either overwritten by the new elements or destroyed.
@@ -869,7 +869,7 @@ Pointers and references to elements are never invalidated.
 
 ==== Insert Initializer List
 ```c++
-void insert(initializer_list<value_type>);
+void insert(std::initializer_list<value_type>);
 ```
 
 Inserts a range of elements into the container. Elements are inserted if and only if there is no element in the container with an equivalent key.
@@ -1364,12 +1364,12 @@ Notes:;; The `template <typename K>` overload only participates in overload reso
 
 ==== equal_range
 ```c++
-pair<iterator, iterator>               equal_range(const key_type& k);
-pair<const_iterator, const_iterator>   equal_range(const key_type& k) const;
+std::pair<iterator, iterator>               equal_range(const key_type& k);
+std::pair<const_iterator, const_iterator>   equal_range(const key_type& k) const;
 template<class K>
-  pair<iterator, iterator>             equal_range(const K& k);
+  std::pair<iterator, iterator>             equal_range(const K& k);
 template<class K>
-  pair<const_iterator, const_iterator> equal_range(const K& k) const;
+  std::pair<const_iterator, const_iterator> equal_range(const K& k) const;
 ```
 
 [horizontal]
