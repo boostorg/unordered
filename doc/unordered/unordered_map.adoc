@@ -103,6 +103,23 @@ namespace boost {
     template<class InputIterator> void xref:#unordered_map_insert_iterator_range[insert](InputIterator first, InputIterator last);
     void xref:#unordered_map_insert_initializer_list[insert](initializer_list<value_type>);
 
+    template<class... Args>
+      std::pair<iterator, bool> xref:#unordered_map_try_emplace[try_emplace](const key_type& k, Args&&... args);
+    template<class... Args>
+      std::pair<iterator, bool> xref:#unordered_map_try_emplace[try_emplace](key_type&& k, Args&&... args);
+    template<class... Args>
+      iterator xref:#unordered_map_try_emplace_with_hint[try_emplace](const_iterator hint, const key_type& k, Args&&... args);
+    template<class... Args>
+      iterator xref:#unordered_map_try_emplace_with_hint[try_emplace](const_iterator hint, key_type&& k, Args&&... args);
+    template<class M>
+      std::pair<iterator, bool> xref:#unordered_map_insert_or_assign[insert_or_assign](const key_type& k, M&& obj);
+    template<class M>
+      std::pair<iterator, bool> xref:#unordered_map_insert_or_assign[insert_or_assign](key_type&& k, M&& obj);
+    template<class M>
+      iterator xref:#unordered_map_insert_or_assign_with_hint[insert_or_assign](const_iterator hint, const key_type& k, M&& obj);
+    template<class M>
+      iterator xref:#unordered_map_insert_or_assign_with_hint[insert_or_assign](const_iterator hint, key_type&& k, M&& obj);
+
     node_type xref:#unordered_map_extract_by_iterator[extract](const_iterator position);
     node_type xref:#unordered_map_extract_by_key[extract](const key_type& k);
     template<class K> node_type xref:#unordered_map_transparent_extract_by_key[extract](K&& k);
@@ -861,6 +878,148 @@ Inserts a range of elements into the container. Elements are inserted if and onl
 Requires:;; `value_type` is https://en.cppreference.com/w/cpp/named_req/EmplaceConstructible[EmplaceConstructible^] into `X` from `*first`.
 Throws:;; When inserting a single element, if an exception is thrown by an operation other than a call to `hasher` the function has no effect.
 Notes:;; Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor. +
++
+Pointers and references to elements are never invalidated.
+
+---
+
+==== try_emplace
+```c++
+template<class... Args>
+  std::pair<iterator, bool> try_emplace(const key_type& k, Args&&... args);
+template<class... Args>
+  std::pair<iterator, bool> try_emplace(key_type&& k, Args&&... args);
+```
+
+Inserts a new node into the container if there is no existing element with key `k` contained within it.
+
+If there is an existing element with key `k` this function does nothing.
+
+[horizontal]
+Returns:;; The bool component of the return type is true if an insert took place. +
++
+If an insert took place, then the iterator points to the newly inserted element. Otherwise, it points to the element with equivalent key.
+Throws:;; If an exception is thrown by an operation other than a call to `hasher` the function has no effect.
+Notes:;; This function is similiar to xref:#unordered_map_emplace[emplace] except the `value_type` is constructed using: +
++
+--
+```c++
+value_type(std::piecewise_construct,
+           std::forward_as_tuple(boost::forward<Key>(k)),
+           std::forward_as_tuple(boost::forward<Args>(args)...))
+```
+
+instead of xref:#unordered_map_emplace[emplace] which simply forwards all arguments to ``value_type``'s constructor.
+
+Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.
+
+Pointers and references to elements are never invalidated.
+
+If the compiler doesn't support variadic template arguments or rvalue references, this is emulated for up to `10` arguments, with no support for rvalue references or move semantics.
+
+Since existing `std::pair` implementations don't support `std::piecewise_construct` this emulates it, but using `boost::unordered::piecewise_construct`.
+--
+
+---
+
+==== try_emplace with Hint
+```c++
+template<class... Args>
+  iterator try_emplace(const_iterator hint, const key_type& k, Args&&... args);
+template<class... Args>
+  iterator try_emplace(const_iterator hint, key_type&& k, Args&&... args);
+```
+
+Inserts a new node into the container if there is no existing element with key `k` contained within it.
+
+If there is an existing element with key `k` this function does nothing.
+
+`hint` is a suggestion to where the element should be inserted.
+
+[horizontal]
+Returns:;; If an insert took place, then the iterator points to the newly inserted element. Otherwise, it points to the element with equivalent key.
+Throws:;; If an exception is thrown by an operation other than a call to `hasher` the function has no effect.
+Notes:;; This function is similiar to xref:#unordered_map_emplace_hint[emplace_hint] except the `value_type` is constructed using: +
++
+--
+```c++
+value_type(std::piecewise_construct,
+           std::forward_as_tuple(boost::forward<Key>(k)),
+           std::forward_as_tuple(boost::forward<Args>(args)...))
+```
+
+instead of xref:#unordered_map_emplace_hint[emplace_hint] which simply forwards all arguments to ``value_type``'s constructor.
+
+The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same key.
+
+Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.
+
+Pointers and references to elements are never invalidated.
+
+If the compiler doesn't support variadic template arguments or rvalue references, this is emulated for up to `10` arguments, with no support for rvalue references or move semantics.
+
+Since existing `std::pair` implementations don't support `std::piecewise_construct` this emulates it, but using `boost::unordered::piecewise_construct`.
+--
+
+---
+
+==== insert_or_assign
+```c++
+template<class M>
+  std::pair<iterator, bool> insert_or_assign(const key_type& k, M&& obj);
+template<class M>
+  std::pair<iterator, bool> insert_or_assign(key_type&& k, M&& obj);
+```
+
+Inserts a new element into the container or updates an existing one by assigning to the contained value.
+
+If there is an element with key `k`, then it is updated by assigning `boost::forward<M>(obj)`.
+
+If there is no such element, it is added to the container as:
+```c++
+value_type(std::piecewise_construct,
+           std::forward_as_tuple(boost::forward<Key>(k)),
+           std::forward_as_tuple(boost::forward<M>(obj)))
+```
+
+[horizontal]
+Returns:;; The bool component of the return type is true if an insert took place. +
++
+If an insert took place, then the iterator points to the newly inserted element. Otherwise, it points to the element with equivalent key.
+Throws:;; If an exception is thrown by an operation other than a call to `hasher` the function has no effect.
+Notes:;; Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor. +
++
+Pointers and references to elements are never invalidated.
+
+---
+
+==== insert_or_assign with Hint
+```c++
+template<class M>
+  iterator insert_or_assign(const_iterator hint, const key_type& k, M&& obj);
+template<class M>
+  iterator insert_or_assign(const_iterator hint, key_type&& k, M&& obj);
+```
+
+Inserts a new element into the container or updates an existing one by assigning to the contained value.
+
+If there is an element with key `k`, then it is updated by assigning `boost::forward<M>(obj)`.
+
+If there is no such element, it is added to the container as:
+```c++
+value_type(std::piecewise_construct,
+           std::forward_as_tuple(boost::forward<Key>(k)),
+           std::forward_as_tuple(boost::forward<M>(obj)))
+```
+
+`hint` is a suggestion to where the element should be inserted.
+
+[horizontal]
+Returns:;; If an insert took place, then the iterator points to the newly inserted element. Otherwise, it points to the element with equivalent key.
+Throws:;; If an exception is thrown by an operation other than a call to `hasher` the function has no effect.
+Notes:;; The standard is fairly vague on the meaning of the hint. But the only practical way to use it, and the only way that Boost.Unordered supports is to point to an existing element with the same key. +
++
+Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor. +
 +
 Pointers and references to elements are never invalidated.
 
