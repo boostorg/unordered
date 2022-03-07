@@ -15,9 +15,11 @@
 # include "absl/container/flat_hash_map.h"
 #endif
 #include <unordered_map>
-#include <map>
+#include <vector>
+#include <memory>
 #include <cstdint>
 #include <iostream>
+#include <iomanip>
 #include <chrono>
 
 using namespace std::chrono_literals;
@@ -187,11 +189,66 @@ template<class Map> BOOST_NOINLINE void test_erase( Map& map, std::chrono::stead
     std::cout << std::endl;
 }
 
-static std::vector< std::pair<std::string, long long> > times;
+// counting allocator
+
+static std::size_t s_alloc_bytes = 0;
+static std::size_t s_alloc_count = 0;
+
+template<class T> struct allocator
+{
+    using value_type = T;
+
+    allocator() = default;
+
+    template<class U> allocator( allocator<U> const & ) noexcept
+    {
+    }
+
+    template<class U> bool operator==( allocator<U> const & ) const noexcept
+    {
+        return true;
+    }
+
+    template<class U> bool operator!=( allocator<U> const& ) const noexcept
+    {
+        return false;
+    }
+
+    T* allocate( std::size_t n ) const
+    {
+        s_alloc_bytes += n;
+        s_alloc_count++;
+
+        return std::allocator<T>().allocate( n );
+    }
+
+    void deallocate( T* p, std::size_t n ) const noexcept
+    {
+        s_alloc_bytes -= n;
+        s_alloc_count--;
+
+        std::allocator<T>().deallocate( p, n );
+    }
+};
+
+//
+
+struct record
+{
+    std::string label_;
+    long long time_;
+    std::size_t bytes_;
+    std::size_t count_;
+};
+
+static std::vector<record> times;
 
 template<template<class...> class Map> BOOST_NOINLINE void test( char const* label )
 {
     std::cout << label << ":\n\n";
+
+    s_alloc_bytes = 0;
+    s_alloc_count = 0;
 
     Map<std::uint32_t, std::uint32_t> map;
 
@@ -199,6 +256,11 @@ template<template<class...> class Map> BOOST_NOINLINE void test( char const* lab
     auto t1 = t0;
 
     test_insert( map, t1 );
+
+    std::cout << "Memory: " << s_alloc_bytes << " bytes in " << s_alloc_count << " allocations\n\n";
+
+    record rec = { label, 0, s_alloc_bytes, s_alloc_count };
+
     test_lookup( map, t1 );
     test_iteration( map, t1 );
     test_lookup( map, t1 );
@@ -207,7 +269,8 @@ template<template<class...> class Map> BOOST_NOINLINE void test( char const* lab
     auto tN = std::chrono::steady_clock::now();
     std::cout << "Total: " << ( tN - t0 ) / 1ms << " ms\n\n";
 
-    times.push_back( { label, ( tN - t0 ) / 1ms } );
+    rec.time_ = ( tN - t0 ) / 1ms;
+    times.push_back( rec );
 }
 
 // multi_index emulation of unordered_map
@@ -224,23 +287,42 @@ template<class K, class V> using multi_index_map = multi_index_container<
   pair<K, V>,
   indexed_by<
     hashed_unique< member<pair<K, V>, K, &pair<K, V>::first> >
-  >
+  >,
+  ::allocator< pair<K, V> >
 >;
+
+// aliases using the counting allocator
+
+template<class K, class V> using allocator_for = ::allocator< std::pair<K const, V> >;
+
+template<class K, class V> using std_unordered_map =
+    std::unordered_map<K, V, std::hash<K>, std::equal_to<K>, allocator_for<K, V>>;
+
+template<class K, class V> using boost_unordered_map =
+    boost::unordered_map<K, V, boost::hash<K>, std::equal_to<K>, allocator_for<K, V>>;
+
+#ifdef HAVE_ABSEIL
+
+template<class K, class V> using absl_node_hash_map =
+    absl::node_hash_map<K, V, absl::container_internal::hash_default_hash<K>, absl::container_internal::hash_default_eq<K>, allocator_for<K, V>>;
+
+template<class K, class V> using absl_flat_hash_map =
+    absl::flat_hash_map<K, V, absl::container_internal::hash_default_hash<K>, absl::container_internal::hash_default_eq<K>, allocator_for<K, V>>;
+
+#endif
 
 int main()
 {
     init_indices();
 
-    test<std::unordered_map>( "std::unordered_map" );
-    test<boost::unordered_map>( "boost::unordered_map" );
+    test<std_unordered_map>( "std::unordered_map" );
+    test<boost_unordered_map>( "boost::unordered_map" );
     test<multi_index_map>( "multi_index_map" );
-
-    // test<std::map>( "std::map" );
 
 #ifdef HAVE_ABSEIL
 
-    test<absl::node_hash_map>( "absl::node_hash_map" );
-    test<absl::flat_hash_map>( "absl::flat_hash_map" );
+    test<absl_node_hash_map>( "absl::node_hash_map" );
+    test<absl_flat_hash_map>( "absl::flat_hash_map" );
 
 #endif
 
@@ -248,7 +330,7 @@ int main()
 
     for( auto const& x: times )
     {
-        std::cout << x.first << ": " << x.second << " ms\n";
+        std::cout << std::setw( 25 ) << ( x.label_ + ": " ) << std::setw( 5 ) << x.time_ << " ms, " << std::setw( 8 ) << x.bytes_ << " bytes in " << x.count_ << " allocations\n";
     }
 }
 

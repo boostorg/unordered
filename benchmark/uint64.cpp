@@ -189,6 +189,8 @@ template<class Map> BOOST_NOINLINE void test_erase( Map& map, std::chrono::stead
     std::cout << std::endl;
 }
 
+// counting allocator
+
 static std::size_t s_alloc_bytes = 0;
 static std::size_t s_alloc_count = 0;
 
@@ -229,6 +231,8 @@ template<class T> struct allocator
     }
 };
 
+//
+
 struct record
 {
     std::string label_;
@@ -243,10 +247,10 @@ template<template<class...> class Map> BOOST_NOINLINE void test( char const* lab
 {
     std::cout << label << ":\n\n";
 
-    Map<std::uint64_t, std::uint64_t> map;
-
     s_alloc_bytes = 0;
     s_alloc_count = 0;
+
+    Map<std::uint64_t, std::uint64_t> map;
 
     auto t0 = std::chrono::steady_clock::now();
     auto t1 = t0;
