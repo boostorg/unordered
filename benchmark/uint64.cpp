@@ -216,7 +216,7 @@ template<class T> struct allocator
 
     T* allocate( std::size_t n ) const
     {
-        s_alloc_bytes += n;
+        s_alloc_bytes += n * sizeof(T);
         s_alloc_count++;
 
         return std::allocator<T>().allocate( n );
@@ -224,7 +224,7 @@ template<class T> struct allocator
 
     void deallocate( T* p, std::size_t n ) const noexcept
     {
-        s_alloc_bytes -= n;
+        s_alloc_bytes -= n * sizeof(T);
         s_alloc_count--;
 
         std::allocator<T>().deallocate( p, n );
@@ -330,7 +330,7 @@ int main()
 
     for( auto const& x: times )
     {
-        std::cout << std::setw( 25 ) << ( x.label_ + ": " ) << std::setw( 5 ) << x.time_ << " ms, " << std::setw( 8 ) << x.bytes_ << " bytes in " << x.count_ << " allocations\n";
+        std::cout << std::setw( 25 ) << ( x.label_ + ": " ) << std::setw( 5 ) << x.time_ << " ms, " << std::setw( 9 ) << x.bytes_ << " bytes in " << x.count_ << " allocations\n";
     }
 }
 
