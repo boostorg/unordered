@@ -369,21 +369,28 @@ int main()
 {
     init_indices();
 
-    test<std_unordered_map>( "std::unordered_map" );
-    test<std_unordered_map_fnv1a>( "std::unordered_map, FNV-1a" );
-    test<boost_unordered_map>( "boost::unordered_map" );
-    test<boost_unordered_map_fnv1a>( "boost::unordered_map, FNV-1a" );
-    test<multi_index_map>( "multi_index_map" );
-    test<multi_index_map_fnv1a>( "multi_index_map, FNV-1a" );
+#if 0
 
-    // test<std::map>( "std::map" );
+    test<std_unordered_map>( "std::unordered_map" );
+    test<boost_unordered_map>( "boost::unordered_map" );
+    test<multi_index_map>( "multi_index_map" );
 
 #ifdef HAVE_ABSEIL
 
     test<absl_node_hash_map>( "absl::node_hash_map" );
-    test<absl_node_hash_map_fnv1a>( "absl::node_hash_map, FNV-1a" );
-
     test<absl_flat_hash_map>( "absl::flat_hash_map" );
+
+#endif
+
+#endif
+
+    test<std_unordered_map_fnv1a>( "std::unordered_map, FNV-1a" );
+    test<boost_unordered_map_fnv1a>( "boost::unordered_map, FNV-1a" );
+    test<multi_index_map_fnv1a>( "multi_index_map, FNV-1a" );
+
+#ifdef HAVE_ABSEIL
+
+    test<absl_node_hash_map_fnv1a>( "absl::node_hash_map, FNV-1a" );
     test<absl_flat_hash_map_fnv1a>( "absl::flat_hash_map, FNV-1a" );
 
 #endif
