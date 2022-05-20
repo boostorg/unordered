@@ -12,6 +12,7 @@
 #define BOOST_UNORDERED_OBJECTS_MINIMAL_HEADER
 
 #include <boost/core/lightweight_test.hpp>
+#include <boost/core/pointer_traits.hpp>
 #include <boost/move/move.hpp>
 #include <cstddef>
 #include <utility>
@@ -311,12 +312,16 @@ namespace test {
         return tmp;
       }
       ptr operator+(std::ptrdiff_t s) const { return ptr<T>(ptr_ + s); }
-      friend ptr operator+(std::ptrdiff_t s, ptr p)
-      {
-        return ptr<T>(s + p.ptr_);
-      }
+      friend ptr operator+(std::ptrdiff_t s, ptr p) { return ptr<T>(s + p.ptr_); }
+
+      std::ptrdiff_t operator-(ptr p) const { return ptr_ - p.ptr_; }
+      ptr operator-(std::ptrdiff_t s) const { return ptr(ptr_ - s); }
       T& operator[](std::ptrdiff_t s) const { return ptr_[s]; }
       bool operator!() const { return !ptr_; }
+
+      static ptr pointer_to(T& p) {
+        return ptr(&p);
+      }
 
       // I'm not using the safe bool idiom because the containers should be
       // able to cope with bool conversions.
@@ -636,5 +641,15 @@ namespace test {
 #if defined(BOOST_MSVC)
 #pragma warning(pop)
 #endif
+
+namespace boost {
+  template <> struct pointer_traits< ::test::minimal::void_ptr>
+  {
+    template <class U> struct rebind_to
+    {
+      typedef ::test::minimal::ptr<U> type;
+    };
+  };
+}
 
 #endif

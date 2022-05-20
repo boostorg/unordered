@@ -521,10 +521,21 @@ namespace test {
       ++ptr_;
       return tmp;
     }
+
     ptr operator+(std::ptrdiff_t s) const { return ptr<T>(ptr_ + s); }
     friend ptr operator+(std::ptrdiff_t s, ptr p) { return ptr<T>(s + p.ptr_); }
+
+    std::ptrdiff_t operator-(ptr p) const { return ptr_ - p.ptr_; }
+    ptr operator-(std::ptrdiff_t s) const { return ptr(ptr_ - s); }
+
+    ptr& operator+=(std::ptrdiff_t s) { ptr_ += s; return *this; }
+
     T& operator[](std::ptrdiff_t s) const { return ptr_[s]; }
     bool operator!() const { return !ptr_; }
+
+    static ptr pointer_to(T& p) {
+      return ptr(&p);
+    }
 
     // I'm not using the safe bool idiom because the containers should be
     // able to cope with bool conversions.
@@ -700,5 +711,15 @@ namespace test {
     return x == y;
   }
 }
+
+namespace boost {
+  template <> struct pointer_traits< ::test::void_ptr>
+  {
+    template <class U> struct rebind_to
+    {
+      typedef ::test::ptr<U> type;
+    };
+  };
+} // namespace boost
 
 #endif
