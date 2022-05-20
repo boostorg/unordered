@@ -11,6 +11,7 @@
 #if !defined(BOOST_UNORDERED_OBJECTS_MINIMAL_HEADER)
 #define BOOST_UNORDERED_OBJECTS_MINIMAL_HEADER
 
+#include <boost/core/lightweight_test.hpp>
 #include <boost/move/move.hpp>
 #include <cstddef>
 #include <utility>
