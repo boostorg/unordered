@@ -20,24 +20,16 @@
 std::size_t total_allocation = 0;
 std::size_t num_allocations = 0;
 
-struct B
-{
-  B() : i(++count) {}
-  static int count;
-  int i;
-  bool operator==(B const& b) const { return i == b.i; };
-  bool operator!=(B const& b) const { return i != b.i; };
-};
-
-int B::count = 0;
-
-template <typename T> struct A : B
+template <typename T> struct A
 {
   typedef T value_type;
 
-  A() {}
+  static int count;
+  int i;
 
-  template <class U> A(const A<U>&) BOOST_NOEXCEPT {}
+  A() : i(++count) {}
+
+  template <class U> A(const A<U>& a) BOOST_NOEXCEPT : i(a.i) {}
 
   T* allocate(std::size_t n)
   {
@@ -51,7 +43,12 @@ template <typename T> struct A : B
     total_allocation -= n * sizeof(T);
     std::free(p);
   }
+
+  bool operator==(A const& a) const { return i == a.i; };
+  bool operator!=(A const& a) const { return i != a.i; };
 };
+
+template <class T> int A<T>::count = 0;
 
 template <class UnorderedContainer> void bucket_count_constructor()
 {
@@ -184,6 +181,30 @@ template <class UnorderedContainer> void rehash_tests()
 }
 
 UNORDERED_AUTO_TEST (unordered_set_reserve) {
+  {
+    // prove Allocator invariants
+    // from cppref:
+    // Given:
+    // * A, an Allocator type for type T
+    // * B, the corresponding Allocator type for some cv-unqualified object type
+    //   U (as obtained by rebinding A)
+    //
+    // Expression:
+    // A a(b)
+    //
+    // Return Type:
+    // Constructs `a` such that `B(a)==b` and `A(b)==a`.
+    // (Note: This implies that all allocators related by rebind maintain each
+    // other's resources, such as memory pools.)
+    //
+    //
+    typedef boost::allocator_rebind<A<int>, float>::type alloc_rebound;
+    alloc_rebound b;
+    A<int> a(b);
+    BOOST_ASSERT(alloc_rebound(a) == b);
+    BOOST_ASSERT(A<int>(b) == a);
+  }
+
   typedef boost::unordered_set<int, boost::hash<int>, std::equal_to<int>,
     A<int> >
     unordered_set;
