@@ -185,7 +185,7 @@ namespace test {
   };
 
   // Note: This is a deliberately bad hash function.
-  class hash
+  class hash BOOST_FINAL
   {
     int type_;
 
@@ -298,7 +298,7 @@ namespace test {
     }
   };
 
-  class equal_to
+  class equal_to BOOST_FINAL
   {
     int type_;
 
