@@ -500,11 +500,9 @@ namespace test {
     friend class const_ptr<T>;
     friend struct void_ptr;
 
-    T* ptr_;
-
-    ptr(T* x) : ptr_(x) {}
-
   public:
+    T* ptr_;
+    ptr(T* x) : ptr_(x) {}
     ptr() : ptr_(0) {}
     explicit ptr(void_ptr const& x) : ptr_((T*)x.ptr_) {}
 
