@@ -290,7 +290,7 @@ namespace test {
       }
     }
 
-    std::size_t operator()(int x1, int x2) const { return x1 < x2; }
+    bool operator()(int x1, int x2) const { return x1 < x2; }
 
     friend bool operator==(less const& x1, less const& x2)
     {
@@ -331,7 +331,7 @@ namespace test {
       }
     }
 
-    std::size_t operator()(int x1, int x2) const { return x1 == x2; }
+    bool operator()(int x1, int x2) const { return x1 == x2; }
 
     friend bool operator==(equal_to const& x1, equal_to const& x2)
     {
