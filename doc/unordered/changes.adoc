@@ -6,6 +6,12 @@
 :github-pr-url: https://github.com/boostorg/unordered/pull
 :cpp: C++
 
+== Release 1.80.0
+
+* Refactor internal implementation to be dramatically faster
+* Fix long-standing bug where `final`-qualified Hasher and KeyEqual couldn't be 
+  used
+
 == Release 1.79.0
 
 * Improved {cpp}20 support:

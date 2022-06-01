@@ -1,5 +1,6 @@
 
 # Copyright 2006-2008 Daniel James.
+# Copyright 2022 Christian Mazakas
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -69,14 +70,13 @@ test-suite unordered
         [ run unordered/rehash_tests.cpp ]
         [ run unordered/equality_tests.cpp ]
         [ run unordered/swap_tests.cpp ]
-        [ run unordered/detail_tests.cpp ]
         [ run unordered/deduction_tests.cpp ]
         [ run unordered/scoped_allocator.cpp : : : <toolset>msvc-14.0:<build>no ]
         [ run unordered/transparent_tests.cpp ]
         [ run unordered/reserve_tests.cpp ]
         [ run unordered/contains_tests.cpp ]
-        [ run unordered/mix_policy.cpp ]
         [ run unordered/erase_if.cpp ]
+        [ run unordered/scary_tests.cpp ]
 
         [ run unordered/compile_set.cpp : :
             : <define>BOOST_UNORDERED_USE_MOVE
