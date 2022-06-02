@@ -19,7 +19,6 @@
 #include <boost/core/bit.hpp>
 #include <boost/core/no_exceptions_support.hpp>
 #include <boost/core/pointer_traits.hpp>
-#include <boost/detail/select_type.hpp>
 #include <boost/limits.hpp>
 #include <boost/move/move.hpp>
 #include <boost/preprocessor/arithmetic/inc.hpp>
