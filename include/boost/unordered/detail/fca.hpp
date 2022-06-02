@@ -118,7 +118,6 @@ to normal separate chaining implementations.
 #pragma once
 #endif
 
-#include <boost/align/alignment_of.hpp>
 #include <boost/core/addressof.hpp>
 #include <boost/core/allocator_access.hpp>
 #include <boost/core/bit.hpp>
@@ -151,6 +150,7 @@ to normal separate chaining implementations.
 #include <boost/preprocessor/seq/size.hpp>
 #include <boost/swap.hpp>
 #include <boost/type_traits/aligned_storage.hpp>
+#include <boost/type_traits/alignment_of.hpp>
 
 #include <climits>
 
