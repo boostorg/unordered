@@ -14,6 +14,7 @@ target_include_directories(boost_unordered INTERFACE include)
 
 target_link_libraries(boost_unordered
   INTERFACE
+    Boost::align
     Boost::assert
     Boost::config
     Boost::container
