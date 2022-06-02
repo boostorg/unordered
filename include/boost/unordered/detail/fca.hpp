@@ -118,13 +118,13 @@ to normal separate chaining implementations.
 #pragma once
 #endif
 
-#include <boost/align/alignment_of.hpp>
 #include <boost/core/addressof.hpp>
 #include <boost/core/allocator_access.hpp>
 #include <boost/core/bit.hpp>
 #include <boost/core/empty_value.hpp>
 #include <boost/core/no_exceptions_support.hpp>
 #include <boost/cstdint.hpp>
+#include <boost/type_traits/alignment_of.hpp>
 
 // `iterator_facade` has transitive dependencies on Boost.MPL; one of the
 // headers is generating a `-Wsign-conversion` warning which has an open PR to
