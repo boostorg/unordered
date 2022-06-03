@@ -49,6 +49,10 @@ jobs:
             cxxstd: "03,11,14,17,2a"
             os: ubuntu-20.04
             install: g++-11
+          - toolset: gcc-12
+            cxxstd: "03,11,14,17,2a"
+            os: ubuntu-22.04
+            install: g++-12
             sanitizers: true
           - toolset: clang
             compiler: clang++-3.9
@@ -97,6 +101,16 @@ jobs:
             compiler: clang++-12
             cxxstd: "03,11,14,17,2a"
             os: ubuntu-20.04
+          - toolset: clang
+            compiler: clang++-13
+            cxxstd: "03,11,14,17,2a"
+            os: ubuntu-22.04
+            install: clang-13
+          - toolset: clang
+            compiler: clang++-14
+            cxxstd: "03,11,14,17,2a"
+            os: ubuntu-22.04
+            install: clang-14
             sanitizers: true
           - toolset: clang
             cxxstd: "03,11,14,17"
