@@ -212,25 +212,34 @@ namespace boost {
         }
 
 #if defined(BOOST_UNORDERED_FCA_FASTMOD_SUPPORT)
-        // https://github.com/lemire/fastmod
+        // We emulate the techniques taken from:
+        // Faster Remainder by Direct Computation: Applications to Compilers and
+        // Software Libraries
+        // https://arxiv.org/abs/1902.01961
+        //
+        // In essence, use fancy math to directly calculate the remainder (aka
+        // modulo) exploiting how compilers transform division
+        //
 
 #if defined(_MSC_VER)
-        static inline uint64_t mul128_u32(uint64_t lowbits, uint32_t d)
+        static inline uint64_t get_remainder(uint64_t fractional, uint32_t d)
         {
-          return __umulh(lowbits, d);
+          // use fancy msvc instrinsic when available instead of using `>> 64`
+          //
+          return __umulh(fractional, d);
         }
 #else
-        static inline uint64_t mul128_u32(uint64_t lowbits, uint32_t d)
+        static inline uint64_t get_remainder(uint64_t fractional, uint32_t d)
         {
           __extension__ typedef unsigned __int128 uint128;
-          return static_cast<uint64_t>(((uint128)lowbits * d) >> 64);
+          return static_cast<uint64_t>(((uint128)fractional * d) >> 64);
         }
 #endif /* defined(_MSC_VER) */
 
-        static inline uint32_t fastmod_u32(uint32_t a, uint64_t M, uint32_t d)
+        static inline uint32_t fast_modulo(uint32_t a, uint64_t M, uint32_t d)
         {
-          uint64_t lowbits = M * a;
-          return (uint32_t)(mul128_u32(lowbits, d));
+          uint64_t fractional = M * a;
+          return (uint32_t)(get_remainder(fractional, d));
         }
 #endif /* defined(BOOST_UNORDERED_FCA_FASTMOD_SUPPORT) */
 
@@ -241,13 +250,13 @@ namespace boost {
 #if defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T)
           std::size_t sizes_under_32bit = inv_sizes32_len;
           if (BOOST_LIKELY(size_index < sizes_under_32bit)) {
-            return fastmod_u32(uint32_t(hash) + uint32_t(hash >> 32),
+            return fast_modulo(uint32_t(hash) + uint32_t(hash >> 32),
               inv_sizes32[size_index], uint32_t(sizes[size_index]));
           } else {
             return positions[size_index - sizes_under_32bit](hash);
           }
 #else
-          return fastmod_u32(
+          return fast_modulo(
             hash, inv_sizes32[size_index], uint32_t(sizes[size_index]));
 #endif /* defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T) */
 #else
