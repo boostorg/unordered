@@ -1070,13 +1070,6 @@ namespace boost {
             boost::get<Is>(tuple)...);
         }
 
-        template <class... Args>
-        boost::mp11::index_sequence_for<Args...> make_index_seq(
-          boost::mp11::mp_list<Args...>)
-        {
-          return boost::mp11::index_sequence_for<Args...>{};
-        }
-
         template <class T>
         using add_lvalue_reference_t =
           typename std::add_lvalue_reference<T>::type;
@@ -1089,8 +1082,10 @@ namespace boost {
         {
           using list = boost::mp11::mp_remove<boost::mp11::mp_list<Args...>,
             boost::tuples::null_type>;
+          using list_size = boost::mp11::mp_size<list>;
+          using index_seq = boost::mp11::make_index_sequence<list_size::value>;
 
-          return to_std_tuple_impl(list{}, tuple, make_index_seq(list{}));
+          return to_std_tuple_impl(list{}, tuple, index_seq{});
         }
 
         template <typename Alloc, typename A, typename B, typename A0,
