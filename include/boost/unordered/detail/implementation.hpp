@@ -1548,6 +1548,21 @@ namespace boost {
       // If an exception is thrown between these two calls, use
       // 'cleanup_spare_functions' to destroy the unused constructed functions.
 
+#if defined(_GLIBCXX_HAVE_BUILTIN_LAUNDER)
+      // gcc-12 warns when accessing the `current_functions` of our `functions`
+      // class below with `-Wmaybe-unitialized`. By laundering the pointer, we
+      // silence the warning and assure the compiler that a valid object exists
+      // in that region of storage. This warning is also generated in C++03
+      // which does not have `std::launder`. The compiler builtin is always
+      // available, regardless of the C++ standard used when compiling.
+      template <class T> T* launder(T* p) BOOST_NOEXCEPT
+      {
+        return __builtin_launder(p);
+      }
+#else
+      template <class T> T* launder(T* p) BOOST_NOEXCEPT { return p; }
+#endif
+
       template <class H, class P> class functions
       {
       public:
@@ -1604,14 +1619,16 @@ namespace boost {
 
         function_pair const& current_functions() const
         {
-          return *static_cast<function_pair const*>(
-            static_cast<void const*>(funcs_[current_ & 1].address()));
+          return *::boost::unordered::detail::launder(
+            static_cast<function_pair const*>(
+              static_cast<void const*>(funcs_[current_ & 1].address())));
         }
 
         function_pair& current_functions()
         {
-          return *static_cast<function_pair*>(
-            static_cast<void*>(funcs_[current_ & 1].address()));
+          return *::boost::unordered::detail::launder(
+            static_cast<function_pair*>(
+              static_cast<void*>(funcs_[current_ & 1].address())));
         }
 
         void construct_spare_functions(function_pair const& f)
