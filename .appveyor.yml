@@ -90,6 +90,7 @@ environment:
       B2_ADDRESS_MODEL: 64
       B2_CXXSTD: 03,11,14,1z
       B2_TOOLSET: gcc
+      MAYFAIL: true
 
     - FLAVOR: mingw32
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
@@ -97,6 +98,7 @@ environment:
       ADDPATH: C:\mingw\bin;
       B2_CXXSTD: 03,11,14,1z
       B2_TOOLSET: gcc
+      MAYFAIL: true
 
     - FLAVOR: mingw64
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
