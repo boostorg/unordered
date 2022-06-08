@@ -54,18 +54,36 @@ environment:
     - FLAVOR: Visual Studio 2019
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       B2_CXXFLAGS: -permissive-
-      B2_CXXSTD: 14,17,2a
+      B2_CXXSTD: 14,17
       B2_TOOLSET: msvc-14.2
 
     - FLAVOR: Visual Studio 2022
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
       B2_CXXFLAGS: -permissive-
-      B2_CXXSTD: 14,17,20
+      B2_CXXSTD: 14,17
       B2_TOOLSET: msvc-14.3
 
-    - FLAVOR: clang-cl
+    # C++20 Jobs split out from above due to build timeout
+    - FLAVOR: Visual Studio 2019 C++2a
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-      B2_CXXSTD: 11,14,17,latest
+      B2_CXXFLAGS: -permissive-
+      B2_CXXSTD: 2a
+      B2_TOOLSET: msvc-14.2
+
+    - FLAVOR: Visual Studio 2022 C++20
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
+      B2_CXXFLAGS: -permissive-
+      B2_CXXSTD: 20
+      B2_TOOLSET: msvc-14.3
+
+    - FLAVOR: clang-cl C++11, C++14
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+      B2_CXXSTD: 11,14
+      B2_TOOLSET: clang-win
+    # Extra job as compilation takes to long
+    - FLAVOR: clang-cl C++17, C++latest
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+      B2_CXXSTD: 17,latest
       B2_TOOLSET: clang-win
 
     - FLAVOR: cygwin (32-bit)
