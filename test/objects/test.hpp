@@ -196,52 +196,52 @@ namespace test {
 
     std::size_t operator()(object const& x) const
     {
-      unsigned result;
+      std::size_t result;
       switch (type_) {
       case 1:
-        result = static_cast<unsigned>(x.tag1_);
+        result = static_cast<std::size_t>(x.tag1_);
         break;
       case 2:
-        result = static_cast<unsigned>(x.tag2_);
+        result = static_cast<std::size_t>(x.tag2_);
         break;
       default:
         result =
-          static_cast<unsigned>(x.tag1_) + static_cast<unsigned>(x.tag2_);
+          static_cast<std::size_t>(x.tag1_) + static_cast<std::size_t>(x.tag2_);
       }
       return result;
     }
 
     std::size_t operator()(movable const& x) const
     {
-      unsigned result;
+      std::size_t result;
       switch (type_) {
       case 1:
-        result = static_cast<unsigned>(x.tag1_);
+        result = static_cast<std::size_t>(x.tag1_);
         break;
       case 2:
-        result = static_cast<unsigned>(x.tag2_);
+        result = static_cast<std::size_t>(x.tag2_);
         break;
       default:
         result =
-          static_cast<unsigned>(x.tag1_) + static_cast<unsigned>(x.tag2_);
+          static_cast<std::size_t>(x.tag1_) + static_cast<std::size_t>(x.tag2_);
       }
       return result;
     }
 
     std::size_t operator()(int x) const
     {
-      int result;
+      std::size_t result;
       switch (type_) {
       case 1:
-        result = x;
+        result = static_cast<std::size_t>(x);
         break;
       case 2:
-        result = x * 7;
+        result = static_cast<std::size_t>(x) * 7u;
         break;
       default:
-        result = x * 256;
+        result = static_cast<std::size_t>(x) * 256u;
       }
-      return static_cast<std::size_t>(result);
+      return result;
     }
 
     friend bool operator==(hash const& x1, hash const& x2)

@@ -195,17 +195,17 @@ namespace test {
 
       std::size_t hash_impl(object const& x) const
       {
-        unsigned result;
+        std::size_t result;
         switch (tag_) {
         case 1:
-          result = static_cast<unsigned>(x.tag1_);
+          result = static_cast<std::size_t>(x.tag1_);
           break;
         case 2:
-          result = static_cast<unsigned>(x.tag2_);
+          result = static_cast<std::size_t>(x.tag2_);
           break;
         default:
           result =
-            static_cast<unsigned>(x.tag1_) + static_cast<unsigned>(x.tag2_);
+            static_cast<std::size_t>(x.tag1_) + static_cast<std::size_t>(x.tag2_);
         }
         return result;
       }
