@@ -455,9 +455,9 @@ max load factor 5
 [cols="3*^.^a", frame=all, grid=all]
 |===
 
-|image::benchmarks/vs/scattered%20successful%20looukp.xlsx.practice.png[width=250,window=_blank,link=../diagrams/benchmarks/benchmarks/vs/scattered%20successful%20looukp.xlsx.practice.png]
-|image::benchmarks/vs/scattered%20successful%20looukp.xlsx.practice non-unique.png[width=250,window=_blank,link=../diagrams/benchmarks/benchmarks/vs/scattered%20successful%20looukp.xlsx.practice non-unique.png]
-|image::benchmarks/vs/scattered%20successful%20looukp.xlsx.practice non-unique 5.png[width=250,window=_blank,link=../diagrams/benchmarks/benchmarks/vs/scattered%20successful%20looukp.xlsx.practice non-unique 5.png]
+|image::benchmarks/vs/scattered%20successful%20looukp.xlsx.practice.png[width=250,window=_blank,link=../diagrams/benchmarks/vs/scattered%20successful%20looukp.xlsx.practice.png]
+|image::benchmarks/vs/scattered%20successful%20looukp.xlsx.practice non-unique.png[width=250,window=_blank,link=../diagrams/benchmarks/vs/scattered%20successful%20looukp.xlsx.practice non-unique.png]
+|image::benchmarks/vs/scattered%20successful%20looukp.xlsx.practice non-unique 5.png[width=250,window=_blank,link=../diagrams/benchmarks/vs/scattered%20successful%20looukp.xlsx.practice non-unique 5.png]
 
 h|non-duplicate elements
 h|duplicate elements
