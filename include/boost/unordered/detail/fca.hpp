@@ -124,25 +124,6 @@ to normal separate chaining implementations.
 #include <boost/core/empty_value.hpp>
 #include <boost/core/no_exceptions_support.hpp>
 #include <boost/cstdint.hpp>
-
-// `iterator_facade` has transitive dependencies on Boost.MPL; one of the
-// headers is generating a `-Wsign-conversion` warning which has an open PR to
-// address the issue but merging does not seem likely so for now create a rote
-// workaround.
-//
-// TODO: eventually remove this once MPL is fixed or we decide to migrate off of
-// the Boost.Iterator dependency.
-//
-#if defined(BOOST_GCC)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wsign-conversion"
-#pragma GCC diagnostic ignored "-Wconversion"
-#include <boost/iterator/iterator_facade.hpp>
-#pragma GCC diagnostic pop
-#else
-#include <boost/iterator/iterator_facade.hpp>
-#endif
-
 #include <boost/move/core.hpp>
 #include <boost/move/utility_core.hpp>
 #include <boost/preprocessor/seq/enum.hpp>
@@ -153,6 +134,7 @@ to normal separate chaining implementations.
 #include <boost/type_traits/alignment_of.hpp>
 
 #include <climits>
+#include <iterator>
 
 namespace boost {
   namespace unordered {
@@ -472,10 +454,7 @@ namespace boost {
         return ~(~(std::size_t(0)) >> (sizeof(std::size_t) * 8 - n));
       }
 
-      template <class Bucket>
-      struct grouped_bucket_iterator
-          : public boost::iterator_facade<grouped_bucket_iterator<Bucket>,
-              Bucket, boost::forward_traversal_tag>
+      template <class Bucket> struct grouped_bucket_iterator
       {
       public:
         typedef typename Bucket::bucket_pointer bucket_pointer;
@@ -483,8 +462,12 @@ namespace boost {
           typename boost::pointer_traits<bucket_pointer>::template rebind_to<
             bucket_group<Bucket> >::type bucket_group_pointer;
 
+        typedef Bucket value_type;
         typedef typename boost::pointer_traits<bucket_pointer>::difference_type
           difference_type;
+        typedef Bucket& reference;
+        typedef Bucket* pointer;
+        typedef std::forward_iterator_tag iterator_category;
 
       private:
         bucket_pointer p;
@@ -493,9 +476,38 @@ namespace boost {
       public:
         grouped_bucket_iterator() : p(), pbg() {}
 
-      private:
-        friend class boost::iterator_core_access;
+        reference operator*() const BOOST_NOEXCEPT { return dereference(); }
+        pointer operator->() const BOOST_NOEXCEPT
+        {
+          return boost::to_address(p);
+        }
 
+        grouped_bucket_iterator& operator++() BOOST_NOEXCEPT
+        {
+          increment();
+          return *this;
+        }
+
+        grouped_bucket_iterator operator++(int) BOOST_NOEXCEPT
+        {
+          grouped_bucket_iterator old = *this;
+          increment();
+          return old;
+        }
+
+        bool operator==(
+          grouped_bucket_iterator const& other) const BOOST_NOEXCEPT
+        {
+          return equal(other);
+        }
+
+        bool operator!=(
+          grouped_bucket_iterator const& other) const BOOST_NOEXCEPT
+        {
+          return !equal(other);
+        }
+
+      private:
         template <typename, typename, typename>
         friend class grouped_bucket_array;
 
@@ -533,12 +545,8 @@ namespace boost {
 
       template <class Node> struct const_grouped_local_bucket_iterator;
 
-      template <class Node>
-      struct grouped_local_bucket_iterator
-          : public boost::iterator_facade<grouped_local_bucket_iterator<Node>,
-              typename Node::value_type, boost::forward_traversal_tag>
+      template <class Node> struct grouped_local_bucket_iterator
       {
-
         typedef typename Node::node_pointer node_pointer;
 
       public:
@@ -551,9 +559,39 @@ namespace boost {
 
         grouped_local_bucket_iterator() : p() {}
 
-      private:
-        friend class boost::iterator_core_access;
+        reference operator*() const BOOST_NOEXCEPT { return dereference(); }
 
+        pointer operator->() const BOOST_NOEXCEPT
+        {
+          return boost::to_address(p);
+        }
+
+        grouped_local_bucket_iterator& operator++() BOOST_NOEXCEPT
+        {
+          increment();
+          return *this;
+        }
+
+        grouped_local_bucket_iterator operator++(int) BOOST_NOEXCEPT
+        {
+          grouped_local_bucket_iterator old = *this;
+          increment();
+          return old;
+        }
+
+        bool operator==(
+          grouped_local_bucket_iterator const& other) const BOOST_NOEXCEPT
+        {
+          return equal(other);
+        }
+
+        bool operator!=(
+          grouped_local_bucket_iterator const& other) const BOOST_NOEXCEPT
+        {
+          return !equal(other);
+        }
+
+      private:
         template <typename, typename, typename>
         friend class grouped_bucket_array;
 
@@ -573,11 +611,7 @@ namespace boost {
         node_pointer p;
       };
 
-      template <class Node>
-      struct const_grouped_local_bucket_iterator
-          : public boost::iterator_facade<
-              const_grouped_local_bucket_iterator<Node>,
-              typename Node::value_type const, boost::forward_traversal_tag>
+      template <class Node> struct const_grouped_local_bucket_iterator
       {
         typedef typename Node::node_pointer node_pointer;
 
@@ -596,9 +630,39 @@ namespace boost {
         {
         }
 
-      private:
-        friend class boost::iterator_core_access;
+        reference operator*() const BOOST_NOEXCEPT { return dereference(); }
 
+        pointer operator->() const BOOST_NOEXCEPT
+        {
+          return boost::to_address(p);
+        }
+
+        const_grouped_local_bucket_iterator& operator++() BOOST_NOEXCEPT
+        {
+          increment();
+          return *this;
+        }
+
+        const_grouped_local_bucket_iterator operator++(int) BOOST_NOEXCEPT
+        {
+          const_grouped_local_bucket_iterator old = *this;
+          increment();
+          return old;
+        }
+
+        bool operator==(
+          const_grouped_local_bucket_iterator const& other) const BOOST_NOEXCEPT
+        {
+          return equal(other);
+        }
+
+        bool operator!=(
+          const_grouped_local_bucket_iterator const& other) const BOOST_NOEXCEPT
+        {
+          return !equal(other);
+        }
+
+      private:
         template <typename, typename, typename>
         friend class grouped_bucket_array;
 

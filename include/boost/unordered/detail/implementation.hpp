@@ -19,6 +19,7 @@
 #include <boost/core/bit.hpp>
 #include <boost/core/no_exceptions_support.hpp>
 #include <boost/core/pointer_traits.hpp>
+#include <boost/detail/select_type.hpp>
 #include <boost/limits.hpp>
 #include <boost/move/move.hpp>
 #include <boost/preprocessor/arithmetic/inc.hpp>
@@ -1730,10 +1731,7 @@ namespace boost {
       namespace iterator_detail {
         template <class Node, class Bucket> class c_iterator;
 
-        template <class Node, class Bucket>
-        class iterator
-            : public boost::iterator_facade<iterator<Node, Bucket>,
-                typename Node::value_type, boost::forward_traversal_tag>
+        template <class Node, class Bucket> class iterator
         {
         public:
           typedef typename Node::value_type value_type;
@@ -1745,6 +1743,50 @@ namespace boost {
 
           iterator() : p(), itb(){};
 
+          reference operator*() const BOOST_NOEXCEPT { return dereference(); }
+          pointer operator->() const BOOST_NOEXCEPT
+          {
+            pointer x = boost::addressof(p->value());
+            return x;
+          }
+
+          iterator& operator++() BOOST_NOEXCEPT
+          {
+            increment();
+            return *this;
+          }
+
+          iterator operator++(int) BOOST_NOEXCEPT
+          {
+            iterator old = *this;
+            increment();
+            return old;
+          }
+
+          bool operator==(iterator const& other) const BOOST_NOEXCEPT
+          {
+            return equal(other);
+          }
+
+          bool operator!=(iterator const& other) const BOOST_NOEXCEPT
+          {
+            return !equal(other);
+          }
+
+          bool operator==(
+            boost::unordered::detail::iterator_detail::c_iterator<Node,
+              Bucket> const& other) const BOOST_NOEXCEPT
+          {
+            return equal(other);
+          }
+
+          bool operator!=(
+            boost::unordered::detail::iterator_detail::c_iterator<Node,
+              Bucket> const& other) const BOOST_NOEXCEPT
+          {
+            return !equal(other);
+          }
+
         private:
           typedef typename Node::node_pointer node_pointer;
           typedef grouped_bucket_iterator<Bucket> bucket_iterator;
@@ -1754,13 +1796,19 @@ namespace boost {
 
           template <class Types> friend struct boost::unordered::detail::table;
           template <class N, class B> friend class c_iterator;
-          friend class boost::iterator_core_access;
 
           iterator(node_pointer p_, bucket_iterator itb_) : p(p_), itb(itb_) {}
 
           value_type& dereference() const BOOST_NOEXCEPT { return p->value(); }
 
           bool equal(const iterator& x) const BOOST_NOEXCEPT
+          {
+            return (p == x.p);
+          }
+
+          bool equal(
+            const boost::unordered::detail::iterator_detail::c_iterator<Node,
+              Bucket>& x) const BOOST_NOEXCEPT
           {
             return (p == x.p);
           }
@@ -1774,10 +1822,7 @@ namespace boost {
           }
         };
 
-        template <class Node, class Bucket>
-        class c_iterator
-            : public boost::iterator_facade<c_iterator<Node, Bucket>,
-                typename Node::value_type const, boost::forward_traversal_tag>
+        template <class Node, class Bucket> class c_iterator
         {
         public:
           typedef typename Node::value_type value_type;
@@ -1788,7 +1833,51 @@ namespace boost {
           typedef std::forward_iterator_tag iterator_category;
 
           c_iterator() : p(), itb(){};
-          c_iterator(iterator<Node, Bucket> it) : p(it.p), itb(it.itb){};
+          c_iterator(iterator<Node, Bucket> it) : p(it.p), itb(it.itb) {}
+
+          reference operator*() const BOOST_NOEXCEPT { return dereference(); }
+          pointer operator->() const BOOST_NOEXCEPT
+          {
+            pointer x = boost::addressof(p->value());
+            return x;
+          }
+
+          c_iterator& operator++() BOOST_NOEXCEPT
+          {
+            increment();
+            return *this;
+          }
+
+          c_iterator operator++(int) BOOST_NOEXCEPT
+          {
+            c_iterator old = *this;
+            increment();
+            return old;
+          }
+
+          bool operator==(c_iterator const& other) const BOOST_NOEXCEPT
+          {
+            return equal(other);
+          }
+
+          bool operator!=(c_iterator const& other) const BOOST_NOEXCEPT
+          {
+            return !equal(other);
+          }
+
+          bool operator==(
+            boost::unordered::detail::iterator_detail::iterator<Node,
+              Bucket> const& other) const BOOST_NOEXCEPT
+          {
+            return equal(other);
+          }
+
+          bool operator!=(
+            boost::unordered::detail::iterator_detail::iterator<Node,
+              Bucket> const& other) const BOOST_NOEXCEPT
+          {
+            return !equal(other);
+          }
 
         private:
           typedef typename Node::node_pointer node_pointer;
@@ -1798,7 +1887,7 @@ namespace boost {
           bucket_iterator itb;
 
           template <class Types> friend struct boost::unordered::detail::table;
-          friend class boost::iterator_core_access;
+          template <class, class> friend class iterator;
 
           c_iterator(node_pointer p_, bucket_iterator itb_) : p(p_), itb(itb_)
           {
