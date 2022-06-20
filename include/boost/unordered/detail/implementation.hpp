@@ -19,7 +19,6 @@
 #include <boost/core/bit.hpp>
 #include <boost/core/no_exceptions_support.hpp>
 #include <boost/core/pointer_traits.hpp>
-#include <boost/detail/select_type.hpp>
 #include <boost/limits.hpp>
 #include <boost/move/move.hpp>
 #include <boost/preprocessor/arithmetic/inc.hpp>
@@ -1698,10 +1697,9 @@ namespace boost {
       };
 
       template <typename T>
-      struct rv_ref
-        : boost::detail::if_true<boost::is_class<T>::value>::
-            BOOST_NESTED_TEMPLATE then<boost::unordered::detail::rv_ref_impl<T>,
-              please_ignore_this_overload>::type
+      struct rv_ref : boost::conditional<boost::is_class<T>::value,
+                        boost::unordered::detail::rv_ref_impl<T>,
+                        please_ignore_this_overload>::type
       {
       };
 
@@ -3507,8 +3505,8 @@ namespace boost {
                   sizeof(choice2::type)
         };
 
-        typedef typename boost::detail::if_true<value>::BOOST_NESTED_TEMPLATE
-          then<Key const&, no_key>::type type;
+        typedef
+          typename boost::conditional<value, Key const&, no_key>::type type;
       };
 
       template <class ValueType> struct set_extractor
