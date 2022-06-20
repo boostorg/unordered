@@ -2449,13 +2449,8 @@ namespace boost {
             k, this->hash_function(), this->key_eq());
         }
 
-#if defined(BOOST_MSVC)
-#pragma warning(push)
-#pragma warning(                                                               \
-  disable : 4714) // function 'function' marked as __forceinline not inlined
-#endif
         template <class Key, class Hash, class Pred>
-        BOOST_FORCEINLINE iterator transparent_find(
+        inline iterator transparent_find(
           Key const& k, Hash const& h, Pred const& pred) const
         {
           std::size_t const key_hash = h(k);
@@ -2468,10 +2463,6 @@ namespace boost {
 
           return this->end();
         }
-
-#if defined(BOOST_MSVC)
-#pragma warning(pop)
-#endif
 
         template <class Key>
         node_pointer* find_prev(Key const& key, bucket_iterator itb)
