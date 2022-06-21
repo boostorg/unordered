@@ -15,6 +15,7 @@
 #endif
 
 #include <boost/assert.hpp>
+#include <boost/config.hpp>
 #include <boost/core/allocator_traits.hpp>
 #include <boost/core/bit.hpp>
 #include <boost/core/no_exceptions_support.hpp>
@@ -57,6 +58,15 @@
 
 #if !defined(BOOST_NO_CXX11_HDR_TYPE_TRAITS)
 #include <type_traits>
+#endif
+
+#if __SSE2__
+#include <emmintrin.h>
+#endif
+
+#if defined(__SSE2__) || \
+    defined(_M_X64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2)
+#define BOOST_UNORDERED_SSE2_SUPPORTED
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2362,15 +2372,11 @@ namespace boost {
             k, this->hash_function(), this->key_eq());
         }
 
-#if defined(BOOST_MSVC)
-#pragma warning(push)
-#pragma warning(                                                               \
-  disable : 4714) // function 'function' marked as __forceinline not inlined
-#endif
         template <class Key, class Hash, class Pred>
-        BOOST_FORCEINLINE iterator transparent_find(
+        inline iterator transparent_find(
           Key const& k, Hash const& h, Pred const& pred) const
         {
+#if 0
           std::size_t const key_hash = h(k);
           bucket_iterator itb = buckets_.at(buckets_.position(key_hash));
           for (node_pointer p = itb->next; p; p = p->next) {
@@ -2378,13 +2384,38 @@ namespace boost {
               return iterator(p, itb);
             }
           }
+#else
+          std::size_t const key_hash = h(k);
+          bucket_iterator itb = buckets_.at(buckets_.position(key_hash));
 
+          node_pointer p = itb->next;
+          if (p) {
+            for (;;) {
+              node_pointer p1 = p->next;
+              if (p1) {
+
+#if defined(BOOST_GCC)||defined(BOOST_CLANG)
+                __builtin_prefetch((const char*)p1, 0);
+#elif defined(BOOST_UNORDERED_SSE2_SUPPORTED)
+                _mm_prefetch((const char*)p1, _MM_HINT_T0);
+#endif  
+
+                if (BOOST_LIKELY(pred(k, extractor::extract(p->value())))) {
+                  return iterator(p, itb);
+                }
+                p = p1;
+              }
+              else{
+                if (BOOST_LIKELY(pred(k, extractor::extract(p->value())))) {
+                  return iterator(p, itb);
+                }
+                break;
+              }
+            }
+          }
+#endif
           return this->end();
         }
-
-#if defined(BOOST_MSVC)
-#pragma warning(pop)
-#endif
 
         template <class Key>
         node_pointer* find_prev(Key const& key, bucket_iterator itb)
