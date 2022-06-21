@@ -18,7 +18,6 @@ target_link_libraries(boost_unordered
     Boost::config
     Boost::container_hash
     Boost::core
-    Boost::iterator
     Boost::move
     Boost::mp11
     Boost::predef
