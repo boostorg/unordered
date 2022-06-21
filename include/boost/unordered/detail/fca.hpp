@@ -230,7 +230,7 @@ namespace boost {
         {
 #if defined(BOOST_UNORDERED_FCA_FASTMOD_SUPPORT)
 #if defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T)
-          std::size_t sizes_under_32bit = inv_sizes32_len;
+          std::size_t sizes_under_32bit = inv_sizes32_len - 1;
           if (BOOST_LIKELY(size_index < sizes_under_32bit)) {
             return fast_modulo(uint32_t(hash) + uint32_t(hash >> 32),
               inv_sizes32[size_index], uint32_t(sizes[size_index]));
