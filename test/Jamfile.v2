@@ -29,7 +29,7 @@ project
         <toolset>msvc:<warnings-as-errors>on
     ;
 
-run unordered/detail_tests.cpp ;
+run unordered/prime_fmod_tests.cpp ;
 run unordered/fwd_set_test.cpp ;
 run unordered/fwd_map_test.cpp ;
 run unordered/allocator_traits.cpp ;
