@@ -18,7 +18,6 @@ assert
 config
 container_hash
 core
-iterator
 move
 mp11
 predef
@@ -29,24 +28,10 @@ type_traits
 
 # Secondary dependencies
 
-static_assert
-concept_check
-conversion
 detail
-function_types
-fusion
-mpl
-optional
-smart_ptr
-utility
-winapi
-typeof
-functional
-io
-function
-bind
 integer
-type_index
+static_assert
+winapi
 )
 
 foreach(dep IN LISTS deps)
