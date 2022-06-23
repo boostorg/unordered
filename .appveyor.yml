@@ -106,9 +106,17 @@ environment:
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
       ADDPATH: C:\cygwin64\bin;
       B2_ADDRESS_MODEL: 64
-      B2_CXXSTD: 03,11,14,1z
+      B2_CXXSTD: 03,11
       B2_TOOLSET: gcc
-      MAYFAIL: true
+      B2_FLAGS: "include=libs/unordered/test/unordered include=libs/unordered/test/exception"
+
+    - FLAVOR: cygwin (64-bit, latest)
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
+      ADDPATH: C:\cygwin64\bin;
+      B2_ADDRESS_MODEL: 64
+      B2_CXXSTD: 14,1z
+      B2_TOOLSET: gcc
+      B2_FLAGS: "include=libs/unordered/test/unordered include=libs/unordered/test/exception"
 
     - FLAVOR: mingw32
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
