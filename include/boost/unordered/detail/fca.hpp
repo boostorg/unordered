@@ -151,7 +151,7 @@ namespace boost {
 #endif
 
 #if !defined(BOOST_NO_INT64_T) &&                                              \
-  (defined(BOOST_HAS_INT128) || (defined(BOOST_MSVC) && defined(_WIN64)))
+  (defined(BOOST_HAS_INT128) || (defined(_MSC_VER) && defined(_M_X64)))
 #define BOOST_UNORDERED_FCA_FASTMOD_SUPPORT
 #endif
 
