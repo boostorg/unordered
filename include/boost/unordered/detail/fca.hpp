@@ -344,7 +344,7 @@ namespace boost {
           (boost::ulong_long_type(5ul) << 32)         + boost::ulong_long_type(1431653234ul) /* = 22906489714 */,
           (boost::ulong_long_type(2ul) << 32)         + boost::ulong_long_type(2863311496ul) /* = 11453246088 */,
           (boost::ulong_long_type(1ul) << 32)         + boost::ulong_long_type(1431655764ul) /* = 5726623060 */,
-#if !defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T)
+#if defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T)
         };
 #else
           (boost::ulong_long_type(1ul) << 32)         + boost::ulong_long_type(6ul)          /* 4294967302 */
