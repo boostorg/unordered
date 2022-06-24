@@ -23,6 +23,12 @@ void macros_test()
                 "BOOST_UNORDERED_FCA_HAS_64B_SIZE_T is not defined");
 #endif
   }
+  else {
+#if defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T)
+    BOOST_ERROR("std::numeric_limits<size_t>::digits < 64, but "
+                "BOOST_UNORDERED_FCA_HAS_64B_SIZE_T is defined");
+#endif
+  }
 
 #if ((defined(__GNUC__) || defined(__clang__)) &&                              \
      defined(__SIZEOF_INT128__)) ||                                            \
