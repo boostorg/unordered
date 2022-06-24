@@ -6,7 +6,6 @@
 
 #include <boost/core/detail/splitmix64.hpp>
 #include <boost/core/lightweight_test.hpp>
-#include <boost/static_assert.hpp>
 
 #include <limits>
 
