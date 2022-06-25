@@ -150,8 +150,7 @@ namespace boost {
 #endif
 #endif
 
-#if !defined(BOOST_NO_INT64_T) &&                                              \
-  (defined(BOOST_HAS_INT128) || (defined(_MSC_VER) && defined(_M_X64)))
+#if !defined(BOOST_NO_INT64_T)
 #define BOOST_UNORDERED_FCA_FASTMOD_SUPPORT
 #endif
 
@@ -203,20 +202,23 @@ namespace boost {
         // modulo) exploiting how compilers transform division
         //
 
-#if defined(_MSC_VER)
         static inline uint64_t get_remainder(uint64_t fractional, uint32_t d)
         {
-          // use fancy msvc instrinsic when available instead of using `>> 64`
-          //
+#if defined(_MSC_VER) && defined(_WIN64)
+          // use MSVC instrinsic when available to avoid promotion to 128 bits
+
           return __umulh(fractional, d);
-        }
+#elif defined(BOOST_HAS_INT128)
+          return static_cast<uint64_t>(((boost::uint128_type)fractional * d) >> 64);
 #else
-        static inline uint64_t get_remainder(uint64_t fractional, uint32_t d)
-        {
-          __extension__ typedef unsigned __int128 uint128;
-          return static_cast<uint64_t>(((uint128)fractional * d) >> 64);
-        }
+          // portable implementation in the absence of boost::uint128_type
+
+          uint64_t r1 = (fractional & UINT32_MAX) * d;
+          uint64_t r2 = (fractional >> 32 ) * d;
+          r2 += r1 >> 32;
+          return r2 >> 32;
 #endif /* defined(_MSC_VER) */
+        }
 
         static inline uint32_t fast_modulo(uint32_t a, uint64_t M, uint32_t d)
         {
