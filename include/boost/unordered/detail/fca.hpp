@@ -151,7 +151,7 @@ namespace boost {
 #endif
 
 #if !defined(BOOST_NO_INT64_T) &&                                              \
-  (defined(BOOST_HAS_INT128) || (defined(BOOST_MSVC) && defined(_WIN64)))
+  (defined(BOOST_HAS_INT128) || (defined(_MSC_VER) && defined(_M_X64)))
 #define BOOST_UNORDERED_FCA_FASTMOD_SUPPORT
 #endif
 
@@ -344,7 +344,7 @@ namespace boost {
           (boost::ulong_long_type(5ul) << 32)         + boost::ulong_long_type(1431653234ul) /* = 22906489714 */,
           (boost::ulong_long_type(2ul) << 32)         + boost::ulong_long_type(2863311496ul) /* = 11453246088 */,
           (boost::ulong_long_type(1ul) << 32)         + boost::ulong_long_type(1431655764ul) /* = 5726623060 */,
-#if !defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T)
+#if defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T)
         };
 #else
           (boost::ulong_long_type(1ul) << 32)         + boost::ulong_long_type(6ul)          /* 4294967302 */
@@ -378,16 +378,8 @@ namespace boost {
 #undef BOOST_UNORDERED_PRIME_FMOD_POSITIONS_ELEMENT
 #undef BOOST_UNORDERED_PRIME_FMOD_SIZES
 #undef BOOST_UNORDERED_PRIME_FMOD_SIZES_64BIT
-#undef BOOST_UNORDERED_PRIME_FMOD_SIZES_34BIT
-#undef BOOST_UNORDERED_PRIME_FMOD_SIZES_34BIT_INCOMPLETE
-
-#ifdef BOOST_UNORDERED_FCA_FASTMOD_SUPPORT
-#undef BOOST_UNORDERED_FCA_FASTMOD_SUPPORT
-#endif
-
-#ifdef BOOST_UNORDERED_FCA_HAS_64B_SIZE_T
-#undef BOOST_UNORDERED_FCA_HAS_64B_SIZE_T
-#endif
+#undef BOOST_UNORDERED_PRIME_FMOD_SIZES_32BIT
+#undef BOOST_UNORDERED_PRIME_FMOD_SIZES_32BIT_INCOMPLETE
 
       template <class ValueType, class VoidPtr> struct node
       {
