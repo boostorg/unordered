@@ -150,10 +150,6 @@ namespace boost {
 #endif
 #endif
 
-#if !defined(BOOST_NO_INT64_T)
-#define BOOST_UNORDERED_FCA_FASTMOD_SUPPORT
-#endif
-
       template <class = void> struct prime_fmod_size
       {
         // Because we compile for C++03, we don't have access to any inline
@@ -166,10 +162,10 @@ namespace boost {
         static std::size_t const sizes_len;
         static std::size_t (*positions[])(std::size_t);
 
-#if defined(BOOST_UNORDERED_FCA_FASTMOD_SUPPORT)
+#if defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T)
         static uint64_t inv_sizes32[];
         static std::size_t const inv_sizes32_len;
-#endif /* defined(BOOST_UNORDERED_FCA_FASTMOD_SUPPORT) */
+#endif /* defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T) */
 
         static inline std::size_t size_index(std::size_t n)
         {
@@ -192,7 +188,7 @@ namespace boost {
           return hash % Size;
         }
 
-#if defined(BOOST_UNORDERED_FCA_FASTMOD_SUPPORT)
+#if defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T)
         // We emulate the techniques taken from:
         // Faster Remainder by Direct Computation: Applications to Compilers and
         // Software Libraries
@@ -204,14 +200,15 @@ namespace boost {
 
         static inline uint64_t get_remainder(uint64_t fractional, uint32_t d)
         {
-#if defined(_MSC_VER) && defined(_WIN64)
-          // use MSVC instrinsic when available to avoid promotion to 128 bits
+#if defined(_MSC_VER)
+          // use MSVC intrinsics when available to avoid promotion to 128 bits
 
           return __umulh(fractional, d);
 #elif defined(BOOST_HAS_INT128)
           return static_cast<uint64_t>(((boost::uint128_type)fractional * d) >> 64);
 #else
-          // portable implementation in the absence of boost::uint128_type
+          // portable implementation in the absence of boost::uint128_type on 64 bits,
+          // which happens at least in GCC 4.5 and prior 
 
           uint64_t r1 = (fractional & UINT32_MAX) * d;
           uint64_t r2 = (fractional >> 32 ) * d;
@@ -225,12 +222,11 @@ namespace boost {
           uint64_t fractional = M * a;
           return (uint32_t)(get_remainder(fractional, d));
         }
-#endif /* defined(BOOST_UNORDERED_FCA_FASTMOD_SUPPORT) */
+#endif /* defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T) */
 
         static inline std::size_t position(
           std::size_t hash, std::size_t size_index)
         {
-#if defined(BOOST_UNORDERED_FCA_FASTMOD_SUPPORT)
 #if defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T)
           std::size_t sizes_under_32bit = inv_sizes32_len;
           if (BOOST_LIKELY(size_index < sizes_under_32bit)) {
@@ -240,12 +236,8 @@ namespace boost {
             return positions[size_index - sizes_under_32bit](hash);
           }
 #else
-          return fast_modulo(
-            hash, inv_sizes32[size_index], uint32_t(sizes[size_index]));
-#endif /* defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T) */
-#else
           return positions[size_index](hash);
-#endif /* defined(BOOST_UNORDERED_FCA_FASTMOD_SUPPORT) */
+#endif /* defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T) */
         }
       }; // prime_fmod_size
 
@@ -313,7 +305,7 @@ namespace boost {
 // Similarly here, we have to re-express the integer initialization using
 // arithmetic such that each literal can fit in a 32-bit value.
 //
-#if defined(BOOST_UNORDERED_FCA_FASTMOD_SUPPORT)
+#if defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T)
       // clang-format off
         template <class T>
         uint64_t prime_fmod_size<T>::inv_sizes32[] = {
@@ -346,34 +338,27 @@ namespace boost {
           (boost::ulong_long_type(5ul) << 32)         + boost::ulong_long_type(1431653234ul) /* = 22906489714 */,
           (boost::ulong_long_type(2ul) << 32)         + boost::ulong_long_type(2863311496ul) /* = 11453246088 */,
           (boost::ulong_long_type(1ul) << 32)         + boost::ulong_long_type(1431655764ul) /* = 5726623060 */,
-#if defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T)
-        };
-#else
-          (boost::ulong_long_type(1ul) << 32)         + boost::ulong_long_type(6ul)          /* 4294967302 */
         };
       // clang-format on
-#endif /* !defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T) */
 
       template <class T>
       std::size_t const
         prime_fmod_size<T>::inv_sizes32_len = sizeof(inv_sizes32) /
                                               sizeof(inv_sizes32[0]);
 
-#endif /* defined(BOOST_UNORDERED_FCA_FASTMOD_SUPPORT) */
+#endif /* defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T) */
 
 #define BOOST_UNORDERED_PRIME_FMOD_POSITIONS_ELEMENT(z, _, n)                  \
   prime_fmod_size<T>::template modulo<n>,
 
       template <class T>
       std::size_t (*prime_fmod_size<T>::positions[])(std::size_t) = {
-#if !defined(BOOST_UNORDERED_FCA_FASTMOD_SUPPORT)
+#if !defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T)
         BOOST_PP_SEQ_FOR_EACH(BOOST_UNORDERED_PRIME_FMOD_POSITIONS_ELEMENT, ~,
           BOOST_UNORDERED_PRIME_FMOD_SIZES_32BIT)
-#endif
-
-#if defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T)
-          BOOST_PP_SEQ_FOR_EACH(BOOST_UNORDERED_PRIME_FMOD_POSITIONS_ELEMENT, ~,
-            BOOST_UNORDERED_PRIME_FMOD_SIZES_64BIT)
+#else
+        BOOST_PP_SEQ_FOR_EACH(BOOST_UNORDERED_PRIME_FMOD_POSITIONS_ELEMENT, ~,
+          BOOST_UNORDERED_PRIME_FMOD_SIZES_64BIT)
 #endif
       };
 

@@ -28,15 +28,6 @@ void macros_test()
                 "BOOST_UNORDERED_FCA_HAS_64B_SIZE_T is defined");
 #endif
   }
-
-#if ((defined(__GNUC__) || defined(__clang__)) &&                              \
-     defined(__SIZEOF_INT128__)) ||                                            \
-  (defined(_MSC_VER) && defined(_M_X64))
-#if !defined(BOOST_UNORDERED_FCA_FASTMOD_SUPPORT)
-  BOOST_ERROR("fast_modulo support should be enabled for this toolchain but "
-              "it's currently not");
-#endif
-#endif
 }
 
 // Pretty inefficient, but the test is fast enough.
@@ -93,7 +84,7 @@ void prime_sizes_test()
     BOOST_TEST_GT(sizes[i], sizes[i - 1]);
   }
 
-#if defined(BOOST_UNORDERED_FCA_FASTMOD_SUPPORT)
+#if defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T)
   // now we wish to prove that if we do have the reciprocals stored, we have the
   // correct amount of them, i.e. one for every entry in sizes[] that fits in 32
   // bits
@@ -140,13 +131,14 @@ void prime_sizes_test()
 
 void get_remainder_test()
 {
-#if defined(BOOST_UNORDERED_FCA_FASTMOD_SUPPORT)
+#if defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T)
   struct
   {
-    // internally, our get_remainder() function will rely on either msvc
-    // intrinsics or 128 bit integer support which isn't always available. This
-    // is a slower, portable version we can use for verification of the
-    // routines.
+    // boost::unordered::detail::prime_fmod_size<>::get_remainder
+    // uses several internal implementations depending on the availability of
+    // certain intrinsics or 128 bit integer support, defaulting to a slow,
+    // portable routine. The following is a transcription of the portable
+    // routine used here for verification purposes.
     //
     boost::uint64_t operator()(boost::uint64_t f, boost::uint32_t d)
     {
@@ -178,7 +170,7 @@ void get_remainder_test()
 #endif
 }
 
-void modulo32_test()
+void modulo_test()
 {
   std::size_t* sizes = boost::unordered::detail::prime_fmod_size<>::sizes;
 
@@ -188,39 +180,12 @@ void modulo32_test()
   boost::detail::splitmix64 rng;
 
   for (std::size_t i = 0; i < 1000000u; ++i) {
-    std::size_t hash = static_cast<boost::uint32_t>(rng());
-
-    for (std::size_t j = 0; j < sizes_len; ++j) {
-      std::size_t p1 =
-        boost::unordered::detail::prime_fmod_size<>::position(hash, j);
-
-      std::size_t p2 = hash % sizes[j];
-      if (!BOOST_TEST_EQ(p1, p2)) {
-        std::cerr << "hash: " << hash << ", j: " << j << ", sizes[" << j
-                  << "]: " << sizes[j] << std::endl;
-        return;
-      }
-    }
-  }
-}
-
-void modulo64_test()
-{
-#if defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T)
-  std::size_t* sizes = boost::unordered::detail::prime_fmod_size<>::sizes;
-
-  std::size_t const sizes_len =
-    boost::unordered::detail::prime_fmod_size<>::sizes_len;
-
-  boost::detail::splitmix64 rng;
-
-  for (std::size_t i = 0; i < 1000000u; ++i) {
-    std::size_t hash = rng();
+    std::size_t hash = static_cast<std::size_t>(rng());
 
     for (std::size_t j = 0; j < sizes_len; ++j) {
       std::size_t h = hash;
 
-#if defined(BOOST_UNORDERED_FCA_FASTMOD_SUPPORT)
+#if defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T)
       if (sizes[j] <= UINT_MAX) {
         h = boost::uint32_t(h) + boost::uint32_t(h >> 32);
       }
@@ -237,16 +202,14 @@ void modulo64_test()
       }
     }
   }
-#endif
 }
 
 int main()
 {
   macros_test();
   prime_sizes_test();
-  modulo32_test();
   get_remainder_test();
-  modulo64_test();
+  modulo_test();
 
   return boost::report_errors();
 }
