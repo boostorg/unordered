@@ -24,6 +24,8 @@ project
         <toolset>clang:<cxxflags>$(clang-flags)
         <toolset>msvc:<cxxflags>$(msvc-flags)
 
+        <toolset>gcc-4.4:<cxxflags>-Wno-strict-aliasing
+
         <toolset>gcc:<warnings-as-errors>on
         <toolset>clang:<warnings-as-errors>on
         <toolset>msvc:<warnings-as-errors>on
