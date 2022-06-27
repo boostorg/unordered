@@ -11,10 +11,10 @@
 
 #include "../helpers/test.hpp"
 
+#include <boost/config.hpp>
 #include <string>
 
-#if BOOST_CXX_VERSION >= 201103L &&                            \
-    (!defined(BOOST_GCC_VERSION) || BOOST_GCC_VERSION >= 40800)
+#if !defined(BOOST_NO_CXX11_REF_QUALIFIERS)
 #define UNORDERED_LVALUE_QUAL &
 #else
 #define UNORDERED_LVALUE_QUAL
