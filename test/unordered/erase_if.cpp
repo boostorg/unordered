@@ -1,4 +1,4 @@
-// Copyright 2021 Christian Mazakas.
+// Copyright 2021-2022 Christian Mazakas.
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -13,7 +13,8 @@
 
 #include <string>
 
-#if BOOST_CXX_VERSION >= 201103L
+#if BOOST_CXX_VERSION >= 201103L &&                            \
+    (!defined(BOOST_GCC_VERSION) || BOOST_GCC_VERSION >= 40800)
 #define UNORDERED_LVALUE_QUAL &
 #else
 #define UNORDERED_LVALUE_QUAL
