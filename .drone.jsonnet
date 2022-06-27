@@ -135,52 +135,31 @@ local windows_pipeline(name, image, environment, arch = "amd64") =
     ),
 
     linux_pipeline(
-        "Linux 20.04 GCC 9 ARM64 32/64",
+        "Linux 20.04 GCC 9* ARM64 32",
         "cppalliance/droneubuntu2004:multiarch",
-        { TOOLSET: 'gcc', COMPILER: 'g++', CXXSTD: '03,11,14,17,2a', ADDRMD: '32,64' },
+        { TOOLSET: 'gcc', COMPILER: 'g++', CXXSTD: '03,11,14,17,2a', ADDRMD: '32' },
         arch="arm64",
     ),
 
     linux_pipeline(
-        "Linux 20.04 GCC 9 S390x 32/64",
+        "Linux 20.04 GCC 9* ARM64 64",
         "cppalliance/droneubuntu2004:multiarch",
-        { TOOLSET: 'gcc', COMPILER: 'g++', CXXSTD: '03,11,14,17,2a', ADDRMD: '32,64' },
+        { TOOLSET: 'gcc', COMPILER: 'g++', CXXSTD: '03,11,14,17,2a', ADDRMD: '64' },
+        arch="arm64",
+    ),
+
+    linux_pipeline(
+        "Linux 20.04 GCC 9* S390x 32",
+        "cppalliance/droneubuntu2004:multiarch",
+        { TOOLSET: 'gcc', COMPILER: 'g++', CXXSTD: '03,11,14,17,2a', ADDRMD: '32' },
         arch="s390x",
     ),
 
     linux_pipeline(
-        "Linux 22.04 GCC 12 32/64",
-        "cppalliance/droneubuntu2204:1",
-        { TOOLSET: 'gcc', COMPILER: 'g++-12', CXXSTD: '03,11,14,17,20', ADDRMD: '32,64' },
-        "g++-12-multilib",
-    ),
-
-    linux_pipeline(
-        "Linux 22.04 GCC 12 32 ASAN",
-        "cppalliance/droneubuntu2204:1",
-        { TOOLSET: 'gcc', COMPILER: 'g++-12', CXXSTD: '03,11,14,17,20', ADDRMD: '32' } + asan,
-        "g++-12-multilib",
-    ),
-
-    linux_pipeline(
-        "Linux 22.04 GCC 12 64 ASAN",
-        "cppalliance/droneubuntu2204:1",
-        { TOOLSET: 'gcc', COMPILER: 'g++-12', CXXSTD: '03,11,14,17,20', ADDRMD: '64' } + asan,
-        "g++-12-multilib",
-    ),
-
-    linux_pipeline(
-        "Linux 22.04 Clang 14 UBSAN",
-        "cppalliance/droneubuntu2204:1",
-        { TOOLSET: 'clang', COMPILER: 'clang++-14', CXXSTD: '03,11,14,17,20' } + ubsan,
-        "clang-14",
-    ),
-
-    linux_pipeline(
-        "Linux 22.04 Clang 14 ASAN",
-        "cppalliance/droneubuntu2204:1",
-        { TOOLSET: 'clang', COMPILER: 'clang++-14', CXXSTD: '03,11,14,17,20' } + asan,
-        "clang-14",
+        "Linux 20.04 GCC 9* S390x 64",
+        "cppalliance/droneubuntu2004:multiarch",
+        { TOOLSET: 'gcc', COMPILER: 'g++', CXXSTD: '03,11,14,17,2a', ADDRMD: '64' },
+        arch="s390x",
     ),
 
     macos_pipeline(
