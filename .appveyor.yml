@@ -40,51 +40,10 @@ environment:
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       B2_TOOLSET: msvc-12.0,msvc-14.0
 
-    - FLAVOR: Visual Studio 2017 C++14/17
+    - FLAVOR: Visual Studio 2017
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-      B2_CXXSTD: 14,17
+      B2_CXXSTD: 14,17,latest
       B2_TOOLSET: msvc-14.1
-
-    - FLAVOR: Visual Studio 2017 C++2a Strict
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-      B2_CXXFLAGS: -permissive-
-      B2_CXXSTD: 2a
-      B2_TOOLSET: msvc-14.1
-
-    - FLAVOR: Visual Studio 2019
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-      B2_CXXFLAGS: -permissive-
-      B2_CXXSTD: 14,17
-      B2_TOOLSET: msvc-14.2
-
-    - FLAVOR: Visual Studio 2022
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
-      B2_CXXFLAGS: -permissive-
-      B2_CXXSTD: 14,17
-      B2_TOOLSET: msvc-14.3
-
-    # C++20 Jobs split out from above due to build timeout
-    - FLAVOR: Visual Studio 2019 C++2a
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-      B2_CXXFLAGS: -permissive-
-      B2_CXXSTD: 2a
-      B2_TOOLSET: msvc-14.2
-
-    - FLAVOR: Visual Studio 2022 C++20
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
-      B2_CXXFLAGS: -permissive-
-      B2_CXXSTD: 20
-      B2_TOOLSET: msvc-14.3
-
-    - FLAVOR: clang-cl C++11, C++14
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-      B2_CXXSTD: 11,14
-      B2_TOOLSET: clang-win
-    # Extra job as compilation takes to long
-    - FLAVOR: clang-cl C++17, C++latest
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-      B2_CXXSTD: 17,latest
-      B2_TOOLSET: clang-win
 
     - FLAVOR: cygwin (32-bit)
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
@@ -100,8 +59,6 @@ environment:
       B2_CXXSTD: 03,11,14,1z
       B2_TOOLSET: gcc
 
-    # (Currently) the images up to 2017 use an older Cygwin
-    # This tests that the library works with more recent versions
     - FLAVOR: cygwin (64-bit, latest)
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
       ADDPATH: C:\cygwin64\bin;
@@ -118,20 +75,19 @@ environment:
       B2_TOOLSET: gcc
       B2_FLAGS: "include=libs/unordered/test/unordered include=libs/unordered/test/exception"
 
-    - FLAVOR: mingw32
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-      B2_ADDRESS_MODEL: 32
-      ADDPATH: C:\mingw\bin;
-      B2_CXXSTD: 03,11,14,1z
-      B2_TOOLSET: gcc
-      MAYFAIL: true
-
-    - FLAVOR: mingw64
+    - FLAVOR: mingw-w64, 32 bit
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-      ADDPATH: C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin;
-      B2_ADDRESS_MODEL: 64
+      ADDPATH: C:\mingw-w64\i686-8.1.0-posix-dwarf-rt_v6-rev0\mingw32\bin;
       B2_CXXSTD: 03,11,14,17,2a
       B2_TOOLSET: gcc
+      B2_ADDRESS_MODEL: 32
+
+    - FLAVOR: mingw-w64, 64 bit
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+      ADDPATH: C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin;
+      B2_CXXSTD: 03,11,14,17,2a
+      B2_TOOLSET: gcc
+      B2_ADDRESS_MODEL: 64
 
     #- FLAVOR: CodeCov (VS 2019)
     #  APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
