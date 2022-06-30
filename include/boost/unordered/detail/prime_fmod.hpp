@@ -7,15 +7,12 @@
 #ifndef BOOST_UNORDERED_DETAIL_PRIME_FMOD_HPP
 #define BOOST_UNORDERED_DETAIL_PRIME_FMOD_HPP
 
-#include <boost/config.hpp>
-#if defined(BOOST_HAS_PRAGMA_ONCE)
-#pragma once
-#endif
-
 #include <boost/cstdint.hpp>
 #include <boost/preprocessor/seq/enum.hpp>
 #include <boost/preprocessor/seq/for_each.hpp>
 #include <boost/preprocessor/seq/size.hpp>
+
+#include <boost/config.hpp>
 
 #include <climits>
 #include <cstddef>
