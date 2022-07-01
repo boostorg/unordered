@@ -301,10 +301,10 @@ template<class K, class V> using absl_flat_hash_map =
 #ifdef HAVE_TSL_HOPSCOTCH
 
 template<class K, class V> using tsl_hopscotch_map =
-    tsl::hopscotch_map<K, V, std::hash<K>, std::equal_to<K>, allocator_for<K, V>>;
+    tsl::hopscotch_map<K, V, std::hash<K>, std::equal_to<K>, ::allocator< std::pair<K, V> >>;
 
 template<class K, class V> using tsl_hopscotch_pg_map =
-    tsl::hopscotch_pg_map<K, V, std::hash<K>, std::equal_to<K>, allocator_for<K, V>>;
+    tsl::hopscotch_pg_map<K, V, std::hash<K>, std::equal_to<K>, ::allocator< std::pair<K, V> >>;
 
 #endif
 
@@ -379,10 +379,10 @@ template<class K, class V> using absl_flat_hash_map_fnv1a =
 #ifdef HAVE_TSL_HOPSCOTCH
 
 template<class K, class V> using tsl_hopscotch_map_fnv1a =
-    tsl::hopscotch_map<K, V, fnv1a_hash, std::equal_to<K>, allocator_for<K, V>>;
+    tsl::hopscotch_map<K, V, fnv1a_hash, std::equal_to<K>, ::allocator< std::pair<K, V> >>;
 
 template<class K, class V> using tsl_hopscotch_pg_map_fnv1a =
-    tsl::hopscotch_pg_map<K, V, fnv1a_hash, std::equal_to<K>, allocator_for<K, V>>;
+    tsl::hopscotch_pg_map<K, V, fnv1a_hash, std::equal_to<K>, ::allocator< std::pair<K, V> >>;
 
 #endif
 
