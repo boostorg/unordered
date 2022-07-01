@@ -14,6 +14,9 @@
 # include "absl/container/node_hash_map.h"
 # include "absl/container/flat_hash_map.h"
 #endif
+#ifdef HAVE_TSL_HOPSCOTCH
+# include "tsl/hopscotch_map.h"
+#endif
 #include <unordered_map>
 #include <vector>
 #include <memory>
@@ -311,6 +314,16 @@ template<class K, class V> using absl_flat_hash_map =
 
 #endif
 
+#ifdef HAVE_TSL_HOPSCOTCH
+
+template<class K, class V> using tsl_hopscotch_map =
+    tsl::hopscotch_map<K, V, std::hash<K>, std::equal_to<K>, allocator_for<K, V>>;
+
+template<class K, class V> using tsl_hopscotch_pg_map =
+    tsl::hopscotch_pg_map<K, V, std::hash<K>, std::equal_to<K>, allocator_for<K, V>>;
+
+#endif
+
 int main()
 {
     init_indices();
@@ -323,6 +336,13 @@ int main()
 
     test<absl_node_hash_map>( "absl::node_hash_map" );
     test<absl_flat_hash_map>( "absl::flat_hash_map" );
+
+#endif
+
+#ifdef HAVE_TSL_HOPSCOTCH
+
+    test<tsl_hopscotch_map>( "tsl::hopscotch_map" );
+    test<tsl_hopscotch_pg_map>( "tsl::hopscotch_pg_map" );
 
 #endif
 
