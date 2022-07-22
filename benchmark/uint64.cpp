@@ -8,6 +8,7 @@
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/member.hpp>
+#include <boost/endian/conversion.hpp>
 #include <boost/core/detail/splitmix64.hpp>
 #include <boost/config.hpp>
 #ifdef HAVE_ABSEIL
@@ -65,7 +66,7 @@ static void init_indices()
 
     for( unsigned i = 1; i <= N*2; ++i )
     {
-        indices3.push_back( (std::uint64_t)i << 40 );
+        indices3.push_back( boost::endian::endian_reverse( static_cast<std::uint64_t>( i ) ) );
     }
 }
 
@@ -90,7 +91,7 @@ template<class Map> BOOST_NOINLINE void test_insert( Map& map, std::chrono::stea
         map.insert( { indices3[ i ], i } );
     }
 
-    print_time( t1, "Consecutive shifted insert",  0, map.size() );
+    print_time( t1, "Consecutive reversed insert",  0, map.size() );
 
     std::cout << std::endl;
 }
@@ -136,7 +137,7 @@ template<class Map> BOOST_NOINLINE void test_lookup( Map& map, std::chrono::stea
         }
     }
 
-    print_time( t1, "Consecutive shifted lookup",  s, map.size() );
+    print_time( t1, "Consecutive reversed lookup",  s, map.size() );
 
     std::cout << std::endl;
 }
@@ -187,7 +188,7 @@ template<class Map> BOOST_NOINLINE void test_erase( Map& map, std::chrono::stead
         map.erase( indices3[ i ] );
     }
 
-    print_time( t1, "Consecutive shifted erase",  0, map.size() );
+    print_time( t1, "Consecutive reversed erase",  0, map.size() );
 
     std::cout << std::endl;
 }
