@@ -173,13 +173,9 @@ template<class Map> BOOST_NOINLINE void test_erase( Map& map, std::chrono::stead
 
     print_time( t1, "Consecutive erase",  0, map.size() );
 
+    for( unsigned i = 1; i <= N; ++i )
     {
-        boost::detail::splitmix64 rng;
-
-        for( unsigned i = 1; i <= N; ++i )
-        {
-            map.erase( indices2[ i ] );
-        }
+        map.erase( indices2[ i ] );
     }
 
     print_time( t1, "Random erase",  0, map.size() );
