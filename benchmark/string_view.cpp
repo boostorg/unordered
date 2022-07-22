@@ -17,6 +17,9 @@
 #ifdef HAVE_TSL_HOPSCOTCH
 # include "tsl/hopscotch_map.h"
 #endif
+#ifdef HAVE_TSL_ROBIN
+# include "tsl/robin_map.h"
+#endif
 #include <unordered_map>
 #include <string_view>
 #include <vector>
@@ -141,7 +144,14 @@ template<class Map> BOOST_NOINLINE void test_iteration( Map& map, std::chrono::s
     {
         if( it->second & 1 )
         {
-            map.erase( it++ );
+            if constexpr( std::is_void_v< decltype( map.erase( it ) ) > )
+            {
+                map.erase( it++ );
+            }
+            else
+            {
+                it = map.erase( it );
+            }
         }
         else
         {
@@ -309,6 +319,16 @@ template<class K, class V> using tsl_hopscotch_pg_map =
 
 #endif
 
+#ifdef HAVE_TSL_ROBIN
+
+template<class K, class V> using tsl_robin_map =
+    tsl::robin_map<K, V, std::hash<K>, std::equal_to<K>, ::allocator< std::pair<K, V> >>;
+
+template<class K, class V> using tsl_robin_pg_map =
+    tsl::robin_pg_map<K, V, std::hash<K>, std::equal_to<K>, ::allocator< std::pair<K, V> >>;
+
+#endif
+
 // fnv1a_hash
 
 template<int Bits> struct fnv1a_hash_impl;
@@ -387,6 +407,16 @@ template<class K, class V> using tsl_hopscotch_pg_map_fnv1a =
 
 #endif
 
+#ifdef HAVE_TSL_ROBIN
+
+template<class K, class V> using tsl_robin_map_fnv1a =
+    tsl::robin_map<K, V, fnv1a_hash, std::equal_to<K>, ::allocator< std::pair<K, V> >>;
+
+template<class K, class V> using tsl_robin_pg_map_fnv1a =
+    tsl::robin_pg_map<K, V, fnv1a_hash, std::equal_to<K>, ::allocator< std::pair<K, V> >>;
+
+#endif
+
 //
 
 int main()
@@ -413,6 +443,13 @@ int main()
 
 #endif
 
+#ifdef HAVE_TSL_ROBIN
+
+    test<tsl_robin_map>( "tsl::robin_map" );
+    test<tsl_robin_pg_map>( "tsl::robin_pg_map" );
+
+#endif
+
 #endif
 
     test<std_unordered_map_fnv1a>( "std::unordered_map, FNV-1a" );
@@ -430,6 +467,13 @@ int main()
 
     test<tsl_hopscotch_map_fnv1a>( "tsl::hopscotch_map, FNV-1a" );
     test<tsl_hopscotch_pg_map_fnv1a>( "tsl::hopscotch_pg_map, FNV-1a" );
+
+#endif
+
+#ifdef HAVE_TSL_ROBIN
+
+    test<tsl_robin_map_fnv1a>( "tsl::robin_map, FNV-1a" );
+    test<tsl_robin_pg_map_fnv1a>( "tsl::robin_pg_map, FNV-1a" );
 
 #endif
 
