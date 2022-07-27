@@ -2928,6 +2928,23 @@ namespace boost {
           return 1;
         }
 
+        iterator erase_node(c_iterator pos) {
+          c_iterator next = pos;
+          ++next;
+          
+          bucket_iterator itb = pos.itb;
+          node_pointer* pp = boost::addressof(itb->next);
+          while (*pp != pos.p) {
+            pp = boost::addressof((*pp)->next);
+          }
+
+          buckets_.extract_node_after(itb, pp);
+          this->delete_node(pos.p);
+          --size_;
+
+          return iterator(next.p, next.itb);
+        }
+
         iterator erase_nodes_range(c_iterator first, c_iterator last)
         {
           if (first == last) {

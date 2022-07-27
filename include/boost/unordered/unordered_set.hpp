@@ -1457,9 +1457,7 @@ namespace boost {
     typename unordered_set<T, H, P, A>::iterator
     unordered_set<T, H, P, A>::erase(const_iterator position)
     {
-      const_iterator last = position;
-      ++last;
-      return table_.erase_nodes_range(position, last);
+      return table_.erase_node(position);
     }
 
     template <class T, class H, class P, class A>
@@ -1853,10 +1851,7 @@ namespace boost {
     unordered_multiset<T, H, P, A>::erase(const_iterator position)
     {
       BOOST_ASSERT(position != this->end());
-      iterator next = position;
-      ++next;
-      table_.erase_nodes_range(position, next);
-      return next;
+      return table_.erase_node(position);
     }
 
     template <class T, class H, class P, class A>

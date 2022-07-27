@@ -1856,18 +1856,14 @@ namespace boost {
     typename unordered_map<K, T, H, P, A>::iterator
     unordered_map<K, T, H, P, A>::erase(iterator position)
     {
-      const_iterator last = position;
-      ++last;
-      return table_.erase_nodes_range(position, last);
+      return table_.erase_node(position);
     }
 
     template <class K, class T, class H, class P, class A>
     typename unordered_map<K, T, H, P, A>::iterator
     unordered_map<K, T, H, P, A>::erase(const_iterator position)
     {
-      const_iterator last = position;
-      ++last;
-      return table_.erase_nodes_range(position, last);
+      return table_.erase_node(position);
     }
 
     template <class K, class T, class H, class P, class A>
@@ -2340,9 +2336,7 @@ namespace boost {
     unordered_multimap<K, T, H, P, A>::erase(iterator position)
     {
       BOOST_ASSERT(position != this->end());
-      iterator next = position;
-      ++next;
-      return table_.erase_nodes_range(position, next);
+      return table_.erase_node(position);
     }
 
     template <class K, class T, class H, class P, class A>
@@ -2350,9 +2344,7 @@ namespace boost {
     unordered_multimap<K, T, H, P, A>::erase(const_iterator position)
     {
       BOOST_ASSERT(position != this->end());
-      const_iterator next = position;
-      ++next;
-      return table_.erase_nodes_range(position, next);
+      return table_.erase_node(position);
     }
 
     template <class K, class T, class H, class P, class A>
