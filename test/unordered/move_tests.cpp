@@ -775,11 +775,11 @@ namespace move_tests {
       bool b = boost::allocator_propagate_on_container_move_assignment<
         typename T::allocator_type>::type::value;
       if (b) {
-#if defined(BOOST_UNORDERED_USE_MOVE) ||                                       \
+        #if defined(BOOST_UNORDERED_USE_MOVE) ||                                       \
   !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-        BOOST_TEST(y.empty());
-        BOOST_TEST(y.begin() == y.end());
-#else
+      BOOST_TEST(y.empty());
+      BOOST_TEST(y.begin() == y.end());
+      #else
         BOOST_TEST_NOT(y.empty());
         BOOST_TEST(y.begin() != y.end());
 
@@ -797,16 +797,19 @@ namespace move_tests {
   }
 
   boost::unordered_map<test::object, test::object, test::hash, test::equal_to,
-    std::allocator<test::object> >* test_map_std_alloc;
+    std::allocator<std::pair<test::object const, test::object> > >*
+    test_map_std_alloc;
 
   boost::unordered_set<test::object, test::hash, test::equal_to,
     test::allocator2<test::object> >* test_set;
   boost::unordered_multiset<test::object, test::hash, test::equal_to,
     test::allocator1<test::object> >* test_multiset;
   boost::unordered_map<test::object, test::object, test::hash, test::equal_to,
-    test::allocator1<test::object> >* test_map;
+    test::allocator1<std::pair<test::object const, test::object> > >* test_map;
   boost::unordered_multimap<test::object, test::object, test::hash,
-    test::equal_to, test::allocator2<test::object> >* test_multimap;
+    test::equal_to,
+    test::allocator2<std::pair<test::object const, test::object> > >*
+    test_multimap;
 
   boost::unordered_set<test::object, test::hash, test::equal_to,
     test::cxx11_allocator<test::object, test::propagate_move> >*
@@ -815,11 +818,12 @@ namespace move_tests {
     test::cxx11_allocator<test::object, test::propagate_move> >*
     test_multiset_prop_move;
   boost::unordered_map<test::object, test::object, test::hash, test::equal_to,
-    test::cxx11_allocator<test::object, test::propagate_move> >*
-    test_map_prop_move;
+    test::cxx11_allocator<std::pair<test::object const, test::object>,
+      test::propagate_move> >* test_map_prop_move;
   boost::unordered_multimap<test::object, test::object, test::hash,
-    test::equal_to, test::cxx11_allocator<test::object, test::propagate_move> >*
-    test_multimap_prop_move;
+    test::equal_to,
+    test::cxx11_allocator<std::pair<test::object const, test::object>,
+      test::propagate_move> >* test_multimap_prop_move;
 
   boost::unordered_set<test::object, test::hash, test::equal_to,
     test::cxx11_allocator<test::object, test::no_propagate_move> >*
@@ -828,12 +832,12 @@ namespace move_tests {
     test::cxx11_allocator<test::object, test::no_propagate_move> >*
     test_multiset_no_prop_move;
   boost::unordered_map<test::object, test::object, test::hash, test::equal_to,
-    test::cxx11_allocator<test::object, test::no_propagate_move> >*
-    test_map_no_prop_move;
+    test::cxx11_allocator<std::pair<test::object const, test::object>,
+      test::no_propagate_move> >* test_map_no_prop_move;
   boost::unordered_multimap<test::object, test::object, test::hash,
     test::equal_to,
-    test::cxx11_allocator<test::object, test::no_propagate_move> >*
-    test_multimap_no_prop_move;
+    test::cxx11_allocator<std::pair<test::object const, test::object>,
+      test::no_propagate_move> >* test_multimap_no_prop_move;
 
   using test::default_generator;
   using test::generate_collisions;
