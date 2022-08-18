@@ -646,7 +646,7 @@ namespace boost {
 
         size_type bucket_count() const { return size_; }
 
-        iterator begin() const { return ++at(size_); }
+        iterator begin() const { return size_ == 0 ? end() : ++at(size_); }
 
         iterator end() const
         {
@@ -660,6 +660,10 @@ namespace boost {
 
         local_iterator begin(size_type n) const
         {
+          if (size_ == 0) {
+            return this->end(n);
+          }
+
           return local_iterator(
             (buckets + static_cast<difference_type>(n))->next);
         }
@@ -670,12 +674,16 @@ namespace boost {
 
         iterator at(size_type n) const
         {
-          std::size_t const N = group::N;
+          if (size_ > 0) {
+            std::size_t const N = group::N;
 
-          iterator pbg(buckets + static_cast<difference_type>(n),
-            groups + static_cast<difference_type>(n / N));
+            iterator pbg(buckets + static_cast<difference_type>(n),
+              groups + static_cast<difference_type>(n / N));
 
-          return pbg;
+            return pbg;
+          } else {
+            return this->end();
+          }
         }
 
         span<Bucket> raw()
