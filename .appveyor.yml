@@ -85,7 +85,14 @@ environment:
     - FLAVOR: mingw-w64, 64 bit
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       ADDPATH: C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin;
-      B2_CXXSTD: 03,11,14,17,2a
+      B2_CXXSTD: 03,11,14
+      B2_TOOLSET: gcc
+      B2_ADDRESS_MODEL: 64
+
+    - FLAVOR: mingw-w64, 64 bit
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+      ADDPATH: C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin;
+      B2_CXXSTD: 17,2a
       B2_TOOLSET: gcc
       B2_ADDRESS_MODEL: 64
 
