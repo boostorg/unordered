@@ -32,6 +32,7 @@ local linux_pipeline(name, image, environment, packages = "", sources = [], arch
             commands:
             [
                 'set -e',
+                'uname -a',
                 'wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -',
             ] +
             (if sources != [] then [ ('apt-add-repository "' + source + '"') for source in sources ] else []) +
@@ -63,6 +64,7 @@ local macos_pipeline(name, environment, xcode_version = "12.2", osx_version = "c
             environment: environment + { "DEVELOPER_DIR": "/Applications/Xcode-" + xcode_version + ".app/Contents/Developer" },
             commands:
             [
+                'uname -a',
                 'export LIBRARY=' + library,
                 './.drone/drone.sh',
             ]
@@ -89,6 +91,7 @@ local windows_pipeline(name, image, environment, arch = "amd64") =
             environment: environment,
             commands:
             [
+                'echo $env:DRONE_STAGE_MACHINE',
                 'cmd /C .drone\\\\drone.bat ' + library,
             ]
         }
@@ -168,8 +171,9 @@ local windows_pipeline(name, image, environment, arch = "amd64") =
     ),
 
     macos_pipeline(
-        "MacOS 10.15 Xcode 12.2 ASAN",
+        "MacOS 12.4 Xcode 13.4.1 ASAN",
         { TOOLSET: 'clang', COMPILER: 'clang++', CXXSTD: '03,11,14,1z' } + asan,
+        xcode_version = "13.4.1", osx_version = "monterey",
     ),
 
     windows_pipeline(
