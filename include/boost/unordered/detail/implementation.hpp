@@ -2075,9 +2075,16 @@ namespace boost {
 
           // From 6.3.1/13:
           // Only resize when size >= mlf_ * count
-          max_load_ = boost::unordered::detail::double_to_size(
-            floor(static_cast<double>(mlf_) *
-                 static_cast<double>(buckets_.bucket_count())));
+          std::size_t const bc = buckets_.bucket_count();
+
+          // it's important we do the `bc == 0` check here because the `mlf_`
+          // can be specified to be infinity. The operation `n * INF` is `INF`
+          // for all `n > 0` but NaN for `n == 0`.
+          //
+          max_load_ =
+            bc == 0 ? 0
+                    : boost::unordered::detail::double_to_size(floor(
+                        static_cast<double>(mlf_) * static_cast<double>(bc)));
         }
 
         void max_load_factor(float z)
@@ -2089,6 +2096,12 @@ namespace boost {
 
         ////////////////////////////////////////////////////////////////////////
         // Constructors
+
+        table()
+            : functions(hasher(), key_equal()), size_(0), mlf_(1.0f),
+              max_load_(0)
+        {
+        }
 
         table(std::size_t num_buckets, hasher const& hf, key_equal const& eq,
           node_allocator_type const& a)
@@ -2361,7 +2374,10 @@ namespace boost {
         template <typename UniqueType>
         void move_assign(table& x, UniqueType is_unique, false_type)
         {
-          reserve(x.size_);
+          if (x.size_ > 0) {
+            reserve(x.size_);
+          }
+
           if (node_alloc() == x.node_alloc()) {
             move_assign_equal_alloc(x);
           } else {
@@ -2390,7 +2406,9 @@ namespace boost {
           {
             mlf_ = x.mlf_;
             recalculate_max_load();
-            this->reserve_for_insert(x.size_);
+            if (x.size_ > 0) {
+              this->reserve_for_insert(x.size_);
+            }
             this->clear_impl();
           }
           BOOST_CATCH(...)

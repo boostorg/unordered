@@ -494,11 +494,25 @@ namespace boost {
         group_pointer groups;
 
       public:
+        grouped_bucket_array()
+            : empty_value<node_allocator_type>(
+                empty_init_t(), node_allocator_type()),
+              size_index_(0), size_(0), buckets(), groups()
+        {
+        }
+
         grouped_bucket_array(size_type n, const Allocator& al)
             : empty_value<node_allocator_type>(empty_init_t(), al),
-              size_index_(size_policy::size_index(n)),
-              size_(size_policy::size(size_index_)), buckets(), groups()
+              size_index_(0),
+              size_(0), buckets(), groups()
         {
+          if (n == 0) {
+            return;
+          }
+
+          size_index_ = size_policy::size_index(n);
+          size_ = size_policy::size(size_index_);
+
           bucket_allocator_type bucket_alloc = this->get_bucket_allocator();
           group_allocator_type group_alloc = this->get_group_allocator();
 
