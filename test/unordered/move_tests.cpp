@@ -73,6 +73,10 @@ namespace move_tests {
       BOOST_TEST(test::equivalent(y.get_allocator(), al));
       BOOST_TEST(y.max_load_factor() == 1.0);
       test::check_equivalent_keys(y);
+#if defined(BOOST_UNORDERED_USE_MOVE) ||                                       \
+  !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+      BOOST_TEST_EQ(test::detail::tracker.count_allocations, 0u);
+#endif
     }
 
     {
@@ -90,7 +94,7 @@ namespace move_tests {
   }
 
   template <class T>
-  void move_assign_tests1(T*, test::random_generator const& generator)
+  void move_assign_tests1(T* p, test::random_generator const& generator)
   {
     {
       test::check_instances check_;
@@ -101,6 +105,19 @@ namespace move_tests {
       y = create(v, count);
 #if BOOST_UNORDERED_TEST_MOVING && defined(BOOST_HAS_NRVO)
       BOOST_TEST(count == test::global_object_count);
+#endif
+      test::check_container(y, v);
+      test::check_equivalent_keys(y);
+    }
+
+    {
+      test::random_values<T> v;
+
+      T y;
+      y = empty(p);
+#if defined(BOOST_UNORDERED_USE_MOVE) ||                                       \
+  !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+      BOOST_TEST_EQ(test::detail::tracker.count_allocations, 0u);
 #endif
       test::check_container(y, v);
       test::check_equivalent_keys(y);
@@ -234,6 +251,32 @@ namespace move_tests {
         BOOST_TEST(test::equivalent(y.get_allocator(), al1));
       }
 #endif
+    }
+
+    {
+      test::random_values<T> v;
+      T y(0, hf, eq, al1);
+      T x(0, hf, eq, al2);
+      x.max_load_factor(0.25);
+
+      BOOST_TEST_EQ(test::detail::tracker.count_allocations, 0u);
+
+      y = boost::move(x);
+#if defined(BOOST_UNORDERED_USE_MOVE) ||                                       \
+  !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+      BOOST_TEST_EQ(test::detail::tracker.count_allocations, 0u);
+#endif
+      test::check_container(y, v);
+      test::check_equivalent_keys(y);
+      BOOST_TEST(y.max_load_factor() == 0.25);
+
+      if (BOOST_UNORDERED_TEST_MOVING
+            ? (bool)allocator_type::is_propagate_on_move
+            : (bool)allocator_type::is_propagate_on_assign) {
+        BOOST_TEST(test::equivalent(y.get_allocator(), al2));
+      } else {
+        BOOST_TEST(test::equivalent(y.get_allocator(), al1));
+      }
     }
 
     {
@@ -701,12 +744,18 @@ namespace move_tests {
       test::random_values<T> const v(1000, generator);
       test::object_count count;
       T y(create(v, count));
+
+      unsigned num_allocs = test::detail::tracker.count_allocations;
+      (void)num_allocs;
+
       T x(boost::move(y));
 
 #if defined(BOOST_UNORDERED_USE_MOVE) ||                                       \
   !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
       BOOST_TEST(y.empty());
       BOOST_TEST(y.begin() == y.end());
+      BOOST_TEST_EQ(y.bucket_count(), 0u);
+      BOOST_TEST_EQ(test::detail::tracker.count_allocations, num_allocs);
 #endif
 
       fps[i](y, v);
@@ -743,6 +792,10 @@ namespace move_tests {
       test::random_values<T> v(1000, generator);
       test::object_count count;
       T y(create(v, count));
+
+      unsigned num_allocs = test::detail::tracker.count_allocations;
+      (void)num_allocs;
+
       T x(empty(ptr));
       x = boost::move(y);
 
@@ -750,6 +803,8 @@ namespace move_tests {
   !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
       BOOST_TEST(y.empty());
       BOOST_TEST(y.begin() == y.end());
+      BOOST_TEST_EQ(y.bucket_count(), 0u);
+      BOOST_TEST_EQ(test::detail::tracker.count_allocations, num_allocs);
 #endif
 
       fps[i](y, v);
@@ -769,17 +824,23 @@ namespace move_tests {
       test::random_values<T> v(1000, generator);
       test::object_count count;
       T y(v.begin(), v.end(), 0, hf, eq, al1);
+
+      unsigned num_allocs = test::detail::tracker.count_allocations;
+      (void)num_allocs;
+
       T x(al2);
       x = boost::move(y);
 
       bool b = boost::allocator_propagate_on_container_move_assignment<
         typename T::allocator_type>::type::value;
       if (b) {
-        #if defined(BOOST_UNORDERED_USE_MOVE) ||                                       \
+#if defined(BOOST_UNORDERED_USE_MOVE) ||                                       \
   !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-      BOOST_TEST(y.empty());
-      BOOST_TEST(y.begin() == y.end());
-      #else
+        BOOST_TEST(y.empty());
+        BOOST_TEST(y.begin() == y.end());
+        BOOST_TEST_EQ(y.bucket_count(), 0u);
+        BOOST_TEST_EQ(test::detail::tracker.count_allocations, num_allocs);
+#else
         BOOST_TEST_NOT(y.empty());
         BOOST_TEST(y.begin() != y.end());
 

@@ -43,6 +43,23 @@ namespace copy_tests {
       BOOST_TEST(x.max_load_factor() == y.max_load_factor());
       BOOST_TEST(test::selected_count(y.get_allocator()) ==
                  (allocator_type::is_select_on_copy));
+      BOOST_TEST(test::detail::tracker.count_allocations == 0);
+      test::check_equivalent_keys(y);
+    }
+
+    {
+      test::check_instances check_;
+
+      T x(0);
+      T y(x);
+      BOOST_TEST(y.empty());
+      BOOST_TEST(test::equivalent(y.hash_function(), hf));
+      BOOST_TEST(test::equivalent(y.key_eq(), eq));
+      BOOST_TEST(test::equivalent(y.get_allocator(), al));
+      BOOST_TEST(x.max_load_factor() == y.max_load_factor());
+      BOOST_TEST(test::selected_count(y.get_allocator()) ==
+                 (allocator_type::is_select_on_copy));
+      BOOST_TEST(test::detail::tracker.count_allocations == 0);
       test::check_equivalent_keys(y);
     }
 
@@ -94,6 +111,22 @@ namespace copy_tests {
     {
       test::check_instances check_;
 
+      T x(0, hf, eq, al);
+      T y(x);
+      BOOST_TEST(y.empty());
+      BOOST_TEST(test::equivalent(y.hash_function(), hf));
+      BOOST_TEST(test::equivalent(y.key_eq(), eq));
+      BOOST_TEST(test::equivalent(y.get_allocator(), al));
+      BOOST_TEST(x.max_load_factor() == y.max_load_factor());
+      BOOST_TEST(test::selected_count(y.get_allocator()) ==
+                 (allocator_type::is_select_on_copy));
+      BOOST_TEST(test::detail::tracker.count_allocations == 0);
+      test::check_equivalent_keys(y);
+    }
+
+    {
+      test::check_instances check_;
+
       T x(10000, hf, eq, al);
       T y(x);
       BOOST_TEST(y.empty());
@@ -103,6 +136,21 @@ namespace copy_tests {
       BOOST_TEST(x.max_load_factor() == y.max_load_factor());
       BOOST_TEST(test::selected_count(y.get_allocator()) ==
                  (allocator_type::is_select_on_copy));
+      test::check_equivalent_keys(y);
+    }
+
+    {
+      test::check_instances check_;
+
+      T x(0, hf, eq, al);
+      T y(x, al2);
+      BOOST_TEST(y.empty());
+      BOOST_TEST(test::equivalent(y.hash_function(), hf));
+      BOOST_TEST(test::equivalent(y.key_eq(), eq));
+      BOOST_TEST(test::equivalent(y.get_allocator(), al2));
+      BOOST_TEST(x.max_load_factor() == y.max_load_factor());
+      BOOST_TEST(test::selected_count(y.get_allocator()) == 0);
+      BOOST_TEST(test::detail::tracker.count_allocations == 0);
       test::check_equivalent_keys(y);
     }
 
@@ -123,6 +171,22 @@ namespace copy_tests {
     {
       test::check_instances check_;
 
+      test::random_values<T> v;
+
+      T x(v.begin(), v.end(), 0, hf, eq, al);
+      T y(x);
+      test::unordered_equivalence_tester<T> equivalent(x);
+      BOOST_TEST(equivalent(y));
+      test::check_equivalent_keys(y);
+      BOOST_TEST(test::selected_count(y.get_allocator()) ==
+                 (allocator_type::is_select_on_copy));
+      BOOST_TEST(test::equivalent(y.get_allocator(), al));
+      BOOST_TEST(test::detail::tracker.count_allocations == 0);
+    }
+
+    {
+      test::check_instances check_;
+
       test::random_values<T> v(1000, generator);
 
       T x(v.begin(), v.end(), 0, hf, eq, al);
@@ -133,6 +197,21 @@ namespace copy_tests {
       BOOST_TEST(test::selected_count(y.get_allocator()) ==
                  (allocator_type::is_select_on_copy));
       BOOST_TEST(test::equivalent(y.get_allocator(), al));
+    }
+
+    {
+      test::check_instances check_;
+
+      test::random_values<T> v;
+
+      T x(v.begin(), v.end(), 0, hf, eq, al);
+      T y(x, al2);
+      test::unordered_equivalence_tester<T> equivalent(x);
+      BOOST_TEST(equivalent(y));
+      test::check_equivalent_keys(y);
+      BOOST_TEST(test::selected_count(y.get_allocator()) == 0);
+      BOOST_TEST(test::equivalent(y.get_allocator(), al2));
+      BOOST_TEST(test::detail::tracker.count_allocations == 0);
     }
 
     {
