@@ -200,7 +200,7 @@ namespace boost {
       template <typename Types> struct table;
 
       static const float minimum_max_load_factor = 1e-3f;
-      static const std::size_t default_bucket_count = 11;
+      static const std::size_t default_bucket_count = 0;
 
       struct move_tag
       {
