@@ -1664,8 +1664,6 @@ namespace boost {
 
     template <class K, class T, class H, class P, class A>
     unordered_map<K, T, H, P, A>::unordered_map()
-        : table_(boost::unordered::detail::default_bucket_count, hasher(),
-            key_equal(), allocator_type())
     {
     }
 
@@ -2147,8 +2145,6 @@ namespace boost {
 
     template <class K, class T, class H, class P, class A>
     unordered_multimap<K, T, H, P, A>::unordered_multimap()
-        : table_(boost::unordered::detail::default_bucket_count, hasher(),
-            key_equal(), allocator_type())
     {
     }
 

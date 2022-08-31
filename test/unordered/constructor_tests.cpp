@@ -35,6 +35,7 @@ namespace constructor_tests {
 
       T x(0, hf, eq);
       BOOST_TEST(x.empty());
+      BOOST_TEST_EQ(x.bucket_count(), 0u);
       BOOST_TEST(test::equivalent(x.hash_function(), hf));
       BOOST_TEST(test::equivalent(x.key_eq(), eq));
       BOOST_TEST(test::equivalent(x.get_allocator(), al));
@@ -73,6 +74,7 @@ namespace constructor_tests {
 
       T x;
       BOOST_TEST(x.empty());
+      BOOST_TEST_EQ(x.bucket_count(), 0u);
       BOOST_TEST(test::equivalent(x.hash_function(), hf));
       BOOST_TEST(test::equivalent(x.key_eq(), eq));
       BOOST_TEST(test::equivalent(x.get_allocator(), al));
@@ -140,6 +142,7 @@ namespace constructor_tests {
 
       T x(0, hf, eq, al);
       BOOST_TEST(x.empty());
+      BOOST_TEST_EQ(x.bucket_count(), 0u);
       BOOST_TEST(test::equivalent(x.hash_function(), hf));
       BOOST_TEST(test::equivalent(x.key_eq(), eq));
       BOOST_TEST(test::equivalent(x.get_allocator(), al));
@@ -166,6 +169,7 @@ namespace constructor_tests {
 
       T x(al);
       BOOST_TEST(x.empty());
+      BOOST_TEST_EQ(x.bucket_count(), 0u);
       BOOST_TEST(test::equivalent(x.hash_function(), hf));
       BOOST_TEST(test::equivalent(x.key_eq(), eq));
       BOOST_TEST(test::equivalent(x.get_allocator(), al));
@@ -325,6 +329,7 @@ namespace constructor_tests {
 
       T x(list);
       BOOST_TEST(x.empty());
+      BOOST_TEST_EQ(x.bucket_count(), 0u);
       BOOST_TEST(test::equivalent(x.hash_function(), hf));
       BOOST_TEST(test::equivalent(x.key_eq(), eq));
       BOOST_TEST(test::equivalent(x.get_allocator(), al));
@@ -381,6 +386,104 @@ namespace constructor_tests {
   }
 
   template <class T>
+  void no_alloc_default_construct_test(T*, test::random_generator)
+  {
+    UNORDERED_SUB_TEST("Construct 1")
+    {
+      T x;
+      BOOST_TEST_EQ(x.bucket_count(), 0u);
+      BOOST_TEST_EQ(test::detail::tracker.count_allocations, 0u);
+    }
+
+    UNORDERED_SUB_TEST("Construct 2")
+    {
+      {
+        T x(0);
+        BOOST_TEST_EQ(x.bucket_count(), 0u);
+        BOOST_TEST_EQ(test::detail::tracker.count_allocations, 0u);
+      }
+
+      {
+        T x(1);
+        BOOST_TEST_GT(x.bucket_count(), 0u);
+        BOOST_TEST_GT(test::detail::tracker.count_allocations, 0u);
+      }
+    }
+
+    UNORDERED_SUB_TEST("Construct 3")
+    {
+      test::random_values<T> v;
+      T x(v.begin(), v.end());
+      BOOST_TEST_EQ(x.bucket_count(), 0u);
+      BOOST_TEST_EQ(test::detail::tracker.count_allocations, 0u);
+    }
+
+    UNORDERED_SUB_TEST("Construct 4")
+    {
+      {
+        test::random_values<T> v;
+        T x(v.begin(), v.end(), 0);
+        BOOST_TEST_EQ(x.bucket_count(), 0u);
+        BOOST_TEST_EQ(test::detail::tracker.count_allocations, 0u);
+      }
+
+      {
+        test::random_values<T> v;
+        T x(v.begin(), v.end(), 1);
+        BOOST_TEST_GT(x.bucket_count(), 0u);
+        BOOST_TEST_GT(test::detail::tracker.count_allocations, 0u);
+      }
+    }
+
+    UNORDERED_SUB_TEST("Construct 5")
+    {
+      typename T::allocator_type al;
+
+      {
+        T x(al);
+        BOOST_TEST_EQ(x.bucket_count(), 0u);
+        BOOST_TEST_EQ(test::detail::tracker.count_allocations, 0u);
+      }
+    }
+
+    UNORDERED_SUB_TEST("Construct 6")
+    {
+      typename T::allocator_type al;
+
+      T x(0, al);
+      BOOST_TEST_EQ(x.bucket_count(), 0u);
+      BOOST_TEST_EQ(test::detail::tracker.count_allocations, 0u);
+    }
+
+#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
+    UNORDERED_SUB_TEST("Initializer list 1")
+    {
+      std::initializer_list<typename T::value_type> list;
+      T x(list);
+      BOOST_TEST_EQ(x.bucket_count(), 0u);
+      BOOST_TEST_EQ(test::detail::tracker.count_allocations, 0u);
+    }
+
+    UNORDERED_SUB_TEST("Initializer list 2")
+    {
+      {
+        std::initializer_list<typename T::value_type> list;
+        T x(list, 0);
+        BOOST_TEST_EQ(x.bucket_count(), 0u);
+        BOOST_TEST_EQ(test::detail::tracker.count_allocations, 0u);
+      }
+
+      {
+        std::initializer_list<typename T::value_type> list;
+        T x(list, 1);
+        BOOST_TEST_GT(x.bucket_count(), 0u);
+        BOOST_TEST_GT(test::detail::tracker.count_allocations, 0u);
+      }
+    }
+#endif
+  }
+
+  template <class T>
   void map_constructor_test(T*, test::random_generator const& generator)
   {
     typedef test::list<
@@ -420,6 +523,10 @@ namespace constructor_tests {
 
   UNORDERED_TEST(map_constructor_test,
     ((test_map_std_alloc)(test_map)(test_multimap))(
+      (default_generator)(generate_collisions)(limited_range)))
+
+  UNORDERED_TEST(no_alloc_default_construct_test,
+    ((test_set)(test_multiset)(test_map)(test_multimap))(
       (default_generator)(generate_collisions)(limited_range)))
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)

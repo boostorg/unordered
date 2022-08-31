@@ -1266,8 +1266,6 @@ namespace boost {
     ////////////////////////////////////////////////////////////////////////////
     template <class T, class H, class P, class A>
     unordered_set<T, H, P, A>::unordered_set()
-        : table_(boost::unordered::detail::default_bucket_count, hasher(),
-            key_equal(), allocator_type())
     {
     }
 
@@ -1664,8 +1662,6 @@ namespace boost {
 
     template <class T, class H, class P, class A>
     unordered_multiset<T, H, P, A>::unordered_multiset()
-        : table_(boost::unordered::detail::default_bucket_count, hasher(),
-            key_equal(), allocator_type())
     {
     }
 

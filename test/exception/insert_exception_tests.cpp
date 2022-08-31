@@ -95,7 +95,7 @@ void insert_rehash_exception_test(
   T*, Inserter insert, test::random_generator gen)
 {
   for (int i = 0; i < 5; ++i) {
-    T x;
+    T x(1);
     rehash_prep(x);
 
     test::random_values<T> v2(5, gen);
@@ -393,7 +393,7 @@ template <typename T>
 void insert_range_rehash_exception_test(T*, test::random_generator gen)
 {
   for (int i = 0; i < 5; ++i) {
-    T x;
+    T x(1);
     rehash_prep(x);
 
     test::random_values<T> v2(5, gen);
