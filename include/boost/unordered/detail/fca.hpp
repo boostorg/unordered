@@ -494,6 +494,14 @@ namespace boost {
         group_pointer groups;
 
       public:
+        static std::size_t bucket_count_for(std::size_t num_buckets)
+        {
+          if (num_buckets == 0) {
+            return 0;
+          }
+          return size_policy::size(size_policy::size_index(num_buckets));
+        }
+
         grouped_bucket_array()
             : empty_value<node_allocator_type>(
                 empty_init_t(), node_allocator_type()),

@@ -2524,6 +2524,17 @@ namespace boost {
           new_buckets.insert_node(itnewb, p);
         }
 
+        static std::size_t min_buckets(std::size_t num_elements, float mlf)
+        {
+          std::size_t num_buckets = static_cast<std::size_t>(
+            std::ceil(static_cast<float>(num_elements) / mlf));
+
+          if (num_buckets == 0 && num_elements > 0) { // mlf == inf
+            num_buckets = 1;
+          }
+          return num_buckets;
+        }
+
         void rehash(std::size_t);
         void reserve(std::size_t);
         void reserve_for_insert(std::size_t);
@@ -3432,22 +3443,18 @@ namespace boost {
       template <typename Types>
       inline void table<Types>::rehash(std::size_t num_buckets)
       {
-        std::size_t bc = (std::max)(num_buckets,
-          static_cast<std::size_t>(1.0f + static_cast<float>(size_) / mlf_));
+        num_buckets = (std::max)(
+          min_buckets(size_, mlf_), buckets_.bucket_count_for(num_buckets));
 
-        if (bc <= buckets_.bucket_count()) {
-          return;
+        if (num_buckets != this->bucket_count()) {
+          this->rehash_impl(num_buckets);
         }
-
-        this->rehash_impl(bc);
       }
 
       template <class Types>
       inline void table<Types>::reserve(std::size_t num_elements)
       {
-        std::size_t const num_buckets = static_cast<std::size_t>(
-          std::ceil(static_cast<float>(num_elements) / mlf_));
-
+        std::size_t num_buckets = min_buckets(num_elements, mlf_);
         this->rehash(num_buckets);
       }
 
