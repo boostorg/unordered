@@ -2071,8 +2071,6 @@ namespace boost {
 
         void recalculate_max_load()
         {
-          using namespace std;
-
           // From 6.3.1/13:
           // Only resize when size >= mlf_ * count
           std::size_t const bc = buckets_.bucket_count();
@@ -2083,8 +2081,8 @@ namespace boost {
           //
           max_load_ =
             bc == 0 ? 0
-                    : boost::unordered::detail::double_to_size(floor(
-                        static_cast<double>(mlf_) * static_cast<double>(bc)));
+                    : boost::unordered::detail::double_to_size(
+                        static_cast<double>(mlf_) * static_cast<double>(bc));
         }
 
         void max_load_factor(float z)
