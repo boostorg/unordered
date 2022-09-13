@@ -81,6 +81,300 @@ namespace rehash_tests {
     BOOST_TEST(postcondition(x, 0));
   }
 
+  template <class X> void rehash_empty_tracking(X*, test::random_generator)
+  {
+    // valid for all load factors
+    float const max_load_factors[] = {
+      0.5f, 1.0f, 1e6f, std::numeric_limits<float>::infinity()};
+
+    std::size_t const max_load_factors_len =
+      sizeof(max_load_factors) / sizeof(*max_load_factors);
+
+    for (std::size_t i = 0; i < max_load_factors_len; ++i) {
+      X x;
+      BOOST_TEST_EQ(x.size(), 0u);
+      BOOST_TEST_EQ(test::detail::tracker.count_allocations, 0u);
+
+      x.max_load_factor(max_load_factors[i]);
+
+      {
+        BOOST_TEST_EQ(x.bucket_count(), 0u);
+
+        x.rehash(0);
+        BOOST_TEST_EQ(x.bucket_count(), 0u);
+        BOOST_TEST_EQ(test::detail::tracker.count_allocations, 0u);
+      }
+
+      {
+        BOOST_TEST_EQ(x.bucket_count(), 0u);
+
+        x.rehash(1000);
+        BOOST_TEST_GE(x.bucket_count(), 1000u);
+        BOOST_TEST_GT(test::detail::tracker.count_allocations, 0u);
+
+        x.rehash(0);
+        BOOST_TEST_EQ(x.bucket_count(), 0u);
+        BOOST_TEST_EQ(test::detail::tracker.count_allocations, 0u);
+      }
+
+      {
+        BOOST_TEST_EQ(x.bucket_count(), 0u);
+
+        x.rehash(1000);
+        BOOST_TEST_GE(x.bucket_count(), 1000u);
+        BOOST_TEST_GT(test::detail::tracker.count_allocations, 0u);
+
+        x.rehash(10);
+        BOOST_TEST_GE(x.bucket_count(), 10u);
+        BOOST_TEST_LT(x.bucket_count(), 1000u);
+        BOOST_TEST_GT(test::detail::tracker.count_allocations, 0u);
+      }
+
+      {
+        BOOST_TEST_GT(x.bucket_count(), 0u);
+        BOOST_TEST_LT(x.bucket_count(), 1000u);
+
+        x.rehash(1000);
+        BOOST_TEST_GE(x.bucket_count(), 1000u);
+        BOOST_TEST_GT(test::detail::tracker.count_allocations, 0u);
+
+        x.rehash(0);
+        BOOST_TEST_EQ(x.bucket_count(), 0u);
+        BOOST_TEST_EQ(test::detail::tracker.count_allocations, 0u);
+      }
+    }
+
+    for (std::size_t i = 0; i < max_load_factors_len; ++i) {
+      typedef typename X::size_type size_type;
+
+      X x;
+      BOOST_TEST_EQ(x.size(), 0u);
+      BOOST_TEST_EQ(test::detail::tracker.count_allocations, 0u);
+
+      float const mlf = max_load_factors[i];
+      x.max_load_factor(mlf);
+
+      {
+        BOOST_TEST_EQ(x.bucket_count(), 0u);
+
+        x.reserve(0);
+        BOOST_TEST_EQ(x.bucket_count(), 0u);
+        BOOST_TEST_EQ(test::detail::tracker.count_allocations, 0u);
+      }
+
+      {
+        BOOST_TEST_EQ(x.bucket_count(), 0u);
+
+        x.reserve(1000);
+        BOOST_TEST_GE(
+          x.bucket_count(), static_cast<size_type>(std::ceil(1000 / mlf)));
+        BOOST_TEST_GT(test::detail::tracker.count_allocations, 0u);
+
+        x.reserve(0);
+        BOOST_TEST_EQ(x.bucket_count(), 0u);
+        BOOST_TEST_EQ(test::detail::tracker.count_allocations, 0u);
+      }
+
+      {
+        BOOST_TEST_EQ(x.bucket_count(), 0u);
+
+        x.reserve(1000);
+        BOOST_TEST_GE(
+          x.bucket_count(), static_cast<size_type>(std::ceil(1000 / mlf)));
+        BOOST_TEST_GT(test::detail::tracker.count_allocations, 0u);
+
+        x.reserve(10);
+        BOOST_TEST_GE(
+          x.bucket_count(), static_cast<size_type>(std::ceil(10 / mlf)));
+        BOOST_TEST_LT(x.bucket_count(), 1000u);
+        BOOST_TEST_GT(test::detail::tracker.count_allocations, 0u);
+      }
+
+      {
+        BOOST_TEST_GT(x.bucket_count(), 0u);
+        BOOST_TEST_LT(x.bucket_count(), 1000u);
+
+        x.reserve(1000);
+        BOOST_TEST_GE(
+          x.bucket_count(), static_cast<size_type>(std::ceil(1000 / mlf)));
+        BOOST_TEST_GT(test::detail::tracker.count_allocations, 0u);
+
+        x.reserve(0);
+        BOOST_TEST_EQ(x.bucket_count(), 0u);
+        BOOST_TEST_EQ(test::detail::tracker.count_allocations, 0u);
+      }
+    }
+  }
+
+  template <class X>
+  void rehash_nonempty_tracking(X*, test::random_generator generator)
+  {
+    test::random_values<X> const v(1000, generator);
+
+    typedef typename X::size_type size_type;
+
+    float const max_load_factors[] = {0.5f, 1.0f, 1e2f};
+
+    size_type const max_load_factors_len =
+      sizeof(max_load_factors) / sizeof(*max_load_factors);
+
+    for (size_type i = 0; i < max_load_factors_len; ++i) {
+      float const mlf = max_load_factors[i];
+
+      X x(v.begin(), v.end());
+      BOOST_TEST_GT(x.size(), 0u);
+      BOOST_TEST_GT(test::detail::tracker.count_allocations, 0u);
+
+      x.max_load_factor(mlf);
+
+      size_type bucket_count = x.bucket_count();
+
+      {
+        BOOST_TEST_GT(x.bucket_count(), 0u);
+
+        x.rehash(0);
+        BOOST_TEST_GE(x.bucket_count(),
+          static_cast<size_type>(
+            std::floor(static_cast<float>(x.size()) / x.max_load_factor())));
+        BOOST_TEST_GT(test::detail::tracker.count_allocations, 0u);
+
+        bucket_count = x.bucket_count();
+      }
+
+      {
+        BOOST_TEST_GT(bucket_count, 0u);
+
+        x.rehash(2 * x.bucket_count());
+        BOOST_TEST_GT(x.bucket_count(), bucket_count);
+
+        bucket_count = x.bucket_count();
+      }
+
+      {
+        float const old_mlf = x.max_load_factor();
+
+        BOOST_TEST_GT(bucket_count, 0u);
+
+        x.rehash(bucket_count / 4);
+        BOOST_TEST_LT(x.bucket_count(), bucket_count);
+
+        x.max_load_factor(std::numeric_limits<float>::infinity());
+        x.rehash(0);
+        BOOST_TEST_GT(x.bucket_count(), 0u);
+
+        x.max_load_factor(old_mlf);
+      }
+
+      {
+        std::size_t const max_load =
+          static_cast<std::size_t>(static_cast<double>(x.max_load_factor()) *
+                                   static_cast<double>(x.bucket_count()));
+
+        while (x.size() < max_load) {
+          test::random_values<X> const t(max_load, generator);
+          typename test::random_values<X>::const_iterator pos = t.begin();
+          typename test::random_values<X>::const_iterator end = t.end();
+          for (; pos != end; ++pos) {
+            x.insert(*pos);
+            if (x.size() == max_load) {
+              break;
+            }
+          }
+        }
+
+        while (x.size() > max_load) {
+          x.erase(x.begin());
+        }
+
+        BOOST_TEST_EQ(x.size(), max_load);
+
+        bucket_count = x.bucket_count();
+        x.rehash(x.bucket_count());
+        BOOST_TEST_EQ(x.bucket_count(), bucket_count);
+      }
+    }
+
+    for (size_type i = 0; i < max_load_factors_len; ++i) {
+      X x(v.begin(), v.end());
+      BOOST_TEST_GT(x.size(), 0u);
+      BOOST_TEST_GT(test::detail::tracker.count_allocations, 0u);
+
+      float const mlf = max_load_factors[i];
+      x.max_load_factor(mlf);
+
+      size_type bucket_count = x.bucket_count();
+
+      {
+        BOOST_TEST_GT(x.bucket_count(), 0u);
+
+        x.reserve(0);
+        BOOST_TEST_GE(x.bucket_count(),
+          static_cast<size_type>(
+            std::floor(static_cast<float>(x.size()) / x.max_load_factor())));
+        BOOST_TEST_GT(test::detail::tracker.count_allocations, 0u);
+
+        bucket_count = x.bucket_count();
+      }
+
+      {
+        BOOST_TEST_GT(x.bucket_count(), 0u);
+
+        x.reserve(
+          2 * (static_cast<size_type>(
+                std::floor(static_cast<float>(x.size()) / x.max_load_factor()) +
+                std::floor(static_cast<float>(x.size()) * x.max_load_factor()))));
+
+        BOOST_TEST_GT(x.bucket_count(), bucket_count);
+
+        bucket_count = x.bucket_count();
+        BOOST_TEST_GT(bucket_count, 1u);
+      }
+
+      {
+        float const old_mlf = x.max_load_factor();
+
+        BOOST_TEST_GT(bucket_count, 4u);
+
+        x.reserve(bucket_count / 4);
+        BOOST_TEST_LT(x.bucket_count(), bucket_count);
+
+        x.max_load_factor(std::numeric_limits<float>::infinity());
+        x.reserve(0);
+        BOOST_TEST_GT(x.bucket_count(), 0u);
+
+        x.max_load_factor(old_mlf);
+      }
+
+      {
+        std::size_t const max_load =
+          static_cast<std::size_t>(static_cast<double>(x.max_load_factor()) *
+                                   static_cast<double>(x.bucket_count()));
+
+        while (x.size() < max_load) {
+          test::random_values<X> const t(max_load, generator);
+          typename test::random_values<X>::const_iterator pos = t.begin();
+          typename test::random_values<X>::const_iterator end = t.end();
+          for (; pos != end; ++pos) {
+            x.insert(*pos);
+            if (x.size() == max_load) {
+              break;
+            }
+          }
+        }
+
+        while (x.size() > max_load) {
+          x.erase(x.begin());
+        }
+
+        BOOST_TEST_EQ(x.size(), max_load);
+
+        bucket_count = x.bucket_count();
+        x.reserve(x.size());
+        BOOST_TEST_EQ(x.bucket_count(), bucket_count);
+      }
+    }
+  }
+
   template <class X> void rehash_test1(X*, test::random_generator generator)
   {
     test::random_values<X> v(1000, generator);
@@ -199,6 +493,18 @@ namespace rehash_tests {
     test::allocator2<test::movable> >* test_map_ptr;
   boost::unordered_multimap<int, int>* int_multimap_ptr;
 
+  boost::unordered_set<test::object, test::hash, test::equal_to,
+    test::allocator1<test::object> >* test_set_tracking;
+  boost::unordered_multiset<test::object, test::hash, test::equal_to,
+    test::allocator1<test::object> >* test_multiset_tracking;
+  boost::unordered_map<test::object, test::object, test::hash, test::equal_to,
+    test::allocator1<std::pair<test::object const, test::object> > >*
+    test_map_tracking;
+  boost::unordered_multimap<test::object, test::object, test::hash,
+    test::equal_to,
+    test::allocator1<std::pair<test::object const, test::object> > >*
+    test_multimap_tracking;
+
   using test::default_generator;
   using test::generate_collisions;
   using test::limited_range;
@@ -223,6 +529,12 @@ namespace rehash_tests {
       (default_generator)(generate_collisions)(limited_range)))
   UNORDERED_TEST(reserve_test2,
     ((int_set_ptr)(test_multiset_ptr)(test_map_ptr)(int_multimap_ptr))(
+      (default_generator)(generate_collisions)(limited_range)))
+  UNORDERED_TEST(rehash_empty_tracking,
+    ((test_set_tracking)(test_multiset_tracking)(test_map_tracking)(test_multimap_tracking))(
+      (default_generator)(generate_collisions)(limited_range)))
+  UNORDERED_TEST(rehash_nonempty_tracking,
+    ((test_set_tracking)(test_multiset_tracking)(test_map_tracking)(test_multimap_tracking))(
       (default_generator)(generate_collisions)(limited_range)))
 }
 
