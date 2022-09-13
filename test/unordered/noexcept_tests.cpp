@@ -11,6 +11,7 @@
 // clang-format on
 
 #include "../helpers/test.hpp"
+#include "../helpers/fwd.hpp"
 
 #if defined(BOOST_MSVC)
 #pragma warning(push)
@@ -247,37 +248,65 @@ namespace noexcept_tests {
     throwing_test_exception = false;
   }
 
-  UNORDERED_AUTO_TEST (test_nothrow_move_assign_when_noexcept) {
-    typedef boost::unordered_set<int, hash_nothrow_move_assign,
-      equal_to_nothrow_move_assign>
-      throwing_set;
+  template <class T>
+  void test_nothrow_move_assign_when_noexcept(T*, test::random_generator const&)
+  {
+    {
+      if (have_is_nothrow_move_assign) {
+        BOOST_TEST(boost::is_nothrow_move_assignable<T>::value);
+      }
 
-    if (have_is_nothrow_move_assign) {
-      BOOST_TEST(boost::is_nothrow_move_assignable<throwing_set>::value);
+      throwing_test_exception = false;
+
+      T x1;
+      T x2;
+      x1.insert(10);
+      x1.insert(50);
+      for (int i = 0; i < 100; ++i) {
+        x2.insert(i);
+      }
+
+      try {
+        throwing_test_exception = true;
+
+        x2 = boost::move(x1);
+        BOOST_TEST(x2.size() == 2);
+        BOOST_TEST(*x2.begin() == 10 || *x2.begin() == 50);
+        BOOST_TEST(have_is_nothrow_move_assign);
+      } catch (test_exception) {
+        BOOST_TEST(!have_is_nothrow_move_assign);
+      }
+
+      throwing_test_exception = false;
     }
 
-    throwing_test_exception = false;
+    {
+      if (have_is_nothrow_move_assign) {
+        BOOST_TEST(boost::is_nothrow_move_assignable<T>::value);
+      }
 
-    throwing_set x1;
-    throwing_set x2;
-    x1.insert(10);
-    x1.insert(50);
-    for (int i = 0; i < 100; ++i) {
-      x2.insert(i);
+      throwing_test_exception = false;
+
+      T x1;
+      T x2;
+      x1.insert(10);
+      x1.insert(50);
+      for (int i = 0; i < 100; ++i) {
+        x2.insert(i);
+      }
+
+      try {
+        throwing_test_exception = true;
+
+        x1 = boost::move(x2);
+        BOOST_TEST(x1.size() == 100);
+        BOOST_TEST(have_is_nothrow_move_assign);
+      } catch (test_exception) {
+        BOOST_TEST(!have_is_nothrow_move_assign);
+      }
+
+      throwing_test_exception = false;
     }
-
-    try {
-      throwing_test_exception = true;
-
-      x2 = boost::move(x1);
-      BOOST_TEST(x2.size() == 2);
-      BOOST_TEST(*x2.begin() == 10 || *x2.begin() == 50);
-      BOOST_TEST(have_is_nothrow_move_assign);
-    } catch (test_exception) {
-      BOOST_TEST(!have_is_nothrow_move_assign);
-    }
-
-    throwing_test_exception = false;
   }
 
   UNORDERED_AUTO_TEST (test_nothrow_swap_when_noexcept) {
@@ -317,5 +346,81 @@ namespace noexcept_tests {
 #if defined(BOOST_MSVC)
 #pragma warning(pop)
 #endif
+
+template <class T> class allocator1
+{
+  BOOST_COPYABLE_AND_MOVABLE(allocator1)
+  allocator1 operator=(BOOST_COPY_ASSIGN_REF(allocator1));
+  allocator1 operator=(BOOST_RV_REF(allocator1));
+
+public:
+  typedef T value_type;
+
+  allocator1() {}
+  allocator1(allocator1 const&) {}
+
+  template <class U> allocator1(allocator1<U> const&) {}
+
+  T* allocate(std::size_t n)
+  {
+    noexcept_tests::test_throw("Allocate");
+    return static_cast<T*>(::operator new(n * sizeof(T)));
+  }
+
+  void deallocate(T* p, std::size_t) { ::operator delete(p); }
+
+  friend bool operator==(allocator1 const&, allocator1 const&) { return true; }
+  friend bool operator!=(allocator1 const&, allocator1 const&) { return false; }
+};
+
+template <class T> class allocator2
+{
+  BOOST_COPYABLE_AND_MOVABLE(allocator2)
+  allocator2 operator=(BOOST_COPY_ASSIGN_REF(allocator2));
+public:
+  typedef T value_type;
+  typedef boost::true_type propagate_on_container_move_assignment;
+
+  allocator2() {}
+  allocator2(allocator2 const&) {}
+
+  template <class U> allocator2(allocator2<U> const&) {}
+
+  allocator2& operator=(BOOST_RV_REF(allocator2)) { return *this; }
+
+  T* allocate(std::size_t n)
+  {
+    noexcept_tests::test_throw("Allocate");
+    return static_cast<T*>(::operator new(n * sizeof(T)));
+  }
+
+  void deallocate(T* p, std::size_t) { ::operator delete(p); }
+
+  friend bool operator==(allocator2 const&, allocator2 const&) { return true; }
+  friend bool operator!=(allocator2 const&, allocator2 const&) { return false; }
+};
+
+UNORDERED_AUTO_TEST (prelim_allocator_checks) {
+  BOOST_TEST(boost::allocator_is_always_equal<allocator1<int> >::type::value);
+  BOOST_TEST(!boost::allocator_propagate_on_container_move_assignment<
+             allocator1<int> >::type::value);
+
+  BOOST_TEST(boost::allocator_is_always_equal<allocator2<int> >::type::value);
+  BOOST_TEST(boost::allocator_propagate_on_container_move_assignment<
+             allocator2<int> >::type::value);
+}
+
+boost::unordered_set<int, noexcept_tests::hash_nothrow_move_assign,
+  noexcept_tests::equal_to_nothrow_move_assign, allocator1<int> >*
+  throwing_set_alloc1;
+
+boost::unordered_set<int, noexcept_tests::hash_nothrow_move_assign,
+  noexcept_tests::equal_to_nothrow_move_assign, allocator2<int> >*
+  throwing_set_alloc2;
+
+using test::default_generator;
+
+UNORDERED_TEST(test_nothrow_move_assign_when_noexcept,
+  ((throwing_set_alloc1)(throwing_set_alloc2))((default_generator)))
 
 RUN_TESTS()

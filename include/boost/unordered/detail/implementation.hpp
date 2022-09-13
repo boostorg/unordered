@@ -2374,10 +2374,6 @@ namespace boost {
         template <typename UniqueType>
         void move_assign(table& x, UniqueType is_unique, false_type)
         {
-          if (x.size_ > 0) {
-            reserve(x.size_);
-          }
-
           if (node_alloc() == x.node_alloc()) {
             move_assign_equal_alloc(x);
           } else {
