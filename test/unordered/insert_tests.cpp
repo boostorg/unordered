@@ -12,6 +12,10 @@
 #include "../helpers/postfix.hpp"
 // clang-format on
 
+#ifdef BOOST_UNORDERED_FOA_TESTS
+#include <boost/unordered/unordered_flat_map.hpp>
+#endif
+
 #include "../helpers/test.hpp"
 #include "../objects/test.hpp"
 #include "../helpers/random_values.hpp"
@@ -884,13 +888,24 @@ namespace insert_tests {
   boost::unordered_multimap<test::object, test::object, test::hash,
     test::equal_to, test::allocator1<test::object> >* test_multimap;
 
+#ifdef BOOST_UNORDERED_FOA_TESTS
+  boost::unordered::unordered_flat_map<test::movable, test::movable, test::hash,
+    test::equal_to, test::allocator2<test::movable> >* test_flat_map;
+#endif
+
   using test::default_generator;
   using test::generate_collisions;
   using test::limited_range;
 
+#ifdef BOOST_UNORDERED_FOA_TESTS
+  UNORDERED_TEST(unique_insert_tests1,
+    ((test_set_std_alloc)(test_set)(test_map)(test_flat_map))(
+      (default_generator)(generate_collisions)(limited_range)))
+#else
   UNORDERED_TEST(unique_insert_tests1,
     ((test_set_std_alloc)(test_set)(test_map))(
       (default_generator)(generate_collisions)(limited_range)))
+#endif
 
   UNORDERED_TEST(equivalent_insert_tests1,
     ((test_multimap_std_alloc)(test_multiset)(test_multimap))(

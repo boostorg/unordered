@@ -5,6 +5,9 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 import testing ;
+import ../../config/checks/config : requires ;
+
+CPP14 = [ requires cxx14 ] ;
 
 # Adding -Wundef is blocked on (at least)
 # https://github.com/boostorg/type_traits/issues/165
@@ -49,6 +52,7 @@ run unordered/copy_tests.cpp ;
 run unordered/move_tests.cpp ;
 run unordered/assign_tests.cpp ;
 run unordered/insert_tests.cpp ;
+run unordered/insert_tests.cpp : : : $(CPP14) <define>BOOST_UNORDERED_FOA_TESTS : foa_insert_tests ;
 run unordered/insert_stable_tests.cpp ;
 run unordered/insert_hint_tests.cpp ;
 run unordered/emplace_tests.cpp ;
