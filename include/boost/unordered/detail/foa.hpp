@@ -672,13 +672,13 @@ private:
     }
     else{
       group_allocator gal=al;
-      new_arrays_.groups=group_alloc_traits::allocate(gal,groups_size);
+      new_arrays_.groups=boost::to_address(group_alloc_traits::allocate(gal,groups_size));
       // TODO: explain why memset
       std::memset(
         new_arrays_.groups,0,sizeof(group_type)*groups_size-1);
       new_arrays_.groups[groups_size-1].set_sentinel();
       BOOST_TRY{
-        new_arrays_.elements=alloc_traits::allocate(al,groups_size*N-1);
+        new_arrays_.elements=boost::to_address(alloc_traits::allocate(al,groups_size*N-1));
       }
       BOOST_CATCH(...){
         group_alloc_traits::deallocate(gal,new_arrays_.groups,groups_size);
