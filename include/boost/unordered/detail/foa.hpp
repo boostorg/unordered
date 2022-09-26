@@ -118,7 +118,7 @@ struct group15
 
   inline void mark_overflow(std::size_t hash)
   {
-    overflow()|=1<<(hash%8);
+    overflow()|=static_cast<unsigned char>(1<<(hash%8));
   }
 
   inline int match_available()const
