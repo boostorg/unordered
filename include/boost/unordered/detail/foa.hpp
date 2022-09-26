@@ -627,7 +627,7 @@ public:
     return arrays.elements?(arrays.groups_size_mask+1)*N-1:0;
   }
   
-  float load_factor()const noexcept{return float(size())/capacity();}
+  float load_factor()const noexcept{return float(size())/float(capacity());}
   float max_load_factor()const noexcept{return mlf;}
 
   void rehash(std::size_t n)
@@ -737,7 +737,7 @@ private:
     else {
       float fml=mlf*(float)(capacity());
       auto  res=(std::numeric_limits<std::size_t>::max)();
-      if(res>fml)res=(std::size_t)fml;
+      if(res>(std::size_t)fml)res=(std::size_t)fml;
       return res;
     }
   }
