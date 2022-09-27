@@ -49,9 +49,17 @@ namespace boost {
 
       size_type size() const noexcept { return table_.size(); }
 
+      /// Modifiers
+      ///
+
       std::pair<iterator, bool> insert(value_type const& value)
       {
         return table_.insert(value);
+      }
+
+      std::pair<iterator, bool> insert(value_type&& value)
+      {
+        return table_.insert(std::move(value));
       }
 
       size_type count(key_type const& key) const
