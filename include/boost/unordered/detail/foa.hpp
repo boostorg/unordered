@@ -256,7 +256,7 @@ struct pow2_size_policy
 
 struct pow2_quadratic_prober
 {
-  pow2_quadratic_prober(std::size_t _pos):pos{_pos}{}
+  pow2_quadratic_prober(std::size_t pos_):pos{pos_}{}
 
   inline std::size_t get()const{return pos;}
 
@@ -305,9 +305,9 @@ private:
   template<typename,typename,bool> friend class table_iterator;
   template<typename,typename,typename,typename> friend class table;
 
-  table_iterator(Group* pg,std::size_t n,const Value* _p):
+  table_iterator(Group* pg,std::size_t n,const Value* p_):
     pc{reinterpret_cast<unsigned char*>(const_cast<Group*>(pg))+n},
-    p{const_cast<Value*>(_p)}
+    p{const_cast<Value*>(p_)}
     {}
 
   inline std::size_t rebase() noexcept
@@ -378,9 +378,9 @@ public:
     const_iterator>::type;
 
   table(
-    std::size_t n=0,const Hash& _h=Hash(),const Pred& _pred=Pred(),
-    const Allocator& _al=Allocator()):
-    h{_h},pred{_pred},al{_al},size_{0},arrays{new_arrays(n)},ml{max_load()}
+    std::size_t n=0,const Hash& h_=Hash(),const Pred& pred_=Pred(),
+    const Allocator& al_=Allocator()):
+    h{h_},pred{pred_},al{al_},size_{0},arrays{new_arrays(n)},ml{max_load()}
   {}
 
   table(const table& x):table(x,x.al){}
@@ -399,8 +399,8 @@ public:
     x.ml=x.max_load();
   }
 
-  table(const table& x,const Allocator& _al):
-    h{x.h},pred{x.pred},al{_al},size_{0},
+  table(const table& x,const Allocator& al_):
+    h{x.h},pred{x.pred},al{al_},size_{0},
     arrays{new_arrays(std::size_t(std::ceil(x.size()/mlf)))},
     ml{max_load()}
   {
@@ -416,8 +416,8 @@ public:
     BOOST_CATCH_END
   }
 
-  table(table&& x,const Allocator& _al):
-    table{0,std::move(x.h),std::move(x.pred),_al}
+  table(table&& x,const Allocator& al_):
+    table{0,std::move(x.h),std::move(x.pred),al_}
   {
     if(al==x.al){
       size_=x.size_;
