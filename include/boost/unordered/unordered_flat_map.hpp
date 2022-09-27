@@ -72,6 +72,16 @@ namespace boost {
       void erase(const_iterator pos) { return table_.erase(pos); }
       size_type erase(key_type const& key) { return table_.erase(key); }
 
+      /// Lookup
+      ///
+
+      iterator find(key_type const& key) { return table_.find(key); }
+
+      const_iterator find(key_type const& key) const
+      {
+        return table_.find(key);
+      }
+
       std::pair<iterator, iterator> equal_range(key_type const& key)
       {
         auto pos = table_.find(key);
