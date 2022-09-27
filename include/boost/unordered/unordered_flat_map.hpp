@@ -63,14 +63,26 @@ namespace boost {
       std::pair<iterator, iterator> equal_range(key_type const& key)
       {
         auto pos = table_.find(key);
-        return {pos, pos == table_.end() ? pos : ++pos};
+        if (pos == table_.end()) {
+          return {pos, pos};
+        }
+
+        auto next = pos;
+        ++next;
+        return {pos, next};
       }
 
       std::pair<const_iterator, const_iterator> equal_range(
         key_type const& key) const
       {
         auto pos = table_.find(key);
-        return {pos, pos == table_.end() ? pos : ++pos};
+        if (pos == table_.end()) {
+          return {pos, pos};
+        }
+
+        auto next = pos;
+        ++next;
+        return {pos, next};
       }
 
       size_type bucket_count() const noexcept { return table_.capacity(); }
