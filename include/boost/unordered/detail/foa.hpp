@@ -336,7 +336,7 @@ private:
     }
     else{
       pc+=n;
-      p+=n-n0;
+      p+=static_cast<int>(n)-static_cast<int>(n0);
     }
   }
 
@@ -959,6 +959,7 @@ private:
   {
     auto pg=arrays_.groups;
     auto p=arrays_.elements;
+    if(!p){return;}
     for(std::size_t pos=0,last=arrays_.groups_size_mask+1;
         pos!=last;++pos,++pg,p+=N){
       auto mask=pg->match_really_occupied();

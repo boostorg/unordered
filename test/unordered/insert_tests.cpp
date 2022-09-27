@@ -878,7 +878,7 @@ namespace insert_tests {
   using test::generate_collisions;
   using test::limited_range;
 
-#ifndef BOOST_UNORDERED_FOA_TESTS
+#ifdef BOOST_UNORDERED_FOA_TESTS
   boost::unordered::unordered_flat_map<test::movable, test::movable, test::hash,
     test::equal_to, test::allocator2<test::movable> >* test_flat_map;
 
