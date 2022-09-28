@@ -534,7 +534,8 @@ public:
     h{h_},pred{pred_},al{al_},size_{0},arrays{new_arrays(n)},ml{max_load()}
   {}
 
-  table(const table& x):table(x,x.al){}
+  table(const table& x):
+    table(x,alloc_traits::select_on_container_copy_construction(x.al)){}
 
   table(table&& x)
     noexcept(
