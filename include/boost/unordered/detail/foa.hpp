@@ -15,13 +15,14 @@
 #include <boost/config.hpp>
 #include <boost/core/bit.hpp>
 #include <boost/core/no_exceptions_support.hpp>
+#include <boost/core/pointer_traits.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/predef.h>
 #include <boost/type_traits/is_nothrow_swappable.hpp>
-#include <cstddef>
-#include <cstring>
 #include <climits>
 #include <cmath>
+#include <cstddef>
+#include <cstring>
 #include <iterator>
 #include <limits>
 #include <memory>
@@ -136,6 +137,9 @@ struct group15
   {
     return at(N-1)==sentinel_?match_occupied()&0x3FFF:match_occupied();
   }
+
+  static constexpr struct{alignas(16) unsigned char storage[N+1];} dummy_group=
+    {{0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0}};
 
 private:
   static constexpr unsigned char available_=0,
@@ -691,22 +695,14 @@ private:
 
   static group_type* dummy_groups()noexcept
   {
-#if defined(BOOST_UNORDERED_SSE2)
-    static_assert(
-      std::is_same<group_type,group15>::value,
-      "encapsulation breach"
-    );
-    alignas(group_type) static constexpr unsigned char
-    storage[sizeof(group_type)*2]={
-      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1
-    };
+    using dummy_group_layout=
+      typename std::remove_const<decltype(group_type::dummy_group)>::type;
 
-    return reinterpret_cast<group_type*>(const_cast<unsigned char*>(storage));
+    static constexpr dummy_group_layout
+      storage[2]={group_type::dummy_group,group_type::dummy_group};
+
+    return reinterpret_cast<group_type*>(const_cast<dummy_group_layout*>(storage));
   }
-#else
-#error encapsulation breach
-#endif
 
   void delete_arrays(const arrays_info& arrays_)noexcept
   {
