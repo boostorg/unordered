@@ -252,6 +252,8 @@ struct pow2_size_policy
      return std::size_t(1)<<(sizeof(std::size_t)*CHAR_BIT-size_index);  
   }
     
+  static constexpr std::size_t min_size(){return 2;}
+
   static inline std::size_t position(std::size_t hash,std::size_t size_index)
   {
     return hash>>size_index;
@@ -699,8 +701,8 @@ private:
     using dummy_group_layout=
       typename std::remove_const<decltype(group_type::dummy_group)>::type;
 
-    static constexpr dummy_group_layout
-      storage[2]={group_type::dummy_group,group_type::dummy_group};
+    static constexpr dummy_group_layout storage[size_policy::min_size()]=
+      {group_type::dummy_group,group_type::dummy_group};
 
     return reinterpret_cast<group_type*>(
       const_cast<dummy_group_layout*>(storage));
