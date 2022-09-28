@@ -340,7 +340,8 @@ private:
     }
     else{
       pc+=n;
-      p+=static_cast<int>(n)-static_cast<int>(n0);
+      p-=n0;
+      p+=n;
     }
   }
 
@@ -701,7 +702,8 @@ private:
     static constexpr dummy_group_layout
       storage[2]={group_type::dummy_group,group_type::dummy_group};
 
-    return reinterpret_cast<group_type*>(const_cast<dummy_group_layout*>(storage));
+    return reinterpret_cast<group_type*>(
+      const_cast<dummy_group_layout*>(storage));
   }
 
   void delete_arrays(const arrays_info& arrays_)noexcept
