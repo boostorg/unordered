@@ -408,9 +408,9 @@ struct pow2_quadratic_prober
 {
   pow2_quadratic_prober(std::size_t pos_):pos{pos_}{}
 
-  std::size_t get()const{return pos;}
+  inline std::size_t get()const{return pos;}
 
-  bool next(std::size_t mask)
+  inline bool next(std::size_t mask)
   {
     step+=1;
     pos=(pos+step)&mask;
