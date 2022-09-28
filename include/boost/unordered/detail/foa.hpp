@@ -503,6 +503,7 @@ class table
   static constexpr auto N=group_type::N;
   using size_policy=pow2_size_policy;
   using prober=pow2_quadratic_prober;
+  using alloc_traits=std::allocator_traits<Allocator>;
 
 public:
   using key_type=typename type_policy::key_type;
@@ -797,7 +798,6 @@ public:
   }
 
 private:
-  using alloc_traits=std::allocator_traits<Allocator>;
   using group_allocator=
     typename alloc_traits::template rebind_alloc<group_type>;
   using group_alloc_traits=std::allocator_traits<group_allocator>;
