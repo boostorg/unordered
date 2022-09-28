@@ -491,7 +491,7 @@ private:
     }
   }
 
-  unsigned char *pc=nullptr;
+  unsigned char *pc;
   Value         *p=nullptr;
 };
 
