@@ -76,6 +76,11 @@ struct group15
 {
   static constexpr int N=15;
 
+  struct dummy_group_type
+  {
+    alignas(16) unsigned char storage[N+1]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0};
+  };
+
   inline void set(std::size_t pos,std::size_t hash)
   {
     BOOST_ASSERT(pos<N);
@@ -137,9 +142,6 @@ struct group15
   {
     return at(N-1)==sentinel_?match_occupied()&0x3FFF:match_occupied();
   }
-
-  static constexpr struct{alignas(16) unsigned char storage[N+1];} dummy_group=
-    {{0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0}};
 
 private:
   static constexpr unsigned char available_=0,
@@ -220,6 +222,11 @@ struct group15
 {
   static constexpr int N=15;
 
+  struct dummy_group_type
+  {
+    alignas(16) unsigned char storage[N+1]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0};
+  };
+
   inline void set(std::size_t pos,std::size_t hash)
   {
     BOOST_ASSERT(pos<N);
@@ -281,9 +288,6 @@ struct group15
   {
     return at(N-1)==sentinel_?match_occupied()&0x3FFF:match_occupied();
   }
-
-  static constexpr struct{alignas(16) unsigned char storage[N+1];} dummy_group=
-    {{0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0}};
 
 private:
   static constexpr unsigned char available_=0,
@@ -838,14 +842,9 @@ private:
 
   static group_type* dummy_groups()noexcept
   {
-    using dummy_group_layout=
-      typename std::remove_const<decltype(group_type::dummy_group)>::type;
-
-    static constexpr dummy_group_layout storage[size_policy::min_size()]=
-      {group_type::dummy_group,group_type::dummy_group};
-
+    static constexpr group_type::dummy_group_type storage[size_policy::min_size()];
     return reinterpret_cast<group_type*>(
-      const_cast<dummy_group_layout*>(storage));
+      const_cast<group_type::dummy_group_type*>(storage));
   }
 
   void delete_arrays(const arrays_info& arrays_)noexcept
