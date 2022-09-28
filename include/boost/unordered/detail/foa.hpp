@@ -729,15 +729,10 @@ private:
 
   std::size_t max_load()const
   {
-    if(!arrays.elements){
-      return 0;
-    }
-    else {
-      float fml=mlf*(float)(capacity());
-      auto  res=(std::numeric_limits<std::size_t>::max)();
-      if(res>(std::size_t)fml)res=(std::size_t)fml;
-      return res;
-    }
+    float fml=mlf*(float)(capacity());
+    auto  res=(std::numeric_limits<std::size_t>::max)();
+    if(res>(std::size_t)fml)res=(std::size_t)fml;
+    return res;
   }
 
   static inline auto key_from(const value_type& x)
