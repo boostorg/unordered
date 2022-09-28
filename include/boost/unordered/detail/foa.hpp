@@ -821,7 +821,7 @@ private:
       return {it,false};
     }
     else if(BOOST_UNLIKELY(size_>=ml)){
-      unchecked_rehash(capacity()+1); // TODO wrong if mlf is allowed to change
+      unchecked_rehash(std::size_t(std::ceil((size_+1)/mlf)));
       pos0=position_for(hash);
     }
     return {
