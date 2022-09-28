@@ -293,7 +293,7 @@ private:
   static constexpr unsigned char available_=0,
                                  sentinel_=1;
 
-  inline static unsigned char adjust_hash(unsigned char hash)
+  inline static unsigned char adjust_hash(std::size_t hash)
   {
     static constexpr unsigned char table[]={
       2,3,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
@@ -314,7 +314,7 @@ private:
       240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255,
     };
     
-    return table[hash];
+    return table[(unsigned char)hash];
   }
 
   /* copied from https://github.com/simd-everywhere/simde/blob/master/simde/x86/sse2.h#L3763 */
