@@ -682,7 +682,7 @@ public:
   const_iterator cbegin()const noexcept{return begin();}
   const_iterator cend()const noexcept{return end();}
 
-  bool        empty()const noexcept{return size()!=0;}
+  bool        empty()const noexcept{return size()==0;}
   std::size_t size()const noexcept{return size_;}
   std::size_t max_size()const noexcept{return SIZE_MAX;}
 
