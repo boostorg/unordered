@@ -70,7 +70,7 @@ namespace foa{
 
 /* TODO: description */
 
-#ifdef BOOST_UNORDERED_SSE2
+#if defined(BOOST_UNORDERED_SSE2)
 
 struct group15
 {
@@ -216,7 +216,7 @@ private:
   __m128i m;
 };
 
-#elif BOOST_UNORDERED_LITTLE_ENDIAN_NEON
+#elif defined(BOOST_UNORDERED_LITTLE_ENDIAN_NEON)
 
 struct group15
 {
