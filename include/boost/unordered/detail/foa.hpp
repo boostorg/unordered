@@ -755,7 +755,20 @@ public:
 
   void clear()noexcept
   {
-    for_all_elements([this](value_type* p){destroy_element(p);});
+    auto pg=arrays.groups;
+    auto p=arrays.elements;
+    if(p){
+      for(std::size_t pos=0,last=arrays.groups_size_mask+1;
+          pos!=last;++pos,++pg,p+=N){
+        auto mask=pg->match_really_occupied();
+        while(mask){
+          auto n=unchecked_countr_zero(mask);
+          destroy_element(p+n);
+          pg->reset(n);
+          mask&=mask-1;
+        }
+      }
+    }
     size_=0;
   }
 
