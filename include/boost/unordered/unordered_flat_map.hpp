@@ -7,6 +7,7 @@
 #endif
 
 #include <boost/unordered/detail/foa.hpp>
+#include <boost/unordered/unordered_flat_map_fwd.hpp>
 
 #include <boost/core/allocator_access.hpp>
 
