@@ -974,7 +974,7 @@ private:
       return {it,false};
     }
     else if(BOOST_UNLIKELY(size_>=ml)){
-      unchecked_rehash(std::size_t(std::ceil((size_+1)/mlf)));
+      unchecked_rehash(std::size_t(std::ceil(static_cast<float>(size_+1)/mlf)));
       pos0=position_for(hash);
     }
     return {
