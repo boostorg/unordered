@@ -1050,9 +1050,9 @@ private:
     const arrays_info& arrays_,std::size_t pos0,std::size_t hash,
     Args&&... args)
   {
-    auto  p=insert_position(arrays_,pos0,hash);
-    auto &pos=p.first;
-    auto &n=p.second;
+    auto  pn=insert_position(arrays_,pos0,hash);
+    auto &pos=pn.first;
+    auto &n=pn.second;
     auto  pg=arrays_.groups+pos;
     auto  p=arrays_.elements+pos*N+n;
     construct_element(p,std::forward<Args>(args)...);
