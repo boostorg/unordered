@@ -357,6 +357,171 @@ private:
   int8x16_t m;
 };
 
+#else /* non-SIMD */
+
+struct group15
+{
+  static constexpr int N=15;
+
+  struct dummy_group_type
+  {
+    alignas(16) boost::uint64_t m[2]=
+      {0x0000000000004000ull,0x0000000000000000ull};
+  };
+
+  inline void set(std::size_t pos,std::size_t hash)
+  {
+    BOOST_ASSERT(pos<N);
+    set_impl(pos,adjust_hash(hash));
+  }
+
+  inline void set_sentinel()
+  {
+    set_impl(N-1,sentinel_);
+  }
+
+  inline bool is_sentinel(std::size_t pos)const
+  {
+    BOOST_ASSERT(pos<N);
+    return 
+      pos==N-1&&
+      (m[0] & boost::uint64_t(0x4000400040004000ull))==boost::uint64_t(0x4000ull)&&
+      (m[1] & boost::uint64_t(0x4000400040004000ull))==0;
+  }
+
+  inline void reset(std::size_t pos)
+  {
+    BOOST_ASSERT(pos<N);
+    set_impl(pos,available_);
+  }
+
+  static inline void reset(unsigned char* pc)
+  {
+    std::size_t pos=reinterpret_cast<uintptr_t>(pc)%sizeof(group15);
+    pc-=pos;
+    reinterpret_cast<group15*>(pc)->reset(pos);
+  }
+
+  inline int match(std::size_t hash)const
+  {
+    return match_impl(adjust_hash(hash));
+  }
+
+  inline bool is_not_overflowed(std::size_t hash)const
+  {
+    return !(reinterpret_cast<const boost::uint16_t*>(m)[hash%8] & 0x8000u);
+  }
+
+  inline void mark_overflow(std::size_t hash)
+  {
+    reinterpret_cast<boost::uint16_t*>(m)[hash%8]|=0x8000u;
+  }
+
+  inline int match_available()const
+  {
+    boost::uint64_t x=~(m[0]|m[1]);
+    boost::uint32_t y=x&(x>>32);
+    y&=y>>16;
+    return y&0x7FFF;
+  }
+
+  inline int match_occupied()const
+  {
+    boost::uint64_t x=m[0]|m[1];
+    boost::uint32_t y=x|(x>>32);
+    y|=y>>16;
+    return y&0x7FFF;
+  }
+
+  inline int match_really_occupied()const /* excluding sentinel */
+  {
+    return ~(match_impl(0)|match_impl(1))&0x7FFF;
+  }
+
+private:
+  static constexpr unsigned char available_=0,
+                                 sentinel_=1;
+
+  inline static unsigned char adjust_hash(std::size_t hash)
+  {
+    static constexpr unsigned char table[]={
+      2,3,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
+      16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,
+      32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,
+      48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,
+      64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,
+      80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,
+      96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,
+      112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,
+      128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,
+      144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,
+      160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,
+      176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,
+      192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,
+      208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,
+      224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,
+      240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255,
+    };
+    
+    return table[(unsigned char)hash];
+  }
+
+  inline void set_impl(std::size_t pos,std::size_t n)
+  {
+    BOOST_ASSERT(n<256);
+    set_impl(m[0],pos,n&0xFu);
+    set_impl(m[1],pos,n>>4);
+  }
+
+  static inline void set_impl(boost::uint64_t& x,unsigned pos,unsigned n)
+  {
+    static constexpr boost::uint64_t mask[]=
+    {
+      0x0000000000000000ull,0x0000000000000001ull,0x0000000000010000ull,
+      0x0000000000010001ull,0x0000000100000000ull,0x0000000100000001ull,
+      0x0000000100010000ull,0x0000000100010001ull,0x0001000000000000ull,
+      0x0001000000000001ull,0x0001000000010000ull,0x0001000000010001ull,
+      0x0001000100000000ull,0x0001000100000001ull,0x0001000100010000ull,
+      0x0001000100010001ull,
+    };
+    static constexpr boost::uint64_t imask[]=
+    {
+      0x0001000100010001ull,0x0001000100010000ull,0x0001000100000001ull,
+      0x0001000100000000ull,0x0001000000010001ull,0x0001000000010000ull,
+      0x0001000000000001ull,0x0001000000000000ull,0x0000000100010001ull,
+      0x0000000100010000ull,0x0000000100000001ull,0x0000000100000000ull,
+      0x0000000000010001ull,0x0000000000010000ull,0x0000000000000001ull,
+      0x0000000000000000ull,
+    };
+
+    BOOST_ASSERT(pos<16&&n<16);
+    x|=   mask[n]<<pos;
+    x&=~(imask[n]<<pos);
+  }
+
+  inline int match_impl(std::size_t n)const
+  {
+    static constexpr boost::uint64_t mask[]=
+    {
+      0x0000000000000000ull,0x000000000000ffffull,0x00000000ffff0000ull,
+      0x00000000ffffffffull,0x0000ffff00000000ull,0x0000ffff0000ffffull,
+      0x0000ffffffff0000ull,0x0000ffffffffffffull,0xffff000000000000ull,
+      0xffff00000000ffffull,0xffff0000ffff0000ull,0xffff0000ffffffffull,
+      0xffffffff00000000ull,0xffffffff0000ffffull,0xffffffffffff0000ull,
+      0xffffffffffffffffull,
+    };
+
+    BOOST_ASSERT(n<256);
+    boost::uint64_t lo=~(m[0]^mask[n&0xFu]);
+    boost::uint64_t hi=~(m[1]^mask[n>>4])&lo;
+    boost::uint32_t y=hi&(hi>>32);
+    y&=y>>16;
+    return y&0x7FFF;
+  }
+
+  alignas(16) boost::uint64_t m[2];
+};
+
 #endif
 
 inline unsigned int unchecked_countr_zero(int x)
