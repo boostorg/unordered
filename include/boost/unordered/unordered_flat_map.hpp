@@ -51,20 +51,22 @@ namespace boost {
       using iterator = typename table_type::iterator;
       using const_iterator = typename table_type::const_iterator;
 
-      iterator begin() noexcept { return table_.begin(); }
-      const_iterator begin() const noexcept { return table_.begin(); }
-      const_iterator cbegin() const noexcept { return table_.cbegin(); }
-
-      iterator end() noexcept { return table_.end(); }
-      const_iterator end() const noexcept { return table_.end(); }
-      const_iterator cend() const noexcept { return table_.cend(); }
-
       unordered_flat_map() : unordered_flat_map(0) {}
 
       explicit unordered_flat_map(size_type n, hasher const& h = hasher(),
         key_equal const& pred = key_equal(),
         allocator_type const& a = allocator_type())
           : table_(n, h, pred, a)
+      {
+      }
+
+      unordered_flat_map(size_type n, allocator_type const& a)
+          : unordered_flat_map(n, hasher(), key_equal(), a)
+      {
+      }
+
+      explicit unordered_flat_map(allocator_type const& a)
+          : unordered_flat_map(0, a)
       {
       }
 
@@ -76,6 +78,30 @@ namespace boost {
       {
         this->insert(first, last);
       }
+
+      unordered_flat_map(std::initializer_list<value_type> ilist,
+        size_type n = 0, hasher const& h = hasher(),
+        key_equal const& pred = key_equal(),
+        allocator_type const& a = allocator_type())
+          : unordered_flat_map(ilist.begin(), ilist.end(), n, h, pred, a)
+      {
+      }
+
+      allocator_type get_allocator() const noexcept
+      {
+        return table_.get_allocator();
+      }
+
+      /// Iterators
+      ///
+
+      iterator begin() noexcept { return table_.begin(); }
+      const_iterator begin() const noexcept { return table_.begin(); }
+      const_iterator cbegin() const noexcept { return table_.cbegin(); }
+
+      iterator end() noexcept { return table_.end(); }
+      const_iterator end() const noexcept { return table_.end(); }
+      const_iterator cend() const noexcept { return table_.cend(); }
 
       /// Capacity
       ///
@@ -246,6 +272,9 @@ namespace boost {
         return {pos, next};
       }
 
+      /// Hash Policy
+      ///
+
       size_type bucket_count() const noexcept { return table_.capacity(); }
 
       float load_factor() const noexcept { return table_.load_factor(); }
@@ -254,6 +283,13 @@ namespace boost {
       {
         return table_.max_load_factor();
       }
+
+      void max_load_factor(float) {}
+
+      /// Observers
+      ///
+
+      hasher hash_function() const { return table_.hash_function(); }
 
       key_equal key_eq() const { return table_.key_eq(); }
     };

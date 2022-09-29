@@ -48,6 +48,7 @@ run unordered/incomplete_test.cpp ;
 run unordered/simple_tests.cpp ;
 run unordered/equivalent_keys_tests.cpp ;
 run unordered/constructor_tests.cpp ;
+run unordered/constructor_tests.cpp : : : $(CPP14) <define>BOOST_UNORDERED_FOA_TESTS : foa_constructor_tests ;
 run unordered/copy_tests.cpp ;
 run unordered/move_tests.cpp ;
 run unordered/assign_tests.cpp ;

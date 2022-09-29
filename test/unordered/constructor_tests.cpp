@@ -1,14 +1,20 @@
 
 // Copyright 2006-2010 Daniel James.
+// Copyright (C) 2022 Christian Mazakas
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+#ifdef BOOST_UNORDERED_FOA_TESTS
+#include <boost/unordered_flat_set.hpp>
+#include <boost/unordered_flat_map.hpp>
+#else
 // clang-format off
 #include "../helpers/prefix.hpp"
 #include <boost/unordered_set.hpp>
 #include <boost/unordered_map.hpp>
 #include "../helpers/postfix.hpp"
 // clang-format on
+#endif
 
 #include "../helpers/test.hpp"
 #include "../objects/test.hpp"
@@ -497,6 +503,35 @@ namespace constructor_tests {
     test::check_equivalent_keys(x);
   }
 
+  using test::default_generator;
+  using test::generate_collisions;
+  using test::limited_range;
+
+#ifdef BOOST_UNORDERED_FOA_TESTS
+  boost::unordered_flat_map<test::object, test::object, test::hash,
+    test::equal_to, std::allocator<test::object> >* test_map_std_alloc;
+
+  boost::unordered_flat_set<test::object, test::hash, test::equal_to,
+    test::allocator1<test::object> >* test_set;
+  boost::unordered_flat_map<test::object, test::object, test::hash,
+    test::equal_to, test::allocator2<test::object> >* test_map;
+
+  UNORDERED_TEST(constructor_tests1,
+    ((test_map_std_alloc)(test_set)(test_map))(
+      (default_generator)(generate_collisions)(limited_range)))
+
+  UNORDERED_TEST(constructor_tests2,
+    ((test_set)(test_map))(
+      (default_generator)(generate_collisions)(limited_range)))
+
+  UNORDERED_TEST(map_constructor_test,
+    ((test_map_std_alloc)(test_map))(
+      (default_generator)(generate_collisions)(limited_range)))
+
+  UNORDERED_TEST(no_alloc_default_construct_test,
+    ((test_set)(test_map))(
+      (default_generator)(generate_collisions)(limited_range)))
+#else
   boost::unordered_map<test::object, test::object, test::hash, test::equal_to,
     std::allocator<test::object> >* test_map_std_alloc;
 
@@ -508,10 +543,6 @@ namespace constructor_tests {
     test::allocator2<test::object> >* test_map;
   boost::unordered_multimap<test::object, test::object, test::hash,
     test::equal_to, test::allocator1<test::object> >* test_multimap;
-
-  using test::default_generator;
-  using test::generate_collisions;
-  using test::limited_range;
 
   UNORDERED_TEST(constructor_tests1,
     ((test_map_std_alloc)(test_set)(test_multiset)(test_map)(test_multimap))(
@@ -528,12 +559,17 @@ namespace constructor_tests {
   UNORDERED_TEST(no_alloc_default_construct_test,
     ((test_set)(test_multiset)(test_map)(test_multimap))(
       (default_generator)(generate_collisions)(limited_range)))
+#endif
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
 
   UNORDERED_AUTO_TEST (test_default_initializer_list) {
     std::initializer_list<int> init;
+#ifdef BOOST_UNORDERED_FOA_TESTS
+    boost::unordered_flat_set<int> x1 = init;
+#else
     boost::unordered_set<int> x1 = init;
+#endif
     BOOST_TEST(x1.empty());
   }
 
@@ -542,7 +578,12 @@ namespace constructor_tests {
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
 
   UNORDERED_AUTO_TEST (test_initializer_list) {
+#ifdef BOOST_UNORDERED_FOA_TESTS
+    boost::unordered_flat_set<int> x1 = {2, 10, 45, -5};
+#else
     boost::unordered_set<int> x1 = {2, 10, 45, -5};
+#endif
+
     BOOST_TEST(x1.find(10) != x1.end());
     BOOST_TEST(x1.find(46) == x1.end());
   }

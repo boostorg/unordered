@@ -59,6 +59,16 @@ namespace boost {
       {
       }
 
+      unordered_flat_set(size_type n, allocator_type const& a)
+          : unordered_flat_set(n, hasher(), key_equal(), a)
+      {
+      }
+
+      explicit unordered_flat_set(allocator_type const& a)
+          : unordered_flat_set(0, a)
+      {
+      }
+
       template <class Iterator>
       unordered_flat_set(Iterator first, Iterator last, size_type n = 0,
         hasher const& h = hasher(), key_equal const& pred = key_equal(),
@@ -67,6 +77,22 @@ namespace boost {
       {
         this->insert(first, last);
       }
+
+      unordered_flat_set(std::initializer_list<value_type> ilist,
+        size_type n = 0, hasher const& h = hasher(),
+        key_equal const& pred = key_equal(),
+        allocator_type const& a = allocator_type())
+          : unordered_flat_set(ilist.begin(), ilist.end(), n, h, pred, a)
+      {
+      }
+
+      allocator_type get_allocator() const noexcept
+      {
+        return table_.get_allocator();
+      }
+
+      /// Iterators
+      ///
 
       iterator begin() noexcept { return table_.begin(); }
       const_iterator begin() const noexcept { return table_.begin(); }
@@ -173,6 +199,9 @@ namespace boost {
         return {pos, next};
       }
 
+      /// Hash Policy
+      ///
+
       size_type bucket_count() const noexcept { return table_.capacity(); }
 
       float load_factor() const noexcept { return table_.load_factor(); }
@@ -181,6 +210,13 @@ namespace boost {
       {
         return table_.max_load_factor();
       }
+
+      void max_load_factor(float) {}
+
+      /// Observers
+      ///
+
+      hasher hash_function() const { return table_.hash_function(); }
 
       key_equal key_eq() const { return table_.key_eq(); }
     };
