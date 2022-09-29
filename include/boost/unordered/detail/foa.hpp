@@ -420,7 +420,7 @@ struct group15
   inline int match_available()const
   {
     boost::uint64_t x=~(m[0]|m[1]);
-    boost::uint32_t y=x&(x>>32);
+    boost::uint32_t y=static_cast<boost::uint32_t>(x&(x>>32));
     y&=y>>16;
     return y&0x7FFF;
   }
@@ -428,7 +428,7 @@ struct group15
   inline int match_occupied()const
   {
     boost::uint64_t x=m[0]|m[1];
-    boost::uint32_t y=x|(x>>32);
+    boost::uint32_t y=static_cast<boost::uint32_t>(x|(x>>32));
     y|=y>>16;
     return y&0x7FFF;
   }
@@ -514,7 +514,7 @@ private:
     BOOST_ASSERT(n<256);
     boost::uint64_t lo=~(m[0]^mask[n&0xFu]);
     boost::uint64_t hi=~(m[1]^mask[n>>4])&lo;
-    boost::uint32_t y=hi&(hi>>32);
+    boost::uint32_t y=static_cast<boost::uint32_t>(hi&(hi>>32));
     y&=y>>16;
     return y&0x7FFF;
   }
