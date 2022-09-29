@@ -92,24 +92,8 @@ namespace boost {
         return table_.insert(std::move(value)).first;
       }
 
-      template <class ForwardIterator>
-      typename std::enable_if<
-        std::is_base_of<std::forward_iterator_tag, ForwardIterator>::value,
-        void>::type
-      insert(ForwardIterator first, ForwardIterator last)
-      {
-        auto const len = std::distance(first, last);
-        table_.reserve(len);
-        for (auto pos = first; pos != last; ++pos) {
-          table_.insert(*pos);
-        }
-      }
-
       template <class InputIterator>
-      typename std::enable_if<
-        !std::is_base_of<std::forward_iterator_tag, InputIterator>::value,
-        void>::type
-      insert(InputIterator first, InputIterator last)
+      void insert(InputIterator first, InputIterator last)
       {
         for (auto pos = first; pos != last; ++pos) {
           table_.insert(*pos);
