@@ -1,5 +1,6 @@
 
 // Copyright 2006-2010 Daniel James.
+// Copyright (C) 2022 Christian Mazakas
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -319,7 +320,6 @@ namespace insert_tests {
 
     UNORDERED_SUB_TEST("insert range with rehash tests")
     {
-      std::cout << "Starting problematic test case now!!!" << std::endl;
       test::check_instances check_;
 
       X x;
