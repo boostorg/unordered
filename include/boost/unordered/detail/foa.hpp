@@ -972,7 +972,7 @@ public:
 
   void reserve(std::size_t n)
   {
-    rehash(std::size_t(std::ceil(n/mlf)));
+    rehash(std::size_t(std::ceil(static_cast<float>(n)/mlf)));
   }
 
 private:
