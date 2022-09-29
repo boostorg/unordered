@@ -43,7 +43,9 @@ namespace boost {
       using mapped_type = T;
       using value_type = typename map_types::value_type;
       using size_type = std::size_t;
+      using hasher = Hash;
       using key_equal = KeyEqual;
+      using allocator_type = Allocator;
       using reference = value_type&;
       using const_reference = value_type const&;
       using iterator = typename table_type::iterator;
@@ -56,6 +58,24 @@ namespace boost {
       iterator end() noexcept { return table_.end(); }
       const_iterator end() const noexcept { return table_.end(); }
       const_iterator cend() const noexcept { return table_.cend(); }
+
+      unordered_flat_map() : unordered_flat_map(0) {}
+
+      explicit unordered_flat_map(size_type n, hasher const& h = hasher(),
+        key_equal const& pred = key_equal(),
+        allocator_type const& a = allocator_type())
+          : table_(n, h, pred, a)
+      {
+      }
+
+      template <class Iterator>
+      unordered_flat_map(Iterator first, Iterator last, size_type n = 0,
+        hasher const& h = hasher(), key_equal const& pred = key_equal(),
+        allocator_type const& a = allocator_type())
+          : unordered_flat_map(n, h, pred, a)
+      {
+        this->insert(first, last);
+      }
 
       /// Capacity
       ///
