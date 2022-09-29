@@ -719,7 +719,7 @@ public:
 
   table(const table& x,const Allocator& al_):
     h{x.h},pred{x.pred},al{al_},size_{0},
-    arrays{new_arrays(std::size_t(std::ceil(x.size()/mlf)))},
+    arrays{new_arrays(std::size_t(std::ceil(static_cast<float>(x.size())/mlf)))},
     ml{max_load()}
   {
     BOOST_TRY{
