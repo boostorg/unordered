@@ -79,6 +79,16 @@ namespace boost {
         this->insert(first, last);
       }
 
+      unordered_flat_map(unordered_flat_map const& other) : table_(other.table_)
+      {
+      }
+
+      unordered_flat_map(
+        unordered_flat_map const& other, allocator_type const& a)
+          : table_(other.table_, a)
+      {
+      }
+
       unordered_flat_map(std::initializer_list<value_type> ilist,
         size_type n = 0, hasher const& h = hasher(),
         key_equal const& pred = key_equal(),
