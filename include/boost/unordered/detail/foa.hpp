@@ -72,13 +72,18 @@ namespace foa{
 
 #if defined(BOOST_UNORDERED_SSE2)
 
+template<typename T>
+using has_extended_align=
+  std::integral_constant<bool,(alignof(T) > alignof(std::max_align_t))>;
+
 struct group15
 {
   static constexpr int N=15;
 
   struct dummy_group_type
   {
-    alignas(16) unsigned char storage[N+1]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0};
+    alignas(__m128i) unsigned char storage[N+1]=
+      {0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0};
   };
 
   inline void set(std::size_t pos,std::size_t hash)
@@ -112,8 +117,7 @@ struct group15
   inline int match(std::size_t hash)const
   {
     return _mm_movemask_epi8(
-      _mm_cmpeq_epi8(
-        m/*_mm_loadu_si128(&m)*/,_mm_set1_epi32(match_word(hash))))&0x7FFF;
+      _mm_cmpeq_epi8(load(),_mm_set1_epi32(match_word(hash))))&0x7FFF;
   }
 
   inline bool is_not_overflowed(std::size_t hash)const
@@ -131,7 +135,7 @@ struct group15
   inline int match_available()const
   {
     return _mm_movemask_epi8(
-      _mm_cmpeq_epi8(m/*_mm_loadu_si128(&m)*/,_mm_setzero_si128()))&0x7FFF;
+      _mm_cmpeq_epi8(load(),_mm_setzero_si128()))&0x7FFF;
   }
 
   inline int match_occupied()const
@@ -147,6 +151,10 @@ struct group15
 private:
   static constexpr unsigned char available_=0,
                                  sentinel_=1;
+
+  inline __m128i load()const{return load(has_extended_align<__m128i>());}
+  inline __m128i load(std::true_type)const{return _mm_loadu_si128(&m);}
+  inline __m128i load(std::false_type)const{return m;}
 
   inline static int match_word(std::size_t hash)
   {
@@ -214,7 +222,7 @@ private:
     return at(N);
   }
 
-  /*alignas(16)*/ __m128i m;
+  __m128i m;
 };
 
 #elif defined(BOOST_UNORDERED_LITTLE_ENDIAN_NEON)
@@ -225,7 +233,8 @@ struct group15
 
   struct dummy_group_type
   {
-    alignas(16) unsigned char storage[N+1]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0};
+    alignas(int8x16_t) unsigned char storage[N+1]=
+      {0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0};
   };
 
   inline void set(std::size_t pos,std::size_t hash)
@@ -366,7 +375,7 @@ struct group15
 
   struct dummy_group_type
   {
-    alignas(16) boost::uint64_t m[2]=
+    alignas(boost::uint64_t) boost::uint64_t m[2]=
       {0x0000000000004000ull,0x0000000000000000ull};
   };
 
@@ -520,7 +529,7 @@ private:
     return y&0x7FFF;
   }
 
-  alignas(16) boost::uint64_t m[2];
+  boost::uint64_t m[2];
 };
 
 #endif
