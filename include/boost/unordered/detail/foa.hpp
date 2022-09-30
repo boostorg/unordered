@@ -112,7 +112,8 @@ struct group15
   inline int match(std::size_t hash)const
   {
     return _mm_movemask_epi8(
-      _mm_cmpeq_epi8(m,_mm_set1_epi32(match_word(hash))))&0x7FFF;
+      _mm_cmpeq_epi8(
+        _mm_loadu_si128(&m),_mm_set1_epi32(match_word(hash))))&0x7FFF;
   }
 
   inline bool is_not_overflowed(std::size_t hash)const
@@ -130,7 +131,7 @@ struct group15
   inline int match_available()const
   {
     return _mm_movemask_epi8(
-      _mm_cmpeq_epi8(m,_mm_setzero_si128()))&0x7FFF;
+      _mm_cmpeq_epi8(_mm_loadu_si128(&m),_mm_setzero_si128()))&0x7FFF;
   }
 
   inline int match_occupied()const
@@ -213,7 +214,7 @@ private:
     return at(N);
   }
 
-  __m128i m;
+  alignas(16) __m128i m;
 };
 
 #elif defined(BOOST_UNORDERED_LITTLE_ENDIAN_NEON)
