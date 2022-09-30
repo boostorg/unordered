@@ -1022,7 +1022,7 @@ private:
 
   static group_type* dummy_groups()noexcept
   {
-    static constexpr group_type::dummy_group_type storage[size_policy::min_size()]{};
+    static constexpr group_type::dummy_group_type storage[size_policy::min_size()];
     return reinterpret_cast<group_type*>(
       const_cast<group_type::dummy_group_type*>(storage));
   }
