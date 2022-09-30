@@ -214,7 +214,7 @@ private:
     return at(N);
   }
 
-  alignas(16) __m128i m;
+  /*alignas(16)*/ __m128i m;
 };
 
 #elif defined(BOOST_UNORDERED_LITTLE_ENDIAN_NEON)
