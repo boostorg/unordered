@@ -784,9 +784,9 @@ struct subaligned_table_arrays:
     byte_allocator bal=al;
     auto p=boost::to_address(
       byte_alloc_traits::allocate(bal,sizeof(group_type)*(groups_size+1)-1));
-    groups_offset=
+    groups_offset=static_cast<unsigned char>(
       (uintptr_t(sizeof(group_type))-reinterpret_cast<uintptr_t>(p))%
-        sizeof(group_type);
+        sizeof(group_type));
     groups=reinterpret_cast<group_type*>(p+groups_offset);
   }
 
