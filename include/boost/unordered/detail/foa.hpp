@@ -1255,7 +1255,7 @@ private:
                                   // TODO: check if this is 128 in current benchmark machine
     const char    *p0=reinterpret_cast<const char*>(p),
                   *p1=p0+sizeof(value_type)*N/2;
-    for(auto p=p0;p<p1;p+=cache_line)prefetch(p);
+    for(;p0<p1;p0+=cache_line)prefetch(p0);
 #else
     prefetch(p);
 #endif
