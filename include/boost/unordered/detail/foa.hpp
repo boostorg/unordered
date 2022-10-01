@@ -72,18 +72,13 @@ namespace foa{
 
 #if defined(BOOST_UNORDERED_SSE2)
 
-template<typename T>
-using has_extended_align=
-  std::integral_constant<bool,(alignof(T) > alignof(std::max_align_t))>;
-
 struct group15
 {
   static constexpr int N=15;
 
   struct dummy_group_type
   {
-    alignas(__m128i) unsigned char storage[N+1]=
-      {0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0};
+    alignas(16) unsigned char storage[N+1]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0};
   };
 
   inline void set(std::size_t pos,std::size_t hash)
@@ -117,7 +112,7 @@ struct group15
   inline int match(std::size_t hash)const
   {
     return _mm_movemask_epi8(
-      _mm_cmpeq_epi8(load(),_mm_set1_epi32(match_word(hash))))&0x7FFF;
+      _mm_cmpeq_epi8(m,_mm_set1_epi32(match_word(hash))))&0x7FFF;
   }
 
   inline bool is_not_overflowed(std::size_t hash)const
@@ -135,7 +130,7 @@ struct group15
   inline int match_available()const
   {
     return _mm_movemask_epi8(
-      _mm_cmpeq_epi8(load(),_mm_setzero_si128()))&0x7FFF;
+      _mm_cmpeq_epi8(m,_mm_setzero_si128()))&0x7FFF;
   }
 
   inline int match_occupied()const
@@ -151,10 +146,6 @@ struct group15
 private:
   static constexpr unsigned char available_=0,
                                  sentinel_=1;
-
-  inline __m128i load()const{return load(has_extended_align<__m128i>());}
-  inline __m128i load(std::true_type)const{return _mm_loadu_si128(&m);}
-  inline __m128i load(std::false_type)const{return m;}
 
   inline static int match_word(std::size_t hash)
   {
@@ -222,7 +213,7 @@ private:
     return at(N);
   }
 
-  __m128i m;
+  alignas(16) __m128i m;
 };
 
 #elif defined(BOOST_UNORDERED_LITTLE_ENDIAN_NEON)
@@ -233,8 +224,7 @@ struct group15
 
   struct dummy_group_type
   {
-    alignas(int8x16_t) unsigned char storage[N+1]=
-      {0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0};
+    alignas(16) unsigned char storage[N+1]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0};
   };
 
   inline void set(std::size_t pos,std::size_t hash)
@@ -364,7 +354,7 @@ private:
     return at(N);
   }
 
-  int8x16_t m;
+  alignas(16) int8x16_t m;
 };
 
 #else /* non-SIMD */
@@ -375,7 +365,7 @@ struct group15
 
   struct dummy_group_type
   {
-    alignas(boost::uint64_t) boost::uint64_t m[2]=
+    alignas(16) boost::uint64_t m[2]=
       {0x0000000000004000ull,0x0000000000000000ull};
   };
 
@@ -483,7 +473,7 @@ private:
     set_impl(m[1],pos,n>>4);
   }
 
-  static inline void set_impl(boost::uint64_t& x,unsigned pos,unsigned n)
+  static inline void set_impl(boost::uint64_t& x,std::size_t pos,std::size_t n)
   {
     static constexpr boost::uint64_t mask[]=
     {
@@ -529,7 +519,7 @@ private:
     return y&0x7FFF;
   }
 
-  boost::uint64_t m[2];
+  alignas(16) boost::uint64_t m[2];
 };
 
 #endif
@@ -670,6 +660,169 @@ private:
   Value         *p=nullptr;
 };
 
+template<typename Arrays>
+struct table_arrays_base
+{
+  template<typename Allocator>
+  static Arrays new_(Allocator& al,std::size_t n)
+  {
+    using group_type=typename Arrays::group_type;
+    static constexpr auto N=group_type::N;
+    using size_policy=typename Arrays::size_policy;
+    using alloc_traits=std::allocator_traits<Allocator>;
+
+    auto   groups_size_index=size_policy::size_index(n/N+1);
+    auto   groups_size=size_policy::size(groups_size_index);
+    Arrays arrays{groups_size_index,groups_size-1};
+
+    if(!n){
+      static constexpr typename group_type::dummy_group_type
+      storage[size_policy::min_size()]=
+        {typename group_type::dummy_group_type(),};
+
+      arrays.groups=reinterpret_cast<group_type*>(
+        const_cast<typename group_type::dummy_group_type*>(storage));
+    }
+    else{
+      arrays.allocate_groups(al,groups_size);
+      // TODO: explain why memset
+      std::memset(
+        arrays.groups,0,sizeof(group_type)*groups_size);
+      arrays.groups[groups_size-1].set_sentinel();
+      BOOST_TRY{
+        arrays.elements=
+          boost::to_address(alloc_traits::allocate(al,groups_size*N-1));
+      }
+      BOOST_CATCH(...){
+        arrays.deallocate_groups(al,groups_size);
+        BOOST_RETHROW;
+      }
+      BOOST_CATCH_END
+    }
+    return arrays;
+  }
+
+  template<typename Allocator>
+  static void delete_(Allocator& al,Arrays& arrays)noexcept
+  {
+    using group_type=typename Arrays::group_type;
+    static constexpr auto N=group_type::N;
+    using alloc_traits=std::allocator_traits<Allocator>;
+
+    if(arrays.elements){
+      auto groups_size=arrays.groups_size_mask+1;
+      alloc_traits::deallocate(al,arrays.elements,groups_size*N-1);
+      arrays.deallocate_groups(al,groups_size);
+    }
+  }
+};
+
+template<typename Value,typename Group,typename SizePolicy>
+struct aligned_table_arrays:
+  table_arrays_base<aligned_table_arrays<Value,Group,SizePolicy>>
+{
+  using group_type=Group;
+  using value_type=Value;
+  using size_policy=SizePolicy;
+
+  aligned_table_arrays(
+    std::size_t groups_size_index_,std::size_t groups_size_mask_):
+    groups_size_index{groups_size_index_},groups_size_mask{groups_size_mask_}
+    {}
+
+  template<typename Allocator>
+  void allocate_groups(Allocator& al,std::size_t groups_size)
+  {
+    using alloc_traits=std::allocator_traits<Allocator>;
+    using group_allocator=
+      typename alloc_traits::template rebind_alloc<group_type>;
+    using group_alloc_traits=std::allocator_traits<group_allocator>;
+
+    group_allocator gal=al;
+    groups=boost::to_address(group_alloc_traits::allocate(gal,groups_size));
+  }
+
+  template<typename Allocator>
+  void deallocate_groups(Allocator& al,std::size_t groups_size)
+  {
+    using alloc_traits=std::allocator_traits<Allocator>;
+    using group_allocator=
+      typename alloc_traits::template rebind_alloc<group_type>;
+    using group_alloc_traits=std::allocator_traits<group_allocator>;
+
+    group_allocator gal=al;
+    group_alloc_traits::deallocate(gal,groups,groups_size);
+  }
+
+  std::size_t  groups_size_index;
+  std::size_t  groups_size_mask;
+  group_type  *groups=nullptr;
+  value_type  *elements=nullptr;
+};
+
+template<typename Value,typename Group,typename SizePolicy>
+struct subaligned_table_arrays:
+  table_arrays_base<subaligned_table_arrays<Value,Group,SizePolicy>>
+{
+  using group_type=Group;
+  using value_type=Value;
+  using size_policy=SizePolicy;
+
+  subaligned_table_arrays(
+    std::size_t groups_size_index_,std::size_t groups_size_mask_):
+    groups_size_index{groups_size_index_},groups_size_mask{groups_size_mask_}
+    {}
+
+  template<typename Allocator>
+  void allocate_groups(Allocator& al,std::size_t groups_size)
+  {
+    using alloc_traits=std::allocator_traits<Allocator>;
+    using byte_allocator=
+      typename alloc_traits::template rebind_alloc<unsigned char>;
+    using byte_alloc_traits=std::allocator_traits<byte_allocator>;
+
+    byte_allocator bal=al;
+    auto p=boost::to_address(
+      byte_alloc_traits::allocate(bal,sizeof(group_type)*(groups_size+1)-1));
+    groups_offset=
+      (uintptr_t(sizeof(group_type))-reinterpret_cast<uintptr_t>(p))%
+        sizeof(group_type);
+    groups=reinterpret_cast<group_type*>(p+groups_offset);
+  }
+
+  template<typename Allocator>
+  void deallocate_groups(Allocator& al,std::size_t groups_size)
+  {
+    using alloc_traits=std::allocator_traits<Allocator>;
+    using byte_allocator=
+      typename alloc_traits::template rebind_alloc<unsigned char>;
+    using byte_alloc_traits=std::allocator_traits<byte_allocator>;
+
+    byte_allocator bal=al;
+    byte_alloc_traits::deallocate(
+      bal,reinterpret_cast<unsigned char*>(groups)-groups_offset,
+      sizeof(group_type)*(groups_size+1)-1);
+  }
+
+  std::size_t    groups_size_index;
+  std::size_t    groups_size_mask;
+  group_type    *groups=nullptr;
+  value_type    *elements=nullptr;
+  unsigned char  groups_offset=0;
+};
+
+template<typename Value,typename Group,typename SizePolicy>
+using table_arrays=typename std::conditional<
+
+#if defined(__STDCPP_DEFAULT_NEW_ALIGNMENT__)
+  sizeof(Group)<=__STDCPP_DEFAULT_NEW_ALIGNMENT__,
+#else
+  sizeof(Group)<=alignof(std::max_align_t),
+#endif
+
+  aligned_table_arrays<Value,Group,SizePolicy>,
+  subaligned_table_arrays<Value,Group,SizePolicy>>::type;
+
 template<typename TypePolicy,typename Hash,typename Pred,typename Allocator>
 class table
 {
@@ -729,7 +882,8 @@ public:
 
   table(const table& x,const Allocator& al_):
     h{x.h},pred{x.pred},al{al_},size_{0},
-    arrays{new_arrays(std::size_t(std::ceil(static_cast<float>(x.size())/mlf)))},
+    arrays{
+      new_arrays(std::size_t(std::ceil(static_cast<float>(x.size())/mlf)))},
     ml{max_load()}
   {
     BOOST_TRY{
@@ -986,65 +1140,16 @@ public:
   }
 
 private:
-  using group_allocator=
-    typename alloc_traits::template rebind_alloc<group_type>;
-  using group_alloc_traits=std::allocator_traits<group_allocator>;
+  using arrays_type=table_arrays<value_type,group_type,size_policy>;
 
-  struct arrays_info{
-    std::size_t  groups_size_index;
-    std::size_t  groups_size_mask;
-    group_type  *groups;
-    value_type  *elements;
-  };
-
-  arrays_info new_arrays(std::size_t n)
+  arrays_type new_arrays(std::size_t n)
   {
-    auto  groups_size_index=size_policy::size_index(n/N+1);
-    auto        groups_size=size_policy::size(groups_size_index);
-    arrays_info new_arrays_{
-      groups_size_index,
-      groups_size-1,
-      nullptr,
-      nullptr
-    };
-    if(!n){
-      new_arrays_.groups=dummy_groups();
-    }
-    else{
-      group_allocator gal=al;
-      new_arrays_.groups=boost::to_address(group_alloc_traits::allocate(gal,groups_size));
-      // TODO: explain why memset
-      std::memset(
-        new_arrays_.groups,0,sizeof(group_type)*groups_size);
-      new_arrays_.groups[groups_size-1].set_sentinel();
-      BOOST_TRY{
-        new_arrays_.elements=boost::to_address(alloc_traits::allocate(al,groups_size*N-1));
-      }
-      BOOST_CATCH(...){
-        group_alloc_traits::deallocate(gal,new_arrays_.groups,groups_size);
-        BOOST_RETHROW;
-      }
-      BOOST_CATCH_END
-    }
-    return new_arrays_;
+    return arrays_type::new_(al,n);
   }
 
-  static group_type* dummy_groups()noexcept
+  void delete_arrays(arrays_type& arrays_)noexcept
   {
-    static constexpr group_type::dummy_group_type storage[size_policy::min_size()]=
-      {group_type::dummy_group_type(),};
-    return reinterpret_cast<group_type*>(
-      const_cast<group_type::dummy_group_type*>(storage));
-  }
-
-  void delete_arrays(const arrays_info& arrays_)noexcept
-  {
-    if(arrays_.elements){
-      auto groups_size=arrays_.groups_size_mask+1;
-      alloc_traits::deallocate(al,arrays_.elements,groups_size*N-1);
-      group_allocator gal=al;
-      group_alloc_traits::deallocate(gal,arrays_.groups,groups_size);
-    }
+    arrays_type::delete_(al,arrays_);
   }
 
   template<typename... Args>
@@ -1092,7 +1197,7 @@ private:
   }
 
   static inline std::size_t position_for(
-    std::size_t hash,const arrays_info& arrays_)
+    std::size_t hash,const arrays_type& arrays_)
   {
     return size_policy::position(hash,arrays_.groups_size_index);
   }
@@ -1150,7 +1255,8 @@ private:
       return {it,false};
     }
     else if(BOOST_UNLIKELY(size_>=ml)){
-      unchecked_rehash(std::size_t(std::ceil(static_cast<float>(size_+1)/mlf)));
+      unchecked_rehash(
+        std::size_t(std::ceil(static_cast<float>(size_+1)/mlf)));
       pos0=position_for(hash);
     }
     return {
@@ -1202,7 +1308,7 @@ private:
     unchecked_emplace_at(position_for(hash),hash,std::forward<Value>(x));
   }
 
-  void nosize_transfer_element(value_type* p,const arrays_info& arrays_)
+  void nosize_transfer_element(value_type* p,const arrays_type& arrays_)
   {
     auto hash=h(key_from(*p));
     nosize_unchecked_emplace_at(
@@ -1223,7 +1329,7 @@ private:
 #if 0
   template<typename... Args>
   iterator nosize_unchecked_emplace_at(
-    const arrays_info& arrays_,std::size_t pos0,std::size_t hash,
+    const arrays_type& arrays_,std::size_t pos0,std::size_t hash,
     Args&&... args)
   {
     auto  pn=insert_position(arrays_,pos0,hash);
@@ -1238,7 +1344,7 @@ private:
 
   std::pair<std::size_t,std::size_t>
   static insert_position(
-    const arrays_info& arrays_,std::size_t pos0,std::size_t hash)
+    const arrays_type& arrays_,std::size_t pos0,std::size_t hash)
   {
     for(prober pb(pos0);;pb.next(arrays_.groups_size_mask)){
       auto pos=pb.get();
@@ -1253,7 +1359,7 @@ private:
 #else
   template<typename... Args>
   iterator nosize_unchecked_emplace_at(
-    const arrays_info& arrays_,std::size_t pos0,std::size_t hash,
+    const arrays_type& arrays_,std::size_t pos0,std::size_t hash,
     Args&&... args)
   {
     for(prober pb(pos0);;pb.next(arrays_.groups_size_mask)){
@@ -1279,7 +1385,7 @@ private:
   }
 
   template<typename F>
-  static void for_all_elements(const arrays_info& arrays_,F f)
+  static void for_all_elements(const arrays_type& arrays_,F f)
   {
     auto pg=arrays_.groups;
     auto p=arrays_.elements;
@@ -1299,7 +1405,7 @@ private:
   Allocator              al;
   static constexpr float mlf=0.875;
   std::size_t            size_;
-  arrays_info            arrays;
+  arrays_type            arrays;
   std::size_t            ml;
 };
 
