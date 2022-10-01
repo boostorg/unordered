@@ -18,6 +18,7 @@
 #include <boost/core/pointer_traits.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/predef.h>
+#include <boost/type_traits/is_final.hpp>
 #include <boost/type_traits/is_nothrow_swappable.hpp>
 #include <climits>
 #include <cmath>
@@ -823,9 +824,41 @@ using table_arrays=typename std::conditional<
   aligned_table_arrays<Value,Group,SizePolicy>,
   subaligned_table_arrays<Value,Group,SizePolicy>>::type;
 
-template<typename TypePolicy,typename Hash,typename Pred,typename Allocator>
-class table
+template<std::size_t I,typename T,typename=void>
+struct ebo_base
 {
+  T&       get(){return x;}
+  const T& get()const{return x;}
+  
+  T x;
+};
+
+template<std::size_t I,typename T>
+struct ebo_base<
+  I,T,
+  typename std::enable_if<
+    std::is_class<T>::value&&!boost::is_final<T>::value>::type
+>:T
+{
+  template<typename Arg>
+  ebo_base(Arg&& x):T{std::forward<Arg>(x)}{}
+
+  T&       get(){return *this;}
+  const T& get()const{return *this;}
+};
+
+template<typename TypePolicy,typename Hash,typename Pred,typename Allocator>
+class 
+
+#if defined(_MSC_VER)&&_MSC_FULL_VER>=190023918
+__declspec(empty_bases) 
+#endif
+
+table:ebo_base<0,Hash>,ebo_base<1,Pred>,ebo_base<2,Allocator>
+{
+  using hash_base=ebo_base<0,Hash>;
+  using pred_base=ebo_base<1,Pred>;
+  using allocator_base=ebo_base<2,Allocator>;
   using type_policy=TypePolicy;
   using group_type=group15;
   static constexpr auto N=group_type::N;
@@ -860,11 +893,12 @@ public:
   table(
     std::size_t n=0,const Hash& h_=Hash(),const Pred& pred_=Pred(),
     const Allocator& al_=Allocator()):
-    h{h_},pred{pred_},al{al_},size_{0},arrays{new_arrays(n)},ml{max_load()}
+    hash_base{h_},pred_base{pred_},allocator_base{al_},
+    size_{0},arrays{new_arrays(n)},ml{max_load()}
   {}
 
   table(const table& x):
-    table(x,alloc_traits::select_on_container_copy_construction(x.al)){}
+    table(x,alloc_traits::select_on_container_copy_construction(x.al())){}
 
   table(table&& x)
     noexcept(
@@ -872,8 +906,8 @@ public:
       std::is_nothrow_move_constructible<Pred>::value&&
       std::is_nothrow_move_constructible<Allocator>::value):
     // TODO verify if we should copy or move copy hash, pred and al
-    h{std::move(x.h)},pred{std::move(x.pred)},al{std::move(x.al)},
-    size_{x.size_},arrays{x.arrays},ml{x.ml}
+    hash_base{std::move(x.h())},pred_base{std::move(x.pred())},
+    allocator_base{std::move(x.al())},size_{x.size_},arrays{x.arrays},ml{x.ml}
   {
     x.size_=0;
     x.arrays=x.new_arrays(0);
@@ -881,7 +915,7 @@ public:
   }
 
   table(const table& x,const Allocator& al_):
-    h{x.h},pred{x.pred},al{al_},size_{0},
+    hash_base{x.h()},pred_base{x.pred()},allocator_base{al_},size_{0},
     arrays{
       new_arrays(std::size_t(std::ceil(static_cast<float>(x.size())/mlf)))},
     ml{max_load()}
@@ -900,9 +934,9 @@ public:
   }
 
   table(table&& x,const Allocator& al_):
-    table{0,std::move(x.h),std::move(x.pred),al_}
+    table{0,std::move(x.h()),std::move(x.pred()),al_}
   {
-    if(al==x.al){
+    if(al()==x.al()){
       size_=x.size_;
       arrays=x.arrays;
       ml=x.ml;
@@ -942,11 +976,11 @@ public:
   {
     if(this!=&x){
       clear();
-      h=x.h;
-      pred=x.pred;
+      h()=x.h();
+      pred()=x.pred();
       if(alloc_traits::propagate_on_container_copy_assignment::value){
-        if(al!=x.al)reserve(0);
-        al=x.al;
+        if(al()!=x.al())reserve(0);
+        al()=x.al();
       }
       // TODO may shrink arrays and miss an opportunity for memory reuse
       reserve(x.size());
@@ -967,14 +1001,14 @@ public:
       // TODO explain why not constexpr
       auto pocma=alloc_traits::propagate_on_container_move_assignment::value;
       clear();
-      h=std::move(x.h);
-      pred=std::move(x.pred);
-      if(pocma||al==x.al){
+      h()=std::move(x.h());
+      pred()=std::move(x.pred());
+      if(pocma||al()==x.al()){
         using std::swap;
         reserve(0);
         swap(arrays,x.arrays);
         swap(ml,x.ml);
-        if(pocma)al=std::move(x.al);
+        if(pocma)al()=std::move(x.al());
       }
       else{
         reserve(x.size());
@@ -998,7 +1032,7 @@ public:
     return *this;
   }
 
-  allocator_type get_allocator()const noexcept{return al;}
+  allocator_type get_allocator()const noexcept{return al();}
 
   iterator begin()noexcept
   {
@@ -1076,10 +1110,10 @@ public:
       boost::is_nothrow_swappable<Pred>::value)
   {
     using std::swap;
-    swap(h,x.h);
-    swap(pred,x.pred);
-    if(alloc_traits::propagate_on_container_swap::value)swap(al,x.al);
-    else BOOST_ASSERT(al==x.al);
+    swap(h(),x.h());
+    swap(pred(),x.pred());
+    if(alloc_traits::propagate_on_container_swap::value)swap(al(),x.al());
+    else BOOST_ASSERT(al()==x.al());
     swap(size_,x.size_);
     swap(arrays,x.arrays);
     swap(ml,x.ml);
@@ -1104,13 +1138,13 @@ public:
     size_=0;
   }
 
-  hasher hash_function()const{return h;}
-  key_equal key_eq()const{return pred;}
+  hasher hash_function()const{return h();}
+  key_equal key_eq()const{return pred();}
 
   template<typename Key>
   BOOST_FORCEINLINE iterator find(const Key& x)
   {
-    auto hash=h(x);
+    auto hash=h()(x);
     return find_impl(x,position_for(hash),hash);
   }
 
@@ -1145,25 +1179,34 @@ public:
 private:
   using arrays_type=table_arrays<value_type,group_type,size_policy>;
 
+  Hash&            h(){return static_cast<hash_base*>(this)->get();}
+  const Hash&      h()const{return static_cast<const hash_base*>(this)->get();}
+  Pred&            pred(){return static_cast<pred_base*>(this)->get();}
+  const Pred&      pred()const
+                    {return static_cast<const pred_base*>(this)->get();}
+  Allocator&       al(){return static_cast<allocator_base*>(this)->get();}
+  const Allocator& al()const
+                    {return static_cast<const allocator_base*>(this)->get();}
+
   arrays_type new_arrays(std::size_t n)
   {
-    return arrays_type::new_(al,n);
+    return arrays_type::new_(al(),n);
   }
 
   void delete_arrays(arrays_type& arrays_)noexcept
   {
-    arrays_type::delete_(al,arrays_);
+    arrays_type::delete_(al(),arrays_);
   }
 
   template<typename... Args>
   void construct_element(value_type* p,Args&&... args)
   {
-    alloc_traits::construct(al,p,std::forward<Args>(args)...);
+    alloc_traits::construct(al(),p,std::forward<Args>(args)...);
   }
 
   void destroy_element(value_type* p)noexcept
   {
-    alloc_traits::destroy(al,p);
+    alloc_traits::destroy(al(),p);
   }
 
   std::size_t max_load()const
@@ -1232,7 +1275,7 @@ private:
         prefetch_elements(p);
         do{
           auto n=unchecked_countr_zero(mask);
-          if(BOOST_LIKELY(pred(x,key_from(p[n])))){
+          if(BOOST_LIKELY(pred()(x,key_from(p[n])))){
             return {pg,n,p+n};
           }
           mask&=mask-1;
@@ -1250,7 +1293,7 @@ private:
   BOOST_FORCEINLINE std::pair<iterator,bool> emplace_impl(Args&&... args)
   {
     const auto &k=key_from(std::forward<Args>(args)...);
-    auto        hash=h(k);
+    auto        hash=h()(k);
     auto        pos0=position_for(hash);
     auto        it=find_impl(k,pos0,hash);
 
@@ -1307,13 +1350,13 @@ private:
   template<typename Value>
   void unchecked_insert(Value&& x)
   {
-    auto hash=h(key_from(x));
+    auto hash=h()(key_from(x));
     unchecked_emplace_at(position_for(hash),hash,std::forward<Value>(x));
   }
 
   void nosize_transfer_element(value_type* p,const arrays_type& arrays_)
   {
-    auto hash=h(key_from(*p));
+    auto hash=h()(key_from(*p));
     nosize_unchecked_emplace_at(
       arrays_,position_for(hash,arrays_),hash,std::move(*p));
     destroy_element(p);
@@ -1403,9 +1446,6 @@ private:
     }
   }
 
-  Hash                   h;
-  Pred                   pred;
-  Allocator              al;
   static constexpr float mlf=0.875;
   std::size_t            size_;
   arrays_type            arrays;
