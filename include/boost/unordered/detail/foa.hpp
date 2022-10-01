@@ -695,7 +695,7 @@ struct table_arrays_base
       }
       BOOST_CATCH(...){
         arrays.deallocate_groups(al,groups_size);
-        BOOST_RETHROW;
+        BOOST_RETHROW
       }
       BOOST_CATCH_END
     }
@@ -894,6 +894,7 @@ public:
     BOOST_CATCH(...){
       clear();
       delete_arrays(arrays);
+      BOOST_RETHROW
     }
     BOOST_CATCH_END
   }
@@ -924,6 +925,7 @@ public:
         clear();
         delete_arrays(arrays);
         x.clear();
+        BOOST_RETHROW
       }
       BOOST_CATCH_END
       x.clear();
@@ -987,6 +989,7 @@ public:
         }
         BOOST_CATCH(...){
           x.clear();
+          BOOST_RETHROW
         }
         BOOST_CATCH_END
         x.clear();
@@ -1293,7 +1296,7 @@ private:
         destroy_element(p);
       });
       delete_arrays(new_arrays_);
-      BOOST_RETHROW;
+      BOOST_RETHROW
     }
     BOOST_CATCH_END
     delete_arrays(arrays);
