@@ -1013,6 +1013,11 @@ public:
     return *this;
   }
 
+#if defined(BOOST_MSVC)
+#pragma warning(push)
+#pragma warning(disable:4297) /* throw inside noexcept function */
+#endif
+
   table& operator=(table&& x)
     noexcept(
       alloc_traits::is_always_equal::value&&
@@ -1053,6 +1058,10 @@ public:
     }
     return *this;
   }
+
+#if defined(BOOST_MSVC)
+#pragma warning(pop) /* C4297 */
+#endif
 
   allocator_type get_allocator()const noexcept{return al();}
 
