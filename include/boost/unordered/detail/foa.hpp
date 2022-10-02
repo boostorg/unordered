@@ -847,6 +847,28 @@ struct ebo_base<
   const T& get()const{return *this;}
 };
 
+#if defined(BOOST_GCC)
+/* GCC's -Wshadow triggers at scenarios like this: 
+ *
+ *   struct foo{};
+ *   template<typename Base>
+ *   struct derived:Base
+ *   {
+ *     void f(){int foo;}
+ *   };
+ * 
+ *   derived<foo>x;
+ *   x.f(); // declaration of "foo" in derived::f shadows base type "foo"
+ *
+ * This makes shadowing warnings unavoidable in general when a class template
+ * derives from user-provided classes, as is the case with table and
+ * ebo_base's below.
+ */
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#endif
+
 template<typename TypePolicy,typename Hash,typename Pred,typename Allocator>
 class 
 
@@ -1451,6 +1473,10 @@ private:
   arrays_type            arrays;
   std::size_t            ml;
 };
+
+#if defined(BOOST_GCC)
+#pragma GCC diagnostic pop /* ignored "-Wshadow" */
+#endif
 
 } /* namespace foa */
 } /* namespace detail */
