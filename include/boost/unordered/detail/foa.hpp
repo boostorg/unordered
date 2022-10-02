@@ -873,7 +873,7 @@ template<typename TypePolicy,typename Hash,typename Pred,typename Allocator>
 class 
 
 #if defined(_MSC_VER)&&_MSC_FULL_VER>=190023918
-__declspec(empty_bases) 
+__declspec(empty_bases) /* activate EBO with multiple inheritance */
 #endif
 
 table:ebo_base<0,Hash>,ebo_base<1,Pred>,ebo_base<2,Allocator>
