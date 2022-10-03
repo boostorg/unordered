@@ -643,7 +643,7 @@ private:
         pc+=sizeof(Group);
         p+=Group::N;
       }
-      while((mask=reinterpret_cast<Group*>(pc)->match_occupied())!=0);
+      while((mask=reinterpret_cast<Group*>(pc)->match_occupied())==0);
     }
 
     auto n=unchecked_countr_zero(mask);
