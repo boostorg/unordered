@@ -14,11 +14,11 @@
 #include <boost/assert.hpp>
 #include <boost/config.hpp>
 #include <boost/core/bit.hpp>
+#include <boost/core/empty_value.hpp>
 #include <boost/core/no_exceptions_support.hpp>
 #include <boost/core/pointer_traits.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/predef.h>
-#include <boost/type_traits/is_final.hpp>
 #include <boost/type_traits/is_nothrow_swappable.hpp>
 #include <climits>
 #include <cmath>
@@ -824,29 +824,6 @@ using table_arrays=typename std::conditional<
   aligned_table_arrays<Value,Group,SizePolicy>,
   subaligned_table_arrays<Value,Group,SizePolicy>>::type;
 
-template<std::size_t I,typename T,typename=void>
-struct ebo_base
-{
-  T&       get(){return x;}
-  const T& get()const{return x;}
-  
-  T x;
-};
-
-template<std::size_t I,typename T>
-struct ebo_base<
-  I,T,
-  typename std::enable_if<
-    std::is_class<T>::value&&!boost::is_final<T>::value>::type
->:T
-{
-  template<typename Arg>
-  ebo_base(Arg&& x):T{std::forward<Arg>(x)}{}
-
-  T&       get(){return *this;}
-  const T& get()const{return *this;}
-};
-
 #if defined(BOOST_GCC)
 /* GCC's -Wshadow triggers at scenarios like this: 
  *
@@ -862,7 +839,7 @@ struct ebo_base<
  *
  * This makes shadowing warnings unavoidable in general when a class template
  * derives from user-provided classes, as is the case with table and
- * ebo_base's below.
+ * empty_value's below.
  */
 
 #pragma GCC diagnostic push
@@ -876,11 +853,11 @@ class
 __declspec(empty_bases) /* activate EBO with multiple inheritance */
 #endif
 
-table:ebo_base<0,Hash>,ebo_base<1,Pred>,ebo_base<2,Allocator>
+table:empty_value<Hash,0>,empty_value<Pred,1>,empty_value<Allocator,1>
 {
-  using hash_base=ebo_base<0,Hash>;
-  using pred_base=ebo_base<1,Pred>;
-  using allocator_base=ebo_base<2,Allocator>;
+  using hash_base=empty_value<Hash,0>;
+  using pred_base=empty_value<Pred,1>;
+  using allocator_base=empty_value<Allocator,1>;
   using type_policy=TypePolicy;
   using group_type=group15;
   static constexpr auto N=group_type::N;
@@ -915,8 +892,9 @@ public:
   table(
     std::size_t n=0,const Hash& h_=Hash(),const Pred& pred_=Pred(),
     const Allocator& al_=Allocator()):
-    hash_base{h_},pred_base{pred_},allocator_base{al_},
-    size_{0},arrays{new_arrays(n)},ml{max_load()}
+    hash_base{empty_init,h_},pred_base{empty_init,pred_},
+    allocator_base{empty_init,al_},size_{0},arrays{new_arrays(n)},
+    ml{max_load()}
   {}
 
   table(const table& x):
@@ -928,8 +906,10 @@ public:
       std::is_nothrow_move_constructible<Pred>::value&&
       std::is_nothrow_move_constructible<Allocator>::value):
     // TODO verify if we should copy or move copy hash, pred and al
-    hash_base{std::move(x.h())},pred_base{std::move(x.pred())},
-    allocator_base{std::move(x.al())},size_{x.size_},arrays{x.arrays},ml{x.ml}
+    hash_base{empty_init,std::move(x.h())},
+    pred_base{empty_init,std::move(x.pred())},
+    allocator_base{empty_init,std::move(x.al())},
+    size_{x.size_},arrays{x.arrays},ml{x.ml}
   {
     x.size_=0;
     x.arrays=x.new_arrays(0);
@@ -937,7 +917,8 @@ public:
   }
 
   table(const table& x,const Allocator& al_):
-    hash_base{x.h()},pred_base{x.pred()},allocator_base{al_},size_{0},
+    hash_base{empty_init,x.h()},pred_base{empty_init,x.pred()},
+    allocator_base{empty_init,al_},size_{0},
     arrays{
       new_arrays(std::size_t(std::ceil(static_cast<float>(x.size())/mlf)))},
     ml{max_load()}
@@ -1210,14 +1191,12 @@ public:
 private:
   using arrays_type=table_arrays<value_type,group_type,size_policy>;
 
-  Hash&            h(){return static_cast<hash_base*>(this)->get();}
-  const Hash&      h()const{return static_cast<const hash_base*>(this)->get();}
-  Pred&            pred(){return static_cast<pred_base*>(this)->get();}
-  const Pred&      pred()const
-                    {return static_cast<const pred_base*>(this)->get();}
-  Allocator&       al(){return static_cast<allocator_base*>(this)->get();}
-  const Allocator& al()const
-                    {return static_cast<const allocator_base*>(this)->get();}
+  Hash&            h(){return hash_base::get();}
+  const Hash&      h()const{return hash_base::get();}
+  Pred&            pred(){return pred_base::get();}
+  const Pred&      pred()const{return pred_base::get();}
+  Allocator&       al(){return allocator_base::get();}
+  const Allocator& al()const{return allocator_base::get();}
 
   arrays_type new_arrays(std::size_t n)
   {
