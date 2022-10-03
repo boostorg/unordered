@@ -1171,7 +1171,12 @@ public:
     return arrays.elements?(arrays.groups_size_mask+1)*N-1:0;
   }
   
-  float load_factor()const noexcept{return float(size())/float(capacity());}
+  float load_factor()const noexcept
+  {
+    if (capacity() == 0) { return 0; }
+    return float(size())/float(capacity());
+  }
+
   float max_load_factor()const noexcept{return mlf;}
 
   void rehash(std::size_t n)
