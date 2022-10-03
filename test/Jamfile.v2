@@ -7,7 +7,7 @@
 import testing ;
 import ../../config/checks/config : requires ;
 
-CPP14 = [ requires cxx14 ] ;
+CPP14 = [ requires cxx14_constexpr ] ;
 
 # Adding -Wundef is blocked on (at least)
 # https://github.com/boostorg/type_traits/issues/165
