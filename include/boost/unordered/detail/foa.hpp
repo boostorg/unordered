@@ -975,16 +975,31 @@ public:
     delete_arrays(arrays);
   }
 
+  template <class AllocTraits>
+  typename std::enable_if<
+    !AllocTraits::propagate_on_container_copy_assignment::value, 
+    void
+  >::type 
+  copy_assign_helper(const table&) {}
+
+  template <class AllocTraits>
+  typename std::enable_if<
+    AllocTraits::propagate_on_container_copy_assignment::value, 
+    void
+  >::type
+  copy_assign_helper(const table& x)
+  {
+    if(al()!=x.al())reserve(0);
+    al()=x.al();
+  }
+
   table& operator=(const table& x)
   {
     if(this!=&x){
       clear();
       h()=x.h();
       pred()=x.pred();
-      if(alloc_traits::propagate_on_container_copy_assignment::value){
-        if(al()!=x.al())reserve(0);
-        al()=x.al();
-      }
+      copy_assign_helper<alloc_traits>(x);
       // TODO may shrink arrays and miss an opportunity for memory reuse
       reserve(x.size());
       x.for_all_elements([this](value_type* p){
