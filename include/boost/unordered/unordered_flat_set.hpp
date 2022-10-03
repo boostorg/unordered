@@ -96,6 +96,16 @@ namespace boost {
       {
       }
 
+      ~unordered_flat_set() = default;
+
+      unordered_flat_set& operator=(unordered_flat_set const& other)
+      {
+        if (this != &other) {
+          table_ = other.table_;
+        }
+        return *this;
+      }
+
       allocator_type get_allocator() const noexcept
       {
         return table_.get_allocator();
