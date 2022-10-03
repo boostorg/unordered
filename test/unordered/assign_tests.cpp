@@ -5,8 +5,13 @@
 
 // clang-format off
 #include "../helpers/prefix.hpp"
+#ifdef BOOST_UNORDERED_FOA_TESTS
+#include <boost/unordered_flat_set.hpp>
+#include <boost/unordered_flat_map.hpp>
+#else
 #include <boost/unordered_set.hpp>
 #include <boost/unordered_map.hpp>
+#endif
 #include "../helpers/postfix.hpp"
 // clang-format on
 
@@ -201,6 +206,54 @@ namespace assign_tests {
     }
   }
 
+  using test::default_generator;
+  using test::generate_collisions;
+  using test::limited_range;
+
+  template <typename T> bool is_propagate(T*)
+  {
+    return T::allocator_type::is_propagate_on_assign;
+  }
+
+#ifdef BOOST_UNORDERED_FOA_TESTS
+  boost::unordered_flat_map<test::object, test::object, test::hash,
+    test::equal_to, std::allocator<test::object> >* test_map_std_alloc;
+
+  boost::unordered_flat_set<test::object, test::hash, test::equal_to,
+    test::allocator1<test::object> >* test_set;
+  boost::unordered_flat_map<test::object, test::object, test::hash,
+    test::equal_to, test::allocator2<test::object> >* test_map;
+
+  boost::unordered_flat_set<test::object, test::hash, test::equal_to,
+    test::cxx11_allocator<test::object, test::propagate_assign> >*
+    test_set_prop_assign;
+  boost::unordered_flat_map<test::object, test::object, test::hash,
+    test::equal_to,
+    test::cxx11_allocator<test::object, test::propagate_assign> >*
+    test_map_prop_assign;
+
+  boost::unordered_flat_set<test::object, test::hash, test::equal_to,
+    test::cxx11_allocator<test::object, test::no_propagate_assign> >*
+    test_set_no_prop_assign;
+  boost::unordered_flat_map<test::object, test::object, test::hash,
+    test::equal_to,
+    test::cxx11_allocator<test::object, test::no_propagate_assign> >*
+    test_map_no_prop_assign;
+
+  UNORDERED_AUTO_TEST (check_traits) {
+    BOOST_TEST(!is_propagate(test_set));
+    BOOST_TEST(is_propagate(test_set_prop_assign));
+    BOOST_TEST(!is_propagate(test_set_no_prop_assign));
+  }
+
+  UNORDERED_TEST(assign_tests1,
+    ((test_map_std_alloc)(test_set)(test_map)(test_set_prop_assign)(test_map_prop_assign)(test_set_no_prop_assign)(test_map_no_prop_assign))(
+      (default_generator)(generate_collisions)(limited_range)))
+
+  UNORDERED_TEST(assign_tests2,
+    ((test_set)(test_map)(test_set_prop_assign)(test_map_prop_assign)(test_set_no_prop_assign)(test_map_no_prop_assign))(
+      (default_generator)(generate_collisions)(limited_range)))
+#else
   boost::unordered_map<test::object, test::object, test::hash, test::equal_to,
     std::allocator<test::object> >* test_map_std_alloc;
 
@@ -241,15 +294,6 @@ namespace assign_tests {
     test::cxx11_allocator<test::object, test::no_propagate_assign> >*
     test_multimap_no_prop_assign;
 
-  using test::default_generator;
-  using test::generate_collisions;
-  using test::limited_range;
-
-  template <typename T> bool is_propagate(T*)
-  {
-    return T::allocator_type::is_propagate_on_assign;
-  }
-
   UNORDERED_AUTO_TEST (check_traits) {
     BOOST_TEST(!is_propagate(test_set));
     BOOST_TEST(is_propagate(test_set_prop_assign));
@@ -271,6 +315,7 @@ namespace assign_tests {
                      test_set_no_prop_assign)(test_multiset_no_prop_assign)(
                      test_map_no_prop_assign)(test_multimap_no_prop_assign))(
                      (default_generator)(generate_collisions)(limited_range)))
+#endif
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
 

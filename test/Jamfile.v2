@@ -98,5 +98,6 @@ run quick.cpp ;
 
 run unordered/constructor_tests.cpp : : : <cxxstd>03:<build>no <cxxstd>11:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_constructor_tests ;
 run unordered/copy_tests.cpp        : : : <cxxstd>03:<build>no <cxxstd>11:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_copy_tests ;
+run unordered/assign_tests.cpp      : : : <cxxstd>03:<build>no <cxxstd>11:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_assign_tests ;
 run unordered/insert_tests.cpp      : : : <cxxstd>03:<build>no <cxxstd>11:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_insert_tests ;
 run unordered/find_tests.cpp        : : : <cxxstd>03:<build>no <cxxstd>11:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_find_tests ;
