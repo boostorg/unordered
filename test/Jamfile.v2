@@ -5,9 +5,6 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 import testing ;
-import ../../config/checks/config : requires ;
-
-CPP14 = [ requires cxx14_constexpr ] ;
 
 # Adding -Wundef is blocked on (at least)
 # https://github.com/boostorg/type_traits/issues/165
@@ -48,13 +45,10 @@ run unordered/incomplete_test.cpp ;
 run unordered/simple_tests.cpp ;
 run unordered/equivalent_keys_tests.cpp ;
 run unordered/constructor_tests.cpp ;
-run unordered/constructor_tests.cpp : : : $(CPP14) <define>BOOST_UNORDERED_FOA_TESTS : foa_constructor_tests ;
 run unordered/copy_tests.cpp ;
-run unordered/copy_tests.cpp : : : $(CPP14) <define>BOOST_UNORDERED_FOA_TESTS : foa_copy_tests ;
 run unordered/move_tests.cpp ;
 run unordered/assign_tests.cpp ;
 run unordered/insert_tests.cpp ;
-run unordered/insert_tests.cpp : : : $(CPP14) <define>BOOST_UNORDERED_FOA_TESTS : foa_insert_tests ;
 run unordered/insert_stable_tests.cpp ;
 run unordered/insert_hint_tests.cpp ;
 run unordered/emplace_tests.cpp ;
@@ -69,7 +63,6 @@ compile-fail unordered/insert_node_type_fail.cpp : <define>UNORDERED_TEST_MULTIM
 compile-fail unordered/insert_node_type_fail.cpp : <define>UNORDERED_TEST_SET : insert_node_type_fail_set ;
 compile-fail unordered/insert_node_type_fail.cpp : <define>UNORDERED_TEST_MULTISET : insert_node_type_fail_multiset ;
 run unordered/find_tests.cpp ;
-run unordered/find_tests.cpp : : : $(CPP14) <define>BOOST_UNORDERED_FOA_TESTS : foa_find_tests ;
 run unordered/at_tests.cpp ;
 run unordered/bucket_tests.cpp ;
 run unordered/load_factor_tests.cpp ;
@@ -102,3 +95,8 @@ run exception/swap_exception_tests.cpp : : : <define>BOOST_UNORDERED_SWAP_METHOD
 run exception/merge_exception_tests.cpp ;
 
 run quick.cpp ;
+
+run unordered/constructor_tests.cpp : : : <cxxstd>03:<build>no <cxxstd>11:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_constructor_tests ;
+run unordered/copy_tests.cpp        : : : <cxxstd>03:<build>no <cxxstd>11:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_copy_tests ;
+run unordered/insert_tests.cpp      : : : <cxxstd>03:<build>no <cxxstd>11:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_insert_tests ;
+run unordered/find_tests.cpp        : : : <cxxstd>03:<build>no <cxxstd>11:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_find_tests ;
