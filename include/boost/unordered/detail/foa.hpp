@@ -815,7 +815,7 @@ struct subaligned_table_arrays:
 template<typename Value,typename Group,typename SizePolicy>
 using table_arrays=typename std::conditional<
 
-#if defined(__STDCPP_DEFAULT_NEW_ALIGNMENT__)
+#if 0&&defined(__STDCPP_DEFAULT_NEW_ALIGNMENT__)
   sizeof(Group)<=__STDCPP_DEFAULT_NEW_ALIGNMENT__,
 #else
   sizeof(Group)<=alignof(std::max_align_t),
