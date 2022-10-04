@@ -824,6 +824,32 @@ using table_arrays=typename std::conditional<
   aligned_table_arrays<Value,Group,SizePolicy>,
   subaligned_table_arrays<Value,Group,SizePolicy>>::type;
 
+struct if_constexpr_void_else{void operator()()const{}};
+
+template<bool B,typename F,typename G=if_constexpr_void_else>
+void if_constexpr(F f,G g={})
+{
+  std::get<B?0:1>(std::forward_as_tuple(f,g))();
+}
+
+template<bool B,typename T,typename std::enable_if<B>::type* =nullptr>
+void copy_assign_if(T& x,const T& y){x=y;}
+
+template<bool B,typename T,typename std::enable_if<!B>::type* =nullptr>
+void copy_assign_if(T& x,const T& y){}
+
+template<bool B,typename T,typename std::enable_if<B>::type* =nullptr>
+void move_assign_if(T& x,T& y){x=std::move(y);}
+
+template<bool B,typename T,typename std::enable_if<!B>::type* =nullptr>
+void move_assign_if(T& x,T& y){}
+
+template<bool B,typename T,typename std::enable_if<B>::type* =nullptr>
+void swap_if(T& x,T& y){using std::swap; swap(x,y);}
+
+template<bool B,typename T,typename std::enable_if<!B>::type* =nullptr>
+void swap_if(T& x,T& y){}
+
 #if defined(BOOST_GCC)
 /* GCC's -Wshadow triggers at scenarios like this: 
  *
@@ -975,31 +1001,19 @@ public:
     delete_arrays(arrays);
   }
 
-  template <class AllocTraits>
-  typename std::enable_if<
-    !AllocTraits::propagate_on_container_copy_assignment::value, 
-    void
-  >::type 
-  copy_assign_helper(const table&) {}
-
-  template <class AllocTraits>
-  typename std::enable_if<
-    AllocTraits::propagate_on_container_copy_assignment::value, 
-    void
-  >::type
-  copy_assign_helper(const table& x)
-  {
-    if(al()!=x.al())reserve(0);
-    al()=x.al();
-  }
-
   table& operator=(const table& x)
   {
+    static constexpr auto pocca=
+      alloc_traits::propagate_on_container_copy_assignment::value;
+
     if(this!=&x){
       clear();
       h()=x.h();
       pred()=x.pred();
-      copy_assign_helper<alloc_traits>(x);
+      if_constexpr<pocca>([&,this]{
+        if(al()!=x.al())reserve(0);
+        copy_assign_if<pocca>(al(),x.al());
+      });
       // TODO may shrink arrays and miss an opportunity for memory reuse
       reserve(x.size());
       x.for_all_elements([this](value_type* p){
@@ -1020,9 +1034,10 @@ public:
       std::is_nothrow_move_assignable<Hash>::value&&
       std::is_nothrow_move_assignable<Pred>::value)
   {
+    static constexpr auto pocma=
+      alloc_traits::propagate_on_container_move_assignment::value;
+
     if(this!=&x){
-      // TODO explain why not constexpr
-      auto pocma=alloc_traits::propagate_on_container_move_assignment::value;
       clear();
       h()=std::move(x.h());
       pred()=std::move(x.pred());
@@ -1031,7 +1046,7 @@ public:
         reserve(0);
         swap(arrays,x.arrays);
         swap(ml,x.ml);
-        if(pocma)al()=std::move(x.al());
+        move_assign_if<pocma>(al(),x.al());
       }
       else{
         reserve(x.size());
@@ -1136,11 +1151,18 @@ public:
       boost::is_nothrow_swappable<Hash>::value&&
       boost::is_nothrow_swappable<Pred>::value)
   {
+    static constexpr auto pocs=
+      alloc_traits::propagate_on_container_swap::value;
+
     using std::swap;
     swap(h(),x.h());
     swap(pred(),x.pred());
-    if(alloc_traits::propagate_on_container_swap::value)swap(al(),x.al());
-    else BOOST_ASSERT(al()==x.al());
+    if_constexpr<pocs>([&,this]{
+      swap_if<pocs>(al(),x.al());
+    },
+    [&,this]{ /* else */
+      BOOST_ASSERT(al()==x.al());
+    });
     swap(size_,x.size_);
     swap(arrays,x.arrays);
     swap(ml,x.ml);
