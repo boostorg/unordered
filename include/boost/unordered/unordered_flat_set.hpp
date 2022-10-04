@@ -88,6 +88,19 @@ namespace boost {
       {
       }
 
+      unordered_flat_set(unordered_flat_set&& other)
+        noexcept(std::is_nothrow_move_constructible<hasher>::value&&
+            std::is_nothrow_move_constructible<key_equal>::value&&
+              std::is_nothrow_move_constructible<allocator_type>::value)
+          : table_(std::move(other.table_))
+      {
+      }
+
+      unordered_flat_set(unordered_flat_set&& other, allocator_type const& al)
+          : table_(std::move(other.table_), al)
+      {
+      }
+
       unordered_flat_set(std::initializer_list<value_type> ilist,
         size_type n = 0, hasher const& h = hasher(),
         key_equal const& pred = key_equal(),
@@ -103,6 +116,16 @@ namespace boost {
         table_ = other.table_;
         return *this;
       }
+
+      unordered_flat_set& operator=(unordered_flat_set&& other)
+        noexcept(std::allocator_traits<allocator_type>::is_always_equal::value&&
+            std::is_nothrow_move_assignable<hasher>::value&&
+              std::is_nothrow_move_assignable<key_equal>::value)
+      {
+        table_ = std::move(other.table_);
+        return *this;
+      }
+
 
       allocator_type get_allocator() const noexcept
       {
