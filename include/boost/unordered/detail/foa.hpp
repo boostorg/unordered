@@ -872,6 +872,11 @@ void swap_if(T&,T&){}
 #pragma GCC diagnostic ignored "-Wshadow"
 #endif
 
+#if defined(BOOST_MSVC)
+#pragma warning(push)
+#pragma warning(disable:4714) /* marked as __forceinline not inlined */
+#endif
+
 template<typename TypePolicy,typename Hash,typename Pred,typename Allocator>
 class 
 
@@ -1503,6 +1508,10 @@ private:
   arrays_type            arrays;
   std::size_t            ml;
 };
+
+#if defined(BOOST_MSVC)
+#pragma warning(pop) /* C4714 */
+#endif
 
 #if defined(BOOST_GCC)
 #pragma GCC diagnostic pop /* ignored "-Wshadow" */
