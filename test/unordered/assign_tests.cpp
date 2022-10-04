@@ -322,7 +322,11 @@ namespace assign_tests {
   UNORDERED_AUTO_TEST (assign_default_initializer_list) {
     BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Initializer List Tests\n";
     std::initializer_list<std::pair<int const, int> > init;
+#ifdef BOOST_UNORDERED_FOA_TESTS
+    boost::unordered_flat_map<int, int> x1;
+#else
     boost::unordered_map<int, int> x1;
+#endif
     x1[25] = 3;
     x1[16] = 10;
     BOOST_TEST(!x1.empty());
@@ -336,7 +340,11 @@ namespace assign_tests {
   UNORDERED_AUTO_TEST (assign_initializer_list) {
     BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Initializer List Tests\n";
 
+#ifdef BOOST_UNORDERED_FOA_TESTS
+    boost::unordered_flat_set<int> x;
+#else
     boost::unordered_set<int> x;
+#endif
     x.insert(10);
     x.insert(20);
     x = {1, 2, -10};
