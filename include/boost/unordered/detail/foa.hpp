@@ -836,19 +836,19 @@ template<bool B,typename T,typename std::enable_if<B>::type* =nullptr>
 void copy_assign_if(T& x,const T& y){x=y;}
 
 template<bool B,typename T,typename std::enable_if<!B>::type* =nullptr>
-void copy_assign_if(T& x,const T& y){}
+void copy_assign_if(T&,const T&){}
 
 template<bool B,typename T,typename std::enable_if<B>::type* =nullptr>
 void move_assign_if(T& x,T& y){x=std::move(y);}
 
 template<bool B,typename T,typename std::enable_if<!B>::type* =nullptr>
-void move_assign_if(T& x,T& y){}
+void move_assign_if(T&,T&){}
 
 template<bool B,typename T,typename std::enable_if<B>::type* =nullptr>
 void swap_if(T& x,T& y){using std::swap; swap(x,y);}
 
 template<bool B,typename T,typename std::enable_if<!B>::type* =nullptr>
-void swap_if(T& x,T& y){}
+void swap_if(T&,T&){}
 
 #if defined(BOOST_GCC)
 /* GCC's -Wshadow triggers at scenarios like this: 
