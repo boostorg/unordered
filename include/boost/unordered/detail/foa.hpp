@@ -1056,6 +1056,7 @@ public:
         reserve(0);
         swap(arrays,x.arrays);
         swap(ml,x.ml);
+        swap(size_,x.size_);
         move_assign_if<pocma>(al(),x.al());
       }
       else{
