@@ -11,6 +11,8 @@
 #ifndef BOOST_UNORDERED_DETAIL_FOA_HPP
 #define BOOST_UNORDERED_DETAIL_FOA_HPP
 
+#include <iostream>
+
 #include <boost/assert.hpp>
 #include <boost/config.hpp>
 #include <boost/core/bit.hpp>
@@ -1038,6 +1040,11 @@ public:
 #pragma warning(disable:4297) /* throw inside noexcept function */
 #endif
 
+#if defined(BOOST_GCC)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wterminate"
+#endif
+
   table& operator=(table&& x)
     noexcept(
       alloc_traits::is_always_equal::value&&
@@ -1080,6 +1087,10 @@ public:
     }
     return *this;
   }
+
+#if defined(BOOST_GCC)
+#pragma GCC diagnostic pop
+#endif
 
 #if defined(BOOST_MSVC)
 #pragma warning(pop) /* C4297 */
