@@ -590,6 +590,8 @@ private:
 template<typename,typename,typename,typename>
 class table;
 
+class const_iterator_cast_tag {};
+
 template<typename Value,typename Group,bool Const>
 class table_iterator
 {
@@ -603,6 +605,9 @@ public:
   table_iterator()=default;
   template<bool Const2,typename std::enable_if<!Const2>::type* =nullptr>
   table_iterator(const table_iterator<Value,Group,Const2>& x):
+    pc{x.pc},p{x.p}{}
+  table_iterator(
+    const_iterator_cast_tag, const table_iterator<Value,Group,true>& x):
     pc{x.pc},p{x.p}{}
 
   inline reference operator*()const noexcept{return *p;}

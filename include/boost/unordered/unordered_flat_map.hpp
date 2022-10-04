@@ -239,6 +239,14 @@ namespace boost {
 
       void erase(iterator pos) { table_.erase(pos); }
       void erase(const_iterator pos) { return table_.erase(pos); }
+      iterator erase(const_iterator first, const_iterator last)
+      {
+        while (first != last) {
+          this->erase(first++);
+        }
+        return iterator{detail::foa::const_iterator_cast_tag{}, last};
+      }
+
       size_type erase(key_type const& key) { return table_.erase(key); }
 
       /// Lookup
