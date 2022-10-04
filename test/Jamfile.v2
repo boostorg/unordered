@@ -47,6 +47,7 @@ run unordered/equivalent_keys_tests.cpp ;
 run unordered/constructor_tests.cpp ;
 run unordered/copy_tests.cpp ;
 run unordered/move_tests.cpp ;
+run unordered/post_move_tests.cpp ;
 run unordered/assign_tests.cpp ;
 run unordered/insert_tests.cpp ;
 run unordered/insert_stable_tests.cpp ;
