@@ -101,9 +101,7 @@ namespace boost {
 
       unordered_flat_map& operator=(unordered_flat_map const& other)
       {
-        if (this != &other) {
-          table_ = other.table_;
-        }
+        table_ = other.table_;
         return *this;
       }
 

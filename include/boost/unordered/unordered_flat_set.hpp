@@ -100,9 +100,7 @@ namespace boost {
 
       unordered_flat_set& operator=(unordered_flat_set const& other)
       {
-        if (this != &other) {
-          table_ = other.table_;
-        }
+        table_ = other.table_;
         return *this;
       }
 
