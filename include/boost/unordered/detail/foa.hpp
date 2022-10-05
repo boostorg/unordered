@@ -1045,9 +1045,10 @@ public:
       std::forward_as_tuple(std::forward<Args>(args)...));
   }
 
-  BOOST_FORCEINLINE std::pair<iterator,bool> insert(const init_type& x)
+  template<typename T>
+  BOOST_FORCEINLINE std::pair<iterator,bool> insert(T&& x)
   {
-    return emplace_impl(x);
+    return emplace_impl(std::forward<T>(x));
   }
 
   BOOST_FORCEINLINE std::pair<iterator,bool> insert(init_type&& x)
