@@ -28,8 +28,16 @@ namespace boost {
       struct map_types
       {
         using key_type = Key;
+        using init_type = std::pair<Key, T>;
         using value_type = std::pair<Key const, T>;
         static Key const& extract(value_type const& kv) { return kv.first; }
+
+        template<typename F>
+        static void move_parts_to(value_type& x,F f)
+        {
+          // TODO: we probably need to launder here
+          f(std::move(const_cast<Key&>(x.first)), std::move(x.second));
+        }
       };
 
       using table_type = detail::foa::table<map_types, Hash, KeyEqual,

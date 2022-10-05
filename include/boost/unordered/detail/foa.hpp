@@ -828,6 +828,7 @@ table:empty_value<Hash,0>,empty_value<Pred,1>,empty_value<Allocator,1>
 
 public:
   using key_type=typename type_policy::key_type;
+  using init_type=typename type_policy::value_type;
   using value_type=typename type_policy::value_type;
 
 private:
@@ -1042,12 +1043,12 @@ public:
       std::forward_as_tuple(std::forward<Args>(args)...));
   }
 
-  BOOST_FORCEINLINE std::pair<iterator,bool> insert(const value_type& x)
+  BOOST_FORCEINLINE std::pair<iterator,bool> insert(const init_type& x)
   {
     return emplace_impl(x);
   }
 
-  BOOST_FORCEINLINE std::pair<iterator,bool> insert(value_type&& x)
+  BOOST_FORCEINLINE std::pair<iterator,bool> insert(init_type&& x)
   {
     return emplace_impl(std::move(x));
   }
@@ -1346,8 +1347,9 @@ private:
   void nosize_transfer_element(value_type* p,const arrays_type& arrays_)
   {
     auto hash=h()(key_from(*p));
-    nosize_unchecked_emplace_at(
-      arrays_,position_for(hash,arrays_),hash,std::move(*p));
+    type_policy::move_parts_to(
+      *p,
+      bind_unchecked_emplace_at{this,arrays_,position_for(hash,arrays_),hash});
     destroy_element(p);
   }
 
@@ -1412,6 +1414,21 @@ private:
     }
   }
 #endif
+
+  struct bind_unchecked_emplace_at
+  {
+    template<typename... Args>
+    iterator operator()(Args&&... args)const
+    {
+      return this_->nosize_unchecked_emplace_at(
+        arrays,pos0,hash,std::forward<Args>(args)...);
+    }
+
+    table*             this_;
+    const arrays_type& arrays;
+    std::size_t        pos0;
+    std::size_t        hash;
+  };
 
   template<typename F>
   void for_all_elements(F f)const
