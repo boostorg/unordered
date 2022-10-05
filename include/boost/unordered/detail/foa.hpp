@@ -828,12 +828,14 @@ table:empty_value<Hash,0>,empty_value<Pred,1>,empty_value<Allocator,1>
 
 public:
   using key_type=typename type_policy::key_type;
-  using init_type=typename type_policy::value_type;
+  using init_type=typename type_policy::init_type;
   using value_type=typename type_policy::value_type;
 
 private:
   static constexpr bool has_mutable_iterator=
     !std::is_same<key_type,value_type>::value;
+  static constexpr bool has_different_init_type=
+    !std::is_same<init_type,value_type>::value;
 
 public:
   using hasher=Hash;
@@ -1205,6 +1207,17 @@ private:
     else{
       return (std::size_t)(mlf*(float)(capacity_));
     }
+  }
+
+  template<
+    bool dependent_value=false,
+    typename std::enable_if<
+      has_different_init_type||dependent_value>::type* =nullptr
+  >
+  static inline auto key_from(const init_type& x)
+    ->decltype(type_policy::extract(x))
+  {
+    return type_policy::extract(x);
   }
 
   static inline auto key_from(const value_type& x)

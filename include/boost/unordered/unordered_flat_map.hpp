@@ -30,6 +30,7 @@ namespace boost {
         using key_type = Key;
         using init_type = std::pair<Key, T>;
         using value_type = std::pair<Key const, T>;
+        static Key const& extract(init_type const& kv) { return kv.first; }
         static Key const& extract(value_type const& kv) { return kv.first; }
 
         template<typename F>
