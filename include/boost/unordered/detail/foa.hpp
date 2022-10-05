@@ -1035,16 +1035,6 @@ public:
     return *this;
   }
 
-#if defined(BOOST_MSVC)
-#pragma warning(push)
-#pragma warning(disable:4297) /* throw inside noexcept function */
-#endif
-
-#if defined(BOOST_GCC)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wterminate"
-#endif
-
   table& operator=(table&& x)
     noexcept(
       alloc_traits::is_always_equal::value&&
@@ -1066,7 +1056,12 @@ public:
         swap(arrays,x.arrays);
         swap(ml,x.ml);
       }
-      else{
+      else if_constexpr<!alloc_traits::is_always_equal::value>([&,this]{
+        /* The check above is redundant: we're setting up a compile-time
+         * barrier so that the compiler is convinced we're not throwing
+         * under noexcept(true) conditions.
+         */
+
         reserve(x.size());
         BOOST_TRY{
           /* This works because subsequent x.clear() does not depend on the
@@ -1083,18 +1078,10 @@ public:
         }
         BOOST_CATCH_END
         x.clear();
-      }
+      });
     }
     return *this;
   }
-
-#if defined(BOOST_GCC)
-#pragma GCC diagnostic pop
-#endif
-
-#if defined(BOOST_MSVC)
-#pragma warning(pop) /* C4297 */
-#endif
 
   allocator_type get_allocator()const noexcept{return al();}
 
