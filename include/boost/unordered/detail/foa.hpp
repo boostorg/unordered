@@ -668,22 +668,31 @@ private:
   Value         *p=nullptr;
 };
 
-template<typename Arrays>
-struct table_arrays_base
+template<typename Value,typename Group,typename SizePolicy>
+struct table_arrays
 {
+  using value_type=Value;
+  using group_type=Group;
+  static constexpr auto N=group_type::N;
+  using size_policy=SizePolicy;
+
   template<typename Allocator>
-  static Arrays new_(Allocator& al,std::size_t n)
+  static table_arrays new_(Allocator& al,std::size_t n)
   {
-    using group_type=typename Arrays::group_type;
-    static constexpr auto N=group_type::N;
-    using size_policy=typename Arrays::size_policy;
     using alloc_traits=std::allocator_traits<Allocator>;
 
-    auto   groups_size_index=size_policy::size_index(n/N+1);
-    auto   groups_size=size_policy::size(groups_size_index);
-    Arrays arrays{groups_size_index,groups_size-1};
+                 /* n/N+1 == ceil(n+1/N) (extra +1 for the sentinel) */
+    auto         groups_size_index=size_policy::size_index(n/N+1);
+    auto         groups_size=size_policy::size(groups_size_index);
+    table_arrays arrays{groups_size_index,groups_size-1,nullptr,nullptr};
 
     if(!n){
+      /* We make groups point to dummy storage initialized as if in an empty
+       * container. This allows us to implement find() etc. without checking
+       * groups==nullptr. This space won't ever be used for insertion as
+       * container capacity is properly tuned to avoid that.
+       */
+
       static constexpr typename group_type::dummy_group_type
       storage[size_policy::min_size()]=
         {typename group_type::dummy_group_type(),};
@@ -692,144 +701,58 @@ struct table_arrays_base
         const_cast<typename group_type::dummy_group_type*>(storage));
     }
     else{
-      arrays.allocate_groups(al,groups_size);
-      // TODO: explain why memset
-      std::memset(
-        arrays.groups,0,sizeof(group_type)*groups_size);
+      arrays.elements=
+        boost::to_address(alloc_traits::allocate(al,buffer_size(groups_size)));
+      
+      /* Align arrays.groups to sizeof(group_type). table_iterator critically
+       * depends on such alignment for its increment operation.
+       */
+
+      auto p=reinterpret_cast<unsigned char*>(arrays.elements+groups_size*N-1);
+      p+=(uintptr_t(sizeof(group_type))-
+          reinterpret_cast<uintptr_t>(p))%sizeof(group_type);
+      arrays.groups=reinterpret_cast<group_type*>(p);
+
+      /* memset is faster/not slower than using group_type default ctor.
+       * This assumes all zeros is group_type's default layout. 
+       */
+
+      std::memset(arrays.groups,0,sizeof(group_type)*groups_size);
       arrays.groups[groups_size-1].set_sentinel();
-      BOOST_TRY{
-        arrays.elements=
-          boost::to_address(alloc_traits::allocate(al,groups_size*N-1));
-      }
-      BOOST_CATCH(...){
-        arrays.deallocate_groups(al,groups_size);
-        BOOST_RETHROW
-      }
-      BOOST_CATCH_END
     }
     return arrays;
   }
 
   template<typename Allocator>
-  static void delete_(Allocator& al,Arrays& arrays)noexcept
+  static void delete_(Allocator& al,table_arrays& arrays)noexcept
   {
-    using group_type=typename Arrays::group_type;
-    static constexpr auto N=group_type::N;
     using alloc_traits=std::allocator_traits<Allocator>;
 
     if(arrays.elements){
-      auto groups_size=arrays.groups_size_mask+1;
-      alloc_traits::deallocate(al,arrays.elements,groups_size*N-1);
-      arrays.deallocate_groups(al,groups_size);
+      alloc_traits::deallocate(
+        al,arrays.elements,buffer_size(arrays.groups_size_mask+1));
     }
   }
-};
 
-template<typename Value,typename Group,typename SizePolicy>
-struct aligned_table_arrays:
-  table_arrays_base<aligned_table_arrays<Value,Group,SizePolicy>>
-{
-  using group_type=Group;
-  using value_type=Value;
-  using size_policy=SizePolicy;
+  /* combined space for elements and groups measured in sizeof(value_type)s */
 
-  aligned_table_arrays(
-    std::size_t groups_size_index_,std::size_t groups_size_mask_):
-    groups_size_index{groups_size_index_},groups_size_mask{groups_size_mask_}
-    {}
-
-  template<typename Allocator>
-  void allocate_groups(Allocator& al,std::size_t groups_size)
+  static std::size_t buffer_size(std::size_t groups_size)
   {
-    using alloc_traits=std::allocator_traits<Allocator>;
-    using group_allocator=
-      typename alloc_traits::template rebind_alloc<group_type>;
-    using group_alloc_traits=std::allocator_traits<group_allocator>;
+    auto buffer_bytes=
+      /* space for elements (we subtract 1 because of the sentinel) */
+      sizeof(value_type)*(groups_size*N-1)+
+      /* space for groups + padding for group alignment */
+      sizeof(group_type)*(groups_size+1)-1;
 
-    group_allocator gal=al;
-    groups=boost::to_address(group_alloc_traits::allocate(gal,groups_size));
-  }
-
-  template<typename Allocator>
-  void deallocate_groups(Allocator& al,std::size_t groups_size)
-  {
-    using alloc_traits=std::allocator_traits<Allocator>;
-    using group_allocator=
-      typename alloc_traits::template rebind_alloc<group_type>;
-    using group_alloc_traits=std::allocator_traits<group_allocator>;
-
-    group_allocator gal=al;
-    group_alloc_traits::deallocate(gal,groups,groups_size);
+    /* ceil(buffer_bytes/sizeof(value_type)) */
+    return (buffer_bytes+sizeof(value_type)-1)/sizeof(value_type);
   }
 
   std::size_t  groups_size_index;
   std::size_t  groups_size_mask;
-  group_type  *groups=nullptr;
-  value_type  *elements=nullptr;
+  group_type  *groups;
+  value_type  *elements;
 };
-
-template<typename Value,typename Group,typename SizePolicy>
-struct subaligned_table_arrays:
-  table_arrays_base<subaligned_table_arrays<Value,Group,SizePolicy>>
-{
-  using group_type=Group;
-  using value_type=Value;
-  using size_policy=SizePolicy;
-
-  subaligned_table_arrays(
-    std::size_t groups_size_index_,std::size_t groups_size_mask_):
-    groups_size_index{groups_size_index_},groups_size_mask{groups_size_mask_}
-    {}
-
-  template<typename Allocator>
-  void allocate_groups(Allocator& al,std::size_t groups_size)
-  {
-    using alloc_traits=std::allocator_traits<Allocator>;
-    using byte_allocator=
-      typename alloc_traits::template rebind_alloc<unsigned char>;
-    using byte_alloc_traits=std::allocator_traits<byte_allocator>;
-
-    byte_allocator bal=al;
-    auto p=boost::to_address(
-      byte_alloc_traits::allocate(bal,sizeof(group_type)*(groups_size+1)-1));
-    groups_offset=static_cast<unsigned char>(
-      (uintptr_t(sizeof(group_type))-reinterpret_cast<uintptr_t>(p))%
-        sizeof(group_type));
-    groups=reinterpret_cast<group_type*>(p+groups_offset);
-  }
-
-  template<typename Allocator>
-  void deallocate_groups(Allocator& al,std::size_t groups_size)
-  {
-    using alloc_traits=std::allocator_traits<Allocator>;
-    using byte_allocator=
-      typename alloc_traits::template rebind_alloc<unsigned char>;
-    using byte_alloc_traits=std::allocator_traits<byte_allocator>;
-
-    byte_allocator bal=al;
-    byte_alloc_traits::deallocate(
-      bal,reinterpret_cast<unsigned char*>(groups)-groups_offset,
-      sizeof(group_type)*(groups_size+1)-1);
-  }
-
-  std::size_t    groups_size_index;
-  std::size_t    groups_size_mask;
-  group_type    *groups=nullptr;
-  value_type    *elements=nullptr;
-  unsigned char  groups_offset=0;
-};
-
-template<typename Value,typename Group,typename SizePolicy>
-using table_arrays=typename std::conditional<
-
-#if 0&&defined(__STDCPP_DEFAULT_NEW_ALIGNMENT__)
-  sizeof(Group)<=__STDCPP_DEFAULT_NEW_ALIGNMENT__,
-#else
-  sizeof(Group)<=alignof(std::max_align_t),
-#endif
-
-  aligned_table_arrays<Value,Group,SizePolicy>,
-  subaligned_table_arrays<Value,Group,SizePolicy>>::type;
 
 struct if_constexpr_void_else{void operator()()const{}};
 
