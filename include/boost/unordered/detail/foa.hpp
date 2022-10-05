@@ -16,6 +16,7 @@
 #include <boost/assert.hpp>
 #include <boost/config.hpp>
 #include <boost/core/bit.hpp>
+#include <boost/core/allocator_traits.hpp>
 #include <boost/core/empty_value.hpp>
 #include <boost/core/no_exceptions_support.hpp>
 #include <boost/core/pointer_traits.hpp>
@@ -28,7 +29,6 @@
 #include <cstring>
 #include <iterator>
 #include <limits>
-#include <memory>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -679,7 +679,7 @@ struct table_arrays
   template<typename Allocator>
   static table_arrays new_(Allocator& al,std::size_t n)
   {
-    using alloc_traits=std::allocator_traits<Allocator>;
+    using alloc_traits=boost::allocator_traits<Allocator>;
 
                  /* n/N+1 == ceil(n+1/N) (extra +1 for the sentinel) */
     auto         groups_size_index=size_policy::size_index(n/N+1);
@@ -726,7 +726,7 @@ struct table_arrays
   template<typename Allocator>
   static void delete_(Allocator& al,table_arrays& arrays)noexcept
   {
-    using alloc_traits=std::allocator_traits<Allocator>;
+    using alloc_traits=boost::allocator_traits<Allocator>;
 
     if(arrays.elements){
       alloc_traits::deallocate(
@@ -824,7 +824,7 @@ table:empty_value<Hash,0>,empty_value<Pred,1>,empty_value<Allocator,1>
   static constexpr auto N=group_type::N;
   using size_policy=pow2_size_policy;
   using prober=pow2_quadratic_prober;
-  using alloc_traits=std::allocator_traits<Allocator>;
+  using alloc_traits=boost::allocator_traits<Allocator>;
 
 public:
   using key_type=typename type_policy::key_type;
