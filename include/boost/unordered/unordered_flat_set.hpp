@@ -14,6 +14,7 @@
 #include <boost/unordered/unordered_flat_set_fwd.hpp>
 
 #include <boost/core/allocator_access.hpp>
+#include <boost/functional/hash.hpp>
 
 #include <initializer_list>
 #include <iterator>
@@ -32,8 +33,10 @@ namespace boost {
         using value_type = Key;
         static Key const& extract(value_type const& key) { return key; }
 
-        template<typename F>
-        static void move_parts_to(value_type& x,F f) { f(std::move(x)); }
+        template <typename F> static void move_parts_to(value_type& x, F f)
+        {
+          f(std::move(x));
+        }
       };
 
       using table_type = detail::foa::table<set_types, Hash, KeyEqual,

@@ -14,6 +14,7 @@
 #include <boost/unordered/unordered_flat_map_fwd.hpp>
 
 #include <boost/core/allocator_access.hpp>
+#include <boost/functional/hash.hpp>
 
 #include <initializer_list>
 #include <iterator>
@@ -33,8 +34,7 @@ namespace boost {
         static Key const& extract(init_type const& kv) { return kv.first; }
         static Key const& extract(value_type const& kv) { return kv.first; }
 
-        template<typename F>
-        static void move_parts_to(value_type& x,F f)
+        template <typename F> static void move_parts_to(value_type& x, F f)
         {
           // TODO: we probably need to launder here
           f(std::move(const_cast<Key&>(x.first)), std::move(x.second));

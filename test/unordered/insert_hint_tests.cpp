@@ -5,8 +5,14 @@
 
 // clang-format off
 #include "../helpers/prefix.hpp"
+#ifdef BOOST_UNORDERED_FOA_TESTS
+#include <boost/unordered/detail/implementation.hpp>
+#include <boost/unordered_flat_set.hpp>
+#include <boost/unordered_flat_map.hpp>
+#else
 #include <boost/unordered_set.hpp>
 #include <boost/unordered_map.hpp>
+#endif
 #include "../helpers/postfix.hpp"
 // clang-format on
 
@@ -17,6 +23,7 @@
 #include <set>
 
 namespace insert_hint {
+#ifndef BOOST_UNORDERED_FOA_TESTS
   UNORDERED_AUTO_TEST (insert_hint_empty) {
     typedef boost::unordered_multiset<int> container;
     container x;
@@ -90,9 +97,13 @@ namespace insert_hint {
       }
     }
   }
-
+#endif
   UNORDERED_AUTO_TEST (insert_hint_unique) {
+#ifdef BOOST_UNORDERED_FOA_TESTS
+    typedef boost::unordered_flat_set<int> container;
+#else
     typedef boost::unordered_set<int> container;
+#endif
     container x;
     x.insert(x.cbegin(), 10);
     BOOST_TEST_EQ(x.size(), 1u);
@@ -101,7 +112,11 @@ namespace insert_hint {
   }
 
   UNORDERED_AUTO_TEST (insert_hint_unique_single) {
+#ifdef BOOST_UNORDERED_FOA_TESTS
+    typedef boost::unordered_flat_set<int> container;
+#else
     typedef boost::unordered_set<int> container;
+#endif
     container x;
     x.insert(10);
 

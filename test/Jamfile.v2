@@ -107,5 +107,6 @@ build_foa copy_tests ;
 build_foa move_tests ;
 build_foa assign_tests ;
 build_foa insert_tests ;
+build_foa insert_hint_tests ;
 build_foa erase_tests ;
 build_foa find_tests ;
