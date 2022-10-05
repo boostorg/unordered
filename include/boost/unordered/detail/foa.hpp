@@ -1061,10 +1061,10 @@ public:
       if(pocma||al()==x.al()){
         using std::swap;
         reserve(0);
+        move_assign_if<pocma>(al(),x.al());
+        swap(size_,x.size_);
         swap(arrays,x.arrays);
         swap(ml,x.ml);
-        swap(size_,x.size_);
-        move_assign_if<pocma>(al(),x.al());
       }
       else{
         reserve(x.size());
