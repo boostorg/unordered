@@ -5,8 +5,14 @@
 
 // clang-format off
 #include "../helpers/prefix.hpp"
+#ifdef BOOST_UNORDERED_FOA_TESTS
+#include <boost/unordered/detail/implementation.hpp>
+#include <boost/unordered_flat_set.hpp>
+#include <boost/unordered_flat_map.hpp>
+#else
 #include <boost/unordered_set.hpp>
 #include <boost/unordered_map.hpp>
+#endif
 #include "../helpers/postfix.hpp"
 // clang-format on
 
@@ -162,16 +168,29 @@ namespace emplace_tests {
       return true;
     }
 
+#ifdef BOOST_UNORDERED_FOA_TESTS
+    emplace_value() = delete;
+    emplace_value(emplace_value const&) = default;
+    emplace_value(emplace_value&&) = default;
+#else
   private:
     emplace_value();
     emplace_value(emplace_value const&);
+#endif
+
   };
 
   UNORDERED_AUTO_TEST (emplace_set) {
     test::check_instances check_;
 
+#ifdef BOOST_UNORDERED_FOA_TESTS
+    typedef boost::unordered_flat_set<emplace_value,
+      boost::hash<emplace_value> >
+      container;
+#else
     typedef boost::unordered_set<emplace_value, boost::hash<emplace_value> >
       container;
+#endif
     typedef container::iterator iterator;
     typedef std::pair<iterator, bool> return_type;
     container x(10);
@@ -187,7 +206,15 @@ namespace emplace_tests {
     BOOST_TEST(*r1.first == v1);
     BOOST_TEST(r1.first == x.find(v1));
     BOOST_TEST_EQ(check_.instances(), 2);
+#ifdef BOOST_UNORDERED_FOA_TESTS
+    // 1 from v1
+    // 1 from constructing the value_type() so we can pluck the key
+    // 1 from move-constructing which invokes the counted_object base
+    // constructor
+    BOOST_TEST_EQ(check_.constructions(), 3);
+#else
     BOOST_TEST_EQ(check_.constructions(), 2);
+#endif
 
     // 3 args
 
@@ -198,7 +225,11 @@ namespace emplace_tests {
     BOOST_TEST(*r1.first == v2);
     BOOST_TEST(r1.first == x.find(v2));
     BOOST_TEST_EQ(check_.instances(), 4);
+#ifdef BOOST_UNORDERED_FOA_TESTS
+  BOOST_TEST_EQ(check_.constructions(), 6);
+#else
     BOOST_TEST_EQ(check_.constructions(), 4);
+#endif
 
     // 7 args with hint + duplicate
 
@@ -208,7 +239,11 @@ namespace emplace_tests {
     BOOST_TEST(*i1 == v3);
     BOOST_TEST(i1 == x.find(v3));
     BOOST_TEST_EQ(check_.instances(), 6);
+#ifdef BOOST_UNORDERED_FOA_TESTS
+    BOOST_TEST_EQ(check_.constructions(), 9);
+#else
     BOOST_TEST_EQ(check_.constructions(), 6);
+#endif
 
     r2 = x.emplace(25, "something", 'z', 4, 5, 6, 7);
     BOOST_TEST_EQ(x.size(), 3u);
@@ -218,7 +253,11 @@ namespace emplace_tests {
     // whether it can emplace, so there's an extra construction
     // here.
     BOOST_TEST_EQ(check_.instances(), 6);
+#ifdef BOOST_UNORDERED_FOA_TESTS
+    BOOST_TEST_EQ(check_.constructions(), 10);
+#else
     BOOST_TEST_EQ(check_.constructions(), 7);
+#endif
 
     // 10 args + hint duplicate
 
@@ -230,7 +269,11 @@ namespace emplace_tests {
     BOOST_TEST(*r1.first == v4);
     BOOST_TEST(r1.first == x.find(v4));
     BOOST_TEST_EQ(check_.instances(), 8);
+#ifdef BOOST_UNORDERED_FOA_TESTS
+    BOOST_TEST_EQ(check_.constructions(), 13);
+#else
     BOOST_TEST_EQ(check_.constructions(), 9);
+#endif
 
     BOOST_TEST(
       r1.first == x.emplace_hint(r1.first, 10, "", 'a', 4, 5, 6, 7, 8, 9, 10));
@@ -239,7 +282,11 @@ namespace emplace_tests {
     BOOST_TEST(
       r1.first == x.emplace_hint(x.end(), 10, "", 'a', 4, 5, 6, 7, 8, 9, 10));
     BOOST_TEST_EQ(check_.instances(), 8);
+#ifdef BOOST_UNORDERED_FOA_TESTS
+    BOOST_TEST_EQ(check_.constructions(), 16);
+#else
     BOOST_TEST_EQ(check_.constructions(), 12);
+#endif
 
     BOOST_TEST_EQ(x.size(), 4u);
     BOOST_TEST(x.count(v1) == 1);
@@ -248,6 +295,7 @@ namespace emplace_tests {
     BOOST_TEST(x.count(v4) == 1);
   }
 
+#ifndef BOOST_UNORDERED_FOA_TESTS
   UNORDERED_AUTO_TEST (emplace_multiset) {
     test::check_instances check_;
 
@@ -325,20 +373,79 @@ namespace emplace_tests {
     BOOST_TEST_EQ(x.count(v2), 2u);
     BOOST_TEST_EQ(x.count(v3), 2u);
   }
+#endif
 
   UNORDERED_AUTO_TEST (emplace_map) {
     test::check_instances check_;
-
+#ifdef BOOST_UNORDERED_FOA_TESTS
+    typedef boost::unordered_flat_map<emplace_value, emplace_value,
+      boost::hash<emplace_value> >
+      container;
+#else
     typedef boost::unordered_map<emplace_value, emplace_value,
       boost::hash<emplace_value> >
       container;
+#endif
     typedef container::iterator iterator;
     typedef std::pair<iterator, bool> return_type;
     container x(10);
     return_type r1, r2;
 
+#ifdef BOOST_UNORDERED_FOA_TESTS
     // 5/8 args + duplicate
+    emplace_value k1(5, "", 'b', 4, 5);
+    emplace_value m1(8, "xxx", 'z', 4, 5, 6, 7, 8);
+    r1 = x.emplace(std::piecewise_construct, std::make_tuple(5, "", 'b', 4, 5),
+      std::make_tuple(8, "xxx", 'z', 4, 5, 6, 7, 8));
+    BOOST_TEST_EQ(x.size(), 1u);
+    BOOST_TEST(r1.second);
+    BOOST_TEST(x.find(k1) == r1.first);
+    BOOST_TEST(x.find(k1)->second == m1);
+    BOOST_TEST_EQ(check_.instances(), 4);
+    BOOST_TEST_EQ(check_.constructions(), 6);
 
+    r2 = x.emplace(std::piecewise_construct, std::make_tuple(5, "", 'b', 4, 5),
+      std::make_tuple(8, "xxx", 'z', 4, 5, 6, 7, 8));
+    BOOST_TEST_EQ(x.size(), 1u);
+    BOOST_TEST(!r2.second);
+    BOOST_TEST(r1.first == r2.first);
+    BOOST_TEST(x.find(k1)->second == m1);
+    BOOST_TEST_EQ(check_.instances(), 4);
+    // constructions could possibly be 5 if the implementation only
+    // constructed the key.
+    BOOST_TEST_EQ(check_.constructions(), 8);
+
+    // 9/3 args + duplicates with hints, different mapped value.
+
+    emplace_value k2(9, "", 'b', 4, 5, 6, 7, 8, 9);
+    emplace_value m2(3, "aaa", 'm');
+    r1 = x.emplace(std::piecewise_construct,
+      std::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
+      std::make_tuple(3, "aaa", 'm'));
+    BOOST_TEST_EQ(x.size(), 2u);
+    BOOST_TEST(r1.second);
+    BOOST_TEST(r1.first->first.arg_count == 9);
+    BOOST_TEST(r1.first->second.arg_count == 3);
+    BOOST_TEST(x.find(k2) == r1.first);
+    BOOST_TEST(x.find(k2)->second == m2);
+    BOOST_TEST_EQ(check_.instances(), 8);
+    BOOST_TEST_EQ(check_.constructions(), 14);
+
+    BOOST_TEST(r1.first == x.emplace_hint(r1.first, std::piecewise_construct,
+                             std::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
+                             std::make_tuple(15, "jkjk")));
+    BOOST_TEST(r1.first == x.emplace_hint(r2.first, std::piecewise_construct,
+                             std::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
+                             std::make_tuple(275, "xxx", 'm', 6)));
+    BOOST_TEST(r1.first == x.emplace_hint(x.end(), std::piecewise_construct,
+                             std::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
+                             std::make_tuple(-10, "blah blah", '\0')));
+    BOOST_TEST_EQ(x.size(), 2u);
+    BOOST_TEST(x.find(k2)->second == m2);
+    BOOST_TEST_EQ(check_.instances(), 8);
+    BOOST_TEST_EQ(check_.constructions(), 20);
+#else
+    // 5/8 args + duplicate
     emplace_value k1(5, "", 'b', 4, 5);
     emplace_value m1(8, "xxx", 'z', 4, 5, 6, 7, 8);
     r1 = x.emplace(boost::unordered::piecewise_construct,
@@ -395,8 +502,10 @@ namespace emplace_tests {
     BOOST_TEST(x.find(k2)->second == m2);
     BOOST_TEST_EQ(check_.instances(), 8);
     BOOST_TEST_EQ(check_.constructions(), 16);
+#endif
   }
 
+#ifndef BOOST_UNORDERED_FOA_TESTS
   UNORDERED_AUTO_TEST (emplace_multimap) {
     test::check_instances check_;
 
@@ -461,11 +570,15 @@ namespace emplace_tests {
     BOOST_TEST_EQ(check_.instances(), 20);
     BOOST_TEST_EQ(check_.constructions(), 20);
   }
+#endif
 
   UNORDERED_AUTO_TEST (try_emplace) {
     test::check_instances check_;
-
+#ifdef BOOST_UNORDERED_FOA_TESTS
+    typedef boost::unordered_flat_map<int, emplace_value> container;
+#else
     typedef boost::unordered_map<int, emplace_value> container;
+#endif
     typedef container::iterator iterator;
     typedef std::pair<iterator, bool> return_type;
     container x(10);

@@ -240,6 +240,12 @@ namespace boost {
       }
 
       template <class... Args>
+      iterator emplace_hint(const_iterator, Args&&... args)
+      {
+        return this->emplace(std::forward<Args>(args)...).first;
+      }
+
+      template <class... Args>
       std::pair<iterator, bool> try_emplace(key_type const& key, Args&&... args)
       {
         return table_.try_emplace(key, std::forward<Args>(args)...);
