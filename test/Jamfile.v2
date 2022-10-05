@@ -97,10 +97,15 @@ run exception/merge_exception_tests.cpp ;
 
 run quick.cpp ;
 
-run unordered/constructor_tests.cpp : : : <cxxstd>98:<build>no <cxxstd>03:<build>no <cxxstd>11:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_constructor_tests ;
-run unordered/copy_tests.cpp        : : : <cxxstd>98:<build>no <cxxstd>03:<build>no <cxxstd>11:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_copy_tests ;
-run unordered/move_tests.cpp        : : : <cxxstd>98:<build>no <cxxstd>03:<build>no <cxxstd>11:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_move_tests ;
-run unordered/assign_tests.cpp      : : : <cxxstd>98:<build>no <cxxstd>03:<build>no <cxxstd>11:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_assign_tests ;
-run unordered/insert_tests.cpp      : : : <cxxstd>98:<build>no <cxxstd>03:<build>no <cxxstd>11:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_insert_tests ;
-run unordered/erase_tests.cpp       : : : <cxxstd>98:<build>no <cxxstd>03:<build>no <cxxstd>11:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_erase_tests ;
-run unordered/find_tests.cpp        : : : <cxxstd>98:<build>no <cxxstd>03:<build>no <cxxstd>11:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_find_tests ;
+rule build_foa ( name )
+{
+  run unordered/$(name).cpp : : : <cxxstd>98:<build>no <cxxstd>03:<build>no <cxxstd>0x:<build>no <cxxstd>11:<build>no <cxxstd>1y:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_$(name) ;
+}
+
+build_foa constructor_tests ;
+build_foa copy_tests ;
+build_foa move_tests ;
+build_foa assign_tests ;
+build_foa insert_tests ;
+build_foa erase_tests ;
+build_foa find_tests ;
