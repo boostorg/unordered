@@ -1195,10 +1195,15 @@ private:
 
   std::size_t max_load()const
   {
-    float fml=mlf*(float)(capacity());
-    auto  res=(std::numeric_limits<std::size_t>::max)();
-    if(res>(std::size_t)fml)res=(std::size_t)fml;
-    return res;
+    static constexpr std::size_t small_capacity=2*N-1;
+
+    auto capacity_=capacity();
+    if(capacity_<=small_capacity){
+      return capacity_; /* we allow 100% usage */
+    }
+    else{
+      return (std::size_t)(mlf*(float)(capacity_));
+    }
   }
 
   static inline auto key_from(const value_type& x)
