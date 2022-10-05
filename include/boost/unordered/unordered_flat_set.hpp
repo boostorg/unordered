@@ -121,15 +121,12 @@ namespace boost {
         return *this;
       }
 
-      unordered_flat_set& operator=(unordered_flat_set&& other)
-        noexcept(std::allocator_traits<allocator_type>::is_always_equal::value&&
-            std::is_nothrow_move_assignable<hasher>::value&&
-              std::is_nothrow_move_assignable<key_equal>::value)
+      unordered_flat_set& operator=(unordered_flat_set&& other) noexcept(
+        noexcept(std::declval<table_type&>() = std::declval<table_type&&>()))
       {
         table_ = std::move(other.table_);
         return *this;
       }
-
 
       allocator_type get_allocator() const noexcept
       {
