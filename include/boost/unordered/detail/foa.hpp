@@ -1264,30 +1264,11 @@ private:
   }
 
   template<
-    typename T,
-    typename std::enable_if<
-      has_different_init_type&&
-      is_init_or_value_type<T>::value>::type* =nullptr
-  >
+    typename T>
   static inline auto key_from(const T& x)
     ->decltype(type_policy::extract(x))
   {
     return type_policy::extract(x);
-  }
-
-  static inline auto key_from(const value_type& x)
-    ->decltype(type_policy::extract(x))
-  {
-    return type_policy::extract(x);
-  }
-
-  template<
-    typename Key,
-    typename std::enable_if<!is_init_or_value_type<Key>::value>::type* =nullptr
-  >
-  static inline const Key& key_from(const Key& x)
-  {
-    return x;
   }
 
   template<typename Arg1,typename Arg2>
