@@ -1229,22 +1229,13 @@ private:
   }
 
   template<
-    bool dependent_value=false,
+    class T,
     typename std::enable_if<
-      has_different_init_type||dependent_value>::type* =nullptr
+      has_different_init_type&&(
+        std::is_same<T,init_type>::value||std::is_same<T,moved_type>::value
+      )>::type* =nullptr
   >
-  static inline auto key_from(const init_type& x)
-    ->decltype(type_policy::extract(x))
-  {
-    return type_policy::extract(x);
-  }
-
-  template<
-    bool dependent_value=false,
-    typename std::enable_if<
-      has_different_init_type||dependent_value>::type* =nullptr
-  >
-  static inline auto key_from(const moved_type& x)
+  static inline auto key_from(const T& x)
     ->decltype(type_policy::extract(x))
   {
     return type_policy::extract(x);
