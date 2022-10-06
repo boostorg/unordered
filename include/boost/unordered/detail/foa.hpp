@@ -1063,10 +1063,14 @@ public:
       std::forward_as_tuple(std::forward<Args>(args)...));
   }
 
-  template<typename T>
+  template<
+    typename T,
+    typename std::enable_if<
+      std::is_constructible<value_type,T&&>::value>* =nullptr
+  >
   BOOST_FORCEINLINE std::pair<iterator,bool> insert(T&& x)
   {
-    return emplace_impl(std::forward<T>(x));
+    return emplace_impl(value_from(std::forward<T>(x)));
   }
 
   BOOST_FORCEINLINE std::pair<iterator,bool> insert(init_type&& x)
@@ -1228,12 +1232,42 @@ private:
     }
   }
 
+  template<typename T>
+  using is_init_or_value_type=std::integral_constant<
+    bool,
+    std::is_same<
+      init_type,
+      typename std::remove_cv<typename std::remove_reference<T>::type>::type
+    >::value||
+    std::is_same<
+      value_type,
+      typename std::remove_cv<typename std::remove_reference<T>::type>::type
+    >::value
+  >;
+
   template<
-    class T,
+    typename T,
+    typename std::enable_if<is_init_or_value_type<T>::value>::type* =nullptr
+  >
+  static inline auto value_from(T&& x)->decltype(std::forward<T>(x))
+  {
+    return std::forward<T>(x);
+  }
+
+  template<
+    typename T,
+    typename std::enable_if<!is_init_or_value_type<T>::value>::type* =nullptr
+  >
+  static inline init_type value_from(T&& x)
+  {
+    return {std::forward<T>(x)};
+  }
+
+  template<
+    typename T,
     typename std::enable_if<
-      has_different_init_type&&(
-        std::is_same<T,init_type>::value||std::is_same<T,moved_type>::value
-      )>::type* =nullptr
+      has_different_init_type&&
+      is_init_or_value_type<T>::value>::type* =nullptr
   >
   static inline auto key_from(const T& x)
     ->decltype(type_policy::extract(x))
@@ -1247,7 +1281,10 @@ private:
     return type_policy::extract(x);
   }
 
-  template<typename Key>
+  template<
+    typename Key,
+    typename std::enable_if<!is_init_or_value_type<Key>::value>::type* =nullptr
+  >
   static inline const Key& key_from(const Key& x)
   {
     return x;
@@ -1498,3 +1535,4 @@ private:
 #undef BOOST_UNORDERED_SSE2
 #endif
 #endif
+
