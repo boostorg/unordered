@@ -99,7 +99,7 @@ run quick.cpp ;
 
 rule build_foa ( name )
 {
-  run unordered/$(name).cpp : : : <cxxstd>98:<build>no <cxxstd>03:<build>no <cxxstd>0x:<build>no <cxxstd>11:<build>no <cxxstd>1y:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_$(name) ;
+  run unordered/$(name).cpp : : : <cxxstd>98:<build>no <cxxstd>03:<build>no <cxxstd>0x:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_$(name) ;
 }
 
 build_foa constructor_tests ;
