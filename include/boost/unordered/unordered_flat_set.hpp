@@ -30,13 +30,10 @@ namespace boost {
       {
         using key_type = Key;
         using init_type = Key;
+        using moved_type = Key;
         using value_type = Key;
         static Key const& extract(value_type const& key) { return key; }
-
-        template <typename F> static void move_parts_to(value_type& x, F f)
-        {
-          f(std::move(x));
-        }
+        static Key&& move(value_type& x) { return std::move(x); }
       };
 
       using table_type = detail::foa::table<set_types, Hash, KeyEqual,
