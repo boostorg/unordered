@@ -52,47 +52,56 @@ namespace emplace_tests {
     A8 a8;
     A9 a9;
 
-    emplace_value(A0 const& b0, A1 const& b1) : arg_count(2), a0(b0), a1(b1) {}
+    emplace_value(A0 const& b0, A1 const& b1)
+        : arg_count(2), a0(b0), a1(b1), a2('\0'), a3(-1), a4(-1), a5(-1),
+          a6(-1), a7(-1), a8(-1), a9(-1)
+    {
+    }
 
     emplace_value(A0 const& b0, A1 const& b1, A2 const& b2)
-        : arg_count(3), a0(b0), a1(b1), a2(b2)
+        : arg_count(3), a0(b0), a1(b1), a2(b2), a3(-1), a4(-1), a5(-1), a6(-1),
+          a7(-1), a8(-1), a9(-1)
     {
     }
 
     emplace_value(A0 const& b0, A1 const& b1, A2 const& b2, A3 const& b3)
-        : arg_count(4), a0(b0), a1(b1), a2(b2), a3(b3)
+        : arg_count(4), a0(b0), a1(b1), a2(b2), a3(b3), a4(-1), a5(-1), a6(-1),
+          a7(-1), a8(-1), a9(-1)
     {
     }
 
     emplace_value(
       A0 const& b0, A1 const& b1, A2 const& b2, A3 const& b3, A4 const& b4)
-        : arg_count(5), a0(b0), a1(b1), a2(b2), a3(b3), a4(b4)
+        : arg_count(5), a0(b0), a1(b1), a2(b2), a3(b3), a4(b4), a5(-1), a6(-1),
+          a7(-1), a8(-1), a9(-1)
     {
     }
 
     emplace_value(A0 const& b0, A1 const& b1, A2 const& b2, A3 const& b3,
       A4 const& b4, A5 const& b5)
-        : arg_count(6), a0(b0), a1(b1), a2(b2), a3(b3), a4(b4), a5(b5)
+        : arg_count(6), a0(b0), a1(b1), a2(b2), a3(b3), a4(b4), a5(b5), a6(-1),
+          a7(-1), a8(-1), a9(-1)
     {
     }
 
     emplace_value(A0 const& b0, A1 const& b1, A2 const& b2, A3 const& b3,
       A4 const& b4, A5 const& b5, A6 const& b6)
-        : arg_count(7), a0(b0), a1(b1), a2(b2), a3(b3), a4(b4), a5(b5), a6(b6)
+        : arg_count(7), a0(b0), a1(b1), a2(b2), a3(b3), a4(b4), a5(b5), a6(b6),
+          a7(-1), a8(-1), a9(-1)
     {
     }
 
     emplace_value(A0 const& b0, A1 const& b1, A2 const& b2, A3 const& b3,
       A4 const& b4, A5 const& b5, A6 const& b6, A7 const& b7)
         : arg_count(8), a0(b0), a1(b1), a2(b2), a3(b3), a4(b4), a5(b5), a6(b6),
-          a7(b7)
+          a7(b7), a8(-1), a9(-1)
     {
     }
 
     emplace_value(A0 const& b0, A1 const& b1, A2 const& b2, A3 const& b3,
       A4 const& b4, A5 const& b5, A6 const& b6, A7 const& b7, A8 const& b8)
         : arg_count(9), a0(b0), a1(b1), a2(b2), a3(b3), a4(b4), a5(b5), a6(b6),
-          a7(b7), a8(b8)
+          a7(b7), a8(b8), a9(-1)
     {
     }
 
