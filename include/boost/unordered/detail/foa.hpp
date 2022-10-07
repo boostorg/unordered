@@ -976,7 +976,8 @@ public:
       std::is_nothrow_move_assignable<Hash>::value&&
       std::is_nothrow_move_assignable<Pred>::value)
   {
-    static constexpr auto pocma=
+    /* not constexpr to avoid constant conditional expression warnings in VS */
+    const auto pocma=
       alloc_traits::propagate_on_container_move_assignment::value;
 
     /* Avoid using nested lambdas with a `this` capture as it seems to trigger
