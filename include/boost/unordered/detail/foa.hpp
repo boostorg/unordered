@@ -855,9 +855,10 @@ public:
     std::size_t n=0,const Hash& h_=Hash(),const Pred& pred_=Pred(),
     const Allocator& al_=Allocator()):
     hash_base{empty_init,h_},pred_base{empty_init,pred_},
-    allocator_base{empty_init,al_},size_{0},arrays{new_arrays(n)}
+    allocator_base{empty_init,al_},size_{0}
   {
     /* GCC 4.8/4.9 emits funky errors if cted at initializer list */
+    arrays=new_arrays(n);
     ml=max_load();
   }
 
@@ -882,11 +883,11 @@ public:
 
   table(const table& x,const Allocator& al_):
     hash_base{empty_init,x.h()},pred_base{empty_init,x.pred()},
-    allocator_base{empty_init,al_},size_{0},
-    arrays{
-      new_arrays(std::size_t(std::ceil(static_cast<float>(x.size())/mlf)))}
+    allocator_base{empty_init,al_},size_{0}
   {
     /* GCC 4.8/4.9 emits funky errors if cted at initializer list */
+    arrays=
+      new_arrays(std::size_t(std::ceil(static_cast<float>(x.size())/mlf)));
     ml=max_load();
 
     BOOST_TRY{
