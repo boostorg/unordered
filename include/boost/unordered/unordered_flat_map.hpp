@@ -371,6 +371,10 @@ namespace boost {
 
       void max_load_factor(float) {}
 
+      void rehash(size_type count) { table_.rehash(count); }
+
+      void reserve(size_type count) { table_.reserve(count); }
+
       /// Observers
       ///
 
