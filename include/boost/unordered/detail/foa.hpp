@@ -778,6 +778,11 @@ void swap_if(T& x,T& y){using std::swap; swap(x,y);}
 template<bool B,typename T,typename std::enable_if<!B>::type* =nullptr>
 void swap_if(T&,T&){}
 
+// we pull this out so the tests don't have to rely on a magic constant or
+// instantiate the table class template as it can be quite gory
+//
+constexpr static float const mlf = 0.875f;
+
 #if defined(BOOST_GCC)
 /* GCC's -Wshadow triggers at scenarios like this: 
  *
@@ -1492,7 +1497,6 @@ private:
     }
   }
 
-  static constexpr float mlf=0.875;
   std::size_t            size_;
   arrays_type            arrays;
   std::size_t            ml;
