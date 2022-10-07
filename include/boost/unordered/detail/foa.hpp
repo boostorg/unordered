@@ -11,8 +11,6 @@
 #ifndef BOOST_UNORDERED_DETAIL_FOA_HPP
 #define BOOST_UNORDERED_DETAIL_FOA_HPP
 
-#include <iostream>
-
 #include <boost/assert.hpp>
 #include <boost/config.hpp>
 #include <boost/core/bit.hpp>
