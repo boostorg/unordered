@@ -112,4 +112,5 @@ build_foa emplace_tests ;
 build_foa erase_tests ;
 build_foa find_tests ;
 build_foa at_tests ;
+build_foa load_factor_tests ;
 build_foa rehash_tests ;
