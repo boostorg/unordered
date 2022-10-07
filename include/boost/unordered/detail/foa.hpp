@@ -829,11 +829,6 @@ table:empty_value<Hash,0>,empty_value<Pred,1>,empty_value<Allocator,1>
 public:
   using key_type=typename type_policy::key_type;
   using init_type=typename type_policy::init_type;
-
-private:
-  using moved_type=typename type_policy::moved_type;
-
-public:
   using value_type=typename type_policy::value_type;
 
 private:
