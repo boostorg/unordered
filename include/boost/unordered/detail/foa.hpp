@@ -976,28 +976,23 @@ public:
       alloc_traits::propagate_on_container_move_assignment::value;
 
     /*  Avoid using nested lambdas with a `this` capture as it seems to trigger
-      * a bug in GCC:
-      * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80947
-      * 
-      * Rather than directly attempting to manipulate the visibility of the
-      * table class, it's easier to work around the bug by simply un-nesting the
-      * lambdas
-      */
+     * a bug in GCC:
+     * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80947
+     * 
+     * Rather than directly attempting to manipulate the visibility of the
+     * table class, it's easier to work around the bug by simply un-nesting the
+     * lambdas
+     */
     auto const move_element=[this](value_type* p){
       unchecked_insert(std::move(*p));
     };
 
     auto const elementwise_move=[&,this]{
-      /* The check above is redundant: we're setting up a compile-time
-        * barrier so that the compiler is convinced we're not throwing
-        * under noexcept(true) conditions.
-        */
-
       reserve(x.size());
       BOOST_TRY{
         /* This works because subsequent x.clear() does not depend on the
-          * elements' values.
-          */
+         * elements' values.
+         */
 
         x.for_all_elements(move_element);
       }
@@ -1022,6 +1017,10 @@ public:
         swap(ml,x.ml);
       }
       else if_constexpr<!alloc_traits::is_always_equal::value>(
+        /* The check above is redundant: we're setting up a compile-time
+         * barrier so that the compiler is convinced we're not throwing
+         * under noexcept(true) conditions.
+         */
         elementwise_move);
     }
     return *this;
@@ -1263,8 +1262,7 @@ private:
     return init_type{std::forward<T>(x)};
   }
 
-  template<
-    typename T>
+  template<typename T>
   static inline auto key_from(const T& x)
     ->decltype(type_policy::extract(x))
   {
