@@ -332,6 +332,11 @@ namespace boost {
         return table_.find(key);
       }
 
+      bool contains(key_type const& key) const
+      {
+        return this->find(key) != this->end();
+      }
+
       std::pair<iterator, iterator> equal_range(key_type const& key)
       {
         auto pos = table_.find(key);
@@ -382,6 +387,34 @@ namespace boost {
 
       key_equal key_eq() const { return table_.key_eq(); }
     };
+
+    template <class Key, class T, class Hash, class KeyEqual, class Allocator>
+    bool operator==(
+      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator> const& lhs,
+      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator> const& rhs)
+    {
+      if (&lhs == &rhs) {
+        return true;
+      }
+
+      return (lhs.size() == rhs.size()) && ([&] {
+        for (auto const& kvp : lhs) {
+          auto pos = rhs.find(kvp.first);
+          if (pos != rhs.end() && (pos->second != kvp.second)) {
+            return false;
+          }
+        }
+        return true;
+      })();
+    }
+
+    template <class Key, class T, class Hash, class KeyEqual, class Allocator>
+    bool operator!=(
+      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator> const& lhs,
+      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator> const& rhs)
+    {
+      return !(lhs == rhs);
+    }
   } // namespace unordered
 } // namespace boost
 

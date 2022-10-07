@@ -279,6 +279,34 @@ namespace boost {
 
       key_equal key_eq() const { return table_.key_eq(); }
     };
+
+    template <class Key, class Hash, class KeyEqual, class Allocator>
+    bool operator==(
+      unordered_flat_set<Key, Hash, KeyEqual, Allocator> const& lhs,
+      unordered_flat_set<Key, Hash, KeyEqual, Allocator> const& rhs)
+    {
+      if (&lhs == &rhs) {
+        return true;
+      }
+
+      return (lhs.size() == rhs.size()) && ([&] {
+        for (auto const& key : lhs) {
+          auto pos = rhs.find(key);
+          if (pos != rhs.end() && (key != *pos)) {
+            return false;
+          }
+        }
+        return true;
+      })();
+    }
+
+    template <class Key, class Hash, class KeyEqual, class Allocator>
+    bool operator!=(
+      unordered_flat_set<Key, Hash, KeyEqual, Allocator> const& lhs,
+      unordered_flat_set<Key, Hash, KeyEqual, Allocator> const& rhs)
+    {
+      return !(lhs == rhs);
+    }
   } // namespace unordered
 } // namespace boost
 
