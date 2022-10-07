@@ -1099,9 +1099,8 @@ public:
 
   template<typename Key>
   auto erase(Key&& x) -> typename std::enable_if<
-    !boost::is_convertible<Key,iterator>::value&&
-    !boost::is_convertible<Key,const_iterator>::value, std::size_t>::type
-  erase(Key&& x)
+    !std::is_convertible<Key,iterator>::value&&
+    !std::is_convertible<Key,const_iterator>::value, std::size_t>::type
   {
     auto it=find(x);
     if(it!=end()){
