@@ -959,14 +959,18 @@ public:
     return *this;
   }
 
+#if defined(BOOST_MSVC)
+#pragma warning(push)
+#pragma warning(disable:4127) /* conditional expression is constant */
+#endif
+
   table& operator=(table&& x)
     noexcept(
       alloc_traits::is_always_equal::value&&
       std::is_nothrow_move_assignable<Hash>::value&&
       std::is_nothrow_move_assignable<Pred>::value)
   {
-    /* not constexpr to avoid constant conditional expression warnings in VS */
-    const auto pocma=
+    static constexpr auto pocma=
       alloc_traits::propagate_on_container_move_assignment::value;
 
     /* Avoid using nested lambdas with a `this` capture as it seems to trigger
@@ -1018,6 +1022,10 @@ public:
     }
     return *this;
   }
+
+#if defined(BOOST_MSVC)
+#pragma warning(pop) /* C4127 */
+#endif
 
   allocator_type get_allocator()const noexcept{return al();}
 
