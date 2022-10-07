@@ -1091,8 +1091,13 @@ public:
     --size_;
   }
 
-  template<typename Key>
-  std::size_t erase(const Key& x)
+  template<
+    typename Key,
+    typename std::enable_if<
+      !std::is_convertible<Key&&,iterator>::value&&
+      !std::is_convertible<Key&&,const_iterator>::value>::type* =nullptr
+  >
+  std::size_t erase(Key&& x)
   {
     auto it=find(x);
     if(it!=end()){
