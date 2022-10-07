@@ -923,7 +923,7 @@ public:
          */
 
         x.for_all_elements([this](value_type* p){
-          unchecked_insert(std::move(*p));
+          unchecked_insert(type_policy::move(*p));
         });
       }
       BOOST_CATCH(...){
@@ -985,7 +985,7 @@ public:
      */
 
     auto const move_element=[this](value_type* p){
-      unchecked_insert(std::move(*p));
+      unchecked_insert(type_policy::move(*p));
     };
 
     if(this!=&x){
