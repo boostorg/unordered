@@ -5,7 +5,12 @@
 
 // clang-format off
 #include "../helpers/prefix.hpp"
+#ifdef BOOST_UNORDERED_FOA_TESTS
+#include <boost/unordered/unordered_flat_map.hpp>
+#include <boost/unordered/detail/implementation.hpp>
+#else
 #include <boost/unordered_map.hpp>
+#endif
 #include "../helpers/postfix.hpp"
 // clang-format on
 
@@ -17,8 +22,13 @@ namespace at_tests {
   UNORDERED_AUTO_TEST (at_tests) {
     BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Create Map" << std::endl;
 
+#ifdef BOOST_UNORDERED_FOA_TESTS
+    boost::unordered_flat_map<std::string, int> x;
+    boost::unordered_flat_map<std::string, int> const& x_const(x);
+#else
     boost::unordered_map<std::string, int> x;
     boost::unordered_map<std::string, int> const& x_const(x);
+#endif
 
     BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Check empty container" << std::endl;
 

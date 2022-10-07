@@ -18,6 +18,7 @@
 
 #include <initializer_list>
 #include <iterator>
+#include <stdexcept>
 #include <type_traits>
 #include <utility>
 
@@ -286,6 +287,27 @@ namespace boost {
 
       /// Lookup
       ///
+
+      mapped_type& at(key_type const& key)
+      {
+        auto pos = table_.find(key);
+        if (pos != table_.end()) {
+          return pos->second;
+        }
+        // TODO: someday refactor this to conditionally serialize the key and
+        // include it in the error message
+        //
+        throw std::out_of_range("key was not found in unordered_flat_map");
+      }
+
+      mapped_type const& at(key_type const& key) const
+      {
+        auto pos = table_.find(key);
+        if (pos != table_.end()) {
+          return pos->second;
+        }
+        throw std::out_of_range("key was not found in unordered_flat_map");
+      }
 
       mapped_type& operator[](key_type const& key)
       {
