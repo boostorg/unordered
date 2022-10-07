@@ -292,7 +292,7 @@ namespace boost {
       return (lhs.size() == rhs.size()) && ([&] {
         for (auto const& key : lhs) {
           auto pos = rhs.find(key);
-          if (pos != rhs.end() && (key != *pos)) {
+          if ((pos == rhs.end()) || (key != *pos)) {
             return false;
           }
         }

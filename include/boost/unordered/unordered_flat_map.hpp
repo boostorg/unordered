@@ -400,7 +400,7 @@ namespace boost {
       return (lhs.size() == rhs.size()) && ([&] {
         for (auto const& kvp : lhs) {
           auto pos = rhs.find(kvp.first);
-          if (pos != rhs.end() && (pos->second != kvp.second)) {
+          if ((pos == rhs.end()) || (*pos != kvp)) {
             return false;
           }
         }
