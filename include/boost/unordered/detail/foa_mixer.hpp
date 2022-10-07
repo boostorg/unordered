@@ -76,7 +76,7 @@ public:
 
   template<
     typename Key,
-    std::enable_if<
+    typename std::enable_if<
       std::is_same<
         std::size_t,
         decltype(std::declval<const Hash>()(std::declval<const Key&>()))
