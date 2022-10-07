@@ -1048,7 +1048,7 @@ public:
   template<typename... Args>
   BOOST_FORCEINLINE std::pair<iterator,bool> emplace(Args&&... args)
   {
-    return emplace_impl(value_type(std::forward<Args>(args)...));
+    return emplace_impl(init_type(std::forward<Args>(args)...));
   }
 
   template<typename Key,typename... Args>
