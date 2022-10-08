@@ -21,6 +21,8 @@
 #include <boost/cstdint.hpp>
 #include <boost/predef.h>
 #include <boost/type_traits/is_nothrow_swappable.hpp>
+#include <boost/unordered/detail/xmx.hpp>
+#include <boost/unordered/hash_traits.hpp>
 #include <climits>
 #include <cmath>
 #include <cstddef>
@@ -752,6 +754,19 @@ struct table_arrays
   value_type  *elements;
 };
 
+struct no_mix
+{
+  static inline std::size_t mix(std::size_t x)noexcept{return x;}
+};
+
+struct xmx_mix
+{
+  static inline std::size_t mix(std::size_t x)noexcept
+  {
+    return xmx(x);
+  }
+};
+
 struct if_constexpr_void_else{void operator()()const{}};
 
 template<bool B,typename F,typename G=if_constexpr_void_else>
@@ -827,6 +842,11 @@ table:empty_value<Hash,0>,empty_value<Pred,1>,empty_value<Allocator,1>
   static constexpr auto N=group_type::N;
   using size_policy=pow2_size_policy;
   using prober=pow2_quadratic_prober;
+  using mix_policy=typename std::conditional<
+    hash_traits<Hash>::is_avalanching::value,
+    no_mix,
+    xmx_mix
+  >::type;
   using alloc_traits=boost::allocator_traits<Allocator>;
 
 public:
@@ -1158,7 +1178,7 @@ public:
   template<typename Key>
   BOOST_FORCEINLINE iterator find(const Key& x)
   {
-    auto hash=h()(x);
+    auto hash=hash_for(x);
     return find_impl(x,position_for(hash),hash);
   }
 
@@ -1285,6 +1305,12 @@ private:
     return std::get<0>(k);
   }
 
+  template<typename Key>
+  inline std::size_t hash_for(const Key& x)
+  {
+    return mix_policy::mix(h()(x));
+  }
+
   inline std::size_t position_for(std::size_t hash)const
   {
     return position_for(hash,arrays);
@@ -1341,7 +1367,7 @@ private:
   BOOST_FORCEINLINE std::pair<iterator,bool> emplace_impl(Args&&... args)
   {
     const auto &k=key_from(std::forward<Args>(args)...);
-    auto        hash=h()(k);
+    auto        hash=hash_for(k);
     auto        pos0=position_for(hash);
     auto        it=find_impl(k,pos0,hash);
 
@@ -1398,13 +1424,13 @@ private:
   template<typename Value>
   void unchecked_insert(Value&& x)
   {
-    auto hash=h()(key_from(x));
+    auto hash=hash_for(key_from(x));
     unchecked_emplace_at(position_for(hash),hash,std::forward<Value>(x));
   }
 
   void nosize_transfer_element(value_type* p,const arrays_type& arrays_)
   {
-    auto hash=h()(key_from(*p));
+    auto hash=hash_for(key_from(*p));
     nosize_unchecked_emplace_at(
       arrays_,position_for(hash,arrays_),hash,type_policy::move(*p));
     destroy_element(p);
