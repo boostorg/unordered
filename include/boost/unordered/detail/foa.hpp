@@ -843,7 +843,7 @@ table:empty_value<Hash,0>,empty_value<Pred,1>,empty_value<Allocator,1>
   using size_policy=pow2_size_policy;
   using prober=pow2_quadratic_prober;
   using mix_policy=typename std::conditional<
-    hash_traits<Hash>::is_avalanching::value,
+    hash_is_avalanching<Hash>::value,
     no_mix,
     xmx_mix
   >::type;

@@ -20,31 +20,28 @@ namespace unordered{
 namespace detail{
 
 template<typename Hash,typename=void>
-struct hash_is_avalanching
+struct hash_is_avalanching_impl
 {
   using type=std::false_type;
 };
 
 template<typename Hash>
-struct hash_is_avalanching<Hash,void_t<typename Hash::is_avalanching>>
+struct hash_is_avalanching_impl<Hash,void_t<typename Hash::is_avalanching>>
 {
   using type=std::true_type;
 };
 
 } /* namespace detail */
 
-/* Partially specializable by users for concrete hash functions when
- * actual characterization differs from default.
+/* Each trait can be partially specialized by users for concrete hash functions
+ * when actual characterization differs from default.
  */
 
+/* Derived from std::true_type if the type Hash::is_avalanching is present,
+ * derived from std::false_type otherwise.
+ */
 template<typename Hash>
-struct hash_traits
-{
-  /* std::true_type if the type Hash::is_avalanching is present,
-   * std::false_type otherwise.
-   */
-  using is_avalanching=typename detail::hash_is_avalanching<Hash>::type;
-};
+struct hash_is_avalanching:detail::hash_is_avalanching_impl<Hash>::type{};
 
 } /* namespace unordered */
 } /* namespace boost */
