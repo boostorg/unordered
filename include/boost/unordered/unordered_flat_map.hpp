@@ -353,15 +353,18 @@ namespace boost {
         return pos != table_.end() ? 1 : 0;
       }
 
-      iterator find(key_type const& key) { return table_.find(key); }
+      BOOST_FORCEINLINE iterator find(key_type const& key)
+      {
+        return table_.find(key);
+      }
 
-      const_iterator find(key_type const& key) const
+      BOOST_FORCEINLINE const_iterator find(key_type const& key) const
       {
         return table_.find(key);
       }
 
       template <class K>
-      typename std::enable_if<
+      BOOST_FORCEINLINE typename std::enable_if<
         boost::unordered::detail::are_transparent<K, hasher, key_equal>::value,
         iterator>::type
       find(K const& key)
@@ -370,7 +373,7 @@ namespace boost {
       }
 
       template <class K>
-      typename std::enable_if<
+      BOOST_FORCEINLINE typename std::enable_if<
         boost::unordered::detail::are_transparent<K, hasher, key_equal>::value,
         const_iterator>::type
       find(K const& key) const
