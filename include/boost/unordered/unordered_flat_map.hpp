@@ -295,6 +295,12 @@ namespace boost {
         return table_.erase(key);
       }
 
+      void swap(unordered_flat_map& rhs) noexcept(
+        noexcept(std::declval<table_type&>().swap(std::declval<table_type&>())))
+      {
+        table_.swap(rhs.table_);
+      }
+
       /// Lookup
       ///
 
@@ -492,6 +498,14 @@ namespace boost {
       unordered_flat_map<Key, T, Hash, KeyEqual, Allocator> const& rhs)
     {
       return !(lhs == rhs);
+    }
+
+    template <class Key, class T, class Hash, class KeyEqual, class Allocator>
+    void swap(unordered_flat_map<Key, T, Hash, KeyEqual, Allocator>& lhs,
+      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator>& rhs)
+      noexcept(noexcept(lhs.swap(rhs)))
+    {
+      lhs.swap(rhs);
     }
   } // namespace unordered
 } // namespace boost

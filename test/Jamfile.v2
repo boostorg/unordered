@@ -114,6 +114,7 @@ build_foa find_tests ;
 build_foa at_tests ;
 build_foa load_factor_tests ;
 build_foa rehash_tests ;
+build_foa equality_tests ;
+build_foa swap_tests ;
 build_foa transparent_tests ;
 build_foa contains_tests ;
-build_foa equality_tests ;
