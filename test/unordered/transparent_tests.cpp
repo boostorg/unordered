@@ -1649,8 +1649,8 @@ template <class Key, class T, class Hash, class KeyEqual> struct map_type
 void test_unordered_map()
 {
   {
-    typedef typename map_type<key, int, transparent_hasher,
-      transparent_key_equal>::type unordered_map;
+    typedef map_type<key, int, transparent_hasher, transparent_key_equal>::type
+      unordered_map;
 
     test_map_transparent_count<unordered_map>();
     test_map_transparent_find<unordered_map>();
@@ -1662,7 +1662,7 @@ void test_unordered_map()
   {
     // non-transparent Hash, non-transparent KeyEqual
     //
-    typedef typename map_type<key, int, hasher, key_equal>::type unordered_map;
+    typedef map_type<key, int, hasher, key_equal>::type unordered_map;
 
     test_map_non_transparent_count<unordered_map>();
     test_map_non_transparent_find<unordered_map>();
@@ -1674,7 +1674,7 @@ void test_unordered_map()
   {
     // transparent Hash, non-transparent KeyEqual
     //
-    typedef typename map_type<key, int, transparent_hasher, key_equal>::type
+    typedef map_type<key, int, transparent_hasher, key_equal>::type
       unordered_map;
 
     test_map_non_transparent_count<unordered_map>();
@@ -1687,7 +1687,7 @@ void test_unordered_map()
   {
     // non-transparent Hash, transparent KeyEqual
     //
-    typedef typename map_type<key, int, hasher, transparent_key_equal>::type
+    typedef map_type<key, int, hasher, transparent_key_equal>::type
       unordered_map;
 
     test_map_non_transparent_count<unordered_map>();
@@ -1766,9 +1766,8 @@ template <class Key, class Hash, class KeyEqual> struct set_type
 void test_unordered_set()
 {
   {
-    typedef
-      typename set_type<key, transparent_hasher, transparent_key_equal>::type
-        unordered_set;
+    typedef set_type<key, transparent_hasher, transparent_key_equal>::type
+      unordered_set;
 
     test_set_transparent_count<unordered_set>();
     test_set_transparent_find<unordered_set>();
@@ -1780,7 +1779,7 @@ void test_unordered_set()
   {
     // non-transparent Hash, non-transparent KeyEqual
     //
-    typedef typename set_type<key, hasher, key_equal>::type unordered_set;
+    typedef set_type<key, hasher, key_equal>::type unordered_set;
 
     test_set_non_transparent_count<unordered_set>();
     test_set_non_transparent_find<unordered_set>();
@@ -1792,8 +1791,7 @@ void test_unordered_set()
   {
     // transparent Hash, non-transparent KeyEqual
     //
-    typedef
-      typename set_type<key, transparent_hasher, key_equal>::type unordered_set;
+    typedef set_type<key, transparent_hasher, key_equal>::type unordered_set;
 
     test_set_non_transparent_count<unordered_set>();
     test_set_non_transparent_find<unordered_set>();
@@ -1805,8 +1803,7 @@ void test_unordered_set()
   {
     // non-transparent Hash, transparent KeyEqual
     //
-    typedef
-      typename set_type<key, hasher, transparent_key_equal>::type unordered_set;
+    typedef set_type<key, hasher, transparent_key_equal>::type unordered_set;
 
     test_set_non_transparent_count<unordered_set>();
     test_set_non_transparent_find<unordered_set>();
