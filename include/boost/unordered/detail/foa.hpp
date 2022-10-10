@@ -1317,8 +1317,7 @@ private:
   template<typename Key>
   inline std::size_t hash_for(const Key& x)const
   {
-    //return mix_policy::mix(h()(x));
-    return h()(x);
+    return mix_policy::mix(h()(x));
   }
 
   inline std::size_t position_for(std::size_t hash)const
