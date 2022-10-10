@@ -20,16 +20,11 @@ namespace unordered{
 namespace detail{
 
 template<typename Hash,typename=void>
-struct hash_is_avalanching_impl
-{
-  using type=std::false_type;
-};
+struct hash_is_avalanching_impl:std::false_type{};
 
 template<typename Hash>
-struct hash_is_avalanching_impl<Hash,void_t<typename Hash::is_avalanching>>
-{
-  using type=std::true_type;
-};
+struct hash_is_avalanching_impl<Hash,void_t<typename Hash::is_avalanching>>:
+  std::true_type{};
 
 } /* namespace detail */
 
