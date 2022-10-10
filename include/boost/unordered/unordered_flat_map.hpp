@@ -16,6 +16,7 @@
 
 #include <boost/core/allocator_access.hpp>
 #include <boost/functional/hash.hpp>
+#include <boost/throw_exception.hpp>
 
 #include <initializer_list>
 #include <iterator>
@@ -313,7 +314,8 @@ namespace boost {
         // TODO: someday refactor this to conditionally serialize the key and
         // include it in the error message
         //
-        throw std::out_of_range("key was not found in unordered_flat_map");
+        boost::throw_exception(
+          std::out_of_range("key was not found in unordered_flat_map"));
       }
 
       mapped_type const& at(key_type const& key) const
@@ -322,7 +324,8 @@ namespace boost {
         if (pos != table_.end()) {
           return pos->second;
         }
-        throw std::out_of_range("key was not found in unordered_flat_map");
+        boost::throw_exception(
+          std::out_of_range("key was not found in unordered_flat_map"));
       }
 
       mapped_type& operator[](key_type const& key)
