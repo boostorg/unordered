@@ -286,6 +286,15 @@ namespace boost {
 
       size_type erase(key_type const& key) { return table_.erase(key); }
 
+      template <class K>
+      typename std::enable_if<
+        detail::transparent_non_iterable<K, unordered_flat_map>::value,
+        size_type>::type
+      erase(K const& key)
+      {
+        return table_.erase(key);
+      }
+
       /// Lookup
       ///
 
@@ -321,6 +330,15 @@ namespace boost {
       }
 
       size_type count(key_type const& key) const
+      {
+        auto pos = table_.find(key);
+        return pos != table_.end() ? 1 : 0;
+      }
+
+      template <class K>
+      typename std::enable_if<
+        detail::are_transparent<K, hasher, key_equal>::value, size_type>::type
+      count(K const& key) const
       {
         auto pos = table_.find(key);
         return pos != table_.end() ? 1 : 0;
@@ -379,6 +397,38 @@ namespace boost {
 
       std::pair<const_iterator, const_iterator> equal_range(
         key_type const& key) const
+      {
+        auto pos = table_.find(key);
+        if (pos == table_.end()) {
+          return {pos, pos};
+        }
+
+        auto next = pos;
+        ++next;
+        return {pos, next};
+      }
+
+      template <class K>
+      typename std::enable_if<
+        detail::are_transparent<K, hasher, key_equal>::value,
+        std::pair<iterator, iterator> >::type
+      equal_range(K const& key)
+      {
+        auto pos = table_.find(key);
+        if (pos == table_.end()) {
+          return {pos, pos};
+        }
+
+        auto next = pos;
+        ++next;
+        return {pos, next};
+      }
+
+      template <class K>
+      typename std::enable_if<
+        detail::are_transparent<K, hasher, key_equal>::value,
+        std::pair<const_iterator, const_iterator> >::type
+      equal_range(K const& key) const
       {
         auto pos = table_.find(key);
         if (pos == table_.end()) {

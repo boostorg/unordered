@@ -4,8 +4,14 @@
 
 // clang-format off
 #include "../helpers/prefix.hpp"
+#ifdef BOOST_UNORDERED_FOA_TESTS
+#include <boost/unordered_flat_set.hpp>
+#include <boost/unordered_flat_map.hpp>
+#include <boost/unordered/detail/implementation.hpp>
+#else
 #include <boost/unordered_set.hpp>
 #include <boost/unordered_map.hpp>
+#endif
 #include "../helpers/postfix.hpp"
 // clang-format on
 
@@ -1053,14 +1059,25 @@ template <class UnorderedMap> struct convertible_to_const_iterator
   }
 };
 
+#ifdef BOOST_UNORDERED_FOA_TESTS
+typedef boost::unordered_flat_map<int, int, transparent_hasher,
+  transparent_key_equal>
+  transparent_unordered_map;
+#else
 typedef boost::unordered_map<int, int, transparent_hasher,
   transparent_key_equal>
   transparent_unordered_map;
+#endif
 
 // test that in the presence of the member function template `erase()`, we still
 // invoke the correct iterator overloads when the type is implicitly convertible
 //
-transparent_unordered_map::iterator map_erase_overload_compile_test()
+#ifdef BOOST_UNORDERED_FOA_TESTS
+void
+#else
+transparent_unordered_map::iterator
+#endif
+map_erase_overload_compile_test()
 {
   convertible_to_iterator<transparent_unordered_map> c;
   transparent_unordered_map map;
@@ -1069,7 +1086,11 @@ transparent_unordered_map::iterator map_erase_overload_compile_test()
   return map.erase(c);
 }
 
+#ifdef BOOST_UNORDERED_FOA_TESTS
+void
+#else
 transparent_unordered_map::const_iterator
+#endif
 map_erase_const_overload_compile_test()
 {
   convertible_to_const_iterator<transparent_unordered_map> c;
@@ -1079,6 +1100,7 @@ map_erase_const_overload_compile_test()
   return map.erase(c);
 }
 
+#ifndef BOOST_UNORDERED_FOA_TESTS
 typedef boost::unordered_multimap<int, int, transparent_hasher,
   transparent_key_equal>
   transparent_unordered_multimap;
@@ -1101,6 +1123,7 @@ multimap_erase_const_overload_compile_test()
   pos = c;
   return map.erase(c);
 }
+#endif
 
 template <class UnorderedMap> void test_map_transparent_erase()
 {
@@ -1197,14 +1220,25 @@ template <class UnorderedMap> void test_map_non_transparent_erase()
   BOOST_TEST_EQ(key::count_, key_count);
 }
 
+#if BOOST_UNORDERED_FOA_TESTS
+typedef boost::unordered_flat_set<int, transparent_hasher,
+  transparent_key_equal>
+  transparent_unordered_set;
+#else
 typedef boost::unordered_set<int, transparent_hasher, transparent_key_equal>
   transparent_unordered_set;
 
 typedef boost::unordered_multiset<int, transparent_hasher,
   transparent_key_equal>
   transparent_unordered_multiset;
+#endif
 
-transparent_unordered_set::iterator set_erase_overload_compile_test()
+#ifdef BOOST_UNORDERED_FOA_TESTS
+void
+#else
+transparent_unordered_set::iterator
+#endif
+set_erase_overload_compile_test()
 {
   convertible_to_iterator<transparent_unordered_set> c;
   transparent_unordered_set set;
@@ -1213,7 +1247,11 @@ transparent_unordered_set::iterator set_erase_overload_compile_test()
   return set.erase(c);
 }
 
+#ifdef BOOST_UNORDERED_FOA_TESTS
+void
+#else
 transparent_unordered_set::const_iterator
+#endif
 set_erase_const_overload_compile_test()
 {
   convertible_to_const_iterator<transparent_unordered_set> c;
@@ -1223,6 +1261,7 @@ set_erase_const_overload_compile_test()
   return set.erase(c);
 }
 
+#ifndef BOOST_UNORDERED_FOA_TESTS
 transparent_unordered_multiset::iterator multiset_erase_overload_compile_test()
 {
   convertible_to_iterator<transparent_unordered_multiset> c;
@@ -1241,6 +1280,7 @@ multiset_erase_const_overload_compile_test()
   pos = c;
   return set.erase(c);
 }
+#endif
 
 template <class UnorderedSet> void test_set_transparent_erase()
 {
@@ -1337,6 +1377,7 @@ template <class UnorderedSet> void test_set_non_transparent_erase()
   BOOST_TEST_EQ(key::count_, key_count);
 }
 
+#ifndef BOOST_UNORDERED_FOA_TESTS
 // test that in the presence of the member function template `extract()`, we
 // still invoke the correct iterator overloads when the type is implicitly
 // convertible
@@ -1359,9 +1400,11 @@ multimap_extract_const_overload_compile_test()
   pos = c;
   return map.extract(c);
 }
+#endif
 
 template <class UnorderedMap> void test_map_transparent_extract()
 {
+#ifndef BOOST_UNORDERED_FOA_TESTS
   typedef typename UnorderedMap::node_type node_type;
   typedef typename UnorderedMap::const_iterator const_iterator;
   typedef std::pair<const_iterator, const_iterator> const_iterator_pair;
@@ -1397,10 +1440,12 @@ template <class UnorderedMap> void test_map_transparent_extract()
   BOOST_TEST(nh.empty());
 
   BOOST_TEST_EQ(key::count_, expected_key_count);
+#endif
 }
 
 template <class UnorderedMap> void test_map_non_transparent_extract()
 {
+#ifndef BOOST_UNORDERED_FOA_TESTS
   typedef typename UnorderedMap::node_type node_type;
   typedef typename UnorderedMap::const_iterator const_iterator;
   typedef std::pair<const_iterator, const_iterator> const_iterator_pair;
@@ -1441,8 +1486,10 @@ template <class UnorderedMap> void test_map_non_transparent_extract()
   ++key_count;
   BOOST_TEST(nh.empty());
   BOOST_TEST_EQ(key::count_, key_count);
+#endif
 }
 
+#ifndef BOOST_UNORDERED_FOA_TESTS
 transparent_unordered_set::node_type set_extract_overload_compile_test()
 {
   convertible_to_iterator<transparent_unordered_set> c;
@@ -1480,9 +1527,11 @@ multiset_extract_const_overload_compile_test()
   pos = c;
   return set.extract(c);
 }
+#endif
 
 template <class UnorderedSet> void test_set_transparent_extract()
 {
+#ifndef BOOST_UNORDERED_FOA_TESTS
   typedef typename UnorderedSet::node_type node_type;
 
   count_reset();
@@ -1526,10 +1575,12 @@ template <class UnorderedSet> void test_set_transparent_extract()
   BOOST_TEST_EQ(set.size(), set_size);
 
   BOOST_TEST_EQ(key::count_, expected_key_count);
+#endif
 }
 
 template <class UnorderedSet> void test_set_non_transparent_extract()
 {
+#ifndef BOOST_UNORDERED_FOA_TESTS
   typedef typename UnorderedSet::node_type node_type;
 
   count_reset();
@@ -1583,14 +1634,23 @@ template <class UnorderedSet> void test_set_non_transparent_extract()
   BOOST_TEST_EQ(set.size(), set_size);
 
   BOOST_TEST_EQ(key::count_, key_count);
+#endif
 }
+
+template <class Key, class T, class Hash, class KeyEqual> struct map_type
+{
+#ifdef BOOST_UNORDERED_FOA_TESTS
+  typedef boost::unordered_flat_map<Key, T, Hash, KeyEqual> type;
+#else
+  typedef boost::unordered_map<Key, T, Hash, KeyEqual> type;
+#endif
+};
 
 void test_unordered_map()
 {
   {
-    typedef boost::unordered_map<key, int, transparent_hasher,
-      transparent_key_equal>
-      unordered_map;
+    typedef typename map_type<key, int, transparent_hasher,
+      transparent_key_equal>::type unordered_map;
 
     test_map_transparent_count<unordered_map>();
     test_map_transparent_find<unordered_map>();
@@ -1602,7 +1662,7 @@ void test_unordered_map()
   {
     // non-transparent Hash, non-transparent KeyEqual
     //
-    typedef boost::unordered_map<key, int, hasher, key_equal> unordered_map;
+    typedef typename map_type<key, int, hasher, key_equal>::type unordered_map;
 
     test_map_non_transparent_count<unordered_map>();
     test_map_non_transparent_find<unordered_map>();
@@ -1614,7 +1674,7 @@ void test_unordered_map()
   {
     // transparent Hash, non-transparent KeyEqual
     //
-    typedef boost::unordered_map<key, int, transparent_hasher, key_equal>
+    typedef typename map_type<key, int, transparent_hasher, key_equal>::type
       unordered_map;
 
     test_map_non_transparent_count<unordered_map>();
@@ -1627,7 +1687,7 @@ void test_unordered_map()
   {
     // non-transparent Hash, transparent KeyEqual
     //
-    typedef boost::unordered_map<key, int, hasher, transparent_key_equal>
+    typedef typename map_type<key, int, hasher, transparent_key_equal>::type
       unordered_map;
 
     test_map_non_transparent_count<unordered_map>();
@@ -1638,6 +1698,7 @@ void test_unordered_map()
   }
 }
 
+#ifndef BOOST_UNORDERED_FOA_TESTS
 void test_unordered_multimap()
 {
   {
@@ -1691,12 +1752,23 @@ void test_unordered_multimap()
     test_map_non_transparent_extract<unordered_multimap>();
   }
 }
+#endif
+
+template <class Key, class Hash, class KeyEqual> struct set_type
+{
+#ifdef BOOST_UNORDERED_FOA_TESTS
+  typedef boost::unordered_flat_set<Key, Hash, KeyEqual> type;
+#else
+  typedef boost::unordered_set<Key, Hash, KeyEqual> type;
+#endif
+};
 
 void test_unordered_set()
 {
   {
-    typedef boost::unordered_set<key, transparent_hasher, transparent_key_equal>
-      unordered_set;
+    typedef
+      typename set_type<key, transparent_hasher, transparent_key_equal>::type
+        unordered_set;
 
     test_set_transparent_count<unordered_set>();
     test_set_transparent_find<unordered_set>();
@@ -1708,7 +1780,7 @@ void test_unordered_set()
   {
     // non-transparent Hash, non-transparent KeyEqual
     //
-    typedef boost::unordered_set<key, hasher, key_equal> unordered_set;
+    typedef typename set_type<key, hasher, key_equal>::type unordered_set;
 
     test_set_non_transparent_count<unordered_set>();
     test_set_non_transparent_find<unordered_set>();
@@ -1720,8 +1792,8 @@ void test_unordered_set()
   {
     // transparent Hash, non-transparent KeyEqual
     //
-    typedef boost::unordered_set<key, transparent_hasher, key_equal>
-      unordered_set;
+    typedef
+      typename set_type<key, transparent_hasher, key_equal>::type unordered_set;
 
     test_set_non_transparent_count<unordered_set>();
     test_set_non_transparent_find<unordered_set>();
@@ -1733,8 +1805,8 @@ void test_unordered_set()
   {
     // non-transparent Hash, transparent KeyEqual
     //
-    typedef boost::unordered_set<key, hasher, transparent_key_equal>
-      unordered_set;
+    typedef
+      typename set_type<key, hasher, transparent_key_equal>::type unordered_set;
 
     test_set_non_transparent_count<unordered_set>();
     test_set_non_transparent_find<unordered_set>();
@@ -1744,6 +1816,7 @@ void test_unordered_set()
   }
 }
 
+#ifndef BOOST_UNORDERED_FOA_TESTS
 void test_unordered_multiset()
 {
   {
@@ -1796,12 +1869,16 @@ void test_unordered_multiset()
     test_set_non_transparent_extract<unordered_set>();
   }
 }
+#endif
 
 UNORDERED_AUTO_TEST (transparent_ops) {
   test_unordered_map();
-  test_unordered_multimap();
   test_unordered_set();
+
+#ifndef BOOST_UNORDERED_FOA_TESTS
+  test_unordered_multimap();
   test_unordered_multiset();
+#endif
 }
 
 RUN_TESTS()
