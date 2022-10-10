@@ -590,6 +590,24 @@ private:
   std::size_t pos,step=0;
 };
 
+struct no_mix
+{
+  template<typename Hash,typename T>
+  static inline std::size_t mix(const Hash& h,const T& x)
+  {
+    return h(x);
+  }
+};
+
+struct xmx_mix
+{
+  template<typename Hash,typename T>
+  static inline std::size_t mix(const Hash& h,const T& x)
+  {
+    return xmx(h(x));
+  }
+};
+
 template<typename,typename,typename,typename>
 class table;
 
@@ -753,19 +771,6 @@ struct table_arrays
   std::size_t  groups_size_mask;
   group_type  *groups;
   value_type  *elements;
-};
-
-struct no_mix
-{
-  static inline std::size_t mix(std::size_t x)noexcept{return x;}
-};
-
-struct xmx_mix
-{
-  static inline std::size_t mix(std::size_t x)noexcept
-  {
-    return xmx(x);
-  }
 };
 
 struct if_constexpr_void_else{void operator()()const{}};
@@ -1317,7 +1322,7 @@ private:
   template<typename Key>
   inline std::size_t hash_for(const Key& x)const
   {
-    return mix_policy::mix(h()(x));
+    return mix_policy::mix(h(),x);
   }
 
   inline std::size_t position_for(std::size_t hash)const
