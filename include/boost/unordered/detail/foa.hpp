@@ -1375,10 +1375,9 @@ private:
   template<typename... Args>
   BOOST_FORCEINLINE std::pair<iterator,bool> emplace_impl(Args&&... args)
   {
-    const auto &k=key_from(std::forward<Args>(args)...);
-    auto        hash=hash_for(k);
-    auto        pos0=position_for(hash);
-    auto        it=find_impl(k,pos0,hash);
+    auto hash=hash_for(key_from(args...));
+    auto pos0=position_for(hash);
+    auto it=find_impl(key_from(args...),pos0,hash);
 
     if(it!=end()){
       return {it,false};
