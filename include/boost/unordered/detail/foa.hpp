@@ -1315,7 +1315,7 @@ private:
   }
 
   template<typename Key>
-  std::size_t hash_for(const Key& x)const
+  inline std::size_t hash_for(const Key& x)const
   {
     return mix_policy::mix(h()(x));
   }
@@ -1375,9 +1375,10 @@ private:
   template<typename... Args>
   BOOST_FORCEINLINE std::pair<iterator,bool> emplace_impl(Args&&... args)
   {
-    auto hash=hash_for(key_from(args...));
-    auto pos0=position_for(hash);
-    auto it=find_impl(key_from(args...),pos0,hash);
+    const auto &k=key_from(std::forward<Args>(args)...);
+    auto        hash=hash_for(k);
+    auto        pos0=position_for(hash);
+    auto        it=find_impl(k,pos0,hash);
 
     if(it!=end()){
       return {it,false};
