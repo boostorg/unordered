@@ -841,11 +841,11 @@ class
 __declspec(empty_bases) /* activate EBO with multiple inheritance */
 #endif
 
-table:empty_value<Hash,0>,empty_value<Pred,1>,empty_value<Allocator,1>
+table:empty_value<Hash,0>,empty_value<Pred,1>,empty_value<Allocator,2>
 {
   using hash_base=empty_value<Hash,0>;
   using pred_base=empty_value<Pred,1>;
-  using allocator_base=empty_value<Allocator,1>;
+  using allocator_base=empty_value<Allocator,2>;
   using type_policy=TypePolicy;
   using group_type=group15;
   static constexpr auto N=group_type::N;
