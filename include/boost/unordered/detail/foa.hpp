@@ -1296,7 +1296,7 @@ private:
   >
   static inline init_type value_from(T&& x)
   {
-    return std::forward<T>(x);
+    return {std::forward<T>(x)};
   }
 
   template<typename T>
