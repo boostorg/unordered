@@ -1534,7 +1534,6 @@ private:
   std::size_t            ml;
 };
 
-
 #if BOOST_WORKAROUND(BOOST_MSVC,<=1900)
 #pragma warning(pop) /* C4702 */
 #endif
