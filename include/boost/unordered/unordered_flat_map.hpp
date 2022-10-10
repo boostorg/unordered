@@ -11,6 +11,7 @@
 #endif
 
 #include <boost/unordered/detail/foa.hpp>
+#include <boost/unordered/detail/type_traits.hpp>
 #include <boost/unordered/unordered_flat_map_fwd.hpp>
 
 #include <boost/core/allocator_access.hpp>
@@ -332,7 +333,34 @@ namespace boost {
         return table_.find(key);
       }
 
+      template <class K>
+      typename std::enable_if<
+        boost::unordered::detail::are_transparent<K, hasher, key_equal>::value,
+        iterator>::type
+      find(K const& key)
+      {
+        return table_.find(key);
+      }
+
+      template <class K>
+      typename std::enable_if<
+        boost::unordered::detail::are_transparent<K, hasher, key_equal>::value,
+        const_iterator>::type
+      find(K const& key) const
+      {
+        return table_.find(key);
+      }
+
       bool contains(key_type const& key) const
+      {
+        return this->find(key) != this->end();
+      }
+
+      template <class K>
+      typename std::enable_if<
+        boost::unordered::detail::are_transparent<K, hasher, key_equal>::value,
+        bool>::type
+      contains(K const& key) const
       {
         return this->find(key) != this->end();
       }
