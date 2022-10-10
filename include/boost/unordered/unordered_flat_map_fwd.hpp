@@ -22,9 +22,28 @@ namespace boost {
       class KeyEqual = std::equal_to<Key>,
       class Allocator = std::allocator<std::pair<const Key, T> > >
     class unordered_flat_map;
-  }
+
+    template <class Key, class T, class Hash, class KeyEqual, class Allocator>
+    bool operator==(
+      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator> const& lhs,
+      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator> const& rhs);
+
+    template <class Key, class T, class Hash, class KeyEqual, class Allocator>
+    bool operator!=(
+      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator> const& lhs,
+      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator> const& rhs);
+
+    template <class Key, class T, class Hash, class KeyEqual, class Allocator>
+    void swap(unordered_flat_map<Key, T, Hash, KeyEqual, Allocator>& lhs,
+      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator>& rhs)
+      noexcept(noexcept(lhs.swap(rhs)));
+  } // namespace unordered
 
   using boost::unordered::unordered_flat_map;
+
+  using boost::unordered::swap;
+  using boost::unordered::operator==;
+  using boost::unordered::operator!=;
 } // namespace boost
 
 #endif

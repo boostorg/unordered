@@ -5,10 +5,39 @@
 
 // clang-format off
 #include "../helpers/prefix.hpp"
+#ifdef BOOST_UNORDERED_FOA_TESTS
+#include <boost/unordered/unordered_flat_map_fwd.hpp>
+#include <boost/unordered/detail/implementation.hpp>
+#else
 #include <boost/unordered/unordered_map_fwd.hpp>
+#endif
 #include "../helpers/postfix.hpp"
 // clang-format on
 
+#ifdef BOOST_UNORDERED_FOA_TESTS
+template <typename T>
+void call_swap(
+  boost::unordered_flat_map<T, T>& x, boost::unordered_flat_map<T, T>& y)
+{
+  swap(x, y);
+}
+
+template <typename T>
+bool call_equals(
+  boost::unordered_flat_map<T, T>& x, boost::unordered_flat_map<T, T>& y)
+{
+  return x == y;
+}
+
+template <typename T>
+bool call_not_equals(
+  boost::unordered_flat_map<T, T>& x, boost::unordered_flat_map<T, T>& y)
+{
+  return x != y;
+}
+
+#include <boost/unordered/unordered_flat_map.hpp>
+#else
 template <typename T>
 void call_swap(boost::unordered_map<T, T>& x, boost::unordered_map<T, T>& y)
 {
@@ -50,10 +79,15 @@ bool call_not_equals(
 }
 
 #include <boost/unordered_map.hpp>
+#endif
 #include "../helpers/test.hpp"
 
+#ifdef BOOST_UNORDERED_FOA_TESTS
+typedef boost::unordered_flat_map<int, int> int_map;
+#else
 typedef boost::unordered_map<int, int> int_map;
 typedef boost::unordered_multimap<int, int> int_multimap;
+#endif
 
 UNORDERED_AUTO_TEST (use_map_fwd_declared_function) {
   int_map x, y;
@@ -71,11 +105,13 @@ UNORDERED_AUTO_TEST (use_map_fwd_declared_function) {
   BOOST_TEST(call_not_equals(x, y));
 }
 
+#ifndef BOOST_UNORDERED_FOA_TESTS
 UNORDERED_AUTO_TEST (use_multimap_fwd_declared_function) {
   int_multimap x, y;
   call_swap(x, y);
   BOOST_TEST(call_equals(x, y));
   BOOST_TEST(!call_not_equals(x, y));
 }
+#endif
 
 RUN_TESTS()
