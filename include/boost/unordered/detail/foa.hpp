@@ -13,6 +13,7 @@
 
 #include <boost/assert.hpp>
 #include <boost/config.hpp>
+#include <boost/config/workaround.hpp>
 #include <boost/core/bit.hpp>
 #include <boost/core/allocator_traits.hpp>
 #include <boost/core/empty_value.hpp>
@@ -825,6 +826,14 @@ constexpr static float const mlf = 0.875f;
 #pragma warning(disable:4714) /* marked as __forceinline not inlined */
 #endif
 
+#if BOOST_WORKAROUND(BOOST_MSVC,<=1900)
+/* VS2015 marks as unreachable generic catch clauses around non-throwing
+ * code.
+ */
+#pragma warning(push)
+#pragma warning(disable:4702)
+#endif
+
 template<typename TypePolicy,typename Hash,typename Pred,typename Allocator>
 class 
 
@@ -1524,6 +1533,11 @@ private:
   arrays_type            arrays;
   std::size_t            ml;
 };
+
+
+#if BOOST_WORKAROUND(BOOST_MSVC,<=1900)
+#pragma warning(pop) /* C4702 */
+#endif
 
 #if defined(BOOST_MSVC)
 #pragma warning(pop) /* C4714 */
