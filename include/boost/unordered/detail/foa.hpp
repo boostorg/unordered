@@ -604,14 +604,7 @@ struct xmx_mix
   template<typename Hash,typename T>
   static inline std::size_t mix(const Hash& h,const T& x)
   {
-    //return xmx(h(x));
-    boost::uint64_t z=(boost::uint64_t)(h(x));
-
-    z^=z>>23;
-    z*=0xff51afd7ed558ccdull;
-    z^=z>>23;
-
-    return (std::size_t)z;
+    return xmx(h(x));
   }
 };
 
