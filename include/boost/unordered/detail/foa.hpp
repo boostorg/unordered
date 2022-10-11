@@ -1119,7 +1119,7 @@ public:
     return emplace_impl(value_from(std::forward<T>(x)));
   }
 
-  BOOST_FORCEINLINE std::pair<iterator,bool> insert(/*init_type*/value_type&& x)
+  BOOST_FORCEINLINE std::pair<iterator,bool> insert(init_type&& x)
   {
     return emplace_impl(std::move(x));
   }
