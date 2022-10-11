@@ -1168,6 +1168,7 @@ public:
     },
     [&,this]{ /* else */
       BOOST_ASSERT(al()==x.al());
+      (void)this; /* makes sure captured this is used */
     });
     swap(size_,x.size_);
     swap(arrays,x.arrays);
