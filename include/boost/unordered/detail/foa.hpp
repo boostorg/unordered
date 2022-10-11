@@ -1114,7 +1114,7 @@ public:
 
   BOOST_FORCEINLINE std::pair<iterator,bool> insert(init_type&& x)
   {
-    return emplace_impl(std::forward<init_type>(x));
+    return emplace_impl(std::move(x));
   }
 
   template<
