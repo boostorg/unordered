@@ -46,6 +46,7 @@ namespace boost {
       using key_type = Key;
       using value_type = typename set_types::value_type;
       using size_type = std::size_t;
+      using difference_type = std::ptrdiff_t;
       using hasher = Hash;
       using key_equal = KeyEqual;
       using allocator_type = Allocator;
@@ -68,6 +69,11 @@ namespace boost {
       {
       }
 
+      unordered_flat_set(size_type n, hasher const& h, allocator_type const& a)
+          : unordered_flat_set(n, h, key_equal(), a)
+      {
+      }
+
       explicit unordered_flat_set(allocator_type const& a)
           : unordered_flat_set(0, a)
       {
@@ -80,6 +86,20 @@ namespace boost {
           : unordered_flat_set(n, h, pred, a)
       {
         this->insert(first, last);
+      }
+
+      template <class InputIt>
+      unordered_flat_set(
+        InputIt first, InputIt last, size_type n, allocator_type const& a)
+          : unordered_flat_set(first, last, n, hasher(), key_equal(), a)
+      {
+      }
+
+      template <class Iterator>
+      unordered_flat_set(Iterator first, Iterator last, size_type n,
+        hasher const& h, allocator_type const& a)
+          : unordered_flat_set(first, last, n, h, key_equal(), a)
+      {
       }
 
       unordered_flat_set(unordered_flat_set const& other) : table_(other.table_)
@@ -110,6 +130,18 @@ namespace boost {
         key_equal const& pred = key_equal(),
         allocator_type const& a = allocator_type())
           : unordered_flat_set(ilist.begin(), ilist.end(), n, h, pred, a)
+      {
+      }
+
+      unordered_flat_set(std::initializer_list<value_type> init, size_type n,
+        allocator_type const& a)
+          : unordered_flat_set(init, n, hasher(), key_equal(), a)
+      {
+      }
+
+      unordered_flat_set(std::initializer_list<value_type> init, size_type n,
+        hasher const& h, allocator_type const& a)
+          : unordered_flat_set(init, n, h, key_equal(), a)
       {
       }
 
@@ -153,6 +185,8 @@ namespace boost {
       }
 
       size_type size() const noexcept { return table_.size(); }
+
+      size_type max_size() const noexcept { return table_.max_size(); }
 
       /// Modifiers
       ///
@@ -227,6 +261,18 @@ namespace boost {
         noexcept(std::declval<table_type&>().swap(std::declval<table_type&>())))
       {
         table_.swap(rhs.table_);
+      }
+
+      template <class H2, class P2>
+      void merge(unordered_flat_set<key_type, H2, P2, allocator_type>& source)
+      {
+        (void) source;
+      }
+
+      template <class H2, class P2>
+      void merge(unordered_flat_set<key_type, H2, P2, allocator_type>&& source)
+      {
+        (void) source;
       }
 
       /// Lookup

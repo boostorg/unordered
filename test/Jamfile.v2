@@ -104,6 +104,7 @@ rule build_foa ( name )
 
 build_foa fwd_set_test ;
 build_foa fwd_map_test ;
+build_foa compile_set ;
 build_foa constructor_tests ;
 build_foa copy_tests ;
 build_foa move_tests ;

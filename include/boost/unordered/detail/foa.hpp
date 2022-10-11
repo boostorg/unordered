@@ -618,10 +618,13 @@ class table_iterator
 {
 public:
   using difference_type=std::ptrdiff_t;
-  using value_type=typename std::conditional<Const,const Value,Value>::type;
-  using pointer=value_type*;
+  using value_type=Value;
+  using pointer=
+    typename std::conditional<Const,value_type const*,value_type*>::type;
   using reference=value_type&;
   using iterator_category=std::forward_iterator_tag;
+  using element_type=
+    typename std::conditional<Const,value_type const,value_type>::type;
 
   table_iterator()=default;
   template<bool Const2,typename std::enable_if<!Const2>::type* =nullptr>
@@ -746,10 +749,12 @@ struct table_arrays
   static void delete_(Allocator& al,table_arrays& arrays)noexcept
   {
     using alloc_traits=boost::allocator_traits<Allocator>;
+    using pointer=typename alloc_traits::pointer;
+    using pointer_traits=boost::pointer_traits<pointer>;
 
     if(arrays.elements){
       alloc_traits::deallocate(
-        al,arrays.elements,buffer_size(arrays.groups_size_mask+1));
+        al,pointer_traits::pointer_to(*arrays.elements),buffer_size(arrays.groups_size_mask+1));
     }
   }
 
@@ -981,7 +986,7 @@ public:
     static constexpr auto pocca=
       alloc_traits::propagate_on_container_copy_assignment::value;
 
-    if(this!=&x){
+    if(this!=std::addressof(x)){
       clear();
       h()=x.h();
       pred()=x.pred();
@@ -1025,7 +1030,7 @@ public:
       unchecked_insert(type_policy::move(*p));
     };
 
-    if(this!=&x){
+    if(this!=std::addressof(x)){
       clear();
       h()=std::move(x.h());
       pred()=std::move(x.pred());
