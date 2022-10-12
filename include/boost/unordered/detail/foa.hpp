@@ -1175,20 +1175,10 @@ public:
 
   void clear()noexcept
   {
-    auto pg=arrays.groups;
-    auto p=arrays.elements;
-    if(p){
-      for(std::size_t pos=0,last=arrays.groups_size_mask+1;
-          pos!=last;++pos,++pg,p+=N){
-        auto mask=pg->match_really_occupied();
-        while(mask){
-          auto n=unchecked_countr_zero(mask);
-          destroy_element(p+n);
-          pg->reset(n);
-          mask&=mask-1;
-        }
-      }
-    }
+    for_all_elements([&,this](group_type* pg,unsigned int n,value_type* p){
+      destroy_element(p);
+      pg->reset(n);
+    });
     size_=0;
   }
 
@@ -1525,7 +1515,16 @@ private:
   }
 
   template<typename F>
-  static void for_all_elements(const arrays_type& arrays_,F f)
+  static auto for_all_elements(const arrays_type& arrays_,F f)
+    ->decltype(f(nullptr),void())
+  {
+    for_all_elements(
+      arrays_,[=](group_type*,unsigned int,value_type* p){return f(p);});
+  }
+
+  template<typename F>
+  static auto for_all_elements(const arrays_type& arrays_,F f)
+    ->decltype(f(nullptr,0,nullptr),void())
   {
     auto pg=arrays_.groups;
     auto p=arrays_.elements;
@@ -1534,7 +1533,8 @@ private:
         pos!=last;++pos,++pg,p+=N){
       auto mask=pg->match_really_occupied();
       while(mask){
-        f(p+unchecked_countr_zero(mask));
+        auto n=unchecked_countr_zero(mask);
+        f(pg,n,p+n);
         mask&=mask-1;
       }
     }
