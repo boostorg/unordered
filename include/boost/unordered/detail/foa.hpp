@@ -1239,6 +1239,12 @@ public:
     rehash(std::size_t(std::ceil(static_cast<float>(n)/mlf)));
   }
 
+  template<typename Predicate>
+  friend std::size_t erase_if(table& x,Predicate pr)
+  {
+    return x.erase_if_impl(pr);
+  }
+
 private:
   template<typename,typename,typename,typename> friend class table;
   using arrays_type=table_arrays<value_type,group_type,size_policy>;
@@ -1523,6 +1529,16 @@ private:
   }
 #endif
 
+  template<typename Predicate>
+  std::size_t erase_if_impl(Predicate pr)
+  {
+    std::size_t s=size();
+    for_all_elements([&,this](group_type* pg,unsigned int n,value_type* p){
+      if(pr(*p)) erase(iterator{pg,n,p});
+    });
+    return std::size_t(s-size());
+  }
+
   template<typename F>
   void for_all_elements(F f)const
   {
@@ -1534,7 +1550,7 @@ private:
     ->decltype(f(nullptr),void())
   {
     for_all_elements(
-      arrays_,[=](group_type*,unsigned int,value_type* p){return f(p);});
+      arrays_,[&](group_type*,unsigned int,value_type* p){return f(p);});
   }
 
   template<typename F>
