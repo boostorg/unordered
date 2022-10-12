@@ -623,6 +623,8 @@ public:
     typename std::conditional<Const,value_type const*,value_type*>::type;
   using reference=value_type&;
   using iterator_category=std::forward_iterator_tag;
+  using element_type=
+    typename std::conditional<Const,value_type const,value_type>::type;
 
   table_iterator()=default;
   template<bool Const2,typename std::enable_if<!Const2>::type* =nullptr>
