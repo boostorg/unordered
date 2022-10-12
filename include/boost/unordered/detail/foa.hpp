@@ -1182,6 +1182,20 @@ public:
     size_=0;
   }
 
+  // TODO: should we accept different allocator too?
+  template<typename Hash2,typename Pred2>
+  void merge(table<TypePolicy,Hash2,Pred2,Allocator>& x)
+  {
+    x.for_all_elements([&,this](group_type* pg,unsigned int n,value_type* p){
+      if(emplace_impl(type_policy::move(*p)).second){
+        x.erase(iterator{pg,n,p});
+      }
+    });
+  }
+
+  template<typename Hash2,typename Pred2>
+  void merge(table<TypePolicy,Hash2,Pred2,Allocator>&& x){merge(x);}
+
   hasher hash_function()const{return h();}
   key_equal key_eq()const{return pred();}
 
@@ -1226,6 +1240,7 @@ public:
   }
 
 private:
+  template<typename,typename,typename,typename> friend class table;
   using arrays_type=table_arrays<value_type,group_type,size_policy>;
 
   Hash&            h(){return hash_base::get();}
