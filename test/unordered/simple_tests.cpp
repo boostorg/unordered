@@ -7,8 +7,14 @@
 
 // clang-format off
 #include "../helpers/prefix.hpp"
-#include <boost/unordered_set.hpp>
+#ifdef BOOST_UNORDERED_FOA_TESTS
+#include <boost/unordered_flat_map.hpp>
+#include <boost/unordered_flat_set.hpp>
+#include <boost/unordered/detail/implementation.hpp>
+#else
 #include <boost/unordered_map.hpp>
+#include <boost/unordered_set.hpp>
+#endif
 #include "../helpers/postfix.hpp"
 // clang-format on
 
@@ -93,7 +99,11 @@ UNORDERED_AUTO_TEST (simple_tests) {
   srand(14878);
 
   BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Test unordered_set.\n";
+#ifdef BOOST_UNORDERED_FOA_TESTS
+  boost::unordered_flat_set<int> set;
+#else
   boost::unordered_set<int> set;
+#endif
   simple_test(set);
 
   set.insert(1);
@@ -101,6 +111,7 @@ UNORDERED_AUTO_TEST (simple_tests) {
   set.insert(1456);
   simple_test(set);
 
+#ifndef BOOST_UNORDERED_FOA_TESTS
   BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Test unordered_multiset.\n";
   boost::unordered_multiset<int> multiset;
   simple_test(multiset);
@@ -111,15 +122,21 @@ UNORDERED_AUTO_TEST (simple_tests) {
       multiset.insert(index);
   }
   simple_test(multiset);
+#endif
 
   BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Test unordered_map.\n";
+#ifdef BOOST_UNORDERED_FOA_TESTS
+  boost::unordered_flat_map<int, int> map;
+#else
   boost::unordered_map<int, int> map;
+#endif
 
   for (int i2 = 0; i2 < 1000; ++i2) {
     map.insert(std::pair<const int, int>(rand(), rand()));
   }
   simple_test(map);
 
+#ifndef BOOST_UNORDERED_FOA_TESTS
   BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Test unordered_multimap.\n";
   boost::unordered_multimap<int, int> multimap;
 
@@ -129,6 +146,7 @@ UNORDERED_AUTO_TEST (simple_tests) {
       multimap.insert(std::pair<const int, int>(index, rand()));
   }
   simple_test(multimap);
+#endif
 }
 
 RUN_TESTS()
