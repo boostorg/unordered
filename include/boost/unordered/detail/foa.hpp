@@ -621,7 +621,8 @@ public:
   using value_type=Value;
   using pointer=
     typename std::conditional<Const,value_type const*,value_type*>::type;
-  using reference=value_type&;
+  using reference=
+    typename std::conditional<Const,value_type const&,value_type&>::type;
   using iterator_category=std::forward_iterator_tag;
   using element_type=
     typename std::conditional<Const,value_type const,value_type>::type;

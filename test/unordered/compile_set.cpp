@@ -64,6 +64,19 @@ INSTANTIATE(multiset)<test::minimal::assignable,
 
 #endif
 
+UNORDERED_AUTO_TEST (type_traits) {
+#ifdef BOOST_UNORDERED_FOA_TESTS
+  typedef boost::unordered_flat_set<int> set_type;
+#else
+  typedef boost::unordered_set<int> set_type;
+#endif
+
+  typedef set_type::iterator iterator;
+
+  BOOST_STATIC_ASSERT(boost::is_same<int const&,
+    std::iterator_traits<iterator>::reference>::value);
+}
+
 UNORDERED_AUTO_TEST (test0) {
   test::minimal::constructor_param x;
 
