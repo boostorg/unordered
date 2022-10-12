@@ -5,11 +5,30 @@
 
 // clang-format off
 #include "../helpers/prefix.hpp"
+#ifdef BOOST_UNORDERED_FOA_TESTS
+#include <boost/unordered_flat_set.hpp>
+#include <boost/unordered_flat_map.hpp>
+#include <boost/unordered/detail/implementation.hpp>
+#else
 #include <boost/unordered_set.hpp>
 #include <boost/unordered_map.hpp>
+#endif
 #include "../helpers/postfix.hpp"
 // clang-format on
 
+#ifdef BOOST_UNORDERED_FOA_TESTS
+void foo(boost::unordered_flat_set<int>&, boost::unordered_flat_map<int, int>&);
+
+int main()
+{
+  boost::unordered_flat_set<int> x1;
+  boost::unordered_flat_map<int, int> x2;
+
+  foo(x1, x2);
+
+  return 0;
+}
+#else
 void foo(boost::unordered_set<int>&, boost::unordered_map<int, int>&,
   boost::unordered_multiset<int>&, boost::unordered_multimap<int, int>&);
 
@@ -24,3 +43,4 @@ int main()
 
   return 0;
 }
+#endif
