@@ -106,6 +106,7 @@ build_foa fwd_set_test ;
 build_foa fwd_map_test ;
 build_foa compile_set ;
 build_foa compile_map ;
+build_foa noexcept_tests ;
 build_foa constructor_tests ;
 build_foa copy_tests ;
 build_foa move_tests ;

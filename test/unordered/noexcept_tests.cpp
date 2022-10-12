@@ -5,8 +5,14 @@
 
 // clang-format off
 #include "../helpers/prefix.hpp"
+#ifdef BOOST_UNORDERED_FOA_TESTS
+#include <boost/unordered_flat_set.hpp>
+#include <boost/unordered_flat_map.hpp>
+#include <boost/unordered/detail/implementation.hpp>
+#else
 #include <boost/unordered_set.hpp>
 #include <boost/unordered_map.hpp>
+#endif
 #include "../helpers/postfix.hpp"
 // clang-format on
 
@@ -202,6 +208,12 @@ namespace noexcept_tests {
 
   UNORDERED_AUTO_TEST (test_noexcept) {
     if (have_is_nothrow_move) {
+#ifdef BOOST_UNORDERED_FOA_TESTS
+      BOOST_TEST((boost::is_nothrow_move_constructible<
+        boost::unordered_flat_set<int> >::value));
+      BOOST_TEST((boost::is_nothrow_move_constructible<
+        boost::unordered_flat_map<int, int> >::value));
+#else
       BOOST_TEST((boost::is_nothrow_move_constructible<
         boost::unordered_set<int> >::value));
       BOOST_TEST((boost::is_nothrow_move_constructible<
@@ -210,19 +222,35 @@ namespace noexcept_tests {
         boost::unordered_map<int, int> >::value));
       BOOST_TEST((boost::is_nothrow_move_constructible<
         boost::unordered_multimap<int, int> >::value));
+#endif
     }
 
+#ifdef BOOST_UNORDERED_FOA_TESTS
+    BOOST_TEST(
+      (!boost::is_nothrow_move_constructible<
+        boost::unordered_flat_set<int, hash_possible_exception> >::value));
+    BOOST_TEST(
+      (!boost::is_nothrow_move_constructible<boost::unordered_flat_set<int,
+          boost::hash<int>, equal_to_possible_exception> >::value));
+#else
     BOOST_TEST((!boost::is_nothrow_move_constructible<
                 boost::unordered_set<int, hash_possible_exception> >::value));
     BOOST_TEST(
       (!boost::is_nothrow_move_constructible<boost::unordered_multiset<int,
           boost::hash<int>, equal_to_possible_exception> >::value));
+#endif
   }
 
   UNORDERED_AUTO_TEST (test_nothrow_move_when_noexcept) {
+#ifdef BOOST_UNORDERED_FOA_TESTS
+    typedef boost::unordered_flat_set<int, hash_nothrow_move_construct,
+      equal_to_nothrow_move_construct>
+      throwing_set;
+#else
     typedef boost::unordered_set<int, hash_nothrow_move_construct,
       equal_to_nothrow_move_construct>
       throwing_set;
+#endif
 
     if (have_is_nothrow_move) {
       BOOST_TEST(boost::is_nothrow_move_constructible<throwing_set>::value);
@@ -310,8 +338,14 @@ namespace noexcept_tests {
   }
 
   UNORDERED_AUTO_TEST (test_nothrow_swap_when_noexcept) {
+#if BOOST_UNORDERED_FOA_TESTS
+    typedef boost::unordered_flat_set<int, hash_nothrow_swap,
+      equal_to_nothrow_swap>
+      throwing_set;
+#else
     typedef boost::unordered_set<int, hash_nothrow_swap, equal_to_nothrow_swap>
       throwing_set;
+#endif
 
     if (have_is_nothrow_swap) {
       BOOST_TEST(boost::is_nothrow_swappable<throwing_set>::value);
@@ -410,6 +444,20 @@ UNORDERED_AUTO_TEST (prelim_allocator_checks) {
              allocator2<int> >::type::value);
 }
 
+using test::default_generator;
+
+#ifdef BOOST_UNORDERED_FOA_TESTS
+boost::unordered_flat_set<int, noexcept_tests::hash_nothrow_move_assign,
+  noexcept_tests::equal_to_nothrow_move_assign, allocator1<int> >*
+  throwing_set_alloc1;
+
+boost::unordered_flat_set<int, noexcept_tests::hash_nothrow_move_assign,
+  noexcept_tests::equal_to_nothrow_move_assign, allocator2<int> >*
+  throwing_set_alloc2;
+
+UNORDERED_TEST(test_nothrow_move_assign_when_noexcept,
+  ((throwing_set_alloc1)(throwing_set_alloc2))((default_generator)))
+#else
 boost::unordered_set<int, noexcept_tests::hash_nothrow_move_assign,
   noexcept_tests::equal_to_nothrow_move_assign, allocator1<int> >*
   throwing_set_alloc1;
@@ -418,9 +466,8 @@ boost::unordered_set<int, noexcept_tests::hash_nothrow_move_assign,
   noexcept_tests::equal_to_nothrow_move_assign, allocator2<int> >*
   throwing_set_alloc2;
 
-using test::default_generator;
-
 UNORDERED_TEST(test_nothrow_move_assign_when_noexcept,
   ((throwing_set_alloc1)(throwing_set_alloc2))((default_generator)))
+#endif
 
 RUN_TESTS()
