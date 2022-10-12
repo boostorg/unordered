@@ -360,23 +360,29 @@ void unordered_map_test(X& r, Key const& k, T const& v)
 
   typedef typename X::iterator iterator;
   typedef typename X::const_iterator const_iterator;
+#ifndef BOOST_UNORDERED_FOA_TESTS
   typedef typename X::local_iterator local_iterator;
   typedef typename X::const_local_iterator const_local_iterator;
+#endif
   typedef typename std::iterator_traits<iterator>::pointer iterator_pointer;
   typedef typename std::iterator_traits<const_iterator>::pointer
     const_iterator_pointer;
+#ifndef BOOST_UNORDERED_FOA_TESTS
   typedef typename std::iterator_traits<local_iterator>::pointer
     local_iterator_pointer;
   typedef typename std::iterator_traits<const_local_iterator>::pointer
     const_local_iterator_pointer;
+#endif
 
   BOOST_STATIC_ASSERT((boost::is_same<value_type*, iterator_pointer>::value));
   BOOST_STATIC_ASSERT(
     (boost::is_same<value_type const*, const_iterator_pointer>::value));
+#ifndef BOOST_UNORDERED_FOA_TESTS
   BOOST_STATIC_ASSERT(
     (boost::is_same<value_type*, local_iterator_pointer>::value));
   BOOST_STATIC_ASSERT(
     (boost::is_same<value_type const*, const_local_iterator_pointer>::value));
+#endif
 
   // pointer_traits<iterator>
 
@@ -396,6 +402,7 @@ void unordered_map_test(X& r, Key const& k, T const& v)
   BOOST_STATIC_ASSERT((boost::is_same<std::ptrdiff_t,
     typename boost::pointer_traits<const_iterator>::difference_type>::value));
 
+#ifndef BOOST_UNORDERED_FOA_TESTS
   // pointer_traits<local_iterator>
 
   BOOST_STATIC_ASSERT((boost::is_same<local_iterator,
@@ -424,6 +431,7 @@ void unordered_map_test(X& r, Key const& k, T const& v)
   BOOST_STATIC_ASSERT((boost::is_same<T, node_mapped_type>::value));
   // Superfluous,but just to make sure.
   BOOST_STATIC_ASSERT((!boost::is_const<node_key_type>::value));
+#endif
 
   // Calling functions
 
@@ -442,8 +450,12 @@ void unordered_map_test(X& r, Key const& k, T const& v)
   r.emplace(k_lvalue, v_lvalue);
   r.emplace(rvalue(k), rvalue(v));
 
+#ifdef BOOST_UNORDERED_FOA_TESTS
+  r.emplace(std::piecewise_construct, std::make_tuple(k), std::make_tuple(v));
+#else
   r.emplace(boost::unordered::piecewise_construct, boost::make_tuple(k),
     boost::make_tuple(v));
+#endif
 
   // Emplace with hint
 
@@ -451,9 +463,15 @@ void unordered_map_test(X& r, Key const& k, T const& v)
   r.emplace_hint(r.begin(), k_lvalue, v_lvalue);
   r.emplace_hint(r.begin(), rvalue(k), rvalue(v));
 
+#ifdef BOOST_UNORDERED_FOA_TESTS
+  r.emplace_hint(r.begin(), std::piecewise_construct, std::make_tuple(k),
+    std::make_tuple(v));
+#else
   r.emplace_hint(r.begin(), boost::unordered::piecewise_construct,
     boost::make_tuple(k), boost::make_tuple(v));
+#endif
 
+#ifndef BOOST_UNORDERED_FOA_TESTS
   // Extract
 
   test::check_return_type<node_type>::equals(r.extract(r.begin()));
@@ -476,6 +494,7 @@ void unordered_map_test(X& r, Key const& k, T const& v)
   node_type n = r.extract(r.begin());
   test::check_return_type<node_key_type>::equals_ref(n.key());
   test::check_return_type<node_mapped_type>::equals_ref(n.mapped());
+#endif
 }
 
 template <class X> void equality_test(X& r)
