@@ -350,7 +350,7 @@ namespace boost {
         unordered_flat_map<key_type, mapped_type, H2, P2, allocator_type>&
           source)
       {
-        (void)source;
+        table_.merge(source.table_);
       }
 
       template <class H2, class P2>
@@ -358,7 +358,7 @@ namespace boost {
         unordered_flat_map<key_type, mapped_type, H2, P2, allocator_type>&&
           source)
       {
-        (void)source;
+        table_.merge(std::move(source.table_));
       }
 
       /// Lookup

@@ -119,6 +119,7 @@ build_foa insert_tests ;
 build_foa insert_hint_tests ;
 build_foa emplace_tests ;
 build_foa erase_tests ;
+build_foa merge_tests ;
 build_foa find_tests ;
 build_foa at_tests ;
 build_foa load_factor_tests ;
