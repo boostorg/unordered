@@ -32,12 +32,15 @@ namespace boost {
       struct map_types
       {
         using key_type = Key;
-        using init_type = std::pair<Key, T>;
-        using moved_type = std::pair<Key&&, T&&>;
+        using raw_key_type = typename std::remove_const<Key>::type;
+        using raw_value_type = typename std::remove_const<T>::type;
+
+        using init_type = std::pair<raw_key_type, raw_value_type>;
+        using moved_type = std::pair<raw_key_type&&, raw_value_type&&>;
         using value_type = std::pair<Key const, T>;
 
         template <class K, class V>
-        static K const& extract(std::pair<K, V> const& kv)
+        static raw_key_type const& extract(std::pair<K, V> const& kv)
         {
           return kv.first;
         }
