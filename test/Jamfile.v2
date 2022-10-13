@@ -110,6 +110,7 @@ build_foa noexcept_tests ;
 run unordered/link_test_1.cpp unordered/link_test_2.cpp : : : <cxxstd>98:<build>no <cxxstd>03:<build>no <cxxstd>0x:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_link_test ;
 build_foa incomplete_test ;
 build_foa simple_tests ;
+build_foa equivalent_keys_tests ;
 build_foa constructor_tests ;
 build_foa copy_tests ;
 build_foa move_tests ;
