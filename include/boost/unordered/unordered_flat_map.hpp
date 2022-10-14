@@ -48,7 +48,10 @@ namespace boost {
         static moved_type move(value_type& x)
         {
           // TODO: we probably need to launder here
-          return {std::move(const_cast<Key&>(x.first)), std::move(x.second)};
+          return {
+            std::move(const_cast<raw_key_type&>(x.first)),
+            std::move(const_cast<raw_mapped_type&>(x.second))
+          };
         }
       };
 
