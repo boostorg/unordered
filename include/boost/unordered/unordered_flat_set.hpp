@@ -42,6 +42,10 @@ namespace boost {
 
       table_type table_;
 
+      template <class K, class H, class KE, class A, class Pred>
+      typename unordered_flat_set<K, H, KE, A>::size_type friend erase_if(
+        unordered_flat_set<K, H, KE, A>& set, Pred pred);
+
     public:
       using key_type = Key;
       using value_type = typename set_types::value_type;
@@ -452,6 +456,14 @@ namespace boost {
       noexcept(noexcept(lhs.swap(rhs)))
     {
       lhs.swap(rhs);
+    }
+
+    template <class Key, class Hash, class KeyEqual, class Allocator,
+      class Pred>
+    typename unordered_flat_set<Key, Hash, KeyEqual, Allocator>::size_type
+    erase_if(unordered_flat_set<Key, Hash, KeyEqual, Allocator>& set, Pred pred)
+    {
+      return erase_if(set.table_, pred);
     }
   } // namespace unordered
 } // namespace boost

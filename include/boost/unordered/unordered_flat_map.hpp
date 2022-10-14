@@ -48,10 +48,8 @@ namespace boost {
         static moved_type move(value_type& x)
         {
           // TODO: we probably need to launder here
-          return {
-            std::move(const_cast<raw_key_type&>(x.first)),
-            std::move(const_cast<raw_mapped_type&>(x.second))
-          };
+          return {std::move(const_cast<raw_key_type&>(x.first)),
+            std::move(const_cast<raw_mapped_type&>(x.second))};
         }
       };
 
@@ -60,6 +58,10 @@ namespace boost {
           typename map_types::value_type>::type>;
 
       table_type table_;
+
+      template <class K, class V, class H, class KE, class A, class Pred>
+      typename unordered_flat_map<K, V, H, KE, A>::size_type friend erase_if(
+        unordered_flat_map<K, V, H, KE, A>& set, Pred pred);
 
     public:
       using key_type = Key;
@@ -571,6 +573,15 @@ namespace boost {
       noexcept(noexcept(lhs.swap(rhs)))
     {
       lhs.swap(rhs);
+    }
+
+    template <class Key, class T, class Hash, class KeyEqual, class Allocator,
+      class Pred>
+    typename unordered_flat_map<Key, T, Hash, KeyEqual, Allocator>::size_type
+    erase_if(
+      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator>& map, Pred pred)
+    {
+      return erase_if(map.table_, pred);
     }
   } // namespace unordered
 } // namespace boost

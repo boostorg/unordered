@@ -4,8 +4,14 @@
 
 // clang-format off
 #include "../helpers/prefix.hpp"
+#ifdef BOOST_UNORDERED_FOA_TESTS
+#include <boost/unordered/unordered_flat_set.hpp>
+#include <boost/unordered/unordered_flat_map.hpp>
+#include <boost/unordered/detail/implementation.hpp>
+#else
 #include <boost/unordered_set.hpp>
 #include <boost/unordered_map.hpp>
+#endif
 #include "../helpers/postfix.hpp"
 // clang-format on
 
@@ -112,11 +118,16 @@ template <class UnorderedSet> void test_set_erase_if()
 }
 
 UNORDERED_AUTO_TEST (unordered_erase_if) {
+#ifdef BOOST_UNORDERED_FOA_TESTS
+  test_map_erase_if<boost::unordered_flat_map<std::string, int> >();
+  test_set_erase_if<boost::unordered_flat_set<int> >();
+#else
   test_map_erase_if<boost::unordered_map<std::string, int> >();
   test_map_erase_if<boost::unordered_multimap<std::string, int> >();
 
   test_set_erase_if<boost::unordered_set<int> >();
   test_set_erase_if<boost::unordered_multiset<int> >();
+#endif
 }
 
 RUN_TESTS()
