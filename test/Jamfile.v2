@@ -114,6 +114,7 @@ build_foa equivalent_keys_tests ;
 build_foa constructor_tests ;
 build_foa copy_tests ;
 build_foa move_tests ;
+build_foa post_move_tests ;
 build_foa assign_tests ;
 build_foa insert_tests ;
 build_foa insert_hint_tests ;
