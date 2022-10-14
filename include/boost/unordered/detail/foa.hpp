@@ -704,7 +704,7 @@ struct table_arrays
   {
     using alloc_traits=boost::allocator_traits<Allocator>;
 
-                 /* n/N+1 == ceil(n+1/N) (extra +1 for the sentinel) */
+                 /* n/N+1 == ceil((n+1)/N) (extra +1 for the sentinel) */
     auto         groups_size_index=size_policy::size_index(n/N+1);
     auto         groups_size=size_policy::size(groups_size_index);
     table_arrays arrays{groups_size_index,groups_size-1,nullptr,nullptr};
