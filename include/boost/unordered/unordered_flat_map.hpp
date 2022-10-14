@@ -33,10 +33,10 @@ namespace boost {
       {
         using key_type = Key;
         using raw_key_type = typename std::remove_const<Key>::type;
-        using raw_value_type = typename std::remove_const<T>::type;
+        using raw_mapped_type = typename std::remove_const<T>::type;
 
-        using init_type = std::pair<raw_key_type, raw_value_type>;
-        using moved_type = std::pair<raw_key_type&&, raw_value_type&&>;
+        using init_type = std::pair<raw_key_type, raw_mapped_type>;
+        using moved_type = std::pair<raw_key_type&&, raw_mapped_type&&>;
         using value_type = std::pair<Key const, T>;
 
         template <class K, class V>
