@@ -1367,6 +1367,12 @@ private:
 #endif
   }
 
+#if defined(BOOST_MSVC)
+/* warning: forcing value to bool 'true' or 'false' in bool(pred()...) */
+#pragma warning(push)
+#pragma warning(disable:4800)
+#endif
+
   template<typename Key>
   BOOST_FORCEINLINE iterator find_impl(
     const Key& x,std::size_t pos0,std::size_t hash)const
@@ -1394,6 +1400,10 @@ private:
     while(BOOST_LIKELY(pb.next(arrays.groups_size_mask)));
     return {}; // TODO end() does not work (returns const_iterator)
   }
+
+#if defined(BOOST_MSVC)
+#pragma warning(pop) /* C4800 */
+#endif
 
   template<typename... Args>
   BOOST_FORCEINLINE std::pair<iterator,bool> emplace_impl(Args&&... args)
