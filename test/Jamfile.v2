@@ -126,6 +126,7 @@ build_foa load_factor_tests ;
 build_foa rehash_tests ;
 build_foa equality_tests ;
 build_foa swap_tests ;
+run unordered/scoped_allocator.cpp : : : <cxxstd>98:<build>no <cxxstd>03:<build>no <cxxstd>0x:<build>no <toolset>msvc-14.0:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_scoped_allocator ;
 build_foa transparent_tests ;
 build_foa reserve_tests ;
 build_foa contains_tests ;

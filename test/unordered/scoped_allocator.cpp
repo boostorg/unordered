@@ -21,8 +21,14 @@ int main() {}
 
 // clang-format off
 #include "../helpers/prefix.hpp"
+#ifdef BOOST_UNORDERED_FOA_TESTS
+#include <boost/unordered_flat_set.hpp>
+#include <boost/unordered_flat_map.hpp>
+#include <boost/unordered/detail/implementation.hpp>
+#else
 #include <boost/unordered_set.hpp>
 #include <boost/unordered_map.hpp>
+#endif
 #include "../helpers/postfix.hpp"
 // clang-format on
 
@@ -32,10 +38,10 @@ int main() {}
 
 #include <boost/core/ignore_unused.hpp>
 
+#include <scoped_allocator>
 #include <string>
 #include <utility>
 #include <vector>
-#include <scoped_allocator>
 
 namespace test {
   template <class T> struct allocator
@@ -70,9 +76,15 @@ typedef std::scoped_allocator_adaptor<test::allocator<pair_type>,
   test::allocator<boost::uint64_t> >
   allocator_type;
 
+#ifdef BOOST_UNORDERED_FOA_TESTS
+typedef boost::unordered_flat_map<const boost::uint64_t, vector_type,
+  boost::hash<boost::uint64_t>, std::equal_to<boost::uint64_t>, allocator_type>
+  map_type;
+#else
 typedef boost::unordered_map<const boost::uint64_t, vector_type,
   boost::hash<boost::uint64_t>, std::equal_to<boost::uint64_t>, allocator_type>
   map_type;
+#endif
 
 UNORDERED_AUTO_TEST (scoped_allocator) {
   allocator_type alloc(
