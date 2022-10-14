@@ -877,8 +877,6 @@ public:
 private:
   static constexpr bool has_mutable_iterator=
     !std::is_same<key_type,value_type>::value;
-  static constexpr bool has_different_init_type=
-    !std::is_same<init_type,value_type>::value;
 
 public:
   using hasher=Hash;
