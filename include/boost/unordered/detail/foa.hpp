@@ -72,7 +72,59 @@ namespace unordered{
 namespace detail{
 namespace foa{
 
-/* TODO: description */
+/* foa::table is an open-addressing hash table serving as the foundational core
+ * of boost::unordered_flat_[map|set]. Its main design aspects are:
+ * 
+ *   - Element slots are logically split into groups of size N=15. The number
+ *     of groups is always a power of two, so the number of allocated slots
+       is of the form (N*2^n)-1 (final slot reserved for a sentinel mark).
+ *   - Positioning is done at the group level rather than the slot level, that
+ *     is, for any given element its hash value is used to locate a group and
+ *     insertion is performed on the first available element of that group;
+ *     if the group is full (overflow), further groups are tried using
+ *     quadratic probing.
+ *   - Each group has an associated 16B metadata word holding reduced hash
+ *     values and overflow information. Reduced hash values are used to
+ *     accelerate lookup within the group by using SIMD or 64-bit word
+ *     operations.
+ */
+
+/* group15 controls metadata information of a group of N=15 element slots.
+ * The 16B metadata word is organized as follows (LSB depicted rightmost):
+ *
+ *   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+ *   |ofw|h14|h13|h13|h11|h10|h09|h08|h07|h06|h05|h04|h03|h02|h01|h00|
+ *   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+ *
+ * hi is 0 if the i-th element slot is avalaible, 1 to mark a sentinel and,
+ * when the slot is occupied, a value in the range [2,255] obtained from the
+ * element's original hash value.
+ * ofw is the so-called overflow byte. If insertion of an element with hash
+ * value h is tried on a full group, then the (h%8)-th bit of the overflow
+ * byte is set to 1 and a further group is probed. Having an overflow byte
+ * brings two advantages:
+ * 
+ *   - There's no need to reserve a special value of hi to mark tombstone
+ *     slots; each reduced hash value keeps then log2(254)=7.99 bits of the
+ *     original hash (alternative approaches reserve one full bit to mark
+ *     if the slot is available/deleted, so their reduced hash values are 7 bit
+ *     strong only).
+ *   - When doing an unsuccessful lookup (i.e. the element is not present in
+ *     the table), probing stops at the first non-overflowed group. Having 8
+ *     bits for signalling overflow makes it very likely that we stop at the
+ *     current group (this happens when no element with the same (h%8) value
+ *     has overflowed in the same group), saving us an additional group check
+ *     even under high-load/high-erase conditions.
+ *
+ * When looking for an element with hash value h, match(n) returns a bitmask
+ * signalling which slots have the same reduced hash value. If available,
+ * match uses SSE2 or (little endian) Neon 128-bit SIMD operations. On non-SIMD
+ * scenarios, the logical layout described above is physically mapped to two
+ * 64-bit words with *bit interleaving*, i.e. the least significant 16 bits of
+ * the first 64-bit word contain the least significant bits of each byte in the
+ * "logical" 128-bit word, and so forth. With this layout, match can be
+ * implemented with 5 ANDs, 3 shifts, 2 XORs and 2 NOTs.
+ */
 
 #if defined(BOOST_UNORDERED_SSE2)
 
@@ -549,6 +601,30 @@ inline void prefetch(const void* p)
 #endif    
 }
 
+/* foa::table uses a size policy to control the permissible sizes of the group
+ * array (and, by implication, the element array) and the hash->group mapping.
+ * 
+ *   - size_index(n) returns an unspecified "index" number used in other policy
+ *     operations.
+ *   - size(size_index_) returns the number of groups for the given index. It is
+ *     guaranteed that size(size_index(n)) >= n.
+ *   - min_size() is the minimum number of groups permissible, i.e.
+ *     size(size_index(0)).
+ *   - position(hash,size_index_) maps hash to a position in the range
+ *     [0,size(size_index_)).
+ * 
+ * The reason we're introducing the intermediate index value for calculating
+ * sizes and positions is that it allows us to optimize the implementation of
+ * position, which is in the hot path of lookup and insertion operations.
+ * pow2_size_policy, the actual size policy used by foa::table, returns 2^n
+ * (n>0) as permissible sizes and returns the n most significant bits
+ * of the hash value as the position in the group array. Using a size index
+ * defined as i = (bits in std::size_t) - n, we have an unbeatable
+ * implementation of position(hash) as hash>>i. We've chosen to select the
+ * most significant bits of hash for positioning as multiplication-based mixing
+ * tends to yield better entropy in the high part of its result.
+ */
+
 struct pow2_size_policy
 {
   static inline std::size_t size_index(std::size_t n)
@@ -560,24 +636,34 @@ struct pow2_size_policy
       (n<=2?1:((std::size_t)(boost::core::bit_width(n-1))));
   }
 
-  static inline std::size_t size(std::size_t size_index)
+  static inline std::size_t size(std::size_t size_index_)
   {
-     return std::size_t(1)<<(sizeof(std::size_t)*CHAR_BIT-size_index);  
+     return std::size_t(1)<<(sizeof(std::size_t)*CHAR_BIT-size_index_);  
   }
     
   static constexpr std::size_t min_size(){return 2;}
 
-  static inline std::size_t position(std::size_t hash,std::size_t size_index)
+  static inline std::size_t position(std::size_t hash,std::size_t size_index_)
   {
-    return hash>>size_index;
+    return hash>>size_index_;
   }
 };
+
+/* Quadratic prober over a power-of-two range using triangular numbers.
+ * mask in next(mask) is expected to be the range size minus one (and since
+ * size is 2^n, mask has exactly its n first bits set to 1).
+ */
 
 struct pow2_quadratic_prober
 {
   pow2_quadratic_prober(std::size_t pos_):pos{pos_}{}
 
   inline std::size_t get()const{return pos;}
+
+  /* next returns false when the whole array has been traversed, which ends
+   * probing (in practice, full-table probing will only happen with very small
+   * arrays).
+   */
 
   inline bool next(std::size_t mask)
   {
@@ -589,6 +675,12 @@ struct pow2_quadratic_prober
 private:
   std::size_t pos,step=0;
 };
+
+/* Mixing policies: no_mix is the identity function and xmx_mix uses the
+ * xmx function defined in <boost/unordered/detail/xmx.hpp>.
+ * foa::table mixes hash results with xmx_mix unless the hash is marked as
+ * avalanching, i.e. of good quality (see <boost/unordered/hash_traits.hpp>).
+ */
 
 struct no_mix
 {
@@ -610,6 +702,28 @@ struct xmx_mix
 
 template<typename,typename,typename,typename>
 class table;
+
+/* table_iterators keeps two pointers:
+ * 
+ *   - A pointer p to the element slot.
+ *   - A pointer pc to the n-th byte of the associated group metadata, where n
+ *     is the position of the element in the group.
+ *
+ * A simpler solution would have been to keep a pointer p to the element, a
+ * pointer pg to the group, and the position n, but that would increase
+ * sizeof(table_iterator) by 4/8 bytes. In order to make this compact
+ * representation possible, it is required that group objects are aligned
+ * to its size, so that we can recover pg and n as
+ * 
+ *   - n = pc%sizeof(group)
+ *   - pg = pc-n
+ * 
+ * (for explanatory purposes pg and pc are treated above as if they were memory
+ * addresses rather than pointers).The main drawback of this two-pointer
+ * representation is that iterator increment is relatively slow.
+ * 
+ * p = nullptr is conventionally used to mark end() iterators.
+ */
 
 class const_iterator_cast_tag {};
 
@@ -690,6 +804,15 @@ private:
   unsigned char *pc=nullptr;
   Value         *p=nullptr;
 };
+
+/* table_arrays controls allocation, initialization and deallocation of
+ * paired arrays of groups and element slots. Only one chunk of memory is
+ * allocated to place both arrays: this is not done for efficiency reasons,
+ * but in order to be able to properly align the group array without storing
+ * additional offset information --the alignment required (16B) is usually
+ * greater than alignof(std::max_align_t) and thus not guaranteed by
+ * allocators.
+ */
 
 template<typename Value,typename Group,typename SizePolicy>
 struct table_arrays
