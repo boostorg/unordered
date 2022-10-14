@@ -1367,24 +1367,6 @@ private:
 #endif
   }
 
-/* GCC and clang (including clang-win toolsets) will generate warnings when the
- * KeyEqual predicate returns an integral type such as std::size_t because the
- * implementation of __builtin_expect() accepts long as its argument types.
- * 
- * Because we can't control this, it's easiest to simply silence the warning
- * instead of introducing any potential performance pitfalls.
- */
-#if defined(BOOST_GCC)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wsign-conversion"
-#endif
-
-#if defined(BOOST_CLANG)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wshorten-64-to-32"
-#pragma clang diagnostic ignored "-Wsign-conversion"
-#endif
-
   template<typename Key>
   BOOST_FORCEINLINE iterator find_impl(
     const Key& x,std::size_t pos0,std::size_t hash)const
@@ -1399,7 +1381,7 @@ private:
         prefetch_elements(p);
         do{
           auto n=unchecked_countr_zero(mask);
-          if(BOOST_LIKELY(pred()(x,key_from(p[n])))){
+          if(BOOST_LIKELY(bool(pred()(x,key_from(p[n]))))){
             return {pg,n,p+n};
           }
           mask&=mask-1;
@@ -1412,13 +1394,6 @@ private:
     while(BOOST_LIKELY(pb.next(arrays.groups_size_mask)));
     return {}; // TODO end() does not work (returns const_iterator)
   }
-#if defined(BOOST_CLANG)
-#pragma clang diagnostic pop /* ignored "-Wshorten-64-to-32", "-Wsign-conversion" */
-#endif
-
-#if defined(BOOST_GCC)
-#pragma GCC diagnostic pop /* ignored "-Wsign-conversion" */
-#endif
 
   template<typename... Args>
   BOOST_FORCEINLINE std::pair<iterator,bool> emplace_impl(Args&&... args)
@@ -1527,7 +1502,7 @@ private:
       auto pos=pb.get();
       auto pg=arrays_.groups+pos;
       auto mask=pg->match_available();
-      if(BOOST_LIKELY(mask)){
+      if(BOOST_LIKELY(mask!=0)){
         return {pos,unchecked_countr_zero(mask)};
       }
       else pg->mark_overflow(hash);
@@ -1543,7 +1518,7 @@ private:
       auto pos=pb.get();
       auto pg=arrays_.groups+pos;
       auto mask=pg->match_available();
-      if(BOOST_LIKELY(mask)){
+      if(BOOST_LIKELY(mask!=0)){
         auto n=unchecked_countr_zero(mask);
         auto p=arrays_.elements+pos*N+n;
         construct_element(p,std::forward<Args>(args)...);
