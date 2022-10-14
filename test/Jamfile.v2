@@ -131,3 +131,4 @@ build_foa transparent_tests ;
 build_foa reserve_tests ;
 build_foa contains_tests ;
 build_foa erase_if ;
+build_foa scary_tests ;
