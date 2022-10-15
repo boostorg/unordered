@@ -85,7 +85,7 @@ namespace foa{
  *     quadratic probing.
  *   - Each group has an associated 16B metadata word holding reduced hash
  *     values and overflow information. Reduced hash values are used to
- *     accelerate lookup within the group by using SIMD or 64-bit word
+ *     accelerate lookup within the group by using 128-bit SIMD or 64-bit word
  *     operations.
  */
 
@@ -113,10 +113,10 @@ namespace foa{
  *     the table), probing stops at the first non-overflowed group. Having 8
  *     bits for signalling overflow makes it very likely that we stop at the
  *     current group (this happens when no element with the same (h%8) value
- *     has overflowed in the same group), saving us an additional group check
- *     even under high-load/high-erase conditions.
+ *     has overflowed in the group), saving us an additional group check even
+ *     under high-load/high-erase conditions.
  *
- * When looking for an element with hash value h, match(n) returns a bitmask
+ * When looking for an element with hash value h, match(h) returns a bitmask
  * signalling which slots have the same reduced hash value. If available,
  * match uses SSE2 or (little endian) Neon 128-bit SIMD operations. On non-SIMD
  * scenarios, the logical layout described above is physically mapped to two
@@ -601,8 +601,9 @@ inline void prefetch(const void* p)
 #endif    
 }
 
-/* foa::table uses a size policy to control the permissible sizes of the group
- * array (and, by implication, the element array) and the hash->group mapping.
+/* foa::table uses a size policy to obtain the permissible sizes of the group
+ * array (and, by implication, the element array) and to do the hash->group
+ * mapping.
  * 
  *   - size_index(n) returns an unspecified "index" number used in other policy
  *     operations.
@@ -621,8 +622,8 @@ inline void prefetch(const void* p)
  * of the hash value as the position in the group array. Using a size index
  * defined as i = (bits in std::size_t) - n, we have an unbeatable
  * implementation of position(hash) as hash>>i. We've chosen to select the
- * most significant bits of hash for positioning as multiplication-based mixing
- * tends to yield better entropy in the high part of its result.
+ * most significant bits of hash for positioning because multiplication-based
+ * mixing tends to yield better entropy in the high part of its result.
  */
 
 struct pow2_size_policy
@@ -650,8 +651,8 @@ struct pow2_size_policy
 };
 
 /* Quadratic prober over a power-of-two range using triangular numbers.
- * mask in next(mask) is expected to be the range size minus one (and since
- * size is 2^n, mask has exactly its n first bits set to 1).
+ * mask in next(mask) must be the range size minus one (and since size is 2^n,
+ * mask has exactly its n first bits set to 1).
  */
 
 struct pow2_quadratic_prober
@@ -703,7 +704,7 @@ struct xmx_mix
 template<typename,typename,typename,typename>
 class table;
 
-/* table_iterators keeps two pointers:
+/* table_iterator keeps two pointers:
  * 
  *   - A pointer p to the element slot.
  *   - A pointer pc to the n-th byte of the associated group metadata, where n
@@ -713,7 +714,7 @@ class table;
  * pointer pg to the group, and the position n, but that would increase
  * sizeof(table_iterator) by 4/8 bytes. In order to make this compact
  * representation possible, it is required that group objects are aligned
- * to its size, so that we can recover pg and n as
+ * to their size, so that we can recover pg and n as
  * 
  *   - n = pc%sizeof(group)
  *   - pg = pc-n
