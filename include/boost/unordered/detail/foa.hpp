@@ -597,14 +597,17 @@ private:
  * 
  * The reason we're introducing the intermediate index value for calculating
  * sizes and positions is that it allows us to optimize the implementation of
- * position, which is in the hot path of lookup and insertion operations.
+ * position, which is in the hot path of lookup and insertion operations:
  * pow2_size_policy, the actual size policy used by foa::table, returns 2^n
  * (n>0) as permissible sizes and returns the n most significant bits
- * of the hash value as the position in the group array. Using a size index
+ * of the hash value as the position in the group array; using a size index
  * defined as i = (bits in std::size_t) - n, we have an unbeatable
- * implementation of position(hash) as hash>>i. We've chosen to select the
- * most significant bits of hash for positioning because multiplication-based
- * mixing tends to yield better entropy in the high part of its result.
+ * implementation of position(hash) as hash>>i.
+ * There's a twofold reason for choosing the high bits of hash for positioning:
+ *   - Multiplication-based mixing tends to yield better entropy in the high
+ *     part of its result.
+ *   - group15 reduced-hash values take the *low* bits of hash, and we want
+ *     these values and positioning to be as uncorrelated as possible.
  */
 
 struct pow2_size_policy
@@ -816,11 +819,12 @@ private:
 template<typename Group,std::size_t Size>
 Group* dummy_groups()
 {
-  /* Dummy storage initialized as if in an empty container. We make
-   * table_arrays::groups point to this for empty containers, so that find()
-   * etc. can be implemented without checking groups==nullptr. This space won't
-   * ever be used for insertion as container capacity is properly tuned to
-   * avoid that.
+  /* Dummy storage initialized as if in an empty container (actually, each
+   * of its groups is initialized like a separate empty container).
+   * We make table_arrays::groups point to this when capacity()==0, so that
+   * we are not allocating any dynamic memory and yet lookup can be implemented
+   * without checking for groups==nullptr. This space won't ever be used for
+   * insertion as the container's capacity is precisely zero.
    */
 
   static constexpr typename Group::dummy_group_type
@@ -883,7 +887,8 @@ struct table_arrays
 
     if(arrays.elements){
       alloc_traits::deallocate(
-        al,pointer_traits::pointer_to(*arrays.elements),buffer_size(arrays.groups_size_mask+1));
+        al,pointer_traits::pointer_to(*arrays.elements),
+        buffer_size(arrays.groups_size_mask+1));
     }
   }
 
@@ -1087,7 +1092,6 @@ public:
       std::is_nothrow_move_constructible<Hash>::value&&
       std::is_nothrow_move_constructible<Pred>::value&&
       std::is_nothrow_move_constructible<Allocator>::value):
-    // TODO verify if we should copy or move copy hash, pred and al
     hash_base{empty_init,std::move(x.h())},
     pred_base{empty_init,std::move(x.pred())},
     allocator_base{empty_init,std::move(x.al())},
@@ -1224,6 +1228,7 @@ public:
          * under noexcept(true) conditions.
          */
 
+        // TODO may shrink arrays and miss an opportunity for memory reuse
         reserve(x.size());
         BOOST_TRY{
           /* This works because subsequent x.clear() does not depend on the
@@ -1531,9 +1536,18 @@ private:
 
   static inline void prefetch_elements(const value_type* p)
   {
+    /* We have experimentally confirmed that ARM architectures get a higher
+     * speedup when around the first half of the element slots in a group are
+     * prefetched, whereas for Intel just the first cache line is best.
+     * Please report back if you find better tunings for some particular
+     * architectures.
+     */
+
 #if BOOST_ARCH_ARM
-    constexpr int  cache_line=64; // TODO: get from Boost.Predef?
-                                  // TODO: check if this is 128 in current benchmark machine
+    /* Cache line size can't be known at compile time, so we settle on
+     * the very frequent value of 64B.
+     */
+    constexpr int  cache_line=64;
     const char    *p0=reinterpret_cast<const char*>(p),
                   *p1=p0+sizeof(value_type)*N/2;
     for(;p0<p1;p0+=cache_line)prefetch(p0);
