@@ -123,7 +123,7 @@ namespace foa{
  * 64-bit words with *bit interleaving*, i.e. the least significant 16 bits of
  * the first 64-bit word contain the least significant bits of each byte in the
  * "logical" 128-bit word, and so forth. With this layout, match can be
- * implemented with 5 ANDs, 3 shifts, 2 XORs and 2 NOTs.
+ * implemented with 4 ANDs, 3 shifts, 2 XORs, 1 OR and 1 NOT.
  */
 
 #if defined(BOOST_UNORDERED_SSE2)
@@ -568,9 +568,9 @@ private:
     };
 
     BOOST_ASSERT(n<256);
-    boost::uint64_t lo=~(m[0]^mask[n&0xFu]);
-    boost::uint64_t hi=~(m[1]^mask[n>>4])&lo;
-    boost::uint32_t y=static_cast<boost::uint32_t>(hi&(hi>>32));
+    boost::uint64_t x=m[0]^mask[n&0xFu];
+                    x=~((m[1]^mask[n>>4])|x);
+    boost::uint32_t y=static_cast<boost::uint32_t>(x&(x>>32));
     y&=y>>16;
     return y&0x7FFF;
   }
