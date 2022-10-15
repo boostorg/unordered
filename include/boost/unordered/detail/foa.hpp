@@ -571,8 +571,8 @@ private:
     boost::uint64_t x=m[0]^mask[n&0xFu];
                     x=~((m[1]^mask[n>>4])|x);
     boost::uint32_t y=static_cast<boost::uint32_t>(x&(x>>32));
-    y&=y>>16;
-    return y&0x7FFF;
+                    y&=y>>16;
+    return          y&0x7FFF;
   }
 
   alignas(16) boost::uint64_t m[2];
