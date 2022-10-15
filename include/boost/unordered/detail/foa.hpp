@@ -815,6 +815,23 @@ private:
  * allocators.
  */
 
+template<typename Group,std::size_t Size>
+Group* dummy_groups()
+{
+  /* Dummy storage initialized as if in an empty container. We make
+   * table_arrays::groups point to this for empty containers, so that find()
+   * etc. can be implemented without checking groups==nullptr. This space won't
+   * ever be used for insertion as container capacity is properly tuned to
+   * avoid that.
+   */
+
+  static constexpr typename Group::dummy_group_type
+  storage[Size]={typename Group::dummy_group_type(),};
+
+  return reinterpret_cast<Group*>(
+    const_cast<typename Group::dummy_group_type*>(storage));
+}
+
 template<typename Value,typename Group,typename SizePolicy>
 struct table_arrays
 {
@@ -834,18 +851,7 @@ struct table_arrays
     table_arrays arrays{groups_size_index,groups_size-1,nullptr,nullptr};
 
     if(!n){
-      /* We make groups point to dummy storage initialized as if in an empty
-       * container. This allows us to implement find() etc. without checking
-       * groups==nullptr. This space won't ever be used for insertion as
-       * container capacity is properly tuned to avoid that.
-       */
-
-      static constexpr typename group_type::dummy_group_type
-      storage[size_policy::min_size()]=
-        {typename group_type::dummy_group_type(),};
-
-      arrays.groups=reinterpret_cast<group_type*>(
-        const_cast<typename group_type::dummy_group_type*>(storage));
+      arrays.groups=dummy_groups<group_type,size_policy::min_size()>();
     }
     else{
       arrays.elements=
