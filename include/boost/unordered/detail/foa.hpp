@@ -73,7 +73,7 @@ namespace detail{
 namespace foa{
 
 /* foa::table is an open-addressing hash table serving as the foundational core
- * of boost::unordered_flat_[map|set]. Its main design aspects are:
+ * of boost::unordered_flat_[map|set]. Its main internal design aspects are:
  * 
  *   - Element slots are logically split into groups of size N=15. The number
  *     of groups is always a power of two, so the number of allocated slots
@@ -373,7 +373,9 @@ private:
     return table[(unsigned char)hash];
   }
 
-  /* copied from https://github.com/simd-everywhere/simde/blob/master/simde/x86/sse2.h#L3763 */
+  /* Copied from 
+   * https://github.com/simd-everywhere/simde/blob/master/simde/x86/sse2.h#L3763
+   */
 
   static inline int simde_mm_movemask_epi8(uint8x16_t a)
   {
@@ -680,6 +682,10 @@ struct xmx_mix
   }
 };
 
+/* boost::core::countr_zero has a potentially costly check for
+ * the case x==0.
+ */
+
 inline unsigned int unchecked_countr_zero(int x)
 {
 #if defined(BOOST_MSVC)
@@ -704,7 +710,7 @@ class table;
  * A simpler solution would have been to keep a pointer p to the element, a
  * pointer pg to the group, and the position n, but that would increase
  * sizeof(table_iterator) by 4/8 bytes. In order to make this compact
- * representation possible, it is required that group objects are aligned
+ * representation feasible, it is required that group objects are aligned
  * to their size, so that we can recover pg and n as
  * 
  *   - n = pc%sizeof(group)
@@ -717,7 +723,8 @@ class table;
  * p = nullptr is conventionally used to mark end() iterators.
  */
 
-class const_iterator_cast_tag {};
+/* internal conversion from const_iterator to iterator */
+class const_iterator_cast_tag {}; 
 
 template<typename Value,typename Group,bool Const>
 class table_iterator
@@ -935,12 +942,6 @@ inline void prefetch(const void* p)
 #endif    
 }
 
-
-// we pull this out so the tests don't have to rely on a magic constant or
-// instantiate the table class template as it can be quite gory
-//
-constexpr static float const mlf = 0.875f;
-
 #if defined(BOOST_GCC)
 /* GCC's -Wshadow triggers at scenarios like this: 
  *
@@ -975,6 +976,51 @@ constexpr static float const mlf = 0.875f;
 #pragma warning(push)
 #pragma warning(disable:4702)
 #endif
+
+/* foa::table interface departs in a number of ways from that of C++ unordered
+ * associative containers because it's not for end-user consumption
+ * (boost::unordered_flat_[map|set] wrappers complete it as appropriate) and,
+ * more importantly, because of fundamental restrictions imposed by open
+ * addressing:
+ * 
+ *   - value_type must be moveable.
+ *   - Pointer stability is not kept under rehashing.
+ *   - begin() is not O(1).
+ *   - No bucket API.
+ *   - Load factor is fixed and can't be set by the user.
+ *   - No extract API.
+ * 
+ * The TypePolicy template parameter is used to generate instantiations
+ * suitable for either maps or sets, and introduces non-standard init_type:
+ * 
+ *   - TypePolicy::key_type and TypePolicy::value_type have the obvious
+ *     meaning.
+ *   - TypePolicy::init_type is the type implicitly converted to when
+ *     writing x.insert({...}). For maps, this is std::pair<Key,T> rather
+ *     than std::pair<const Key,T> so that, for instance, x.insert({"hello",0})
+ *     produces a cheaply moveable std::string&& ("hello") rather than
+ *     a copyable const std::string&&. foa::table::insert is extended to accept
+ *     both init_type and value_type references.
+ *   - TypePolicy::move(value_type&) returns a temporary object for value
+ *     transfer on rehashing, move copy/asignment, and merge. For maps, this
+ *     object is a std::pair<Key&&,T&&>, which is generally cheaper to move
+ *     than std::pair<const Key,T>&& because of the constness in Key.
+ *   - TypePolicy::extract returns a const reference to the key part of
+ *     a value of type value_type, init_type or
+ *     decltype(TypePolicy::move(...)).
+ * 
+ *  try_emplace, erase and find support heterogenous lookup by default, that is,
+ *  without checking for any ::is_transparent typedefs --the checking is done by
+ *  boost::unordered_flat_[map|set].
+ * 
+ *  At the moment, we're not supporting allocators with fancy pointers.
+ *  Allocator::pointer must be convertible to/from regular pointers.
+ */
+
+/* We pull this out so the tests don't have to rely on a magic constant or
+ * instantiate the table class template as it can be quite gory.
+ */
+constexpr static float const mlf = 0.875f;
 
 template<typename TypePolicy,typename Hash,typename Pred,typename Allocator>
 class 
@@ -1523,11 +1569,11 @@ private:
         }while(mask);
       }
       if(BOOST_LIKELY(pg->is_not_overflowed(hash))){
-        return {}; // TODO end() does not work (returns const_iterator)
+        return {}; /* end() */
       }
     }
     while(BOOST_LIKELY(pb.next(arrays.groups_size_mask)));
-    return {}; // TODO end() does not work (returns const_iterator)
+    return {}; /* end() */
   }
 
 #if defined(BOOST_MSVC)
