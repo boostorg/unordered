@@ -580,27 +580,6 @@ private:
 
 #endif
 
-inline unsigned int unchecked_countr_zero(int x)
-{
-#if defined(BOOST_MSVC)
-  unsigned long r;
-  _BitScanForward(&r,(unsigned long)x);
-  return (unsigned int)r;
-#else
-  BOOST_UNORDERED_ASSUME(x);
-  return (unsigned int)boost::core::countr_zero((unsigned int)x);
-#endif
-}
-
-inline void prefetch(const void* p)
-{
-#if defined(BOOST_GCC)||defined(BOOST_CLANG)
-  __builtin_prefetch((const char*)p);
-#elif defined(BOOST_UNORDERED_SSE2)
-  _mm_prefetch((const char*)p,_MM_HINT_T0);
-#endif    
-}
-
 /* foa::table uses a size policy to obtain the permissible sizes of the group
  * array (and, by implication, the element array) and to do the hash->group
  * mapping.
@@ -700,6 +679,18 @@ struct xmx_mix
     return xmx(h(x));
   }
 };
+
+inline unsigned int unchecked_countr_zero(int x)
+{
+#if defined(BOOST_MSVC)
+  unsigned long r;
+  _BitScanForward(&r,(unsigned long)x);
+  return (unsigned int)r;
+#else
+  BOOST_UNORDERED_ASSUME(x);
+  return (unsigned int)boost::core::countr_zero((unsigned int)x);
+#endif
+}
 
 template<typename,typename,typename,typename>
 class table;
@@ -934,6 +925,16 @@ void swap_if(T& x,T& y){using std::swap; swap(x,y);}
 
 template<bool B,typename T,typename std::enable_if<!B>::type* =nullptr>
 void swap_if(T&,T&){}
+
+inline void prefetch(const void* p)
+{
+#if defined(BOOST_GCC)||defined(BOOST_CLANG)
+  __builtin_prefetch((const char*)p);
+#elif defined(BOOST_UNORDERED_SSE2)
+  _mm_prefetch((const char*)p,_MM_HINT_T0);
+#endif    
+}
+
 
 // we pull this out so the tests don't have to rely on a magic constant or
 // instantiate the table class template as it can be quite gory
