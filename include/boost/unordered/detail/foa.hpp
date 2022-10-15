@@ -1436,7 +1436,7 @@ private:
     typename T,
     typename std::enable_if<is_init_or_value_type<T>::value>::type* =nullptr
   >
-  static inline auto value_from(T&& x)->decltype(std::forward<T>(x))
+  static inline T&& value_from(T&& x)
   {
     return std::forward<T>(x);
   }
