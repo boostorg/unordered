@@ -1710,9 +1710,9 @@ private:
     }
   }
 
-  std::size_t            size_;
-  arrays_type            arrays;
-  std::size_t            ml;
+  std::size_t size_;
+  arrays_type arrays;
+  std::size_t ml;
 };
 
 #if BOOST_WORKAROUND(BOOST_MSVC,<=1900)
