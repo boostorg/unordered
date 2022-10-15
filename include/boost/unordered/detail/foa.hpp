@@ -14,8 +14,8 @@
 #include <boost/assert.hpp>
 #include <boost/config.hpp>
 #include <boost/config/workaround.hpp>
-#include <boost/core/bit.hpp>
 #include <boost/core/allocator_traits.hpp>
+#include <boost/core/bit.hpp>
 #include <boost/core/empty_value.hpp>
 #include <boost/core/no_exceptions_support.hpp>
 #include <boost/core/pointer_traits.hpp>
