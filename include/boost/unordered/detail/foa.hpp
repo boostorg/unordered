@@ -1174,8 +1174,7 @@ public:
         if(al()!=x.al())reserve(0);
         copy_assign_if<pocca>(al(),x.al());
       });
-      // TODO may shrink arrays and miss an opportunity for memory reuse
-      reserve(x.size());
+      noshrink_reserve(x.size());
       x.for_all_elements([this](value_type* p){
         unchecked_insert(*p);
       });
@@ -1228,8 +1227,7 @@ public:
          * under noexcept(true) conditions.
          */
 
-        // TODO may shrink arrays and miss an opportunity for memory reuse
-        reserve(x.size());
+        noshrink_reserve(x.size());
         BOOST_TRY{
           /* This works because subsequent x.clear() does not depend on the
            * elements' values.
@@ -1650,6 +1648,22 @@ private:
     delete_arrays(arrays);
     arrays=new_arrays_;
     ml=max_load();
+  }
+
+  void noshrink_reserve(std::size_t n)
+  {
+    /* used only on assignment after element clearance */
+    BOOST_ASSERT(size_==0);
+
+    auto c=std::size_t(std::ceil(static_cast<float>(n)/mlf));
+    if(c) c=size_policy::size(size_policy::size_index(c/N+1))*N-1;
+
+    if(c>capacity()){
+      auto new_arrays_=new_arrays(c);
+      delete_arrays(arrays);
+      arrays=new_arrays_;
+      ml=max_load();
+    }
   }
 
   template<typename Value>
