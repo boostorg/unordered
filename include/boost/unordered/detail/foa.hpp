@@ -1708,7 +1708,7 @@ private:
     return res;
   }
 
-#if 0
+#if 1
   template<typename... Args>
   iterator nosize_unchecked_emplace_at(
     const arrays_type& arrays_,std::size_t pos0,std::size_t hash,
