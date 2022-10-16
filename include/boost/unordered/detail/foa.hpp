@@ -634,6 +634,15 @@ struct pow2_size_policy
   }
 };
 
+/* size index of a group array for a given *element* capacity */
+
+template<typename Group,typename SizePolicy>
+static inline std::size_t size_index_for(std::size_t n)
+{
+  /* n/N+1 == ceil((n+1)/N) (extra +1 for the sentinel) */
+  return SizePolicy::size_index(n/Group::N+1);
+}
+
 /* Quadratic prober over a power-of-two range using triangular numbers.
  * mask in next(mask) must be the range size minus one (and since size is 2^n,
  * mask has exactly its n first bits set to 1).
@@ -847,8 +856,7 @@ struct table_arrays
   {
     using alloc_traits=boost::allocator_traits<Allocator>;
 
-                 /* n/N+1 == ceil((n+1)/N) (extra +1 for the sentinel) */
-    auto         groups_size_index=size_policy::size_index(n/N+1);
+    auto         groups_size_index=size_index_for<group_type,size_policy>(n);
     auto         groups_size=size_policy::size(groups_size_index);
     table_arrays arrays{groups_size_index,groups_size-1,nullptr,nullptr};
 
@@ -1174,7 +1182,8 @@ public:
         if(al()!=x.al())reserve(0);
         copy_assign_if<pocca>(al(),x.al());
       });
-      noshrink_reserve(x.size());
+      /* noshrink: favor memory reuse over tightness */
+      noshrink_reserve(x.size()); 
       x.for_all_elements([this](value_type* p){
         unchecked_insert(*p);
       });
@@ -1227,6 +1236,7 @@ public:
          * under noexcept(true) conditions.
          */
 
+        /* noshrink: favor memory reuse over tightness */
         noshrink_reserve(x.size());
         BOOST_TRY{
           /* This works because subsequent x.clear() does not depend on the
@@ -1406,16 +1416,16 @@ public:
 
   void rehash(std::size_t n)
   {
-    auto c1=std::size_t(std::ceil(float(size())/mlf));
-    auto c2=n?size_policy::size(size_policy::size_index(n/N+1))*N-1:0;
-    auto c=c1>c2?c1:c2; /* we avoid std::max to not include <algorithm> */
+    auto m=size_t(std::ceil(float(size())/mlf));
+    if(m>n)n=m;
+    if(n)n=capacity_for(n); /* exact resulting capacity */
 
-    if(c!=capacity())unchecked_rehash(c);
+    if(n!=capacity())unchecked_rehash(n);
   }
 
   void reserve(std::size_t n)
   {
-    rehash(std::size_t(std::ceil(static_cast<float>(n)/mlf)));
+    rehash(std::size_t(std::ceil(float(n)/mlf)));
   }
 
   template<typename Predicate>
@@ -1614,6 +1624,11 @@ private:
     };  
   }
 
+  static std::size_t capacity_for(std::size_t n)
+  {
+    return size_policy::size(size_index_for<group_type,size_policy>(n))*N-1;
+  }
+
   BOOST_NOINLINE void unchecked_rehash(std::size_t n)
   {
     auto        new_arrays_=new_arrays(n);
@@ -1653,16 +1668,18 @@ private:
   void noshrink_reserve(std::size_t n)
   {
     /* used only on assignment after element clearance */
-    BOOST_ASSERT(size_==0);
+    BOOST_ASSERT(empty());
 
-    auto c=std::size_t(std::ceil(static_cast<float>(n)/mlf));
-    if(c) c=size_policy::size(size_policy::size_index(c/N+1))*N-1;
+    if(n){
+      n=std::size_t(std::ceil(float(n)/mlf)); /* elements -> slots */
+      n=capacity_for(n); /* exact resulting capacity */
 
-    if(c>capacity()){
-      auto new_arrays_=new_arrays(c);
-      delete_arrays(arrays);
-      arrays=new_arrays_;
-      ml=max_load();
+      if(n>capacity()){
+        auto new_arrays_=new_arrays(n);
+        delete_arrays(arrays);
+        arrays=new_arrays_;
+        ml=max_load();
+      }
     }
   }
 
