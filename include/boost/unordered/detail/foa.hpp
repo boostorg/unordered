@@ -1015,7 +1015,7 @@ inline void prefetch(const void* p)
  *     a copyable const std::string&&. foa::table::insert is extended to accept
  *     both init_type and value_type references.
  *   - TypePolicy::move(value_type&) returns a temporary object for value
- *     transfer on rehashing, move copy/asignment, and merge. For maps, this
+ *     transfer on rehashing, move copy/assignment, and merge. For maps, this
  *     object is a std::pair<Key&&,T&&>, which is generally cheaper to move
  *     than std::pair<const Key,T>&& because of the constness in Key.
  *   - TypePolicy::extract returns a const reference to the key part of
