@@ -1123,8 +1123,7 @@ public:
       });
     }
     BOOST_CATCH(...){
-      clear();
-      delete_arrays(arrays);
+      destroy();
       BOOST_RETHROW
     }
     BOOST_CATCH_END
@@ -1153,9 +1152,8 @@ public:
         });
       }
       BOOST_CATCH(...){
-        clear();
-        delete_arrays(arrays);
         x.clear();
+        destroy();
         BOOST_RETHROW
       }
       BOOST_CATCH_END
@@ -1165,8 +1163,7 @@ public:
 
   ~table()noexcept
   {
-    clear();
-    delete_arrays(arrays);
+    destroy();
   }
 
   table& operator=(const table& x)
@@ -1457,6 +1454,14 @@ private:
   const Pred&      pred()const{return pred_base::get();}
   Allocator&       al(){return allocator_base::get();}
   const Allocator& al()const{return allocator_base::get();}
+
+  void destroy()noexcept
+  {
+    for_all_elements([this](value_type* p){
+      destroy_element(p);
+    });
+    delete_arrays(arrays);
+  }
 
   arrays_type new_arrays(std::size_t n)
   {
