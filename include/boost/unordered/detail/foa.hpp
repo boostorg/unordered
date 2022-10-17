@@ -1640,10 +1640,9 @@ private:
       });
     }
     BOOST_CATCH(...){
-      size_-=num_tx;
       if(num_tx){
-        auto pg=arrays.groups;
-        for(std::size_t pos=0;;++pos,++pg){
+        size_-=num_tx;
+        for(auto pg=arrays.groups;;++pg){
           auto mask=pg->match_occupied();
           while(mask){
             auto nz=unchecked_countr_zero(mask);
@@ -1651,11 +1650,11 @@ private:
             if(!(--num_tx))goto continue_;
           }
         }
+      continue_:
+        for_all_elements(new_arrays_,[this](value_type* p){
+          destroy_element(p);
+        });
       }
-    continue_:
-      for_all_elements(new_arrays_,[this](value_type* p){
-        destroy_element(p);
-      });
       delete_arrays(new_arrays_);
       BOOST_RETHROW
     }
@@ -1788,11 +1787,10 @@ private:
   static auto for_all_elements(const arrays_type& arrays_,F f)
     ->decltype(f(nullptr,0,nullptr),void())
   {
-    auto pg=arrays_.groups;
     auto p=arrays_.elements;
     if(!p){return;}
-    for(std::size_t pos=0,last=arrays_.groups_size_mask+1;
-        pos!=last;++pos,++pg,p+=N){
+    for(auto pg=arrays_.groups,last=pg+arrays_.groups_size_mask+1;
+        pg!=last;++pg,p+=N){
       auto mask=pg->match_really_occupied();
       while(mask){
         auto n=unchecked_countr_zero(mask);
