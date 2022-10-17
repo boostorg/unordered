@@ -389,7 +389,13 @@ private:
     uint8x16_t  masked=vandq_u8(vld1q_u8(md),a);
     uint8x8x2_t tmp=vzip_u8(vget_low_u8(masked),vget_high_u8(masked));
     uint16x8_t  x=vreinterpretq_u16_u8(vcombine_u8(tmp.val[0],tmp.val[1]));
+
+#if defined(__ARM_ARCH_ISA_A64)
     return vaddvq_u16(x);
+#else
+    uint64x2_t t64=vpaddlq_u32(vpaddlq_u16(x));
+    return int(vgetq_lane_u64(t64,0))+int(vgetq_lane_u64(t64,1));
+#endif
   }
 
   inline unsigned char& at(std::size_t pos)
