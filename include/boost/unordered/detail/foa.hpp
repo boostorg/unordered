@@ -1364,11 +1364,24 @@ public:
 
   void clear()noexcept
   {
-    for_all_elements([&,this](group_type* pg,unsigned int n,value_type* p){
-      destroy_element(p);
-      pg->reset(n);
-    });
-    size_=0;
+    alignas(group_type) static constexpr unsigned char
+    zero[sizeof(group_type)]={0,};
+
+    auto p=arrays.elements;
+    if(p){
+      for(auto pg=arrays.groups,last=pg+arrays.groups_size_mask+1;
+          pg!=last;++pg,p+=N){
+        auto mask=pg->match_really_occupied();
+        while(mask){
+          destroy_element(p+unchecked_countr_zero(mask));
+          mask&=mask-1;
+        }
+        /* we wipe the entire metadata to reset the overflow byte as well */
+        *pg=*reinterpret_cast<const group_type*>(zero);
+      }
+      arrays.groups[arrays.groups_size_mask].set_sentinel();
+      size_=0;
+    }
   }
 
   // TODO: should we accept different allocator too?
