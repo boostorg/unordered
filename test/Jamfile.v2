@@ -135,3 +135,4 @@ build_foa erase_if ;
 build_foa scary_tests ;
 
 run exception/constructor_exception_tests.cpp : : : <cxxstd>98:<build>no <cxxstd>03:<build>no <cxxstd>0x:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_constructor_exception_tests ;
+run exception/copy_exception_tests.cpp : : : <cxxstd>98:<build>no <cxxstd>03:<build>no <cxxstd>0x:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_copy_exception_tests ;
