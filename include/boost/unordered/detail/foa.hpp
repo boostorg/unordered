@@ -269,7 +269,7 @@ private:
     return at(N);
   }
 
-  alignas(16) __m128i m=_mm_setzero_si128();
+  alignas(16) __m128i m;
 };
 
 #elif defined(BOOST_UNORDERED_LITTLE_ENDIAN_NEON)
@@ -418,7 +418,7 @@ private:
     return at(N);
   }
 
-  alignas(16) int8x16_t m=vdupq_n_s8(0);
+  alignas(16) int8x16_t m;
 };
 
 #else /* non-SIMD */
@@ -583,7 +583,7 @@ private:
     return          y&0x7FFF;
   }
 
-  alignas(16) boost::uint64_t m[2]={0,0};
+  alignas(16) boost::uint64_t m[2];
 };
 
 #endif
@@ -1367,6 +1367,9 @@ public:
 
   void clear()noexcept
   {
+    alignas(group_type) static constexpr unsigned char
+    zero[sizeof(group_type)]={0,};
+
     auto p=arrays.elements;
     if(p){
       for(auto pg=arrays.groups,last=pg+arrays.groups_size_mask+1;
@@ -1377,7 +1380,7 @@ public:
           mask&=mask-1;
         }
         /* we wipe the entire metadata to reset the overflow byte as well */
-        *pg=group_type();
+        *pg=*reinterpret_cast<const group_type*>(zero);
       }
       arrays.groups[arrays.groups_size_mask].set_sentinel();
       size_=0;
