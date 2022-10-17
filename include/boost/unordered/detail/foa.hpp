@@ -1669,6 +1669,7 @@ private:
             auto nz=unchecked_countr_zero(mask);
             pg->reset(nz);
             if(!(--num_tx))goto continue_;
+            mask&=mask-1;
           }
         }
       continue_:
