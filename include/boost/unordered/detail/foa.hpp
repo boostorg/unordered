@@ -1151,8 +1151,8 @@ public:
       (void)c; /* unused var warning */
 
       /* This works because subsequent x.clear() does not depend on the
-        * elements' values.
-        */
+       * elements' values.
+       */
       x.for_all_elements([this](value_type* p){
         unchecked_insert(type_policy::move(*p));
       });
@@ -1631,25 +1631,22 @@ private:
   BOOST_NOINLINE void unchecked_rehash(std::size_t n)
   {
     auto        new_arrays_=new_arrays(n);
-    std::size_t num_tx=0;
+    std::size_t num_destroyed=0;
     BOOST_TRY{
       for_all_elements([&,this](value_type* p){
-        /* We increment num_tx *before* actual transfer to guard us against
-         * exceptions thrown in the middle of value move construction.
-         */
-        ++num_tx;
+        ++num_destroyed; /* p destroyed below even if an exception is thrown */
         nosize_transfer_element(p,new_arrays_);
       });
     }
     BOOST_CATCH(...){
-      if(num_tx){
-        size_-=num_tx;
+      if(num_destroyed){
+        size_-=num_destroyed;
         for(auto pg=arrays.groups;;++pg){
           auto mask=pg->match_occupied();
           while(mask){
             auto nz=unchecked_countr_zero(mask);
             pg->reset(nz);
-            if(!(--num_tx))goto continue_;
+            if(!(--num_destroyed))goto continue_;
             mask&=mask-1;
           }
         }
@@ -1694,8 +1691,11 @@ private:
 
   void nosize_transfer_element(value_type* p,const arrays_type& arrays_)
   {
+    /* Destroy p always to guard us against an exception in the middle of value
+     * move construction, which could leave the source half-moved.
+     */
     destroy_on_exit d{this,p};
-    (void)d; /* ununsed var warning */
+    (void)d; /* unused var warning */
     auto hash=hash_for(key_from(*p));
     nosize_unchecked_emplace_at(
       arrays_,position_for(hash,arrays_),hash,type_policy::move(*p));
