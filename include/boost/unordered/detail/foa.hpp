@@ -1109,7 +1109,7 @@ public:
     {}
 
   table(const table& x):
-    table(x,alloc_traits::select_on_container_copy_construction(x.al())){}
+    table{x,alloc_traits::select_on_container_copy_construction(x.al())}{}
 
   table(table&& x)
     noexcept(
@@ -1127,22 +1127,11 @@ public:
   }
 
   table(const table& x,const Allocator& al_):
-    hash_base{empty_init,x.h()},pred_base{empty_init,x.pred()},
-    allocator_base{empty_init,al_},size_{0},
-    arrays(
-      new_arrays(std::size_t(std::ceil(static_cast<float>(x.size())/mlf)))),
-    ml{max_load()}
+    table{std::size_t(std::ceil(float(x.size())/mlf)),x.h(),x.pred(),al_}
   {
-    BOOST_TRY{
-      x.for_all_elements([this](value_type* p){
-        unchecked_insert(*p);
-      });
-    }
-    BOOST_CATCH(...){
-      destroy();
-      BOOST_RETHROW
-    }
-    BOOST_CATCH_END
+    x.for_all_elements([this](value_type* p){
+      unchecked_insert(*p);
+    });
   }
 
   table(table&& x,const Allocator& al_):
@@ -1178,7 +1167,10 @@ public:
 
   ~table()noexcept
   {
-    destroy();
+    for_all_elements([this](value_type* p){
+      destroy_element(p);
+    });
+    delete_arrays(arrays);
   }
 
   table& operator=(const table& x)
@@ -1466,14 +1458,6 @@ private:
   const Pred&      pred()const{return pred_base::get();}
   Allocator&       al(){return allocator_base::get();}
   const Allocator& al()const{return allocator_base::get();}
-
-  void destroy()noexcept
-  {
-    for_all_elements([this](value_type* p){
-      destroy_element(p);
-    });
-    delete_arrays(arrays);
-  }
 
   arrays_type new_arrays(std::size_t n)
   {
