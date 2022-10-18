@@ -1169,7 +1169,6 @@ public:
       }
       BOOST_CATCH(...){
         x.clear();
-        destroy();
         BOOST_RETHROW
       }
       BOOST_CATCH_END
