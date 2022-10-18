@@ -1694,9 +1694,9 @@ private:
 
   void nosize_transfer_element(value_type* p,const arrays_type& arrays_)
   {
-    auto hash=hash_for(key_from(*p));
     destroy_on_exit d{this,p};
     (void)d; /* ununsed var warning */
+    auto hash=hash_for(key_from(*p));
     nosize_unchecked_emplace_at(
       arrays_,position_for(hash,arrays_),hash,type_policy::move(*p));
   }
