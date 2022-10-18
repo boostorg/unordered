@@ -124,6 +124,10 @@ namespace foa{
  * the first 64-bit word contain the least significant bits of each byte in the
  * "logical" 128-bit word, and so forth. With this layout, match can be
  * implemented with 4 ANDs, 3 shifts, 2 XORs, 1 OR and 1 NOT.
+ * 
+ * group15 has no user-defined ctor so that it's a trivial type and can be
+ * initialized via memset etc. Where needed, group15::initialize sets the
+ * metadata to all zeros.
  */
 
 #if defined(BOOST_UNORDERED_SSE2)
@@ -136,6 +140,8 @@ struct group15
   {
     alignas(16) unsigned char storage[N+1]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0};
   };
+
+  inline void initialize(){m=_mm_setzero_si128();}
 
   inline void set(std::size_t pos,std::size_t hash)
   {
@@ -282,6 +288,8 @@ struct group15
   {
     alignas(16) unsigned char storage[N+1]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0};
   };
+
+  inline void initialize(){m=vdupq_n_s8(0);}
 
   inline void set(std::size_t pos,std::size_t hash)
   {
@@ -432,6 +440,8 @@ struct group15
     alignas(16) boost::uint64_t m[2]=
       {0x0000000000004000ull,0x0000000000000000ull};
   };
+
+  inline void initialize(){m[0]=0;m[1]=0;}
 
   inline void set(std::size_t pos,std::size_t hash)
   {
@@ -1367,9 +1377,6 @@ public:
 
   void clear()noexcept
   {
-    alignas(group_type) static constexpr unsigned char
-    zero[sizeof(group_type)]={0,};
-
     auto p=arrays.elements;
     if(p){
       for(auto pg=arrays.groups,last=pg+arrays.groups_size_mask+1;
@@ -1380,7 +1387,7 @@ public:
           mask&=mask-1;
         }
         /* we wipe the entire metadata to reset the overflow byte as well */
-        *pg=*reinterpret_cast<const group_type*>(zero);
+        pg->initialize();
       }
       arrays.groups[arrays.groups_size_mask].set_sentinel();
       size_=0;
