@@ -1627,8 +1627,11 @@ private:
     std::size_t num_tx=0;
     BOOST_TRY{
       for_all_elements([&,this](value_type* p){
-        nosize_transfer_element(p,new_arrays_);
+        /* We increment num_tx *before* actual transfer to guard us against
+         * exceptions thrown in the middle of value move construction.
+         */
         ++num_tx;
+        nosize_transfer_element(p,new_arrays_);
       });
     }
     BOOST_CATCH(...){
