@@ -1458,6 +1458,13 @@ private:
     alloc_traits::destroy(al(),p);
   }
 
+  struct destroy_on_exit
+  {
+    ~destroy_on_exit(){this_->destroy_element(p);}
+    table* this_;
+    value_type* p;
+  };
+
   std::size_t max_load()const
   {
     static constexpr std::size_t small_capacity=2*N-1;
@@ -1688,9 +1695,10 @@ private:
   void nosize_transfer_element(value_type* p,const arrays_type& arrays_)
   {
     auto hash=hash_for(key_from(*p));
+    destroy_on_exit d{this,p};
+    (void)d; /* ununsed var warning */
     nosize_unchecked_emplace_at(
       arrays_,position_for(hash,arrays_),hash,type_policy::move(*p));
-    destroy_element(p);
   }
 
   template<typename... Args>
