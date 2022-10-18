@@ -1138,12 +1138,9 @@ public:
     table{0,std::move(x.h()),std::move(x.pred()),al_}
   {
     if(al()==x.al()){
-      size_=x.size_;
-      arrays=x.arrays;
-      ml=x.ml;
-      x.size_=0;
-      x.arrays=x.new_arrays(0);
-      x.ml=x.max_load();
+      std::swap(size_,x.size_);
+      std::swap(arrays,x.arrays);
+      std::swap(ml,x.ml);
     }
     else{
       reserve(x.size());
@@ -1461,8 +1458,8 @@ private:
   struct destroy_on_exit
   {
     ~destroy_on_exit(){this_->destroy_element(p);}
-    table* this_;
-    value_type* p;
+    table      *this_;
+    value_type *p;
   };
 
   std::size_t max_load()const
