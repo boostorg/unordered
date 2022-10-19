@@ -30,11 +30,15 @@ namespace test {
 
     void test(X const& x, unsigned int allocations = 0) const
     {
+      (void) x;
+      (void) allocations;
+#ifndef BOOST_UNORDERED_FOA_TESTS
       if (!(x.size() == values_.size() && test::equal(x.cbegin(), x.cend(),
                                             values_.begin(), test::equivalent)))
         BOOST_ERROR("Strong exception safety failure.");
       if (allocations != allocations_)
         BOOST_ERROR("Strong exception failure: extra allocations.");
+#endif
     }
   };
 }
