@@ -1679,7 +1679,7 @@ private:
     BOOST_CATCH_END
 
     /* either all moved and destroyed or all copied */
-    BOOST_ASSERT(num_destroyed=size()||num_destroyed==0);
+    BOOST_ASSERT(num_destroyed==size()||num_destroyed==0);
     if(num_destroyed!=size()){
       for_all_elements([this](value_type* p){
         destroy_element(p);
