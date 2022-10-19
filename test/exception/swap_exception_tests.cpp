@@ -5,6 +5,10 @@
 
 #include "./containers.hpp"
 
+#if defined(BOOST_UNORDERED_FOA_TESTS)
+#define BOOST_UNORDERED_FOA_WEAK_GUARANTEE_SWAP_EXCEPTIONS_TESTS
+#endif
+
 #include "../helpers/invariants.hpp"
 #include "../helpers/random_values.hpp"
 #include "../helpers/tracker.hpp"

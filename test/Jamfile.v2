@@ -141,4 +141,5 @@ run exception/move_assign_exception_tests.cpp : : : <cxxstd>98:<build>no <cxxstd
 run exception/insert_exception_tests.cpp : : : <cxxstd>98:<build>no <cxxstd>03:<build>no <cxxstd>0x:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_insert_exception_tests ;
 run exception/erase_exception_tests.cpp : : : <cxxstd>98:<build>no <cxxstd>03:<build>no <cxxstd>0x:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_erase_exception_tests ;
 run exception/rehash_exception_tests.cpp : : : <cxxstd>98:<build>no <cxxstd>03:<build>no <cxxstd>0x:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_rehash_exception_tests ;
+run exception/swap_exception_tests.cpp : : : <cxxstd>98:<build>no <cxxstd>03:<build>no <cxxstd>0x:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_swap_exception_tests ;
 run exception/merge_exception_tests.cpp : : : <cxxstd>98:<build>no <cxxstd>03:<build>no <cxxstd>0x:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_merge_exception_tests ;
