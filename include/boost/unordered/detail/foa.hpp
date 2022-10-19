@@ -1455,9 +1455,9 @@ private:
     alloc_traits::destroy(al(),p);
   }
 
-  struct destroy_on_exit
+  struct destroy_element_on_exit
   {
-    ~destroy_on_exit(){this_->destroy_element(p);}
+    ~destroy_element_on_exit(){this_->destroy_element(p);}
     table      *this_;
     value_type *p;
   };
@@ -1609,15 +1609,32 @@ private:
     if(it!=end()){
       return {it,false};
     }
-    else if(BOOST_UNLIKELY(size_>=ml)){
-      unchecked_rehash(
-        std::size_t(std::ceil(static_cast<float>(size_+1)/mlf)));
-      pos0=position_for(hash);
+    if(BOOST_LIKELY(size_<ml)){
+      return {
+        unchecked_emplace_at(pos0,hash,std::forward<Args>(args)...),
+        true
+      };  
     }
-    return {
-      unchecked_emplace_at(pos0,hash,std::forward<Args>(args)...),
-      true
-    };  
+    else{
+      /* strong exception guarantee -> try insertion before rehash */
+      auto new_arrays_=new_arrays(
+        std::size_t(std::ceil(static_cast<float>(size_+1)/mlf)));
+      BOOST_TRY{
+        it=nosize_unchecked_emplace_at(
+          new_arrays_,position_for(hash,new_arrays_),
+          hash,std::forward<Args>(args)...);
+      }
+      BOOST_CATCH(...){
+        delete_arrays(new_arrays_);
+        BOOST_RETHROW
+      }
+      BOOST_CATCH_END
+
+      /* new_arrays_ lifetime taken care of by unchecked_rehash */
+      unchecked_rehash(new_arrays_);
+      ++size_;
+      return {it,true};
+    }
   }
 
   static std::size_t capacity_for(std::size_t n)
@@ -1627,12 +1644,16 @@ private:
 
   BOOST_NOINLINE void unchecked_rehash(std::size_t n)
   {
-    auto        new_arrays_=new_arrays(n);
+    auto new_arrays_=new_arrays(n);
+    unchecked_rehash(new_arrays_);
+  }
+
+  BOOST_NOINLINE void unchecked_rehash(arrays_type& new_arrays_)
+  {
     std::size_t num_destroyed=0;
     BOOST_TRY{
       for_all_elements([&,this](value_type* p){
-        ++num_destroyed; /* p destroyed below even if an exception is thrown */
-        nosize_transfer_element(p,new_arrays_);
+        nosize_transfer_element(p,new_arrays_,num_destroyed);
       });
     }
     BOOST_CATCH(...){
@@ -1647,11 +1668,11 @@ private:
             mask&=mask-1;
           }
         }
-      continue_:
-        for_all_elements(new_arrays_,[this](value_type* p){
-          destroy_element(p);
-        });
       }
+      continue_:
+      for_all_elements(new_arrays_,[this](value_type* p){
+        destroy_element(p);
+      });
       delete_arrays(new_arrays_);
       BOOST_RETHROW
     }
@@ -1686,16 +1707,38 @@ private:
     unchecked_emplace_at(position_for(hash),hash,std::forward<Value>(x));
   }
 
-  void nosize_transfer_element(value_type* p,const arrays_type& arrays_)
+  void nosize_transfer_element(
+    value_type* p,const arrays_type& arrays_,std::size_t& num_destroyed)
   {
-    /* Destroy p always to guard us against an exception in the middle of value
-     * move construction, which could leave the source half-moved.
+    nosize_transfer_element(
+      p,hash_for(key_from(*p)),arrays_,num_destroyed,
+      std::integral_constant< /* std::move_if_noexcept semantics */
+        bool,
+        std::is_nothrow_move_constructible<init_type>::value||
+        !std::is_copy_constructible<init_type>::value>{});
+  }
+
+  void nosize_transfer_element(
+    value_type* p,std::size_t hash,const arrays_type& arrays_,
+    std::size_t& num_destroyed,std::true_type /* move */)
+  {
+    /* Destroy p even if an an exception is thrown in the middle of move
+     * construction, which could leave the source half-moved.
      */
-    destroy_on_exit d{this,p};
+    ++num_destroyed;
+    destroy_element_on_exit d{this,p};
     (void)d; /* unused var warning */
-    auto hash=hash_for(key_from(*p));
     nosize_unchecked_emplace_at(
       arrays_,position_for(hash,arrays_),hash,type_policy::move(*p));
+  }
+
+  void nosize_transfer_element(
+    value_type* p,std::size_t hash,const arrays_type& arrays_,
+    std::size_t& /*num_destroyed*/,std::false_type /* copy */)
+  {
+    nosize_unchecked_emplace_at(
+      arrays_,position_for(hash,arrays_),hash,
+      const_cast<const value_type&>(*p));
   }
 
   template<typename... Args>
