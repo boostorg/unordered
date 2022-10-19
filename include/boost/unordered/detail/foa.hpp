@@ -1677,6 +1677,14 @@ private:
       BOOST_RETHROW
     }
     BOOST_CATCH_END
+
+    /* either all moved and destroyed or all copied */
+    BOOST_ASSERT(num_destroyed=size()||num_destroyed==0);
+    if(num_destroyed!=size()){
+      for_all_elements([this](value_type* p){
+        destroy_element(p);
+      });
+    }
     delete_arrays(arrays);
     arrays=new_arrays_;
     ml=max_load();
@@ -1720,7 +1728,7 @@ private:
 
   void nosize_transfer_element(
     value_type* p,std::size_t hash,const arrays_type& arrays_,
-    std::size_t& num_destroyed,std::true_type /* move */)
+    std::size_t& num_destroyed,std::true_type /* ->move */)
   {
     /* Destroy p even if an an exception is thrown in the middle of move
      * construction, which could leave the source half-moved.
@@ -1734,7 +1742,7 @@ private:
 
   void nosize_transfer_element(
     value_type* p,std::size_t hash,const arrays_type& arrays_,
-    std::size_t& /*num_destroyed*/,std::false_type /* copy */)
+    std::size_t& /*num_destroyed*/,std::false_type /* ->copy */)
   {
     nosize_unchecked_emplace_at(
       arrays_,position_for(hash,arrays_),hash,
