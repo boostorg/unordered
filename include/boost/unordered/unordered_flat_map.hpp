@@ -67,6 +67,7 @@ namespace boost {
       using key_type = Key;
       using mapped_type = T;
       using value_type = typename map_types::value_type;
+      using init_type = typename map_types::init_type;
       using size_type = std::size_t;
       using difference_type = std::ptrdiff_t;
       using hasher = Hash;

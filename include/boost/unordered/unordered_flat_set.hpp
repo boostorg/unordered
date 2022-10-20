@@ -49,6 +49,7 @@ namespace boost {
     public:
       using key_type = Key;
       using value_type = typename set_types::value_type;
+      using init_type = typename set_types::init_type;
       using size_type = std::size_t;
       using difference_type = std::ptrdiff_t;
       using hasher = Hash;
