@@ -1499,9 +1499,26 @@ private:
 
   template<
     typename T,
-    typename std::enable_if<!is_init_or_value_type<T>::value>::type* =nullptr
+    typename Ty=typename std::decay<T>::type,
+    typename std::enable_if<
+      !is_init_or_value_type<T>::value&&
+      std::is_convertible<Ty,init_type>::value
+    >::type* =nullptr
   >
   static inline init_type value_from(T&& x)
+  {
+    return std::forward<T>(x);
+  }
+
+  template<
+    typename T,
+    typename Ty=typename std::decay<T>::type,
+    typename std::enable_if<
+      !is_init_or_value_type<T>::value&&
+      !std::is_convertible<Ty,init_type>::value
+    >::type* =nullptr
+  >
+  static inline value_type value_from(T&& x)
   {
     return std::forward<T>(x);
   }
