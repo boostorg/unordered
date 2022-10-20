@@ -1084,6 +1084,43 @@ private:
   static constexpr bool has_mutable_iterator=
     !std::is_same<key_type,value_type>::value;
 
+  template<
+    typename T,
+    typename RawT=typename std::remove_cv<
+      typename std::remove_reference<T>::type>::type
+  >
+  using value_from_return_type=typename std::conditional<
+    std::is_same<RawT,init_type>::value||std::is_same<RawT,value_type>::value,
+    T,
+    typename std::conditional<
+      std::is_convertible<T,init_type&&>::value,
+      const init_type,
+      typename std::conditional<
+        std::is_convertible<T,value_type&&>::value,
+        const value_type,
+        typename std::conditional<
+          std::is_convertible<T,const init_type&>::value,
+          const init_type&,
+          typename std::conditional<
+            std::is_convertible<T,const value_type&>::value,
+            const value_type&,
+            void
+          >::type
+        >::type
+      >::type
+    >::type
+  >::type;
+
+  template<
+    typename T,
+    typename std::enable_if<
+      !std::is_void<value_from_return_type<T&&>>::value>::type* =nullptr
+  >
+  static inline value_from_return_type<T&&> value_from(T&& x)
+  {
+    return std::forward<T>(x);
+  }
+
 public:
   using hasher=Hash;
   using key_equal=Pred;
@@ -1269,12 +1306,9 @@ public:
       std::forward_as_tuple(std::forward<Args>(args)...));
   }
 
-  template<
-    typename T,
-    typename std::enable_if<
-      std::is_constructible<value_type,T&&>::value>* =nullptr
-  >
-  BOOST_FORCEINLINE std::pair<iterator,bool> insert(T&& x)
+  template<typename T>
+  BOOST_FORCEINLINE auto insert(T&& x)
+    ->decltype(value_from(std::forward<T>(x)),std::pair<iterator,bool>())
   {
     return emplace_impl(value_from(std::forward<T>(x)));
   }
@@ -1473,54 +1507,6 @@ private:
     else{
       return (std::size_t)(mlf*(float)(capacity_));
     }
-  }
-
-  template<typename T>
-  using is_init_or_value_type=std::integral_constant<
-    bool,
-    std::is_same<
-      init_type,
-      typename std::remove_cv<typename std::remove_reference<T>::type>::type
-    >::value||
-    std::is_same<
-      value_type,
-      typename std::remove_cv<typename std::remove_reference<T>::type>::type
-    >::value
-  >;
-
-  template<
-    typename T,
-    typename std::enable_if<is_init_or_value_type<T>::value>::type* =nullptr
-  >
-  static inline T&& value_from(T&& x)
-  {
-    return std::forward<T>(x);
-  }
-
-  template<
-    typename T,
-    typename Ty=typename std::decay<T>::type,
-    typename std::enable_if<
-      !is_init_or_value_type<T>::value&&
-      std::is_convertible<Ty,init_type>::value
-    >::type* =nullptr
-  >
-  static inline init_type value_from(T&& x)
-  {
-    return std::forward<T>(x);
-  }
-
-  template<
-    typename T,
-    typename Ty=typename std::decay<T>::type,
-    typename std::enable_if<
-      !is_init_or_value_type<T>::value&&
-      !std::is_convertible<Ty,init_type>::value
-    >::type* =nullptr
-  >
-  static inline value_type value_from(T&& x)
-  {
-    return std::forward<T>(x);
   }
 
   template<typename T>
