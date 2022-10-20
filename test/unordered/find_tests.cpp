@@ -4,17 +4,7 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#ifdef BOOST_UNORDERED_FOA_TESTS
-#include <boost/unordered_flat_map.hpp>
-#include <boost/unordered_flat_set.hpp>
-#else
-// clang-format off
-#include "../helpers/prefix.hpp"
-#include <boost/unordered_set.hpp>
-#include <boost/unordered_map.hpp>
-#include "../helpers/postfix.hpp"
-// clang-format on
-#endif
+#include "../helpers/unordered.hpp"
 
 #include "../helpers/test.hpp"
 #include "../objects/test.hpp"

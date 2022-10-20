@@ -109,7 +109,7 @@ UNORDERED_AUTO_TEST (use_fwd_declared_trait_without_definition) {
 }
 
 #ifdef BOOST_UNORDERED_FOA_TESTS
-#include <boost/unordered_flat_set.hpp>
+#include <boost/unordered/unordered_flat_set.hpp>
 #else
 #include <boost/unordered_set.hpp>
 #endif

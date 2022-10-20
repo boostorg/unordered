@@ -9,8 +9,8 @@
 // clang-format off
 #include "prefix.hpp"
 #ifdef BOOST_UNORDERED_FOA_TESTS
-#include <boost/unordered_flat_set.hpp>
-#include <boost/unordered_flat_map.hpp>
+#include <boost/unordered/unordered_flat_set.hpp>
+#include <boost/unordered/unordered_flat_map.hpp>
 #include <boost/unordered/detail/implementation.hpp>
 #else
 #include <boost/unordered_set.hpp>

@@ -6,17 +6,7 @@
 
 #if !defined(PIECEWISE_TEST_NAME)
 
-#ifdef BOOST_UNORDERED_FOA_TESTS
-#include <boost/unordered/unordered_flat_map.hpp>
-#include <boost/unordered/unordered_flat_set.hpp>
-#else
-// clang-format off
-#include "../helpers/prefix.hpp"
-#include <boost/unordered_set.hpp>
-#include <boost/unordered_map.hpp>
-#include "../helpers/postfix.hpp"
-// clang-format on
-#endif
+#include "../helpers/unordered.hpp"
 
 #include "../helpers/test.hpp"
 #include "../objects/test.hpp"

@@ -2,8 +2,7 @@
 #error "This test is only for the FOA-style conatiners"
 #endif
 
-#include <boost/unordered/unordered_flat_map.hpp>
-#include <boost/unordered/unordered_flat_set.hpp>
+#include "../helpers/unordered.hpp"
 
 #include "../helpers/test.hpp"
 

@@ -5,18 +5,7 @@
 
 // This test checks the runtime requirements of containers.
 
-// clang-format off
-#include "../helpers/prefix.hpp"
-#ifdef BOOST_UNORDERED_FOA_TESTS
-#include <boost/unordered_flat_map.hpp>
-#include <boost/unordered_flat_set.hpp>
-#include <boost/unordered/detail/implementation.hpp>
-#else
-#include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
-#endif
-#include "../helpers/postfix.hpp"
-// clang-format on
+#include "../helpers/unordered.hpp"
 
 #include "../helpers/test.hpp"
 #include <cstdlib>

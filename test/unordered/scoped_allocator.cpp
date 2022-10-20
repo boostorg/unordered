@@ -19,18 +19,7 @@ int main() {}
 // https://github.com/boostorg/unordered/issues/22
 //
 
-// clang-format off
-#include "../helpers/prefix.hpp"
-#ifdef BOOST_UNORDERED_FOA_TESTS
-#include <boost/unordered_flat_set.hpp>
-#include <boost/unordered_flat_map.hpp>
-#include <boost/unordered/detail/implementation.hpp>
-#else
-#include <boost/unordered_set.hpp>
-#include <boost/unordered_map.hpp>
-#endif
-#include "../helpers/postfix.hpp"
-// clang-format on
+#include "../helpers/unordered.hpp"
 
 #include "../helpers/test.hpp"
 
