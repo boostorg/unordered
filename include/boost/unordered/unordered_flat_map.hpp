@@ -216,12 +216,14 @@ namespace boost {
 
       void clear() noexcept { table_.clear(); }
 
-      std::pair<iterator, bool> insert(value_type const& value)
+      template <class Ty>
+      auto insert(Ty&& value)
+        -> decltype(table_.insert(std::forward<Ty>(value)))
       {
-        return table_.insert(value);
+        return table_.insert(std::forward<Ty>(value));
       }
 
-      std::pair<iterator, bool> insert(value_type&& value)
+      std::pair<iterator, bool> insert(init_type&& value)
       {
         return table_.insert(std::move(value));
       }
