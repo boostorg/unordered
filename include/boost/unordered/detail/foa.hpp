@@ -1094,10 +1094,10 @@ private:
     T,
     typename std::conditional<
       std::is_convertible<T,init_type&&>::value,
-      const init_type,
+      init_type,
       typename std::conditional<
         std::is_convertible<T,value_type&&>::value,
-        const value_type,
+        value_type,
         typename std::conditional<
           std::is_convertible<T,const init_type&>::value,
           const init_type&,
