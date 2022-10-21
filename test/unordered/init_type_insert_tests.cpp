@@ -21,13 +21,17 @@ struct move_only
   }
 };
 
-template <> struct std::hash<move_only>
+namespace std{
+
+template <> struct hash<move_only>
 {
   std::size_t operator()(move_only const& mo) const noexcept
   {
     return std::hash<int>()(mo.x_);
   }
 };
+
+} // namespace std
 
 struct raii_tracker
 {
@@ -59,13 +63,17 @@ struct raii_tracker
   }
 };
 
-template <> struct std::hash<raii_tracker>
+namespace std{
+
+template <> struct hash<raii_tracker>
 {
   std::size_t operator()(raii_tracker const& rt) const noexcept
   {
     return std::hash<int>()(rt.x_);
   }
 };
+
+} // namespace std
 
 int raii_tracker::move_constructs = 0;
 int raii_tracker::copy_constructs = 0;
