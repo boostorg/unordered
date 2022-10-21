@@ -242,7 +242,7 @@ namespace boost {
       void insert(InputIterator first, InputIterator last)
       {
         for (auto pos = first; pos != last; ++pos) {
-          table_.insert(*pos);
+          table_.emplace(*pos);
         }
       }
 

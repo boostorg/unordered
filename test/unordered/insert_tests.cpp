@@ -17,6 +17,8 @@
 #include "../helpers/input_iterator.hpp"
 #include "../helpers/helpers.hpp"
 
+#include <vector>
+
 namespace insert_tests {
 
   test::seed_t initialize_seed(243432);
@@ -674,6 +676,23 @@ namespace insert_tests {
     }
   }
 
+  template <class X> void set_tests(X*, test::random_generator)
+  {
+    // prove that our insert(iterator, iterator) implementation honors
+    // Cpp17EmplaceConstructible
+    //
+
+    X x;
+    std::vector<int> v;
+    v.reserve(1000);
+    for (unsigned i = 0; i < 1000; ++i) {
+      v.push_back(static_cast<int>(i));
+    }
+
+    x.insert(v.begin(), v.end());
+    BOOST_TEST_EQ(x.size(), 1000u);
+  }
+
   template <class X>
   void try_emplace_tests(X*, test::random_generator generator)
   {
@@ -909,6 +928,9 @@ namespace insert_tests {
 
   UNORDERED_TEST(map_insert_range_test2,
     ((test_map))((default_generator)(generate_collisions)(limited_range)))
+
+  UNORDERED_TEST(
+    set_tests, ((test_set_std_alloc)(test_set))((default_generator)))
 #else
   boost::unordered_set<test::movable, test::hash, test::equal_to,
     std::allocator<test::movable> >* test_set_std_alloc;
@@ -965,6 +987,9 @@ namespace insert_tests {
   UNORDERED_TEST(map_insert_range_test2,
     ((test_multimap_std_alloc)(test_map)(test_multimap))(
       (default_generator)(generate_collisions)(limited_range)))
+
+  UNORDERED_TEST(
+    set_tests, ((test_set_std_alloc)(test_set)(test_multiset))((default_generator)))
 #endif
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
