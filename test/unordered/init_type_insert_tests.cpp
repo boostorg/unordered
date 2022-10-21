@@ -157,7 +157,7 @@ static void test_insert_tracking()
     BOOST_TEST_EQ(raii_tracker::move_constructs, 7u);
   }
 
-  BOOST_TEST_EQ(map.size(), 6);
+  BOOST_TEST_EQ(map.size(), 6u);
 
   map.rehash(1024);
   BOOST_TEST_EQ(raii_tracker::copy_constructs, 5u);
