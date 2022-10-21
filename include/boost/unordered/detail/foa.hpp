@@ -892,7 +892,7 @@ struct table_arrays
           reinterpret_cast<uintptr_t>(p))%sizeof(group_type);
       arrays.groups=reinterpret_cast<group_type*>(p);
 
-      /* memset is faster/not slower than using group_type default ctor.
+      /* memset is faster/not slower than initializing groups individually.
        * This assumes all zeros is group_type's default layout. 
        */
 
