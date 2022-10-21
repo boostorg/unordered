@@ -13,6 +13,7 @@
 #define BOOST_UNORDERED_DETAIL_XMX_HPP
 
 #include <boost/cstdint.hpp>
+#include <boost/config.hpp>
 #include <climits>
 #include <cstddef>
 
@@ -41,7 +42,7 @@ namespace detail{
 #endif
 #endif
 
-static inline std::size_t xmx(std::size_t x)noexcept
+static inline std::size_t xmx(std::size_t x)BOOST_NOEXCEPT
 {
 #if defined(BOOST_UNORDERED_64B_ARCHITECTURE)
 

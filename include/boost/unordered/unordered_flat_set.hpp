@@ -118,7 +118,7 @@ namespace boost {
       }
 
       unordered_flat_set(unordered_flat_set&& other)
-        noexcept(std::is_nothrow_move_constructible<hasher>::value&&
+        BOOST_NOEXCEPT_IF(std::is_nothrow_move_constructible<hasher>::value&&
             std::is_nothrow_move_constructible<key_equal>::value&&
               std::is_nothrow_move_constructible<allocator_type>::value)
           : table_(std::move(other.table_))
@@ -158,14 +158,14 @@ namespace boost {
         return *this;
       }
 
-      unordered_flat_set& operator=(unordered_flat_set&& other) noexcept(
-        noexcept(std::declval<table_type&>() = std::declval<table_type&&>()))
+      unordered_flat_set& operator=(unordered_flat_set&& other) BOOST_NOEXCEPT_IF(
+        BOOST_NOEXCEPT_EXPR(std::declval<table_type&>() = std::declval<table_type&&>()))
       {
         table_ = std::move(other.table_);
         return *this;
       }
 
-      allocator_type get_allocator() const noexcept
+      allocator_type get_allocator() const BOOST_NOEXCEPT
       {
         return table_.get_allocator();
       }
@@ -173,30 +173,30 @@ namespace boost {
       /// Iterators
       ///
 
-      iterator begin() noexcept { return table_.begin(); }
-      const_iterator begin() const noexcept { return table_.begin(); }
-      const_iterator cbegin() const noexcept { return table_.cbegin(); }
+      iterator begin() BOOST_NOEXCEPT { return table_.begin(); }
+      const_iterator begin() const BOOST_NOEXCEPT { return table_.begin(); }
+      const_iterator cbegin() const BOOST_NOEXCEPT { return table_.cbegin(); }
 
-      iterator end() noexcept { return table_.end(); }
-      const_iterator end() const noexcept { return table_.end(); }
-      const_iterator cend() const noexcept { return table_.cend(); }
+      iterator end() BOOST_NOEXCEPT { return table_.end(); }
+      const_iterator end() const BOOST_NOEXCEPT { return table_.end(); }
+      const_iterator cend() const BOOST_NOEXCEPT { return table_.cend(); }
 
       /// Capacity
       ///
 
-      BOOST_ATTRIBUTE_NODISCARD bool empty() const noexcept
+      BOOST_ATTRIBUTE_NODISCARD bool empty() const BOOST_NOEXCEPT
       {
         return table_.empty();
       }
 
-      size_type size() const noexcept { return table_.size(); }
+      size_type size() const BOOST_NOEXCEPT { return table_.size(); }
 
-      size_type max_size() const noexcept { return table_.max_size(); }
+      size_type max_size() const BOOST_NOEXCEPT { return table_.max_size(); }
 
       /// Modifiers
       ///
 
-      void clear() noexcept { table_.clear(); }
+      void clear() BOOST_NOEXCEPT { table_.clear(); }
 
       std::pair<iterator, bool> insert(value_type const& value)
       {
@@ -262,8 +262,8 @@ namespace boost {
         return table_.erase(key);
       }
 
-      void swap(unordered_flat_set& rhs) noexcept(
-        noexcept(std::declval<table_type&>().swap(std::declval<table_type&>())))
+      void swap(unordered_flat_set& rhs) BOOST_NOEXCEPT_IF(
+        BOOST_NOEXCEPT_EXPR(std::declval<table_type&>().swap(std::declval<table_type&>())))
       {
         table_.swap(rhs.table_);
       }
@@ -400,11 +400,11 @@ namespace boost {
       /// Hash Policy
       ///
 
-      size_type bucket_count() const noexcept { return table_.capacity(); }
+      size_type bucket_count() const BOOST_NOEXCEPT { return table_.capacity(); }
 
-      float load_factor() const noexcept { return table_.load_factor(); }
+      float load_factor() const BOOST_NOEXCEPT { return table_.load_factor(); }
 
-      float max_load_factor() const noexcept
+      float max_load_factor() const BOOST_NOEXCEPT
       {
         return table_.max_load_factor();
       }
@@ -454,7 +454,7 @@ namespace boost {
     template <class Key, class Hash, class KeyEqual, class Allocator>
     void swap(unordered_flat_set<Key, Hash, KeyEqual, Allocator>& lhs,
       unordered_flat_set<Key, Hash, KeyEqual, Allocator>& rhs)
-      noexcept(noexcept(lhs.swap(rhs)))
+      BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
     {
       lhs.swap(rhs);
     }
