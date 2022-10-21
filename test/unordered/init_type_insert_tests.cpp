@@ -35,8 +35,8 @@ template <> struct hash<move_only>
 
 struct raii_tracker
 {
-  static int move_constructs;
-  static int copy_constructs;
+  static unsigned move_constructs;
+  static unsigned copy_constructs;
 
   int x_ = -1;
 
@@ -75,8 +75,8 @@ template <> struct hash<raii_tracker>
 
 } // namespace std
 
-int raii_tracker::move_constructs = 0;
-int raii_tracker::copy_constructs = 0;
+unsigned raii_tracker::move_constructs = 0;
+unsigned raii_tracker::copy_constructs = 0;
 
 static void test_move_only()
 {
@@ -102,8 +102,8 @@ static void test_insert_tracking()
 {
   raii_tracker::reset_counts();
 
-  BOOST_TEST_EQ(raii_tracker::copy_constructs, 0);
-  BOOST_TEST_EQ(raii_tracker::move_constructs, 0);
+  BOOST_TEST_EQ(raii_tracker::copy_constructs, 0u);
+  BOOST_TEST_EQ(raii_tracker::move_constructs, 0u);
 
   boost::unordered_flat_map<raii_tracker, raii_tracker,
     std::hash<raii_tracker> >
@@ -114,8 +114,8 @@ static void test_insert_tracking()
 
     map.insert(value);
 
-    BOOST_TEST_EQ(raii_tracker::copy_constructs, 2);
-    BOOST_TEST_EQ(raii_tracker::move_constructs, 0);
+    BOOST_TEST_EQ(raii_tracker::copy_constructs, 2u);
+    BOOST_TEST_EQ(raii_tracker::move_constructs, 0u);
   }
 
   {
@@ -123,8 +123,8 @@ static void test_insert_tracking()
 
     map.insert(std::move(value));
 
-    BOOST_TEST_EQ(raii_tracker::copy_constructs, 2);
-    BOOST_TEST_EQ(raii_tracker::move_constructs, 2);
+    BOOST_TEST_EQ(raii_tracker::copy_constructs, 2u);
+    BOOST_TEST_EQ(raii_tracker::move_constructs, 2u);
   }
 
   {
@@ -132,8 +132,8 @@ static void test_insert_tracking()
 
     map.insert(value);
 
-    BOOST_TEST_EQ(raii_tracker::copy_constructs, 4);
-    BOOST_TEST_EQ(raii_tracker::move_constructs, 2);
+    BOOST_TEST_EQ(raii_tracker::copy_constructs, 4u);
+    BOOST_TEST_EQ(raii_tracker::move_constructs, 2u);
   }
 
   {
@@ -141,26 +141,26 @@ static void test_insert_tracking()
 
     map.insert(std::move(value));
 
-    BOOST_TEST_EQ(raii_tracker::copy_constructs, 5);
-    BOOST_TEST_EQ(raii_tracker::move_constructs, 3);
+    BOOST_TEST_EQ(raii_tracker::copy_constructs, 5u);
+    BOOST_TEST_EQ(raii_tracker::move_constructs, 3u);
   }
 
   {
     map.insert(std::make_pair(5, 6));
-    BOOST_TEST_EQ(raii_tracker::copy_constructs, 5);
-    BOOST_TEST_EQ(raii_tracker::move_constructs, 5);
+    BOOST_TEST_EQ(raii_tracker::copy_constructs, 5u);
+    BOOST_TEST_EQ(raii_tracker::move_constructs, 5u);
   }
 
   {
     map.insert({6, 7});
-    BOOST_TEST_EQ(raii_tracker::copy_constructs, 5);
-    BOOST_TEST_EQ(raii_tracker::move_constructs, 7);
+    BOOST_TEST_EQ(raii_tracker::copy_constructs, 5u);
+    BOOST_TEST_EQ(raii_tracker::move_constructs, 7u);
   }
 
   BOOST_TEST_EQ(map.size(), 6);
 
   map.rehash(1024);
-  BOOST_TEST_EQ(raii_tracker::copy_constructs, 5);
+  BOOST_TEST_EQ(raii_tracker::copy_constructs, 5u);
   BOOST_TEST_EQ(raii_tracker::move_constructs, 7u + 2u * map.size());
 }
 
