@@ -146,7 +146,7 @@ struct group15
   inline void set(std::size_t pos,std::size_t hash)
   {
     BOOST_ASSERT(pos<N);
-    at(pos)=adjust_hash(hash);
+    at(pos)=reduced_hash(hash);
   }
 
   inline void set_sentinel()
@@ -250,7 +250,7 @@ private:
     return (int)word[(unsigned char)hash];
   }
 
-  inline static unsigned char adjust_hash(std::size_t hash)
+  inline static unsigned char reduced_hash(std::size_t hash)
   {
     return (unsigned char)match_word(hash);
   }
@@ -294,7 +294,7 @@ struct group15
   inline void set(std::size_t pos,std::size_t hash)
   {
     BOOST_ASSERT(pos<N);
-    at(pos)=adjust_hash(hash);
+    at(pos)=reduced_hash(hash);
   }
 
   inline void set_sentinel()
@@ -322,7 +322,7 @@ struct group15
   inline int match(std::size_t hash)const
   {
     return simde_mm_movemask_epi8(
-      vceqq_s8(m,vdupq_n_s8(adjust_hash(hash))))&0x7FFF;
+      vceqq_s8(m,vdupq_n_s8(reduced_hash(hash))))&0x7FFF;
   }
 
   inline bool is_not_overflowed(std::size_t hash)const
@@ -357,7 +357,7 @@ private:
   static constexpr unsigned char available_=0,
                                  sentinel_=1;
 
-  inline static unsigned char adjust_hash(std::size_t hash)
+  inline static unsigned char reduced_hash(std::size_t hash)
   {
     static constexpr unsigned char table[]={
       2,3,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
@@ -446,7 +446,7 @@ struct group15
   inline void set(std::size_t pos,std::size_t hash)
   {
     BOOST_ASSERT(pos<N);
-    set_impl(pos,adjust_hash(hash));
+    set_impl(pos,reduced_hash(hash));
   }
 
   inline void set_sentinel()
@@ -478,7 +478,7 @@ struct group15
 
   inline int match(std::size_t hash)const
   {
-    return match_impl(adjust_hash(hash));
+    return match_impl(reduced_hash(hash));
   }
 
   inline bool is_not_overflowed(std::size_t hash)const
@@ -516,7 +516,7 @@ private:
   static constexpr unsigned char available_=0,
                                  sentinel_=1;
 
-  inline static unsigned char adjust_hash(std::size_t hash)
+  inline static unsigned char reduced_hash(std::size_t hash)
   {
     static constexpr unsigned char table[]={
       2,3,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
