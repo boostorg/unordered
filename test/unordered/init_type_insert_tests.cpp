@@ -92,10 +92,10 @@ static void test_move_only()
   map.insert(std::make_pair(move_only(1), v));
   map.insert({move_only(2), v});
 
-  BOOST_TEST_EQ(map.size(), 2);
+  BOOST_TEST_EQ(map.size(), 2u);
 
   map.rehash(1024);
-  BOOST_TEST_GE(map.bucket_count(), 1024);
+  BOOST_TEST_GE(map.bucket_count(), 1024u);
 }
 
 static void test_insert_tracking()
@@ -161,7 +161,7 @@ static void test_insert_tracking()
 
   map.rehash(1024);
   BOOST_TEST_EQ(raii_tracker::copy_constructs, 5);
-  BOOST_TEST_EQ(raii_tracker::move_constructs, 7 + 2 * map.size());
+  BOOST_TEST_EQ(raii_tracker::move_constructs, 7u + 2u * map.size());
 }
 
 int main()
