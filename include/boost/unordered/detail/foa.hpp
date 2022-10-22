@@ -134,16 +134,11 @@ namespace foa{
 
 struct group15
 {
-  BOOST_STATIC_CONSTEXPR int N=15;
+  static constexpr int N=15;
 
   struct dummy_group_type
   {
-    BOOST_ALIGNMENT(16) unsigned char storage[N+1];
-    
-    dummy_group_type() {
-      BOOST_ALIGNMENT(16) unsigned char tmp[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0};
-      std::memcpy(storage, tmp, sizeof(storage));
-    }
+    alignas(16) unsigned char storage[N+1]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0};
   };
 
   inline void initialize(){m=_mm_setzero_si128();}
@@ -184,7 +179,7 @@ struct group15
 
   inline bool is_not_overflowed(std::size_t hash)const
   {
-    BOOST_STATIC_CONSTEXPR unsigned char shift[]={1,2,4,8,16,32,64,128};
+    static constexpr unsigned char shift[]={1,2,4,8,16,32,64,128};
 
     return !(overflow()&shift[hash%8]);
   }
@@ -211,12 +206,12 @@ struct group15
   }
 
 private:
-  BOOST_STATIC_CONSTEXPR unsigned char available_=0,
+  static constexpr unsigned char available_=0,
                                  sentinel_=1;
 
   inline static int match_word(std::size_t hash)
   {
-    BOOST_STATIC_CONSTEXPR boost::uint32_t word[]=
+    static constexpr boost::uint32_t word[]=
     {
       0x02020202u,0x03030303u,0x02020202u,0x03030303u,0x04040404u,0x05050505u,0x06060606u,0x07070707u,
       0x08080808u,0x09090909u,0x0A0A0A0Au,0x0B0B0B0Bu,0x0C0C0C0Cu,0x0D0D0D0Du,0x0E0E0E0Eu,0x0F0F0F0Fu,
@@ -280,7 +275,7 @@ private:
     return at(N);
   }
 
-  BOOST_ALIGNMENT(16) __m128i m;
+  alignas(16) __m128i m;
 };
 
 #elif defined(BOOST_UNORDERED_LITTLE_ENDIAN_NEON)
@@ -647,8 +642,7 @@ struct pow2_size_policy
      return std::size_t(1)<<(sizeof(std::size_t)*CHAR_BIT-size_index_);  
   }
     
-  // static BOOST_CONSTEXPR std::size_t min_size(){return 2;}
-  BOOST_STATIC_CONSTEXPR std::size_t min_size = 2;
+  static constexpr std::size_t min_size(){return 2;}
 
   static inline std::size_t position(std::size_t hash,std::size_t size_index_)
   {
@@ -782,10 +776,10 @@ public:
     const_iterator_cast_tag, const table_iterator<Value,Group,true>& x):
     pc{x.pc},p{x.p}{}
 
-  inline reference operator*()const BOOST_NOEXCEPT{return *p;}
-  inline pointer operator->()const BOOST_NOEXCEPT{return p;}
-  inline table_iterator& operator++()BOOST_NOEXCEPT{increment();return *this;}
-  inline table_iterator operator++(int)BOOST_NOEXCEPT
+  inline reference operator*()const noexcept{return *p;}
+  inline pointer operator->()const noexcept{return p;}
+  inline table_iterator& operator++()noexcept{increment();return *this;}
+  inline table_iterator operator++(int)noexcept
     {auto x=*this;increment();return x;}
   friend inline bool operator==(
     const table_iterator& x,const table_iterator& y)
@@ -803,14 +797,14 @@ private:
     p{const_cast<Value*>(p_)}
     {}
 
-  inline std::size_t rebase() BOOST_NOEXCEPT
+  inline std::size_t rebase() noexcept
   {
     std::size_t off=reinterpret_cast<uintptr_t>(pc)%sizeof(Group);
     pc-=off;
     return off;
   }
 
-  inline void increment()BOOST_NOEXCEPT
+  inline void increment()noexcept
   {
     std::size_t n0=rebase();
 
@@ -858,7 +852,7 @@ Group* dummy_groups()
    * insertion as the container's capacity is precisely zero.
    */
 
-  BOOST_STATIC_CONSTEXPR typename Group::dummy_group_type
+  static constexpr typename Group::dummy_group_type
   storage[Size]={typename Group::dummy_group_type(),};
 
   return reinterpret_cast<Group*>(
@@ -870,7 +864,7 @@ struct table_arrays
 {
   using value_type=Value;
   using group_type=Group;
-  BOOST_STATIC_CONSTEXPR auto N=group_type::N;
+  static constexpr auto N=group_type::N;
   using size_policy=SizePolicy;
 
   template<typename Allocator>
@@ -883,7 +877,7 @@ struct table_arrays
     table_arrays arrays{groups_size_index,groups_size-1,nullptr,nullptr};
 
     if(!n){
-      arrays.groups=dummy_groups<group_type,size_policy::min_size>();
+      arrays.groups=dummy_groups<group_type,size_policy::min_size()>();
     }
     else{
       arrays.elements=
@@ -909,7 +903,7 @@ struct table_arrays
   }
 
   template<typename Allocator>
-  static void delete_(Allocator& al,table_arrays& arrays)BOOST_NOEXCEPT
+  static void delete_(Allocator& al,table_arrays& arrays)noexcept
   {
     using alloc_traits=boost::allocator_traits<Allocator>;
     using pointer=typename alloc_traits::pointer;
@@ -1055,7 +1049,7 @@ inline void prefetch(const void* p)
 /* We pull this out so the tests don't have to rely on a magic constant or
  * instantiate the table class template as it can be quite gory.
  */
-BOOST_STATIC_CONSTEXPR float mlf = 0.875f;
+constexpr static float const mlf = 0.875f;
 
 template<typename TypePolicy,typename Hash,typename Pred,typename Allocator>
 class 
@@ -1071,7 +1065,7 @@ table:empty_value<Hash,0>,empty_value<Pred,1>,empty_value<Allocator,2>
   using allocator_base=empty_value<Allocator,2>;
   using type_policy=TypePolicy;
   using group_type=group15;
-  BOOST_STATIC_CONSTEXPR auto N=group_type::N;
+  static constexpr auto N=group_type::N;
   using size_policy=pow2_size_policy;
   using prober=pow2_quadratic_prober;
   using mix_policy=typename std::conditional<
@@ -1087,7 +1081,7 @@ public:
   using value_type=typename type_policy::value_type;
 
 private:
-  BOOST_STATIC_CONSTEXPR bool has_mutable_iterator=
+  static constexpr bool has_mutable_iterator=
     !std::is_same<key_type,value_type>::value;
 
 public:
@@ -1118,7 +1112,7 @@ public:
     table{x,alloc_traits::select_on_container_copy_construction(x.al())}{}
 
   table(table&& x)
-    BOOST_NOEXCEPT_IF(
+    noexcept(
       std::is_nothrow_move_constructible<Hash>::value&&
       std::is_nothrow_move_constructible<Pred>::value&&
       std::is_nothrow_move_constructible<Allocator>::value):
@@ -1162,9 +1156,9 @@ public:
     }
   }
 
-  ~table()BOOST_NOEXCEPT
+  ~table()noexcept
   {
-    for_all_elements([this](group_type*,unsigned int,value_type* p){
+    for_all_elements([this](value_type* p){
       destroy_element(p);
     });
     delete_arrays(arrays);
@@ -1198,19 +1192,19 @@ public:
 #endif
 
   table& operator=(table&& x)
-    BOOST_NOEXCEPT_IF(
+    noexcept(
       alloc_traits::is_always_equal::value&&
       std::is_nothrow_move_assignable<Hash>::value&&
       std::is_nothrow_move_assignable<Pred>::value)
   {
-    BOOST_STATIC_CONSTEXPR auto pocma=
+    static constexpr auto pocma=
       alloc_traits::propagate_on_container_move_assignment::value;
 
     if(this!=std::addressof(x)){
       clear();
       h()=std::move(x.h());
       pred()=std::move(x.pred());
-      if_constexpr(pocma||al()==x.al()){
+      if(pocma||al()==x.al()){
         using std::swap;
         reserve(0);
         move_assign_if<pocma>(al(),x.al());
@@ -1239,25 +1233,25 @@ public:
 #pragma warning(pop) /* C4127 */
 #endif
 
-  allocator_type get_allocator()const BOOST_NOEXCEPT{return al();}
+  allocator_type get_allocator()const noexcept{return al();}
 
-  iterator begin()BOOST_NOEXCEPT
+  iterator begin()noexcept
   {
     iterator it{arrays.groups,0,arrays.elements};
     if(!(arrays.groups[0].match_occupied()&0x1))++it;
     return it;
   }
 
-  const_iterator begin()const BOOST_NOEXCEPT
+  const_iterator begin()const noexcept
                    {return const_cast<table*>(this)->begin();}
-  iterator       end()BOOST_NOEXCEPT{return {};}
-  const_iterator end()const BOOST_NOEXCEPT{return const_cast<table*>(this)->end();}
-  const_iterator cbegin()const BOOST_NOEXCEPT{return begin();}
-  const_iterator cend()const BOOST_NOEXCEPT{return end();}
+  iterator       end()noexcept{return {};}
+  const_iterator end()const noexcept{return const_cast<table*>(this)->end();}
+  const_iterator cbegin()const noexcept{return begin();}
+  const_iterator cend()const noexcept{return end();}
 
-  bool        empty()const BOOST_NOEXCEPT{return size()==0;}
-  std::size_t size()const BOOST_NOEXCEPT{return size_;}
-  std::size_t max_size()const BOOST_NOEXCEPT{return SIZE_MAX;}
+  bool        empty()const noexcept{return size()==0;}
+  std::size_t size()const noexcept{return size_;}
+  std::size_t max_size()const noexcept{return SIZE_MAX;}
 
   template<typename... Args>
   BOOST_FORCEINLINE std::pair<iterator,bool> emplace(Args&&... args)
@@ -1303,9 +1297,9 @@ public:
     typename std::enable_if<
       has_mutable_iterator||dependent_value>::type* =nullptr
   >
-  void erase(iterator pos)BOOST_NOEXCEPT{return erase(const_iterator(pos));}
+  void erase(iterator pos)noexcept{return erase(const_iterator(pos));}
 
-  void erase(const_iterator pos)BOOST_NOEXCEPT
+  void erase(const_iterator pos)noexcept
   {
     destroy_element(pos.p);
     group_type::reset(pos.pc);
@@ -1326,12 +1320,12 @@ public:
   }
 
   void swap(table& x)
-    BOOST_NOEXCEPT_IF(
+    noexcept(
       alloc_traits::is_always_equal::value&&
       boost::is_nothrow_swappable<Hash>::value&&
       boost::is_nothrow_swappable<Pred>::value)
   {
-    BOOST_STATIC_CONSTEXPR auto pocs=
+    static constexpr auto pocs=
       alloc_traits::propagate_on_container_swap::value;
 
     using std::swap;
@@ -1349,7 +1343,7 @@ public:
     swap(ml,x.ml);
   }
 
-  void clear()BOOST_NOEXCEPT
+  void clear()noexcept
   {
     auto p=arrays.elements;
     if(p){
@@ -1398,18 +1392,18 @@ public:
     return const_cast<table*>(this)->find(x);
   }
 
-  std::size_t capacity()const BOOST_NOEXCEPT
+  std::size_t capacity()const noexcept
   {
     return arrays.elements?(arrays.groups_size_mask+1)*N-1:0;
   }
   
-  float load_factor()const BOOST_NOEXCEPT
+  float load_factor()const noexcept
   {
     if (capacity() == 0) { return 0; }
     return float(size())/float(capacity());
   }
 
-  float max_load_factor()const BOOST_NOEXCEPT{return mlf;}
+  float max_load_factor()const noexcept{return mlf;}
 
   void rehash(std::size_t n)
   {
@@ -1437,14 +1431,7 @@ private:
 
   struct clear_on_exit
   {
-    clear_on_exit(table& x_) : x(x_) {}
     ~clear_on_exit(){x.clear();}
-
-    clear_on_exit&
-    operator=(clear_on_exit const&) {
-      return *this;
-    }
-
     table& x;
   };
 
@@ -1460,7 +1447,7 @@ private:
     return arrays_type::new_(al(),n);
   }
 
-  void delete_arrays(arrays_type& arrays_)BOOST_NOEXCEPT
+  void delete_arrays(arrays_type& arrays_)noexcept
   {
     arrays_type::delete_(al(),arrays_);
   }
@@ -1471,7 +1458,7 @@ private:
     alloc_traits::construct(al(),p,std::forward<Args>(args)...);
   }
 
-  void destroy_element(value_type* p)BOOST_NOEXCEPT
+  void destroy_element(value_type* p)noexcept
   {
     alloc_traits::destroy(al(),p);
   }
@@ -1485,7 +1472,7 @@ private:
 
   std::size_t max_load()const
   {
-    BOOST_STATIC_CONSTEXPR std::size_t small_capacity=2*N-1;
+    static constexpr std::size_t small_capacity=2*N-1;
 
     auto capacity_=capacity();
     if(capacity_<=small_capacity){
@@ -1642,7 +1629,7 @@ private:
   {
     std::size_t num_destroyed=0;
     BOOST_TRY{
-      for_all_elements([&,this](group_type*,unsigned int,value_type* p){
+      for_all_elements([&,this](value_type* p){
         nosize_transfer_element(p,new_arrays_,num_destroyed);
       });
     }
@@ -1660,7 +1647,7 @@ private:
         }
       }
       continue_:
-      for_all_elements(new_arrays_,[this](group_type*,unsigned int,value_type* p){
+      for_all_elements(new_arrays_,[this](value_type* p){
         destroy_element(p);
       });
       delete_arrays(new_arrays_);
@@ -1671,7 +1658,7 @@ private:
     /* either all moved and destroyed or all copied */
     BOOST_ASSERT(num_destroyed==size()||num_destroyed==0);
     if(num_destroyed!=size()){
-      for_all_elements([this](group_type*,unsigned int,value_type* p){
+      for_all_elements([this](value_type* p){
         destroy_element(p);
       });
     }
@@ -1817,13 +1804,13 @@ private:
     for_all_elements(arrays,f);
   }
 
-  // template<typename F>
-  // static auto for_all_elements(const arrays_type& arrays_,F f)
-  //   ->decltype(f(nullptr),void())
-  // {
-  //   for_all_elements(
-  //     arrays_,[&](group_type*,unsigned int,value_type* p){return f(p);});
-  // }
+  template<typename F>
+  static auto for_all_elements(const arrays_type& arrays_,F f)
+    ->decltype(f(nullptr),void())
+  {
+    for_all_elements(
+      arrays_,[&](group_type*,unsigned int,value_type* p){return f(p);});
+  }
 
   template<typename F>
   static auto for_all_elements(const arrays_type& arrays_,F f)

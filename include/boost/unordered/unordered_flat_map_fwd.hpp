@@ -36,7 +36,7 @@ namespace boost {
     template <class Key, class T, class Hash, class KeyEqual, class Allocator>
     void swap(unordered_flat_map<Key, T, Hash, KeyEqual, Allocator>& lhs,
       unordered_flat_map<Key, T, Hash, KeyEqual, Allocator>& rhs)
-      BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)));
+      noexcept(noexcept(lhs.swap(rhs)));
   } // namespace unordered
 
   using boost::unordered::unordered_flat_map;
