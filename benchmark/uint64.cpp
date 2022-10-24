@@ -316,8 +316,25 @@ template<class K, class V> using boost_unordered_map =
 template <typename Key, typename Value> struct map_types
 {
   using key_type = Key;
-  using value_type = std::pair<const Key, Value>;
-  static auto& extract(const value_type& x) { return x.first; }
+  using raw_key_type = typename std::remove_const<Key>::type;
+  using raw_mapped_type = typename std::remove_const<Value>::type;
+
+  using init_type = std::pair<raw_key_type, raw_mapped_type>;
+  using moved_type = std::pair<raw_key_type&&, raw_mapped_type&&>;
+  using value_type = std::pair<Key const, Value>;
+
+  template <class K, class V>
+  static raw_key_type const& extract(std::pair<K, V> const& kv)
+  {
+    return kv.first;
+  }
+
+  static moved_type move(value_type& x)
+  {
+    // TODO: we probably need to launder here
+    return {std::move(const_cast<raw_key_type&>(x.first)),
+      std::move(const_cast<raw_mapped_type&>(x.second))};
+  }
 };
 
 template <class Key, class Value>
