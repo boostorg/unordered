@@ -518,13 +518,11 @@ template <class X> void equality_test(X& r)
 
 template <class X, class T> void unordered_unique_test(X& r, T const& t)
 {
-  (void) r;
-  (void) t;
-#ifndef BOOST_UNORDERED_FOA_TESTS
   typedef typename X::iterator iterator;
   test::check_return_type<std::pair<iterator, bool> >::equals(r.insert(t));
   test::check_return_type<std::pair<iterator, bool> >::equals(r.emplace(t));
 
+#ifndef BOOST_UNORDERED_FOA_TESTS
   typedef typename X::node_type node_type;
   typedef typename X::insert_return_type insert_return_type;
 
