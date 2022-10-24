@@ -231,12 +231,14 @@ namespace boost {
         return table_.insert(std::move(value));
       }
 
-      iterator insert(const_iterator, value_type const& value)
+      template <class Ty>
+      auto insert(const_iterator, Ty&& value)
+        -> decltype(table_.insert(std::forward<Ty>(value)).first)
       {
-        return table_.insert(value).first;
+        return table_.insert(std::forward<Ty>(value)).first;
       }
 
-      iterator insert(const_iterator, value_type&& value)
+      iterator insert(const_iterator, init_type&& value)
       {
         return table_.insert(std::move(value)).first;
       }
