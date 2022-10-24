@@ -99,7 +99,7 @@ run quick.cpp ;
 
 import ../../config/checks/config : requires ;
 
-CPP11 = [ requires cxx11_constexpr cxx11_noexcept cxx11_decltype ] ;
+CPP11 = [ requires cxx11_constexpr cxx11_noexcept cxx11_decltype cxx11_alignas ] ;
 
 rule build_foa ( name )
 {
