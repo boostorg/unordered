@@ -97,9 +97,13 @@ run exception/merge_exception_tests.cpp ;
 
 run quick.cpp ;
 
+import ../../config/checks/config : requires ;
+
+CPP11 = [ requires cxx11_constexpr cxx11_noexcept cxx11_decltype ] ;
+
 rule build_foa ( name )
 {
-  run unordered/$(name).cpp : : : <cxxstd>98:<build>no <cxxstd>03:<build>no <cxxstd>0x:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_$(name) ;
+  run unordered/$(name).cpp : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_$(name) ;
 }
 
 build_foa fwd_set_test ;
@@ -107,7 +111,7 @@ build_foa fwd_map_test ;
 build_foa compile_set ;
 build_foa compile_map ;
 build_foa noexcept_tests ;
-run unordered/link_test_1.cpp unordered/link_test_2.cpp : : : <cxxstd>98:<build>no <cxxstd>03:<build>no <cxxstd>0x:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_link_test ;
+run unordered/link_test_1.cpp unordered/link_test_2.cpp : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_link_test ;
 build_foa incomplete_test ;
 build_foa simple_tests ;
 build_foa equivalent_keys_tests ;
@@ -127,7 +131,7 @@ build_foa load_factor_tests ;
 build_foa rehash_tests ;
 build_foa equality_tests ;
 build_foa swap_tests ;
-run unordered/scoped_allocator.cpp : : : <cxxstd>98:<build>no <cxxstd>03:<build>no <cxxstd>0x:<build>no <toolset>msvc-14.0:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_scoped_allocator ;
+run unordered/scoped_allocator.cpp : : : $(CPP11) <toolset>msvc-14.0:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_scoped_allocator ;
 build_foa transparent_tests ;
 build_foa reserve_tests ;
 build_foa contains_tests ;
@@ -135,12 +139,12 @@ build_foa erase_if ;
 build_foa scary_tests ;
 build_foa init_type_insert_tests ;
 
-run exception/constructor_exception_tests.cpp : : : <cxxstd>98:<build>no <cxxstd>03:<build>no <cxxstd>0x:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_constructor_exception_tests ;
-run exception/copy_exception_tests.cpp : : : <cxxstd>98:<build>no <cxxstd>03:<build>no <cxxstd>0x:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_copy_exception_tests ;
-run exception/assign_exception_tests.cpp : : : <cxxstd>98:<build>no <cxxstd>03:<build>no <cxxstd>0x:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_assign_exception_tests ;
-run exception/move_assign_exception_tests.cpp : : : <cxxstd>98:<build>no <cxxstd>03:<build>no <cxxstd>0x:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_move_assign_exception_tests ;
-run exception/insert_exception_tests.cpp : : : <cxxstd>98:<build>no <cxxstd>03:<build>no <cxxstd>0x:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_insert_exception_tests ;
-run exception/erase_exception_tests.cpp : : : <cxxstd>98:<build>no <cxxstd>03:<build>no <cxxstd>0x:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_erase_exception_tests ;
-run exception/rehash_exception_tests.cpp : : : <cxxstd>98:<build>no <cxxstd>03:<build>no <cxxstd>0x:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_rehash_exception_tests ;
-run exception/swap_exception_tests.cpp : : : <cxxstd>98:<build>no <cxxstd>03:<build>no <cxxstd>0x:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_swap_exception_tests ;
-run exception/merge_exception_tests.cpp : : : <cxxstd>98:<build>no <cxxstd>03:<build>no <cxxstd>0x:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_merge_exception_tests ;
+run exception/constructor_exception_tests.cpp : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_constructor_exception_tests ;
+run exception/copy_exception_tests.cpp        : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_copy_exception_tests ;
+run exception/assign_exception_tests.cpp      : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_assign_exception_tests ;
+run exception/move_assign_exception_tests.cpp : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_move_assign_exception_tests ;
+run exception/insert_exception_tests.cpp      : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_insert_exception_tests ;
+run exception/erase_exception_tests.cpp       : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_erase_exception_tests ;
+run exception/rehash_exception_tests.cpp      : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_rehash_exception_tests ;
+run exception/swap_exception_tests.cpp        : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_swap_exception_tests ;
+run exception/merge_exception_tests.cpp       : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_merge_exception_tests ;
