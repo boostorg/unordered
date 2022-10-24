@@ -1,3 +1,8 @@
+
+// Copyright 2022 Christian Mazakas.
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or move at http://www.boost.org/LICENSE_1_0.txt)
+
 #if !defined(BOOST_UNORDERED_FOA_TESTS)
 #error "This test is only for the FOA-style conatiners"
 #endif
