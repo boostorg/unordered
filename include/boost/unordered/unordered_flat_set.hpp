@@ -57,6 +57,9 @@ namespace boost {
       using allocator_type = Allocator;
       using reference = value_type&;
       using const_reference = value_type const&;
+      using pointer = typename boost::allocator_pointer<allocator_type>::type;
+      using const_pointer =
+        typename boost::allocator_const_pointer<allocator_type>::type;
       using iterator = typename table_type::iterator;
       using const_iterator = typename table_type::const_iterator;
 

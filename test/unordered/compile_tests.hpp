@@ -75,6 +75,14 @@ template <class X, class T> void container_test(X& r, T const&)
 #endif
 
   typedef typename X::allocator_type allocator_type;
+  typedef typename X::pointer pointer;
+  typedef typename X::const_pointer const_pointer;
+
+  BOOST_STATIC_ASSERT((boost::is_same<pointer,
+    typename boost::allocator_pointer<allocator_type>::type>::value));
+
+  BOOST_STATIC_ASSERT((boost::is_same<const_pointer,
+    typename boost::allocator_const_pointer<allocator_type>::type>::value));
 
   // value_type
 
