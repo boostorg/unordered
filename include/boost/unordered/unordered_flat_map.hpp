@@ -232,7 +232,7 @@ namespace boost {
         return table_.insert(std::forward<Ty>(value));
       }
 
-      std::pair<iterator, bool> insert(init_type&& value)
+      BOOST_FORCEINLINE std::pair<iterator, bool> insert(init_type&& value)
       {
         return table_.insert(std::move(value));
       }
