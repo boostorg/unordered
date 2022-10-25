@@ -1595,30 +1595,41 @@ private:
       };  
     }
     else{
-      /* strong exception guarantee -> try insertion before rehash */
-      auto new_arrays_=new_arrays(
-        std::size_t(std::ceil(static_cast<float>(size_+1)/mlf)));
-      BOOST_TRY{
-        it=nosize_unchecked_emplace_at(
-          new_arrays_,position_for(hash,new_arrays_),
-          hash,std::forward<Args>(args)...);
-      }
-      BOOST_CATCH(...){
-        delete_arrays(new_arrays_);
-        BOOST_RETHROW
-      }
-      BOOST_CATCH_END
-
-      /* new_arrays_ lifetime taken care of by unchecked_rehash */
-      unchecked_rehash(new_arrays_);
-      ++size_;
-      return {it,true};
+      return {
+        unchecked_emplace_with_rehash(hash,std::forward<Args>(args)...),
+        true
+      };  
     }
   }
 
   static std::size_t capacity_for(std::size_t n)
   {
     return size_policy::size(size_index_for<group_type,size_policy>(n))*N-1;
+  }
+
+  template<typename... Args>
+  BOOST_NOINLINE iterator
+  unchecked_emplace_with_rehash(std::size_t hash,Args&&... args)
+  {
+    /* strong exception guarantee -> try insertion before rehash */
+    auto     new_arrays_=new_arrays(
+               std::size_t(std::ceil(static_cast<float>(size_+1)/mlf)));
+    iterator it;
+    BOOST_TRY{
+      it=nosize_unchecked_emplace_at(
+        new_arrays_,position_for(hash,new_arrays_),
+        hash,std::forward<Args>(args)...);
+    }
+    BOOST_CATCH(...){
+      delete_arrays(new_arrays_);
+      BOOST_RETHROW
+    }
+    BOOST_CATCH_END
+
+    /* new_arrays_ lifetime taken care of by unchecked_rehash */
+    unchecked_rehash(new_arrays_);
+    ++size_;
+    return it;
   }
 
   BOOST_NOINLINE void unchecked_rehash(std::size_t n)
