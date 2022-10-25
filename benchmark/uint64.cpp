@@ -5,14 +5,12 @@
 #define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING
 
 #include <boost/unordered_map.hpp>
-#include <boost/unordered/unordered_flat_map.hpp>
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/member.hpp>
 #include <boost/endian/conversion.hpp>
 #include <boost/core/detail/splitmix64.hpp>
 #include <boost/config.hpp>
-#include <fxa_unordered/foa_unordered_rc.hpp>
 #ifdef HAVE_ABSEIL
 # include "absl/container/node_hash_map.h"
 # include "absl/container/flat_hash_map.h"
@@ -313,46 +311,6 @@ template<class K, class V> using std_unordered_map =
 template<class K, class V> using boost_unordered_map =
     boost::unordered_map<K, V, boost::hash<K>, std::equal_to<K>, allocator_for<K, V>>;
 
-template <typename Key, typename Value> struct map_types
-{
-  using key_type = Key;
-  using raw_key_type = typename std::remove_const<Key>::type;
-  using raw_mapped_type = typename std::remove_const<Value>::type;
-
-  using init_type = std::pair<raw_key_type, raw_mapped_type>;
-  using moved_type = std::pair<raw_key_type&&, raw_mapped_type&&>;
-  using value_type = std::pair<Key const, Value>;
-
-  template <class K, class V>
-  static raw_key_type const& extract(std::pair<K, V> const& kv)
-  {
-    return kv.first;
-  }
-
-  static moved_type move(value_type& x)
-  {
-    // TODO: we probably need to launder here
-    return {std::move(const_cast<raw_key_type&>(x.first)),
-      std::move(const_cast<raw_mapped_type&>(x.second))};
-  }
-};
-
-template <class Key, class Value>
-using boost_unordered_detail_foa_table =
-  boost::unordered::detail::foa::table<map_types<Key, Value>,
-    absl::container_internal::hash_default_hash<Key>, std::equal_to<Key>,
-    allocator_for<Key, Value> >;
-
-template <typename Key, typename Value>
-using boost_unordered_flat_map = boost::unordered::unordered_flat_map<Key,
-  Value, absl::container_internal::hash_default_hash<Key>, std::equal_to<Key>,
-  allocator_for<Key, Value> >;
-
-template <typename Key, typename Value>
-using rc15_flat_map = foa_unordered_rc_map<Key, Value,
-  absl::container_internal::hash_default_hash<Key>, std::equal_to<Key>,
-  allocator_for<Key, Value> >;
-
 #ifdef HAVE_ABSEIL
 
 template<class K, class V> using absl_node_hash_map =
@@ -389,9 +347,6 @@ int main()
 
     test<std_unordered_map>( "std::unordered_map" );
     test<boost_unordered_map>( "boost::unordered_map" );
-    test<boost_unordered_detail_foa_table>( "boost_unordered_detail_foa_table" );
-    test<boost_unordered_flat_map>( "boost::unordered_flat_map" );
-    test<rc15_flat_map>( "rc15_flat_map" );
     test<multi_index_map>( "multi_index_map" );
 
 #ifdef HAVE_ABSEIL
@@ -419,7 +374,7 @@ int main()
 
     for( auto const& x: times )
     {
-        std::cout << std::setw( 34 ) << ( x.label_ + ": " ) << std::setw( 5 ) << x.time_ << " ms, " << std::setw( 9 ) << x.bytes_ << " bytes in " << x.count_ << " allocations\n";
+        std::cout << std::setw( 25 ) << ( x.label_ + ": " ) << std::setw( 5 ) << x.time_ << " ms, " << std::setw( 9 ) << x.bytes_ << " bytes in " << x.count_ << " allocations\n";
     }
 }
 
