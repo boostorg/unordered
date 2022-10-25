@@ -1749,37 +1749,6 @@ private:
     return res;
   }
 
-#if 0
-  template<typename... Args>
-  iterator nosize_unchecked_emplace_at(
-    const arrays_type& arrays_,std::size_t pos0,std::size_t hash,
-    Args&&... args)
-  {
-    auto  pn=insert_position(arrays_,pos0,hash);
-    auto &pos=pn.first;
-    auto &n=pn.second;
-    auto  pg=arrays_.groups+pos;
-    auto  p=arrays_.elements+pos*N+n;
-    construct_element(p,std::forward<Args>(args)...);
-    pg->set(n,hash);
-    return {pg,n,p};
-  }
-
-  std::pair<std::size_t,std::size_t>
-  static insert_position(
-    const arrays_type& arrays_,std::size_t pos0,std::size_t hash)
-  {
-    for(prober pb(pos0);;pb.next(arrays_.groups_size_mask)){
-      auto pos=pb.get();
-      auto pg=arrays_.groups+pos;
-      auto mask=pg->match_available();
-      if(BOOST_LIKELY(mask!=0)){
-        return {pos,unchecked_countr_zero(mask)};
-      }
-      else pg->mark_overflow(hash);
-    }
-  }
-#else
   template<typename... Args>
   iterator nosize_unchecked_emplace_at(
     const arrays_type& arrays_,std::size_t pos0,std::size_t hash,
@@ -1799,7 +1768,6 @@ private:
       else pg->mark_overflow(hash);
     }
   }
-#endif
 
   template<typename Predicate>
   std::size_t erase_if_impl(Predicate pr)
