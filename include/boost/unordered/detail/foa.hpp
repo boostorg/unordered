@@ -305,7 +305,7 @@ struct group15
   inline bool is_sentinel(std::size_t pos)const
   {
     BOOST_ASSERT(pos<N);
-    return at(pos)==sentinel_;
+    return pos==N-1&&at(N-1)==sentinel_;
   }
 
   inline void reset(std::size_t pos)
