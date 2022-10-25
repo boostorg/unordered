@@ -26,6 +26,12 @@
 
 namespace boost {
   namespace unordered {
+
+#if defined(BOOST_MSVC)
+#pragma warning(push)
+#pragma warning(disable : 4714) /* marked as __forceinline not inlined */
+#endif
+
     template <class Key, class T, class Hash, class KeyEqual, class Allocator>
     class unordered_flat_map
     {
@@ -220,7 +226,7 @@ namespace boost {
       void clear() noexcept { table_.clear(); }
 
       template <class Ty>
-      auto insert(Ty&& value)
+      BOOST_FORCEINLINE auto insert(Ty&& value)
         -> decltype(table_.insert(std::forward<Ty>(value)))
       {
         return table_.insert(std::forward<Ty>(value));
@@ -232,19 +238,19 @@ namespace boost {
       }
 
       template <class Ty>
-      auto insert(const_iterator, Ty&& value)
+      BOOST_FORCEINLINE auto insert(const_iterator, Ty&& value)
         -> decltype(table_.insert(std::forward<Ty>(value)).first)
       {
         return table_.insert(std::forward<Ty>(value)).first;
       }
 
-      iterator insert(const_iterator, init_type&& value)
+      BOOST_FORCEINLINE iterator insert(const_iterator, init_type&& value)
       {
         return table_.insert(std::move(value)).first;
       }
 
       template <class InputIterator>
-      void insert(InputIterator first, InputIterator last)
+      BOOST_FORCEINLINE void insert(InputIterator first, InputIterator last)
       {
         for (auto pos = first; pos != last; ++pos) {
           table_.emplace(*pos);
@@ -292,44 +298,52 @@ namespace boost {
           .first;
       }
 
-      template <class... Args> std::pair<iterator, bool> emplace(Args&&... args)
+      template <class... Args>
+      BOOST_FORCEINLINE std::pair<iterator, bool> emplace(Args&&... args)
       {
         return table_.emplace(std::forward<Args>(args)...);
       }
 
       template <class... Args>
-      iterator emplace_hint(const_iterator, Args&&... args)
+      BOOST_FORCEINLINE iterator emplace_hint(const_iterator, Args&&... args)
       {
-        return this->emplace(std::forward<Args>(args)...).first;
+        return table_.emplace(std::forward<Args>(args)...).first;
       }
 
       template <class... Args>
-      std::pair<iterator, bool> try_emplace(key_type const& key, Args&&... args)
+      BOOST_FORCEINLINE std::pair<iterator, bool> try_emplace(
+        key_type const& key, Args&&... args)
       {
         return table_.try_emplace(key, std::forward<Args>(args)...);
       }
 
       template <class... Args>
-      std::pair<iterator, bool> try_emplace(key_type&& key, Args&&... args)
+      BOOST_FORCEINLINE std::pair<iterator, bool> try_emplace(
+        key_type&& key, Args&&... args)
       {
         return table_.try_emplace(std::move(key), std::forward<Args>(args)...);
       }
 
       template <class... Args>
-      iterator try_emplace(const_iterator, key_type const& key, Args&&... args)
+      BOOST_FORCEINLINE iterator try_emplace(
+        const_iterator, key_type const& key, Args&&... args)
       {
         return table_.try_emplace(key, std::forward<Args>(args)...).first;
       }
 
       template <class... Args>
-      iterator try_emplace(const_iterator, key_type&& key, Args&&... args)
+      BOOST_FORCEINLINE iterator try_emplace(
+        const_iterator, key_type&& key, Args&&... args)
       {
         return table_.try_emplace(std::move(key), std::forward<Args>(args)...)
           .first;
       }
 
-      void erase(iterator pos) { table_.erase(pos); }
-      void erase(const_iterator pos) { return table_.erase(pos); }
+      BOOST_FORCEINLINE void erase(iterator pos) { table_.erase(pos); }
+      BOOST_FORCEINLINE void erase(const_iterator pos)
+      {
+        return table_.erase(pos);
+      }
       iterator erase(const_iterator first, const_iterator last)
       {
         while (first != last) {
@@ -338,10 +352,13 @@ namespace boost {
         return iterator{detail::foa::const_iterator_cast_tag{}, last};
       }
 
-      size_type erase(key_type const& key) { return table_.erase(key); }
+      BOOST_FORCEINLINE size_type erase(key_type const& key)
+      {
+        return table_.erase(key);
+      }
 
       template <class K>
-      typename std::enable_if<
+      BOOST_FORCEINLINE typename std::enable_if<
         detail::transparent_non_iterable<K, unordered_flat_map>::value,
         size_type>::type
       erase(K const& key)
@@ -591,6 +608,11 @@ namespace boost {
     {
       return erase_if(map.table_, pred);
     }
+
+#if defined(BOOST_MSVC)
+#pragma warning(pop) /* C4714 */
+#endif
+
   } // namespace unordered
 } // namespace boost
 

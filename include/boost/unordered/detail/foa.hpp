@@ -1299,6 +1299,7 @@ public:
   >
   void erase(iterator pos)noexcept{return erase(const_iterator(pos));}
 
+  BOOST_FORCEINLINE
   void erase(const_iterator pos)noexcept
   {
     destroy_element(pos.p);
@@ -1307,6 +1308,7 @@ public:
   }
 
   template<typename Key>
+  BOOST_FORCEINLINE
   auto erase(Key&& x) -> typename std::enable_if<
     !std::is_convertible<Key,iterator>::value&&
     !std::is_convertible<Key,const_iterator>::value, std::size_t>::type
