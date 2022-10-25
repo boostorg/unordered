@@ -387,7 +387,7 @@ private:
 
   static inline int simde_mm_movemask_epi8(uint8x16_t a)
   {
-    static constexpr uint8_t md[16]={
+    static const uint8_t md[16]={
       1 << 0, 1 << 1, 1 << 2, 1 << 3,
       1 << 4, 1 << 5, 1 << 6, 1 << 7,
       1 << 0, 1 << 1, 1 << 2, 1 << 3,
