@@ -47,7 +47,7 @@ struct uuid
     {
     }
 
-    uuid( std::uint64_t high, std::uint64_t low ) noexcept
+    uuid( std::uint64_t low, std::uint64_t high ) noexcept
     {
         boost::endian::store_little_u64( data + 0, low );
         boost::endian::store_little_u64( data + 8, high );
