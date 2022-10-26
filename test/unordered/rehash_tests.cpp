@@ -1,14 +1,10 @@
 
 // Copyright 2006-2009 Daniel James.
+// Copyright 2022 Christian Mazakas.
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-// clang-format off
-#include "../helpers/prefix.hpp"
-#include <boost/unordered_set.hpp>
-#include <boost/unordered_map.hpp>
-#include "../helpers/postfix.hpp"
-// clang-format on
+#include "../helpers/unordered.hpp"
 
 #include "../helpers/test.hpp"
 #include "../helpers/random_values.hpp"
@@ -151,8 +147,13 @@ namespace rehash_tests {
       BOOST_TEST_EQ(x.size(), 0u);
       BOOST_TEST_EQ(test::detail::tracker.count_allocations, 0u);
 
+#ifdef BOOST_UNORDERED_FOA_TESTS
+      float const mlf = boost::unordered::detail::foa::mlf;
+      x.max_load_factor(max_load_factors[i]);
+#else
       float const mlf = max_load_factors[i];
       x.max_load_factor(mlf);
+#endif
 
       {
         BOOST_TEST_EQ(x.bucket_count(), 0u);
@@ -419,6 +420,15 @@ namespace rehash_tests {
     X x;
     x.max_load_factor(0.25);
 
+#ifdef BOOST_UNORDERED_FOA_TESTS
+    x.reserve(10000);
+    BOOST_TEST(x.bucket_count() >= 10000);
+
+    x.reserve(0);
+
+    x.reserve(10000000);
+    BOOST_TEST(x.bucket_count() >= 10000000);
+#else
     x.reserve(10000);
     BOOST_TEST(x.bucket_count() >= 40000);
 
@@ -426,6 +436,7 @@ namespace rehash_tests {
 
     x.reserve(10000000);
     BOOST_TEST(x.bucket_count() >= 40000000);
+#endif
   }
 
   template <class X> void reserve_test1(X*, test::random_generator generator)
@@ -486,6 +497,47 @@ namespace rehash_tests {
     }
   }
 
+  using test::default_generator;
+  using test::generate_collisions;
+  using test::limited_range;
+
+#ifdef BOOST_UNORDERED_FOA_TESTS
+  boost::unordered_flat_set<int>* int_set_ptr;
+  boost::unordered_flat_map<test::movable, test::movable, test::hash,
+    test::equal_to, test::allocator2<test::movable> >* test_map_ptr;
+
+  boost::unordered_flat_set<test::object, test::hash, test::equal_to,
+    test::allocator1<test::object> >* test_set_tracking;
+  boost::unordered_flat_map<test::object, test::object, test::hash,
+    test::equal_to,
+    test::allocator1<std::pair<test::object const, test::object> > >*
+    test_map_tracking;
+
+  UNORDERED_TEST(rehash_empty_test1, ((int_set_ptr)(test_map_ptr)))
+  UNORDERED_TEST(rehash_empty_test2,
+    ((int_set_ptr)(test_map_ptr))(
+      (default_generator)(generate_collisions)(limited_range)))
+  UNORDERED_TEST(rehash_empty_test3,
+    ((int_set_ptr)(test_map_ptr))(
+      (default_generator)(generate_collisions)(limited_range)))
+  UNORDERED_TEST(
+    rehash_test1, ((int_set_ptr)(test_map_ptr))(
+                    (default_generator)(generate_collisions)(limited_range)))
+  UNORDERED_TEST(reserve_empty_test1, ((int_set_ptr)(test_map_ptr)))
+  UNORDERED_TEST(reserve_empty_test2, ((int_set_ptr)(test_map_ptr)))
+  UNORDERED_TEST(
+    reserve_test1, ((int_set_ptr)(test_map_ptr))(
+                     (default_generator)(generate_collisions)(limited_range)))
+  UNORDERED_TEST(
+    reserve_test2, ((int_set_ptr)(test_map_ptr))(
+                     (default_generator)(generate_collisions)(limited_range)))
+  UNORDERED_TEST(rehash_empty_tracking,
+    ((test_set_tracking)(test_map_tracking))(
+      (default_generator)(generate_collisions)(limited_range)))
+  UNORDERED_TEST(rehash_nonempty_tracking,
+    ((test_set_tracking)(test_map_tracking))(
+      (default_generator)(generate_collisions)(limited_range)))
+#else
   boost::unordered_set<int>* int_set_ptr;
   boost::unordered_multiset<test::object, test::hash, test::equal_to,
     test::allocator2<test::object> >* test_multiset_ptr;
@@ -504,10 +556,6 @@ namespace rehash_tests {
     test::equal_to,
     test::allocator1<std::pair<test::object const, test::object> > >*
     test_multimap_tracking;
-
-  using test::default_generator;
-  using test::generate_collisions;
-  using test::limited_range;
 
   UNORDERED_TEST(rehash_empty_test1,
     ((int_set_ptr)(test_multiset_ptr)(test_map_ptr)(int_multimap_ptr)))
@@ -536,6 +584,7 @@ namespace rehash_tests {
   UNORDERED_TEST(rehash_nonempty_tracking,
     ((test_set_tracking)(test_multiset_tracking)(test_map_tracking)(test_multimap_tracking))(
       (default_generator)(generate_collisions)(limited_range)))
+#endif
 }
 
 RUN_TESTS()

@@ -47,6 +47,7 @@
 #include <boost/type_traits/make_void.hpp>
 #include <boost/type_traits/remove_const.hpp>
 #include <boost/unordered/detail/fca.hpp>
+#include <boost/unordered/detail/type_traits.hpp>
 #include <boost/unordered/detail/fwd.hpp>
 #include <boost/utility/addressof.hpp>
 #include <boost/utility/enable_if.hpp>
@@ -617,39 +618,6 @@ namespace boost {
         false_type;
 
 #endif
-
-////////////////////////////////////////////////////////////////////////////
-// Type checkers used for the transparent member functions added by C++20 and up
-
-      template <class, class = void> struct is_transparent : public false_type
-      {
-      };
-
-      template <class T>
-      struct is_transparent<T,
-        typename boost::make_void<typename T::is_transparent>::type>
-          : public true_type
-      {
-      };
-
-      template <class, class A, class B> struct are_transparent
-      {
-        static bool const value =
-          is_transparent<A>::value && is_transparent<B>::value;
-      };
-
-      template <class Key, class UnorderedMap> struct transparent_non_iterable
-      {
-        typedef typename UnorderedMap::hasher hash;
-        typedef typename UnorderedMap::key_equal key_equal;
-        typedef typename UnorderedMap::iterator iterator;
-        typedef typename UnorderedMap::const_iterator const_iterator;
-
-        static bool const value =
-          are_transparent<Key, hash, key_equal>::value &&
-          !boost::is_convertible<Key, iterator>::value &&
-          !boost::is_convertible<Key, const_iterator>::value;
-      };
 
 ////////////////////////////////////////////////////////////////////////////
 // Explicitly call a destructor
