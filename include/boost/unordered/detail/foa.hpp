@@ -721,7 +721,7 @@ inline unsigned int unchecked_countr_zero(int x)
   _BitScanForward(&r,(unsigned long)x);
   return (unsigned int)r;
 #else
-  BOOST_UNORDERED_ASSUME(x);
+  BOOST_UNORDERED_ASSUME(x!=0);
   return (unsigned int)boost::core::countr_zero((unsigned int)x);
 #endif
 }
