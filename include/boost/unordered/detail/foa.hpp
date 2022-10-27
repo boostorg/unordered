@@ -1558,7 +1558,8 @@ private:
         auto p=arrays.elements+pos*N;
         prefetch_elements(p);
         do{
-          auto n=unchecked_countr_zero(mask);
+          //auto n=unchecked_countr_zero(mask);
+          auto n=__builtin_ctz((unsigned int)mask);
           if(BOOST_LIKELY(bool(pred()(x,key_from(p[n]))))){
             return {pg,n,p+n};
           }
