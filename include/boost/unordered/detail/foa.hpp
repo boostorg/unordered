@@ -1384,18 +1384,8 @@ public:
   template<typename Key>
   BOOST_FORCEINLINE iterator find(const Key& x)
   {
-    //auto hash=hash_for(x);
-    auto hash=h()(x);
-
-    boost::uint64_t z=(boost::uint64_t)hash;
-
-    z^=z>>23;
-    z*=0xff51afd7ed558ccdull;
-    z^=z>>23;
-
-    //hash=(std::size_t)z;
-
-    return find_impl(x,position_for(z),z);
+    auto hash=hash_for(x);
+    return find_impl(x,position_for(hash),hash);
   }
 
   template<typename Key>
