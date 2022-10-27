@@ -49,8 +49,8 @@ namespace boost {
     using hasher               = Hash;
     using key_equal            = Pred;
     using allocator_type       = Allocator;
-    using pointer              = value_type*; *TODO: missing in impl*
-    using const_pointer        = const value_type*; *TODO: missing in impl*
+    using pointer              = typename std::allocator_traits<Allocator>::pointer;
+    using const_pointer        = typename std::allocator_traits<Allocator>::const_pointer;
     using reference            = value_type&;
     using const_reference      = const value_type&;
     using size_type            = std::size_t;
@@ -122,9 +122,9 @@ namespace boost {
     std::pair<iterator, bool> xref:#unordered_flat_map_move_insert[insert](value_type&& obj);
     std::pair<iterator, bool> xref:#unordered_flat_map_move_insert[insert](init_type&& obj);
     iterator       xref:#unordered_flat_map_copy_insert_with_hint[insert](const_iterator hint, const value_type& obj);
-    iterator       xref:#unordered_flat_map_copy_insert_with_hint[insert](const_iterator hint, const init_type& obj); *TODO: missing in impl*
+    iterator       xref:#unordered_flat_map_copy_insert_with_hint[insert](const_iterator hint, const init_type& obj);
     iterator       xref:#unordered_flat_map_move_insert_with_hint[insert](const_iterator hint, value_type&& obj);
-    iterator       xref:#unordered_flat_map_copy_insert_with_hint[insert](const_iterator hint, init_type&& obj); *TODO: missing in impl*
+    iterator       xref:#unordered_flat_map_copy_insert_with_hint[insert](const_iterator hint, init_type&& obj);
     template<class InputIterator> void xref:#unordered_flat_map_insert_iterator_range[insert](InputIterator first, InputIterator last);
     void xref:#unordered_flat_map_insert_initializer_list[insert](std::initializer_list<value_type>);
 
@@ -178,12 +178,6 @@ namespace boost {
       iterator       xref:#unordered_flat_map_find[find](const K& k);
     template<class K>
       const_iterator xref:#unordered_flat_map_find[find](const K& k) const;
-    template<typename CompatibleKey, typename CompatibleHash, typename CompatiblePredicate>
-      iterator       xref:#unordered_flat_map_find[find](CompatibleKey const& k, CompatibleHash const& hash,
-                          CompatiblePredicate const& eq); *TODO: missing in impl*
-    template<typename CompatibleKey, typename CompatibleHash, typename CompatiblePredicate>
-      const_iterator xref:#unordered_flat_map_find[find](CompatibleKey const& k, CompatibleHash const& hash,
-                          CompatiblePredicate const& eq) const; *TODO: missing in impl*
     size_type        xref:#unordered_flat_map_count[count](const key_type& k) const;
     template<class K>
       size_type      xref:#unordered_flat_map_count[count](const K& k) const;
@@ -274,7 +268,9 @@ The size of the bucket array can be automatically increased by a call to `insert
 greater than `max_load_factor()`, except possibly for small sizes where the implementation may decide to
 allow for higher load factors.
 
-*TODO: Write about mixing*
+If `xref:hash_traits_hash_is_avalanching[hash_is_avalanching]<Hash>::value` is `true`, the hash function
+is used as-is; otherwise, a bit-mixing post-processing stage is added to increase the quality of hashing
+at the expense of extra computational cost.
 
 ---
 
@@ -1051,22 +1047,12 @@ iterator         find(const key_type& k);
 const_iterator   find(const key_type& k) const;
 template<class K>
   iterator       find(const K& k);
-template<class K>
-  const_iterator find(const K& k) const;
-template<typename CompatibleKey, typename CompatibleHash, typename CompatiblePredicate>
-  iterator       find(CompatibleKey const& k, CompatibleHash const& hash,
-                      CompatiblePredicate const& eq);
-template<typename CompatibleKey, typename CompatibleHash, typename CompatiblePredicate>
-  const_iterator find(CompatibleKey const& k, CompatibleHash const& hash,
-                      CompatiblePredicate const& eq) const;
 
 ```
 
 [horizontal]
 Returns:;; An iterator pointing to an element with key equivalent to `k`, or `end()` if no such element exists.
-Notes:;; The templated overloads containing `CompatibleKey`, `CompatibleHash` and `CompatiblePredicate` are non-standard extensions which allow you to use a compatible hash function and equality predicate for a key of a different type in order to avoid an expensive type cast. In general, its use is not encouraged and instead the `K` member function templates should be used. +
-+
-The `template <typename K>` overloads only participate in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
+Notes:;; The `template <typename K>` overloads only participate in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
 
 ---
 
