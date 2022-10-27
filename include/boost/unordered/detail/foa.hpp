@@ -1559,8 +1559,7 @@ private:
         prefetch_elements(p);
         do{
           auto n=unchecked_countr_zero(mask);
-          //if(BOOST_LIKELY(bool(pred()(x,key_from(p[n]))))){
-          if(BOOST_LIKELY(bool(pred()(x,p[n].first)))){
+          if(BOOST_LIKELY(bool(pred()(x,key_from(p[n]))))){
             return {pg,n,p+n};
           }
           mask&=mask-1;
