@@ -1437,12 +1437,12 @@ private:
     table& x;
   };
 
-  inline Hash&            h(){return hash_base::get();}
-  inline const Hash&      h()const{return hash_base::get();}
-  inline Pred&            pred(){return pred_base::get();}
-  inline const Pred&      pred()const{return pred_base::get();}
-  inline Allocator&       al(){return allocator_base::get();}
-  inline const Allocator& al()const{return allocator_base::get();}
+  Hash&            h(){return hash_base::get();}
+  const Hash&      h()const{return hash_base::get();}
+  Pred&            pred(){return pred_base::get();}
+  const Pred&      pred()const{return pred_base::get();}
+  Allocator&       al(){return allocator_base::get();}
+  const Allocator& al()const{return allocator_base::get();}
 
   arrays_type new_arrays(std::size_t n)
   {
