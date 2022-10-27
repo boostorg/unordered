@@ -46,12 +46,12 @@ namespace boost {
         using value_type = std::pair<Key const, T>;
 
         template <class K, class V>
-        static raw_key_type const& extract(std::pair<K, V> const& kv)
+        static inline raw_key_type const& extract(std::pair<K, V> const& kv)
         {
           return kv.first;
         }
 
-        static moved_type move(value_type& x)
+        static inline moved_type move(value_type& x)
         {
           // TODO: we probably need to launder here
           return {std::move(const_cast<raw_key_type&>(x.first)),

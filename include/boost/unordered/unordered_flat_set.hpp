@@ -38,8 +38,8 @@ namespace boost {
         using key_type = Key;
         using init_type = Key;
         using value_type = Key;
-        static Key const& extract(value_type const& key) { return key; }
-        static Key&& move(value_type& x) { return std::move(x); }
+        static inline Key const& extract(value_type const& key) { return key; }
+        static inline Key&& move(value_type& x) { return std::move(x); }
       };
 
       using table_type = detail::foa::table<set_types, Hash, KeyEqual,
