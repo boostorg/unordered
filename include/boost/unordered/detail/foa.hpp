@@ -1556,7 +1556,8 @@ private:
       auto mask=pg->match(hash);
       if(mask){
         auto p=arrays.elements+pos*N;
-        prefetch_elements(p);
+        //prefetch_elements(p);
+        prefetch(p);
         do{
           auto n=unchecked_countr_zero(mask);
           if(BOOST_LIKELY(bool(pred()(x,key_from(p[n]))))){
