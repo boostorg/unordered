@@ -675,7 +675,7 @@ struct pow2_quadratic_prober
    * arrays).
    */
 
-  inline bool next(std::size_t mask)
+  /*inline*/ bool next(std::size_t mask)
   {
     step+=1;
     pos=(pos+step)&mask;
