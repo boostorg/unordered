@@ -197,16 +197,30 @@ local windows_pipeline(name, image, environment, arch = "amd64") =
     ),
 
     linux_pipeline(
-        "Linux 22.04 GCC 12 32 ASAN",
+        "Linux 22.04 GCC 12 32 ASAN (03,11,14)",
         "cppalliance/droneubuntu2204:1",
-        { TOOLSET: 'gcc', COMPILER: 'g++-12', CXXSTD: '03,11,14,17,20,2b', ADDRMD: '32' } + asan,
+        { TOOLSET: 'gcc', COMPILER: 'g++-12', CXXSTD: '03,11,14', ADDRMD: '32' } + asan,
         "g++-12-multilib",
     ),
 
     linux_pipeline(
-        "Linux 22.04 GCC 12 64 ASAN",
+        "Linux 22.04 GCC 12 32 ASAN (17,20,2b)",
         "cppalliance/droneubuntu2204:1",
-        { TOOLSET: 'gcc', COMPILER: 'g++-12', CXXSTD: '03,11,14,17,20,2b', ADDRMD: '64' } + asan,
+        { TOOLSET: 'gcc', COMPILER: 'g++-12', CXXSTD: '17,20,2b', ADDRMD: '32' } + asan,
+        "g++-12-multilib",
+    ),
+
+    linux_pipeline(
+        "Linux 22.04 GCC 12 64 ASAN (03,11,14)",
+        "cppalliance/droneubuntu2204:1",
+        { TOOLSET: 'gcc', COMPILER: 'g++-12', CXXSTD: '03,11,14', ADDRMD: '64' } + asan,
+        "g++-12-multilib",
+    ),
+
+    linux_pipeline(
+        "Linux 22.04 GCC 12 64 ASAN (17,20,2b)",
+        "cppalliance/droneubuntu2204:1",
+        { TOOLSET: 'gcc', COMPILER: 'g++-12', CXXSTD: '17,20,2b', ADDRMD: '64' } + asan,
         "g++-12-multilib",
     ),
 
