@@ -3411,8 +3411,8 @@ namespace boost {
       template <typename Types>
       inline void table<Types>::rehash(std::size_t num_buckets)
       {
-        num_buckets = (std::max)(
-          min_buckets(size_, mlf_), buckets_.bucket_count_for(num_buckets));
+        num_buckets = buckets_.bucket_count_for(
+          (std::max)(min_buckets(size_, mlf_), num_buckets));
 
         if (num_buckets != this->bucket_count()) {
           this->rehash_impl(num_buckets);
