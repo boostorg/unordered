@@ -52,8 +52,8 @@ jobs:
           - { compiler: gcc-10,    cxxstd: '03,11,14,17,20', os: ubuntu-20.04, install: 'g++-10-multilib', address-model: '32,64' }
           - { compiler: gcc-11,    cxxstd: '03,11,14,17,20', os: ubuntu-20.04, install: 'g++-11-multilib', address-model: '32,64' }
           - { compiler: gcc-12,    cxxstd: '03,11,14,17,20', os: ubuntu-22.04, install: 'g++-12-multilib', address-model: '32,64' }
-          - { name: GCC w/ sanitizers, sanitize: yes,
-              compiler: gcc-12,    cxxstd: '03,11,14,17,20', os: ubuntu-22.04 }
+          - { name: GCC w/ sanitizers, sanitize: yes, compiler: gcc-12, cxxstd: '03,11,14', os: ubuntu-22.04 }
+          - { name: GCC w/ sanitizers, sanitize: yes, compiler: gcc-12, cxxstd: '17,20,2b', os: ubuntu-22.04 }
           - { name: Collect coverage, coverage: yes,
               compiler: gcc-8,     cxxstd: '03,11',          os: ubuntu-20.04, install: 'g++-8-multilib', address-model: '32,64' }
 
