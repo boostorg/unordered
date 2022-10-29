@@ -1327,7 +1327,7 @@ public:
   void erase(const_iterator pos)noexcept
   {
     destroy_element(pos.p);
-    reset_slot(pos.pc);
+    recover_slot(pos.pc);
   }
 
   template<typename Key>
@@ -1496,7 +1496,7 @@ private:
     value_type *p;
   };
 
-  void reset_slot(unsigned char* pc)
+  void recover_slot(unsigned char* pc)
   {
     /* If this slot potentially caused overflow, we decrease the maximum load so
      * that average probe length won't increase unboundedly in repeated
@@ -1507,9 +1507,9 @@ private:
     --size_;
   }
 
-  void reset_slot(group_type* pg,std::size_t pos)
+  void recover_slot(group_type* pg,std::size_t pos)
   {
-    reset_slot(reinterpret_cast<unsigned char*>(pg)+pos);
+    recover_slot(reinterpret_cast<unsigned char*>(pg)+pos);
   }
 
   std::size_t max_load()const
@@ -1651,8 +1651,8 @@ private:
   BOOST_NOINLINE iterator
   unchecked_emplace_with_rehash(std::size_t hash,Args&&... args)
   {
-    /* Due to the anti-drift mechanism (see reset_slot), new_arrays_ may be of
-     * the same size as the old arrays; in the limit, erasing one element at
+    /* Due to the anti-drift mechanism (see recover_slot), new_arrays_ may be
+     * of the same size as the old arrays; in the limit, erasing one element at
      * full load and then inserting could bring us back to the same capacity
      * after a costly rehash. We introduce a 10% level of hysteresis to avoid
      * that (the size_/10 addendum).
@@ -1698,7 +1698,7 @@ private:
           auto mask=pg->match_occupied();
           while(mask){
             auto nz=unchecked_countr_zero(mask);
-            reset_slot(pg,nz);
+            recover_slot(pg,nz);
             if(!(--num_destroyed))goto continue_;
             mask&=mask-1;
           }
