@@ -1654,11 +1654,15 @@ private:
     /* Due to the anti-drift mechanism (see recover_slot), new_arrays_ may be
      * of the same size as the old arrays; in the limit, erasing one element at
      * full load and then inserting could bring us back to the same capacity
-     * after a costly rehash. We introduce a 10% level of hysteresis to avoid
-     * that (the size_/10 addendum).
+     * after a costly rehash. To avoid this, we jump to the next capacity level
+     * when the number of erased elements is <= 10% of total elements at full
+     * load, which is implemented by requesting additional F*size elements,
+     * with F = P * 10% / (1 - P * 10%), where P is the probability of an
+     * element having caused overflow; P has been determined to be ~0.187 via
+     * simulation, yielding F ~ 0.019 ~ 1/52.
      */
     auto     new_arrays_=new_arrays(std::size_t(
-               std::ceil(static_cast<float>(size_+size_/10+1)/mlf)));
+               std::ceil(static_cast<float>(size_+size_/52+1)/mlf)));
     iterator it;
     BOOST_TRY{
       /* strong exception guarantee -> try insertion before rehash */
