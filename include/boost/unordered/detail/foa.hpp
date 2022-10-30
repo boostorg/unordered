@@ -114,7 +114,8 @@ namespace foa{
  *     bits for signalling overflow makes it very likely that we stop at the
  *     current group (this happens when no element with the same (h%8) value
  *     has overflowed in the group), saving us an additional group check even
- *     under high-load/high-erase conditions.
+ *     under high-load/high-erase conditions. It is critical that hash
+ *     reduction is invariant under modulo 8 (see maybe_caused_overflow).
  *
  * When looking for an element with hash value h, match(h) returns a bitmask
  * signalling which slots have the same reduced hash value. If available,
@@ -189,6 +190,13 @@ struct group15
     overflow()|=static_cast<unsigned char>(1<<(hash%8));
   }
 
+  static inline bool maybe_caused_overflow(unsigned char* pc)
+  {
+    std::size_t pos=reinterpret_cast<uintptr_t>(pc)%sizeof(group15);
+    group15    *pg=reinterpret_cast<group15*>(pc-pos);
+    return !pg->is_not_overflowed(*pc);
+  };
+
   inline int match_available()const
   {
     return _mm_movemask_epi8(
@@ -213,7 +221,7 @@ private:
   {
     static constexpr boost::uint32_t word[]=
     {
-      0x02020202u,0x03030303u,0x02020202u,0x03030303u,0x04040404u,0x05050505u,0x06060606u,0x07070707u,
+      0x08080808u,0x09090909u,0x02020202u,0x03030303u,0x04040404u,0x05050505u,0x06060606u,0x07070707u,
       0x08080808u,0x09090909u,0x0A0A0A0Au,0x0B0B0B0Bu,0x0C0C0C0Cu,0x0D0D0D0Du,0x0E0E0E0Eu,0x0F0F0F0Fu,
       0x10101010u,0x11111111u,0x12121212u,0x13131313u,0x14141414u,0x15151515u,0x16161616u,0x17171717u,
       0x18181818u,0x19191919u,0x1A1A1A1Au,0x1B1B1B1Bu,0x1C1C1C1Cu,0x1D1D1D1Du,0x1E1E1E1Eu,0x1F1F1F1Fu,
@@ -337,6 +345,13 @@ struct group15
     overflow()|=static_cast<unsigned char>(1<<(hash%8));
   }
 
+  static inline bool maybe_caused_overflow(unsigned char* pc)
+  {
+    std::size_t pos=reinterpret_cast<uintptr_t>(pc)%sizeof(group15);
+    group15    *pg=reinterpret_cast<group15*>(pc-pos);
+    return !pg->is_not_overflowed(*pc);
+  };
+
   inline int match_available()const
   {
     return simde_mm_movemask_epi8(vceqq_s8(m,vdupq_n_s8(0)))&0x7FFF;
@@ -360,7 +375,7 @@ private:
   inline static unsigned char reduced_hash(std::size_t hash)
   {
     static constexpr unsigned char table[]={
-      2,3,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
+      8,9,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
       16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,
       32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,
       48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,
@@ -491,6 +506,15 @@ struct group15
     reinterpret_cast<boost::uint16_t*>(m)[hash%8]|=0x8000u;
   }
 
+  static inline bool maybe_caused_overflow(unsigned char* pc)
+  {
+    std::size_t     pos=reinterpret_cast<uintptr_t>(pc)%sizeof(group15);
+    group15        *pg=reinterpret_cast<group15*>(pc-pos);
+    boost::uint64_t x=((pg->m[0])>>pos)&0x000100010001ull;
+    boost::uint32_t y=static_cast<boost::uint32_t>(x|(x>>15)|(x>>30));
+    return !pg->is_not_overflowed(y);
+  };
+
   inline int match_available()const
   {
     boost::uint64_t x=~(m[0]|m[1]);
@@ -519,7 +543,7 @@ private:
   inline static unsigned char reduced_hash(std::size_t hash)
   {
     static constexpr unsigned char table[]={
-      2,3,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
+      8,9,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
       16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,
       32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,
       48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,
@@ -1105,7 +1129,7 @@ public:
     const Allocator& al_=Allocator()):
     hash_base{empty_init,h_},pred_base{empty_init,pred_},
     allocator_base{empty_init,al_},size_{0},arrays(new_arrays(n)),
-    ml{max_load()}
+    ml{initial_max_load()}
     {}
 
   table(const table& x):
@@ -1123,7 +1147,7 @@ public:
   {
     x.size_=0;
     x.arrays=x.new_arrays(0);
-    x.ml=x.max_load();
+    x.ml=x.initial_max_load();
   }
 
   table(const table& x,const Allocator& al_):
@@ -1303,8 +1327,7 @@ public:
   void erase(const_iterator pos)noexcept
   {
     destroy_element(pos.p);
-    group_type::reset(pos.pc);
-    --size_;
+    recover_slot(pos.pc);
   }
 
   template<typename Key>
@@ -1361,6 +1384,7 @@ public:
       }
       arrays.groups[arrays.groups_size_mask].set_sentinel();
       size_=0;
+      ml=initial_max_load();
     }
   }
 
@@ -1406,6 +1430,8 @@ public:
   }
 
   float max_load_factor()const noexcept{return mlf;}
+
+  std::size_t max_load()const noexcept{return ml;}
 
   void rehash(std::size_t n)
   {
@@ -1472,7 +1498,23 @@ private:
     value_type *p;
   };
 
-  std::size_t max_load()const
+  void recover_slot(unsigned char* pc)
+  {
+    /* If this slot potentially caused overflow, we decrease the maximum load so
+     * that average probe length won't increase unboundedly in repeated
+     * insert/erase cycles (drift).
+     */
+    ml-=group_type::maybe_caused_overflow(pc);
+    group_type::reset(pc);
+    --size_;
+  }
+
+  void recover_slot(group_type* pg,std::size_t pos)
+  {
+    recover_slot(reinterpret_cast<unsigned char*>(pg)+pos);
+  }
+
+  std::size_t initial_max_load()const
   {
     static constexpr std::size_t small_capacity=2*N-1;
 
@@ -1611,11 +1653,21 @@ private:
   BOOST_NOINLINE iterator
   unchecked_emplace_with_rehash(std::size_t hash,Args&&... args)
   {
-    /* strong exception guarantee -> try insertion before rehash */
-    auto     new_arrays_=new_arrays(
-               std::size_t(std::ceil(static_cast<float>(size_+1)/mlf)));
+    /* Due to the anti-drift mechanism (see recover_slot), new_arrays_ may be
+     * of the same size as the old arrays; in the limit, erasing one element at
+     * full load and then inserting could bring us back to the same capacity
+     * after a costly rehash. To avoid this, we jump to the next capacity level
+     * when the number of erased elements is <= 10% of total elements at full
+     * load, which is implemented by requesting additional F*size elements,
+     * with F = P * 10% / (1 - P * 10%), where P is the probability of an
+     * element having caused overflow; P has been measured as ~0.162 under
+     * ideal conditions, yielding F ~ 0.0165 ~ 1/61.
+     */
+    auto     new_arrays_=new_arrays(std::size_t(
+               std::ceil(static_cast<float>(size_+size_/61+1)/mlf)));
     iterator it;
     BOOST_TRY{
+      /* strong exception guarantee -> try insertion before rehash */
       it=nosize_unchecked_emplace_at(
         new_arrays_,position_for(hash,new_arrays_),
         hash,std::forward<Args>(args)...);
@@ -1648,12 +1700,11 @@ private:
     }
     BOOST_CATCH(...){
       if(num_destroyed){
-        size_-=num_destroyed;
         for(auto pg=arrays.groups;;++pg){
           auto mask=pg->match_occupied();
           while(mask){
             auto nz=unchecked_countr_zero(mask);
-            pg->reset(nz);
+            recover_slot(pg,nz);
             if(!(--num_destroyed))goto continue_;
             mask&=mask-1;
           }
@@ -1677,7 +1728,7 @@ private:
     }
     delete_arrays(arrays);
     arrays=new_arrays_;
-    ml=max_load();
+    ml=initial_max_load();
   }
 
   void noshrink_reserve(std::size_t n)
@@ -1693,7 +1744,7 @@ private:
         auto new_arrays_=new_arrays(n);
         delete_arrays(arrays);
         arrays=new_arrays_;
-        ml=max_load();
+        ml=initial_max_load();
       }
     }
   }
