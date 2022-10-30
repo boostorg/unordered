@@ -187,7 +187,11 @@ struct group15
 
   inline void mark_overflow(std::size_t hash)
   {
+#if BOOST_WORKAROUND(BOOST_GCC, >= 50000 && BOOST_GCC < 60000)
+    overflow() = static_cast<unsigned char>( overflow() | static_cast<unsigned char>(1<<(hash%8)) );
+#else
     overflow()|=static_cast<unsigned char>(1<<(hash%8));
+#endif
   }
 
   static inline bool maybe_caused_overflow(unsigned char* pc)
