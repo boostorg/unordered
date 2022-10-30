@@ -428,6 +428,8 @@ namespace boost {
 
       void max_load_factor(float) {}
 
+      size_type max_load() const noexcept { return table_.max_load(); }
+
       void rehash(size_type n) { table_.rehash(n); }
 
       void reserve(size_type n) { table_.reserve(n); }

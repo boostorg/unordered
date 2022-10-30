@@ -1129,7 +1129,7 @@ public:
     const Allocator& al_=Allocator()):
     hash_base{empty_init,h_},pred_base{empty_init,pred_},
     allocator_base{empty_init,al_},size_{0},arrays(new_arrays(n)),
-    ml{max_load()}
+    ml{initial_max_load()}
     {}
 
   table(const table& x):
@@ -1147,7 +1147,7 @@ public:
   {
     x.size_=0;
     x.arrays=x.new_arrays(0);
-    x.ml=x.max_load();
+    x.ml=x.initial_max_load();
   }
 
   table(const table& x,const Allocator& al_):
@@ -1384,7 +1384,7 @@ public:
       }
       arrays.groups[arrays.groups_size_mask].set_sentinel();
       size_=0;
-      ml=max_load();
+      ml=initial_max_load();
     }
   }
 
@@ -1430,6 +1430,8 @@ public:
   }
 
   float max_load_factor()const noexcept{return mlf;}
+
+  std::size_t max_load()const noexcept{return ml;}
 
   void rehash(std::size_t n)
   {
@@ -1512,7 +1514,7 @@ private:
     recover_slot(reinterpret_cast<unsigned char*>(pg)+pos);
   }
 
-  std::size_t max_load()const
+  std::size_t initial_max_load()const
   {
     static constexpr std::size_t small_capacity=2*N-1;
 
@@ -1726,7 +1728,7 @@ private:
     }
     delete_arrays(arrays);
     arrays=new_arrays_;
-    ml=max_load();
+    ml=initial_max_load();
   }
 
   void noshrink_reserve(std::size_t n)
@@ -1742,7 +1744,7 @@ private:
         auto new_arrays_=new_arrays(n);
         delete_arrays(arrays);
         arrays=new_arrays_;
-        ml=max_load();
+        ml=initial_max_load();
       }
     }
   }
