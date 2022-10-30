@@ -1660,11 +1660,11 @@ private:
      * when the number of erased elements is <= 10% of total elements at full
      * load, which is implemented by requesting additional F*size elements,
      * with F = P * 10% / (1 - P * 10%), where P is the probability of an
-     * element having caused overflow; P has been determined to be ~0.187 via
-     * simulation, yielding F ~ 0.019 ~ 1/52.
+     * element having caused overflow; P has been measured as ~0.162 under
+     * ideal conditions, yielding F ~ 0.0165 ~ 1/61.
      */
     auto     new_arrays_=new_arrays(std::size_t(
-               std::ceil(static_cast<float>(size_+size_/52+1)/mlf)));
+               std::ceil(static_cast<float>(size_+size_/61+1)/mlf)));
     iterator it;
     BOOST_TRY{
       /* strong exception guarantee -> try insertion before rehash */
