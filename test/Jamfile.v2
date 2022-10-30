@@ -139,7 +139,7 @@ build_foa erase_if ;
 build_foa scary_tests ;
 build_foa init_type_insert_tests ;
 
-run unordered/hash_is_avalanching_test.cpp : : : $(CPP11) ;
+run unordered/hash_is_avalanching_test.cpp ;
 
 run exception/constructor_exception_tests.cpp : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_constructor_exception_tests ;
 run exception/copy_exception_tests.cpp        : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_copy_exception_tests ;
