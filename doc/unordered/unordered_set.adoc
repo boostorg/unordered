@@ -9,7 +9,7 @@
 
 [listing,subs="+macros,+quotes"]
 -----
-// #include <boost/unordered_set.hpp>
+// #include <boost/unordered/unordered_set.hpp>
 
 namespace boost {
   template<class Key,
@@ -278,7 +278,7 @@ Is identical to the difference type of `iterator` and `const_iterator`.
 typedef _implementation-defined_ iterator;
 ----
 
-An iterator whose value type is `value_type`.
+A constant iterator whose value type is `value_type`.
 
 The iterator category is at least a forward iterator.
 

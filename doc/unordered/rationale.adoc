@@ -17,7 +17,7 @@ has a good summary of the implementation issues for hash tables in general.
 === Data Structure
 
 By specifying an interface for accessing the buckets of the container the
-standard pretty much requires that the hash table uses chained addressing.
+standard pretty much requires that the hash table uses closed addressing.
 
 It would be conceivable to write a hash table that uses another method. For
 example, it could use open addressing, and use the lookup chain to act as a
@@ -34,10 +34,10 @@ bucket but there are some serious problems with this:
   restrictions could prevent a rehash when it's really needed. The maximum load
   factor could be set to a fairly low value to work around this - but the
   standard requires that it is initially set to 1.0.
-* And since the standard is written with a eye towards chained
+* And since the standard is written with a eye towards closed
   addressing, users will be surprised if the performance doesn't reflect that.
 
-So chained addressing is used.
+So closed addressing is used.
 
 === Number of Buckets
 
@@ -89,8 +89,8 @@ We discuss here the most relevant principles.
 
 Given its rich functionality and cross-platform interoperability,
 `boost::hash` remains the default hash function of `boost::unordered_flat_set` and `boost::unordered_flat_map`.
-As it happens, `boost::hash` for integral and other basic types does not provide
-the good statistical properties required by open addressing; to cope with this,
+As it happens, `boost::hash` for integral and other basic types does not possess
+the statistical properties required by open addressing; to cope with this,
 we implement a post-mixing stage:
 
 *  64-bit architectures: we use the `xmx` function defined in
@@ -112,4 +112,4 @@ operations.
 Although the implementation internally uses SIMD technologies, such as https://en.wikipedia.org/wiki/SSE2[SSE2^]
 and https://en.wikipedia.org/wiki/ARM_architecture_family#Advanced_SIMD_(NEON)[Neon^], when available,
 this does not affect interoperatility. For instance, the behavior is the same
-for Visual Studio on an Intel CPU with SSE2 in x64 and for GCC on an IBM s390x without any supported SIMD technology.
+for Visual Studio on an x64-mode Intel CPU with SSE2 and for GCC on an IBM s390x without any supported SIMD technology.

@@ -7,9 +7,9 @@
 
 == Closed-addressing containers: unordered_[multi]set, unordered_[multi]map
 
-The intent of Boost.Unordered is to implement a close (but imperfect)
-implementation of the {cpp}17 standard, that will work with {cpp}98 upwards.
-The wide compatibility does mean some comprimises have to be made.
+The intent of Boost.Unordered is to provide a conformant
+implementation of the {cpp}20 standard that will work with {cpp}98 upwards.
+This wide compatibility does mean some compromises have to be made.
 With a compiler and library that fully support {cpp}11, the differences should
 be minor.
 
@@ -139,5 +139,5 @@ The main differences with C++ unordered associative containers are:
 * `erase(iterator)` returns `void` instead of an iterator to the following element.
 * There is no API for bucket handling (except `bucket_count`) or node extraction/insertion.
 * The maximum load factor of the container is managed internally and can't be set by the user. The maximum load,
-exposed through the public function `max_load`, can not increase monotonically with the number of erasures.
+exposed through the public function `max_load`, does not increase monotonically with the number of erasures.
 
