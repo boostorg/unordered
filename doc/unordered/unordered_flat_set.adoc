@@ -1033,7 +1033,7 @@ template<class Key, class T, class Hash, class Pred, class Alloc>
 Return `false` if `x.size() == y.size()` and for every element in `x`, there is an element in `y` with the same key, with an equal value (using `operator==` to compare the value types).
 
 [horizontal]
-Notes:;;Behavior is undefined if the two containers don't have equivalent equality predicates.
+Notes:;; Behavior is undefined if the two containers don't have equivalent equality predicates.
 
 === Swap
 ```c++
