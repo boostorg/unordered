@@ -371,7 +371,10 @@ template<> struct fnv1a_hash_impl<64>
     }
 };
 
-struct fnv1a_hash: fnv1a_hash_impl< std::numeric_limits<std::size_t>::digits > {};
+struct fnv1a_hash: fnv1a_hash_impl< std::numeric_limits<std::size_t>::digits >
+{
+    using is_avalanching = void;
+};
 
 template<class K, class V> using std_unordered_map_fnv1a =
 std::unordered_map<K, V, fnv1a_hash, std::equal_to<K>, allocator_for<K, V>>;
