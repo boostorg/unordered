@@ -43,8 +43,8 @@ namespace test {
   inline int generate(int const*, random_generator g)
   {
     if (g == sequential) {
-      BOOST_ASSERT(
-        g + 1 < INT_MAX && "test::reset_sequence() should be invoked");
+      BOOST_ASSERT_MSG(
+        origin < INT_MAX, "test::reset_sequence() should be invoked");
       return origin++;
     }
 
