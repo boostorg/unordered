@@ -6,7 +6,7 @@
 
 == boost::unordered_set
 
-All benchmarks were created using `unordered_set<unsigned int>` (non-duplicate) and `unordered_multiset<unsigned int>` (duplicate). The source code can be https://github.com/joaquintides/boost_unordered_benchmarks/tree/boost_unordered_set[found here^].
+All benchmarks were created using `unordered_set<unsigned int>` (non-duplicate) and `unordered_multiset<unsigned int>` (duplicate). The source code can be https://github.com/boostorg/boost_unordered_benchmarks/tree/boost_unordered_set[found here^].
 
 The insertion benchmarks insert `n` random values, where `n` is between 10,000 and 3 million. For the duplicated benchmarks, the same random values are repeated an average of 5 times.
 
@@ -286,7 +286,7 @@ All benchmarks were created using:
 * `boost::unordered_flat_map<uint64_t, uint64_t>`
 * `boost::unordered_map<uint64_t, uint64_t>`
 
-The source code can be https://github.com/joaquintides/boost_unordered_benchmarks/tree/boost_unordered_flat_map[found here^].
+The source code can be https://github.com/boostorg/boost_unordered_benchmarks/tree/boost_unordered_flat_map[found here^].
 
 The insertion benchmarks insert `n` random values, where `n` is between 10,000 and 10 million.
 
