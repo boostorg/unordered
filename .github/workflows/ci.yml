@@ -47,10 +47,12 @@ jobs:
           - { compiler: gcc-9,     cxxstd: '03,11,14,17',    os: ubuntu-20.04, install: 'g++-9' }
           - { compiler: gcc-10,    cxxstd: '03,11,14,17,20', os: ubuntu-20.04, install: 'g++-10' }
           - { compiler: gcc-11,    cxxstd: '03,11,14,17,20', os: ubuntu-20.04, install: 'g++-11' }
-          - { name: "gcc-12 w/ sanitizers (03,11,14)", sanitize: yes, compiler: gcc-12, cxxstd: '03,11,14', os: ubuntu-22.04 }
-          - { name: "gcc-12 w/ sanitizers (17,20,2b)", sanitize: yes, compiler: gcc-12, cxxstd: '17,20,2b', os: ubuntu-22.04 }
+          - { name: "gcc-12 w/ sanitizers (03,11,14)", sanitize: yes,
+              compiler: gcc-12,    cxxstd: '03,11,14',       os: ubuntu-22.04, ccache_key: "san1" }
+          - { name: "gcc-12 w/ sanitizers (17,20,2b)", sanitize: yes,
+              compiler: gcc-12,    cxxstd: '17,20,2b',       os: ubuntu-22.04, ccache_key: "san2" }
           - { name: Collect coverage, coverage: yes,
-              compiler: gcc-8,     cxxstd: '03,11',          os: ubuntu-20.04, install: 'g++-8-multilib', address-model: '32,64' }
+              compiler: gcc-8,     cxxstd: '03,11',          os: ubuntu-20.04, install: 'g++-8-multilib', address-model: '32,64', ccache_key: "cov" }
 
           # Linux, clang, libc++
           - { compiler: clang-7,   cxxstd: '03,11,14,17',       os: ubuntu-20.04, stdlib: libc++, install: 'clang-7 libc++-7-dev libc++abi-7-dev' }
@@ -60,10 +62,10 @@ jobs:
           - { compiler: clang-13,  cxxstd: '03,11,14,17,20,2b', os: ubuntu-22.04, stdlib: libc++, install: 'clang-13 libc++-13-dev libc++abi-13-dev' }
           - { compiler: clang-14,  cxxstd: '03,11,14,17,20,2b', os: ubuntu-22.04, stdlib: libc++, install: 'clang-14 libc++-14-dev libc++abi-14-dev' }
           - { name: "clang-12 w/ sanitizers", sanitize: yes,
-              compiler: clang-12,  cxxstd: '03,11,14,17,20,2b', os: ubuntu-20.04, stdlib: libc++, install: 'clang-12 libc++-12-dev libc++abi-12-dev' }
+              compiler: clang-12,  cxxstd: '03,11,14,17,20,2b', os: ubuntu-20.04, stdlib: libc++, install: 'clang-12 libc++-12-dev libc++abi-12-dev', ccache_key: "san1" }
           # not using libc++ because of https://github.com/llvm/llvm-project/issues/52771
           - { name: "clang-14 w/ sanitizers", sanitize: yes,
-              compiler: clang-14,  cxxstd: '03,11,14,17,20,2b', os: ubuntu-22.04 }
+              compiler: clang-14,  cxxstd: '03,11,14,17,20,2b', os: ubuntu-22.04, ccache_key: "san2" }
 
           # OSX, clang
           - { compiler: clang,     cxxstd: '03,11,14,17,2a', os: macos-11, sanitize: yes }
@@ -105,8 +107,8 @@ jobs:
         if: env.B2_USE_CCACHE
         with:
           path: ~/.ccache
-          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.compiler}}-${{github.sha}}
-          restore-keys: ${{matrix.os}}-${{matrix.container}}-${{matrix.compiler}}-
+          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.compiler}}-${{matrix.ccache_key}}-${{github.sha}}
+          restore-keys: ${{matrix.os}}-${{matrix.container}}-${{matrix.compiler}}-${{matrix.ccache_key}}-
 
       - name: Fetch Boost.CI
         uses: actions/checkout@v3
