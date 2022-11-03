@@ -123,6 +123,9 @@ namespace boost {
 
       explicit unordered_map(size_type, const hasher&, const allocator_type&);
 
+      template <class InputIterator>
+      unordered_map(InputIterator, InputIterator, const allocator_type&);
+
       template <class InputIt>
       unordered_map(InputIt, InputIt, size_type, const allocator_type&);
 
@@ -131,6 +134,8 @@ namespace boost {
         InputIt, InputIt, size_type, const hasher&, const allocator_type&);
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
+      unordered_map(std::initializer_list<value_type>, const allocator_type&);
+
       unordered_map(
         std::initializer_list<value_type>, size_type, const allocator_type&);
 
@@ -1076,6 +1081,9 @@ namespace boost {
       explicit unordered_multimap(
         size_type, const hasher&, const allocator_type&);
 
+      template <class InputIterator>
+      unordered_multimap(InputIterator, InputIterator, const allocator_type&);
+
       template <class InputIt>
       unordered_multimap(InputIt, InputIt, size_type, const allocator_type&);
 
@@ -1084,6 +1092,9 @@ namespace boost {
         InputIt, InputIt, size_type, const hasher&, const allocator_type&);
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
+      unordered_multimap(
+        std::initializer_list<value_type>, const allocator_type&);
+
       unordered_multimap(
         std::initializer_list<value_type>, size_type, const allocator_type&);
 
@@ -1752,6 +1763,17 @@ namespace boost {
     }
 
     template <class K, class T, class H, class P, class A>
+    template <class InputIterator>
+    unordered_map<K, T, H, P, A>::unordered_map(
+      InputIterator f, InputIterator l, const allocator_type& a)
+        : table_(boost::unordered::detail::initial_size(
+                   f, l, detail::default_bucket_count),
+            hasher(), key_equal(), a)
+    {
+      this->insert(f, l);
+    }
+
+    template <class K, class T, class H, class P, class A>
     template <class InputIt>
     unordered_map<K, T, H, P, A>::unordered_map(
       InputIt f, InputIt l, size_type n, const allocator_type& a)
@@ -1772,6 +1794,16 @@ namespace boost {
     }
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
+
+    template <class K, class T, class H, class P, class A>
+    unordered_map<K, T, H, P, A>::unordered_map(
+      std::initializer_list<value_type> list, const allocator_type& a)
+        : table_(boost::unordered::detail::initial_size(
+                   list.begin(), list.end(), detail::default_bucket_count),
+            hasher(), key_equal(), a)
+    {
+      this->insert(list.begin(), list.end());
+    }
 
     template <class K, class T, class H, class P, class A>
     unordered_map<K, T, H, P, A>::unordered_map(
@@ -2235,6 +2267,17 @@ namespace boost {
     }
 
     template <class K, class T, class H, class P, class A>
+    template <class InputIterator>
+    unordered_multimap<K, T, H, P, A>::unordered_multimap(
+      InputIterator f, InputIterator l, const allocator_type& a)
+        : table_(boost::unordered::detail::initial_size(
+                   f, l, detail::default_bucket_count),
+            hasher(), key_equal(), a)
+    {
+      this->insert(f, l);
+    }
+
+    template <class K, class T, class H, class P, class A>
     template <class InputIt>
     unordered_multimap<K, T, H, P, A>::unordered_multimap(
       InputIt f, InputIt l, size_type n, const allocator_type& a)
@@ -2255,6 +2298,16 @@ namespace boost {
     }
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
+
+    template <class K, class T, class H, class P, class A>
+    unordered_multimap<K, T, H, P, A>::unordered_multimap(
+      std::initializer_list<value_type> list, const allocator_type& a)
+        : table_(boost::unordered::detail::initial_size(
+                   list.begin(), list.end(), detail::default_bucket_count),
+            hasher(), key_equal(), a)
+    {
+      this->insert(list.begin(), list.end());
+    }
 
     template <class K, class T, class H, class P, class A>
     unordered_multimap<K, T, H, P, A>::unordered_multimap(
