@@ -106,6 +106,13 @@ namespace boost {
       {
       }
 
+      template <class InputIterator>
+      unordered_flat_map(
+        InputIterator f, InputIterator l, allocator_type const& a)
+          : unordered_flat_map(f, l, size_type(0), hasher(), key_equal(), a)
+      {
+      }
+
       explicit unordered_flat_map(allocator_type const& a)
           : unordered_flat_map(0, a)
       {
@@ -162,6 +169,12 @@ namespace boost {
         key_equal const& pred = key_equal(),
         allocator_type const& a = allocator_type())
           : unordered_flat_map(ilist.begin(), ilist.end(), n, h, pred, a)
+      {
+      }
+
+      unordered_flat_map(
+        std::initializer_list<value_type> il, allocator_type const& a)
+          : unordered_flat_map(il, size_type(0), hasher(), key_equal(), a)
       {
       }
 
