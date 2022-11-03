@@ -88,6 +88,13 @@ namespace boost {
       {
       }
 
+      template <class InputIterator>
+      unordered_flat_set(
+        InputIterator f, InputIterator l, allocator_type const& a)
+          : unordered_flat_set(f, l, size_type(0), hasher(), key_equal(), a)
+      {
+      }
+
       explicit unordered_flat_set(allocator_type const& a)
           : unordered_flat_set(0, a)
       {
@@ -144,6 +151,12 @@ namespace boost {
         key_equal const& pred = key_equal(),
         allocator_type const& a = allocator_type())
           : unordered_flat_set(ilist.begin(), ilist.end(), n, h, pred, a)
+      {
+      }
+
+      unordered_flat_set(
+        std::initializer_list<value_type> il, allocator_type const& a)
+          : unordered_flat_set(il, size_type(0), hasher(), key_equal(), a)
       {
       }
 
