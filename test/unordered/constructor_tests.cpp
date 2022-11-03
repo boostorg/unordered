@@ -173,6 +173,16 @@ namespace constructor_tests {
       BOOST_TEST(test::equivalent(x.get_allocator(), al));
       test::check_equivalent_keys(x);
     }
+
+    UNORDERED_SUB_TEST("Construct 12")
+    {
+      test::check_instances check_;
+
+      test::random_values<T> v(1000, generator);
+      T x(v.begin(), v.end(), al);
+      BOOST_TEST(test::equivalent(x.get_allocator(), al));
+      test::check_container(x, v);
+    }
   }
 
   template <class T>
@@ -503,6 +513,22 @@ namespace constructor_tests {
         test::check_container(x, expected);
       }
     }
+
+    UNORDERED_SUB_TEST("Initializer list construct 8")
+    {
+      test::check_instances check_;
+
+      {
+        T x(list, al1);
+        BOOST_TEST(x.empty());
+        BOOST_TEST(test::equivalent(x.get_allocator(), al1));
+      }
+
+      {
+        T x({vec[0], vec[1], vec[2]}, al1);
+        BOOST_TEST(test::equivalent(x.get_allocator(), al1));
+        test::check_container(x, expected);
+      }
     }
 #endif
   }
