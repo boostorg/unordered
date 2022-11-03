@@ -4,7 +4,7 @@
 
 = Benchmarks
 
-== boost::unordered_set
+== boost::unordered_[multi]set
 
 All benchmarks were created using `unordered_set<unsigned int>` (non-duplicate) and `unordered_multiset<unsigned int>` (duplicate). The source code can be https://github.com/boostorg/boost_unordered_benchmarks/tree/boost_unordered_set[found here^].
 
