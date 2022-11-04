@@ -972,8 +972,8 @@ size_type max_load() const noexcept;
 
 [horizontal]
 Returns:;; The maximum number of elements the container can hold without rehashing, assuming that no further elements will be erased.
-Note:;; After construction, rehash or clearance, the container's maximum load is at least `max_load_factor() * bucket_count()`. This load will decrease by the number of elements inserted,
-but won't increase at the same rate on erasure.
+Note:;; After construction, rehash or clearance, the container's maximum load is at least `max_load_factor() * bucket_count()`.
+This number may decrease on erasure under high-load conditions.
 
 ---
 

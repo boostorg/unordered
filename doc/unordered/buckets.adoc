@@ -142,14 +142,13 @@ h|*Method* h|*Description*
 
 |===
 
-A note on `max_load` for open-addressing containers: the maximum load will naturally decrease when
-new insertions are performed, but _won't_ increase at the same rate when erasing: for instance,
-adding 1,000 elements to a <<unordered_flat_map,`boost::unordered_flat_map`>> under high load
-conditions and then erasing 1,000 elements will typically reduce the maximum load by around
-a few dozen elements rather than restoring it to its original value. This is done internally by Boost.Unordered in order
+A note on `max_load` for open-addressing containers: the maximum load will be 
+(`max_load_factor() * bucket_count()`) right after `rehash` or on container creation, but may
+slightly decrease when erasing elements in high-load situations. For instance, if we
+have a <<unordered_flat_map,`boost::unordered_flat_map`>> with `size()` almost
+at `max_load()` level and then erase 1,000 elements, `max_load()` may decrease by around a
+few dozen elements. This is done internally by Boost.Unordered in order
 to keep its performance stable, and must be taken into account when planning for rehash-free insertions.
-The maximum load will be reset to its theoretical maximum
-(`max_load_factor() * bucket_count()`) right after `rehash`.
 
 == Iterator Invalidation
 
