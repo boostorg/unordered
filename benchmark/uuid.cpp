@@ -24,6 +24,7 @@
 #include <iostream>
 #include <iomanip>
 #include <chrono>
+#include <cstring>
 
 using namespace std::chrono_literals;
 
@@ -55,12 +56,20 @@ struct uuid
 
     inline friend std::size_t hash_value( uuid const& u ) noexcept
     {
-        return boost::hash_value( u.data );
+        std::uint64_t low  = boost::endian::load_little_u64( u.data + 0 );
+        std::uint64_t high = boost::endian::load_little_u64( u.data + 8 );
+
+        std::size_t r = 0;
+
+        boost::hash_combine( r, low );
+        boost::hash_combine( r, high );
+
+        return r;
     }
 
     inline friend bool operator==( uuid const& u1, uuid const& u2 ) noexcept
     {
-        return std::equal( u1.data + 0, u1.data + 16, u2.data );
+        return std::memcmp( u1.data, u2.data, 16 ) == 0;
     }
 };
 
@@ -71,7 +80,7 @@ template<> struct hash< ::uuid >
 {
     std::size_t operator()( uuid const& u ) const noexcept
     {
-        return boost::hash_value( u.data );
+        return hash_value( u );
     }
 };
 
