@@ -51,6 +51,8 @@ namespace boost {
                          const allocator_type& a = allocator_type());
     xref:#unordered_multiset_copy_constructor[unordered_multiset](const unordered_multiset& other);
     xref:#unordered_multiset_move_constructor[unordered_multiset](unordered_multiset&& other);
+    template<class InputIterator>
+      xref:#unordered_multiset_iterator_range_constructor_with_allocator[unordered_multiset](InputIterator f, InputIterator l, const allocator_type& a);
     explicit xref:#unordered_multiset_allocator_constructor[unordered_multiset](const Allocator& a);
     xref:#unordered_multiset_copy_constructor_with_allocator[unordered_multiset](const unordered_multiset& other, const Allocator& a);
     xref:#unordered_multiset_move_constructor_with_allocator[unordered_multiset](unordered_multiset&& other, const Allocator& a);
@@ -66,7 +68,9 @@ namespace boost {
     template<class InputIterator>
       xref:#unordered_multiset_iterator_range_constructor_with_bucket_count_and_hasher[unordered_multiset](InputIterator f, InputIterator l, size_type n, const hasher& hf,
                          const allocator_type& a);
-    xref:#unordered_multiset_initializer_list_constructor_with_bucket_count_and_allocator[unordered_multiset](std::initializer_list<value_type> il, size_type n, const allocator_type& a)
+    xref:#unordered_multiset_initializer_list_constructor_with_allocator[unordered_multiset](std::initializer_list<value_type> il, const allocator_type& a);
+    xref:#unordered_multiset_initializer_list_constructor_with_bucket_count_and_allocator[unordered_multiset](std::initializer_list<value_type> il, size_type n,
+                       const allocator_type& a)
     xref:#unordered_multiset_initializer_list_constructor_with_bucket_count_and_hasher_and_allocator[unordered_multiset](std::initializer_list<value_type> il, size_type n, const hasher& hf,
                        const allocator_type& a);
     xref:#unordered_multiset_destructor[~unordered_multiset()];
@@ -409,6 +413,19 @@ So, for example, you can't return the container from a function.
 
 ---
 
+==== Iterator Range Constructor with Allocator
+```c++
+template<class InputIterator>
+  unordered_multiset(InputIterator f, InputIterator l, const allocator_type& a);
+```
+
+Constructs an empty container using `a` as the allocator, with the default hash function and key equality predicate and a maximum load factor of `1.0` and inserts the elements from `[f, l)` into it.
+
+[horizontal]
+Requires:;; `hasher`, `key_equal` need to be https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[DefaultConstructible^].
+
+---
+
 ==== Allocator Constructor
 ```c++
 explicit unordered_multiset(const Allocator& a);
@@ -509,6 +526,19 @@ Constructs an empty container with at least `n` buckets, using `hf` as the hash 
 
 [horizontal]
 Requires:;; `key_equal` needs to be https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[DefaultConstructible^].
+
+---
+
+==== initializer_list Constructor with Allocator
+
+```c++
+unordered_multiset(std::initializer_list<value_type> il, const allocator_type& a);
+```
+
+Constructs an empty container using `a` as the allocator and a maximum load factor of 1.0 and inserts the elements from `il` into it.
+
+[horizontal]
+Requires:;; `hasher` and `key_equal` need to be https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[DefaultConstructible^].
 
 ---
 

@@ -68,6 +68,8 @@ namespace boost {
                          const allocator_type& a = allocator_type());
     xref:#unordered_flat_set_copy_constructor[unordered_flat_set](const unordered_flat_set& other);
     xref:#unordered_flat_set_move_constructor[unordered_flat_set](unordered_flat_set&& other);
+    template<class InputIterator>
+      xref:#unordered_flat_set_iterator_range_constructor_with_allocator[unordered_flat_set](InputIterator f, InputIterator l, const allocator_type& a);
     explicit xref:#unordered_flat_set_allocator_constructor[unordered_flat_set](const Allocator& a);
     xref:#unordered_flat_set_copy_constructor_with_allocator[unordered_flat_set](const unordered_flat_set& other, const Allocator& a);
     xref:#unordered_flat_set_move_constructor_with_allocator[unordered_flat_set](unordered_flat_set&& other, const Allocator& a);
@@ -83,6 +85,7 @@ namespace boost {
     template<class InputIterator>
       xref:#unordered_flat_set_iterator_range_constructor_with_bucket_count_and_hasher[unordered_flat_set](InputIterator f, InputIterator l, size_type n, const hasher& hf,
                          const allocator_type& a);
+    xref:#unordered_flat_set_initializer_list_constructor_with_allocator[unordered_flat_set](std::initializer_list<value_type> il, const allocator_type& a);
     xref:#unordered_flat_set_initializer_list_constructor_with_bucket_count_and_allocator[unordered_flat_set](std::initializer_list<value_type> il, size_type n,
                        const allocator_type& a);
     xref:#unordered_flat_set_initializer_list_constructor_with_bucket_count_and_hasher_and_allocator[unordered_flat_set](std::initializer_list<value_type> il, size_type n, const hasher& hf,
@@ -332,6 +335,19 @@ The hash function, predicate and allocator are moved-constructed from `other`.
 
 ---
 
+==== Iterator Range Constructor with Allocator
+```c++
+template<class InputIterator>
+  unordered_flat_set(InputIterator f, InputIterator l, const allocator_type& a);
+```
+
+Constructs an empty container using `a` as the allocator, with the default hash function and key equality predicate and inserts the elements from `[f, l)` into it.
+
+[horizontal]
+Requires:;; `hasher`, `key_equal` need to be https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[DefaultConstructible^].
+
+---
+
 ==== Allocator Constructor
 ```c++
 explicit unordered_flat_set(Allocator const& a);
@@ -430,6 +446,19 @@ Constructs an empty container with at least `n` buckets, using `hf` as the hash 
 
 [horizontal]
 Requires:;; `key_equal` needs to be https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[DefaultConstructible^].
+
+---
+
+==== initializer_list Constructor with Allocator
+
+```c++
+unordered_flat_set(std::initializer_list<value_type> il, const allocator_type& a);
+```
+
+Constructs an empty container using `a` and default hash function and key equality predicate, and inserts the elements from `il` into it.
+
+[horizontal]
+Requires:;; `hasher` and `key_equal` need to be https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[DefaultConstructible^].
 
 ---
 
