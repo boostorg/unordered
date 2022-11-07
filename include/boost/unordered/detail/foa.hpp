@@ -21,6 +21,7 @@
 #include <boost/core/pointer_traits.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/predef.h>
+#include <boost/type_traits/has_trivial_copy.hpp>
 #include <boost/type_traits/is_nothrow_swappable.hpp>
 #include <boost/unordered/detail/xmx.hpp>
 #include <boost/unordered/hash_traits.hpp>
@@ -1528,7 +1529,15 @@ private:
     copy_elements_array_from(
       x,
       std::integral_constant<
-        bool,std::is_trivially_copy_constructible<value_type>::value>{});
+        bool,
+#if BOOST_WORKAROUND(BOOST_LIBSTDCXX_VERSION,<50000)
+        /* std::is_trivially_copy_constructible not provided */
+        boost::has_trivial_copy<value_type>::value
+#else
+        std::is_trivially_copy_constructible<value_type>::value
+#endif
+      >{}
+    );
   }
 
   void copy_elements_array_from(const table& x,std::true_type /* -> memcpy */)
