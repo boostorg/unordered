@@ -26,6 +26,12 @@
 
 namespace boost {
   namespace unordered {
+
+#if defined(BOOST_MSVC)
+#pragma warning(push)
+#pragma warning(disable : 4714) /* marked as __forceinline not inlined */
+#endif
+
     template <class Key, class T, class Hash, class KeyEqual, class Allocator>
     class unordered_flat_map
     {
@@ -75,6 +81,9 @@ namespace boost {
       using allocator_type = Allocator;
       using reference = value_type&;
       using const_reference = value_type const&;
+      using pointer = typename boost::allocator_pointer<allocator_type>::type;
+      using const_pointer =
+        typename boost::allocator_const_pointer<allocator_type>::type;
       using iterator = typename table_type::iterator;
       using const_iterator = typename table_type::const_iterator;
 
@@ -94,6 +103,13 @@ namespace boost {
 
       unordered_flat_map(size_type n, hasher const& h, allocator_type const& a)
           : unordered_flat_map(n, h, key_equal(), a)
+      {
+      }
+
+      template <class InputIterator>
+      unordered_flat_map(
+        InputIterator f, InputIterator l, allocator_type const& a)
+          : unordered_flat_map(f, l, size_type(0), hasher(), key_equal(), a)
       {
       }
 
@@ -153,6 +169,12 @@ namespace boost {
         key_equal const& pred = key_equal(),
         allocator_type const& a = allocator_type())
           : unordered_flat_map(ilist.begin(), ilist.end(), n, h, pred, a)
+      {
+      }
+
+      unordered_flat_map(
+        std::initializer_list<value_type> il, allocator_type const& a)
+          : unordered_flat_map(il, size_type(0), hasher(), key_equal(), a)
       {
       }
 
@@ -217,29 +239,31 @@ namespace boost {
       void clear() noexcept { table_.clear(); }
 
       template <class Ty>
-      auto insert(Ty&& value)
+      BOOST_FORCEINLINE auto insert(Ty&& value)
         -> decltype(table_.insert(std::forward<Ty>(value)))
       {
         return table_.insert(std::forward<Ty>(value));
       }
 
-      std::pair<iterator, bool> insert(init_type&& value)
+      BOOST_FORCEINLINE std::pair<iterator, bool> insert(init_type&& value)
       {
         return table_.insert(std::move(value));
       }
 
-      iterator insert(const_iterator, value_type const& value)
+      template <class Ty>
+      BOOST_FORCEINLINE auto insert(const_iterator, Ty&& value)
+        -> decltype(table_.insert(std::forward<Ty>(value)).first)
       {
-        return table_.insert(value).first;
+        return table_.insert(std::forward<Ty>(value)).first;
       }
 
-      iterator insert(const_iterator, value_type&& value)
+      BOOST_FORCEINLINE iterator insert(const_iterator, init_type&& value)
       {
         return table_.insert(std::move(value)).first;
       }
 
       template <class InputIterator>
-      void insert(InputIterator first, InputIterator last)
+      BOOST_FORCEINLINE void insert(InputIterator first, InputIterator last)
       {
         for (auto pos = first; pos != last; ++pos) {
           table_.emplace(*pos);
@@ -287,44 +311,52 @@ namespace boost {
           .first;
       }
 
-      template <class... Args> std::pair<iterator, bool> emplace(Args&&... args)
+      template <class... Args>
+      BOOST_FORCEINLINE std::pair<iterator, bool> emplace(Args&&... args)
       {
         return table_.emplace(std::forward<Args>(args)...);
       }
 
       template <class... Args>
-      iterator emplace_hint(const_iterator, Args&&... args)
+      BOOST_FORCEINLINE iterator emplace_hint(const_iterator, Args&&... args)
       {
-        return this->emplace(std::forward<Args>(args)...).first;
+        return table_.emplace(std::forward<Args>(args)...).first;
       }
 
       template <class... Args>
-      std::pair<iterator, bool> try_emplace(key_type const& key, Args&&... args)
+      BOOST_FORCEINLINE std::pair<iterator, bool> try_emplace(
+        key_type const& key, Args&&... args)
       {
         return table_.try_emplace(key, std::forward<Args>(args)...);
       }
 
       template <class... Args>
-      std::pair<iterator, bool> try_emplace(key_type&& key, Args&&... args)
+      BOOST_FORCEINLINE std::pair<iterator, bool> try_emplace(
+        key_type&& key, Args&&... args)
       {
         return table_.try_emplace(std::move(key), std::forward<Args>(args)...);
       }
 
       template <class... Args>
-      iterator try_emplace(const_iterator, key_type const& key, Args&&... args)
+      BOOST_FORCEINLINE iterator try_emplace(
+        const_iterator, key_type const& key, Args&&... args)
       {
         return table_.try_emplace(key, std::forward<Args>(args)...).first;
       }
 
       template <class... Args>
-      iterator try_emplace(const_iterator, key_type&& key, Args&&... args)
+      BOOST_FORCEINLINE iterator try_emplace(
+        const_iterator, key_type&& key, Args&&... args)
       {
         return table_.try_emplace(std::move(key), std::forward<Args>(args)...)
           .first;
       }
 
-      void erase(iterator pos) { table_.erase(pos); }
-      void erase(const_iterator pos) { return table_.erase(pos); }
+      BOOST_FORCEINLINE void erase(iterator pos) { table_.erase(pos); }
+      BOOST_FORCEINLINE void erase(const_iterator pos)
+      {
+        return table_.erase(pos);
+      }
       iterator erase(const_iterator first, const_iterator last)
       {
         while (first != last) {
@@ -333,10 +365,13 @@ namespace boost {
         return iterator{detail::foa::const_iterator_cast_tag{}, last};
       }
 
-      size_type erase(key_type const& key) { return table_.erase(key); }
+      BOOST_FORCEINLINE size_type erase(key_type const& key)
+      {
+        return table_.erase(key);
+      }
 
       template <class K>
-      typename std::enable_if<
+      BOOST_FORCEINLINE typename std::enable_if<
         detail::transparent_non_iterable<K, unordered_flat_map>::value,
         size_type>::type
       erase(K const& key)
@@ -530,6 +565,8 @@ namespace boost {
 
       void max_load_factor(float) {}
 
+      size_type max_load() const noexcept { return table_.max_load(); }
+
       void rehash(size_type n) { table_.rehash(n); }
 
       void reserve(size_type n) { table_.reserve(n); }
@@ -586,6 +623,11 @@ namespace boost {
     {
       return erase_if(map.table_, pred);
     }
+
+#if defined(BOOST_MSVC)
+#pragma warning(pop) /* C4714 */
+#endif
+
   } // namespace unordered
 } // namespace boost
 

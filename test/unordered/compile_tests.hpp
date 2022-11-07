@@ -1,5 +1,6 @@
 
 // Copyright 2005-2009 Daniel James.
+// Copyright 2022 Christian Mazakas.
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -75,6 +76,14 @@ template <class X, class T> void container_test(X& r, T const&)
 #endif
 
   typedef typename X::allocator_type allocator_type;
+  typedef typename X::pointer pointer;
+  typedef typename X::const_pointer const_pointer;
+
+  BOOST_STATIC_ASSERT((boost::is_same<pointer,
+    typename boost::allocator_pointer<allocator_type>::type>::value));
+
+  BOOST_STATIC_ASSERT((boost::is_same<const_pointer,
+    typename boost::allocator_const_pointer<allocator_type>::type>::value));
 
   // value_type
 
@@ -509,13 +518,11 @@ template <class X> void equality_test(X& r)
 
 template <class X, class T> void unordered_unique_test(X& r, T const& t)
 {
-  (void) r;
-  (void) t;
-#ifndef BOOST_UNORDERED_FOA_TESTS
   typedef typename X::iterator iterator;
   test::check_return_type<std::pair<iterator, bool> >::equals(r.insert(t));
   test::check_return_type<std::pair<iterator, bool> >::equals(r.emplace(t));
 
+#ifndef BOOST_UNORDERED_FOA_TESTS
   typedef typename X::node_type node_type;
   typedef typename X::insert_return_type insert_return_type;
 

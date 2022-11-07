@@ -1,4 +1,4 @@
-// Copyright 2021 Peter Dimov.
+// Copyright 2021, 2022 Peter Dimov.
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -9,17 +9,13 @@
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/member.hpp>
+#include <boost/endian/conversion.hpp>
 #include <boost/core/detail/splitmix64.hpp>
+#include <boost/container_hash/hash.hpp>
 #include <boost/config.hpp>
 #ifdef HAVE_ABSEIL
 # include "absl/container/node_hash_map.h"
 # include "absl/container/flat_hash_map.h"
-#endif
-#ifdef HAVE_TSL_HOPSCOTCH
-# include "tsl/hopscotch_map.h"
-#endif
-#ifdef HAVE_TSL_ROBIN
-# include "tsl/robin_map.h"
 #endif
 #include <unordered_map>
 #include <vector>
@@ -28,10 +24,11 @@
 #include <iostream>
 #include <iomanip>
 #include <chrono>
+#include <cstring>
 
 using namespace std::chrono_literals;
 
-static void print_time( std::chrono::steady_clock::time_point & t1, char const* label, std::uint32_t s, std::size_t size )
+static void print_time( std::chrono::steady_clock::time_point & t1, char const* label, std::uint64_t s, std::size_t size )
 {
     auto t2 = std::chrono::steady_clock::now();
 
@@ -43,44 +40,82 @@ static void print_time( std::chrono::steady_clock::time_point & t1, char const* 
 constexpr unsigned N = 2'000'000;
 constexpr int K = 10;
 
-static std::vector<std::string> indices1, indices2;
-
-static std::string make_index( unsigned x )
+struct uuid
 {
-    char buffer[ 64 ];
-    std::snprintf( buffer, sizeof(buffer), "pfx_%u_sfx", x );
+    unsigned char data[ 16 ];
 
-    return buffer;
-}
+    uuid(): data()
+    {
+    }
 
-static std::string make_random_index( unsigned x )
+    uuid( std::uint64_t low, std::uint64_t high ) noexcept
+    {
+        boost::endian::store_little_u64( data + 0, low );
+        boost::endian::store_little_u64( data + 8, high );
+    }
+
+    inline friend std::size_t hash_value( uuid const& u ) noexcept
+    {
+        std::uint64_t low  = boost::endian::load_little_u64( u.data + 0 );
+        std::uint64_t high = boost::endian::load_little_u64( u.data + 8 );
+
+        std::size_t r = 0;
+
+        boost::hash_combine( r, low );
+        boost::hash_combine( r, high );
+
+        return r;
+    }
+
+    inline friend bool operator==( uuid const& u1, uuid const& u2 ) noexcept
+    {
+        return std::memcmp( u1.data, u2.data, 16 ) == 0;
+    }
+};
+
+namespace std
 {
-    char buffer[ 64 ];
-    std::snprintf( buffer, sizeof(buffer), "pfx_%0*d_%u_sfx", x % 8 + 1, 0, x );
 
-    return buffer;
-}
+template<> struct hash< ::uuid >
+{
+    std::size_t operator()( uuid const& u ) const noexcept
+    {
+        return hash_value( u );
+    }
+};
+
+} // namespace std
+
+static std::vector< uuid > indices1, indices2, indices3;
 
 static void init_indices()
 {
-    indices1.reserve( N*2+1 );
-    indices1.push_back( make_index( 0 ) );
+    indices1.push_back( {} );
 
     for( unsigned i = 1; i <= N*2; ++i )
     {
-        indices1.push_back( make_index( i ) );
+        indices1.push_back( { i, 0 } );
     }
 
-    indices2.reserve( N*2+1 );
-    indices2.push_back( make_index( 0 ) );
+    indices2.push_back( {} );
 
     {
         boost::detail::splitmix64 rng;
 
         for( unsigned i = 1; i <= N*2; ++i )
         {
-            indices2.push_back( make_random_index( static_cast<std::uint32_t>( rng() ) ) );
+            indices2.push_back( { rng(), rng() } );
         }
+    }
+
+    indices3.push_back( {} );
+
+    for( unsigned i = 1; i <= N*2; ++i )
+    {
+        uuid k( i, 0 );
+        std::reverse( k.data + 0, k.data + 16 );
+
+        indices3.push_back( k );
     }
 }
 
@@ -100,13 +135,20 @@ template<class Map> BOOST_NOINLINE void test_insert( Map& map, std::chrono::stea
 
     print_time( t1, "Random insert",  0, map.size() );
 
+    for( unsigned i = 1; i <= N; ++i )
+    {
+        map.insert( { indices3[ i ], i } );
+    }
+
+    print_time( t1, "Consecutive reversed insert",  0, map.size() );
+
     std::cout << std::endl;
 }
 
 template<class Map> BOOST_NOINLINE void test_lookup( Map& map, std::chrono::steady_clock::time_point & t1 )
 {
-    std::uint32_t s;
-    
+    std::uint64_t s;
+
     s = 0;
 
     for( int j = 0; j < K; ++j )
@@ -132,6 +174,19 @@ template<class Map> BOOST_NOINLINE void test_lookup( Map& map, std::chrono::stea
     }
 
     print_time( t1, "Random lookup",  s, map.size() );
+
+    s = 0;
+
+    for( int j = 0; j < K; ++j )
+    {
+        for( unsigned i = 1; i <= N * 2; ++i )
+        {
+            auto it = map.find( indices3[ i ] );
+            if( it != map.end() ) s += it->second;
+        }
+    }
+
+    print_time( t1, "Consecutive reversed lookup",  s, map.size() );
 
     std::cout << std::endl;
 }
@@ -179,6 +234,13 @@ template<class Map> BOOST_NOINLINE void test_erase( Map& map, std::chrono::stead
     }
 
     print_time( t1, "Random erase",  0, map.size() );
+
+    for( unsigned i = 1; i <= N; ++i )
+    {
+        map.erase( indices3[ i ] );
+    }
+
+    print_time( t1, "Consecutive reversed erase",  0, map.size() );
 
     std::cout << std::endl;
 }
@@ -244,7 +306,7 @@ template<template<class...> class Map> BOOST_NOINLINE void test( char const* lab
     s_alloc_bytes = 0;
     s_alloc_count = 0;
 
-    Map<std::string, std::uint32_t> map;
+    Map<uuid, std::uint64_t> map;
 
     auto t0 = std::chrono::steady_clock::now();
     auto t1 = t0;
@@ -308,127 +370,9 @@ template<class K, class V> using absl_flat_hash_map =
 
 #endif
 
-#ifdef HAVE_TSL_HOPSCOTCH
-
-template<class K, class V> using tsl_hopscotch_map =
-    tsl::hopscotch_map<K, V, std::hash<K>, std::equal_to<K>, ::allocator< std::pair<K, V> >>;
-
-template<class K, class V> using tsl_hopscotch_pg_map =
-    tsl::hopscotch_pg_map<K, V, std::hash<K>, std::equal_to<K>, ::allocator< std::pair<K, V> >>;
-
-#endif
-
-#ifdef HAVE_TSL_ROBIN
-
-template<class K, class V> using tsl_robin_map =
-    tsl::robin_map<K, V, std::hash<K>, std::equal_to<K>, ::allocator< std::pair<K, V> >>;
-
-template<class K, class V> using tsl_robin_pg_map =
-    tsl::robin_pg_map<K, V, std::hash<K>, std::equal_to<K>, ::allocator< std::pair<K, V> >>;
-
-#endif
-
-// fnv1a_hash
-
-template<int Bits> struct fnv1a_hash_impl;
-
-template<> struct fnv1a_hash_impl<32>
-{
-    std::size_t operator()( std::string const& s ) const
-    {
-        std::size_t h = 0x811C9DC5u;
-
-        char const * first = s.data();
-        char const * last = first + s.size();
-
-        for( ; first != last; ++first )
-        {
-            h ^= static_cast<unsigned char>( *first );
-            h *= 0x01000193ul;
-        }
-
-        return h;
-    }
-};
-
-template<> struct fnv1a_hash_impl<64>
-{
-    std::size_t operator()( std::string const& s ) const
-    {
-        std::size_t h = 0xCBF29CE484222325ull;
-
-        char const * first = s.data();
-        char const * last = first + s.size();
-
-        for( ; first != last; ++first )
-        {
-            h ^= static_cast<unsigned char>( *first );
-            h *= 0x00000100000001B3ull;
-        }
-
-        return h;
-    }
-};
-
-struct fnv1a_hash: fnv1a_hash_impl< std::numeric_limits<std::size_t>::digits >
-{
-    using is_avalanching = void;
-};
-
-template<class K, class V> using std_unordered_map_fnv1a =
-std::unordered_map<K, V, fnv1a_hash, std::equal_to<K>, allocator_for<K, V>>;
-
-template<class K, class V> using boost_unordered_map_fnv1a =
-    boost::unordered_map<K, V, fnv1a_hash, std::equal_to<K>, allocator_for<K, V>>;
-
-template<class K, class V> using boost_unordered_flat_map_fnv1a =
-    boost::unordered_flat_map<K, V, fnv1a_hash, std::equal_to<K>, allocator_for<K, V>>;
-
-template<class K, class V> using multi_index_map_fnv1a = multi_index_container<
-  pair<K, V>,
-  indexed_by<
-    hashed_unique< member<pair<K, V>, K, &pair<K, V>::first>, fnv1a_hash >
-  >,
-  ::allocator< pair<K, V> >
->;
-
-#ifdef HAVE_ABSEIL
-
-template<class K, class V> using absl_node_hash_map_fnv1a =
-    absl::node_hash_map<K, V, fnv1a_hash, absl::container_internal::hash_default_eq<K>, allocator_for<K, V>>;
-
-template<class K, class V> using absl_flat_hash_map_fnv1a =
-    absl::flat_hash_map<K, V, fnv1a_hash, absl::container_internal::hash_default_eq<K>, allocator_for<K, V>>;
-
-#endif
-
-#ifdef HAVE_TSL_HOPSCOTCH
-
-template<class K, class V> using tsl_hopscotch_map_fnv1a =
-    tsl::hopscotch_map<K, V, fnv1a_hash, std::equal_to<K>, ::allocator< std::pair<K, V> >>;
-
-template<class K, class V> using tsl_hopscotch_pg_map_fnv1a =
-    tsl::hopscotch_pg_map<K, V, fnv1a_hash, std::equal_to<K>, ::allocator< std::pair<K, V> >>;
-
-#endif
-
-#ifdef HAVE_TSL_ROBIN
-
-template<class K, class V> using tsl_robin_map_fnv1a =
-    tsl::robin_map<K, V, fnv1a_hash, std::equal_to<K>, ::allocator< std::pair<K, V> >>;
-
-template<class K, class V> using tsl_robin_pg_map_fnv1a =
-    tsl::robin_pg_map<K, V, fnv1a_hash, std::equal_to<K>, ::allocator< std::pair<K, V> >>;
-
-#endif
-
-//
-
 int main()
 {
     init_indices();
-
-#if 1
 
     test<std_unordered_map>( "std::unordered_map" );
     test<boost_unordered_map>( "boost::unordered_map" );
@@ -442,53 +386,11 @@ int main()
 
 #endif
 
-#ifdef HAVE_TSL_HOPSCOTCH
-
-    test<tsl_hopscotch_map>( "tsl::hopscotch_map" );
-    test<tsl_hopscotch_pg_map>( "tsl::hopscotch_pg_map" );
-
-#endif
-
-#ifdef HAVE_TSL_ROBIN
-
-    test<tsl_robin_map>( "tsl::robin_map" );
-    test<tsl_robin_pg_map>( "tsl::robin_pg_map" );
-
-#endif
-
-#endif
-
-    test<std_unordered_map_fnv1a>( "std::unordered_map, FNV-1a" );
-    test<boost_unordered_map_fnv1a>( "boost::unordered_map, FNV-1a" );
-    test<boost_unordered_flat_map_fnv1a>( "boost::unordered_flat_map, FNV-1a" );
-    test<multi_index_map_fnv1a>( "multi_index_map, FNV-1a" );
-
-#ifdef HAVE_ABSEIL
-
-    test<absl_node_hash_map_fnv1a>( "absl::node_hash_map, FNV-1a" );
-    test<absl_flat_hash_map_fnv1a>( "absl::flat_hash_map, FNV-1a" );
-
-#endif
-
-#ifdef HAVE_TSL_HOPSCOTCH
-
-    test<tsl_hopscotch_map_fnv1a>( "tsl::hopscotch_map, FNV-1a" );
-    test<tsl_hopscotch_pg_map_fnv1a>( "tsl::hopscotch_pg_map, FNV-1a" );
-
-#endif
-
-#ifdef HAVE_TSL_ROBIN
-
-    test<tsl_robin_map_fnv1a>( "tsl::robin_map, FNV-1a" );
-    test<tsl_robin_pg_map_fnv1a>( "tsl::robin_pg_map, FNV-1a" );
-
-#endif
-
     std::cout << "---\n\n";
 
     for( auto const& x: times )
     {
-        std::cout << std::setw( 35 ) << ( x.label_ + ": " ) << std::setw( 5 ) << x.time_ << " ms, " << std::setw( 9 ) << x.bytes_ << " bytes in " << x.count_ << " allocations\n";
+        std::cout << std::setw( 27 ) << ( x.label_ + ": " ) << std::setw( 5 ) << x.time_ << " ms, " << std::setw( 9 ) << x.bytes_ << " bytes in " << x.count_ << " allocations\n";
     }
 }
 

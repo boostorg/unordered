@@ -1,19 +1,52 @@
 
 // Copyright 2006-2009 Daniel James.
+// Copyright 2022 Christian Mazakas.
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include "../helpers/unordered.hpp"
 
-#include "../helpers/test.hpp"
-#include "../helpers/random_values.hpp"
-#include "../helpers/tracker.hpp"
 #include "../helpers/metafunctions.hpp"
+#include "../helpers/random_values.hpp"
+#include "../helpers/test.hpp"
+#include "../helpers/tracker.hpp"
 #include "../objects/test.hpp"
 
 namespace rehash_tests {
 
   test::seed_t initialize_seed(2974);
+
+  static int count_allocations;
+  template <class T> struct monotonic_allocator
+  {
+    typedef T value_type;
+    monotonic_allocator() {}
+    monotonic_allocator(monotonic_allocator const&) {}
+
+    template <class U> monotonic_allocator(monotonic_allocator<U> const&) {}
+
+    friend bool operator==(
+      monotonic_allocator const&, monotonic_allocator const&)
+    {
+      return true;
+    }
+
+    friend bool operator!=(
+      monotonic_allocator const&, monotonic_allocator const&)
+    {
+      return false;
+    }
+
+    T* allocate(std::size_t n)
+    {
+      ++count_allocations;
+      return static_cast<T*>(::operator new(sizeof(T) * n));
+    }
+
+    void deallocate(T* p, std::size_t) { ::operator delete(p); }
+  };
+
+  void reset_counts() { count_allocations = 0; }
 
   template <class X> bool postcondition(X const& x, typename X::size_type n)
   {
@@ -320,9 +353,10 @@ namespace rehash_tests {
         BOOST_TEST_GT(x.bucket_count(), 0u);
 
         x.reserve(
-          2 * (static_cast<size_type>(
-                std::floor(static_cast<float>(x.size()) / x.max_load_factor()) +
-                std::floor(static_cast<float>(x.size()) * x.max_load_factor()))));
+          2 *
+          (static_cast<size_type>(
+            std::floor(static_cast<float>(x.size()) / x.max_load_factor()) +
+            std::floor(static_cast<float>(x.size()) * x.max_load_factor()))));
 
         BOOST_TEST_GT(x.bucket_count(), bucket_count);
 
@@ -373,6 +407,34 @@ namespace rehash_tests {
         BOOST_TEST_EQ(x.bucket_count(), bucket_count);
       }
     }
+  }
+
+  template <class X> void rehash_stability(X*, test::random_generator generator)
+  {
+    reset_counts();
+
+    typedef typename X::size_type size_type;
+
+    size_type bucket_count = 100;
+    X x(bucket_count);
+
+    size_type num_elems = x.bucket_count() - 1;
+
+    test::random_values<X> v(num_elems, generator);
+    test::ordered<X> tracker;
+    tracker.insert_range(v.begin(), v.end());
+
+    typename test::random_values<X>::iterator pos = v.begin();
+    for (size_type i = 0; i < num_elems; ++i) {
+      x.insert(*pos);
+      ++pos;
+    }
+
+    int const old_count = count_allocations;
+    x.rehash(0);
+
+    BOOST_TEST_EQ(count_allocations, old_count);
+    tracker.compare(x);
   }
 
   template <class X> void rehash_test1(X*, test::random_generator generator)
@@ -512,6 +574,13 @@ namespace rehash_tests {
     test::allocator1<std::pair<test::object const, test::object> > >*
     test_map_tracking;
 
+  boost::unordered_flat_set<test::object, test::hash, test::equal_to,
+    monotonic_allocator<test::object> >* test_set_monotonic;
+  boost::unordered_flat_map<test::object, test::object, test::hash,
+    test::equal_to,
+    monotonic_allocator<std::pair<test::object const, test::object> > >*
+    test_map_monotonic;
+
   UNORDERED_TEST(rehash_empty_test1, ((int_set_ptr)(test_map_ptr)))
   UNORDERED_TEST(rehash_empty_test2,
     ((int_set_ptr)(test_map_ptr))(
@@ -533,9 +602,11 @@ namespace rehash_tests {
   UNORDERED_TEST(rehash_empty_tracking,
     ((test_set_tracking)(test_map_tracking))(
       (default_generator)(generate_collisions)(limited_range)))
-  UNORDERED_TEST(rehash_nonempty_tracking,
-    ((test_set_tracking)(test_map_tracking))(
-      (default_generator)(generate_collisions)(limited_range)))
+  UNORDERED_TEST(
+    rehash_nonempty_tracking, ((test_set_tracking)(test_map_tracking))(
+                                (default_generator)(limited_range)))
+  UNORDERED_TEST(rehash_stability, ((test_set_monotonic)(test_map_monotonic))(
+                                     (default_generator)(limited_range)))
 #else
   boost::unordered_set<int>* int_set_ptr;
   boost::unordered_multiset<test::object, test::hash, test::equal_to,
@@ -555,6 +626,18 @@ namespace rehash_tests {
     test::equal_to,
     test::allocator1<std::pair<test::object const, test::object> > >*
     test_multimap_tracking;
+
+  boost::unordered_set<test::object, test::hash, test::equal_to,
+    monotonic_allocator<test::object> >* test_set_monotonic;
+  boost::unordered_multiset<test::object, test::hash, test::equal_to,
+    monotonic_allocator<test::object> >* test_multiset_monotonic;
+  boost::unordered_map<test::object, test::object, test::hash, test::equal_to,
+    monotonic_allocator<std::pair<test::object const, test::object> > >*
+    test_map_monotonic;
+  boost::unordered_multimap<test::object, test::object, test::hash,
+    test::equal_to,
+    monotonic_allocator<std::pair<test::object const, test::object> > >*
+    test_multimap_monotonic;
 
   UNORDERED_TEST(rehash_empty_test1,
     ((int_set_ptr)(test_multiset_ptr)(test_map_ptr)(int_multimap_ptr)))
@@ -583,7 +666,10 @@ namespace rehash_tests {
   UNORDERED_TEST(rehash_nonempty_tracking,
     ((test_set_tracking)(test_multiset_tracking)(test_map_tracking)(test_multimap_tracking))(
       (default_generator)(generate_collisions)(limited_range)))
+  UNORDERED_TEST(rehash_stability,
+    ((test_set_monotonic)(test_multiset_monotonic)(test_map_monotonic)(test_multimap_monotonic))(
+      (default_generator)(limited_range)))
 #endif
-}
+} // namespace rehash_tests
 
 RUN_TESTS()

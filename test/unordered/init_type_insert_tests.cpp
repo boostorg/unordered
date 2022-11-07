@@ -1,3 +1,8 @@
+
+// Copyright 2022 Christian Mazakas.
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or move at http://www.boost.org/LICENSE_1_0.txt)
+
 #if !defined(BOOST_UNORDERED_FOA_TESTS)
 #error "This test is only for the FOA-style conatiners"
 #endif
@@ -164,9 +169,76 @@ static void test_insert_tracking()
   BOOST_TEST_EQ(raii_tracker::move_constructs, 7u + 2u * map.size());
 }
 
+static void test_insert_hint_tracking()
+{
+  raii_tracker::reset_counts();
+
+  BOOST_TEST_EQ(raii_tracker::copy_constructs, 0u);
+  BOOST_TEST_EQ(raii_tracker::move_constructs, 0u);
+
+  boost::unordered_flat_map<raii_tracker, raii_tracker,
+    std::hash<raii_tracker> >
+    map;
+
+  {
+    std::pair<raii_tracker, raii_tracker> value{1, 2};
+
+    map.insert(map.begin(), value);
+
+    BOOST_TEST_EQ(raii_tracker::copy_constructs, 2u);
+    BOOST_TEST_EQ(raii_tracker::move_constructs, 0u);
+  }
+
+  {
+    std::pair<raii_tracker, raii_tracker> value{2, 3};
+
+    map.insert(std::move(value));
+
+    BOOST_TEST_EQ(raii_tracker::copy_constructs, 2u);
+    BOOST_TEST_EQ(raii_tracker::move_constructs, 2u);
+  }
+
+  {
+    std::pair<raii_tracker const, raii_tracker> value{3, 4};
+
+    map.insert(map.begin(), value);
+
+    BOOST_TEST_EQ(raii_tracker::copy_constructs, 4u);
+    BOOST_TEST_EQ(raii_tracker::move_constructs, 2u);
+  }
+
+  {
+    std::pair<raii_tracker const, raii_tracker> value{4, 5};
+
+    map.insert(map.begin(), std::move(value));
+
+    BOOST_TEST_EQ(raii_tracker::copy_constructs, 5u);
+    BOOST_TEST_EQ(raii_tracker::move_constructs, 3u);
+  }
+
+  {
+    map.insert(map.begin(), std::make_pair(5, 6));
+    BOOST_TEST_EQ(raii_tracker::copy_constructs, 5u);
+    BOOST_TEST_EQ(raii_tracker::move_constructs, 5u);
+  }
+
+  {
+    map.insert(map.begin(), {6, 7});
+    BOOST_TEST_EQ(raii_tracker::copy_constructs, 5u);
+    BOOST_TEST_EQ(raii_tracker::move_constructs, 7u);
+  }
+
+  BOOST_TEST_EQ(map.size(), 6u);
+
+  map.rehash(1024);
+  BOOST_TEST_EQ(raii_tracker::copy_constructs, 5u);
+  BOOST_TEST_EQ(raii_tracker::move_constructs, 7u + 2u * map.size());
+}
+
 int main()
 {
   test_move_only();
   test_insert_tracking();
+  test_insert_hint_tracking();
   return boost::report_errors();
 }

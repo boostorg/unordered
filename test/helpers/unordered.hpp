@@ -17,5 +17,6 @@
 #include <boost/unordered_map.hpp>
 #endif
 #include "postfix.hpp"
+// clang-format on
 
 #endif

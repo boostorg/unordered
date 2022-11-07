@@ -24,6 +24,12 @@
 
 namespace boost {
   namespace unordered {
+
+#if defined(BOOST_MSVC)
+#pragma warning(push)
+#pragma warning(disable : 4714) /* marked as __forceinline not inlined */
+#endif
+
     template <class Key, class Hash, class KeyEqual, class Allocator>
     class unordered_flat_set
     {
@@ -57,6 +63,9 @@ namespace boost {
       using allocator_type = Allocator;
       using reference = value_type&;
       using const_reference = value_type const&;
+      using pointer = typename boost::allocator_pointer<allocator_type>::type;
+      using const_pointer =
+        typename boost::allocator_const_pointer<allocator_type>::type;
       using iterator = typename table_type::iterator;
       using const_iterator = typename table_type::const_iterator;
 
@@ -76,6 +85,13 @@ namespace boost {
 
       unordered_flat_set(size_type n, hasher const& h, allocator_type const& a)
           : unordered_flat_set(n, h, key_equal(), a)
+      {
+      }
+
+      template <class InputIterator>
+      unordered_flat_set(
+        InputIterator f, InputIterator l, allocator_type const& a)
+          : unordered_flat_set(f, l, size_type(0), hasher(), key_equal(), a)
       {
       }
 
@@ -135,6 +151,12 @@ namespace boost {
         key_equal const& pred = key_equal(),
         allocator_type const& a = allocator_type())
           : unordered_flat_set(ilist.begin(), ilist.end(), n, h, pred, a)
+      {
+      }
+
+      unordered_flat_set(
+        std::initializer_list<value_type> il, allocator_type const& a)
+          : unordered_flat_set(il, size_type(0), hasher(), key_equal(), a)
       {
       }
 
@@ -198,22 +220,23 @@ namespace boost {
 
       void clear() noexcept { table_.clear(); }
 
-      std::pair<iterator, bool> insert(value_type const& value)
+      BOOST_FORCEINLINE std::pair<iterator, bool> insert(
+        value_type const& value)
       {
         return table_.insert(value);
       }
 
-      std::pair<iterator, bool> insert(value_type&& value)
+      BOOST_FORCEINLINE std::pair<iterator, bool> insert(value_type&& value)
       {
         return table_.insert(std::move(value));
       }
 
-      iterator insert(const_iterator, value_type const& value)
+      BOOST_FORCEINLINE iterator insert(const_iterator, value_type const& value)
       {
         return table_.insert(value).first;
       }
 
-      iterator insert(const_iterator, value_type&& value)
+      BOOST_FORCEINLINE iterator insert(const_iterator, value_type&& value)
       {
         return table_.insert(std::move(value)).first;
       }
@@ -231,18 +254,22 @@ namespace boost {
         this->insert(ilist.begin(), ilist.end());
       }
 
-      template <class... Args> std::pair<iterator, bool> emplace(Args&&... args)
+      template <class... Args>
+      BOOST_FORCEINLINE std::pair<iterator, bool> emplace(Args&&... args)
       {
         return table_.emplace(std::forward<Args>(args)...);
       }
 
       template <class... Args>
-      iterator emplace_hint(const_iterator, Args&&... args)
+      BOOST_FORCEINLINE iterator emplace_hint(const_iterator, Args&&... args)
       {
-        return this->emplace(std::forward<Args>(args)...).first;
+        return table_.emplace(std::forward<Args>(args)...).first;
       }
 
-      void erase(const_iterator pos) { return table_.erase(pos); }
+      BOOST_FORCEINLINE void erase(const_iterator pos)
+      {
+        return table_.erase(pos);
+      }
       iterator erase(const_iterator first, const_iterator last)
       {
         while (first != last) {
@@ -251,10 +278,13 @@ namespace boost {
         return iterator{detail::foa::const_iterator_cast_tag{}, last};
       }
 
-      size_type erase(key_type const& key) { return table_.erase(key); }
+      BOOST_FORCEINLINE size_type erase(key_type const& key)
+      {
+        return table_.erase(key);
+      }
 
       template <class K>
-      typename std::enable_if<
+      BOOST_FORCEINLINE typename std::enable_if<
         detail::transparent_non_iterable<K, unordered_flat_set>::value,
         size_type>::type
       erase(K const& key)
@@ -411,6 +441,8 @@ namespace boost {
 
       void max_load_factor(float) {}
 
+      size_type max_load() const noexcept { return table_.max_load(); }
+
       void rehash(size_type n) { table_.rehash(n); }
 
       void reserve(size_type n) { table_.reserve(n); }
@@ -466,6 +498,11 @@ namespace boost {
     {
       return erase_if(set.table_, pred);
     }
+
+#if defined(BOOST_MSVC)
+#pragma warning(pop) /* C4714 */
+#endif
+
   } // namespace unordered
 } // namespace boost
 
