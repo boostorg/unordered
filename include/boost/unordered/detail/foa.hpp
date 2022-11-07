@@ -1533,8 +1533,13 @@ private:
 
   void copy_elements_array_from(const table& x,std::true_type /* -> memcpy */)
   {
+    /* reinterpret_cast: GCC may complain about value_type not being trivially
+     * copy-assignable when we're relying on trivial copy constructibility.
+     */
     std::memcpy(
-      arrays.elements,x.arrays.elements,x.capacity()*sizeof(value_type));
+      reinterpret_cast<unsigned char*>(arrays.elements),
+      reinterpret_cast<unsigned char*>(x.arrays.elements),
+      x.capacity()*sizeof(value_type));
   }
 
   void copy_elements_array_from(const table& x,std::false_type /* -> manual */)
