@@ -392,7 +392,7 @@ h|unsuccessful lookup
 
 |===
 
-=== Clang 12, x64
+=== Clang 12, x86
 
 
 [caption=]
