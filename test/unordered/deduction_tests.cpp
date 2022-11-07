@@ -11,6 +11,9 @@
 
 #if BOOST_UNORDERED_TEMPLATE_DEDUCTION_GUIDES
 
+#include <boost/unordered/unordered_flat_map.hpp>
+#include <boost/unordered/unordered_flat_set.hpp>
+
 struct hash_equals
 {
   template <typename T> bool operator()(T const& x) const
@@ -399,8 +402,10 @@ int main()
 #if BOOST_UNORDERED_TEMPLATE_DEDUCTION_GUIDES
   map_tests<boost::unordered_map>();
   map_tests<boost::unordered_multimap>();
+  map_tests<boost::unordered_flat_map>();
   set_tests<boost::unordered_set>();
   set_tests<boost::unordered_multiset>();
+  set_tests<boost::unordered_flat_set>();
 
   return boost::report_errors();
 #endif
