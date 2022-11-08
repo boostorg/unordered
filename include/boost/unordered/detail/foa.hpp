@@ -72,6 +72,8 @@ namespace unordered{
 namespace detail{
 namespace foa{
 
+static const std::size_t default_bucket_count = 0;
+
 /* foa::table is an open-addressing hash table serving as the foundational core
  * of boost::unordered_flat_[map|set]. Its main internal design aspects are:
  * 

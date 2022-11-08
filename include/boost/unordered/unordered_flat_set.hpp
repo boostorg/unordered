@@ -503,6 +503,68 @@ namespace boost {
 #pragma warning(pop) /* C4714 */
 #endif
 
+#if BOOST_UNORDERED_TEMPLATE_DEDUCTION_GUIDES
+    template <class InputIterator,
+      class Hash =
+        boost::hash<typename std::iterator_traits<InputIterator>::value_type>,
+      class Pred =
+        std::equal_to<typename std::iterator_traits<InputIterator>::value_type>,
+      class Allocator = std::allocator<
+        typename std::iterator_traits<InputIterator>::value_type>,
+      class = boost::enable_if_t<detail::is_input_iterator_v<InputIterator> >,
+      class = boost::enable_if_t<detail::is_hash_v<Hash> >,
+      class = boost::enable_if_t<detail::is_pred_v<Pred> >,
+      class = boost::enable_if_t<detail::is_allocator_v<Allocator> > >
+    unordered_flat_set(InputIterator, InputIterator,
+      std::size_t = boost::unordered::detail::foa::default_bucket_count,
+      Hash = Hash(), Pred = Pred(), Allocator = Allocator())
+      -> unordered_flat_set<
+        typename std::iterator_traits<InputIterator>::value_type, Hash, Pred,
+        Allocator>;
+
+    template <class T, class Hash = boost::hash<T>,
+      class Pred = std::equal_to<T>, class Allocator = std::allocator<T>,
+      class = boost::enable_if_t<detail::is_hash_v<Hash> >,
+      class = boost::enable_if_t<detail::is_pred_v<Pred> >,
+      class = boost::enable_if_t<detail::is_allocator_v<Allocator> > >
+    unordered_flat_set(std::initializer_list<T>,
+      std::size_t = boost::unordered::detail::foa::default_bucket_count,
+      Hash = Hash(), Pred = Pred(), Allocator = Allocator())
+      -> unordered_flat_set<T, Hash, Pred, Allocator>;
+
+    template <class InputIterator, class Allocator,
+      class = boost::enable_if_t<detail::is_input_iterator_v<InputIterator> >,
+      class = boost::enable_if_t<detail::is_allocator_v<Allocator> > >
+    unordered_flat_set(InputIterator, InputIterator, std::size_t, Allocator)
+      -> unordered_flat_set<
+        typename std::iterator_traits<InputIterator>::value_type,
+        boost::hash<typename std::iterator_traits<InputIterator>::value_type>,
+        std::equal_to<typename std::iterator_traits<InputIterator>::value_type>,
+        Allocator>;
+
+    template <class InputIterator, class Hash, class Allocator,
+      class = boost::enable_if_t<detail::is_hash_v<Hash> >,
+      class = boost::enable_if_t<detail::is_input_iterator_v<InputIterator> >,
+      class = boost::enable_if_t<detail::is_allocator_v<Allocator> > >
+    unordered_flat_set(
+      InputIterator, InputIterator, std::size_t, Hash, Allocator)
+      -> unordered_flat_set<
+        typename std::iterator_traits<InputIterator>::value_type, Hash,
+        std::equal_to<typename std::iterator_traits<InputIterator>::value_type>,
+        Allocator>;
+
+    template <class T, class Allocator,
+      class = boost::enable_if_t<detail::is_allocator_v<Allocator> > >
+    unordered_flat_set(std::initializer_list<T>, std::size_t, Allocator)
+      -> unordered_flat_set<T, boost::hash<T>, std::equal_to<T>, Allocator>;
+
+    template <class T, class Hash, class Allocator,
+      class = boost::enable_if_t<detail::is_hash_v<Hash> >,
+      class = boost::enable_if_t<detail::is_allocator_v<Allocator> > >
+    unordered_flat_set(std::initializer_list<T>, std::size_t, Hash, Allocator)
+      -> unordered_flat_set<T, Hash, std::equal_to<T>, Allocator>;
+#endif
+
   } // namespace unordered
 } // namespace boost
 
