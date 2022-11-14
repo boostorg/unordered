@@ -337,6 +337,17 @@ namespace boost {
         return table_.try_emplace(std::move(key), std::forward<Args>(args)...);
       }
 
+      template <class K, class... Args>
+      BOOST_FORCEINLINE typename std::enable_if<
+        boost::unordered::detail::transparent_non_iterable<K,
+          unordered_flat_map>::value,
+        std::pair<iterator, bool> >::type
+      try_emplace(K&& key, Args&&... args)
+      {
+        return table_.try_emplace(
+          std::forward<K>(key), std::forward<Args>(args)...);
+      }
+
       template <class... Args>
       BOOST_FORCEINLINE iterator try_emplace(
         const_iterator, key_type const& key, Args&&... args)
@@ -349,6 +360,18 @@ namespace boost {
         const_iterator, key_type&& key, Args&&... args)
       {
         return table_.try_emplace(std::move(key), std::forward<Args>(args)...)
+          .first;
+      }
+
+      template <class K, class... Args>
+      BOOST_FORCEINLINE typename std::enable_if<
+        boost::unordered::detail::transparent_non_iterable<K,
+          unordered_flat_map>::value,
+        iterator>::type
+      try_emplace(const_iterator, K&& key, Args&&... args)
+      {
+        return table_
+          .try_emplace(std::forward<K>(key), std::forward<Args>(args)...)
           .first;
       }
 
