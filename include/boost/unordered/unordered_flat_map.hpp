@@ -278,24 +278,25 @@ namespace boost {
       template <class M>
       std::pair<iterator, bool> insert_or_assign(key_type const& key, M&& obj)
       {
-        auto iter_bool_pair = table_.try_emplace(key, std::forward<M>(obj));
-        if (iter_bool_pair.second) {
-          return iter_bool_pair;
+        auto ibp = table_.try_emplace(key, std::forward<M>(obj));
+        if (ibp.second) {
+          return ibp;
         }
-        iter_bool_pair.first->second = std::forward<M>(obj);
-        return iter_bool_pair;
+        ibp.first->second = std::forward<M>(obj);
+        return ibp;
       }
 
       template <class M>
       std::pair<iterator, bool> insert_or_assign(key_type&& key, M&& obj)
       {
-        auto iter_bool_pair =
+        auto ibp =
           table_.try_emplace(std::move(key), std::forward<M>(obj));
-        if (iter_bool_pair.second) {
-          return iter_bool_pair;
+        if (ibp.second) {
+          return ibp;
         }
-        iter_bool_pair.first->second = std::forward<M>(obj);
-        return iter_bool_pair;
+        ibp.first->second = std::forward<M>(obj);
+        return ibp;
+      }
       }
 
       template <class M>
