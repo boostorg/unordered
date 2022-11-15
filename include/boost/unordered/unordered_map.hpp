@@ -973,6 +973,10 @@ namespace boost {
 
       mapped_type& operator[](const key_type&);
       mapped_type& operator[](BOOST_RV_REF(key_type));
+      template <class Key>
+      typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
+        mapped_type&>::type
+      operator[](BOOST_FWD_REF(Key) k);
       mapped_type& at(const key_type&);
       mapped_type const& at(const key_type&) const;
 
@@ -2213,6 +2217,15 @@ namespace boost {
       unordered_map<K, T, H, P, A>::operator[](BOOST_RV_REF(key_type) k)
     {
       return table_.try_emplace_unique(boost::move(k)).first->second;
+    }
+
+    template <class K, class T, class H, class P, class A>
+    template <class Key>
+    typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
+      typename unordered_map<K, T, H, P, A>::mapped_type&>::type
+    unordered_map<K, T, H, P, A>::operator[](BOOST_FWD_REF(Key) k)
+    {
+      return table_.try_emplace_unique(boost::forward<Key>(k)).first->second;
     }
 
     template <class K, class T, class H, class P, class A>
