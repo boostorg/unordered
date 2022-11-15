@@ -1555,6 +1555,87 @@ template <class UnorderedMap> void test_map_non_transparent_try_emplace()
   BOOST_TEST(p == map.find(5));
 }
 
+template <class UnorderedMap> void test_map_transparent_insert_or_assign()
+{
+  count_reset();
+
+  typedef typename UnorderedMap::iterator iterator;
+
+  UnorderedMap map;
+
+  map.insert(std::make_pair(0, 1337));
+  map.insert(std::make_pair(1, 1338));
+  map.insert(std::make_pair(2, 1339));
+  map.insert(std::make_pair(0, 1340));
+  map.insert(std::make_pair(0, 1341));
+  map.insert(std::make_pair(0, 1342));
+
+  int key_count = key::count_;
+
+  std::pair<iterator, bool> r = map.insert_or_assign(0, 7331);
+  BOOST_TEST(r.first == map.find(0));
+  BOOST_TEST_EQ(r.first->second, 7331);
+  BOOST_TEST_NOT(r.second);
+  BOOST_TEST_EQ(key::count_, key_count);
+
+  r = map.insert_or_assign(4, 7331);
+  BOOST_TEST(r.first == map.find(4));
+  BOOST_TEST(r.second);
+  BOOST_TEST_EQ(key::count_, key_count + 1);
+
+  key_count = key::count_;
+
+  iterator p = map.insert_or_assign(map.cbegin(), 0, 1111);
+  BOOST_TEST(p == map.find(0));
+  BOOST_TEST_EQ(p->second, 1111);
+  BOOST_TEST_EQ(key::count_, key_count);
+
+  p = map.insert_or_assign(map.begin(), 5, 7331);
+  BOOST_TEST(p == map.find(5));
+  BOOST_TEST_EQ(key::count_, key_count + 1);
+}
+
+template <class UnorderedMap> void test_map_non_transparent_insert_or_assign()
+{
+  count_reset();
+
+  typedef typename UnorderedMap::iterator iterator;
+
+  UnorderedMap map;
+
+  map.insert(std::make_pair(0, 1337));
+  map.insert(std::make_pair(1, 1338));
+  map.insert(std::make_pair(2, 1339));
+  map.insert(std::make_pair(0, 1340));
+  map.insert(std::make_pair(0, 1341));
+  map.insert(std::make_pair(0, 1342));
+
+  int key_count = key::count_;
+
+  std::pair<iterator, bool> r = map.insert_or_assign(0, 7331);
+  BOOST_TEST_EQ(key::count_, key_count + 1);
+  BOOST_TEST(r.first == map.find(0));
+  BOOST_TEST_EQ(r.first->second, 7331);
+  BOOST_TEST_NOT(r.second);
+
+  key_count = key::count_;
+  r = map.insert_or_assign(4, 7331);
+  BOOST_TEST_EQ(key::count_, key_count + 2);
+  BOOST_TEST(r.first == map.find(4));
+  BOOST_TEST(r.second);
+
+  key_count = key::count_;
+  iterator p = map.insert_or_assign(map.cbegin(), 0, 1111);
+  BOOST_TEST_EQ(key::count_, key_count + 1);
+  BOOST_TEST(p == map.find(0));
+  BOOST_TEST_EQ(p->second, 1111);
+
+  key_count = key::count_;
+  p = map.insert_or_assign(map.begin(), 5, 7331);
+  BOOST_TEST_EQ(key::count_, key_count + 2);
+  BOOST_TEST(p == map.find(5));
+}
+
 #ifndef BOOST_UNORDERED_FOA_TESTS
 transparent_unordered_set::node_type set_extract_overload_compile_test()
 {
@@ -1724,6 +1805,7 @@ void test_unordered_map()
     test_map_transparent_erase<unordered_map>();
     test_map_transparent_extract<unordered_map>();
     test_map_transparent_try_emplace<unordered_map>();
+    test_map_transparent_insert_or_assign<unordered_map>();
   }
 
   {
@@ -1737,6 +1819,7 @@ void test_unordered_map()
     test_map_non_transparent_erase<unordered_map>();
     test_map_non_transparent_extract<unordered_map>();
     test_map_non_transparent_try_emplace<unordered_map>();
+    test_map_non_transparent_insert_or_assign<unordered_map>();
   }
 
   {
@@ -1751,6 +1834,7 @@ void test_unordered_map()
     test_map_non_transparent_erase<unordered_map>();
     test_map_non_transparent_extract<unordered_map>();
     test_map_non_transparent_try_emplace<unordered_map>();
+    test_map_non_transparent_insert_or_assign<unordered_map>();
   }
 
   {
@@ -1765,6 +1849,7 @@ void test_unordered_map()
     test_map_non_transparent_erase<unordered_map>();
     test_map_non_transparent_extract<unordered_map>();
     test_map_non_transparent_try_emplace<unordered_map>();
+    test_map_non_transparent_insert_or_assign<unordered_map>();
   }
 }
 
