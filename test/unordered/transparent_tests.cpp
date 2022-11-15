@@ -1636,6 +1636,51 @@ template <class UnorderedMap> void test_map_non_transparent_insert_or_assign()
   BOOST_TEST(p == map.find(5));
 }
 
+template <class UnorderedMap> void test_map_transparent_subscript()
+{
+  count_reset();
+
+  UnorderedMap map;
+
+  map[0] = 1337;
+  map[1] = 1338;
+  map[2] = 1339;
+  map[0] = 1340;
+  map[0] = 1341;
+  map[0] = 1342;
+
+  int key_count = key::count_;
+
+  map[0] = 7331;
+  BOOST_ASSERT(BOOST_TEST_EQ(key::count_, key_count));
+
+  map[4] = 7331;
+  BOOST_TEST_EQ(key::count_, key_count + 1);
+}
+
+template <class UnorderedMap> void test_map_non_transparent_subscript()
+{
+  count_reset();
+
+  UnorderedMap map;
+
+  map[0] = 1337;
+  map[1] = 1338;
+  map[2] = 1339;
+  map[0] = 1340;
+  map[0] = 1341;
+  map[0] = 1342;
+
+  int key_count = key::count_;
+
+  map[0] = 7331;
+  BOOST_ASSERT(BOOST_TEST_EQ(key::count_, key_count + 1));
+
+  key_count = key::count_;
+  map[4] = 7331;
+  BOOST_TEST_EQ(key::count_, key_count + 2);
+}
+
 #ifndef BOOST_UNORDERED_FOA_TESTS
 transparent_unordered_set::node_type set_extract_overload_compile_test()
 {
@@ -1806,6 +1851,7 @@ void test_unordered_map()
     test_map_transparent_extract<unordered_map>();
     test_map_transparent_try_emplace<unordered_map>();
     test_map_transparent_insert_or_assign<unordered_map>();
+    test_map_transparent_subscript<unordered_map>();
   }
 
   {
@@ -1820,6 +1866,7 @@ void test_unordered_map()
     test_map_non_transparent_extract<unordered_map>();
     test_map_non_transparent_try_emplace<unordered_map>();
     test_map_non_transparent_insert_or_assign<unordered_map>();
+    test_map_non_transparent_subscript<unordered_map>();
   }
 
   {
@@ -1835,6 +1882,7 @@ void test_unordered_map()
     test_map_non_transparent_extract<unordered_map>();
     test_map_non_transparent_try_emplace<unordered_map>();
     test_map_non_transparent_insert_or_assign<unordered_map>();
+    test_map_non_transparent_subscript<unordered_map>();
   }
 
   {
@@ -1850,6 +1898,7 @@ void test_unordered_map()
     test_map_non_transparent_extract<unordered_map>();
     test_map_non_transparent_try_emplace<unordered_map>();
     test_map_non_transparent_insert_or_assign<unordered_map>();
+    test_map_non_transparent_subscript<unordered_map>();
   }
 }
 
