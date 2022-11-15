@@ -289,14 +289,26 @@ namespace boost {
       template <class M>
       std::pair<iterator, bool> insert_or_assign(key_type&& key, M&& obj)
       {
-        auto ibp =
-          table_.try_emplace(std::move(key), std::forward<M>(obj));
+        auto ibp = table_.try_emplace(std::move(key), std::forward<M>(obj));
         if (ibp.second) {
           return ibp;
         }
         ibp.first->second = std::forward<M>(obj);
         return ibp;
       }
+
+      template <class K, class M>
+      typename std::enable_if<
+        boost::unordered::detail::are_transparent<K, hasher, key_equal>::value,
+        std::pair<iterator, bool> >::type
+      insert_or_assign(K&& k, M&& obj)
+      {
+        auto ibp = table_.try_emplace(std::forward<K>(k), std::forward<M>(obj));
+        if (ibp.second) {
+          return ibp;
+        }
+        ibp.first->second = std::forward<M>(obj);
+        return ibp;
       }
 
       template <class M>
@@ -309,6 +321,16 @@ namespace boost {
       iterator insert_or_assign(const_iterator, key_type&& key, M&& obj)
       {
         return this->insert_or_assign(std::move(key), std::forward<M>(obj))
+          .first;
+      }
+
+      template <class K, class M>
+      typename std::enable_if<
+        boost::unordered::detail::are_transparent<K, hasher, key_equal>::value,
+        iterator>::type
+      insert_or_assign(const_iterator, K&& k, M&& obj)
+      {
+        return this->insert_or_assign(std::forward<K>(k), std::forward<M>(obj))
           .first;
       }
 

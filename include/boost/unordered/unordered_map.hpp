@@ -801,6 +801,16 @@ namespace boost {
           boost::move(k), boost::forward<M>(obj));
       }
 
+      template <class Key, class M>
+      typename boost::enable_if_c<
+        detail::are_transparent<Key, hasher, key_equal>::value,
+        std::pair<iterator, bool> >::type
+      insert_or_assign(BOOST_FWD_REF(Key) k, BOOST_FWD_REF(M) obj)
+      {
+        return table_.insert_or_assign_unique(
+          boost::forward<Key>(k), boost::forward<M>(obj));
+      }
+
       template <class M>
       iterator insert_or_assign(
         const_iterator, key_type const& k, BOOST_FWD_REF(M) obj)
@@ -814,6 +824,18 @@ namespace boost {
       {
         return table_
           .insert_or_assign_unique(boost::move(k), boost::forward<M>(obj))
+          .first;
+      }
+
+      template <class Key, class M>
+      typename boost::enable_if_c<
+        detail::are_transparent<Key, hasher, key_equal>::value, iterator>::type
+      insert_or_assign(
+        const_iterator, BOOST_FWD_REF(Key) k, BOOST_FWD_REF(M) obj)
+      {
+        return table_
+          .insert_or_assign_unique(
+            boost::forward<Key>(k), boost::forward<M>(obj))
           .first;
       }
 
