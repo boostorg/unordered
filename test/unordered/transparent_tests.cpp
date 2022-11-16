@@ -1681,6 +1681,67 @@ template <class UnorderedMap> void test_map_non_transparent_subscript()
   BOOST_TEST_EQ(key::count_, key_count + 2);
 }
 
+template <class UnorderedMap> void test_map_transparent_at()
+{
+  count_reset();
+
+  UnorderedMap map;
+
+  map.insert(std::make_pair(0, 1337));
+  map.insert(std::make_pair(1, 1338));
+  map.insert(std::make_pair(2, 1339));
+  map.insert(std::make_pair(0, 1340));
+  map.insert(std::make_pair(0, 1341));
+  map.insert(std::make_pair(0, 1342));
+
+  int key_count = key::count_;
+
+  map.at(0) = 7331;
+  BOOST_TEST_EQ(key::count_, key_count);
+
+  BOOST_TEST_THROWS(map.at(4), std::out_of_range);
+  BOOST_TEST_EQ(key::count_, key_count);
+
+  UnorderedMap const& m = map;
+  BOOST_TEST_EQ(m.at(0), 7331);
+  BOOST_TEST_EQ(key::count_, key_count);
+
+  BOOST_TEST_THROWS(m.at(4), std::out_of_range);
+  BOOST_TEST_EQ(key::count_, key_count);
+}
+
+template <class UnorderedMap> void test_map_non_transparent_at()
+{
+  count_reset();
+
+  UnorderedMap map;
+
+  map.insert(std::make_pair(0, 1337));
+  map.insert(std::make_pair(1, 1338));
+  map.insert(std::make_pair(2, 1339));
+  map.insert(std::make_pair(0, 1340));
+  map.insert(std::make_pair(0, 1341));
+  map.insert(std::make_pair(0, 1342));
+
+  int key_count = key::count_;
+
+  map.at(0) = 7331;
+  BOOST_TEST_EQ(key::count_, key_count + 1);
+
+  key_count = key::count_;
+  BOOST_TEST_THROWS(map.at(4), std::out_of_range);
+  BOOST_TEST_EQ(key::count_, key_count + 1);
+
+  key_count = key::count_;
+  UnorderedMap const& m = map;
+  BOOST_TEST_EQ(m.at(0), 7331);
+  BOOST_TEST_EQ(key::count_, key_count + 1);
+
+  key_count = key::count_;
+  BOOST_TEST_THROWS(m.at(4), std::out_of_range);
+  BOOST_TEST_EQ(key::count_, key_count + 1);
+}
+
 #ifndef BOOST_UNORDERED_FOA_TESTS
 transparent_unordered_set::node_type set_extract_overload_compile_test()
 {
@@ -1852,6 +1913,7 @@ void test_unordered_map()
     test_map_transparent_try_emplace<unordered_map>();
     test_map_transparent_insert_or_assign<unordered_map>();
     test_map_transparent_subscript<unordered_map>();
+    test_map_transparent_at<unordered_map>();
   }
 
   {
@@ -1867,6 +1929,7 @@ void test_unordered_map()
     test_map_non_transparent_try_emplace<unordered_map>();
     test_map_non_transparent_insert_or_assign<unordered_map>();
     test_map_non_transparent_subscript<unordered_map>();
+    test_map_non_transparent_at<unordered_map>();
   }
 
   {
@@ -1883,6 +1946,7 @@ void test_unordered_map()
     test_map_non_transparent_try_emplace<unordered_map>();
     test_map_non_transparent_insert_or_assign<unordered_map>();
     test_map_non_transparent_subscript<unordered_map>();
+    test_map_non_transparent_at<unordered_map>();
   }
 
   {
@@ -1899,6 +1963,7 @@ void test_unordered_map()
     test_map_non_transparent_try_emplace<unordered_map>();
     test_map_non_transparent_insert_or_assign<unordered_map>();
     test_map_non_transparent_subscript<unordered_map>();
+    test_map_non_transparent_at<unordered_map>();
   }
 }
 
