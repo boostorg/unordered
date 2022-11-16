@@ -473,6 +473,34 @@ namespace boost {
           std::out_of_range("key was not found in unordered_flat_map"));
       }
 
+      template <class K>
+      typename std::enable_if<
+        boost::unordered::detail::are_transparent<K, hasher, key_equal>::value,
+        mapped_type&>::type
+      at(K&& key)
+      {
+        auto pos = table_.find(std::forward<K>(key));
+        if (pos != table_.end()) {
+          return pos->second;
+        }
+        boost::throw_exception(
+          std::out_of_range("key was not found in unordered_flat_map"));
+      }
+
+      template <class K>
+      typename std::enable_if<
+        boost::unordered::detail::are_transparent<K, hasher, key_equal>::value,
+        mapped_type const&>::type
+      at(K&& key) const
+      {
+        auto pos = table_.find(std::forward<K>(key));
+        if (pos != table_.end()) {
+          return pos->second;
+        }
+        boost::throw_exception(
+          std::out_of_range("key was not found in unordered_flat_map"));
+      }
+
       BOOST_FORCEINLINE mapped_type& operator[](key_type const& key)
       {
         return table_.try_emplace(key).first->second;

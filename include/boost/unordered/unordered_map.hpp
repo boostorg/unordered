@@ -973,12 +973,22 @@ namespace boost {
 
       mapped_type& operator[](const key_type&);
       mapped_type& operator[](BOOST_RV_REF(key_type));
+
       template <class Key>
       typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
         mapped_type&>::type
       operator[](BOOST_FWD_REF(Key) k);
+
       mapped_type& at(const key_type&);
       mapped_type const& at(const key_type&) const;
+
+      template <class Key>
+      typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
+        mapped_type&>::type at(BOOST_FWD_REF(Key) k);
+
+      template <class Key>
+      typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
+        mapped_type const&>::type at(BOOST_FWD_REF(Key) k) const;
 
       // bucket interface
 
@@ -2252,6 +2262,42 @@ namespace boost {
 
       if (table_.size_) {
         node_pointer p = table_.find_node(k);
+        if (p)
+          return p->value().second;
+      }
+
+      boost::throw_exception(
+        std::out_of_range("Unable to find key in unordered_map."));
+    }
+
+    template <class K, class T, class H, class P, class A>
+    template <class Key>
+    typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
+      typename unordered_map<K, T, H, P, A>::mapped_type&>::type
+    unordered_map<K, T, H, P, A>::at(BOOST_FWD_REF(Key) k)
+    {
+      typedef typename table::node_pointer node_pointer;
+
+      if (table_.size_) {
+        node_pointer p = table_.find_node(boost::forward<Key>(k));
+        if (p)
+          return p->value().second;
+      }
+
+      boost::throw_exception(
+        std::out_of_range("Unable to find key in unordered_map."));
+    }
+
+    template <class K, class T, class H, class P, class A>
+    template <class Key>
+    typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
+      typename unordered_map<K, T, H, P, A>::mapped_type const&>::type
+    unordered_map<K, T, H, P, A>::at(BOOST_FWD_REF(Key) k) const
+    {
+      typedef typename table::node_pointer node_pointer;
+
+      if (table_.size_) {
+        node_pointer p = table_.find_node(boost::forward<Key>(k));
         if (p)
           return p->value().second;
       }
