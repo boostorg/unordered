@@ -571,6 +571,14 @@ namespace boost {
         return table_.hash_to_bucket(table_.hash(k));
       }
 
+      template <class Key>
+      typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
+        size_type>::type
+      bucket(BOOST_FWD_REF(Key) k) const
+      {
+        return table_.hash_to_bucket(table_.hash(boost::forward<Key>(k)));
+      }
+
       local_iterator begin(size_type n)
       {
         return local_iterator(table_.begin(n));
@@ -1210,6 +1218,14 @@ namespace boost {
       size_type bucket(const key_type& k) const
       {
         return table_.hash_to_bucket(table_.hash(k));
+      }
+
+      template <class Key>
+      typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
+        size_type>::type
+      bucket(BOOST_FWD_REF(Key) k) const
+      {
+        return table_.hash_to_bucket(table_.hash(boost::forward<Key>(k)));
       }
 
       local_iterator begin(size_type n)

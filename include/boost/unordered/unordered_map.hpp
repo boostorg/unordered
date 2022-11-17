@@ -802,8 +802,7 @@ namespace boost {
       }
 
       template <class Key, class M>
-      typename boost::enable_if_c<
-        detail::are_transparent<Key, hasher, key_equal>::value,
+      typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
         std::pair<iterator, bool> >::type
       insert_or_assign(BOOST_FWD_REF(Key) k, BOOST_FWD_REF(M) obj)
       {
@@ -828,8 +827,8 @@ namespace boost {
       }
 
       template <class Key, class M>
-      typename boost::enable_if_c<
-        detail::are_transparent<Key, hasher, key_equal>::value, iterator>::type
+      typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
+        iterator>::type
       insert_or_assign(
         const_iterator, BOOST_FWD_REF(Key) k, BOOST_FWD_REF(M) obj)
       {
@@ -1007,6 +1006,14 @@ namespace boost {
       size_type bucket(const key_type& k) const
       {
         return table_.hash_to_bucket(table_.hash(k));
+      }
+
+      template <class Key>
+      typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
+        size_type>::type
+      bucket(BOOST_FWD_REF(Key) k) const
+      {
+        return table_.hash_to_bucket(table_.hash(boost::forward<Key>(k)));
       }
 
       local_iterator begin(size_type n)
@@ -1713,6 +1720,14 @@ namespace boost {
       size_type bucket(const key_type& k) const
       {
         return table_.hash_to_bucket(table_.hash(k));
+      }
+
+      template <class Key>
+      typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
+        size_type>::type
+      bucket(BOOST_FWD_REF(Key) k) const
+      {
+        return table_.hash_to_bucket(table_.hash(boost::forward<Key>(k)));
       }
 
       local_iterator begin(size_type n)
