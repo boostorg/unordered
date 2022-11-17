@@ -1742,6 +1742,48 @@ template <class UnorderedMap> void test_map_non_transparent_at()
   BOOST_TEST_EQ(key::count_, key_count + 1);
 }
 
+template <class UnorderedMap> void test_map_transparent_bucket()
+{
+#ifndef BOOST_UNORDERED_FOA_TESTS
+  count_reset();
+
+  UnorderedMap map;
+
+  map.insert(std::make_pair(0, 1337));
+  map.insert(std::make_pair(1, 1338));
+  map.insert(std::make_pair(2, 1339));
+  map.insert(std::make_pair(0, 1340));
+  map.insert(std::make_pair(0, 1341));
+  map.insert(std::make_pair(0, 1342));
+
+  int key_count = key::count_;
+  map.bucket(0);
+  map.bucket(4);
+  BOOST_TEST_EQ(key::count_, key_count);
+#endif
+}
+
+template <class UnorderedMap> void test_map_non_transparent_bucket()
+{
+#ifndef BOOST_UNORDERED_FOA_TESTS
+  count_reset();
+
+  UnorderedMap map;
+
+  map.insert(std::make_pair(0, 1337));
+  map.insert(std::make_pair(1, 1338));
+  map.insert(std::make_pair(2, 1339));
+  map.insert(std::make_pair(0, 1340));
+  map.insert(std::make_pair(0, 1341));
+  map.insert(std::make_pair(0, 1342));
+
+  int key_count = key::count_;
+  map.bucket(0);
+  map.bucket(4);
+  BOOST_TEST_EQ(key::count_, key_count + 2);
+#endif
+}
+
 #ifndef BOOST_UNORDERED_FOA_TESTS
 transparent_unordered_set::node_type set_extract_overload_compile_test()
 {
@@ -1890,6 +1932,48 @@ template <class UnorderedSet> void test_set_non_transparent_extract()
 #endif
 }
 
+template <class UnorderedSet> void test_set_transparent_bucket()
+{
+#ifndef BOOST_UNORDERED_FOA_TESTS
+  count_reset();
+
+  UnorderedSet set;
+
+  set.insert(0);
+  set.insert(1);
+  set.insert(2);
+  set.insert(0);
+  set.insert(0);
+  set.insert(0);
+
+  int key_count = key::count_;
+  set.bucket(0);
+  set.bucket(4);
+  BOOST_TEST_EQ(key::count_, key_count);
+#endif
+}
+
+template <class UnorderedSet> void test_set_non_transparent_bucket()
+{
+#ifndef BOOST_UNORDERED_FOA_TESTS
+  count_reset();
+
+  UnorderedSet set;
+
+  set.insert(0);
+  set.insert(1);
+  set.insert(2);
+  set.insert(0);
+  set.insert(0);
+  set.insert(0);
+
+  int key_count = key::count_;
+  set.bucket(0);
+  set.bucket(4);
+  BOOST_TEST_EQ(key::count_, key_count + 2);
+#endif
+}
+
 template <class Key, class T, class Hash, class KeyEqual> struct map_type
 {
 #ifdef BOOST_UNORDERED_FOA_TESTS
@@ -1914,6 +1998,7 @@ void test_unordered_map()
     test_map_transparent_insert_or_assign<unordered_map>();
     test_map_transparent_subscript<unordered_map>();
     test_map_transparent_at<unordered_map>();
+    test_map_transparent_bucket<unordered_map>();
   }
 
   {
@@ -1930,6 +2015,7 @@ void test_unordered_map()
     test_map_non_transparent_insert_or_assign<unordered_map>();
     test_map_non_transparent_subscript<unordered_map>();
     test_map_non_transparent_at<unordered_map>();
+    test_map_non_transparent_bucket<unordered_map>();
   }
 
   {
@@ -1947,6 +2033,7 @@ void test_unordered_map()
     test_map_non_transparent_insert_or_assign<unordered_map>();
     test_map_non_transparent_subscript<unordered_map>();
     test_map_non_transparent_at<unordered_map>();
+    test_map_non_transparent_bucket<unordered_map>();
   }
 
   {
@@ -1964,6 +2051,7 @@ void test_unordered_map()
     test_map_non_transparent_insert_or_assign<unordered_map>();
     test_map_non_transparent_subscript<unordered_map>();
     test_map_non_transparent_at<unordered_map>();
+    test_map_non_transparent_bucket<unordered_map>();
   }
 }
 
@@ -1980,6 +2068,7 @@ void test_unordered_multimap()
     test_map_transparent_equal_range<unordered_multimap>();
     test_map_transparent_erase<unordered_multimap>();
     test_map_transparent_extract<unordered_multimap>();
+    test_map_transparent_bucket<unordered_multimap>();
   }
 
   {
@@ -1993,6 +2082,7 @@ void test_unordered_multimap()
     test_map_non_transparent_equal_range<unordered_multimap>();
     test_map_non_transparent_erase<unordered_multimap>();
     test_map_non_transparent_extract<unordered_multimap>();
+    test_map_non_transparent_bucket<unordered_multimap>();
   }
 
   {
@@ -2006,6 +2096,7 @@ void test_unordered_multimap()
     test_map_non_transparent_equal_range<unordered_multimap>();
     test_map_non_transparent_erase<unordered_multimap>();
     test_map_non_transparent_extract<unordered_multimap>();
+    test_map_non_transparent_bucket<unordered_multimap>();
   }
 
   {
@@ -2019,6 +2110,7 @@ void test_unordered_multimap()
     test_map_non_transparent_equal_range<unordered_multimap>();
     test_map_non_transparent_erase<unordered_multimap>();
     test_map_non_transparent_extract<unordered_multimap>();
+    test_map_non_transparent_bucket<unordered_multimap>();
   }
 }
 #endif
@@ -2043,6 +2135,7 @@ void test_unordered_set()
     test_set_transparent_erase<unordered_set>();
     test_set_transparent_equal_range<unordered_set>();
     test_set_transparent_extract<unordered_set>();
+    test_set_transparent_bucket<unordered_set>();
   }
 
   {
@@ -2055,6 +2148,7 @@ void test_unordered_set()
     test_set_non_transparent_erase<unordered_set>();
     test_set_non_transparent_equal_range<unordered_set>();
     test_set_non_transparent_extract<unordered_set>();
+    test_set_non_transparent_bucket<unordered_set>();
   }
 
   {
@@ -2067,6 +2161,7 @@ void test_unordered_set()
     test_set_non_transparent_erase<unordered_set>();
     test_set_non_transparent_equal_range<unordered_set>();
     test_set_non_transparent_extract<unordered_set>();
+    test_set_non_transparent_bucket<unordered_set>();
   }
 
   {
@@ -2079,6 +2174,7 @@ void test_unordered_set()
     test_set_non_transparent_erase<unordered_set>();
     test_set_non_transparent_equal_range<unordered_set>();
     test_set_non_transparent_extract<unordered_set>();
+    test_set_non_transparent_bucket<unordered_set>();
   }
 }
 
@@ -2095,6 +2191,7 @@ void test_unordered_multiset()
     test_set_transparent_erase<unordered_set>();
     test_set_transparent_equal_range<unordered_set>();
     test_set_transparent_extract<unordered_set>();
+    test_set_transparent_bucket<unordered_set>();
   }
 
   {
@@ -2107,6 +2204,7 @@ void test_unordered_multiset()
     test_set_non_transparent_erase<unordered_set>();
     test_set_non_transparent_equal_range<unordered_set>();
     test_set_non_transparent_extract<unordered_set>();
+    test_set_non_transparent_bucket<unordered_set>();
   }
 
   {
@@ -2120,6 +2218,7 @@ void test_unordered_multiset()
     test_set_non_transparent_erase<unordered_set>();
     test_set_non_transparent_equal_range<unordered_set>();
     test_set_non_transparent_extract<unordered_set>();
+    test_set_non_transparent_bucket<unordered_set>();
   }
 
   {
@@ -2133,6 +2232,7 @@ void test_unordered_multiset()
     test_set_non_transparent_erase<unordered_set>();
     test_set_non_transparent_equal_range<unordered_set>();
     test_set_non_transparent_extract<unordered_set>();
+    test_set_non_transparent_bucket<unordered_set>();
   }
 }
 #endif
