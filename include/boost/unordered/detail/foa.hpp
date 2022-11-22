@@ -656,6 +656,7 @@ private:
  *     these values and positioning to be as uncorrelated as possible.
  */
 
+#if 0
 struct pow2_size_policy
 {
   static inline std::size_t size_index(std::size_t n)
@@ -679,6 +680,50 @@ struct pow2_size_policy
     return hash>>size_index_;
   }
 };
+#else
+struct pow2_size_policy
+{
+  static inline std::size_t size_index(std::size_t n)
+  {
+    // TODO: min size is 2, see if we can bring it down to 1 without loss
+    // of performance
+
+    std::size_t used_bits_=n<=2?1:((std::size_t)(boost::core::bit_width(n-1)));
+    std::size_t unused_bits_=total_bits-used_bits_;
+    std::size_t unused_hi_=
+      unused_bits_>=10?(unused_bits_%6)*2:
+      unused_bits_>=6?(unused_bits_%4)*2:
+      0;
+
+    return (unused_hi_<<16)+(unused_bits_);
+  }
+
+  static inline std::size_t size(std::size_t size_index_)
+  {
+    return std::size_t(1)<<(total_bits-unused_bits(size_index_));
+  }
+    
+  static constexpr std::size_t min_size(){return 2;}
+
+  static inline std::size_t position(std::size_t hash,std::size_t size_index_)
+  {
+    return (hash<<unused_hi(size_index_))>>unused_bits(size_index_);
+  }
+
+private:
+  static constexpr std::size_t total_bits=sizeof(std::size_t)*CHAR_BIT;
+
+  static inline std::size_t unused_bits(std::size_t size_index_)
+  {
+    return size_index_&0xffffu;
+  }
+
+  static inline std::size_t unused_hi(std::size_t size_index_)
+  {
+    return size_index_>>16;
+  }
+};
+#endif
 
 /* size index of a group array for a given *element* capacity */
 
