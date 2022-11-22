@@ -1974,6 +1974,92 @@ template <class UnorderedSet> void test_set_non_transparent_bucket()
 #endif
 }
 
+template <class UnorderedSet> void test_set_transparent_insert()
+{
+  count_reset();
+
+  typedef typename UnorderedSet::iterator iterator;
+
+  UnorderedSet set;
+
+  set.insert(0);
+  set.insert(1);
+  set.insert(2);
+  set.insert(0);
+  set.insert(0);
+  set.insert(0);
+
+  int key_count = key::count_;
+
+  std::pair<iterator, bool> p = set.insert(0);
+  BOOST_TEST(p.first == set.find(0));
+  BOOST_TEST_NOT(p.second);
+  BOOST_TEST_EQ(key::count_, key_count);
+
+  key_count = key::count_;
+  p = set.insert(4);
+  BOOST_TEST(p.first == set.find(4));
+  BOOST_TEST(p.second);
+  BOOST_TEST_EQ(key::count_, key_count + 1);
+
+  key_count = key::count_;
+  iterator pos = set.insert(set.begin(), 0);
+  BOOST_TEST(pos == set.find(0));
+  BOOST_TEST_EQ(key::count_, key_count);
+
+  key_count = key::count_;
+  pos = set.insert(set.begin(), 5);
+  BOOST_TEST(pos == set.find(5));
+  BOOST_TEST_EQ(key::count_, key_count + 1);
+
+  // check for collisions with insert(iterator, iterator)
+  // note: this precludes Key from being convertible to an iterator which isn't
+  // explicitly stated by p2363r3
+  //
+  set.insert(set.begin(), set.end());
+}
+
+template <class UnorderedSet> void test_set_non_transparent_insert()
+{
+  count_reset();
+
+  typedef typename UnorderedSet::iterator iterator;
+
+  UnorderedSet set;
+
+  set.insert(0);
+  set.insert(1);
+  set.insert(2);
+  set.insert(0);
+  set.insert(0);
+  set.insert(0);
+
+  int key_count = key::count_;
+
+  std::pair<iterator, bool> p = set.insert(0);
+  BOOST_TEST_EQ(key::count_, key_count + 1);
+  BOOST_TEST(p.first == set.find(0));
+  BOOST_TEST_NOT(p.second);
+
+  key_count = key::count_;
+  p = set.insert(4);
+  BOOST_TEST_EQ(key::count_, key_count + 2);
+  BOOST_TEST(p.first == set.find(4));
+  BOOST_TEST(p.second);
+
+  key_count = key::count_;
+  iterator pos = set.insert(set.begin(), 0);
+  BOOST_TEST_EQ(key::count_, key_count + 1);
+  BOOST_TEST(pos == set.find(0));
+
+  key_count = key::count_;
+  pos = set.insert(set.begin(), 5);
+  BOOST_TEST_EQ(key::count_, key_count + 2);
+  BOOST_TEST(pos == set.find(5));
+
+  set.insert(set.begin(), set.end());
+}
+
 template <class Key, class T, class Hash, class KeyEqual> struct map_type
 {
 #ifdef BOOST_UNORDERED_FOA_TESTS
@@ -2136,6 +2222,7 @@ void test_unordered_set()
     test_set_transparent_equal_range<unordered_set>();
     test_set_transparent_extract<unordered_set>();
     test_set_transparent_bucket<unordered_set>();
+    test_set_transparent_insert<unordered_set>();
   }
 
   {
@@ -2149,6 +2236,7 @@ void test_unordered_set()
     test_set_non_transparent_equal_range<unordered_set>();
     test_set_non_transparent_extract<unordered_set>();
     test_set_non_transparent_bucket<unordered_set>();
+    test_set_non_transparent_insert<unordered_set>();
   }
 
   {
@@ -2162,6 +2250,7 @@ void test_unordered_set()
     test_set_non_transparent_equal_range<unordered_set>();
     test_set_non_transparent_extract<unordered_set>();
     test_set_non_transparent_bucket<unordered_set>();
+    test_set_non_transparent_insert<unordered_set>();
   }
 
   {
@@ -2175,6 +2264,7 @@ void test_unordered_set()
     test_set_non_transparent_equal_range<unordered_set>();
     test_set_non_transparent_extract<unordered_set>();
     test_set_non_transparent_bucket<unordered_set>();
+    test_set_non_transparent_insert<unordered_set>();
   }
 }
 
