@@ -690,11 +690,15 @@ struct pow2_size_policy
 
     std::size_t used_bits_=n<=2?1:((std::size_t)(boost::core::bit_width(n-1)));
     std::size_t unused_bits_=total_bits-used_bits_;
+
+    std::size_t const table[] = { 0, 2, 3, 2 };
+    std::size_t unused_hi_= unused_bits_ >= 3? table[ unused_bits_ % 4 ]: 0;
+/*
     std::size_t unused_hi_=
       unused_bits_>=10?(unused_bits_%6)*2:
       unused_bits_>=6?(unused_bits_%4)*2:
       0;
-
+*/
     return (unused_hi_<<16)+(unused_bits_);
   }
 
