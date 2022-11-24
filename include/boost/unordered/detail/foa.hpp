@@ -656,7 +656,33 @@ private:
  *     these values and positioning to be as uncorrelated as possible.
  */
 
-#if 0
+#if 1
+struct pow2_size_policy
+{
+  static inline std::size_t size_index(std::size_t n)
+  {
+    // TODO: min size is 2, see if we can bring it down to 1 without loss
+    // of performance
+
+    std::size_t size_index_=sizeof(std::size_t)*CHAR_BIT-
+      (n<=2?1:((std::size_t)(boost::core::bit_width(n-1))));
+    std::size_t salt=xmx(size_index_)&~0xffu;
+    return salt|size_index_;
+  }
+
+  static inline std::size_t size(std::size_t size_index_)
+  {
+     return std::size_t(1)<<(sizeof(std::size_t)*CHAR_BIT-(size_index_&0xffu));  
+  }
+    
+  static constexpr std::size_t min_size(){return 2;}
+
+  static inline std::size_t position(std::size_t hash,std::size_t size_index_)
+  {
+    return hash>>(size_index_&0xffu);
+  }
+};
+#else
 struct pow2_size_policy
 {
   static inline std::size_t size_index(std::size_t n)
@@ -677,50 +703,9 @@ struct pow2_size_policy
 
   static inline std::size_t position(std::size_t hash,std::size_t size_index_)
   {
-    return hash>>size_index_;
-  }
-};
-#else
-struct pow2_size_policy
-{
-  static inline std::size_t size_index(std::size_t n)
-  {
-    // TODO: min size is 2, see if we can bring it down to 1 without loss
-    // of performance
-
-    std::size_t used_bits_=n<=2?1:((std::size_t)(boost::core::bit_width(n-1)));
-    std::size_t unused_bits_=total_bits-used_bits_;
-    std::size_t unused_hi_=
-      unused_bits_>=10?(unused_bits_%6)*2:
-      unused_bits_>=6?(unused_bits_%4)*2:
-      0;
-
-    return (unused_hi_<<16)+(unused_bits_);
-  }
-
-  static inline std::size_t size(std::size_t size_index_)
-  {
-    return std::size_t(1)<<(total_bits-unused_bits(size_index_));
-  }
-    
-  static constexpr std::size_t min_size(){return 2;}
-
-  static inline std::size_t position(std::size_t hash,std::size_t size_index_)
-  {
-    return (hash<<unused_hi(size_index_))>>unused_bits(size_index_);
-  }
-
-private:
-  static constexpr std::size_t total_bits=sizeof(std::size_t)*CHAR_BIT;
-
-  static inline std::size_t unused_bits(std::size_t size_index_)
-  {
-    return size_index_&0xffffu;
-  }
-
-  static inline std::size_t unused_hi(std::size_t size_index_)
-  {
-    return size_index_>>16;
+    auto rot=(sizeof(std::size_t)*CHAR_BIT-size_index_)/4+1;
+    auto carry=hash>>(sizeof(std::size_t)*CHAR_BIT-rot);
+    return ((hash<<rot)>>size_index_)|carry;
   }
 };
 #endif
@@ -770,18 +755,18 @@ private:
 struct no_mix
 {
   template<typename Hash,typename T>
-  static inline std::size_t mix(const Hash& h,const T& x)
+  static inline std::size_t mix(const Hash& h,const T& x,std::size_t salt)
   {
-    return h(x);
+    return boost::core::rotl(h(x),(2*salt)&(64-1));
   }
 };
 
 struct xmx_mix
 {
   template<typename Hash,typename T>
-  static inline std::size_t mix(const Hash& h,const T& x)
+  static inline std::size_t mix(const Hash& h,const T& x,std::size_t salt)
   {
-    return xmx(h(x));
+    return xmx(h(x)^salt);
   }
 };
 
@@ -1596,7 +1581,13 @@ private:
   template<typename Key>
   inline std::size_t hash_for(const Key& x)const
   {
-    return mix_policy::mix(h(),x);
+    return hash_for(x,arrays);
+  }
+
+  template<typename Key>
+  inline std::size_t hash_for(const Key& x,const arrays_type& arrays_)const
+  {
+    return mix_policy::mix(h(),x,arrays_.groups_size_index);
   }
 
   inline std::size_t position_for(std::size_t hash)const
@@ -1811,7 +1802,7 @@ private:
     value_type* p,const arrays_type& arrays_,std::size_t& num_destroyed)
   {
     nosize_transfer_element(
-      p,hash_for(key_from(*p)),arrays_,num_destroyed,
+      p,hash_for(key_from(*p),arrays_),arrays_,num_destroyed,
       std::integral_constant< /* std::move_if_noexcept semantics */
         bool,
         std::is_nothrow_move_constructible<init_type>::value||
