@@ -3,6 +3,7 @@
 // https://www.boost.org/LICENSE_1_0.txt
 
 #define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING
+#define _SILENCE_CXX20_CISO646_REMOVED_WARNING
 
 #include <boost/unordered_map.hpp>
 #include <boost/unordered/unordered_flat_map.hpp>
@@ -19,6 +20,8 @@
 #include <iomanip>
 #include <chrono>
 #include <fstream>
+#include <string_view>
+#include <string>
 
 using namespace std::chrono_literals;
 
@@ -54,12 +57,49 @@ static void init_words()
 
 template<class Map> BOOST_NOINLINE void test_word_count( Map& map, std::chrono::steady_clock::time_point & t1 )
 {
+    std::size_t s = 0;
+
     for( auto const& word: words )
     {
         ++map[ word ];
+        ++s;
     }
 
-    print_time( t1, "Word count",  0, map.size() );
+    print_time( t1, "Word count", s, map.size() );
+
+    std::cout << std::endl;
+}
+
+template<class Map> BOOST_NOINLINE void test_contains( Map& map, std::chrono::steady_clock::time_point & t1 )
+{
+    std::size_t s = 0;
+
+    for( auto const& word: words )
+    {
+        std::string_view w2( word );
+        w2.remove_prefix( 1 );
+
+        s += map.contains( w2 );
+    }
+
+    print_time( t1, "Contains", s, map.size() );
+
+    std::cout << std::endl;
+}
+
+template<class Map> BOOST_NOINLINE void test_count( Map& map, std::chrono::steady_clock::time_point & t1 )
+{
+    std::size_t s = 0;
+
+    for( auto const& word: words )
+    {
+        std::string_view w2( word );
+        w2.remove_prefix( 1 );
+
+        s += map.count( w2 );
+    }
+
+    print_time( t1, "Count", s, map.size() );
 
     std::cout << std::endl;
 }
@@ -67,7 +107,7 @@ template<class Map> BOOST_NOINLINE void test_word_count( Map& map, std::chrono::
 template<class Map> BOOST_NOINLINE void test_iteration( Map& map, std::chrono::steady_clock::time_point & t1 )
 {
     std::size_t max = 0;
-    std::string word;
+    std::string_view word;
 
     for( auto const& x: map )
     {
@@ -144,7 +184,7 @@ template<template<class...> class Map> BOOST_NOINLINE void test( char const* lab
     s_alloc_bytes = 0;
     s_alloc_count = 0;
 
-    Map<std::string, std::size_t> map;
+    Map<std::string_view, std::size_t> map;
 
     auto t0 = std::chrono::steady_clock::now();
     auto t1 = t0;
@@ -155,6 +195,8 @@ template<template<class...> class Map> BOOST_NOINLINE void test( char const* lab
 
     record rec = { label, 0, s_alloc_bytes, s_alloc_count };
 
+    test_contains( map, t1 );
+    test_count( map, t1 );
     test_iteration( map, t1 );
 
     auto tN = std::chrono::steady_clock::now();
@@ -193,7 +235,7 @@ template<int Bits> struct fnv1a_hash_impl;
 
 template<> struct fnv1a_hash_impl<32>
 {
-    std::size_t operator()( std::string const& s ) const
+    std::size_t operator()( std::string_view const& s ) const
     {
         std::size_t h = 0x811C9DC5u;
 
@@ -212,7 +254,7 @@ template<> struct fnv1a_hash_impl<32>
 
 template<> struct fnv1a_hash_impl<64>
 {
-    std::size_t operator()( std::string const& s ) const
+    std::size_t operator()( std::string_view const& s ) const
     {
         std::size_t h = 0xCBF29CE484222325ull;
 
