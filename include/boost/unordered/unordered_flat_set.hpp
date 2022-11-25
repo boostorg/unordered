@@ -313,14 +313,14 @@ namespace boost {
       /// Lookup
       ///
 
-      size_type count(key_type const& key) const
+      BOOST_FORCEINLINE size_type count(key_type const& key) const
       {
         auto pos = table_.find(key);
         return pos != table_.end() ? 1 : 0;
       }
 
       template <class K>
-      typename std::enable_if<
+      BOOST_FORCEINLINE typename std::enable_if<
         detail::are_transparent<K, hasher, key_equal>::value, size_type>::type
       count(K const& key) const
       {
