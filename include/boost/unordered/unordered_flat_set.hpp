@@ -356,13 +356,13 @@ namespace boost {
         return table_.find(key);
       }
 
-      bool contains(key_type const& key) const
+      BOOST_FORCEINLINE bool contains(key_type const& key) const
       {
         return this->find(key) != this->end();
       }
 
       template <class K>
-      typename std::enable_if<
+      BOOST_FORCEINLINE typename std::enable_if<
         boost::unordered::detail::are_transparent<K, hasher, key_equal>::value,
         bool>::type
       contains(K const& key) const
