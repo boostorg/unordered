@@ -64,6 +64,20 @@ template<class Map> BOOST_NOINLINE void test_word_size( Map& map, std::chrono::s
     std::cout << std::endl;
 }
 
+template<class Map> BOOST_NOINLINE void test_iteration( Map& map, std::chrono::steady_clock::time_point & t1 )
+{
+    std::size_t s = 0;
+
+    for( auto const& x: map )
+    {
+        s += x.second;
+    }
+
+    print_time( t1, "Iterate and sum counts",  s, map.size() );
+
+    std::cout << std::endl;
+}
+
 // counting allocator
 
 static std::size_t s_alloc_bytes = 0;
@@ -135,6 +149,8 @@ template<template<class...> class Map> BOOST_NOINLINE void test( char const* lab
     std::cout << "Memory: " << s_alloc_bytes << " bytes in " << s_alloc_count << " allocations\n\n";
 
     record rec = { label, 0, s_alloc_bytes, s_alloc_count };
+
+    test_iteration( map, t1 );
 
     auto tN = std::chrono::steady_clock::now();
     std::cout << "Total: " << ( tN - t0 ) / 1ms << " ms\n\n";
