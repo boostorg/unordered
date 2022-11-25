@@ -427,12 +427,12 @@ namespace boost {
           std::out_of_range("key was not found in unordered_flat_map"));
       }
 
-      mapped_type& operator[](key_type const& key)
+      BOOST_FORCEINLINE mapped_type& operator[](key_type const& key)
       {
         return table_.try_emplace(key).first->second;
       }
 
-      mapped_type& operator[](key_type&& key)
+      BOOST_FORCEINLINE mapped_type& operator[](key_type&& key)
       {
         return table_.try_emplace(std::move(key)).first->second;
       }
