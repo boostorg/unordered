@@ -280,7 +280,7 @@ bucket), and an _overflow byte_ (_ofw_ in the diagram). The value of _h_~_i_~ is
 
 When looking for an element with hash value _h_, SIMD technologies such as
 https://en.wikipedia.org/wiki/SSE2[SSE2] and
-https://en.wikipedia.org/wiki/ARM_architecture_family#Advanced_SIMD_(Neon)[Neon] allows us
+https://en.wikipedia.org/wiki/ARM_architecture_family#Advanced_SIMD_(Neon)[Neon] allow us
 to very quickly inspect the full metadata word and look for the reduced value of _h_ among all the
 15 buckets with just a handful of CPU instructions: non-matching buckets can be
 readily discarded, and those whose reduced hash value matches need be inspected via full
@@ -299,7 +299,7 @@ and when going past a full group its corresponding overflow bit is set to 1.
 In architectures without SIMD support, the logical layout stays the same, but the metadata
 word is codified using a technique we call _bit interleaving_: this layout allows us
 to emulate SIMD with reasonably good performance using only standard arithmetic and
-logical operations .
+logical operations.
 
 [#img-foa-metadata-interleaving]
 .Bit-interleaved metadata word.
