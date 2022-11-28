@@ -689,46 +689,39 @@ struct pow2_size_policy
     // of performance
 
     std::size_t used_bits_=n<=2?1:((std::size_t)(boost::core::bit_width(n-1)));
-    std::size_t used_mask_=(std::size_t(1)<<used_bits_)-1;
     std::size_t used_hi_=used_bits_>=10?(5-(used_bits_%6))*2:0;
-    std::size_t used_lo_=used_bits_-used_hi_;
+    std::size_t used_hi_mask_=(std::size_t(1)<<used_hi_)-1;
     std::size_t unused_bits_=total_bits-used_bits_;
 
-    return (used_mask_<<24)|(used_hi_<<16)|(used_lo_<<8)|unused_bits_;
+    return (used_hi_mask_<<16)|(used_hi_<<8)|unused_bits_;
   }
 
   static inline std::size_t size(std::size_t size_index_)
   {
-     return std::size_t(1)<<(total_bits-unused_bits(size_index_));
+    return std::size_t(1)<<(total_bits-unused_bits(size_index_));
   }
     
   static constexpr std::size_t min_size(){return 2;}
 
   static inline std::size_t position(std::size_t hash,std::size_t size_index_)
   {
-    std::size_t used_mask_=used_mask(size_index_);
+    std::size_t used_hi_mask_=used_hi_mask(size_index_);
     std::size_t used_hi_=used_hi(size_index_);
-    std::size_t used_lo_=used_lo(size_index_);
     std::size_t unused_bits_=unused_bits(size_index_);
 
-    hash>>=unused_bits_;
-    return ((hash>>used_lo_)|(hash<<used_hi_))&used_mask_;
+    hash=boost::core::rotl(hash,(int)used_hi_);
+    return ((hash>>unused_bits_)&~used_hi_mask_)|(hash&used_hi_mask_);
   }
 
 private:
   static constexpr std::size_t total_bits=sizeof(std::size_t)*CHAR_BIT;
 
-  static inline std::size_t used_mask(std::size_t size_index_)
+  static inline std::size_t used_hi_mask(std::size_t size_index_)
   {
-    return size_index_>>24;
+    return size_index_>>16;
   }
 
   static inline std::size_t used_hi(std::size_t size_index_)
-  {
-    return (size_index_>>16)&0xffu;
-  }
-
-  static inline std::size_t used_lo(std::size_t size_index_)
   {
     return (size_index_>>8)&0xffu;
   }
