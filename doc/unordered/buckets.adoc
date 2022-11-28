@@ -244,7 +244,7 @@ image::fca.png[align=center]
 
 Thus container-wide iteration is turned into traversing the non-empty bucket groups (an operation with constant time complexity) which reduces the time complexity back to `O(size())`. In total, a bucket group is only 4 words in size and it views `sizeof(std::size_t) * CHAR_BIT` buckets meaning that for all common implementations, there's only 4 bits of space overhead per bucket introduced by the bucket groups.
 
-A more detailed description of Boost.Unordered's open-addressing implementation is
+A more detailed description of Boost.Unordered's closed-addressing implementation is
 given in an
 https://bannalia.blogspot.com/2022/06/advancing-state-of-art-for.html[external article].
 For more information on implementation rationale, read the
@@ -305,7 +305,7 @@ logical operations.
 .Bit-interleaved metadata word.
 image::foa-metadata-interleaving.png[align=center]
 
-A more detailed description of Boost.Unordered's closed-addressing implementation is
+A more detailed description of Boost.Unordered's open-addressing implementation is
 given in an
 https://bannalia.blogspot.com/2022/11/inside-boostunorderedflatmap.html[external article].
 For more information on implementation rationale, read the
