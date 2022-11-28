@@ -217,11 +217,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { toolset: msvc-14.0, cxxstd: '14,latest',       addrmd: '32,64', os: windows-2019 }
-          - { toolset: msvc-14.2, cxxstd: '14,17,20,latest', addrmd: '32,64', os: windows-2019 }
-          - { toolset: msvc-14.3, cxxstd: '14,17,20,latest', addrmd: '32,64', os: windows-2022 }
-          - { toolset: clang-win, cxxstd: '14,17,latest',    addrmd: '32,64', os: windows-2022 }
-          - { toolset: gcc,       cxxstd: '03,11,14,17,2a',  addrmd: '64',    os: windows-2019 }
+          - { toolset: msvc-14.0, cxxstd: '14,latest',       addrmd: '32,64', os: windows-2019, variant: 'debug,release' }
+          - { toolset: msvc-14.2, cxxstd: '14,17,20,latest', addrmd: '32,64', os: windows-2019, variant: 'debug,release' }
+          - { toolset: msvc-14.3, cxxstd: '14,17,20,latest', addrmd: '32,64', os: windows-2022, variant: 'debug,release' }
+          - { toolset: msvc-14.3, cxxstd: '14',              addrmd: '64',    os: windows-2022, variant: 'debug', defines: '_ALLOW_RTCc_IN_STL', cxxflags: '/RTCc'              }
+          - { toolset: msvc-14.3, cxxstd: '14',              addrmd: '32',    os: windows-2022, variant: 'debug', defines: '_ALLOW_RTCc_IN_STL', cxxflags: '"/RTCc /arch:IA32"' }
+          - { toolset: clang-win, cxxstd: '14,17,latest',    addrmd: '32,64', os: windows-2022, variant: 'debug,release' }
+          - { toolset: gcc,       cxxstd: '03,11,14,17,2a',  addrmd: '64',    os: windows-2019, variant: 'debug,release' }
 
     runs-on: ${{matrix.os}}
 
@@ -250,6 +252,9 @@ jobs:
           B2_TOOLSET: ${{matrix.toolset}}
           B2_CXXSTD: ${{matrix.cxxstd}}
           B2_ADDRESS_MODEL: ${{matrix.addrmd}}
+          B2_DEFINES: ${{matrix.defines}}
+          B2_VARIANT: ${{matrix.variant}}
+          B2_CXXFLAGS: ${{matrix.cxxflags}}
 
       - name: Collect coverage
         shell: powershell
