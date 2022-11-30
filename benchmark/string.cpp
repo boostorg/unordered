@@ -18,6 +18,9 @@
 #ifdef HAVE_TSL_ROBIN
 # include "tsl/robin_map.h"
 #endif
+#ifdef HAVE_ANKERL_UNORDERED_DENSE
+# include "ankerl/unordered_dense.h"
+#endif
 #include <unordered_map>
 #include <vector>
 #include <memory>
@@ -307,6 +310,13 @@ template<class K, class V> using tsl_robin_pg_map =
 
 #endif
 
+#ifdef HAVE_ANKERL_UNORDERED_DENSE
+
+template<class K, class V> using ankerl_unordered_dense_map =
+    ankerl::unordered_dense::map<K, V, ankerl::unordered_dense::hash<K>, std::equal_to<K>, ::allocator< std::pair<K, V> >>;
+
+#endif
+
 // fnv1a_hash
 
 template<int Bits> struct fnv1a_hash_impl;
@@ -393,6 +403,13 @@ template<class K, class V> using tsl_robin_pg_map_fnv1a =
 
 #endif
 
+#ifdef HAVE_ANKERL_UNORDERED_DENSE
+
+template<class K, class V> using ankerl_unordered_dense_map_fnv1a =
+    ankerl::unordered_dense::map<K, V, fnv1a_hash, std::equal_to<K>, ::allocator< std::pair<K, V> >>;
+
+#endif
+
 //
 
 int main()
@@ -402,6 +419,12 @@ int main()
     test<std_unordered_map>( "std::unordered_map" );
     test<boost_unordered_map>( "boost::unordered_map" );
     test<boost_unordered_flat_map>( "boost::unordered_flat_map" );
+
+#ifdef HAVE_ANKERL_UNORDERED_DENSE
+
+    test<ankerl_unordered_dense_map>( "ankerl::unordered_dense::map" );
+
+#endif
 
 #ifdef HAVE_ABSEIL
 
@@ -428,6 +451,12 @@ int main()
     test<boost_unordered_map_fnv1a>( "boost::unordered_map, FNV-1a" );
     test<boost_unordered_flat_map_fnv1a>( "boost::unordered_flat_map, FNV-1a" );
 
+#ifdef HAVE_ANKERL_UNORDERED_DENSE
+
+    test<ankerl_unordered_dense_map_fnv1a>( "ankerl::unordered_dense::map, FNV-1a" );
+
+#endif
+
 #ifdef HAVE_ABSEIL
 
     test<absl_node_hash_map_fnv1a>( "absl::node_hash_map, FNV-1a" );
@@ -453,7 +482,7 @@ int main()
 
     for( auto const& x: times )
     {
-        std::cout << std::setw( 35 ) << ( x.label_ + ": " ) << std::setw( 5 ) << x.time_ << " ms, " << std::setw( 9 ) << x.bytes_ << " bytes in " << x.count_ << " allocations\n";
+        std::cout << std::setw( 38 ) << ( x.label_ + ": " ) << std::setw( 5 ) << x.time_ << " ms, " << std::setw( 9 ) << x.bytes_ << " bytes in " << x.count_ << " allocations\n";
     }
 }
 

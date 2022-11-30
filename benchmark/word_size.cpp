@@ -11,6 +11,9 @@
 # include "absl/container/node_hash_map.h"
 # include "absl/container/flat_hash_map.h"
 #endif
+#ifdef HAVE_ANKERL_UNORDERED_DENSE
+# include "ankerl/unordered_dense.h"
+#endif
 #include <unordered_map>
 #include <vector>
 #include <memory>
@@ -182,6 +185,13 @@ template<class K, class V> using absl_flat_hash_map =
 
 #endif
 
+#ifdef HAVE_ANKERL_UNORDERED_DENSE
+
+template<class K, class V> using ankerl_unordered_dense_map =
+    ankerl::unordered_dense::map<K, V, ankerl::unordered_dense::hash<K>, std::equal_to<K>, ::allocator< std::pair<K, V> >>;
+
+#endif
+
 int main()
 {
     init_words();
@@ -189,6 +199,12 @@ int main()
     test<std_unordered_map>( "std::unordered_map" );
     test<boost_unordered_map>( "boost::unordered_map" );
     test<boost_unordered_flat_map>( "boost::unordered_flat_map" );
+
+#ifdef HAVE_ANKERL_UNORDERED_DENSE
+
+    test<ankerl_unordered_dense_map>( "ankerl::unordered_dense::map" );
+
+#endif
 
 #ifdef HAVE_ABSEIL
 
@@ -201,7 +217,7 @@ int main()
 
     for( auto const& x: times )
     {
-        std::cout << std::setw( 27 ) << ( x.label_ + ": " ) << std::setw( 5 ) << x.time_ << " ms, " << std::setw( 9 ) << x.bytes_ << " bytes in " << x.count_ << " allocations\n";
+        std::cout << std::setw( 30 ) << ( x.label_ + ": " ) << std::setw( 5 ) << x.time_ << " ms, " << std::setw( 9 ) << x.bytes_ << " bytes in " << x.count_ << " allocations\n";
     }
 }
 
