@@ -13,12 +13,6 @@
 # include "absl/container/node_hash_map.h"
 # include "absl/container/flat_hash_map.h"
 #endif
-#ifdef HAVE_TSL_HOPSCOTCH
-# include "tsl/hopscotch_map.h"
-#endif
-#ifdef HAVE_TSL_ROBIN
-# include "tsl/robin_map.h"
-#endif
 #ifdef HAVE_ANKERL_UNORDERED_DENSE
 # include "ankerl/unordered_dense.h"
 #endif
@@ -307,26 +301,6 @@ template<class K, class V> using absl_flat_hash_map =
 
 #endif
 
-#ifdef HAVE_TSL_HOPSCOTCH
-
-template<class K, class V> using tsl_hopscotch_map =
-    tsl::hopscotch_map<K, V, std::hash<K>, std::equal_to<K>, ::allocator< std::pair<K, V> >>;
-
-template<class K, class V> using tsl_hopscotch_pg_map =
-    tsl::hopscotch_pg_map<K, V, std::hash<K>, std::equal_to<K>, ::allocator< std::pair<K, V> >>;
-
-#endif
-
-#ifdef HAVE_TSL_ROBIN
-
-template<class K, class V> using tsl_robin_map =
-    tsl::robin_map<K, V, std::hash<K>, std::equal_to<K>, ::allocator< std::pair<K, V> >>;
-
-template<class K, class V> using tsl_robin_pg_map =
-    tsl::robin_pg_map<K, V, std::hash<K>, std::equal_to<K>, ::allocator< std::pair<K, V> >>;
-
-#endif
-
 #ifdef HAVE_ANKERL_UNORDERED_DENSE
 
 template<class K, class V> using ankerl_unordered_dense_map =
@@ -352,20 +326,6 @@ int main()
 
     test<absl_node_hash_map>( "absl::node_hash_map" );
     test<absl_flat_hash_map>( "absl::flat_hash_map" );
-
-#endif
-
-#ifdef HAVE_TSL_HOPSCOTCH
-
-    test<tsl_hopscotch_map>( "tsl::hopscotch_map" );
-    test<tsl_hopscotch_pg_map>( "tsl::hopscotch_pg_map" );
-
-#endif
-
-#ifdef HAVE_TSL_ROBIN
-
-    test<tsl_robin_map>( "tsl::robin_map" );
-    test<tsl_robin_pg_map>( "tsl::robin_pg_map" );
 
 #endif
 
