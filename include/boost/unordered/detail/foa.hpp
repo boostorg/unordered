@@ -69,6 +69,12 @@
   }while(0)
 #endif
 
+#define BOOST_UNORDERED_STATIC_ASSERT_HASH_PRED(Hash, Pred)                    \
+  static_assert(boost::is_nothrow_swappable<Hash>::value,                      \
+    "Template parameter Hash is required to be nothrow Swappable.");           \
+  static_assert(boost::is_nothrow_swappable<Pred>::value,                      \
+    "Template parameter Pred is required to be nothrow Swappable");
+
 namespace boost{
 namespace unordered{
 namespace detail{
@@ -1412,16 +1418,15 @@ public:
 
   void swap(table& x)
     noexcept(
-      alloc_traits::is_always_equal::value&&
-      boost::is_nothrow_swappable<Hash>::value&&
-      boost::is_nothrow_swappable<Pred>::value)
+      alloc_traits::propagate_on_container_swap::value||
+      alloc_traits::is_always_equal::value)
   {
+    BOOST_UNORDERED_STATIC_ASSERT_HASH_PRED(Hash, Pred)
+
     static constexpr auto pocs=
       alloc_traits::propagate_on_container_swap::value;
 
     using std::swap;
-    swap(h(),x.h());
-    swap(pred(),x.pred());
     if_constexpr<pocs>([&,this]{
       swap_if<pocs>(al(),x.al());
     },
@@ -1429,6 +1434,9 @@ public:
       BOOST_ASSERT(al()==x.al());
       (void)this; /* makes sure captured this is used */
     });
+
+    swap(h(),x.h());
+    swap(pred(),x.pred());
     swap(size_,x.size_);
     swap(arrays,x.arrays);
     swap(ml,x.ml);
@@ -2075,6 +2083,7 @@ private:
 
 #undef BOOST_UNORDERED_ASSUME
 #undef BOOST_UNORDERED_HAS_BUILTIN
+#undef BOOST_UNORDERED_STATIC_ASSERT_HASH_PRED
 #ifdef BOOST_UNORDERED_LITTLE_ENDIAN_NEON
 #undef BOOST_UNORDERED_LITTLE_ENDIAN_NEON
 #endif
