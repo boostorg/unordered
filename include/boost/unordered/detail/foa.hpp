@@ -1266,13 +1266,28 @@ public:
 
   table& operator=(const table& x)
   {
+    BOOST_UNORDERED_STATIC_ASSERT_HASH_PRED(Hash, Pred)
+
     static constexpr auto pocca=
       alloc_traits::propagate_on_container_copy_assignment::value;
 
     if(this!=std::addressof(x)){
-      clear();
-      h()=x.h();
-      pred()=x.pred();
+      // if copy construction here winds up throwing, the container is still
+      // left intact so we perform these operations first
+      hasher    tmp_h=x.h();
+      key_equal tmp_p=x.pred();
+
+      // already noexcept, clear() before we swap the Hash, Pred just in case
+      // the clear() impl relies on them at some point in the future
+      clear(); 
+
+      // because we've asserted at compile-time that Hash and Pred are nothrow
+      // swappable, we can safely mutate our source container and maintain
+      // consistency between the Hash, Pred compatibility
+      using std::swap;
+      swap(h(),tmp_h);
+      swap(pred(),tmp_p);
+
       if_constexpr<pocca>([&,this]{
         if(al()!=x.al())reserve(0);
         copy_assign_if<pocca>(al(),x.al());
