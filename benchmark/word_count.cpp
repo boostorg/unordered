@@ -41,7 +41,15 @@ static std::vector<std::string> words;
 
 static void init_words()
 {
+#if SIZE_MAX > UINT32_MAX
+
     char const* fn = "enwik9"; // http://mattmahoney.net/dc/textdata
+
+#else
+
+    char const* fn = "enwik8"; // ditto
+
+#endif
 
     auto t1 = std::chrono::steady_clock::now();
 
