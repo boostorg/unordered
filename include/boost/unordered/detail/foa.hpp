@@ -23,6 +23,7 @@
 #include <boost/predef.h>
 #include <boost/type_traits/has_trivial_copy.hpp>
 #include <boost/type_traits/is_nothrow_swappable.hpp>
+#include <boost/unordered/detail/narrow_cast.hpp>
 #include <boost/unordered/detail/xmx.hpp>
 #include <boost/unordered/hash_traits.hpp>
 #include <climits>
@@ -269,20 +270,12 @@ private:
       0xF8F8F8F8u,0xF9F9F9F9u,0xFAFAFAFAu,0xFBFBFBFBu,0xFCFCFCFCu,0xFDFDFDFDu,0xFEFEFEFEu,0xFFFFFFFFu,
     };
 
-#if defined(__MSVC_RUNTIME_CHECKS)
-    return (int)word[hash&0xffu];
-#else
-    return (int)word[(unsigned char)hash];
-#endif
+    return (int)word[narrow_cast<unsigned char>(hash)];
   }
 
   inline static unsigned char reduced_hash(std::size_t hash)
   {
-#if defined(__MSVC_RUNTIME_CHECKS)
-    return match_word(hash)&0xffu;
-#else
-    return (unsigned char)match_word(hash);
-#endif
+    return narrow_cast<unsigned char>(match_word(hash));
   }
 
   inline unsigned char& at(std::size_t pos)
@@ -533,11 +526,7 @@ struct group15
     std::size_t     pos=reinterpret_cast<uintptr_t>(pc)%sizeof(group15);
     group15        *pg=reinterpret_cast<group15*>(pc-pos);
     boost::uint64_t x=((pg->m[0])>>pos)&0x000100010001ull;
-#if defined(__MSVC_RUNTIME_CHECKS)
-    boost::uint32_t y=(x|(x>>15)|(x>>30))&0xffffffffu;
-#else
-    boost::uint32_t y=static_cast<boost::uint32_t>(x|(x>>15)|(x>>30));
-#endif
+    boost::uint32_t y=narrow_cast<boost::uint32_t>(x|(x>>15)|(x>>30));
     return !pg->is_not_overflowed(y);
   };
 
@@ -552,11 +541,7 @@ struct group15
   inline int match_occupied()const
   {
     boost::uint64_t x=m[0]|m[1];
-#if defined(__MSVC_RUNTIME_CHECKS)
-    boost::uint32_t y=(x|(x>>32))&0xffffffffu;
-#else
-    boost::uint32_t y=static_cast<boost::uint32_t>(x|(x>>32));
-#endif
+    boost::uint32_t y=narrow_cast<boost::uint32_t>(x|(x>>32));
     y|=y>>16;
     return y&0x7FFF;
   }
@@ -591,11 +576,7 @@ private:
       240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255,
     };
     
-#if defined(__MSVC_RUNTIME_CHECKS)
-  return table[hash&0xffu];
-#else
-    return table[(unsigned char)hash];
-#endif
+    return table[narrow_cast<unsigned char>(hash)];
   }
 
   inline void set_impl(std::size_t pos,std::size_t n)
