@@ -786,7 +786,7 @@ inline unsigned int unchecked_countr_zero(int x)
 #endif
 }
 
-template<typename,typename,typename,typename>
+template<typename,typename,typename,typename,typename>
 class table;
 
 /* table_iterator keeps two pointers:
@@ -850,7 +850,7 @@ public:
 
 private:
   template<typename,typename,bool> friend class table_iterator;
-  template<typename,typename,typename,typename> friend class table;
+  template<typename,typename,typename,typename,typename> friend class table;
 
   table_iterator(Group* pg,std::size_t n,const Value* p_):
     pc{reinterpret_cast<unsigned char*>(const_cast<Group*>(pg))+n},
@@ -1112,7 +1112,7 @@ inline void prefetch(const void* p)
  */
 constexpr static float const mlf = 0.875f;
 
-template<typename TypePolicy,typename Hash,typename Pred,typename Allocator>
+template<typename TypePolicy,typename Hash,typename Pred,typename Allocator,typename MixPolicy=xmx_mix>
 class 
 
 #if defined(_MSC_VER)&&_MSC_FULL_VER>=190023918
@@ -1132,7 +1132,7 @@ table:empty_value<Hash,0>,empty_value<Pred,1>,empty_value<Allocator,2>
   using mix_policy=typename std::conditional<
     hash_is_avalanching<Hash>::value,
     no_mix,
-    xmx_mix
+    MixPolicy
   >::type;
   using alloc_traits=boost::allocator_traits<Allocator>;
 
@@ -1491,7 +1491,7 @@ public:
   }
 
 private:
-  template<typename,typename,typename,typename> friend class table;
+  template<typename,typename,typename,typename,typename> friend class table;
   using arrays_type=table_arrays<value_type,group_type,size_policy>;
 
   struct clear_on_exit

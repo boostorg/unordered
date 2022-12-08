@@ -32,7 +32,7 @@ namespace boost {
 #pragma warning(disable : 4714) /* marked as __forceinline not inlined */
 #endif
 
-    template <class Key, class T, class Hash, class KeyEqual, class Allocator>
+    template <class Key, class T, class Hash, class KeyEqual, class Allocator, class MixPolicy>
     class unordered_flat_map
     {
       struct map_types
@@ -61,13 +61,13 @@ namespace boost {
 
       using table_type = detail::foa::table<map_types, Hash, KeyEqual,
         typename boost::allocator_rebind<Allocator,
-          typename map_types::value_type>::type>;
+          typename map_types::value_type>::type, MixPolicy>;
 
       table_type table_;
 
-      template <class K, class V, class H, class KE, class A, class Pred>
-      typename unordered_flat_map<K, V, H, KE, A>::size_type friend erase_if(
-        unordered_flat_map<K, V, H, KE, A>& set, Pred pred);
+      template <class K, class V, class H, class KE, class A, class MP, class Pred>
+      typename unordered_flat_map<K, V, H, KE, A, MP>::size_type friend erase_if(
+        unordered_flat_map<K, V, H, KE, A, MP>& set, Pred pred);
 
     public:
       using key_type = Key;
@@ -387,7 +387,7 @@ namespace boost {
 
       template <class H2, class P2>
       void merge(
-        unordered_flat_map<key_type, mapped_type, H2, P2, allocator_type>&
+        unordered_flat_map<key_type, mapped_type, H2, P2, allocator_type, MixPolicy>&
           source)
       {
         table_.merge(source.table_);
@@ -395,7 +395,7 @@ namespace boost {
 
       template <class H2, class P2>
       void merge(
-        unordered_flat_map<key_type, mapped_type, H2, P2, allocator_type>&&
+        unordered_flat_map<key_type, mapped_type, H2, P2, allocator_type, MixPolicy>&&
           source)
       {
         table_.merge(std::move(source.table_));
@@ -579,10 +579,10 @@ namespace boost {
       key_equal key_eq() const { return table_.key_eq(); }
     };
 
-    template <class Key, class T, class Hash, class KeyEqual, class Allocator>
+    template <class Key, class T, class Hash, class KeyEqual, class Allocator, class MixPolicy>
     bool operator==(
-      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator> const& lhs,
-      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator> const& rhs)
+      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator, MixPolicy> const& lhs,
+      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator, MixPolicy> const& rhs)
     {
       if (&lhs == &rhs) {
         return true;
@@ -599,27 +599,27 @@ namespace boost {
       })();
     }
 
-    template <class Key, class T, class Hash, class KeyEqual, class Allocator>
+    template <class Key, class T, class Hash, class KeyEqual, class Allocator, class MixPolicy>
     bool operator!=(
-      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator> const& lhs,
-      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator> const& rhs)
+      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator, MixPolicy> const& lhs,
+      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator, MixPolicy> const& rhs)
     {
       return !(lhs == rhs);
     }
 
-    template <class Key, class T, class Hash, class KeyEqual, class Allocator>
-    void swap(unordered_flat_map<Key, T, Hash, KeyEqual, Allocator>& lhs,
-      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator>& rhs)
+    template <class Key, class T, class Hash, class KeyEqual, class Allocator, class MixPolicy>
+    void swap(unordered_flat_map<Key, T, Hash, KeyEqual, Allocator, MixPolicy>& lhs,
+      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator, MixPolicy>& rhs)
       noexcept(noexcept(lhs.swap(rhs)))
     {
       lhs.swap(rhs);
     }
 
-    template <class Key, class T, class Hash, class KeyEqual, class Allocator,
+    template <class Key, class T, class Hash, class KeyEqual, class Allocator, class MixPolicy,
       class Pred>
-    typename unordered_flat_map<Key, T, Hash, KeyEqual, Allocator>::size_type
+    typename unordered_flat_map<Key, T, Hash, KeyEqual, Allocator, MixPolicy>::size_type
     erase_if(
-      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator>& map, Pred pred)
+      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator, MixPolicy>& map, Pred pred)
     {
       return erase_if(map.table_, pred);
     }

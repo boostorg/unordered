@@ -18,24 +18,28 @@
 
 namespace boost {
   namespace unordered {
+
+    namespace detail { namespace foa { struct xmx_mix; } }
+
     template <class Key, class T, class Hash = boost::hash<Key>,
       class KeyEqual = std::equal_to<Key>,
-      class Allocator = std::allocator<std::pair<const Key, T> > >
+      class Allocator = std::allocator<std::pair<const Key, T> >,
+      class MixPolicy = detail::foa::xmx_mix >
     class unordered_flat_map;
 
-    template <class Key, class T, class Hash, class KeyEqual, class Allocator>
+    template <class Key, class T, class Hash, class KeyEqual, class Allocator, class MixPolicy>
     bool operator==(
-      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator> const& lhs,
-      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator> const& rhs);
+      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator, MixPolicy> const& lhs,
+      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator, MixPolicy> const& rhs);
 
-    template <class Key, class T, class Hash, class KeyEqual, class Allocator>
+    template <class Key, class T, class Hash, class KeyEqual, class Allocator, class MixPolicy>
     bool operator!=(
-      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator> const& lhs,
-      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator> const& rhs);
+      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator, MixPolicy> const& lhs,
+      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator, MixPolicy> const& rhs);
 
-    template <class Key, class T, class Hash, class KeyEqual, class Allocator>
-    void swap(unordered_flat_map<Key, T, Hash, KeyEqual, Allocator>& lhs,
-      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator>& rhs)
+    template <class Key, class T, class Hash, class KeyEqual, class Allocator, class MixPolicy>
+    void swap(unordered_flat_map<Key, T, Hash, KeyEqual, Allocator, MixPolicy>& lhs,
+      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator, MixPolicy>& rhs)
       noexcept(noexcept(lhs.swap(rhs)));
   } // namespace unordered
 
