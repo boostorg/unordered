@@ -23,6 +23,7 @@
 #include <boost/predef.h>
 #include <boost/type_traits/is_nothrow_swappable.hpp>
 #include <boost/unordered/detail/xmx.hpp>
+#include <boost/unordered/detail/mulx.hpp>
 #include <boost/unordered/hash_traits.hpp>
 #include <climits>
 #include <cmath>
@@ -757,6 +758,15 @@ struct xmx_mix
   static inline std::size_t mix(const Hash& h,const T& x)
   {
     return xmx(h(x));
+  }
+};
+
+struct mulx_mix
+{
+  template<typename Hash,typename T>
+  static inline std::size_t mix(const Hash& h,const T& x)
+  {
+    return mulx(h(x));
   }
 };
 
