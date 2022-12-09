@@ -292,6 +292,9 @@ template<class K, class V> using boost_unordered_map =
 template<class K, class V> using boost_unordered_flat_map_xmx =
     boost::unordered_flat_map<K, V, boost::hash<K>, std::equal_to<K>, allocator_for<K, V>, boost::unordered::detail::foa::xmx_mix>;
 
+template<class K, class V> using boost_unordered_flat_map_xmx2 =
+    boost::unordered_flat_map<K, V, boost::hash<K>, std::equal_to<K>, allocator_for<K, V>, boost::unordered::detail::foa::xmx2_mix>;
+
 template<class K, class V> using boost_unordered_flat_map_mulx =
     boost::unordered_flat_map<K, V, boost::hash<K>, std::equal_to<K>, allocator_for<K, V>, boost::unordered::detail::foa::mulx_mix>;
 
@@ -329,6 +332,7 @@ int main()
 
     test<boost_unordered_map>( "boost::unordered_map" );
     test<boost_unordered_flat_map_xmx>( "boost::unordered_flat_map, xmx" );
+    test<boost_unordered_flat_map_xmx2>( "boost::unordered_flat_map, xmx2" );
     test<boost_unordered_flat_map_mulx>( "boost::unordered_flat_map, mulx" );
 
 #ifdef HAVE_ANKERL_UNORDERED_DENSE
@@ -348,7 +352,7 @@ int main()
 
     for( auto const& x: times )
     {
-        std::cout << std::setw( 33 ) << ( x.label_ + ": " ) << std::setw( 5 ) << x.time_ << " ms, " << std::setw( 9 ) << x.bytes_ << " bytes in " << x.count_ << " allocations\n";
+        std::cout << std::setw( 34 ) << ( x.label_ + ": " ) << std::setw( 5 ) << x.time_ << " ms, " << std::setw( 9 ) << x.bytes_ << " bytes in " << x.count_ << " allocations\n";
     }
 }
 

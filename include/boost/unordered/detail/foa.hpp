@@ -761,6 +761,15 @@ struct xmx_mix
   }
 };
 
+struct xmx2_mix
+{
+  template<typename Hash,typename T>
+  static inline std::size_t mix(const Hash& h,const T& x)
+  {
+    return xmx2(h(x));
+  }
+};
+
 struct mulx_mix
 {
   template<typename Hash,typename T>

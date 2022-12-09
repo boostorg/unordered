@@ -64,6 +64,31 @@ static inline std::size_t xmx(std::size_t x)noexcept
 #endif
 }
 
+// alternative multipliers
+
+static inline std::size_t xmx2( std::size_t x ) noexcept
+{
+#if defined(BOOST_UNORDERED_64B_ARCHITECTURE)
+
+  boost::uint64_t z=(boost::uint64_t)x;
+
+  z ^= z >> 23;
+  z *= 0x9E3779B97F4A7C15ull;
+  z ^= z >> 23;
+
+  return (std::size_t)z;
+
+#else /* 32 bits assumed */
+
+  x ^= x >> 18;
+  x *= 0x9E3779B9u;
+  x ^= x >> 16;
+
+  return x;
+
+#endif
+}
+
 #ifdef BOOST_UNORDERED_64B_ARCHITECTURE
 #undef BOOST_UNORDERED_64B_ARCHITECTURE
 #endif
