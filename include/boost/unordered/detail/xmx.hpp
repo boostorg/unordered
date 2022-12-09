@@ -64,7 +64,7 @@ static inline std::size_t xmx(std::size_t x)noexcept
 #endif
 }
 
-// alternative multipliers
+// alternative multipliers (phi)
 
 static inline std::size_t xmx2( std::size_t x ) noexcept
 {
@@ -82,6 +82,31 @@ static inline std::size_t xmx2( std::size_t x ) noexcept
 
   x ^= x >> 18;
   x *= 0x9E3779B9u;
+  x ^= x >> 16;
+
+  return x;
+
+#endif
+}
+
+// alternative multipliers (https://arxiv.org/abs/2001.05304)
+
+static inline std::size_t xmx3( std::size_t x ) noexcept
+{
+#if defined(BOOST_UNORDERED_64B_ARCHITECTURE)
+
+  boost::uint64_t z=(boost::uint64_t)x;
+
+  z ^= z >> 23;
+  z *= 0xF1357AEA2E62A9C5ull;
+  z ^= z >> 23;
+
+  return (std::size_t)z;
+
+#else /* 32 bits assumed */
+
+  x ^= x >> 18;
+  x *= 0x93D765DDu;
   x ^= x >> 16;
 
   return x;
