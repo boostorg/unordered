@@ -21,6 +21,7 @@
 #include <boost/core/pointer_traits.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/predef.h>
+#include <boost/type_traits/has_trivial_copy.hpp>
 #include <boost/type_traits/is_nothrow_swappable.hpp>
 #include <boost/unordered/detail/xmx.hpp>
 #include <boost/unordered/detail/mulx.hpp>
@@ -1217,9 +1218,7 @@ public:
   table(const table& x,const Allocator& al_):
     table{std::size_t(std::ceil(float(x.size())/mlf)),x.h(),x.pred(),al_}
   {
-    x.for_all_elements([this](value_type* p){
-      unchecked_insert(*p);
-    });
+    copy_elements_from(x);
   }
 
   table(table&& x,const Allocator& al_):
@@ -1266,10 +1265,8 @@ public:
         copy_assign_if<pocca>(al(),x.al());
       });
       /* noshrink: favor memory reuse over tightness */
-      noshrink_reserve(x.size()); 
-      x.for_all_elements([this](value_type* p){
-        unchecked_insert(*p);
-      });
+      noshrink_reserve(x.size());
+      copy_elements_from(x);
     }
     return *this;
   }
@@ -1562,6 +1559,79 @@ private:
     value_type *p;
   };
 
+  void copy_elements_from(const table& x)
+  {
+    BOOST_ASSERT(empty());
+    BOOST_ASSERT(this!=std::addressof(x));
+    if(arrays.groups_size_mask==x.arrays.groups_size_mask){
+      fast_copy_elements_from(x);
+    }
+    else{
+      x.for_all_elements([this](const value_type* p){
+        unchecked_insert(*p);
+      });
+    }
+  }
+
+  void fast_copy_elements_from(const table& x)
+  {
+    if(arrays.elements){
+      copy_elements_array_from(x);
+      std::memcpy(
+        arrays.groups,x.arrays.groups,
+        (arrays.groups_size_mask+1)*sizeof(group_type));
+      size_=x.size();
+    }
+  }
+
+  void copy_elements_array_from(const table& x)
+  {
+    copy_elements_array_from(
+      x,
+      std::integral_constant<
+        bool,
+#if BOOST_WORKAROUND(BOOST_LIBSTDCXX_VERSION,<50000)
+        /* std::is_trivially_copy_constructible not provided */
+        boost::has_trivial_copy<value_type>::value
+#else
+        std::is_trivially_copy_constructible<value_type>::value
+#endif
+      >{}
+    );
+  }
+
+  void copy_elements_array_from(const table& x,std::true_type /* -> memcpy */)
+  {
+    /* reinterpret_cast: GCC may complain about value_type not being trivially
+     * copy-assignable when we're relying on trivial copy constructibility.
+     */
+    std::memcpy(
+      reinterpret_cast<unsigned char*>(arrays.elements),
+      reinterpret_cast<unsigned char*>(x.arrays.elements),
+      x.capacity()*sizeof(value_type));
+  }
+
+  void copy_elements_array_from(const table& x,std::false_type /* -> manual */)
+  {
+    std::size_t num_constructed=0;
+    BOOST_TRY{
+      x.for_all_elements([&,this](const value_type* p){
+        construct_element(arrays.elements+(p-x.arrays.elements),*p);
+        ++num_constructed;
+      });
+    }
+    BOOST_CATCH(...){
+      if(num_constructed){
+        x.for_all_elements_while([&,this](const value_type* p){
+          destroy_element(arrays.elements+(p-x.arrays.elements));
+          return --num_constructed!=0;
+        });
+      }
+      BOOST_RETHROW
+    }
+    BOOST_CATCH_END
+  }
+
   void recover_slot(unsigned char* pc)
   {
     /* If this slot potentially caused overflow, we decrease the maximum load so
@@ -1764,17 +1834,13 @@ private:
     }
     BOOST_CATCH(...){
       if(num_destroyed){
-        for(auto pg=arrays.groups;;++pg){
-          auto mask=pg->match_occupied();
-          while(mask){
-            auto nz=unchecked_countr_zero(mask);
-            recover_slot(pg,nz);
-            if(!(--num_destroyed))goto continue_;
-            mask&=mask-1;
+        for_all_elements_while(
+          [&,this](group_type* pg,unsigned int n,value_type*){
+            recover_slot(pg,n);
+            return --num_destroyed!=0;
           }
-        }
+        );
       }
-      continue_:
       for_all_elements(new_arrays_,[this](value_type* p){
         destroy_element(p);
       });
@@ -1904,12 +1970,34 @@ private:
   static auto for_all_elements(const arrays_type& arrays_,F f)
     ->decltype(f(nullptr),void())
   {
-    for_all_elements(
-      arrays_,[&](group_type*,unsigned int,value_type* p){return f(p);});
+    for_all_elements_while(arrays_,[&](value_type* p){f(p);return true;});
   }
 
   template<typename F>
   static auto for_all_elements(const arrays_type& arrays_,F f)
+    ->decltype(f(nullptr,0,nullptr),void())
+  {
+    for_all_elements_while(
+      arrays_,[&](group_type* pg,unsigned int n,value_type* p)
+        {f(pg,n,p);return true;});
+  }
+
+  template<typename F>
+  void for_all_elements_while(F f)const
+  {
+    for_all_elements_while(arrays,f);
+  }
+
+  template<typename F>
+  static auto for_all_elements_while(const arrays_type& arrays_,F f)
+    ->decltype(f(nullptr),void())
+  {
+    for_all_elements_while(
+      arrays_,[&](group_type*,unsigned int,value_type* p){return f(p);});
+  }
+
+  template<typename F>
+  static auto for_all_elements_while(const arrays_type& arrays_,F f)
     ->decltype(f(nullptr,0,nullptr),void())
   {
     auto p=arrays_.elements;
@@ -1919,7 +2007,7 @@ private:
       auto mask=pg->match_really_occupied();
       while(mask){
         auto n=unchecked_countr_zero(mask);
-        f(pg,n,p+n);
+        if(!f(pg,n,p+n))return;
         mask&=mask-1;
       }
     }
