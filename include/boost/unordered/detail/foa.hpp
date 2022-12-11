@@ -1060,6 +1060,8 @@ inline void prefetch(const void* p)
 #endif    
 }
 
+struct try_emplace_args_t{};
+
 #if defined(BOOST_GCC)
 /* GCC's -Wshadow triggers at scenarios like this: 
  *
@@ -1353,12 +1355,10 @@ public:
 
   template<typename Key,typename... Args>
   BOOST_FORCEINLINE std::pair<iterator,bool> try_emplace(
-    Key&& k,Args&&... args)
+    Key&& x,Args&&... args)
   {
     return emplace_impl(
-      std::piecewise_construct,
-      std::forward_as_tuple(std::forward<Key>(k)),
-      std::forward_as_tuple(std::forward<Args>(args)...));
+      try_emplace_args_t{},std::forward<Key>(x),std::forward<Args>(args)...);
   }
 
   BOOST_FORCEINLINE std::pair<iterator,bool>
@@ -1547,6 +1547,37 @@ private:
     alloc_traits::construct(al(),p,std::forward<Args>(args)...);
   }
 
+  template<typename... Args>
+  void construct_element(value_type* p,try_emplace_args_t,Args&&... args)
+  {
+    construct_element_from_try_emplace_args(
+      p,
+      std::integral_constant<bool,std::is_same<key_type,value_type>::value>{},
+      std::forward<Args>(args)...);
+  }
+
+  template<typename Key,typename... Args>
+  void construct_element_from_try_emplace_args(
+    value_type* p,std::false_type,Key&& x,Args&&... args)
+  {
+    alloc_traits::construct(
+      al(),p,
+      std::piecewise_construct,
+      std::forward_as_tuple(std::forward<Key>(x)),
+      std::forward_as_tuple(std::forward<Args>(args)...));
+  }
+
+  /* This overload allows boost::unordered_flat_set to internally use
+   * try_emplace to implement heterogeneous insert (P2363).
+   */
+
+  template<typename Key>
+  void construct_element_from_try_emplace_args(
+    value_type* p,std::true_type,Key&& x)
+  {
+    alloc_traits::construct(al(),p,std::forward<Key>(x));
+  }
+
   void destroy_element(value_type* p)noexcept
   {
     alloc_traits::destroy(al(),p);
@@ -1668,12 +1699,11 @@ private:
     return type_policy::extract(x);
   }
 
-  template<typename Arg1,typename Arg2>
-  static inline auto key_from(
-    std::piecewise_construct_t,const Arg1& k,const Arg2&)
-    ->decltype(std::get<0>(k))
+  template<typename Key,typename... Args>
+  static inline const Key& key_from(
+    try_emplace_args_t,const Key& x,const Args&...)
   {
-    return std::get<0>(k);
+    return x;
   }
 
   template<typename Key>
