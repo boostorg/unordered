@@ -230,18 +230,18 @@ namespace test {
 
     std::size_t operator()(int x) const
     {
-      int result;
+      unsigned result;
       switch (type_) {
       case 1:
-        result = x;
+        result = static_cast<unsigned>(x);
         break;
       case 2:
-        result = x * 7;
+        result = static_cast<unsigned>(x) * 7;
         break;
       default:
-        result = x * 256;
+        result = static_cast<unsigned>(x) * 256;
       }
-      return static_cast<std::size_t>(result);
+      return result;
     }
 
     friend bool operator==(hash const& x1, hash const& x2)
