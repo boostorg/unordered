@@ -31,6 +31,7 @@
 #include <cstring>
 #include <iterator>
 #include <limits>
+#include <memory>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -1025,6 +1026,47 @@ inline void prefetch(const void* p)
 
 struct try_emplace_args_t{};
 
+template<typename Allocator>
+struct is_std_allocator:std::false_type{};
+
+template<typename T>
+struct is_std_allocator<std::allocator<T>>:std::true_type{};
+
+/* std::allocator::construct marked as deprecated */
+#if defined(_LIBCPP_SUPPRESS_DEPRECATED_PUSH)
+_LIBCPP_SUPPRESS_DEPRECATED_PUSH
+#elif defined(_STL_DISABLE_DEPRECATED_WARNING)
+_STL_DISABLE_DEPRECATED_WARNING
+#elif defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable:4996)
+#endif
+
+template<typename Allocator,typename Ptr,typename... Args>
+struct alloc_has_construct
+{
+private:
+  template<typename Allocator2>
+  static decltype(
+    std::declval<Allocator2&>().construct(
+      std::declval<Ptr>(),std::declval<Args&&>()...),
+    std::true_type{}
+  ) check(int);
+
+  template<typename> static std::false_type check(...);
+
+public:
+  static constexpr bool value=decltype(check<Allocator>(0))::value;
+};
+
+#if defined(_LIBCPP_SUPPRESS_DEPRECATED_POP)
+_LIBCPP_SUPPRESS_DEPRECATED_POP
+#elif defined(_STL_RESTORE_DEPRECATED_WARNING)
+_STL_RESTORE_DEPRECATED_WARNING
+#elif defined(_MSC_VER)
+#pragma warning(pop)
+#endif
+
 #if defined(BOOST_GCC)
 /* GCC's -Wshadow triggers at scenarios like this: 
  *
@@ -1590,6 +1632,9 @@ private:
 #else
         std::is_trivially_copy_constructible<value_type>::value
 #endif
+        &&(
+          is_std_allocator<Allocator>::value||
+          !alloc_has_construct<Allocator,value_type*,const value_type&>::value)
       >{}
     );
   }
