@@ -437,13 +437,11 @@ UNORDERED_AUTO_TEST (prelim_allocator_checks) {
 using test::default_generator;
 
 #ifdef BOOST_UNORDERED_FOA_TESTS
-boost::unordered_flat_set<int, noexcept_tests::hash_nothrow_move_assign,
-  noexcept_tests::equal_to_nothrow_move_assign, allocator1<int> >*
-  throwing_set_alloc1;
+boost::unordered_flat_set<int, noexcept_tests::hash_nothrow_swap,
+  noexcept_tests::equal_to_nothrow_swap, allocator1<int> >* throwing_set_alloc1;
 
-boost::unordered_flat_set<int, noexcept_tests::hash_nothrow_move_assign,
-  noexcept_tests::equal_to_nothrow_move_assign, allocator2<int> >*
-  throwing_set_alloc2;
+boost::unordered_flat_set<int, noexcept_tests::hash_nothrow_swap,
+  noexcept_tests::equal_to_nothrow_swap, allocator2<int> >* throwing_set_alloc2;
 
 UNORDERED_TEST(test_nothrow_move_assign_when_noexcept,
   ((throwing_set_alloc1)(throwing_set_alloc2))((default_generator)))

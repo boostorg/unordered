@@ -32,6 +32,7 @@
 #include <cstring>
 #include <iterator>
 #include <limits>
+#include <memory>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -68,6 +69,12 @@
     static_cast<void>(false&&(cond)); \
   }while(0)
 #endif
+
+#define BOOST_UNORDERED_STATIC_ASSERT_HASH_PRED(Hash, Pred)                    \
+  static_assert(boost::is_nothrow_swappable<Hash>::value,                      \
+    "Template parameter Hash is required to be nothrow Swappable.");           \
+  static_assert(boost::is_nothrow_swappable<Pred>::value,                      \
+    "Template parameter Pred is required to be nothrow Swappable");
 
 namespace boost{
 namespace unordered{
@@ -1062,6 +1069,47 @@ inline void prefetch(const void* p)
 
 struct try_emplace_args_t{};
 
+template<typename Allocator>
+struct is_std_allocator:std::false_type{};
+
+template<typename T>
+struct is_std_allocator<std::allocator<T>>:std::true_type{};
+
+/* std::allocator::construct marked as deprecated */
+#if defined(_LIBCPP_SUPPRESS_DEPRECATED_PUSH)
+_LIBCPP_SUPPRESS_DEPRECATED_PUSH
+#elif defined(_STL_DISABLE_DEPRECATED_WARNING)
+_STL_DISABLE_DEPRECATED_WARNING
+#elif defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable:4996)
+#endif
+
+template<typename Allocator,typename Ptr,typename... Args>
+struct alloc_has_construct
+{
+private:
+  template<typename Allocator2>
+  static decltype(
+    std::declval<Allocator2&>().construct(
+      std::declval<Ptr>(),std::declval<Args&&>()...),
+    std::true_type{}
+  ) check(int);
+
+  template<typename> static std::false_type check(...);
+
+public:
+  static constexpr bool value=decltype(check<Allocator>(0))::value;
+};
+
+#if defined(_LIBCPP_SUPPRESS_DEPRECATED_POP)
+_LIBCPP_SUPPRESS_DEPRECATED_POP
+#elif defined(_STL_RESTORE_DEPRECATED_WARNING)
+_STL_RESTORE_DEPRECATED_WARNING
+#elif defined(_MSC_VER)
+#pragma warning(pop)
+#endif
+
 #if defined(BOOST_GCC)
 /* GCC's -Wshadow triggers at scenarios like this: 
  *
@@ -1255,13 +1303,28 @@ public:
 
   table& operator=(const table& x)
   {
+    BOOST_UNORDERED_STATIC_ASSERT_HASH_PRED(Hash, Pred)
+
     static constexpr auto pocca=
       alloc_traits::propagate_on_container_copy_assignment::value;
 
     if(this!=std::addressof(x)){
-      clear();
-      h()=x.h();
-      pred()=x.pred();
+      // if copy construction here winds up throwing, the container is still
+      // left intact so we perform these operations first
+      hasher    tmp_h=x.h();
+      key_equal tmp_p=x.pred();
+
+      // already noexcept, clear() before we swap the Hash, Pred just in case
+      // the clear() impl relies on them at some point in the future
+      clear(); 
+
+      // because we've asserted at compile-time that Hash and Pred are nothrow
+      // swappable, we can safely mutate our source container and maintain
+      // consistency between the Hash, Pred compatibility
+      using std::swap;
+      swap(h(),tmp_h);
+      swap(pred(),tmp_p);
+
       if_constexpr<pocca>([&,this]{
         if(al()!=x.al())reserve(0);
         copy_assign_if<pocca>(al(),x.al());
@@ -1280,19 +1343,32 @@ public:
 
   table& operator=(table&& x)
     noexcept(
-      alloc_traits::is_always_equal::value&&
-      std::is_nothrow_move_assignable<Hash>::value&&
-      std::is_nothrow_move_assignable<Pred>::value)
+      alloc_traits::propagate_on_container_move_assignment::value||
+      alloc_traits::is_always_equal::value)
   {
+    BOOST_UNORDERED_STATIC_ASSERT_HASH_PRED(Hash, Pred)
+
     static constexpr auto pocma=
       alloc_traits::propagate_on_container_move_assignment::value;
 
     if(this!=std::addressof(x)){
+      /* Given ambiguity in implementation strategies briefly discussed here:
+       * https://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#2227
+       *
+       * we opt into requiring nothrow swappability and eschew the move
+       * operations associated with Hash, Pred.
+       *
+       * To this end, we ensure that the user never has to consider the
+       * moved-from state of their Hash, Pred objects
+       */
+
+      using std::swap;
+
       clear();
-      h()=std::move(x.h());
-      pred()=std::move(x.pred());
+      swap(h(),x.h());
+      swap(pred(),x.pred());
+
       if(pocma||al()==x.al()){
-        using std::swap;
         reserve(0);
         move_assign_if<pocma>(al(),x.al());
         swap(size_,x.size_);
@@ -1407,16 +1483,15 @@ public:
 
   void swap(table& x)
     noexcept(
-      alloc_traits::is_always_equal::value&&
-      boost::is_nothrow_swappable<Hash>::value&&
-      boost::is_nothrow_swappable<Pred>::value)
+      alloc_traits::propagate_on_container_swap::value||
+      alloc_traits::is_always_equal::value)
   {
+    BOOST_UNORDERED_STATIC_ASSERT_HASH_PRED(Hash, Pred)
+
     static constexpr auto pocs=
       alloc_traits::propagate_on_container_swap::value;
 
     using std::swap;
-    swap(h(),x.h());
-    swap(pred(),x.pred());
     if_constexpr<pocs>([&,this]{
       swap_if<pocs>(al(),x.al());
     },
@@ -1424,6 +1499,9 @@ public:
       BOOST_ASSERT(al()==x.al());
       (void)this; /* makes sure captured this is used */
     });
+
+    swap(h(),x.h());
+    swap(pred(),x.pred());
     swap(size_,x.size_);
     swap(arrays,x.arrays);
     swap(ml,x.ml);
@@ -1627,6 +1705,9 @@ private:
 #else
         std::is_trivially_copy_constructible<value_type>::value
 #endif
+        &&(
+          is_std_allocator<Allocator>::value||
+          !alloc_has_construct<Allocator,value_type*,const value_type&>::value)
       >{}
     );
   }
@@ -2067,6 +2148,7 @@ private:
 
 #undef BOOST_UNORDERED_ASSUME
 #undef BOOST_UNORDERED_HAS_BUILTIN
+#undef BOOST_UNORDERED_STATIC_ASSERT_HASH_PRED
 #ifdef BOOST_UNORDERED_LITTLE_ENDIAN_NEON
 #undef BOOST_UNORDERED_LITTLE_ENDIAN_NEON
 #endif

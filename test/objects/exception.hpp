@@ -227,7 +227,20 @@ namespace test {
         }
         return x1.tag_ != x2.tag_;
       }
+
+#if defined(BOOST_UNORDERED_FOA_TESTS)
+      friend void swap(hash&, hash&) noexcept;
+#endif
     };
+
+#if defined(BOOST_UNORDERED_FOA_TESTS)
+      void swap(hash& lhs, hash& rhs) noexcept
+      {
+        int tag = lhs.tag_;
+        lhs.tag_ = rhs.tag_;
+        rhs.tag_ = tag;
+      }
+#endif
 
     class less
     {
@@ -364,7 +377,19 @@ namespace test {
       }
 
       friend less create_compare(equal_to x) { return less(x.tag_); }
+#if defined(BOOST_UNORDERED_FOA_TESTS)
+      friend void swap(equal_to&, equal_to&) noexcept;
+#endif
     };
+
+#if defined(BOOST_UNORDERED_FOA_TESTS)
+    void swap(equal_to& lhs, equal_to& rhs) noexcept
+    {
+      int tag = lhs.tag_;
+      lhs.tag_ = rhs.tag_;
+      rhs.tag_ = tag;
+    }
+#endif
 
     template <class T> class allocator
     {
