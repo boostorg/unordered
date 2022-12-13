@@ -54,20 +54,10 @@ namespace test {
       if (test::has_unique_keys<X>::value && count != 1)
         BOOST_ERROR("Non-unique key.");
 
-#if !defined(BOOST_UNORDERED_FOA_WEAK_GUARANTEE_SWAP_EXCEPTIONS_TESTS)
-      // we conditionally compile this check because our FOA implementation only
-      // exhibits the weak guarantee when swapping throws
-      //
-      // in this case, the hasher may be changed before the predicate and the
-      // arrays are swapped in which case, we can can find an element by
-      // iteration but unfortunately, it's in the wrong slot according to the
-      // new hash function so count(key) can wind up returning nothing when
-      // there really is something
       if (x1.count(key) != count) {
         BOOST_ERROR("Incorrect output of count.");
         std::cerr << x1.count(key) << "," << count << "\n";
       }
-#endif
 
 #ifndef BOOST_UNORDERED_FOA_TESTS
       // Check that the keys are in the correct bucket and are
