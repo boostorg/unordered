@@ -390,6 +390,15 @@ namespace boost {
         return this->emplace(boost::move(x));
       }
 
+      template <class Key>
+      typename boost::enable_if_c<
+        detail::transparent_non_iterable<Key, unordered_set>::value,
+        std::pair<iterator, bool> >::type
+      insert(BOOST_FWD_REF(Key) k)
+      {
+        return table_.try_emplace_unique(boost::forward<Key>(k));
+      }
+
       iterator insert(const_iterator hint, value_type const& x)
       {
         return this->emplace_hint(hint, x);
@@ -398,6 +407,15 @@ namespace boost {
       iterator insert(const_iterator hint, BOOST_UNORDERED_RV_REF(value_type) x)
       {
         return this->emplace_hint(hint, boost::move(x));
+      }
+
+      template <class Key>
+      typename boost::enable_if_c<
+        detail::transparent_non_iterable<Key, unordered_set>::value,
+        iterator>::type
+      insert(const_iterator hint, BOOST_FWD_REF(Key) k)
+      {
+        return table_.try_emplace_hint_unique(hint, boost::forward<Key>(k));
       }
 
       template <class InputIt> void insert(InputIt, InputIt);
