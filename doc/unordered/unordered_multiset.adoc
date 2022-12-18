@@ -107,14 +107,14 @@ namespace boost {
 
     node_type xref:#unordered_multiset_extract_by_iterator[extract](const_iterator position);
     node_type xref:#unordered_multiset_extract_by_value[extract](const key_type& k);
-    template<class K> node_type xref:#unordered_multiset_transparent_extract_by_value[extract](K&& k);
+    template<class K> node_type xref:#unordered_multiset_extract_by_value[extract](K&& k);
     iterator xref:#unordered_multiset_insert_with_node_handle[insert](node_type&& nh);
     iterator xref:#unordered_multiset_insert_with_hint_and_node_handle[insert](const_iterator hint, node_type&& nh);
 
     iterator  xref:#unordered_multiset_erase_by_position[erase](iterator position);
     iterator  xref:#unordered_multiset_erase_by_position[erase](const_iterator position);
     size_type xref:#unordered_multiset_erase_by_value[erase](const key_type& k);
-    template<class K> size_type xref:#unordered_multiset_transparent_erase_by_value[erase](K&& x);
+    template<class K> size_type xref:#unordered_multiset_erase_by_value[erase](K&& x);
     iterator  xref:#unordered_multiset_erase_range[erase](const_iterator first, const_iterator last);
     void      xref:#unordered_multiset_quick_erase[quick_erase](const_iterator position);
     void      xref:#unordered_multiset_erase_return_void[erase_return_void](const_iterator position);
@@ -168,6 +168,7 @@ namespace boost {
     size_type xref:#unordered_multiset_max_bucket_count[max_bucket_count]() const noexcept;
     size_type xref:#unordered_multiset_bucket_size[bucket_size](size_type n) const;
     size_type xref:#unordered_multiset_bucket[bucket](const key_type& k) const;
+    template<class K> size_type xref:#unordered_multiset_bucket[bucket](const K& k) const;
     local_iterator xref:#unordered_multiset_begin_2[begin](size_type n);
     const_local_iterator xref:#unordered_multiset_begin_2[begin](size_type n) const;
     local_iterator xref:#unordered_multiset_end_2[end](size_type n);
@@ -922,6 +923,7 @@ Notes:;; A node extracted using this method can be inserted into a compatible `u
 ==== Extract by Value
 ```c++
 node_type extract(const key_type& k);
+template<class K> node_type extract(K&& k);
 ```
 
 Removes an element with key equivalent to `k`.
@@ -929,23 +931,9 @@ Removes an element with key equivalent to `k`.
 [horizontal]
 Returns:;; A `node_type` owning the element if found, otherwise an empty `node_type`.
 Throws:;; Only throws an exception if it is thrown by `hasher` or `key_equal`.
-Notes:;; A node extracted using this method can be inserted into a compatible `unordered_set`.
-
----
-
-==== Transparent Extract by Value
-```c++
-template<class K> node_type extract(K&& k);
-```
-
-Removes an element with key equivalent to `k`.
-
-This overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs and neither `iterator` nor `const_iterator` are implicitly convertible from `K`. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
-
-[horizontal]
-Returns:;; A `node_type` owning the element if found, otherwise an empty `node_type`.
-Throws:;; Only throws an exception if it is thrown by `hasher` or `key_equal`.[horizontal]
-Notes:;; A node extracted using this method can be inserted into a compatible `unordered_set`.
+Notes:;; A node extracted using this method can be inserted into a compatible `unordered_set`. +
++
+The `template<class K>` overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs and neither `iterator` nor `const_iterator` are implicitly convertible from `K`. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
 
 ---
 
@@ -1018,28 +1006,15 @@ Notes:;; In older versions this could be inefficient because it had to search th
 ==== Erase by Value
 ```c++
 size_type erase(const key_type& k);
-```
-
-Erase all elements with key equivalent to `k`.
-
-[horizontal]
-Returns:;; The number of elements erased.
-Throws:;; Only throws an exception if it is thrown by `hasher` or `key_equal`.
-
----
-
-==== Transparent Erase by Value
-```c++
 template<class K> size_type erase(K&& x);
 ```
 
 Erase all elements with key equivalent to `k`.
 
-This overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs and neither `iterator` nor `const_iterator` are implicitly convertible from `K`. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
-
 [horizontal]
 Returns:;; The number of elements erased.
 Throws:;; Only throws an exception if it is thrown by `hasher` or `key_equal`.
+Notes:;; The `template<class K>` overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs and neither `iterator` nor `const_iterator` are implicitly convertible from `K`. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
 
 ---
 
@@ -1288,11 +1263,13 @@ Returns:;; The number of elements in bucket `n`.
 ==== bucket
 ```c++
 size_type bucket(const key_type& k) const;
+template<class K> size_type bucket(const K& k) const;
 ```
 
 [horizontal]
 Returns:;; The index of the bucket which would contain an element with key `k`.
 Postconditions:;; The return value is less than `bucket_count()`.
+Notes:;; The `template<class K>` overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
 
 ---
 
