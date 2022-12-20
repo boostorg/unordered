@@ -119,7 +119,7 @@ namespace boost {
     template<class K> std::pair<iterator, bool> xref:#unordered_flat_set_transparent_insert[insert](K&& k);
     iterator xref:#unordered_flat_set_copy_insert_with_hint[insert](const_iterator hint, const value_type& obj);
     iterator xref:#unordered_flat_set_move_insert_with_hint[insert](const_iterator hint, value_type&& obj);
-    template<class K> iterator xref:#unordered_flat_set_transparent_insert_with_hint[insert](const_iterator hint, value_type&& obj);
+    template<class K> iterator xref:#unordered_flat_set_transparent_insert_with_hint[insert](const_iterator hint, K&& k);
     template<class InputIterator> void xref:#unordered_flat_set_insert_iterator_range[insert](InputIterator first, InputIterator last);
     void xref:#unordered_flat_set_insert_initializer_list[insert](std::initializer_list<value_type>);
 
@@ -811,7 +811,7 @@ If an insert took place, then the iterator points to the newly inserted element.
 Throws:;; If an exception is thrown by an operation other than a call to `hasher` the function has no effect.
 Notes:;; Can invalidate iterators, pointers and references, but only if the insert causes the load to be greater than the maximum load. +
 +
-This overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
+This overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs and neither `iterator` nor `const_iterator` are implicitly convertible from `K`. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
 
 ---
 
