@@ -1375,13 +1375,14 @@ public:
   template<typename... Args>
   BOOST_FORCEINLINE std::pair<iterator,bool> emplace(Args&&... args)
   {
-    using emplace_type = typename std::conditional<
-      std::is_constructible<
-        init_type, Args...
-      >::value,
-      init_type,
-      value_type
-    >::type;
+    using emplace_type = typename type_policy::emplace_type;
+    // using emplace_type = typename std::conditional<
+    //   std::is_constructible<
+    //     init_type, Args...
+    //   >::value,
+    //   init_type,
+    //   value_type
+    // >::type;
     return emplace_impl(emplace_type(std::forward<Args>(args)...));
   }
 

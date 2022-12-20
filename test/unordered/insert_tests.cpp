@@ -45,6 +45,7 @@ namespace insert_tests {
         float b = x.max_load_factor();
 
         std::pair<iterator, bool> r1 = x.insert(*it);
+        static_assert(std::is_same_v<decltype(*it), std::add_lvalue_reference_t<typename X::value_type>>);
         std::pair<typename ordered::iterator, bool> r2 = tracker.insert(*it);
 
         BOOST_TEST(r1.second == r2.second);
@@ -896,38 +897,41 @@ namespace insert_tests {
     test::allocator1<test::object> >* test_set;
   boost::unordered_flat_map<test::movable, test::movable, test::hash,
     test::equal_to, test::allocator2<test::movable> >* test_map;
+  boost::unordered_node_map<test::movable, test::movable, test::hash,
+    test::equal_to, test::allocator2<test::movable> >* test_node_map;
 
   UNORDERED_TEST(unique_insert_tests1,
-    ((test_set_std_alloc)(test_set)(test_map))(
+    ((test_set_std_alloc)(test_set)(test_map)(test_node_map))(
       (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(
-    insert_tests2, ((test_set)(test_map))(
+    insert_tests2, ((test_set)(test_map)(test_node_map))(
                      (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(unique_emplace_tests1,
-    ((test_set_std_alloc)(test_set)(test_map))(
+    ((test_set_std_alloc)(test_set)(test_map)(test_node_map))(
       (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(move_emplace_tests,
-    ((test_set_std_alloc)(test_set)(test_map))(
+    ((test_set_std_alloc)(test_set)(test_map)(test_node_map))(
       (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(default_emplace_tests,
-    ((test_set_std_alloc)(test_set)(test_map))(
+    ((test_set_std_alloc)(test_set)(test_map)(test_node_map))(
       (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(map_tests,
-    ((test_map))((default_generator)(generate_collisions)(limited_range)))
+    ((test_map)(test_node_map))
+    ((default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(
-    map_tests2, ((test_map))((default_generator)(generate_collisions)))
+    map_tests2, ((test_map)(test_node_map))((default_generator)(generate_collisions)))
 
   UNORDERED_TEST(map_insert_range_test1,
-    ((test_map))((default_generator)(generate_collisions)(limited_range)))
+    ((test_map)(test_node_map))((default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(map_insert_range_test2,
-    ((test_map))((default_generator)(generate_collisions)(limited_range)))
+    ((test_map)(test_node_map))((default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(
     set_tests, ((test_set_std_alloc)(test_set))((default_generator)))
