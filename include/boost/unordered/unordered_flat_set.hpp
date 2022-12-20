@@ -231,6 +231,15 @@ namespace boost {
         return table_.insert(std::move(value));
       }
 
+      template <class K>
+      BOOST_FORCEINLINE typename std::enable_if<
+        detail::transparent_non_iterable<K, unordered_flat_set>::value,
+        std::pair<iterator, bool> >::type
+      insert(K&& k)
+      {
+        return table_.try_emplace(std::forward<K>(k));
+      }
+
       BOOST_FORCEINLINE iterator insert(const_iterator, value_type const& value)
       {
         return table_.insert(value).first;
@@ -239,6 +248,15 @@ namespace boost {
       BOOST_FORCEINLINE iterator insert(const_iterator, value_type&& value)
       {
         return table_.insert(std::move(value)).first;
+      }
+
+      template <class K>
+      BOOST_FORCEINLINE typename std::enable_if<
+        detail::transparent_non_iterable<K, unordered_flat_set>::value,
+        iterator>::type
+      insert(const_iterator, K&& k)
+      {
+        return table_.try_emplace(std::forward<K>(k)).first;
       }
 
       template <class InputIterator>

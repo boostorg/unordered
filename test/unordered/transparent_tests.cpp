@@ -1478,6 +1478,312 @@ template <class UnorderedMap> void test_map_non_transparent_extract()
 #endif
 }
 
+template <class UnorderedMap> void test_map_transparent_try_emplace()
+{
+  count_reset();
+
+  typedef typename UnorderedMap::iterator iterator;
+
+  UnorderedMap map;
+
+  map.insert(std::make_pair(0, 1337));
+  map.insert(std::make_pair(1, 1338));
+  map.insert(std::make_pair(2, 1339));
+  map.insert(std::make_pair(0, 1340));
+  map.insert(std::make_pair(0, 1341));
+  map.insert(std::make_pair(0, 1342));
+
+  int key_count = key::count_;
+
+  std::pair<iterator, bool> r = map.try_emplace(0, 7331);
+  BOOST_TEST(r.first == map.find(0));
+  BOOST_TEST_NOT(r.second);
+  BOOST_TEST_EQ(key::count_, key_count);
+
+  r = map.try_emplace(4, 7331);
+  BOOST_TEST(r.first == map.find(4));
+  BOOST_TEST(r.second);
+  BOOST_TEST_EQ(key::count_, key_count + 1);
+
+  key_count = key::count_;
+
+  iterator p = map.try_emplace(map.cbegin(), 0, 7331);
+  BOOST_TEST(p == map.find(0));
+  BOOST_TEST_EQ(key::count_, key_count);
+
+  p = map.try_emplace(map.begin(), 5, 7331);
+  BOOST_TEST(p == map.find(5));
+  BOOST_TEST_EQ(key::count_, key_count + 1);
+}
+
+template <class UnorderedMap> void test_map_non_transparent_try_emplace()
+{
+  count_reset();
+
+  typedef typename UnorderedMap::iterator iterator;
+
+  UnorderedMap map;
+
+  map.insert(std::make_pair(0, 1337));
+  map.insert(std::make_pair(1, 1338));
+  map.insert(std::make_pair(2, 1339));
+  map.insert(std::make_pair(0, 1340));
+  map.insert(std::make_pair(0, 1341));
+  map.insert(std::make_pair(0, 1342));
+
+  int key_count = key::count_;
+
+  std::pair<iterator, bool> r = map.try_emplace(0, 7331);
+  BOOST_TEST_EQ(key::count_, key_count + 1);
+  BOOST_TEST(r.first == map.find(0));
+  BOOST_TEST_NOT(r.second);
+
+  key_count = key::count_;
+  r = map.try_emplace(4, 7331);
+  BOOST_TEST_EQ(key::count_, key_count + 2);
+  BOOST_TEST(r.first == map.find(4));
+  BOOST_TEST(r.second);
+
+  key_count = key::count_;
+  iterator p = map.try_emplace(map.cbegin(), 0, 7331);
+  BOOST_TEST_EQ(key::count_, key_count + 1);
+  BOOST_TEST(p == map.find(0));
+
+  key_count = key::count_;
+  p = map.try_emplace(map.begin(), 5, 7331);
+  BOOST_TEST_EQ(key::count_, key_count + 2);
+  BOOST_TEST(p == map.find(5));
+}
+
+template <class UnorderedMap> void test_map_transparent_insert_or_assign()
+{
+  count_reset();
+
+  typedef typename UnorderedMap::iterator iterator;
+
+  UnorderedMap map;
+
+  map.insert(std::make_pair(0, 1337));
+  map.insert(std::make_pair(1, 1338));
+  map.insert(std::make_pair(2, 1339));
+  map.insert(std::make_pair(0, 1340));
+  map.insert(std::make_pair(0, 1341));
+  map.insert(std::make_pair(0, 1342));
+
+  int key_count = key::count_;
+
+  std::pair<iterator, bool> r = map.insert_or_assign(0, 7331);
+  BOOST_TEST(r.first == map.find(0));
+  BOOST_TEST_EQ(r.first->second, 7331);
+  BOOST_TEST_NOT(r.second);
+  BOOST_TEST_EQ(key::count_, key_count);
+
+  r = map.insert_or_assign(4, 7331);
+  BOOST_TEST(r.first == map.find(4));
+  BOOST_TEST(r.second);
+  BOOST_TEST_EQ(key::count_, key_count + 1);
+
+  key_count = key::count_;
+
+  iterator p = map.insert_or_assign(map.cbegin(), 0, 1111);
+  BOOST_TEST(p == map.find(0));
+  BOOST_TEST_EQ(p->second, 1111);
+  BOOST_TEST_EQ(key::count_, key_count);
+
+  p = map.insert_or_assign(map.begin(), 5, 7331);
+  BOOST_TEST(p == map.find(5));
+  BOOST_TEST_EQ(key::count_, key_count + 1);
+}
+
+template <class UnorderedMap> void test_map_non_transparent_insert_or_assign()
+{
+  count_reset();
+
+  typedef typename UnorderedMap::iterator iterator;
+
+  UnorderedMap map;
+
+  map.insert(std::make_pair(0, 1337));
+  map.insert(std::make_pair(1, 1338));
+  map.insert(std::make_pair(2, 1339));
+  map.insert(std::make_pair(0, 1340));
+  map.insert(std::make_pair(0, 1341));
+  map.insert(std::make_pair(0, 1342));
+
+  int key_count = key::count_;
+
+  std::pair<iterator, bool> r = map.insert_or_assign(0, 7331);
+  BOOST_TEST_EQ(key::count_, key_count + 1);
+  BOOST_TEST(r.first == map.find(0));
+  BOOST_TEST_EQ(r.first->second, 7331);
+  BOOST_TEST_NOT(r.second);
+
+  key_count = key::count_;
+  r = map.insert_or_assign(4, 7331);
+  BOOST_TEST_EQ(key::count_, key_count + 2);
+  BOOST_TEST(r.first == map.find(4));
+  BOOST_TEST(r.second);
+
+  key_count = key::count_;
+  iterator p = map.insert_or_assign(map.cbegin(), 0, 1111);
+  BOOST_TEST_EQ(key::count_, key_count + 1);
+  BOOST_TEST(p == map.find(0));
+  BOOST_TEST_EQ(p->second, 1111);
+
+  key_count = key::count_;
+  p = map.insert_or_assign(map.begin(), 5, 7331);
+  BOOST_TEST_EQ(key::count_, key_count + 2);
+  BOOST_TEST(p == map.find(5));
+}
+
+template <class UnorderedMap> void test_map_transparent_subscript()
+{
+  count_reset();
+
+  UnorderedMap map;
+
+  map[0] = 1337;
+  map[1] = 1338;
+  map[2] = 1339;
+  map[0] = 1340;
+  map[0] = 1341;
+  map[0] = 1342;
+
+  int key_count = key::count_;
+
+  map[0] = 7331;
+  BOOST_ASSERT(BOOST_TEST_EQ(key::count_, key_count));
+
+  map[4] = 7331;
+  BOOST_TEST_EQ(key::count_, key_count + 1);
+}
+
+template <class UnorderedMap> void test_map_non_transparent_subscript()
+{
+  count_reset();
+
+  UnorderedMap map;
+
+  map[0] = 1337;
+  map[1] = 1338;
+  map[2] = 1339;
+  map[0] = 1340;
+  map[0] = 1341;
+  map[0] = 1342;
+
+  int key_count = key::count_;
+
+  map[0] = 7331;
+  BOOST_ASSERT(BOOST_TEST_EQ(key::count_, key_count + 1));
+
+  key_count = key::count_;
+  map[4] = 7331;
+  BOOST_TEST_EQ(key::count_, key_count + 2);
+}
+
+template <class UnorderedMap> void test_map_transparent_at()
+{
+  count_reset();
+
+  UnorderedMap map;
+
+  map.insert(std::make_pair(0, 1337));
+  map.insert(std::make_pair(1, 1338));
+  map.insert(std::make_pair(2, 1339));
+  map.insert(std::make_pair(0, 1340));
+  map.insert(std::make_pair(0, 1341));
+  map.insert(std::make_pair(0, 1342));
+
+  int key_count = key::count_;
+
+  map.at(0) = 7331;
+  BOOST_TEST_EQ(key::count_, key_count);
+
+  BOOST_TEST_THROWS(map.at(4), std::out_of_range);
+  BOOST_TEST_EQ(key::count_, key_count);
+
+  UnorderedMap const& m = map;
+  BOOST_TEST_EQ(m.at(0), 7331);
+  BOOST_TEST_EQ(key::count_, key_count);
+
+  BOOST_TEST_THROWS(m.at(4), std::out_of_range);
+  BOOST_TEST_EQ(key::count_, key_count);
+}
+
+template <class UnorderedMap> void test_map_non_transparent_at()
+{
+  count_reset();
+
+  UnorderedMap map;
+
+  map.insert(std::make_pair(0, 1337));
+  map.insert(std::make_pair(1, 1338));
+  map.insert(std::make_pair(2, 1339));
+  map.insert(std::make_pair(0, 1340));
+  map.insert(std::make_pair(0, 1341));
+  map.insert(std::make_pair(0, 1342));
+
+  int key_count = key::count_;
+
+  map.at(0) = 7331;
+  BOOST_TEST_EQ(key::count_, key_count + 1);
+
+  key_count = key::count_;
+  BOOST_TEST_THROWS(map.at(4), std::out_of_range);
+  BOOST_TEST_EQ(key::count_, key_count + 1);
+
+  key_count = key::count_;
+  UnorderedMap const& m = map;
+  BOOST_TEST_EQ(m.at(0), 7331);
+  BOOST_TEST_EQ(key::count_, key_count + 1);
+
+  key_count = key::count_;
+  BOOST_TEST_THROWS(m.at(4), std::out_of_range);
+  BOOST_TEST_EQ(key::count_, key_count + 1);
+}
+
+template <class UnorderedMap> void test_map_transparent_bucket()
+{
+#ifndef BOOST_UNORDERED_FOA_TESTS
+  count_reset();
+
+  UnorderedMap map;
+
+  map.insert(std::make_pair(0, 1337));
+  map.insert(std::make_pair(1, 1338));
+  map.insert(std::make_pair(2, 1339));
+  map.insert(std::make_pair(0, 1340));
+  map.insert(std::make_pair(0, 1341));
+  map.insert(std::make_pair(0, 1342));
+
+  int key_count = key::count_;
+  map.bucket(0);
+  map.bucket(4);
+  BOOST_TEST_EQ(key::count_, key_count);
+#endif
+}
+
+template <class UnorderedMap> void test_map_non_transparent_bucket()
+{
+#ifndef BOOST_UNORDERED_FOA_TESTS
+  count_reset();
+
+  UnorderedMap map;
+
+  map.insert(std::make_pair(0, 1337));
+  map.insert(std::make_pair(1, 1338));
+  map.insert(std::make_pair(2, 1339));
+  map.insert(std::make_pair(0, 1340));
+  map.insert(std::make_pair(0, 1341));
+  map.insert(std::make_pair(0, 1342));
+
+  int key_count = key::count_;
+  map.bucket(0);
+  map.bucket(4);
+  BOOST_TEST_EQ(key::count_, key_count + 2);
+#endif
+}
+
 #ifndef BOOST_UNORDERED_FOA_TESTS
 transparent_unordered_set::node_type set_extract_overload_compile_test()
 {
@@ -1626,6 +1932,134 @@ template <class UnorderedSet> void test_set_non_transparent_extract()
 #endif
 }
 
+template <class UnorderedSet> void test_set_transparent_bucket()
+{
+#ifndef BOOST_UNORDERED_FOA_TESTS
+  count_reset();
+
+  UnorderedSet set;
+
+  set.insert(0);
+  set.insert(1);
+  set.insert(2);
+  set.insert(0);
+  set.insert(0);
+  set.insert(0);
+
+  int key_count = key::count_;
+  set.bucket(0);
+  set.bucket(4);
+  BOOST_TEST_EQ(key::count_, key_count);
+#endif
+}
+
+template <class UnorderedSet> void test_set_non_transparent_bucket()
+{
+#ifndef BOOST_UNORDERED_FOA_TESTS
+  count_reset();
+
+  UnorderedSet set;
+
+  set.insert(0);
+  set.insert(1);
+  set.insert(2);
+  set.insert(0);
+  set.insert(0);
+  set.insert(0);
+
+  int key_count = key::count_;
+  set.bucket(0);
+  set.bucket(4);
+  BOOST_TEST_EQ(key::count_, key_count + 2);
+#endif
+}
+
+template <class UnorderedSet> void test_set_transparent_insert()
+{
+  count_reset();
+
+  typedef typename UnorderedSet::iterator iterator;
+
+  UnorderedSet set;
+
+  set.insert(0);
+  set.insert(1);
+  set.insert(2);
+  set.insert(0);
+  set.insert(0);
+  set.insert(0);
+
+  int key_count = key::count_;
+
+  std::pair<iterator, bool> p = set.insert(0);
+  BOOST_TEST(p.first == set.find(0));
+  BOOST_TEST_NOT(p.second);
+  BOOST_TEST_EQ(key::count_, key_count);
+
+  key_count = key::count_;
+  p = set.insert(4);
+  BOOST_TEST(p.first == set.find(4));
+  BOOST_TEST(p.second);
+  BOOST_TEST_EQ(key::count_, key_count + 1);
+
+  key_count = key::count_;
+  iterator pos = set.insert(set.begin(), 0);
+  BOOST_TEST(pos == set.find(0));
+  BOOST_TEST_EQ(key::count_, key_count);
+
+  key_count = key::count_;
+  pos = set.insert(set.begin(), 5);
+  BOOST_TEST(pos == set.find(5));
+  BOOST_TEST_EQ(key::count_, key_count + 1);
+
+  // check for collisions with insert(iterator, iterator)
+  // note: this precludes Key from being convertible to an iterator which isn't
+  // explicitly stated by p2363r3
+  //
+  set.insert(set.begin(), set.end());
+}
+
+template <class UnorderedSet> void test_set_non_transparent_insert()
+{
+  count_reset();
+
+  typedef typename UnorderedSet::iterator iterator;
+
+  UnorderedSet set;
+
+  set.insert(0);
+  set.insert(1);
+  set.insert(2);
+  set.insert(0);
+  set.insert(0);
+  set.insert(0);
+
+  int key_count = key::count_;
+
+  std::pair<iterator, bool> p = set.insert(0);
+  BOOST_TEST_EQ(key::count_, key_count + 1);
+  BOOST_TEST(p.first == set.find(0));
+  BOOST_TEST_NOT(p.second);
+
+  key_count = key::count_;
+  p = set.insert(4);
+  BOOST_TEST_EQ(key::count_, key_count + 2);
+  BOOST_TEST(p.first == set.find(4));
+  BOOST_TEST(p.second);
+
+  key_count = key::count_;
+  iterator pos = set.insert(set.begin(), 0);
+  BOOST_TEST_EQ(key::count_, key_count + 1);
+  BOOST_TEST(pos == set.find(0));
+
+  key_count = key::count_;
+  pos = set.insert(set.begin(), 5);
+  BOOST_TEST_EQ(key::count_, key_count + 2);
+  BOOST_TEST(pos == set.find(5));
+
+  set.insert(set.begin(), set.end());
+}
+
 template <class Key, class T, class Hash, class KeyEqual> struct map_type
 {
 #ifdef BOOST_UNORDERED_FOA_TESTS
@@ -1646,6 +2080,11 @@ void test_unordered_map()
     test_map_transparent_equal_range<unordered_map>();
     test_map_transparent_erase<unordered_map>();
     test_map_transparent_extract<unordered_map>();
+    test_map_transparent_try_emplace<unordered_map>();
+    test_map_transparent_insert_or_assign<unordered_map>();
+    test_map_transparent_subscript<unordered_map>();
+    test_map_transparent_at<unordered_map>();
+    test_map_transparent_bucket<unordered_map>();
   }
 
   {
@@ -1658,6 +2097,11 @@ void test_unordered_map()
     test_map_non_transparent_equal_range<unordered_map>();
     test_map_non_transparent_erase<unordered_map>();
     test_map_non_transparent_extract<unordered_map>();
+    test_map_non_transparent_try_emplace<unordered_map>();
+    test_map_non_transparent_insert_or_assign<unordered_map>();
+    test_map_non_transparent_subscript<unordered_map>();
+    test_map_non_transparent_at<unordered_map>();
+    test_map_non_transparent_bucket<unordered_map>();
   }
 
   {
@@ -1671,6 +2115,11 @@ void test_unordered_map()
     test_map_non_transparent_equal_range<unordered_map>();
     test_map_non_transparent_erase<unordered_map>();
     test_map_non_transparent_extract<unordered_map>();
+    test_map_non_transparent_try_emplace<unordered_map>();
+    test_map_non_transparent_insert_or_assign<unordered_map>();
+    test_map_non_transparent_subscript<unordered_map>();
+    test_map_non_transparent_at<unordered_map>();
+    test_map_non_transparent_bucket<unordered_map>();
   }
 
   {
@@ -1684,6 +2133,11 @@ void test_unordered_map()
     test_map_non_transparent_equal_range<unordered_map>();
     test_map_non_transparent_erase<unordered_map>();
     test_map_non_transparent_extract<unordered_map>();
+    test_map_non_transparent_try_emplace<unordered_map>();
+    test_map_non_transparent_insert_or_assign<unordered_map>();
+    test_map_non_transparent_subscript<unordered_map>();
+    test_map_non_transparent_at<unordered_map>();
+    test_map_non_transparent_bucket<unordered_map>();
   }
 }
 
@@ -1700,6 +2154,7 @@ void test_unordered_multimap()
     test_map_transparent_equal_range<unordered_multimap>();
     test_map_transparent_erase<unordered_multimap>();
     test_map_transparent_extract<unordered_multimap>();
+    test_map_transparent_bucket<unordered_multimap>();
   }
 
   {
@@ -1713,6 +2168,7 @@ void test_unordered_multimap()
     test_map_non_transparent_equal_range<unordered_multimap>();
     test_map_non_transparent_erase<unordered_multimap>();
     test_map_non_transparent_extract<unordered_multimap>();
+    test_map_non_transparent_bucket<unordered_multimap>();
   }
 
   {
@@ -1726,6 +2182,7 @@ void test_unordered_multimap()
     test_map_non_transparent_equal_range<unordered_multimap>();
     test_map_non_transparent_erase<unordered_multimap>();
     test_map_non_transparent_extract<unordered_multimap>();
+    test_map_non_transparent_bucket<unordered_multimap>();
   }
 
   {
@@ -1739,6 +2196,7 @@ void test_unordered_multimap()
     test_map_non_transparent_equal_range<unordered_multimap>();
     test_map_non_transparent_erase<unordered_multimap>();
     test_map_non_transparent_extract<unordered_multimap>();
+    test_map_non_transparent_bucket<unordered_multimap>();
   }
 }
 #endif
@@ -1763,6 +2221,8 @@ void test_unordered_set()
     test_set_transparent_erase<unordered_set>();
     test_set_transparent_equal_range<unordered_set>();
     test_set_transparent_extract<unordered_set>();
+    test_set_transparent_bucket<unordered_set>();
+    test_set_transparent_insert<unordered_set>();
   }
 
   {
@@ -1775,6 +2235,8 @@ void test_unordered_set()
     test_set_non_transparent_erase<unordered_set>();
     test_set_non_transparent_equal_range<unordered_set>();
     test_set_non_transparent_extract<unordered_set>();
+    test_set_non_transparent_bucket<unordered_set>();
+    test_set_non_transparent_insert<unordered_set>();
   }
 
   {
@@ -1787,6 +2249,8 @@ void test_unordered_set()
     test_set_non_transparent_erase<unordered_set>();
     test_set_non_transparent_equal_range<unordered_set>();
     test_set_non_transparent_extract<unordered_set>();
+    test_set_non_transparent_bucket<unordered_set>();
+    test_set_non_transparent_insert<unordered_set>();
   }
 
   {
@@ -1799,6 +2263,8 @@ void test_unordered_set()
     test_set_non_transparent_erase<unordered_set>();
     test_set_non_transparent_equal_range<unordered_set>();
     test_set_non_transparent_extract<unordered_set>();
+    test_set_non_transparent_bucket<unordered_set>();
+    test_set_non_transparent_insert<unordered_set>();
   }
 }
 
@@ -1815,6 +2281,7 @@ void test_unordered_multiset()
     test_set_transparent_erase<unordered_set>();
     test_set_transparent_equal_range<unordered_set>();
     test_set_transparent_extract<unordered_set>();
+    test_set_transparent_bucket<unordered_set>();
   }
 
   {
@@ -1827,6 +2294,7 @@ void test_unordered_multiset()
     test_set_non_transparent_erase<unordered_set>();
     test_set_non_transparent_equal_range<unordered_set>();
     test_set_non_transparent_extract<unordered_set>();
+    test_set_non_transparent_bucket<unordered_set>();
   }
 
   {
@@ -1840,6 +2308,7 @@ void test_unordered_multiset()
     test_set_non_transparent_erase<unordered_set>();
     test_set_non_transparent_equal_range<unordered_set>();
     test_set_non_transparent_extract<unordered_set>();
+    test_set_non_transparent_bucket<unordered_set>();
   }
 
   {
@@ -1853,6 +2322,7 @@ void test_unordered_multiset()
     test_set_non_transparent_erase<unordered_set>();
     test_set_non_transparent_equal_range<unordered_set>();
     test_set_non_transparent_extract<unordered_set>();
+    test_set_non_transparent_bucket<unordered_set>();
   }
 }
 #endif

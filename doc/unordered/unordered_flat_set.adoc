@@ -116,15 +116,17 @@ namespace boost {
     template<class... Args> iterator xref:#unordered_flat_set_emplace_hint[emplace_hint](const_iterator position, Args&&... args);
     std::pair<iterator, bool> xref:#unordered_flat_set_copy_insert[insert](const value_type& obj);
     std::pair<iterator, bool> xref:#unordered_flat_set_move_insert[insert](value_type&& obj);
-    iterator       xref:#unordered_flat_set_copy_insert_with_hint[insert](const_iterator hint, const value_type& obj);
-    iterator       xref:#unordered_flat_set_move_insert_with_hint[insert](const_iterator hint, value_type&& obj);
+    template<class K> std::pair<iterator, bool> xref:#unordered_flat_set_transparent_insert[insert](K&& k);
+    iterator xref:#unordered_flat_set_copy_insert_with_hint[insert](const_iterator hint, const value_type& obj);
+    iterator xref:#unordered_flat_set_move_insert_with_hint[insert](const_iterator hint, value_type&& obj);
+    template<class K> iterator xref:#unordered_flat_set_transparent_insert_with_hint[insert](const_iterator hint, K&& k);
     template<class InputIterator> void xref:#unordered_flat_set_insert_iterator_range[insert](InputIterator first, InputIterator last);
     void xref:#unordered_flat_set_insert_initializer_list[insert](std::initializer_list<value_type>);
 
     void      xref:#unordered_flat_set_erase_by_position[erase](iterator position);
     void      xref:#unordered_flat_set_erase_by_position[erase](const_iterator position);
     size_type xref:#unordered_flat_set_erase_by_key[erase](const key_type& k);
-    template<class K> size_type xref:#unordered_flat_set_transparent_erase_by_key[erase](K&& k);
+    template<class K> size_type xref:#unordered_flat_set_erase_by_key[erase](K&& k);
     iterator  xref:#unordered_flat_set_erase_range[erase](const_iterator first, const_iterator last);
     void      xref:#unordered_flat_set_swap[swap](unordered_flat_set& other)
       noexcept(boost::allocator_traits<Allocator>::is_always_equal::value ||
@@ -736,6 +738,25 @@ Notes:;; Can invalidate iterators, pointers and references, but only if the inse
 
 ---
 
+==== Transparent Insert
+```c++
+template<class K> std::pair<iterator, bool> insert(K&& k);
+```
+
+Inserts an element constructed from `std::forward<K>(k)` in the container if and only if there is no element in the container with an equivalent key.
+
+[horizontal]
+Requires:;; `value_type` is https://en.cppreference.com/w/cpp/named_req/EmplaceConstructible[EmplaceConstructible^] from `k`.
+Returns:;; The bool component of the return type is true if an insert took place. +
++
+If an insert took place, then the iterator points to the newly inserted element. Otherwise, it points to the element with equivalent key.
+Throws:;; If an exception is thrown by an operation other than a call to `hasher` the function has no effect.
+Notes:;; Can invalidate iterators, pointers and references, but only if the insert causes the load to be greater than the maximum load. +
++
+This overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs and neither `iterator` nor `const_iterator` are implicitly convertible from `K`. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
+
+---
+
 ==== Copy Insert with Hint
 ```c++
 iterator insert(const_iterator hint, const value_type& obj);
@@ -770,6 +791,27 @@ Returns:;; The `bool` component of the return type is `true` if an insert took p
 If an insert took place, then the iterator points to the newly inserted element. Otherwise, it points to the element with equivalent key.
 Throws:;; If an exception is thrown by an operation other than a call to `hasher` the function has no effect.
 Notes:;; Can invalidate iterators, pointers and references, but only if the insert causes the load to be greater than the maximum load.
+
+---
+
+==== Transparent Insert with Hint
+```c++
+template<class K> std::pair<iterator, bool> insert(const_iterator hint, K&& k);
+```
+
+Inserts an element constructed from `std::forward<K>(k)` in the container if and only if there is no element in the container with an equivalent key.
+
+`hint` is a suggestion to where the element should be inserted. This implementation ignores it.
+
+[horizontal]
+Requires:;; `value_type` is https://en.cppreference.com/w/cpp/named_req/EmplaceConstructible[EmplaceConstructible^] from `k`.
+Returns:;; The bool component of the return type is true if an insert took place. +
++
+If an insert took place, then the iterator points to the newly inserted element. Otherwise, it points to the element with equivalent key.
+Throws:;; If an exception is thrown by an operation other than a call to `hasher` the function has no effect.
+Notes:;; Can invalidate iterators, pointers and references, but only if the insert causes the load to be greater than the maximum load. +
++
+This overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs and neither `iterator` nor `const_iterator` are implicitly convertible from `K`. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
 
 ---
 
@@ -818,28 +860,15 @@ Throws:;; Nothing.
 ==== Erase by Key
 ```c++
 size_type erase(const key_type& k);
-```
-
-Erase all elements with key equivalent to `k`.
-
-[horizontal]
-Returns:;; The number of elements erased.
-Throws:;; Only throws an exception if it is thrown by `hasher` or `key_equal`.
-
----
-
-==== Transparent Erase by Key
-```c++
 template<class K> size_type erase(K&& k);
 ```
 
 Erase all elements with key equivalent to `k`.
 
-This overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs and neither `iterator` nor `const_iterator` are implicitly convertible from `K`. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
-
 [horizontal]
 Returns:;; The number of elements erased.
 Throws:;; Only throws an exception if it is thrown by `hasher` or `key_equal`.
+Notes:;; The `template<class K>` overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs and neither `iterator` nor `const_iterator` are implicitly convertible from `K`. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
 
 ---
 
