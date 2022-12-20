@@ -1305,7 +1305,7 @@ Returns:;; The number of elements in bucket `n`.
 ==== bucket
 ```c++
 size_type bucket(const key_type& k) const;
-templat<class K> size_type bucket(const K& k) const;
+template<class K> size_type bucket(const K& k) const;
 ```
 
 [horizontal]
