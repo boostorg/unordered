@@ -149,11 +149,12 @@ namespace boost {
         using raw_key_type = typename std::remove_const<Key>::type;
         using raw_mapped_type = typename std::remove_const<T>::type;
 
-        using init_type = std::pair<Key const, T>*;
-        using moved_type = init_type;
-        using value_type = init_type;
+        using init_type = std::pair<raw_key_type, raw_mapped_type>;
+        using moved_type = std::pair<Key const, T>*;
+        using value_type = std::pair<Key const, T>;
 
-        using emplace_type = std::pair<Key const, T>;
+        using emplace_type = value_type;
+        using storage_type = value_type*;
 
         template <class K, class V>
         static raw_key_type const& extract(std::pair<K, V> const& kv)
@@ -167,7 +168,7 @@ namespace boost {
           return kv->first;
         }
 
-        static value_type&& move(value_type& x) { return std::move(x); }
+        static value_type&& move(storage_type& x) { return std::move(x); }
       };
 
       using table_type = detail::foa::table<map_types, Hash, KeyEqual,
@@ -356,26 +357,25 @@ namespace boost {
       BOOST_FORCEINLINE auto insert(Ty&& value)
         -> decltype(table_.insert(std::forward<Ty>(value)))
       {
-        return table_.try_emplace(std::forward<Ty>(value));
+        return table_.insert(std::forward<Ty>(value));
       }
 
       BOOST_FORCEINLINE std::pair<iterator, bool> insert(init_type&& value)
       {
-        return table_.try_emplace(
-          std::move(value.first), std::move(value.second));
+        return table_.insert(std::move(value));
       }
 
       template <class Ty>
       BOOST_FORCEINLINE auto insert(const_iterator, Ty&& value)
-        -> decltype(table_.insert(std::forward<Ty>(value)).first)
+        -> decltype(iterator(table_.insert(std::forward<Ty>(value)).first))
       {
-        return table_.try_emplace(std::forward<Ty>(value)).first;
+        return table_.insert(std::forward<Ty>(value)).first;
       }
 
       BOOST_FORCEINLINE iterator insert(const_iterator, init_type&& value)
       {
         return table_
-          .try_emplace(std::move(value.first), std::move(value.second))
+          .insert(std::move(value.first), std::move(value.second))
           .first;
       }
 

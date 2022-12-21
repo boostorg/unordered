@@ -40,6 +40,7 @@ namespace boost {
         using value_type = Key;
 
         using emplace_type = value_type;
+        using storage_type = Key;
 
         static Key const& extract(value_type const& key) { return key; }
         static Key&& move(value_type& x) { return std::move(x); }

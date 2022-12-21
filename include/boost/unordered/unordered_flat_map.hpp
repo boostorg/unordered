@@ -46,6 +46,7 @@ namespace boost {
         using value_type = std::pair<Key const, T>;
 
         using emplace_type = value_type;
+        using storage_type = std::pair<Key const, T>;
 
         template <class K, class V>
         static raw_key_type const& extract(std::pair<K, V> const& kv)
