@@ -45,7 +45,6 @@ namespace insert_tests {
         float b = x.max_load_factor();
 
         std::pair<iterator, bool> r1 = x.insert(*it);
-        static_assert(std::is_same_v<decltype(*it), std::add_lvalue_reference_t<typename X::value_type>>);
         std::pair<typename ordered::iterator, bool> r2 = tracker.insert(*it);
 
         BOOST_TEST(r1.second == r2.second);
@@ -220,7 +219,7 @@ namespace insert_tests {
       test::check_instances check_;
 
       X x;
-      const_iterator pos = x.begin();
+      iterator pos = x.begin();
       tracker_type tracker = test::create_ordered(x);
 
       test::random_values<X> v(1000, generator);
@@ -248,7 +247,7 @@ namespace insert_tests {
       test::check_instances check_;
 
       X x;
-      const_iterator pos = x.begin();
+      iterator pos = x.begin();
       tracker_type tracker = test::create_ordered(x);
 
       test::random_values<X> v(1000, generator);
