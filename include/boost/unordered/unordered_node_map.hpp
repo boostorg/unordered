@@ -168,7 +168,7 @@ namespace boost {
           return kv->first;
         }
 
-        static value_type&& move(storage_type& x) { return std::move(x); }
+        static storage_type&& move(storage_type& x) { return std::move(x); }
       };
 
       using table_type = detail::foa::table<map_types, Hash, KeyEqual,

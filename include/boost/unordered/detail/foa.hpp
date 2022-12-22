@@ -1621,8 +1621,8 @@ private:
   struct destroy_element_on_exit
   {
     ~destroy_element_on_exit(){this_->destroy_element(p);}
-    table      *this_;
-    value_type *p;
+    table        *this_;
+    storage_type *p;
   };
 
   void copy_elements_from(const table& x)
