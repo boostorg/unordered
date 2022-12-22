@@ -10,7 +10,7 @@ import testing ;
 # https://github.com/boostorg/type_traits/issues/165
 
 local gcc-flags = -Wsign-promo -Wconversion -Wsign-conversion -Wfloat-equal -Wshadow -Wno-variadic-macros ;
-local clang-flags = $(gcc-flags) -Wno-c99-extensions ;
+local clang-flags = $(gcc-flags) -Wno-c99-extensions -Wunused-template ;
 local msvc-flags = /wd4494 ;
 
 project
