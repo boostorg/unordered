@@ -33,113 +33,6 @@ namespace boost {
 #pragma warning(disable : 4714) /* marked as __forceinline not inlined */
 #endif
 
-    namespace detail {
-      template <typename Allocator> class ptr_allocator_adaptor
-      {
-        using alloc_traits = std::allocator_traits<Allocator>;
-        using ptr_allocator = typename alloc_traits::template rebind_alloc<
-          typename Allocator::value_type*>;
-        using ptr_alloc_traits = std::allocator_traits<ptr_allocator>;
-
-        template <class U> friend class ptr_allocator_adaptor;
-
-        Allocator al;
-
-      public:
-        using pointer = typename boost::allocator_pointer<ptr_allocator>::type;
-        using const_pointer =
-          typename boost::allocator_const_pointer<ptr_allocator>::type;
-
-        using void_pointer =
-          typename boost::allocator_void_pointer<ptr_allocator>::type;
-
-        using const_void_pointer =
-          typename boost::allocator_const_void_pointer<ptr_allocator>::type;
-
-        using value_type = typename Allocator::value_type*;
-        using size_type =
-          typename boost::allocator_size_type<ptr_allocator>::type;
-
-        using difference_type =
-          typename boost::allocator_difference_type<ptr_allocator>::type;
-
-        template <typename U> struct rebind
-        {
-          using other = ptr_allocator_adaptor<
-            typename alloc_traits::template rebind_alloc<U> >;
-        };
-
-        ptr_allocator_adaptor() = default;
-        ptr_allocator_adaptor(const Allocator& al_) : al{al_} {}
-
-        template <typename Allocator2>
-        ptr_allocator_adaptor(
-          const ptr_allocator_adaptor<Allocator2>& x) noexcept : al{x.al}
-        {
-        }
-
-        template <typename Allocator2>
-        bool operator==(
-          const ptr_allocator_adaptor<Allocator2>& x) const noexcept
-        {
-          return al == x.al;
-        }
-
-        template <typename Allocator2>
-        bool operator!=(
-          const ptr_allocator_adaptor<Allocator2>& x) const noexcept
-        {
-          return al != x.al;
-        }
-
-        pointer allocate(std::size_t n)
-        {
-          ptr_allocator pal = al;
-          return ptr_alloc_traits::allocate(pal, n);
-        }
-
-        void deallocate(pointer p, std::size_t n) noexcept
-        {
-          ptr_allocator pal = al;
-          ptr_alloc_traits::deallocate(pal, p, n);
-        }
-
-        void construct(value_type* p, const value_type& x)
-        {
-          this->construct(p, *x);
-        }
-
-        void construct(value_type* p, value_type&& x)
-        {
-          *p = x;
-          x = nullptr;
-        }
-
-        template <typename... Args>
-        void construct(value_type* p, Args&&... args)
-        {
-          *p = boost::to_address(alloc_traits::allocate(al, 1));
-          try {
-            alloc_traits::construct(al, *p, std::forward<Args>(args)...);
-          } catch (...) {
-            alloc_traits::deallocate(al,
-              boost::pointer_traits<typename alloc_traits::pointer>::pointer_to(
-                **p),
-              1);
-            throw;
-          }
-        }
-
-        void destroy(value_type* p) noexcept
-        {
-          if (*p) {
-            alloc_traits::destroy(al, *p);
-            alloc_traits::deallocate(al, *p, 1);
-          }
-        }
-      };
-    } // namespace detail
-
     template <class Key, class T, class Hash, class KeyEqual, class Allocator>
     class unordered_node_map
     {
@@ -169,11 +62,44 @@ namespace boost {
         }
 
         static storage_type&& move(storage_type& x) { return std::move(x); }
+
+        template <class A>
+        static void construct(A&, storage_type* p, moved_type&& x)
+        {
+          *p = x;
+          x = nullptr;
+        }
+
+        template <class A, class... Args>
+        static void construct(A& al, storage_type* p, Args&&... args)
+        {
+          *p=boost::to_address(boost::allocator_allocate(al, 1));
+          try {
+            boost::allocator_construct(al, *p, std::forward<Args>(args)...);
+          } catch (...) {
+            boost::allocator_deallocate(al,
+              boost::pointer_traits<
+                typename boost::allocator_pointer<A>::type>::pointer_to(**p),
+              1);
+            throw;
+          }
+        }
+
+        template <class A> static void destroy(A& al, storage_type* p) noexcept
+        {
+          if (*p) {
+            boost::allocator_destroy(al, *p);
+            boost::allocator_deallocate(al,
+              boost::pointer_traits<
+                typename boost::allocator_pointer<A>::type>::pointer_to(**p),
+              1);
+          }
+        }
       };
 
       using table_type = detail::foa::table<map_types, Hash, KeyEqual,
-        detail::ptr_allocator_adaptor<typename boost::allocator_rebind<
-          Allocator, std::pair<Key const, T> >::type> >;
+        typename boost::allocator_rebind<Allocator,
+          std::pair<Key const, T> >::type>;
 
       table_type table_;
 
@@ -207,7 +133,7 @@ namespace boost {
       explicit unordered_node_map(size_type n, hasher const& h = hasher(),
         key_equal const& pred = key_equal(),
         allocator_type const& a = allocator_type())
-          : table_(n, h, pred, detail::ptr_allocator_adaptor<allocator_type>(a))
+          : table_(n, h, pred, a)
       {
       }
 
@@ -374,8 +300,7 @@ namespace boost {
 
       BOOST_FORCEINLINE iterator insert(const_iterator, init_type&& value)
       {
-        return table_
-          .insert(std::move(value.first), std::move(value.second))
+        return table_.insert(std::move(value.first), std::move(value.second))
           .first;
       }
 

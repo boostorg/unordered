@@ -38,6 +38,8 @@
 #include <type_traits>
 #include <utility>
 
+template <class> struct X;
+
 #if defined(__SSE2__)||\
     defined(_M_X64)||(defined(_M_IX86_FP)&&_M_IX86_FP>=2)
 #define BOOST_UNORDERED_SSE2
@@ -921,7 +923,10 @@ struct table_arrays
   template<typename Allocator>
   static table_arrays new_(Allocator& al,std::size_t n)
   {
-    using alloc_traits=boost::allocator_traits<Allocator>;
+    // using alloc_traits=boost::allocator_traits<Allocator>;
+    using storage_allocator=
+      typename boost::allocator_rebind<Allocator, Value>::type;
+    using storage_traits=boost::allocator_traits<storage_allocator>;
 
     auto         groups_size_index=size_index_for<group_type,size_policy>(n);
     auto         groups_size=size_policy::size(groups_size_index);
@@ -931,8 +936,9 @@ struct table_arrays
       arrays.groups=dummy_groups<group_type,size_policy::min_size()>();
     }
     else{
-      arrays.elements=
-        boost::to_address(alloc_traits::allocate(al,buffer_size(groups_size)));
+      auto sal=storage_allocator(al);
+      arrays.elements=boost::to_address(
+        storage_traits::allocate(sal,buffer_size(groups_size)));
       
       /* Align arrays.groups to sizeof(group_type). table_iterator critically
        * depends on such alignment for its increment operation.
@@ -956,13 +962,15 @@ struct table_arrays
   template<typename Allocator>
   static void delete_(Allocator& al,table_arrays& arrays)noexcept
   {
-    using alloc_traits=boost::allocator_traits<Allocator>;
+    using storage_alloc=typename boost::allocator_rebind<Allocator,Value>::type;
+    using alloc_traits=boost::allocator_traits<storage_alloc>;
     using pointer=typename alloc_traits::pointer;
     using pointer_traits=boost::pointer_traits<pointer>;
 
+    auto sal=storage_alloc(al);
     if(arrays.elements){
       alloc_traits::deallocate(
-        al,pointer_traits::pointer_to(*arrays.elements),
+        sal,pointer_traits::pointer_to(*arrays.elements),
         buffer_size(arrays.groups_size_mask+1));
     }
   }
@@ -1579,7 +1587,7 @@ private:
   template<typename... Args>
   void construct_element(storage_type* p,Args&&... args)
   {
-    alloc_traits::construct(al(),p,std::forward<Args>(args)...);
+    type_policy::construct(al(),p,std::forward<Args>(args)...);
   }
 
   template<typename... Args>
@@ -1595,7 +1603,7 @@ private:
   void construct_element_from_try_emplace_args(
     storage_type* p,std::false_type,Key&& x,Args&&... args)
   {
-    alloc_traits::construct(
+    type_policy::construct(
       al(),p,
       std::piecewise_construct,
       std::forward_as_tuple(std::forward<Key>(x)),
@@ -1610,12 +1618,12 @@ private:
   void construct_element_from_try_emplace_args(
     storage_type* p,std::true_type,Key&& x)
   {
-    alloc_traits::construct(al(),p,std::forward<Key>(x));
+    type_policy::construct(al(),p,std::forward<Key>(x));
   }
 
   void destroy_element(storage_type* p)noexcept
   {
-    alloc_traits::destroy(al(),p);
+    type_policy::destroy(al(),p);
   }
 
   struct destroy_element_on_exit
@@ -1962,8 +1970,8 @@ private:
       p,hash_for(key_from(*p)),arrays_,num_destroyed,
       std::integral_constant< /* std::move_if_noexcept semantics */
         bool,
-        std::is_nothrow_move_constructible<init_type>::value||
-        !std::is_copy_constructible<init_type>::value>{});
+        std::is_nothrow_move_constructible<storage_type>::value||
+        !std::is_copy_constructible<storage_type>::value>{});
   }
 
   void nosize_transfer_element(
