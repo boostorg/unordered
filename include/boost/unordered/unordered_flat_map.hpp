@@ -32,10 +32,8 @@ namespace boost {
 #pragma warning(disable : 4714) /* marked as __forceinline not inlined */
 #endif
 
-    template <class Key, class T, class Hash, class KeyEqual, class Allocator>
-    class unordered_flat_map
-    {
-      struct map_types
+    namespace detail {
+      template <class Key, class T> struct flat_map_types
       {
         using key_type = Key;
         using raw_key_type = typename std::remove_const<Key>::type;
@@ -78,6 +76,12 @@ namespace boost {
           boost::allocator_destroy(al, p);
         }
       };
+    } // namespace detail
+
+    template <class Key, class T, class Hash, class KeyEqual, class Allocator>
+    class unordered_flat_map
+    {
+      using map_types = detail::flat_map_types<Key, T>;
 
       using table_type = detail::foa::table<map_types, Hash, KeyEqual,
         typename boost::allocator_rebind<Allocator,

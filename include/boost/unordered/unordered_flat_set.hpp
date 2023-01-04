@@ -30,10 +30,8 @@ namespace boost {
 #pragma warning(disable : 4714) /* marked as __forceinline not inlined */
 #endif
 
-    template <class Key, class Hash, class KeyEqual, class Allocator>
-    class unordered_flat_set
-    {
-      struct set_types
+    namespace detail {
+      template <class Key> struct flat_set_types
       {
         using key_type = Key;
         using init_type = Key;
@@ -62,6 +60,12 @@ namespace boost {
           boost::allocator_destroy(al, p);
         }
       };
+    } // namespace detail
+
+    template <class Key, class Hash, class KeyEqual, class Allocator>
+    class unordered_flat_set
+    {
+      using set_types = detail::flat_set_types<Key>;
 
       using table_type = detail::foa::table<set_types, Hash, KeyEqual,
         typename boost::allocator_rebind<Allocator,
