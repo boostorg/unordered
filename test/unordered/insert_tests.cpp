@@ -1093,8 +1093,8 @@ namespace insert_tests {
     insert_initializer_list_map_impl<
       boost::unordered_node_map<std::string, std::string> >();
 #else
-    insert_initializer_list_map_implboost::unordered_map<std::string,
-      std::string>();
+    insert_initializer_list_map_impl<
+      boost::unordered_map<std::string, std::string> >();
 #endif
   }
 
@@ -1427,8 +1427,11 @@ RUN_TESTS_QUIET()
 
 #else // PIECEWISE_TEST_NAME
 
+#define PIECEWISE_TEST_HELPER(A, B) A##B
+#define MAKE_PIECEWIES_TEST(X) PIECEWISE_TEST_HELPER(X, _impl)
+
   template <class Map>
-  static void piecewise_test_impl()
+  static void MAKE_PIECEWIES_TEST(PIECEWISE_TEST_NAME)()
   {
 #if EMULATING_PIECEWISE_CONSTRUCTION
   test::detail::disable_construction_tracking _scoped;
@@ -1486,12 +1489,12 @@ UNORDERED_AUTO_TEST (PIECEWISE_TEST_NAME) {
 
   {
 #if defined(BOOST_UNORDERED_FOA_TESTS)
-    // typedef boost::unordered_flat_map<overloaded_constructor, overloaded_constructor,
-    //   boost::hash<overloaded_constructor>,
-    //   std::equal_to<overloaded_constructor>,
-    //   test::allocator1<
-    //     std::pair<overloaded_constructor const, overloaded_constructor> > >
-    //   flat_map;
+    typedef boost::unordered_flat_map<overloaded_constructor, overloaded_constructor,
+      boost::hash<overloaded_constructor>,
+      std::equal_to<overloaded_constructor>,
+      test::allocator1<
+        std::pair<overloaded_constructor const, overloaded_constructor> > >
+      flat_map;
 
       typedef boost::unordered_node_map<overloaded_constructor, overloaded_constructor,
       boost::hash<overloaded_constructor>,
@@ -1500,8 +1503,8 @@ UNORDERED_AUTO_TEST (PIECEWISE_TEST_NAME) {
         std::pair<overloaded_constructor const, overloaded_constructor> > >
       node_map;
 
-      // piecewise_test_impl<flat_map>();
-      piecewise_test_impl<node_map>();
+      MAKE_PIECEWIES_TEST(PIECEWISE_TEST_NAME)<flat_map>();
+      MAKE_PIECEWIES_TEST(PIECEWISE_TEST_NAME)<node_map>();
 #else
     typedef boost::unordered_map<overloaded_constructor, overloaded_constructor,
       boost::hash<overloaded_constructor>,
@@ -1510,7 +1513,7 @@ UNORDERED_AUTO_TEST (PIECEWISE_TEST_NAME) {
         std::pair<overloaded_constructor const, overloaded_constructor> > >
       map;
 
-      piecewise_test_impl<map>();
+      MAKE_PIECEWIES_TEST(PIECEWISE_TEST_NAME)<map>();
 #endif
   }
 #ifndef BOOST_UNORDERED_FOA_TESTS

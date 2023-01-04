@@ -335,12 +335,14 @@ namespace move_tests {
       static_cast<typename T::size_type>(std::distance(y.begin(), y.end())));
   }
 
+#ifndef BOOST_UNORDERED_FOA_TESTS
   template <class T> static void extract(T& y, test::random_values<T> const& v)
   {
     (void)y.extract(get_key(*v.begin()));
     BOOST_TEST_EQ(y.size(),
       static_cast<typename T::size_type>(std::distance(y.begin(), y.end())));
   }
+#endif
 
   template <class T> static void merge(T& y, test::random_values<T> const& v)
   {
@@ -375,6 +377,7 @@ namespace move_tests {
       static_cast<typename T::size_type>(std::distance(y.begin(), y.end())));
   }
 
+#ifndef BOOST_UNORDERED_FOA_TESTS
   template <class T> static void buckets(T& y, test::random_values<T> const& v)
   {
     (void)y.begin(0);
@@ -384,6 +387,7 @@ namespace move_tests {
     (void)y.bucket_size(0);
     (void)y.bucket(get_key(*v.begin()));
   }
+#endif
 
   template <class T>
   static void double_move_construct(T& y, test::random_values<T> const&)

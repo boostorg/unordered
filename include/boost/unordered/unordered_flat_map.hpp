@@ -52,7 +52,7 @@ namespace boost {
           return kv.first;
         }
 
-        static moved_type move(value_type& x)
+        static moved_type move(storage_type& x)
         {
           // TODO: we probably need to launder here
           return {std::move(const_cast<raw_key_type&>(x.first)),
