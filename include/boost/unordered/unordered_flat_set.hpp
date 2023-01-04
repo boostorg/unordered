@@ -44,6 +44,23 @@ namespace boost {
 
         static Key const& extract(value_type const& key) { return key; }
         static Key&& move(value_type& x) { return std::move(x); }
+
+        template <class A>
+        static void construct(A& al, storage_type* p, Key&& x)
+        {
+          boost::allocator_construct(al, p, std::move(x));
+        }
+
+        template <class A, class... Args>
+        static void construct(A& al, storage_type* p, Args&&... args)
+        {
+          boost::allocator_construct(al, p, std::forward<Args>(args)...);
+        }
+
+        template <class A> static void destroy(A& al, storage_type* p) noexcept
+        {
+          boost::allocator_destroy(al, p);
+        }
       };
 
       using table_type = detail::foa::table<set_types, Hash, KeyEqual,

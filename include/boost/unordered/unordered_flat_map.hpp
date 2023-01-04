@@ -60,6 +60,23 @@ namespace boost {
           return {std::move(const_cast<raw_key_type&>(x.first)),
             std::move(const_cast<raw_mapped_type&>(x.second))};
         }
+
+        template <class A>
+        static void construct(A& al, storage_type* p, moved_type&& x)
+        {
+          boost::allocator_construct(al, p, std::move(x));
+        }
+
+        template <class A, class... Args>
+        static void construct(A& al, storage_type* p, Args&&... args)
+        {
+          boost::allocator_construct(al, p, std::forward<Args>(args)...);
+        }
+
+        template <class A> static void destroy(A& al, storage_type* p) noexcept
+        {
+          boost::allocator_destroy(al, p);
+        }
       };
 
       using table_type = detail::foa::table<map_types, Hash, KeyEqual,
