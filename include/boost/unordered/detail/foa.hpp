@@ -1970,7 +1970,8 @@ private:
       p,hash_for(key_from(*p)),arrays_,num_destroyed,
       std::integral_constant< /* std::move_if_noexcept semantics */
         bool,
-        std::is_nothrow_move_constructible<storage_type>::value||
+        std::is_nothrow_move_constructible<init_type>::value||
+        std::is_same<storage_type,value_type*>::value||
         !std::is_copy_constructible<storage_type>::value>{});
   }
 

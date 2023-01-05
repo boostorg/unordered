@@ -37,7 +37,6 @@ namespace boost {
         using init_type = Key;
         using value_type = Key;
 
-        using emplace_type = value_type;
         using storage_type = Key;
 
         static Key const& extract(value_type const& key) { return key; }

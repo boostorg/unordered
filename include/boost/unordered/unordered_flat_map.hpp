@@ -43,8 +43,7 @@ namespace boost {
         using moved_type = std::pair<raw_key_type&&, raw_mapped_type&&>;
         using value_type = std::pair<Key const, T>;
 
-        using emplace_type = value_type;
-        using storage_type = std::pair<Key const, T>;
+        using storage_type = value_type;
 
         template <class K, class V>
         static raw_key_type const& extract(std::pair<K, V> const& kv)

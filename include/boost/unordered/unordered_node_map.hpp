@@ -44,7 +44,6 @@ namespace boost {
         using moved_type = std::pair<Key const, T>*;
         using value_type = std::pair<Key const, T>;
 
-        using emplace_type = value_type;
         using storage_type = value_type*;
 
         template <class K, class V>
