@@ -1,6 +1,6 @@
 
 // Copyright 2006-2010 Daniel James.
-// Copyright (C) 2022 Christian Mazakas
+// Copyright (C) 2022-2023 Christian Mazakas
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -721,7 +721,7 @@ namespace insert_tests {
 
   template <template <class Key, class Hash, class Pred, class Allocator>
     class Set>
-  void set_tests2_impl()
+  static void set_tests2_impl()
   {
     Set<pointer_constructible, boost::hash<pointer_constructible>,
       std::equal_to<pointer_constructible>,
@@ -1044,6 +1044,11 @@ namespace insert_tests {
 
   UNORDERED_TEST(
     set_tests, ((test_set_std_alloc)(test_set)(test_multiset))((default_generator)))
+
+  UNORDERED_AUTO_TEST(set_tests2) {
+      set_tests2_impl<boost::unordered_set>();
+      set_tests2_impl<boost::unordered_multiset>();
+  }
 #endif
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
@@ -1063,23 +1068,19 @@ namespace insert_tests {
     }
   };
 
-  UNORDERED_AUTO_TEST (insert_initializer_list_set) {
-#ifdef BOOST_UNORDERED_FOA_TESTS
-    boost::unordered_flat_set<int> set;
-#else
-    boost::unordered_set<int> set;
-#endif
+  template <template <class Key, class Hash = boost::hash<Key>,
+    class Pred = std::equal_to<Key>, class Allocator = std::allocator<Key> >
+    class Set>
+  static void insert_initializer_list_set_impl()
+  {
+    Set<int> set;
+
     set.insert({1, 2, 3, 1});
     BOOST_TEST_EQ(set.size(), 3u);
     BOOST_TEST(set.find(1) != set.end());
     BOOST_TEST(set.find(4) == set.end());
 
-#ifdef BOOST_UNORDERED_FOA_TESTS
-  boost::unordered_flat_set<initialize_from_two_ints> set2;
-#else
-    boost::unordered_set<initialize_from_two_ints> set2;
-#endif
-
+    Set<initialize_from_two_ints> set2;
 #if defined(__GNUC__) && (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 5))
     set2.insert({{1, 2}});
 #else
@@ -1105,6 +1106,16 @@ namespace insert_tests {
     BOOST_TEST(set2.find({5, 6}) != set2.end());
     BOOST_TEST(set2.find({7, 8}) != set2.end());
     BOOST_TEST(set2.find({8, 7}) == set2.end());
+  }
+
+  UNORDERED_AUTO_TEST (insert_initializer_list_set) {
+#ifdef BOOST_UNORDERED_FOA_TESTS
+    insert_initializer_list_set_impl<boost::unordered_flat_set>();
+    insert_initializer_list_set_impl<boost::unordered_node_set>();
+#else
+    insert_initializer_list_set_impl<boost::unordered_set>();
+    boost::unordered_set<int> set;
+#endif
   }
 
 #ifndef BOOST_UNORDERED_FOA_TESTS
@@ -1250,14 +1261,10 @@ namespace insert_tests {
 #endif
   }
 
-  UNORDERED_AUTO_TEST (set_emplace_test) {
-#ifdef BOOST_UNORDERED_FOA_TESTS
-    boost::unordered_flat_set<overloaded_constructor> x;
+  template <class X> static void set_emplace_test_impl()
+  {
+    X x;
     overloaded_constructor check;
-#else
-    boost::unordered_set<overloaded_constructor> x;
-    overloaded_constructor check;
-#endif
 
 #if !BOOST_UNORDERED_SUN_WORKAROUNDS1
     x.emplace();
@@ -1283,6 +1290,16 @@ namespace insert_tests {
     x.emplace(7, 8, 9, 10);
     check = overloaded_constructor(7, 8, 9, 10);
     BOOST_TEST(x.find(check) != x.end() && *x.find(check) == check);
+  }
+
+  UNORDERED_AUTO_TEST (set_emplace_test) {
+#ifdef BOOST_UNORDERED_FOA_TESTS
+    set_emplace_test_impl<boost::unordered_flat_set<overloaded_constructor> >();
+    set_emplace_test_impl<boost::unordered_node_set<overloaded_constructor> >();
+
+#else
+    set_emplace_test_impl<boost::unordered_set<overloaded_constructor> >();
+#endif
   }
 
   struct derived_from_piecewise_construct_t
@@ -1478,11 +1495,11 @@ RUN_TESTS_QUIET()
 
 #else // PIECEWISE_TEST_NAME
 
-#define PIECEWISE_TEST_HELPER(A, B) A##B
-#define MAKE_PIECEWIES_TEST(X) PIECEWISE_TEST_HELPER(X, _impl)
+#define PIECEWISE_TEST_HELPER(A, B, C) A##B##C
+#define MAKE_PIECEWISE_TEST(PREFIX, X) PIECEWISE_TEST_HELPER(PREFIX, X, _impl)
 
   template <class Map>
-  static void MAKE_PIECEWIES_TEST(PIECEWISE_TEST_NAME)()
+  static void MAKE_PIECEWISE_TEST(map_, PIECEWISE_TEST_NAME)()
   {
 #if EMULATING_PIECEWISE_CONSTRUCTION
   test::detail::disable_construction_tracking _scoped;
@@ -1533,6 +1550,28 @@ RUN_TESTS_QUIET()
                  overloaded_constructor(4, 5, 6));
   }
 
+  template <class Set>
+  static void MAKE_PIECEWISE_TEST(set_, PIECEWISE_TEST_NAME)()
+  {
+#if EMULATING_PIECEWISE_CONSTRUCTION
+    test::detail::disable_construction_tracking _scoped;
+#endif
+
+    Set x;
+    std::pair<overloaded_constructor, overloaded_constructor> check;
+
+    x.emplace(PIECEWISE_NAMESPACE::piecewise_construct,
+      TUPLE_NAMESPACE::make_tuple(), TUPLE_NAMESPACE::make_tuple());
+    BOOST_TEST(x.find(check) != x.end() && *x.find(check) == check);
+
+    x.clear();
+    x.emplace(PIECEWISE_NAMESPACE::piecewise_construct,
+      TUPLE_NAMESPACE::make_tuple(1), TUPLE_NAMESPACE::make_tuple(2, 3));
+    check =
+      std::make_pair(overloaded_constructor(1), overloaded_constructor(2, 3));
+    BOOST_TEST(x.find(check) != x.end() && *x.find(check) == check);
+  }
+
 UNORDERED_AUTO_TEST (PIECEWISE_TEST_NAME) {
 #if EMULATING_PIECEWISE_CONSTRUCTION
   test::detail::disable_construction_tracking _scoped;
@@ -1554,8 +1593,8 @@ UNORDERED_AUTO_TEST (PIECEWISE_TEST_NAME) {
         std::pair<overloaded_constructor const, overloaded_constructor> > >
       node_map;
 
-      MAKE_PIECEWIES_TEST(PIECEWISE_TEST_NAME)<flat_map>();
-      MAKE_PIECEWIES_TEST(PIECEWISE_TEST_NAME)<node_map>();
+      MAKE_PIECEWISE_TEST(map_, PIECEWISE_TEST_NAME)<flat_map>();
+      MAKE_PIECEWISE_TEST(map_, PIECEWISE_TEST_NAME)<node_map>();
 #else
     typedef boost::unordered_map<overloaded_constructor, overloaded_constructor,
       boost::hash<overloaded_constructor>,
@@ -1564,7 +1603,7 @@ UNORDERED_AUTO_TEST (PIECEWISE_TEST_NAME) {
         std::pair<overloaded_constructor const, overloaded_constructor> > >
       map;
 
-      MAKE_PIECEWIES_TEST(PIECEWISE_TEST_NAME)<map>();
+      MAKE_PIECEWISE_TEST(map_, PIECEWISE_TEST_NAME)<map>();
 #endif
   }
 #ifndef BOOST_UNORDERED_FOA_TESTS
@@ -1610,26 +1649,23 @@ UNORDERED_AUTO_TEST (BOOST_PP_CAT(PIECEWISE_TEST_NAME, 2)) {
 #endif
 
 #ifdef BOOST_UNORDERED_FOA_TESTS
-  boost::unordered_flat_set<
+  typedef boost::unordered_flat_set<
     std::pair<overloaded_constructor, overloaded_constructor> >
-    x;
+    flat_set;
+
+  typedef boost::unordered_node_set<
+    std::pair<overloaded_constructor, overloaded_constructor> >
+    node_set;
+
+  MAKE_PIECEWISE_TEST(set_, PIECEWISE_TEST_NAME)<flat_set>();
+  MAKE_PIECEWISE_TEST(set_, PIECEWISE_TEST_NAME)<node_set>();
 #else
-  boost::unordered_set<
+  typedef boost::unordered_set<
     std::pair<overloaded_constructor, overloaded_constructor> >
-    x;
+    set_type;
+
+  MAKE_PIECEWISE_TEST(set_, PIECEWISE_TEST_NAME)<set_type>();
 #endif
-  std::pair<overloaded_constructor, overloaded_constructor> check;
-
-  x.emplace(PIECEWISE_NAMESPACE::piecewise_construct,
-    TUPLE_NAMESPACE::make_tuple(), TUPLE_NAMESPACE::make_tuple());
-  BOOST_TEST(x.find(check) != x.end() && *x.find(check) == check);
-
-  x.clear();
-  x.emplace(PIECEWISE_NAMESPACE::piecewise_construct,
-    TUPLE_NAMESPACE::make_tuple(1), TUPLE_NAMESPACE::make_tuple(2, 3));
-  check =
-    std::make_pair(overloaded_constructor(1), overloaded_constructor(2, 3));
-  BOOST_TEST(x.find(check) != x.end() && *x.find(check) == check);
 }
 
 #undef PIECEWISE_TEST_NAME
