@@ -67,6 +67,21 @@ namespace boost {
           x = nullptr;
         }
 
+        template <class A>
+        static void construct(A& al, storage_type* p, storage_type const& copy)
+        {
+          *p = boost::to_address(boost::allocator_allocate(al, 1));
+          try {
+            boost::allocator_construct(al, *p, *copy);
+          } catch (...) {
+            boost::allocator_deallocate(al,
+              boost::pointer_traits<
+                typename boost::allocator_pointer<A>::type>::pointer_to(**p),
+              1);
+            throw;
+          }
+        }
+
         template <class A, class... Args>
         static void construct(A& al, storage_type* p, Args&&... args)
         {

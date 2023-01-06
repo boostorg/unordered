@@ -209,40 +209,75 @@ namespace assign_tests {
 #ifdef BOOST_UNORDERED_FOA_TESTS
   boost::unordered_flat_map<test::object, test::object, test::hash,
     test::equal_to, std::allocator<test::object> >* test_map_std_alloc;
+  boost::unordered_node_map<test::object, test::object, test::hash,
+    test::equal_to, std::allocator<test::object> >* test_node_map_std_alloc;
 
   boost::unordered_flat_set<test::object, test::hash, test::equal_to,
     test::allocator1<test::object> >* test_set;
+  boost::unordered_node_set<test::object, test::hash, test::equal_to,
+    test::allocator1<test::object> >* test_node_set;
   boost::unordered_flat_map<test::object, test::object, test::hash,
     test::equal_to, test::allocator2<test::object> >* test_map;
+  boost::unordered_node_map<test::object, test::object, test::hash,
+    test::equal_to, test::allocator2<test::object> >* test_node_map;
 
   boost::unordered_flat_set<test::object, test::hash, test::equal_to,
     test::cxx11_allocator<test::object, test::propagate_assign> >*
     test_set_prop_assign;
+  boost::unordered_node_set<test::object, test::hash, test::equal_to,
+    test::cxx11_allocator<test::object, test::propagate_assign> >*
+    test_node_set_prop_assign;
   boost::unordered_flat_map<test::object, test::object, test::hash,
     test::equal_to,
     test::cxx11_allocator<test::object, test::propagate_assign> >*
     test_map_prop_assign;
+  boost::unordered_node_map<test::object, test::object, test::hash,
+    test::equal_to,
+    test::cxx11_allocator<test::object, test::propagate_assign> >*
+    test_node_map_prop_assign;
 
   boost::unordered_flat_set<test::object, test::hash, test::equal_to,
     test::cxx11_allocator<test::object, test::no_propagate_assign> >*
     test_set_no_prop_assign;
+  boost::unordered_node_set<test::object, test::hash, test::equal_to,
+    test::cxx11_allocator<test::object, test::no_propagate_assign> >*
+    test_node_set_no_prop_assign;
   boost::unordered_flat_map<test::object, test::object, test::hash,
     test::equal_to,
     test::cxx11_allocator<test::object, test::no_propagate_assign> >*
     test_map_no_prop_assign;
+  boost::unordered_node_map<test::object, test::object, test::hash,
+    test::equal_to,
+    test::cxx11_allocator<test::object, test::no_propagate_assign> >*
+    test_node_map_no_prop_assign;
 
   UNORDERED_AUTO_TEST (check_traits) {
     BOOST_TEST(!is_propagate(test_set));
     BOOST_TEST(is_propagate(test_set_prop_assign));
     BOOST_TEST(!is_propagate(test_set_no_prop_assign));
+
+    BOOST_TEST(!is_propagate(test_node_set));
+    BOOST_TEST(is_propagate(test_node_set_prop_assign));
+    BOOST_TEST(!is_propagate(test_node_set_no_prop_assign));
   }
 
   UNORDERED_TEST(assign_tests1,
-    ((test_map_std_alloc)(test_set)(test_map)(test_set_prop_assign)(test_map_prop_assign)(test_set_no_prop_assign)(test_map_no_prop_assign))(
+    ((test_map_std_alloc)(test_node_map_std_alloc)
+     (test_set)(test_node_set)
+     (test_map)(test_node_map)
+     (test_set_prop_assign)(test_node_set_prop_assign)
+     (test_map_prop_assign)(test_node_map_prop_assign)
+     (test_set_no_prop_assign)(test_node_set_no_prop_assign)
+     (test_map_no_prop_assign)(test_node_map_no_prop_assign))(
       (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(assign_tests2,
-    ((test_set)(test_map)(test_set_prop_assign)(test_map_prop_assign)(test_set_no_prop_assign)(test_map_no_prop_assign))(
+    ((test_set)(test_node_set)
+     (test_map)(test_node_map)
+     (test_set_prop_assign)(test_node_set_prop_assign)
+     (test_map_prop_assign)(test_node_map_prop_assign)
+     (test_set_no_prop_assign)(test_node_set_no_prop_assign)
+     (test_map_no_prop_assign)(test_node_map_no_prop_assign))(
       (default_generator)(generate_collisions)(limited_range)))
 #else
   boost::unordered_map<test::object, test::object, test::hash, test::equal_to,
