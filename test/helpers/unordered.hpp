@@ -12,6 +12,7 @@
 #include <boost/unordered/unordered_flat_set.hpp>
 #include <boost/unordered/unordered_flat_map.hpp>
 #include <boost/unordered/unordered_node_map.hpp>
+#include <boost/unordered/unordered_node_set.hpp>
 #include <boost/unordered/detail/implementation.hpp>
 #else
 #include <boost/unordered_set.hpp>

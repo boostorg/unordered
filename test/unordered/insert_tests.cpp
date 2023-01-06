@@ -693,6 +693,50 @@ namespace insert_tests {
     BOOST_TEST_EQ(x.size(), 1000u);
   }
 
+  struct pointer_constructible
+  {
+    int x;
+
+    pointer_constructible() : x(-1) {}
+    pointer_constructible(pointer_constructible const& p) : x(p.x) {}
+    pointer_constructible(pointer_constructible* p) : x(p->x) {}
+  };
+
+  std::size_t hash_value(pointer_constructible const& p)
+  {
+    return boost::hash<int>()(p.x);
+  }
+
+  bool operator==(
+    pointer_constructible const& lhs, pointer_constructible const& rhs)
+  {
+    return lhs.x == rhs.x;
+  }
+
+  bool operator!=(
+    pointer_constructible const& lhs, pointer_constructible const& rhs)
+  {
+    return !(lhs == rhs);
+  }
+
+  template <template <class Key, class Hash, class Pred, class Allocator>
+    class Set>
+  void set_tests2_impl()
+  {
+    Set<pointer_constructible, boost::hash<pointer_constructible>,
+      std::equal_to<pointer_constructible>,
+      test::allocator1<pointer_constructible> >
+      set;
+
+    pointer_constructible pc;
+    pc.x = 1337;
+
+    set.emplace(&pc);
+
+    BOOST_TEST_EQ(set.size(), 1u);
+    BOOST_TEST(set.find(pc) != set.end());
+  }
+
   template <class X>
   void try_emplace_tests(X*, test::random_generator generator)
   {
@@ -894,29 +938,31 @@ namespace insert_tests {
     std::allocator<test::movable> >* test_set_std_alloc;
   boost::unordered_flat_set<test::object, test::hash, test::equal_to,
     test::allocator1<test::object> >* test_set;
+  boost::unordered_node_set<test::movable, test::hash, test::equal_to,
+    test::allocator1<test::object> >* test_node_set;
   boost::unordered_flat_map<test::movable, test::movable, test::hash,
     test::equal_to, test::allocator2<test::movable> >* test_map;
   boost::unordered_node_map<test::movable, test::movable, test::hash,
     test::equal_to, test::allocator2<test::movable> >* test_node_map;
 
   UNORDERED_TEST(unique_insert_tests1,
-    ((test_set_std_alloc)(test_set)(test_map)(test_node_map))(
+    ((test_set_std_alloc)(test_set)(test_node_set)(test_map)(test_node_map))(
       (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(
-    insert_tests2, ((test_set)(test_map)(test_node_map))(
+    insert_tests2, ((test_set)(test_node_set)(test_map)(test_node_map))(
                      (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(unique_emplace_tests1,
-    ((test_set_std_alloc)(test_set)(test_map)(test_node_map))(
+    ((test_set_std_alloc)(test_set)(test_node_set)(test_map)(test_node_map))(
       (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(move_emplace_tests,
-    ((test_set_std_alloc)(test_set)(test_map)(test_node_map))(
+    ((test_set_std_alloc)(test_set)(test_node_set)(test_map)(test_node_map))(
       (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(default_emplace_tests,
-    ((test_set_std_alloc)(test_set)(test_map)(test_node_map))(
+    ((test_set_std_alloc)(test_set)(test_node_set)(test_map)(test_node_map))(
       (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(map_tests,
@@ -933,7 +979,12 @@ namespace insert_tests {
     ((test_map)(test_node_map))((default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(
-    set_tests, ((test_set_std_alloc)(test_set))((default_generator)))
+    set_tests, ((test_set_std_alloc)(test_set)(test_node_set))((default_generator)))
+
+  UNORDERED_AUTO_TEST(set_tests2) {
+    set_tests2_impl<boost::unordered_flat_set>();
+    set_tests2_impl<boost::unordered_node_set>();
+  }
 #else
   boost::unordered_set<test::movable, test::hash, test::equal_to,
     std::allocator<test::movable> >* test_set_std_alloc;
