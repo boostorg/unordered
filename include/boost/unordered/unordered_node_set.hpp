@@ -39,61 +39,100 @@ namespace boost {
         using init_type = Key;
         using value_type = Key;
 
-        struct element_type
-        {
-          value_type* p;
-        };
+        // struct element_type
+        // {
+        //   value_type* p;
+        // };
 
-        static value_type& value_from(element_type x) { return *x.p; }
+        // static value_type& value_from(element_type x) { return *x.p; }
+
+        using element_type = value_type*;
+        static value_type& value_from(element_type x) { return *x; }
 
         static Key const& extract(value_type const& key) { return key; }
-        static Key const& extract(element_type k) { return *k.p; }
+        // static Key const& extract(element_type k) { return *k.p; }
+        // static element_type&& move(element_type& x) { return std::move(x); }
+
+        static Key const& extract(element_type k) { return *k; }
         static element_type&& move(element_type& x) { return std::move(x); }
+
+        // template <class A>
+        // static void construct(A&, element_type* p, element_type&& x)
+        // {
+        //   p->p = x.p;
+        //   x.p = nullptr;
+        // }
 
         template <class A>
         static void construct(A&, element_type* p, element_type&& x)
         {
-          p->p = x.p;
-          x.p = nullptr;
+          *p = x;
+          x = nullptr;
         }
 
-        template <class A>
-        static void construct(A& al, element_type* p, element_type const& copy)
-        {
-          p->p = boost::to_address(boost::allocator_allocate(al, 1));
-          try {
-            boost::allocator_construct(al, p->p, *copy.p);
-          } catch (...) {
-            boost::allocator_deallocate(al,
-              boost::pointer_traits<
-                typename boost::allocator_pointer<A>::type>::pointer_to(*p->p),
-              1);
-            throw;
-          }
-        }
+        // template <class A>
+        // static void construct(A& al, element_type* p, element_type const& copy)
+        // {
+        //   p->p = boost::to_address(boost::allocator_allocate(al, 1));
+        //   try {
+        //     boost::allocator_construct(al, p->p, *copy.p);
+        //   } catch (...) {
+        //     boost::allocator_deallocate(al,
+        //       boost::pointer_traits<
+        //         typename boost::allocator_pointer<A>::type>::pointer_to(*p->p),
+        //       1);
+        //     throw;
+        //   }
+        // }
+
+        // template <class A, class... Args>
+        // static void construct(A& al, element_type* p, Args&&... args)
+        // {
+        //   p->p = boost::to_address(boost::allocator_allocate(al, 1));
+        //   try {
+        //     boost::allocator_construct(al, p->p, std::forward<Args>(args)...);
+        //   } catch (...) {
+        //     boost::allocator_deallocate(al,
+        //       boost::pointer_traits<
+        //         typename boost::allocator_pointer<A>::type>::pointer_to(*p->p),
+        //       1);
+        //     throw;
+        //   }
+        // }
 
         template <class A, class... Args>
         static void construct(A& al, element_type* p, Args&&... args)
         {
-          p->p = boost::to_address(boost::allocator_allocate(al, 1));
+          *p = boost::to_address(boost::allocator_allocate(al, 1));
           try {
-            boost::allocator_construct(al, p->p, std::forward<Args>(args)...);
+            boost::allocator_construct(al, *p, std::forward<Args>(args)...);
           } catch (...) {
             boost::allocator_deallocate(al,
               boost::pointer_traits<
-                typename boost::allocator_pointer<A>::type>::pointer_to(*p->p),
+                typename boost::allocator_pointer<A>::type>::pointer_to(**p),
               1);
             throw;
           }
         }
 
+        // template <class A> static void destroy(A& al, element_type* p) noexcept
+        // {
+        //   if (p->p) {
+        //     boost::allocator_destroy(al, p->p);
+        //     boost::allocator_deallocate(al,
+        //       boost::pointer_traits<
+        //         typename boost::allocator_pointer<A>::type>::pointer_to(*p->p),
+        //       1);
+        //   }
+        // }
+
         template <class A> static void destroy(A& al, element_type* p) noexcept
         {
-          if (p->p) {
-            boost::allocator_destroy(al, p->p);
+          if (p) {
+            boost::allocator_destroy(al, *p);
             boost::allocator_deallocate(al,
               boost::pointer_traits<
-                typename boost::allocator_pointer<A>::type>::pointer_to(*p->p),
+                typename boost::allocator_pointer<A>::type>::pointer_to(**p),
               1);
           }
         }
@@ -103,7 +142,7 @@ namespace boost {
     template <class Key, class Hash, class KeyEqual, class Allocator>
     class unordered_node_set
     {
-      using set_types = detail::node_set_types<Key>;
+      using set_types = detail::flat_set_types<Key>;
 
       using table_type = detail::foa::table<set_types, Hash, KeyEqual,
         typename boost::allocator_rebind<Allocator,
@@ -294,6 +333,15 @@ namespace boost {
         return table_.insert(std::move(value));
       }
 
+      template <class K>
+      BOOST_FORCEINLINE typename std::enable_if<
+        detail::transparent_non_iterable<K, unordered_node_set>::value,
+        std::pair<iterator, bool> >::type
+      insert(K&& k)
+      {
+        return table_.try_emplace(std::forward<K>(k));
+      }
+
       BOOST_FORCEINLINE iterator insert(const_iterator, value_type const& value)
       {
         return table_.insert(value).first;
@@ -302,6 +350,15 @@ namespace boost {
       BOOST_FORCEINLINE iterator insert(const_iterator, value_type&& value)
       {
         return table_.insert(std::move(value)).first;
+      }
+
+      template <class K>
+      BOOST_FORCEINLINE typename std::enable_if<
+        detail::transparent_non_iterable<K, unordered_node_set>::value,
+        iterator>::type
+      insert(const_iterator, K&& k)
+      {
+        return table_.try_emplace(std::forward<K>(k)).first;
       }
 
       template <class InputIterator>
