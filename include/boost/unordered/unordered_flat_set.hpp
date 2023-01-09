@@ -61,7 +61,6 @@ namespace boost {
         template <class A>
         static void construct(A& al, element_type* p, element_type const& copy)
         {
-          std::cout << "Okay, I should be seeing this, I guess..." << std::endl;
           boost::allocator_construct(al, p, copy);
         }
 
@@ -284,7 +283,6 @@ namespace boost {
         std::pair<iterator, bool> >::type
       insert(K&& k)
       {
-        std::cout << "this should be my insert() overload" << std::endl;
         return table_.try_emplace(std::forward<K>(k));
       }
 
