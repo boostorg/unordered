@@ -43,7 +43,9 @@ namespace boost {
         using moved_type = std::pair<raw_key_type&&, raw_mapped_type&&>;
         using value_type = std::pair<Key const, T>;
 
-        using storage_type = value_type;
+        using element_type = value_type;
+
+        static value_type& value_from(element_type& x) { return x; }
 
         template <class K, class V>
         static raw_key_type const& extract(std::pair<K, V> const& kv)
@@ -51,7 +53,7 @@ namespace boost {
           return kv.first;
         }
 
-        static moved_type move(storage_type& x)
+        static moved_type move(element_type& x)
         {
           // TODO: we probably need to launder here
           return {std::move(const_cast<raw_key_type&>(x.first)),
@@ -59,18 +61,18 @@ namespace boost {
         }
 
         template <class A>
-        static void construct(A& al, storage_type* p, moved_type&& x)
+        static void construct(A& al, element_type* p, moved_type&& x)
         {
           boost::allocator_construct(al, p, std::move(x));
         }
 
         template <class A, class... Args>
-        static void construct(A& al, storage_type* p, Args&&... args)
+        static void construct(A& al, element_type* p, Args&&... args)
         {
           boost::allocator_construct(al, p, std::forward<Args>(args)...);
         }
 
-        template <class A> static void destroy(A& al, storage_type* p) noexcept
+        template <class A> static void destroy(A& al, element_type* p) noexcept
         {
           boost::allocator_destroy(al, p);
         }

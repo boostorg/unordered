@@ -37,24 +37,47 @@ namespace boost {
         using init_type = Key;
         using value_type = Key;
 
-        using storage_type = Key;
+        struct element_type
+        {
+          value_type p;
+
+          element_type(element_type const& rhs) : p(rhs.p) {}
+          element_type(element_type&& rhs): p(std::move(rhs.p)) {}
+
+          element_type(value_type&& p_) : p(std::move(p_)) {}
+
+          template <class... Args>
+          element_type(Args&&... args) : p(std::forward<Args>(args)...)
+          {
+          }
+        };
+
+        static Key& value_from(element_type& x) { return x.p; }
 
         static Key const& extract(value_type const& key) { return key; }
-        static Key&& move(value_type& x) { return std::move(x); }
+        static Key const& extract(element_type const& x) { return x.p; }
+        static element_type&& move(element_type& x) { return std::move(x); }
 
         template <class A>
-        static void construct(A& al, storage_type* p, Key&& x)
+        static void construct(A& al, element_type* p, element_type const& copy)
+        {
+          std::cout << "Okay, I should be seeing this, I guess..." << std::endl;
+          boost::allocator_construct(al, p, copy);
+        }
+
+        template <class A>
+        static void construct(A& al, element_type* p, Key&& x)
         {
           boost::allocator_construct(al, p, std::move(x));
         }
 
         template <class A, class... Args>
-        static void construct(A& al, storage_type* p, Args&&... args)
+        static void construct(A& al, element_type* p, Args&&... args)
         {
           boost::allocator_construct(al, p, std::forward<Args>(args)...);
         }
 
-        template <class A> static void destroy(A& al, storage_type* p) noexcept
+        template <class A> static void destroy(A& al, element_type* p) noexcept
         {
           boost::allocator_destroy(al, p);
         }
@@ -261,6 +284,7 @@ namespace boost {
         std::pair<iterator, bool> >::type
       insert(K&& k)
       {
+        std::cout << "this should be my insert() overload" << std::endl;
         return table_.try_emplace(std::forward<K>(k));
       }
 

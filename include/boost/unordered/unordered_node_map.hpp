@@ -16,7 +16,6 @@
 
 #include <boost/core/allocator_access.hpp>
 #include <boost/functional/hash.hpp>
-#include <boost/iterator/indirect_iterator.hpp>
 #include <boost/throw_exception.hpp>
 
 #include <initializer_list>
@@ -41,10 +40,14 @@ namespace boost {
         using raw_mapped_type = typename std::remove_const<T>::type;
 
         using init_type = std::pair<raw_key_type, raw_mapped_type>;
-        using moved_type = std::pair<Key const, T>*;
         using value_type = std::pair<Key const, T>;
 
-        using storage_type = value_type*;
+        struct element_type
+        {
+          value_type* p;
+        };
+
+        static value_type& value_from(element_type x) { return *(x.p); }
 
         template <class K, class V>
         static raw_key_type const& extract(std::pair<K, V> const& kv)
@@ -52,58 +55,57 @@ namespace boost {
           return kv.first;
         }
 
-        template <class K, class V>
-        static raw_key_type const& extract(std::pair<K, V> const* kv)
+        static raw_key_type const& extract(element_type kv)
         {
-          return kv->first;
+          return kv.p->first;
         }
 
-        static storage_type&& move(storage_type& x) { return std::move(x); }
+        static element_type&& move(element_type& x) { return std::move(x); }
 
         template <class A>
-        static void construct(A&, storage_type* p, moved_type&& x)
+        static void construct(A&, element_type* p, element_type&& x)
         {
-          *p = x;
-          x = nullptr;
+          p->p = x.p;
+          x.p = nullptr;
         }
 
         template <class A>
-        static void construct(A& al, storage_type* p, storage_type const& copy)
+        static void construct(A& al, element_type* p, element_type const& copy)
         {
-          *p = boost::to_address(boost::allocator_allocate(al, 1));
+          p->p = boost::to_address(boost::allocator_allocate(al, 1));
           try {
-            boost::allocator_construct(al, *p, *copy);
+            boost::allocator_construct(al, p->p, *copy.p);
           } catch (...) {
             boost::allocator_deallocate(al,
               boost::pointer_traits<
-                typename boost::allocator_pointer<A>::type>::pointer_to(**p),
+                typename boost::allocator_pointer<A>::type>::pointer_to(*p->p),
               1);
             throw;
           }
         }
 
         template <class A, class... Args>
-        static void construct(A& al, storage_type* p, Args&&... args)
+        static void construct(A& al, element_type* p, Args&&... args)
         {
-          *p = boost::to_address(boost::allocator_allocate(al, 1));
+          p->p = boost::to_address(boost::allocator_allocate(al, 1));
           try {
-            boost::allocator_construct(al, *p, std::forward<Args>(args)...);
+            boost::allocator_construct(al, p->p, std::forward<Args>(args)...);
           } catch (...) {
             boost::allocator_deallocate(al,
               boost::pointer_traits<
-                typename boost::allocator_pointer<A>::type>::pointer_to(**p),
+                typename boost::allocator_pointer<A>::type>::pointer_to(*p->p),
               1);
             throw;
           }
         }
 
-        template <class A> static void destroy(A& al, storage_type* p) noexcept
+        template <class A> static void destroy(A& al, element_type* p) noexcept
         {
-          if (*p) {
-            boost::allocator_destroy(al, *p);
+          if (p->p) {
+            boost::allocator_destroy(al, p->p);
             boost::allocator_deallocate(al,
               boost::pointer_traits<
-                typename boost::allocator_pointer<A>::type>::pointer_to(**p),
+                typename boost::allocator_pointer<A>::type>::pointer_to(*p->p),
               1);
           }
         }
@@ -142,9 +144,8 @@ namespace boost {
       using pointer = typename boost::allocator_pointer<allocator_type>::type;
       using const_pointer =
         typename boost::allocator_const_pointer<allocator_type>::type;
-      using iterator = boost::indirect_iterator<typename table_type::iterator>;
-      using const_iterator =
-        boost::indirect_iterator<typename table_type::const_iterator>;
+      using iterator = typename table_type::iterator;
+      using const_iterator = typename table_type::const_iterator;
 
       unordered_node_map() : unordered_node_map(0) {}
 
@@ -338,24 +339,23 @@ namespace boost {
       template <class M>
       std::pair<iterator, bool> insert_or_assign(key_type const& key, M&& obj)
       {
-        auto iter_bool_pair = table_.try_emplace(key, std::forward<M>(obj));
-        if (iter_bool_pair.second) {
-          return iter_bool_pair;
+        auto ibp = table_.try_emplace(key, std::forward<M>(obj));
+        if (ibp.second) {
+          return ibp;
         }
-        (*(iter_bool_pair.first))->second = std::forward<M>(obj);
-        return iter_bool_pair;
+        ibp.first->second = std::forward<M>(obj);
+        return ibp;
       }
 
       template <class M>
       std::pair<iterator, bool> insert_or_assign(key_type&& key, M&& obj)
       {
-        auto iter_bool_pair =
-          table_.try_emplace(std::move(key), std::forward<M>(obj));
-        if (iter_bool_pair.second) {
-          return iter_bool_pair;
+        auto ibp = table_.try_emplace(std::move(key), std::forward<M>(obj));
+        if (ibp.second) {
+          return ibp;
         }
-        (*(iter_bool_pair.first))->second = std::forward<M>(obj);
-        return iter_bool_pair;
+        ibp.first->second = std::forward<M>(obj);
+        return ibp;
       }
 
       template <class M>
@@ -489,12 +489,12 @@ namespace boost {
 
       BOOST_FORCEINLINE mapped_type& operator[](key_type const& key)
       {
-        return (*(table_.try_emplace(key).first))->second;
+        return table_.try_emplace(key).first->second;
       }
 
       BOOST_FORCEINLINE mapped_type& operator[](key_type&& key)
       {
-        return (*(table_.try_emplace(std::move(key)).first))->second;
+        return table_.try_emplace(std::move(key)).first->second;
       }
 
       BOOST_FORCEINLINE size_type count(key_type const& key) const

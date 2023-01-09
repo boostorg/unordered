@@ -39,57 +39,61 @@ namespace boost {
         using init_type = Key;
         using value_type = Key;
 
-        using storage_type = Key*;
-        using moved_type = storage_type;
+        struct element_type
+        {
+          value_type* p;
+        };
+
+        static value_type& value_from(element_type x) { return *x.p; }
 
         static Key const& extract(value_type const& key) { return key; }
-        static Key const& extract(storage_type k) { return *k; }
-        static storage_type&& move(storage_type& x) { return std::move(x); }
+        static Key const& extract(element_type k) { return *k.p; }
+        static element_type&& move(element_type& x) { return std::move(x); }
 
         template <class A>
-        static void construct(A&, storage_type* p, moved_type&& x)
+        static void construct(A&, element_type* p, element_type&& x)
         {
-          *p = x;
-          x = nullptr;
+          p->p = x.p;
+          x.p = nullptr;
         }
 
-        template <class A, class... Args>
-        static void construct(A& al, storage_type* p, storage_type const& copy)
+        template <class A>
+        static void construct(A& al, element_type* p, element_type const& copy)
         {
-          *p = boost::to_address(boost::allocator_allocate(al, 1));
+          p->p = boost::to_address(boost::allocator_allocate(al, 1));
           try {
-            boost::allocator_construct(al, *p, *copy);
+            boost::allocator_construct(al, p->p, *copy.p);
           } catch (...) {
             boost::allocator_deallocate(al,
               boost::pointer_traits<
-                typename boost::allocator_pointer<A>::type>::pointer_to(**p),
+                typename boost::allocator_pointer<A>::type>::pointer_to(*p->p),
               1);
             throw;
           }
         }
 
         template <class A, class... Args>
-        static void construct(A& al, storage_type* p, Args&&... args)
+        static void construct(A& al, element_type* p, Args&&... args)
         {
-          *p = boost::to_address(boost::allocator_allocate(al, 1));
+          p->p = boost::to_address(boost::allocator_allocate(al, 1));
           try {
-            boost::allocator_construct(al, *p, std::forward<Args>(args)...);
+            boost::allocator_construct(al, p->p, std::forward<Args>(args)...);
           } catch (...) {
             boost::allocator_deallocate(al,
               boost::pointer_traits<
-                typename boost::allocator_pointer<A>::type>::pointer_to(**p),
+                typename boost::allocator_pointer<A>::type>::pointer_to(*p->p),
               1);
             throw;
           }
         }
 
-        template <class A> static void destroy(A& al, storage_type* p) noexcept
+        template <class A> static void destroy(A& al, element_type* p) noexcept
         {
-          if (*p) {
-            boost::allocator_destroy(al, *p);
+          if (p->p) {
+            boost::allocator_destroy(al, p->p);
             boost::allocator_deallocate(al,
               boost::pointer_traits<
-                typename boost::allocator_pointer<A>::type>::pointer_to(**p),
+                typename boost::allocator_pointer<A>::type>::pointer_to(*p->p),
               1);
           }
         }
@@ -125,9 +129,8 @@ namespace boost {
       using pointer = typename boost::allocator_pointer<allocator_type>::type;
       using const_pointer =
         typename boost::allocator_const_pointer<allocator_type>::type;
-      using iterator = boost::indirect_iterator<typename table_type::iterator>;
-      using const_iterator =
-        boost::indirect_iterator<typename table_type::const_iterator>;
+      using iterator = typename table_type::iterator;
+      using const_iterator = typename table_type::const_iterator;
 
       unordered_node_set() : unordered_node_set(0) {}
 
