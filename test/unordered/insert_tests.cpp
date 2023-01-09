@@ -17,6 +17,7 @@
 #include "../helpers/input_iterator.hpp"
 #include "../helpers/helpers.hpp"
 
+#include <boost/move/core.hpp>
 #include <vector>
 
 namespace insert_tests {
@@ -697,44 +698,65 @@ namespace insert_tests {
   {
     int x;
 
-    pointer_constructible() : x(-1) {}
+    pointer_constructible(int x_) : x(x_) {}
     pointer_constructible(pointer_constructible const& p) : x(p.x) {}
-    pointer_constructible(pointer_constructible* p) : x(p->x) {}
+    pointer_constructible(pointer_constructible* const&) : x(-1) {}
+    pointer_constructible(BOOST_RV_REF(pointer_constructible*)) : x(-2) {}
   };
 
-  std::size_t hash_value(pointer_constructible const& p)
+  struct pointer_constructible_hash
   {
-    return boost::hash<int>()(p.x);
-  }
+    typedef void is_transparent;
 
-  bool operator==(
-    pointer_constructible const& lhs, pointer_constructible const& rhs)
-  {
-    return lhs.x == rhs.x;
-  }
+    std::size_t operator()(pointer_constructible const& p) const
+    {
+      return boost::hash<int>()(p.x);
+    }
+  };
 
-  bool operator!=(
-    pointer_constructible const& lhs, pointer_constructible const& rhs)
+  struct pointer_constructible_equal_to
   {
-    return !(lhs == rhs);
-  }
+    typedef void is_transparent;
+
+    bool operator()(
+      pointer_constructible const& lhs, pointer_constructible const& rhs) const
+    {
+      return lhs.x == rhs.x;
+    }
+  };
 
   template <template <class Key, class Hash, class Pred, class Allocator>
     class Set>
   static void set_tests2_impl()
   {
-    Set<pointer_constructible, boost::hash<pointer_constructible>,
-      std::equal_to<pointer_constructible>,
-      test::allocator1<pointer_constructible> >
-      set;
+    Set<pointer_constructible, pointer_constructible_hash,
+      pointer_constructible_equal_to, test::allocator1<pointer_constructible> >
+      set, set2;
 
-    pointer_constructible pc;
-    pc.x = 1337;
+    pointer_constructible pc(1337), *addr_pc = &pc;
 
-    set.emplace(&pc);
+    set.insert(pc);      // 1337
+    set.insert(addr_pc); // -1
+    set.insert(&pc);     // -2
 
-    BOOST_TEST_EQ(set.size(), 1u);
+    BOOST_TEST_EQ(set.size(), 3u);
     BOOST_TEST(set.find(pc) != set.end());
+    BOOST_TEST(set.find(-1) != set.end());
+    BOOST_TEST(set.find(-2) != set.end());
+
+    set2 = set;
+
+    BOOST_TEST_EQ(set2.size(), 3u);
+    BOOST_TEST(set2.find(pc) != set2.end());
+    BOOST_TEST(set2.find(-1) != set2.end());
+    BOOST_TEST(set2.find(-2) != set2.end());
+
+    set.rehash(set.bucket_count() + 1);
+
+    BOOST_TEST_EQ(set.size(), 3u);
+    BOOST_TEST(set.find(pc) != set.end());
+    BOOST_TEST(set.find(-1) != set.end());
+    BOOST_TEST(set.find(-2) != set.end());
   }
 
   template <class X>
