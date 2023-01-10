@@ -1,4 +1,4 @@
-// Copyright 2021-2022 Christian Mazakas.
+// Copyright 2021-2023 Christian Mazakas.
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -137,6 +137,24 @@ void test_map()
 
   typedef boost::unordered_flat_map<key, int, hasher, key_equal>
     non_transparent_map3;
+
+  typedef boost::unordered_node_map<key, int, transparent_hasher,
+    transparent_key_equal>
+    transparent_node_map;
+
+  typedef boost::unordered_node_map<key, int, transparent_hasher, key_equal>
+    non_transparent_node_map1;
+
+  typedef boost::unordered_node_map<key, int, hasher, transparent_key_equal>
+    non_transparent_node_map2;
+
+  typedef boost::unordered_node_map<key, int, hasher, key_equal>
+    non_transparent_node_map3;
+
+  test_map_transparent_contains<transparent_node_map>();
+  test_map_non_transparent_contains<non_transparent_node_map1>();
+  test_map_non_transparent_contains<non_transparent_node_map2>();
+  test_map_non_transparent_contains<non_transparent_node_map3>();
 #else
   typedef boost::unordered_map<key, int, transparent_hasher,
     transparent_key_equal>
@@ -254,6 +272,22 @@ void test_set()
     non_transparent_set2;
   typedef boost::unordered_flat_set<key, hasher, key_equal>
     non_transparent_set3;
+
+  typedef boost::unordered_node_set<key, transparent_hasher,
+    transparent_key_equal>
+    transparent_node_set;
+
+  typedef boost::unordered_node_set<key, transparent_hasher, key_equal>
+    non_transparent_node_set1;
+  typedef boost::unordered_node_set<key, hasher, transparent_key_equal>
+    non_transparent_node_set2;
+  typedef boost::unordered_node_set<key, hasher, key_equal>
+    non_transparent_node_set3;
+
+  test_set_transparent_contains<transparent_node_set>();
+  test_set_non_transparent_contains<non_transparent_node_set1>();
+  test_set_non_transparent_contains<non_transparent_node_set2>();
+  test_set_non_transparent_contains<non_transparent_node_set3>();
 #else
   typedef boost::unordered_set<key, transparent_hasher, transparent_key_equal>
     transparent_set;
