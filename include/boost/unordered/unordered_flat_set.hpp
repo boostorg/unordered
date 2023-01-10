@@ -37,25 +37,12 @@ namespace boost {
         using init_type = Key;
         using value_type = Key;
 
-        struct element_type
-        {
-          value_type p;
-
-          element_type(element_type const& rhs) : p(rhs.p) {}
-          element_type(element_type&& rhs): p(std::move(rhs.p)) {}
-
-          element_type(value_type&& p_) : p(std::move(p_)) {}
-
-          template <class... Args>
-          element_type(Args&&... args) : p(std::forward<Args>(args)...)
-          {
-          }
-        };
-
-        static Key& value_from(element_type& x) { return x.p; }
-
         static Key const& extract(value_type const& key) { return key; }
-        static Key const& extract(element_type const& x) { return x.p; }
+
+        using element_type = value_type;
+
+        static Key const& value_from(element_type const& x) { return x; }
+
         static element_type&& move(element_type& x) { return std::move(x); }
 
         template <class A>
