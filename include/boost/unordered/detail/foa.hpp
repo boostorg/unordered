@@ -1668,9 +1668,9 @@ private:
         bool,
 #if BOOST_WORKAROUND(BOOST_LIBSTDCXX_VERSION,<50000)
         /* std::is_trivially_copy_constructible not provided */
-        boost::has_trivial_copy<value_type>::value
+        boost::has_trivial_copy<element_type>::value
 #else
-        std::is_trivially_copy_constructible<value_type>::value
+        std::is_trivially_copy_constructible<element_type>::value
 #endif
         &&(
           is_std_allocator<Allocator>::value||

@@ -45,6 +45,9 @@ namespace boost {
         struct element_type
         {
           value_type* p;
+
+          element_type() : p(nullptr) {}
+          element_type(element_type const& rhs) : p(rhs.p) {}
         };
 
         static value_type& value_from(element_type x) { return *(x.p); }

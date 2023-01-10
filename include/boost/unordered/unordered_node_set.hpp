@@ -16,7 +16,6 @@
 
 #include <boost/core/allocator_access.hpp>
 #include <boost/functional/hash.hpp>
-#include <boost/iterator/indirect_iterator.hpp>
 #include <boost/throw_exception.hpp>
 
 #include <initializer_list>
@@ -41,9 +40,9 @@ namespace boost {
 
         static Key const& extract(value_type const& key) { return key; }
 
-#if 1
+#if 0
         using element_type = value_type*;
-        static value_type& value_from(element_type x) { return *x; }
+        static value_type& value_from(element_type& x) { return *x; }
 
         static Key const& extract(element_type k) { return *k; }
         static element_type&& move(element_type& x) { return std::move(x); }
@@ -99,6 +98,9 @@ namespace boost {
         struct element_type
         {
           value_type* p;
+
+          element_type() : p(nullptr) {}
+          element_type(element_type const& rhs) : p(rhs.p) {}
         };
 
         static value_type& value_from(element_type x) { return *x.p; }
