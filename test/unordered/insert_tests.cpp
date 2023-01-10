@@ -737,26 +737,26 @@ namespace insert_tests {
 
     set.insert(pc);      // 1337
     set.insert(addr_pc); // -1
-    set.insert(&pc);     // -2
+    set.insert(&pc);     // -1
 
-    BOOST_TEST_EQ(set.size(), 3u);
+    BOOST_TEST_EQ(set.size(), 2u);
     BOOST_TEST(set.find(pc) != set.end());
     BOOST_TEST(set.find(-1) != set.end());
-    BOOST_TEST(set.find(-2) != set.end());
+    BOOST_TEST(set.find(-2) == set.end());
 
     set2 = set;
 
-    BOOST_TEST_EQ(set2.size(), 3u);
+    BOOST_TEST_EQ(set2.size(), 2u);
     BOOST_TEST(set2.find(pc) != set2.end());
     BOOST_TEST(set2.find(-1) != set2.end());
-    BOOST_TEST(set2.find(-2) != set2.end());
+    BOOST_TEST(set2.find(-2) == set2.end());
 
     set.rehash(set.bucket_count() + 1);
 
-    BOOST_TEST_EQ(set.size(), 3u);
+    BOOST_TEST_EQ(set.size(), 2u);
     BOOST_TEST(set.find(pc) != set.end());
     BOOST_TEST(set.find(-1) != set.end());
-    BOOST_TEST(set.find(-2) != set.end());
+    BOOST_TEST(set.find(-2) == set.end());
   }
 
   template <class X>
