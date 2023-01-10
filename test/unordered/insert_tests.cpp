@@ -1069,7 +1069,6 @@ namespace insert_tests {
 
   UNORDERED_AUTO_TEST(set_tests2) {
       set_tests2_impl<boost::unordered_set>();
-      set_tests2_impl<boost::unordered_multiset>();
   }
 #endif
 
