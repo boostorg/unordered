@@ -1599,7 +1599,6 @@ private:
   template<typename... Args>
   void construct_element(element_type* p,try_emplace_args_t,Args&&... args)
   {
-    std::cout << "so hopefully I'm seeing this..." << std::endl;
     construct_element_from_try_emplace_args(
       p,
       std::integral_constant<bool,std::is_same<key_type,value_type>::value>{},
@@ -1846,7 +1845,6 @@ private:
     auto   it=find_impl(k,pos0,hash);
 
     if(it!=end()){
-      std::cout << "preventing duplicated insertion" << std::endl;
       return {it,false};
     }
     if(BOOST_LIKELY(size_<ml)){
