@@ -38,10 +38,6 @@
 #include <type_traits>
 #include <utility>
 
-#include <iostream>
-
-template <class> struct X;
-
 #if defined(__SSE2__)||\
     defined(_M_X64)||(defined(_M_IX86_FP)&&_M_IX86_FP>=2)
 #define BOOST_UNORDERED_SSE2
@@ -741,18 +737,18 @@ private:
 struct no_mix
 {
   template<typename Hash,typename T>
-  static inline std::size_t mix(const Hash& h,T&& x)
+  static inline std::size_t mix(const Hash& h,const T& x)
   {
-    return h(std::forward<T>(x));
+    return h(x);
   }
 };
 
 struct xmx_mix
 {
   template<typename Hash,typename T>
-  static inline std::size_t mix(const Hash& h,T&& x)
+  static inline std::size_t mix(const Hash& h,const T& x)
   {
-    return xmx(h(std::forward<T>(x)));
+    return xmx(h(x));
   }
 };
 
@@ -1752,16 +1748,16 @@ private:
   }
 
   template<typename Key,typename... Args>
-  static inline Key&& key_from(
-    try_emplace_args_t,Key&& x,const Args&...)
+  static inline const Key& key_from(
+    try_emplace_args_t,const Key& x,const Args&...)
   {
-    return std::forward<Key>(x);
+    return x;
   }
 
   template<typename Key>
-  inline std::size_t hash_for(Key&& x)const
+  inline std::size_t hash_for(const Key& x)const
   {
-    return mix_policy::mix(h(),std::forward<Key>(x));
+    return mix_policy::mix(h(),x);
   }
 
   inline std::size_t position_for(std::size_t hash)const
@@ -1839,10 +1835,10 @@ private:
   template<typename... Args>
   BOOST_FORCEINLINE std::pair<iterator,bool> emplace_impl(Args&&... args)
   {
-    auto &&k=key_from(std::forward<Args>(args)...);
-    auto   hash=hash_for(std::forward<decltype(k)>(k));
-    auto   pos0=position_for(hash);
-    auto   it=find_impl(k,pos0,hash);
+    const auto &k=key_from(std::forward<Args>(args)...);
+    auto        hash=hash_for(k);
+    auto        pos0=position_for(hash);
+    auto        it=find_impl(k,pos0,hash);
 
     if(it!=end()){
       return {it,false};
