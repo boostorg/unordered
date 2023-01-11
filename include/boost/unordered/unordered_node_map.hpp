@@ -46,11 +46,23 @@ namespace boost {
         {
           value_type* p;
 
+          /*
+           * we use a defined copy constructor here so the type is no longer
+           * trivially copy-constructible which inhibits our memcpy
+           * optimizations when copying the tables
+           */
           element_type() : p(nullptr) {}
           element_type(element_type const& rhs) : p(rhs.p) {}
         };
 
         static value_type& value_from(element_type x) { return *(x.p); }
+
+        static std::pair<raw_key_type&&, raw_mapped_type&&> moved_value_from(
+          element_type& x)
+        {
+          return {std::move(const_cast<raw_key_type&>(x.p->first)),
+            std::move(const_cast<raw_mapped_type&>(x.p->second))};
+        }
 
         template <class K, class V>
         static raw_key_type const& extract(std::pair<K, V> const& kv)

@@ -60,6 +60,11 @@ namespace boost {
             std::move(const_cast<raw_mapped_type&>(x.second))};
         }
 
+        static moved_type moved_value_from(element_type& x)
+        {
+          return move(x);
+        }
+
         template <class A>
         static void construct(A& al, element_type* p, moved_type&& x)
         {
