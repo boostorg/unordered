@@ -40,65 +40,15 @@ namespace boost {
 
         static Key const& extract(value_type const& key) { return key; }
 
-#if 0
-        using element_type = value_type*;
-        static value_type& value_from(element_type& x) { return *x; }
-
-        static Key const& extract(element_type k) { return *k; }
-        static element_type&& move(element_type& x) { return std::move(x); }
-
-        template <class A>
-        static void construct(A&, element_type* p, element_type&& x)
-        {
-          *p = x;
-          x = nullptr;
-        }
-
-        template <class A, class... Args>
-        static void construct(A& al, element_type* p, element_type const& x)
-        {
-          *p = boost::to_address(boost::allocator_allocate(al, 1));
-          try {
-            boost::allocator_construct(al, *p, *x);
-          } catch (...) {
-            boost::allocator_deallocate(al,
-              boost::pointer_traits<
-                typename boost::allocator_pointer<A>::type>::pointer_to(**p),
-              1);
-            throw;
-          }
-        }
-
-        template <class A, class... Args>
-        static void construct(A& al, element_type* p, Args&&... args)
-        {
-          *p = boost::to_address(boost::allocator_allocate(al, 1));
-          try {
-            boost::allocator_construct(al, *p, std::forward<Args>(args)...);
-          } catch (...) {
-            boost::allocator_deallocate(al,
-              boost::pointer_traits<
-                typename boost::allocator_pointer<A>::type>::pointer_to(**p),
-              1);
-            throw;
-          }
-        }
-
-        template <class A> static void destroy(A& al, element_type* p) noexcept
-        {
-          if (*p) {
-            boost::allocator_destroy(al, *p);
-            boost::allocator_deallocate(al,
-              boost::pointer_traits<
-                typename boost::allocator_pointer<A>::type>::pointer_to(**p),
-              1);
-          }
-        }
-#else
         struct element_type
         {
           value_type* p;
 
+          /*
+           * we use a defined copy constructor here so the type is no longer
+           * trivially copy-constructible which inhibits our memcpy
+           * optimizations when copying the tables
+           */
           element_type() : p(nullptr) {}
           element_type(element_type const& rhs) : p(rhs.p) {}
         };
@@ -146,7 +96,6 @@ namespace boost {
               1);
           }
         }
-#endif
       };
     } // namespace detail
 
