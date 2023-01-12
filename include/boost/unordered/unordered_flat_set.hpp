@@ -41,14 +41,9 @@ namespace boost {
 
         using element_type = value_type;
 
-        static Key const& value_from(element_type const& x) { return x; }
+        static Key& value_from(element_type& x) { return x; }
 
         static element_type&& move(element_type& x) { return std::move(x); }
-
-        static element_type&& moved_value_from(element_type& x)
-        {
-          return move(x);
-        }
 
         template <class A>
         static void construct(A& al, element_type* p, element_type const& copy)

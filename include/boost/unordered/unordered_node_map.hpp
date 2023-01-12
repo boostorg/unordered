@@ -41,6 +41,7 @@ namespace boost {
 
         using init_type = std::pair<raw_key_type, raw_mapped_type>;
         using value_type = std::pair<Key const, T>;
+        using moved_type = std::pair<raw_key_type&&, raw_mapped_type&&>;
 
         struct element_type
         {
@@ -57,13 +58,6 @@ namespace boost {
 
         static value_type& value_from(element_type x) { return *(x.p); }
 
-        static std::pair<raw_key_type&&, raw_mapped_type&&> moved_value_from(
-          element_type& x)
-        {
-          return {std::move(const_cast<raw_key_type&>(x.p->first)),
-            std::move(const_cast<raw_mapped_type&>(x.p->second))};
-        }
-
         template <class K, class V>
         static raw_key_type const& extract(std::pair<K, V> const& kv)
         {
@@ -76,6 +70,11 @@ namespace boost {
         }
 
         static element_type&& move(element_type& x) { return std::move(x); }
+        static moved_type move(value_type& x)
+        {
+          return {std::move(const_cast<raw_key_type&>(x.first)),
+            std::move(const_cast<raw_mapped_type&>(x.second))};
+        }
 
         template <class A>
         static void construct(A&, element_type* p, element_type&& x)
