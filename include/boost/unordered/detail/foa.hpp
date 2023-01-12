@@ -2035,7 +2035,7 @@ private:
   {
     std::size_t s=size();
     for_all_elements([&,this](group_type* pg,unsigned int n,element_type* p){
-      if(pr(*p)) erase(iterator{pg,n,p});
+      if(pr(type_policy::value_from(*p))) erase(iterator{pg,n,p});
     });
     return std::size_t(s-size());
   }
