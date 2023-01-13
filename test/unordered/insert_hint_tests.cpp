@@ -89,7 +89,7 @@ namespace insert_hint {
   }
 #endif
 
-  template <class X> static void insert_hint_unique_impl()
+  template <class X> static void insert_hint_unique(X*)
   {
     typedef X container;
 
@@ -100,16 +100,7 @@ namespace insert_hint {
     test::check_equivalent_keys(x);
   }
 
-  UNORDERED_AUTO_TEST (insert_hint_unique) {
-#ifdef BOOST_UNORDERED_FOA_TESTS
-    insert_hint_unique_impl<boost::unordered_flat_set<int> >();
-    insert_hint_unique_impl<boost::unordered_node_set<int> >();
-#else
-    insert_hint_unique_impl<boost::unordered_set<int> >();
-#endif
-  }
-
-  template <class X> static void insert_hint_unique_single_impl()
+  template <class X> static void insert_hint_unique_single(X*)
   {
     typedef X container;
 
@@ -128,14 +119,17 @@ namespace insert_hint {
     test::check_equivalent_keys(x);
   }
 
-  UNORDERED_AUTO_TEST (insert_hint_unique_single) {
 #ifdef BOOST_UNORDERED_FOA_TESTS
-    insert_hint_unique_single_impl<boost::unordered_flat_set<int> >();
-    insert_hint_unique_single_impl<boost::unordered_node_set<int> >();
+  static boost::unordered_flat_set<int>* test_set;
+  static boost::unordered_node_set<int>* test_node_set;
+
+  UNORDERED_TEST(insert_hint_unique, ((test_set)(test_node_set)))
+  UNORDERED_TEST(insert_hint_unique_single, ((test_set)(test_node_set)))
 #else
-    insert_hint_unique_single_impl<boost::unordered_set<int> >();
+  static boost::unordered_set<int>* test_set;
+  UNORDERED_TEST(insert_hint_unique, ((test_set)))
+  UNORDERED_TEST(insert_hint_unique_single, ((test_set)))
 #endif
-  }
 } // namespace insert_hint
 
 RUN_TESTS()
