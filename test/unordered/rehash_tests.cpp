@@ -1,6 +1,6 @@
 
 // Copyright 2006-2009 Daniel James.
-// Copyright 2022 Christian Mazakas.
+// Copyright 2022-2023 Christian Mazakas.
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -581,32 +581,63 @@ namespace rehash_tests {
     monotonic_allocator<std::pair<test::object const, test::object> > >*
     test_map_monotonic;
 
-  UNORDERED_TEST(rehash_empty_test1, ((int_set_ptr)(test_map_ptr)))
+  boost::unordered_node_set<int>* int_node_set_ptr;
+  boost::unordered_node_map<test::movable, test::movable, test::hash,
+    test::equal_to, test::allocator2<test::movable> >* test_node_map_ptr;
+
+  boost::unordered_node_set<test::object, test::hash, test::equal_to,
+    test::allocator1<test::object> >* test_node_set_tracking;
+  boost::unordered_node_map<test::object, test::object, test::hash,
+    test::equal_to,
+    test::allocator1<std::pair<test::object const, test::object> > >*
+    test_node_map_tracking;
+
+  boost::unordered_node_set<test::object, test::hash, test::equal_to,
+    monotonic_allocator<test::object> >* test_node_set_monotonic;
+  boost::unordered_node_map<test::object, test::object, test::hash,
+    test::equal_to,
+    monotonic_allocator<std::pair<test::object const, test::object> > >*
+    test_node_map_monotonic;
+
+  // clang-format off
+  UNORDERED_TEST(rehash_empty_test1,
+    ((int_set_ptr)(test_map_ptr)
+     (int_node_set_ptr)(test_node_map_ptr)))
   UNORDERED_TEST(rehash_empty_test2,
-    ((int_set_ptr)(test_map_ptr))(
+    ((int_set_ptr)(test_map_ptr)
+     (int_node_set_ptr)(test_node_map_ptr))(
       (default_generator)(generate_collisions)(limited_range)))
   UNORDERED_TEST(rehash_empty_test3,
-    ((int_set_ptr)(test_map_ptr))(
+    ((int_set_ptr)(test_map_ptr)
+     (int_node_set_ptr)(test_node_map_ptr))(
       (default_generator)(generate_collisions)(limited_range)))
-  UNORDERED_TEST(
-    rehash_test1, ((int_set_ptr)(test_map_ptr))(
-                    (default_generator)(generate_collisions)(limited_range)))
-  UNORDERED_TEST(reserve_empty_test1, ((int_set_ptr)(test_map_ptr)))
-  UNORDERED_TEST(reserve_empty_test2, ((int_set_ptr)(test_map_ptr)))
-  UNORDERED_TEST(
-    reserve_test1, ((int_set_ptr)(test_map_ptr))(
-                     (default_generator)(generate_collisions)(limited_range)))
-  UNORDERED_TEST(
-    reserve_test2, ((int_set_ptr)(test_map_ptr))(
-                     (default_generator)(generate_collisions)(limited_range)))
+  UNORDERED_TEST(rehash_test1,
+    ((int_set_ptr)(test_map_ptr)
+     (int_node_set_ptr)(test_node_map_ptr))(
+        (default_generator)(generate_collisions)(limited_range)))
+  UNORDERED_TEST(reserve_empty_test1,
+    ((int_set_ptr)(test_map_ptr)(int_node_set_ptr)(test_node_map_ptr)))
+  UNORDERED_TEST(reserve_empty_test2,
+    ((int_set_ptr)(test_map_ptr)(int_node_set_ptr)(test_node_map_ptr)))
+  UNORDERED_TEST(reserve_test1,
+    ((int_set_ptr)(test_map_ptr)(int_node_set_ptr)(test_node_map_ptr))(
+      (default_generator)(generate_collisions)(limited_range)))
+  UNORDERED_TEST(reserve_test2,
+    ((int_set_ptr)(test_map_ptr)(int_node_set_ptr)(test_node_map_ptr))(
+      (default_generator)(generate_collisions)(limited_range)))
   UNORDERED_TEST(rehash_empty_tracking,
-    ((test_set_tracking)(test_map_tracking))(
+    ((test_set_tracking)(test_map_tracking)
+     (test_node_set_tracking)(test_node_map_tracking))(
       (default_generator)(generate_collisions)(limited_range)))
-  UNORDERED_TEST(
-    rehash_nonempty_tracking, ((test_set_tracking)(test_map_tracking))(
-                                (default_generator)(limited_range)))
-  UNORDERED_TEST(rehash_stability, ((test_set_monotonic)(test_map_monotonic))(
-                                     (default_generator)(limited_range)))
+  UNORDERED_TEST(rehash_nonempty_tracking,
+    ((test_set_tracking)(test_map_tracking)
+     (test_node_set_tracking)(test_node_map_tracking))(
+      (default_generator)(limited_range)))
+  UNORDERED_TEST(rehash_stability,
+    ((test_set_monotonic)(test_map_monotonic)
+     (test_node_set_monotonic)(test_node_map_monotonic))(
+        (default_generator)(limited_range)))
+// clang-format on
 #else
   boost::unordered_set<int>* int_set_ptr;
   boost::unordered_multiset<test::object, test::hash, test::equal_to,
@@ -639,6 +670,7 @@ namespace rehash_tests {
     monotonic_allocator<std::pair<test::object const, test::object> > >*
     test_multimap_monotonic;
 
+  // clang-format off
   UNORDERED_TEST(rehash_empty_test1,
     ((int_set_ptr)(test_multiset_ptr)(test_map_ptr)(int_multimap_ptr)))
   UNORDERED_TEST(rehash_empty_test2,
@@ -669,6 +701,7 @@ namespace rehash_tests {
   UNORDERED_TEST(rehash_stability,
     ((test_set_monotonic)(test_multiset_monotonic)(test_map_monotonic)(test_multimap_monotonic))(
       (default_generator)(limited_range)))
+// clang-format on
 #endif
 } // namespace rehash_tests
 
