@@ -1973,7 +1973,7 @@ private:
       std::integral_constant< /* std::move_if_noexcept semantics */
         bool,
         std::is_nothrow_move_constructible<init_type>::value||
-        std::is_same<element_type,value_type*>::value||
+        !std::is_same<element_type,value_type>::value||
         !std::is_copy_constructible<element_type>::value>{});
   }
 
