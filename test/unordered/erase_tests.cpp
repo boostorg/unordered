@@ -270,10 +270,16 @@ namespace erase_tests {
     test::allocator1<test::object> >* test_set;
   boost::unordered_flat_map<test::object, test::object, test::hash,
     test::equal_to, test::allocator1<test::object> >* test_map;
+  boost::unordered_node_set<test::object, test::hash, test::equal_to,
+    test::allocator1<test::object> >* test_node_set;
+  boost::unordered_node_map<test::object, test::object, test::hash,
+    test::equal_to, test::allocator1<test::object> >* test_node_map;
 
+  // clang-format off
   UNORDERED_TEST(
-    erase_tests1, ((test_set)(test_map))(
+    erase_tests1, ((test_set)(test_map)(test_node_set)(test_node_map))(
                     (default_generator)(generate_collisions)(limited_range)))
+// clang-format on
 #else
   boost::unordered_set<test::object, test::hash, test::equal_to,
     test::allocator1<test::object> >* test_set;
@@ -284,10 +290,11 @@ namespace erase_tests {
   boost::unordered_multimap<test::object, test::object, test::hash,
     test::equal_to, test::allocator2<test::object> >* test_multimap;
 
-
+  // clang-format off
   UNORDERED_TEST(
     erase_tests1, ((test_set)(test_multiset)(test_map)(test_multimap))(
                     (default_generator)(generate_collisions)(limited_range)))
+  // clang-format on
 #endif
 }
 
