@@ -437,6 +437,35 @@ namespace rehash_tests {
     tracker.compare(x);
   }
 
+  template <class X>
+  void rehash_node_stability(X*, test::random_generator generator)
+  {
+    typedef typename X::value_type value_type;
+    std::set<value_type const*> elements;
+
+    test::random_values<X> v(1000, generator);
+    test::ordered<X> tracker;
+    tracker.insert_range(v.begin(), v.end());
+
+    X x(v.begin(), v.end());
+
+    typedef typename X::iterator iterator;
+    for (iterator pos = x.begin(); pos != x.end(); ++pos) {
+      elements.insert(boost::addressof(*pos));
+    }
+
+    x.rehash(2 * x.bucket_count());
+
+    for (iterator pos = x.begin(); pos != x.end(); ++pos) {
+      if (!BOOST_TEST(
+            elements.find(boost::addressof(*pos)) != elements.end())) {
+        break;
+      }
+    }
+
+    tracker.compare(x);
+  }
+
   template <class X> void rehash_test1(X*, test::random_generator generator)
   {
     test::random_values<X> v(1000, generator);
@@ -637,7 +666,11 @@ namespace rehash_tests {
     ((test_set_monotonic)(test_map_monotonic)
      (test_node_set_monotonic)(test_node_map_monotonic))(
         (default_generator)(limited_range)))
-// clang-format on
+  UNORDERED_TEST(rehash_node_stability,
+    ((int_node_set_ptr)(test_node_map_ptr)
+     (test_node_set_tracking)(test_node_map_tracking))(
+      (default_generator)(generate_collisions)(limited_range)))
+  // clang-format on
 #else
   boost::unordered_set<int>* int_set_ptr;
   boost::unordered_multiset<test::object, test::hash, test::equal_to,
@@ -701,6 +734,11 @@ namespace rehash_tests {
   UNORDERED_TEST(rehash_stability,
     ((test_set_monotonic)(test_multiset_monotonic)(test_map_monotonic)(test_multimap_monotonic))(
       (default_generator)(limited_range)))
+  UNORDERED_TEST(rehash_node_stability,
+    ((int_set_ptr)(test_map_ptr)(test_set_tracking)(test_map_tracking)
+     (test_multiset_ptr)(int_multimap_ptr)
+     (test_multiset_tracking)(test_multimap_tracking))(
+      (default_generator)(generate_collisions)(limited_range)))
 // clang-format on
 #endif
 } // namespace rehash_tests
