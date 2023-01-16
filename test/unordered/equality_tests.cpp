@@ -1,14 +1,18 @@
 
 // Copyright 2008-2009 Daniel James.
-// Copyright 2022 Christian Mazakas.
+// Copyright 2022-2023 Christian Mazakas.
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include "../helpers/unordered.hpp"
 
+#include "../helpers/test.hpp"
 #include <boost/preprocessor/seq.hpp>
 #include <list>
-#include "../helpers/test.hpp"
+
+// TODO: this test needs to be someday cleaned up to not be so heavily
+// macro-generated
+//
 
 namespace equality_tests {
   struct mod_compare
@@ -32,6 +36,12 @@ namespace equality_tests {
 
   using boost_unordered_map =
     boost::unordered_flat_map<int, int, mod_compare, mod_compare>;
+
+  using boost_unordered_node_set =
+    boost::unordered_node_set<int, mod_compare, mod_compare>;
+
+  using boost_unordered_node_map =
+    boost::unordered_node_map<int, int, mod_compare, mod_compare>;
 
 #define UNORDERED_EQUALITY_MULTISET_TEST(seq1, op, seq2)                       \
   {                                                                            \
@@ -64,14 +74,46 @@ namespace equality_tests {
   }
 #endif
 
+#ifdef BOOST_UNORDERED_FOA_TESTS
 #define UNORDERED_EQUALITY_SET_TEST(seq1, op, seq2)                            \
   {                                                                            \
-    boost_unordered_set set1, set2;            \
+    boost_unordered_set set1, set2;                                            \
+    BOOST_PP_SEQ_FOR_EACH(UNORDERED_SET_INSERT, set1, seq1)                    \
+    BOOST_PP_SEQ_FOR_EACH(UNORDERED_SET_INSERT, set2, seq2)                    \
+    BOOST_TEST(set1 op set2);                                                  \
+  }                                                                            \
+  {                                                                            \
+    boost_unordered_node_set set1, set2;                                       \
     BOOST_PP_SEQ_FOR_EACH(UNORDERED_SET_INSERT, set1, seq1)                    \
     BOOST_PP_SEQ_FOR_EACH(UNORDERED_SET_INSERT, set2, seq2)                    \
     BOOST_TEST(set1 op set2);                                                  \
   }
+#else
+#define UNORDERED_EQUALITY_SET_TEST(seq1, op, seq2)                            \
+  {                                                                            \
+    boost_unordered_set set1, set2;                                            \
+    BOOST_PP_SEQ_FOR_EACH(UNORDERED_SET_INSERT, set1, seq1)                    \
+    BOOST_PP_SEQ_FOR_EACH(UNORDERED_SET_INSERT, set2, seq2)                    \
+    BOOST_TEST(set1 op set2);                                                  \
+  }
+#endif
 
+#ifdef BOOST_UNORDERED_FOA_TESTS
+#define UNORDERED_EQUALITY_MAP_TEST(seq1, op, seq2)                            \
+  {                                                                            \
+    boost_unordered_map map1, map2;                                            \
+    BOOST_PP_SEQ_FOR_EACH(UNORDERED_MAP_INSERT, map1, seq1)                    \
+    BOOST_PP_SEQ_FOR_EACH(UNORDERED_MAP_INSERT, map2, seq2)                    \
+    BOOST_TEST(map1 op map2);                                                  \
+  }                                                                            \
+                                                                               \
+  {                                                                            \
+    boost_unordered_node_map map1, map2;                                       \
+    BOOST_PP_SEQ_FOR_EACH(UNORDERED_MAP_INSERT, map1, seq1)                    \
+    BOOST_PP_SEQ_FOR_EACH(UNORDERED_MAP_INSERT, map2, seq2)                    \
+    BOOST_TEST(map1 op map2);                                                  \
+  }
+#else
 #define UNORDERED_EQUALITY_MAP_TEST(seq1, op, seq2)                            \
   {                                                                            \
     boost_unordered_map map1, map2;                                            \
@@ -79,6 +121,7 @@ namespace equality_tests {
     BOOST_PP_SEQ_FOR_EACH(UNORDERED_MAP_INSERT, map2, seq2)                    \
     BOOST_TEST(map1 op map2);                                                  \
   }
+#endif
 
 #define UNORDERED_SET_INSERT(r, set, item) set.insert(item);
 #define UNORDERED_MAP_INSERT(r, map, item)                                     \
@@ -86,10 +129,51 @@ namespace equality_tests {
 
   UNORDERED_AUTO_TEST (equality_size_tests) {
 #ifdef BOOST_UNORDERED_FOA_TESTS
-    boost::unordered_flat_set<int> x1, x2;
+    {
+      boost::unordered_flat_set<int> x1, x2;
+      BOOST_TEST(x1 == x2);
+      BOOST_TEST(!(x1 != x2));
+
+      x1.insert(1);
+      BOOST_TEST(x1 != x2);
+      BOOST_TEST(!(x1 == x2));
+      BOOST_TEST(x2 != x1);
+      BOOST_TEST(!(x2 == x1));
+
+      x2.insert(1);
+      BOOST_TEST(x1 == x2);
+      BOOST_TEST(!(x1 != x2));
+
+      x2.insert(2);
+      BOOST_TEST(x1 != x2);
+      BOOST_TEST(!(x1 == x2));
+      BOOST_TEST(x2 != x1);
+      BOOST_TEST(!(x2 == x1));
+    }
+
+    {
+      boost::unordered_node_set<int> x1, x2;
+      BOOST_TEST(x1 == x2);
+      BOOST_TEST(!(x1 != x2));
+
+      x1.insert(1);
+      BOOST_TEST(x1 != x2);
+      BOOST_TEST(!(x1 == x2));
+      BOOST_TEST(x2 != x1);
+      BOOST_TEST(!(x2 == x1));
+
+      x2.insert(1);
+      BOOST_TEST(x1 == x2);
+      BOOST_TEST(!(x1 != x2));
+
+      x2.insert(2);
+      BOOST_TEST(x1 != x2);
+      BOOST_TEST(!(x1 == x2));
+      BOOST_TEST(x2 != x1);
+      BOOST_TEST(!(x2 == x1));
+    }
 #else
     boost::unordered_set<int> x1, x2;
-#endif
     BOOST_TEST(x1 == x2);
     BOOST_TEST(!(x1 != x2));
 
@@ -108,6 +192,7 @@ namespace equality_tests {
     BOOST_TEST(!(x1 == x2));
     BOOST_TEST(x2 != x1);
     BOOST_TEST(!(x2 == x1));
+#endif
   }
 
   UNORDERED_AUTO_TEST (equality_key_value_tests) {
@@ -156,6 +241,45 @@ namespace equality_tests {
   // different hash functions but the same equality predicate.
 
   UNORDERED_AUTO_TEST (equality_different_hash_test) {
+#ifdef BOOST_UNORDERED_FOA_TESTS
+    {
+      typedef boost_unordered_set set;
+      set set1(0, mod_compare(false), mod_compare(false));
+      set set2(0, mod_compare(true), mod_compare(true));
+      BOOST_TEST(set1 == set2);
+      set1.insert(1);
+      set2.insert(2);
+      BOOST_TEST(set1 != set2);
+      set1.insert(2);
+      set2.insert(1);
+      BOOST_TEST(set1 == set2);
+      set1.insert(10);
+      set2.insert(20);
+      BOOST_TEST(set1 != set2);
+      set1.insert(20);
+      set2.insert(10);
+      BOOST_TEST(set1 == set2);
+    }
+
+    {
+      typedef boost_unordered_node_set set;
+      set set1(0, mod_compare(false), mod_compare(false));
+      set set2(0, mod_compare(true), mod_compare(true));
+      BOOST_TEST(set1 == set2);
+      set1.insert(1);
+      set2.insert(2);
+      BOOST_TEST(set1 != set2);
+      set1.insert(2);
+      set2.insert(1);
+      BOOST_TEST(set1 == set2);
+      set1.insert(10);
+      set2.insert(20);
+      BOOST_TEST(set1 != set2);
+      set1.insert(20);
+      set2.insert(10);
+      BOOST_TEST(set1 == set2);
+    }
+#else
     typedef boost_unordered_set set;
     set set1(0, mod_compare(false), mod_compare(false));
     set set2(0, mod_compare(true), mod_compare(true));
@@ -172,7 +296,8 @@ namespace equality_tests {
     set1.insert(20);
     set2.insert(10);
     BOOST_TEST(set1 == set2);
+#endif
   }
-}
+} // namespace equality_tests
 
 RUN_TESTS()
