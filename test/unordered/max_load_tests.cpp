@@ -69,9 +69,24 @@ boost::unordered_flat_map<test::object, test::object, test::hash,
   test::allocator1<std::pair<test::object const, test::object> > >*
   test_map_tracking;
 
+boost::unordered_node_set<int>* int_node_set_ptr;
+boost::unordered_node_map<test::movable, test::movable, test::hash,
+  test::equal_to, test::allocator2<test::movable> >* test_node_map_ptr;
+
+boost::unordered_node_set<test::object, test::hash, test::equal_to,
+  test::allocator1<test::object> >* test_node_set_tracking;
+boost::unordered_node_map<test::object, test::object, test::hash,
+  test::equal_to,
+  test::allocator1<std::pair<test::object const, test::object> > >*
+  test_node_map_tracking;
+
+// clang-format off
 UNORDERED_TEST(max_load_tests,
-  ((int_set_ptr)(test_map_ptr)(test_set_tracking)(test_map_tracking))(
+  ((int_set_ptr)(test_map_ptr)(test_set_tracking)(test_map_tracking)
+   (int_node_set_ptr)(test_node_map_ptr)
+   (test_node_set_tracking)(test_node_map_tracking))(
     (sequential)))
+// clang-format on
 #endif
 
 RUN_TESTS()
