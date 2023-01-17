@@ -1,4 +1,4 @@
-// Copyright 2021-2022 Christian Mazakas.
+// Copyright 2021-2023 Christian Mazakas.
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -45,7 +45,8 @@ template <typename T> struct A
 
 template <class T> int A<T>::count = 0;
 
-template <class UnorderedContainer> void bucket_count_constructor()
+template <class UnorderedContainer>
+void bucket_count_constructor(UnorderedContainer*)
 {
   BOOST_TEST_EQ(num_allocations, 0u);
   BOOST_TEST_EQ(total_allocation, 0u);
@@ -64,7 +65,8 @@ template <class UnorderedContainer> void bucket_count_constructor()
   num_allocations = 0;
 }
 
-template <class UnorderedContainer> void range_bucket_constructor()
+template <class UnorderedContainer>
+void range_bucket_constructor(UnorderedContainer*)
 {
   BOOST_TEST_EQ(num_allocations, 0u);
   BOOST_TEST_EQ(total_allocation, 0u);
@@ -85,7 +87,7 @@ template <class UnorderedContainer> void range_bucket_constructor()
   num_allocations = 0;
 }
 
-template <class UnorderedContainer> void reserve_tests()
+template <class UnorderedContainer> void reserve_tests(UnorderedContainer*)
 {
   BOOST_TEST_EQ(num_allocations, 0u);
   BOOST_TEST_EQ(total_allocation, 0u);
@@ -124,7 +126,7 @@ template <class UnorderedContainer> void reserve_tests()
   num_allocations = 0;
 }
 
-template <class UnorderedContainer> void rehash_tests()
+template <class UnorderedContainer> void rehash_tests(UnorderedContainer*)
 {
   BOOST_TEST_EQ(num_allocations, 0u);
   BOOST_TEST_EQ(total_allocation, 0u);
@@ -191,89 +193,81 @@ template <class UnorderedContainer> void rehash_tests()
   num_allocations = 0;
 }
 
-UNORDERED_AUTO_TEST (unordered_set_reserve) {
-  {
-    // prove Allocator invariants
-    // from cppref:
-    // Given:
-    // * A, an Allocator type for type T
-    // * B, the corresponding Allocator type for some cv-unqualified object type
-    //   U (as obtained by rebinding A)
-    //
-    // Expression:
-    // A a(b)
-    //
-    // Return Type:
-    // Constructs `a` such that `B(a)==b` and `A(b)==a`.
-    // (Note: This implies that all allocators related by rebind maintain each
-    // other's resources, such as memory pools.)
-    //
-    //
-    typedef boost::allocator_rebind<A<int>, float>::type alloc_rebound;
-    alloc_rebound b;
-    A<int> a(b);
-    BOOST_ASSERT(alloc_rebound(a) == b);
-    BOOST_ASSERT(A<int>(b) == a);
-  }
+UNORDERED_AUTO_TEST (allocator_check) {
+  // prove Allocator invariants
+  // from cppref:
+  // Given:
+  // * A, an Allocator type for type T
+  // * B, the corresponding Allocator type for some cv-unqualified object type
+  //   U (as obtained by rebinding A)
+  //
+  // Expression:
+  // A a(b)
+  //
+  // Return Type:
+  // Constructs `a` such that `B(a)==b` and `A(b)==a`.
+  // (Note: This implies that all allocators related by rebind maintain each
+  // other's resources, such as memory pools.)
+  //
+  //
+  typedef boost::allocator_rebind<A<int>, float>::type alloc_rebound;
+  alloc_rebound b;
+  A<int> a(b);
+  BOOST_ASSERT(alloc_rebound(a) == b);
+  BOOST_ASSERT(A<int>(b) == a);
+}
 
 #ifdef BOOST_UNORDERED_FOA_TESTS
-  typedef boost::unordered_flat_set<int*, boost::hash<int*>,
-    std::equal_to<int*>, A<int*> >
-    unordered_set;
+static boost::unordered_flat_set<int*, boost::hash<int*>, std::equal_to<int*>,
+  A<int*> >* test_set;
+static boost::unordered_flat_map<int*, int*, boost::hash<int*>,
+  std::equal_to<int*>, A<std::pair<int const*, int*> > >* test_map;
 
-  typedef boost::unordered_flat_map<int*, int*, boost::hash<int*>,
-    std::equal_to<int*>, A<std::pair<int const*, int*> > >
-    unordered_map;
+static boost::unordered_node_set<int*, boost::hash<int*>, std::equal_to<int*>,
+  A<int*> >* test_node_set;
 
-  bucket_count_constructor<unordered_set>();
-  bucket_count_constructor<unordered_map>();
+static boost::unordered_node_map<int*, int*, boost::hash<int*>,
+  std::equal_to<int*>, A<std::pair<int const*, int*> > >* test_node_map;
 
-  range_bucket_constructor<unordered_set>();
-  range_bucket_constructor<unordered_map>();
+// clang-format off
+UNORDERED_TEST(bucket_count_constructor,
+  ((test_set)(test_map)(test_node_set)(test_node_map)))
 
-  reserve_tests<unordered_set>();
-  reserve_tests<unordered_map>();
+UNORDERED_TEST(range_bucket_constructor,
+  ((test_set)(test_map)(test_node_set)(test_node_map)))
 
-  rehash_tests<unordered_set>();
-  rehash_tests<unordered_map>();
+UNORDERED_TEST(reserve_tests,
+  ((test_set)(test_map)(test_node_set)(test_node_map)))
 
+UNORDERED_TEST(rehash_tests,
+  ((test_set)(test_map)(test_node_set)(test_node_map)))
+// clang-format on
 #else
-  typedef boost::unordered_set<int, boost::hash<int>, std::equal_to<int>,
-    A<int> >
-    unordered_set;
+static boost::unordered_set<int, boost::hash<int>, std::equal_to<int>, A<int> >*
+  test_set;
 
-  typedef boost::unordered_multiset<int, boost::hash<int>, std::equal_to<int>,
-    A<int> >
-    unordered_multiset;
+static boost::unordered_multiset<int, boost::hash<int>, std::equal_to<int>,
+  A<int> >* test_multiset;
 
-  typedef boost::unordered_map<int, int, boost::hash<int>, std::equal_to<int>,
-    A<std::pair<int const, int> > >
-    unordered_map;
+static boost::unordered_map<int, int, boost::hash<int>, std::equal_to<int>,
+  A<std::pair<int const, int> > >* test_map;
 
-  typedef boost::unordered_multimap<int, int, boost::hash<int>,
-    std::equal_to<int>, A<std::pair<int const, int> > >
-    unordered_multimap;
+static boost::unordered_multimap<int, int, boost::hash<int>, std::equal_to<int>,
+  A<std::pair<int const, int> > >* test_multimap;
 
-  bucket_count_constructor<unordered_set>();
-  bucket_count_constructor<unordered_map>();
-  bucket_count_constructor<unordered_multiset>();
-  bucket_count_constructor<unordered_multimap>();
+// clang-format off
+UNORDERED_TEST(bucket_count_constructor,
+  ((test_set)(test_map)(test_multiset)(test_multimap)))
 
-  range_bucket_constructor<unordered_set>();
-  range_bucket_constructor<unordered_map>();
-  range_bucket_constructor<unordered_multiset>();
-  range_bucket_constructor<unordered_multimap>();
+UNORDERED_TEST(range_bucket_constructor,
+  ((test_set)(test_map)(test_multiset)(test_multimap)))
 
-  reserve_tests<unordered_set>();
-  reserve_tests<unordered_map>();
-  reserve_tests<unordered_multiset>();
-  reserve_tests<unordered_multimap>();
+UNORDERED_TEST(reserve_tests,
+  ((test_set)(test_map)(test_multiset)(test_multimap)))
 
-  rehash_tests<unordered_set>();
-  rehash_tests<unordered_map>();
-  rehash_tests<unordered_multiset>();
-  rehash_tests<unordered_multimap>();
+UNORDERED_TEST(rehash_tests,
+  ((test_set)(test_map)(test_multiset)(test_multimap)))
+// clang-format on
 #endif
-}
 
 RUN_TESTS()
