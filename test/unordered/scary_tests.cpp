@@ -312,7 +312,10 @@ void set_scary_test()
 UNORDERED_AUTO_TEST (scary_tests) {
 #ifdef BOOST_UNORDERED_FOA_TESTS
   map_scary_test<boost::unordered_flat_map>();
+  map_scary_test<boost::unordered_node_map>();
+
   set_scary_test<boost::unordered_flat_set>();
+  set_scary_test<boost::unordered_node_set>();
 #else
   map_scary_test<boost::unordered_map>();
   map_scary_test<boost::unordered_multimap>();
