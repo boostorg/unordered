@@ -25,8 +25,24 @@ typedef boost::unordered_flat_set<
   test::exception::allocator<test::exception::object> >
   test_pair_set;
 
-#define CONTAINER_SEQ (test_set)(test_map)
-#define CONTAINER_PAIR_SEQ (test_pair_set)(test_map)
+typedef boost::unordered_node_set<test::exception::object,
+  test::exception::hash, test::exception::equal_to,
+  test::exception::allocator<test::exception::object> >
+  test_node_set;
+
+typedef boost::unordered_node_map<test::exception::object,
+  test::exception::object, test::exception::hash, test::exception::equal_to,
+  test::exception::allocator2<test::exception::object> >
+  test_node_map;
+
+typedef boost::unordered_node_set<
+  std::pair<test::exception::object, test::exception::object>,
+  test::exception::hash, test::exception::equal_to,
+  test::exception::allocator<test::exception::object> >
+  test_pair_node_set;
+
+#define CONTAINER_SEQ (test_set)(test_map)(test_node_set)(test_node_map)
+#define CONTAINER_PAIR_SEQ (test_pair_set)(test_map)(test_pair_node_set)(test_node_map)
 #else
 typedef boost::unordered_set<test::exception::object, test::exception::hash,
   test::exception::equal_to,
