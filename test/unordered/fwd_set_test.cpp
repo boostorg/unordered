@@ -133,8 +133,10 @@ typedef boost::unordered_multiset<int> int_multiset;
 
 UNORDERED_AUTO_TEST (use_fwd_declared_trait_without_definition) {
   BOOST_TEST(sizeof(is_unordered_set_impl((int_set*)0)) == sizeof(true_type));
+#ifdef BOOST_UNORDERED_FOA_TESTS
   BOOST_TEST(
     sizeof(is_unordered_set_impl((int_node_set*)0)) == sizeof(true_type));
+#endif
 }
 
 #ifdef BOOST_UNORDERED_FOA_TESTS
