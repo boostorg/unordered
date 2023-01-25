@@ -713,6 +713,8 @@ namespace constructor_tests {
     std::initializer_list<int> init;
 #ifdef BOOST_UNORDERED_FOA_TESTS
     boost::unordered_flat_set<int> x1 = init;
+    boost::unordered_node_set<int> x2 = init;
+    BOOST_TEST(x2.empty());
 #else
     boost::unordered_set<int> x1 = init;
 #endif
@@ -726,6 +728,9 @@ namespace constructor_tests {
   UNORDERED_AUTO_TEST (test_initializer_list) {
 #ifdef BOOST_UNORDERED_FOA_TESTS
     boost::unordered_flat_set<int> x1 = {2, 10, 45, -5};
+    boost::unordered_node_set<int> x2 = {2, 10, 45, -5};
+    BOOST_TEST(x2.find(10) != x2.end());
+    BOOST_TEST(x2.find(46) == x2.end());
 #else
     boost::unordered_set<int> x1 = {2, 10, 45, -5};
 #endif
