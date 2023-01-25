@@ -247,8 +247,14 @@ using unordered_flat_set = boost::unordered_flat_set<int, boost::hash<int>,
   std::equal_to<int>, test::allocator1<int> >;
 using unordered_flat_map = boost::unordered_flat_map<int, int, boost::hash<int>,
   std::equal_to<int>, test::allocator1<std::pair<int const, int> > >;
+using unordered_node_set = boost::unordered_node_set<int, boost::hash<int>,
+  std::equal_to<int>, test::allocator1<int> >;
+using unordered_node_map = boost::unordered_node_map<int, int, boost::hash<int>,
+  std::equal_to<int>, test::allocator1<std::pair<int const, int> > >;
 
-#define SWAP_CONTAINER_SEQ (unordered_flat_set)(unordered_flat_map)
+#define SWAP_CONTAINER_SEQ \
+ (unordered_flat_set)(unordered_flat_map) \
+ (unordered_node_set)(unordered_node_map)
 
 #else
 
