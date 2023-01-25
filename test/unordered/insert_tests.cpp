@@ -956,6 +956,8 @@ namespace insert_tests {
 #ifdef BOOST_UNORDERED_FOA_TESTS
   boost::unordered_flat_set<test::movable, test::hash, test::equal_to,
     std::allocator<test::movable> >* test_set_std_alloc;
+  boost::unordered_node_set<test::movable, test::hash, test::equal_to,
+    std::allocator<test::movable> >* test_node_set_std_alloc;
   boost::unordered_flat_set<test::object, test::hash, test::equal_to,
     test::allocator1<test::object> >* test_set;
   boost::unordered_node_set<test::movable, test::hash, test::equal_to,
@@ -973,7 +975,8 @@ namespace insert_tests {
     test_pc_node_set;
 
   UNORDERED_TEST(unique_insert_tests1,
-    ((test_set_std_alloc)(test_set)(test_node_set)(test_map)(test_node_map))(
+    ((test_set_std_alloc)(test_node_set_std_alloc)
+     (test_set)(test_node_set)(test_map)(test_node_map))(
       (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(
