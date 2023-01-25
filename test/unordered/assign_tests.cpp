@@ -1,6 +1,6 @@
 
 // Copyright 2006-2009 Daniel James.
-// Copyright 2022 Christian Mazakas.
+// Copyright 2022-2023 Christian Mazakas.
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -350,6 +350,12 @@ namespace assign_tests {
     std::initializer_list<std::pair<int const, int> > init;
 #ifdef BOOST_UNORDERED_FOA_TESTS
     boost::unordered_flat_map<int, int> x1;
+    boost::unordered_node_map<int, int> x2;
+    x2[25] = 3;
+    x2[16] = 10;
+    BOOST_TEST(!x2.empty());
+    x2 = init;
+    BOOST_TEST(x2.empty());
 #else
     boost::unordered_map<int, int> x1;
 #endif
@@ -368,6 +374,12 @@ namespace assign_tests {
 
 #ifdef BOOST_UNORDERED_FOA_TESTS
     boost::unordered_flat_set<int> x;
+    boost::unordered_node_set<int> y;
+    y.insert(10);
+    y.insert(20);
+    y = {1, 2, -10};
+    BOOST_TEST(y.find(10) == y.end());
+    BOOST_TEST(y.find(-10) != y.end());
 #else
     boost::unordered_set<int> x;
 #endif
