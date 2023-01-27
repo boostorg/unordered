@@ -1570,6 +1570,7 @@ private:
 
   struct erase_on_exit
   {
+    erase_on_exit(table& x_,iterator it_):x{x_},it{it_}{}
     ~erase_on_exit(){if(!rollback_)x.erase(it);}
 
     void rollback(){rollback_=true;}
