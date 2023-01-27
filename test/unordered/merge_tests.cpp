@@ -378,6 +378,8 @@ UNORDERED_TEST(merge_into_unique_keys_test,
     ((default_generator)(generate_collisions)))
   // clang-format on
 #else
+  boost::unordered_set<int>* int_set;
+
   boost::unordered_set<test::movable, test::hash, test::equal_to,
     std::allocator<test::movable> >* test_set_std_alloc;
   boost::unordered_multiset<test::movable, test::hash, test::equal_to,
@@ -399,6 +401,8 @@ UNORDERED_TEST(merge_into_unique_keys_test,
     test::equal_to, test::allocator2<test::movable> >* test_multimap;
 
   // clang-format off
+UNORDERED_TEST(merge_set, ((int_set)))
+
 UNORDERED_TEST(merge_empty_test,
     ((test_set_std_alloc)(test_multiset_std_alloc))
     ((test_set_std_alloc)(test_multiset_std_alloc))
