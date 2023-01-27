@@ -359,7 +359,7 @@ local windows_pipeline(name, image, environment, arch = "amd64") =
     macos_pipeline(
         "MacOS 12.4 Xcode 13.4.1 ASAN",
         { TOOLSET: 'clang', COMPILER: 'clang++', CXXSTD: '03,11,14,1z' } + asan,
-        xcode_version = "13.4.1", osx_version = "monterey",
+        xcode_version = "13.4.1", osx_version = "monterey", arch = "arm64",
     ),
 
     windows_pipeline(
