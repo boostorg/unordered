@@ -1798,6 +1798,7 @@ private:
       auto pg=arrays.groups+pos;
       auto mask=pg->match(hash);
       if(mask){
+        BOOST_UNORDERED_ASSUME(arrays.elements != nullptr);
         auto p=arrays.elements+pos*N;
         prefetch_elements(p);
         do{
