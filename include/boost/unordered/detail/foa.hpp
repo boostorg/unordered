@@ -726,9 +726,11 @@ private:
   std::size_t pos,step=0;
 };
 
-/* Mixing policies: no_mix is the identity function and xmx_mix uses the
- * xmx function defined in <boost/unordered/detail/xmx.hpp>.
- * foa::table mixes hash results with xmx_mix unless the hash is marked as
+/* Mixing policies: no_mix is the identity function, xmx_mix uses the
+ * xmx function defined in <boost/unordered/detail/xmx.hpp>, and mulx_mix
+ * uses the mulx function from <boost/unordered/detail/mulx.hpp>.
+ *
+ * foa::table mixes hash results with mulx_mix unless the hash is marked as
  * avalanching, i.e. of good quality (see <boost/unordered/hash_traits.hpp>).
  */
 
@@ -1164,7 +1166,7 @@ table:empty_value<Hash,0>,empty_value<Pred,1>,empty_value<Allocator,2>
   using mix_policy=typename std::conditional<
     hash_is_avalanching<Hash>::value,
     no_mix,
-    xmx_mix
+    mulx_mix
   >::type;
   using alloc_traits=boost::allocator_traits<Allocator>;
 
