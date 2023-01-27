@@ -81,7 +81,16 @@ inline boost::uint64_t mulx64( boost::uint64_t x, boost::uint64_t y )
 inline boost::uint32_t mulx32( boost::uint32_t x, boost::uint32_t y )
 {
     boost::uint64_t r = (boost::uint64_t)x * y;
+
+#if defined(__MSVC_RUNTIME_CHECKS)
+
+    return (boost::uint32_t)(r & UINT32_MAX) ^ (boost::uint32_t)(r >> 32);
+
+#else
+
     return (boost::uint32_t)r ^ (boost::uint32_t)(r >> 32);
+
+#endif
 }
 
 #if defined(SIZE_MAX)
