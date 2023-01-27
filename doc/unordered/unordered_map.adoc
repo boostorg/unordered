@@ -113,29 +113,37 @@ namespace boost {
       std::pair<iterator, bool> xref:#unordered_map_try_emplace[try_emplace](const key_type& k, Args&&... args);
     template<class... Args>
       std::pair<iterator, bool> xref:#unordered_map_try_emplace[try_emplace](key_type&& k, Args&&... args);
+    template<class K, class... Args>
+      std::pair<iterator, bool> xref:#unordered_map_try_emplace[try_emplace](K&& k, Args&&... args);
     template<class... Args>
       iterator xref:#unordered_map_try_emplace_with_hint[try_emplace](const_iterator hint, const key_type& k, Args&&... args);
     template<class... Args>
       iterator xref:#unordered_map_try_emplace_with_hint[try_emplace](const_iterator hint, key_type&& k, Args&&... args);
+    template<class K, class... Args>
+      iterator xref:#unordered_map_try_emplace_with_hint[try_emplace](const_iterator hint, K&& k, Args&&... args);
     template<class M>
       std::pair<iterator, bool> xref:#unordered_map_insert_or_assign[insert_or_assign](const key_type& k, M&& obj);
     template<class M>
       std::pair<iterator, bool> xref:#unordered_map_insert_or_assign[insert_or_assign](key_type&& k, M&& obj);
+    template<class K, class M>
+      std::pair<iterator, bool> xref:#unordered_map_insert_or_assign[insert_or_assign](K&& k, M&& obj);
     template<class M>
       iterator xref:#unordered_map_insert_or_assign_with_hint[insert_or_assign](const_iterator hint, const key_type& k, M&& obj);
     template<class M>
       iterator xref:#unordered_map_insert_or_assign_with_hint[insert_or_assign](const_iterator hint, key_type&& k, M&& obj);
+    template<class K, class M>
+      iterator xref:#unordered_map_insert_or_assign_with_hint[insert_or_assign](const_iterator hint, K&& k, M&& obj);
 
     node_type xref:#unordered_map_extract_by_iterator[extract](const_iterator position);
     node_type xref:#unordered_map_extract_by_key[extract](const key_type& k);
-    template<class K> node_type xref:#unordered_map_transparent_extract_by_key[extract](K&& k);
+    template<class K> node_type xref:#unordered_map_extract_by_key[extract](K&& k);
     insert_return_type xref:#unordered_map_insert_with_node_handle[insert](node_type&& nh);
     iterator           xref:#unordered_map_insert_with_hint_and_node_handle[insert](const_iterator hint, node_type&& nh);
 
     iterator  xref:#unordered_map_erase_by_position[erase](iterator position);
     iterator  xref:#unordered_map_erase_by_position[erase](const_iterator position);
     size_type xref:#unordered_map_erase_by_key[erase](const key_type& k);
-    template<class K> size_type xref:#unordered_map_transparent_erase_by_key[erase](K&& k);
+    template<class K> size_type xref:#unordered_map_erase_by_key[erase](K&& k);
     iterator  xref:#unordered_map_erase_range[erase](const_iterator first, const_iterator last);
     void      xref:#unordered_map_quick_erase[quick_erase](const_iterator position);
     void      xref:#unordered_map_erase_return_void[erase_return_void](const_iterator position);
@@ -187,14 +195,18 @@ namespace boost {
     // element access
     mapped_type& xref:#unordered_map_operator[operator[+]+](const key_type& k);
     mapped_type& xref:#unordered_map_operator[operator[+]+](key_type&& k);
+    template<class K> mapped_type& xref:#unordered_map_operator[operator[+]+](K&& k);
     mapped_type& xref:#unordered_map_at[at](const key_type& k);
     const mapped_type& xref:#unordered_map_at[at](const key_type& k) const;
+    template<class K> mapped_type& xref:#unordered_map_at[at](const K& k);
+    template<class K> const mapped_type& xref:#unordered_map_at[at](const K& k) const;
 
     // bucket interface
     size_type xref:#unordered_map_bucket_count[bucket_count]() const noexcept;
     size_type xref:#unordered_map_max_bucket_count[max_bucket_count]() const noexcept;
     size_type xref:#unordered_map_bucket_size[bucket_size](size_type n) const;
     size_type xref:#unordered_map_bucket[bucket](const key_type& k) const;
+    template<class K> size_type xref:#unordered_map_bucket[bucket](const K& k) const;
     local_iterator xref:#unordered_map_begin_2[begin](size_type n);
     const_local_iterator xref:#unordered_map_begin_2[begin](size_type n) const;
     local_iterator xref:#unordered_map_end_2[end](size_type n);
@@ -997,6 +1009,8 @@ template<class... Args>
   std::pair<iterator, bool> try_emplace(const key_type& k, Args&&... args);
 template<class... Args>
   std::pair<iterator, bool> try_emplace(key_type&& k, Args&&... args);
+template <class K, class... Args>
+  std::pair<iterator, bool> try_emplace(K&& k, Args&&... args)
 ```
 
 Inserts a new node into the container if there is no existing element with key `k` contained within it.
@@ -1012,8 +1026,14 @@ Notes:;; This function is similiar to xref:#unordered_map_emplace[emplace] excep
 +
 --
 ```c++
+// first two overloads
 value_type(std::piecewise_construct,
            std::forward_as_tuple(boost::forward<Key>(k)),
+           std::forward_as_tuple(boost::forward<Args>(args)...))
+
+// third overload
+value_type(std::piecewise_construct,
+           std::forward_as_tuple(boost::forward<K>(k)),
            std::forward_as_tuple(boost::forward<Args>(args)...))
 ```
 
@@ -1022,6 +1042,8 @@ instead of xref:#unordered_map_emplace[emplace] which simply forwards all argume
 Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.
 
 Pointers and references to elements are never invalidated.
+
+The `template <class K, class... Args>` overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs and neither `iterator` nor `const_iterator` are implicitly convertible from `K`. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
 
 If the compiler doesn't support variadic template arguments or rvalue references, this is emulated for up to `10` arguments, with no support for rvalue references or move semantics.
 
@@ -1036,6 +1058,8 @@ template<class... Args>
   iterator try_emplace(const_iterator hint, const key_type& k, Args&&... args);
 template<class... Args>
   iterator try_emplace(const_iterator hint, key_type&& k, Args&&... args);
+template<class K, class... Args>
+  iterator try_emplace(const_iterator hint, K&& k, Args&&... args);
 ```
 
 Inserts a new node into the container if there is no existing element with key `k` contained within it.
@@ -1051,8 +1075,14 @@ Notes:;; This function is similiar to xref:#unordered_map_emplace_hint[emplace_h
 +
 --
 ```c++
+// first two overloads
 value_type(std::piecewise_construct,
            std::forward_as_tuple(boost::forward<Key>(k)),
+           std::forward_as_tuple(boost::forward<Args>(args)...))
+
+// third overload
+value_type(std::piecewise_construct,
+           std::forward_as_tuple(boost::forward<K>(k)),
            std::forward_as_tuple(boost::forward<Args>(args)...))
 ```
 
@@ -1063,6 +1093,8 @@ The standard is fairly vague on the meaning of the hint. But the only practical 
 Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor.
 
 Pointers and references to elements are never invalidated.
+
+The `template <class K, class... Args>` overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs and neither `iterator` nor `const_iterator` are implicitly convertible from `K`. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
 
 If the compiler doesn't support variadic template arguments or rvalue references, this is emulated for up to `10` arguments, with no support for rvalue references or move semantics.
 
@@ -1077,6 +1109,8 @@ template<class M>
   std::pair<iterator, bool> insert_or_assign(const key_type& k, M&& obj);
 template<class M>
   std::pair<iterator, bool> insert_or_assign(key_type&& k, M&& obj);
+template<class K, class M>
+  std::pair<iterator, bool> insert_or_assign(K&& k, M&& obj);
 ```
 
 Inserts a new element into the container or updates an existing one by assigning to the contained value.
@@ -1085,8 +1119,14 @@ If there is an element with key `k`, then it is updated by assigning `boost::for
 
 If there is no such element, it is added to the container as:
 ```c++
+// first two overloads
 value_type(std::piecewise_construct,
            std::forward_as_tuple(boost::forward<Key>(k)),
+           std::forward_as_tuple(boost::forward<M>(obj)))
+
+// third overload
+value_type(std::piecewise_construct,
+           std::forward_as_tuple(boost::forward<K>(k)),
            std::forward_as_tuple(boost::forward<M>(obj)))
 ```
 
@@ -1097,7 +1137,9 @@ If an insert took place, then the iterator points to the newly inserted element.
 Throws:;; If an exception is thrown by an operation other than a call to `hasher` the function has no effect.
 Notes:;; Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor. +
 +
-Pointers and references to elements are never invalidated.
+Pointers and references to elements are never invalidated. +
++
+The `template<class K, class M>` only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
 
 ---
 
@@ -1107,6 +1149,8 @@ template<class M>
   iterator insert_or_assign(const_iterator hint, const key_type& k, M&& obj);
 template<class M>
   iterator insert_or_assign(const_iterator hint, key_type&& k, M&& obj);
+template<class K, class M>
+  iterator insert_or_assign(const_iterator hint, K&& k, M&& obj);
 ```
 
 Inserts a new element into the container or updates an existing one by assigning to the contained value.
@@ -1115,8 +1159,14 @@ If there is an element with key `k`, then it is updated by assigning `boost::for
 
 If there is no such element, it is added to the container as:
 ```c++
+// first two overloads
 value_type(std::piecewise_construct,
            std::forward_as_tuple(boost::forward<Key>(k)),
+           std::forward_as_tuple(boost::forward<M>(obj)))
+
+// third overload
+value_type(std::piecewise_construct,
+           std::forward_as_tuple(boost::forward<K>(k)),
            std::forward_as_tuple(boost::forward<M>(obj)))
 ```
 
@@ -1129,7 +1179,9 @@ Notes:;; The standard is fairly vague on the meaning of the hint. But the only p
 +
 Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor. +
 +
-Pointers and references to elements are never invalidated.
+Pointers and references to elements are never invalidated. +
++
+The `template<class K, class M>` only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
 
 ---
 
@@ -1149,30 +1201,17 @@ Notes:;; A node extracted using this method can be inserted into a compatible `u
 ==== Extract by Key
 ```c++
 node_type extract(const key_type& k);
-```
-
-Removes an element with key equivalent to `k`.
-
-[horizontal]
-Returns:;; A `node_type` owning the element if found, otherwise an empty `node_type`.
-Throws:;; Only throws an exception if it is thrown by `hasher` or `key_equal`.
-Notes:;; A node extracted using this method can be inserted into a compatible `unordered_multimap`.
-
----
-
-==== Transparent Extract by Key
-```c++
 template<class K> node_type extract(K&& k);
 ```
 
 Removes an element with key equivalent to `k`.
 
-This overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs and neither `iterator` nor `const_iterator` are implicitly convertible from `K`. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
-
 [horizontal]
 Returns:;; A `node_type` owning the element if found, otherwise an empty `node_type`.
 Throws:;; Only throws an exception if it is thrown by `hasher` or `key_equal`.
-Notes:;; A node extracted using this method can be inserted into a compatible `unordered_multimap`.
+Notes:;; A node extracted using this method can be inserted into a compatible `unordered_multimap`. +
++
+The `template<class K>`  overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs and neither `iterator` nor `const_iterator` are implicitly convertible from `K`. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
 
 ---
 
@@ -1251,28 +1290,15 @@ Notes:;; In older versions this could be inefficient because it had to search th
 ==== Erase by Key
 ```c++
 size_type erase(const key_type& k);
-```
-
-Erase all elements with key equivalent to `k`.
-
-[horizontal]
-Returns:;; The number of elements erased.
-Throws:;; Only throws an exception if it is thrown by `hasher` or `key_equal`.
-
----
-
-==== Transparent Erase by Key
-```c++
 template<class K> size_type erase(K&& k);
 ```
 
 Erase all elements with key equivalent to `k`.
 
-This overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs and neither `iterator` nor `const_iterator` are implicitly convertible from `K`. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
-
 [horizontal]
 Returns:;; The number of elements erased.
 Throws:;; Only throws an exception if it is thrown by `hasher` or `key_equal`.
+Notes:;; The `template<class K>` overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs and neither `iterator` nor `const_iterator` are implicitly convertible from `K`. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
 
 ---
 
@@ -1490,6 +1516,7 @@ Notes:;; The `template <typename K>` overloads only participate in overload reso
 ```c++
 mapped_type& operator[](const key_type& k);
 mapped_type& operator[](key_type&& k);
+template<class K> mapped_type& operator[](K&& k);
 ```
 
 [horizontal]
@@ -1498,7 +1525,9 @@ Returns:;; A reference to `x.second` where `x` is the element already in the con
 Throws:;; If an exception is thrown by an operation other than a call to `hasher` the function has no effect.
 Notes:;; Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor. +
 +
-Pointers and references to elements are never invalidated.
+Pointers and references to elements are never invalidated. +
++
+The `template<class K>` overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
 
 ---
 
@@ -1506,11 +1535,14 @@ Pointers and references to elements are never invalidated.
 ```c++
 mapped_type& at(const key_type& k);
 const mapped_type& at(const key_type& k) const;
+template<class K> mapped_type& at(const K& k);
+template<class K> const mapped_type& at(const K& k) const;
 ```
 
 [horizontal]
 Returns:;; A reference to `x.second` where `x` is the (unique) element whose key is equivalent to `k`.
 Throws:;; An exception object of type `std::out_of_range` if no such element is present.
+Notes:;; The `template<class K>` overloads only participate in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
 
 ---
 
@@ -1550,11 +1582,13 @@ Returns:;; The number of elements in bucket `n`.
 ==== bucket
 ```c++
 size_type bucket(const key_type& k) const;
+template<class K> size_type bucket(const K& k) const;
 ```
 
 [horizontal]
 Returns:;; The index of the bucket which would contain an element with key `k`.
 Postconditions:;; The return value is less than `bucket_count()`.
+Notes:;; The `template<class K>` overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
 
 ---
 

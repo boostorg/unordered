@@ -21,7 +21,9 @@
 #include <boost/core/pointer_traits.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/predef.h>
+#include <boost/type_traits/has_trivial_copy.hpp>
 #include <boost/type_traits/is_nothrow_swappable.hpp>
+#include <boost/unordered/detail/narrow_cast.hpp>
 #include <boost/unordered/detail/xmx.hpp>
 #include <boost/unordered/detail/mulx.hpp>
 #include <boost/unordered/hash_traits.hpp>
@@ -31,6 +33,7 @@
 #include <cstring>
 #include <iterator>
 #include <limits>
+#include <memory>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -67,6 +70,12 @@
     static_cast<void>(false&&(cond)); \
   }while(0)
 #endif
+
+#define BOOST_UNORDERED_STATIC_ASSERT_HASH_PRED(Hash, Pred)                    \
+  static_assert(boost::is_nothrow_swappable<Hash>::value,                      \
+    "Template parameter Hash is required to be nothrow Swappable.");           \
+  static_assert(boost::is_nothrow_swappable<Pred>::value,                      \
+    "Template parameter Pred is required to be nothrow Swappable");
 
 namespace boost{
 namespace unordered{
@@ -262,20 +271,12 @@ private:
       0xF8F8F8F8u,0xF9F9F9F9u,0xFAFAFAFAu,0xFBFBFBFBu,0xFCFCFCFCu,0xFDFDFDFDu,0xFEFEFEFEu,0xFFFFFFFFu,
     };
 
-#if defined(__MSVC_RUNTIME_CHECKS)
-    return (int)word[hash&0xffu];
-#else
-    return (int)word[(unsigned char)hash];
-#endif
+    return (int)word[narrow_cast<unsigned char>(hash)];
   }
 
   inline static unsigned char reduced_hash(std::size_t hash)
   {
-#if defined(__MSVC_RUNTIME_CHECKS)
-    return match_word(hash)&0xffu;
-#else
-    return (unsigned char)match_word(hash);
-#endif
+    return narrow_cast<unsigned char>(match_word(hash));
   }
 
   inline unsigned char& at(std::size_t pos)
@@ -526,11 +527,7 @@ struct group15
     std::size_t     pos=reinterpret_cast<uintptr_t>(pc)%sizeof(group15);
     group15        *pg=reinterpret_cast<group15*>(pc-pos);
     boost::uint64_t x=((pg->m[0])>>pos)&0x000100010001ull;
-#if defined(__MSVC_RUNTIME_CHECKS)
-    boost::uint32_t y=(x|(x>>15)|(x>>30))&0xffffffffu;
-#else
-    boost::uint32_t y=static_cast<boost::uint32_t>(x|(x>>15)|(x>>30));
-#endif
+    boost::uint32_t y=narrow_cast<boost::uint32_t>(x|(x>>15)|(x>>30));
     return !pg->is_not_overflowed(y);
   };
 
@@ -545,11 +542,7 @@ struct group15
   inline int match_occupied()const
   {
     boost::uint64_t x=m[0]|m[1];
-#if defined(__MSVC_RUNTIME_CHECKS)
-    boost::uint32_t y=(x|(x>>32))&0xffffffffu;
-#else
-    boost::uint32_t y=static_cast<boost::uint32_t>(x|(x>>32));
-#endif
+    boost::uint32_t y=narrow_cast<boost::uint32_t>(x|(x>>32));
     y|=y>>16;
     return y&0x7FFF;
   }
@@ -584,11 +577,7 @@ private:
       240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255,
     };
     
-#if defined(__MSVC_RUNTIME_CHECKS)
-  return table[hash&0xffu];
-#else
-    return table[(unsigned char)hash];
-#endif
+    return table[narrow_cast<unsigned char>(hash)];
   }
 
   inline void set_impl(std::size_t pos,std::size_t n)
@@ -1032,6 +1021,49 @@ inline void prefetch(const void* p)
 #endif    
 }
 
+struct try_emplace_args_t{};
+
+template<typename Allocator>
+struct is_std_allocator:std::false_type{};
+
+template<typename T>
+struct is_std_allocator<std::allocator<T>>:std::true_type{};
+
+/* std::allocator::construct marked as deprecated */
+#if defined(_LIBCPP_SUPPRESS_DEPRECATED_PUSH)
+_LIBCPP_SUPPRESS_DEPRECATED_PUSH
+#elif defined(_STL_DISABLE_DEPRECATED_WARNING)
+_STL_DISABLE_DEPRECATED_WARNING
+#elif defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable:4996)
+#endif
+
+template<typename Allocator,typename Ptr,typename... Args>
+struct alloc_has_construct
+{
+private:
+  template<typename Allocator2>
+  static decltype(
+    std::declval<Allocator2&>().construct(
+      std::declval<Ptr>(),std::declval<Args&&>()...),
+    std::true_type{}
+  ) check(int);
+
+  template<typename> static std::false_type check(...);
+
+public:
+  static constexpr bool value=decltype(check<Allocator>(0))::value;
+};
+
+#if defined(_LIBCPP_SUPPRESS_DEPRECATED_POP)
+_LIBCPP_SUPPRESS_DEPRECATED_POP
+#elif defined(_STL_RESTORE_DEPRECATED_WARNING)
+_STL_RESTORE_DEPRECATED_WARNING
+#elif defined(_MSC_VER)
+#pragma warning(pop)
+#endif
+
 #if defined(BOOST_GCC)
 /* GCC's -Wshadow triggers at scenarios like this: 
  *
@@ -1190,9 +1222,7 @@ public:
   table(const table& x,const Allocator& al_):
     table{std::size_t(std::ceil(float(x.size())/mlf)),x.h(),x.pred(),al_}
   {
-    x.for_all_elements([this](value_type* p){
-      unchecked_insert(*p);
-    });
+    copy_elements_from(x);
   }
 
   table(table&& x,const Allocator& al_):
@@ -1227,22 +1257,35 @@ public:
 
   table& operator=(const table& x)
   {
+    BOOST_UNORDERED_STATIC_ASSERT_HASH_PRED(Hash, Pred)
+
     static constexpr auto pocca=
       alloc_traits::propagate_on_container_copy_assignment::value;
 
     if(this!=std::addressof(x)){
-      clear();
-      h()=x.h();
-      pred()=x.pred();
+      // if copy construction here winds up throwing, the container is still
+      // left intact so we perform these operations first
+      hasher    tmp_h=x.h();
+      key_equal tmp_p=x.pred();
+
+      // already noexcept, clear() before we swap the Hash, Pred just in case
+      // the clear() impl relies on them at some point in the future
+      clear(); 
+
+      // because we've asserted at compile-time that Hash and Pred are nothrow
+      // swappable, we can safely mutate our source container and maintain
+      // consistency between the Hash, Pred compatibility
+      using std::swap;
+      swap(h(),tmp_h);
+      swap(pred(),tmp_p);
+
       if_constexpr<pocca>([&,this]{
         if(al()!=x.al())reserve(0);
         copy_assign_if<pocca>(al(),x.al());
       });
       /* noshrink: favor memory reuse over tightness */
-      noshrink_reserve(x.size()); 
-      x.for_all_elements([this](value_type* p){
-        unchecked_insert(*p);
-      });
+      noshrink_reserve(x.size());
+      copy_elements_from(x);
     }
     return *this;
   }
@@ -1254,19 +1297,32 @@ public:
 
   table& operator=(table&& x)
     noexcept(
-      alloc_traits::is_always_equal::value&&
-      std::is_nothrow_move_assignable<Hash>::value&&
-      std::is_nothrow_move_assignable<Pred>::value)
+      alloc_traits::propagate_on_container_move_assignment::value||
+      alloc_traits::is_always_equal::value)
   {
+    BOOST_UNORDERED_STATIC_ASSERT_HASH_PRED(Hash, Pred)
+
     static constexpr auto pocma=
       alloc_traits::propagate_on_container_move_assignment::value;
 
     if(this!=std::addressof(x)){
+      /* Given ambiguity in implementation strategies briefly discussed here:
+       * https://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#2227
+       *
+       * we opt into requiring nothrow swappability and eschew the move
+       * operations associated with Hash, Pred.
+       *
+       * To this end, we ensure that the user never has to consider the
+       * moved-from state of their Hash, Pred objects
+       */
+
+      using std::swap;
+
       clear();
-      h()=std::move(x.h());
-      pred()=std::move(x.pred());
+      swap(h(),x.h());
+      swap(pred(),x.pred());
+
       if(pocma||al()==x.al()){
-        using std::swap;
         reserve(0);
         move_assign_if<pocma>(al(),x.al());
         swap(size_,x.size_);
@@ -1329,12 +1385,10 @@ public:
 
   template<typename Key,typename... Args>
   BOOST_FORCEINLINE std::pair<iterator,bool> try_emplace(
-    Key&& k,Args&&... args)
+    Key&& x,Args&&... args)
   {
     return emplace_impl(
-      std::piecewise_construct,
-      std::forward_as_tuple(std::forward<Key>(k)),
-      std::forward_as_tuple(std::forward<Args>(args)...));
+      try_emplace_args_t{},std::forward<Key>(x),std::forward<Args>(args)...);
   }
 
   BOOST_FORCEINLINE std::pair<iterator,bool>
@@ -1383,16 +1437,15 @@ public:
 
   void swap(table& x)
     noexcept(
-      alloc_traits::is_always_equal::value&&
-      boost::is_nothrow_swappable<Hash>::value&&
-      boost::is_nothrow_swappable<Pred>::value)
+      alloc_traits::propagate_on_container_swap::value||
+      alloc_traits::is_always_equal::value)
   {
+    BOOST_UNORDERED_STATIC_ASSERT_HASH_PRED(Hash, Pred)
+
     static constexpr auto pocs=
       alloc_traits::propagate_on_container_swap::value;
 
     using std::swap;
-    swap(h(),x.h());
-    swap(pred(),x.pred());
     if_constexpr<pocs>([&,this]{
       swap_if<pocs>(al(),x.al());
     },
@@ -1400,6 +1453,9 @@ public:
       BOOST_ASSERT(al()==x.al());
       (void)this; /* makes sure captured this is used */
     });
+
+    swap(h(),x.h());
+    swap(pred(),x.pred());
     swap(size_,x.size_);
     swap(arrays,x.arrays);
     swap(ml,x.ml);
@@ -1523,6 +1579,37 @@ private:
     alloc_traits::construct(al(),p,std::forward<Args>(args)...);
   }
 
+  template<typename... Args>
+  void construct_element(value_type* p,try_emplace_args_t,Args&&... args)
+  {
+    construct_element_from_try_emplace_args(
+      p,
+      std::integral_constant<bool,std::is_same<key_type,value_type>::value>{},
+      std::forward<Args>(args)...);
+  }
+
+  template<typename Key,typename... Args>
+  void construct_element_from_try_emplace_args(
+    value_type* p,std::false_type,Key&& x,Args&&... args)
+  {
+    alloc_traits::construct(
+      al(),p,
+      std::piecewise_construct,
+      std::forward_as_tuple(std::forward<Key>(x)),
+      std::forward_as_tuple(std::forward<Args>(args)...));
+  }
+
+  /* This overload allows boost::unordered_flat_set to internally use
+   * try_emplace to implement heterogeneous insert (P2363).
+   */
+
+  template<typename Key>
+  void construct_element_from_try_emplace_args(
+    value_type* p,std::true_type,Key&& x)
+  {
+    alloc_traits::construct(al(),p,std::forward<Key>(x));
+  }
+
   void destroy_element(value_type* p)noexcept
   {
     alloc_traits::destroy(al(),p);
@@ -1534,6 +1621,82 @@ private:
     table      *this_;
     value_type *p;
   };
+
+  void copy_elements_from(const table& x)
+  {
+    BOOST_ASSERT(empty());
+    BOOST_ASSERT(this!=std::addressof(x));
+    if(arrays.groups_size_mask==x.arrays.groups_size_mask){
+      fast_copy_elements_from(x);
+    }
+    else{
+      x.for_all_elements([this](const value_type* p){
+        unchecked_insert(*p);
+      });
+    }
+  }
+
+  void fast_copy_elements_from(const table& x)
+  {
+    if(arrays.elements){
+      copy_elements_array_from(x);
+      std::memcpy(
+        arrays.groups,x.arrays.groups,
+        (arrays.groups_size_mask+1)*sizeof(group_type));
+      size_=x.size();
+    }
+  }
+
+  void copy_elements_array_from(const table& x)
+  {
+    copy_elements_array_from(
+      x,
+      std::integral_constant<
+        bool,
+#if BOOST_WORKAROUND(BOOST_LIBSTDCXX_VERSION,<50000)
+        /* std::is_trivially_copy_constructible not provided */
+        boost::has_trivial_copy<value_type>::value
+#else
+        std::is_trivially_copy_constructible<value_type>::value
+#endif
+        &&(
+          is_std_allocator<Allocator>::value||
+          !alloc_has_construct<Allocator,value_type*,const value_type&>::value)
+      >{}
+    );
+  }
+
+  void copy_elements_array_from(const table& x,std::true_type /* -> memcpy */)
+  {
+    /* reinterpret_cast: GCC may complain about value_type not being trivially
+     * copy-assignable when we're relying on trivial copy constructibility.
+     */
+    std::memcpy(
+      reinterpret_cast<unsigned char*>(arrays.elements),
+      reinterpret_cast<unsigned char*>(x.arrays.elements),
+      x.capacity()*sizeof(value_type));
+  }
+
+  void copy_elements_array_from(const table& x,std::false_type /* -> manual */)
+  {
+    std::size_t num_constructed=0;
+    BOOST_TRY{
+      x.for_all_elements([&,this](const value_type* p){
+        construct_element(arrays.elements+(p-x.arrays.elements),*p);
+        ++num_constructed;
+      });
+    }
+    BOOST_CATCH(...){
+      if(num_constructed){
+        x.for_all_elements_while([&,this](const value_type* p){
+          destroy_element(arrays.elements+(p-x.arrays.elements));
+          return --num_constructed!=0;
+        });
+      }
+      BOOST_RETHROW
+    }
+    BOOST_CATCH_END
+  }
 
   void recover_slot(unsigned char* pc)
   {
@@ -1571,12 +1734,11 @@ private:
     return type_policy::extract(x);
   }
 
-  template<typename Arg1,typename Arg2>
-  static inline auto key_from(
-    std::piecewise_construct_t,const Arg1& k,const Arg2&)
-    ->decltype(std::get<0>(k))
+  template<typename Key,typename... Args>
+  static inline const Key& key_from(
+    try_emplace_args_t,const Key& x,const Args&...)
   {
-    return std::get<0>(k);
+    return x;
   }
 
   template<typename Key>
@@ -1737,17 +1899,13 @@ private:
     }
     BOOST_CATCH(...){
       if(num_destroyed){
-        for(auto pg=arrays.groups;;++pg){
-          auto mask=pg->match_occupied();
-          while(mask){
-            auto nz=unchecked_countr_zero(mask);
-            recover_slot(pg,nz);
-            if(!(--num_destroyed))goto continue_;
-            mask&=mask-1;
+        for_all_elements_while(
+          [&,this](group_type* pg,unsigned int n,value_type*){
+            recover_slot(pg,n);
+            return --num_destroyed!=0;
           }
-        }
+        );
       }
-      continue_:
       for_all_elements(new_arrays_,[this](value_type* p){
         destroy_element(p);
       });
@@ -1877,12 +2035,34 @@ private:
   static auto for_all_elements(const arrays_type& arrays_,F f)
     ->decltype(f(nullptr),void())
   {
-    for_all_elements(
-      arrays_,[&](group_type*,unsigned int,value_type* p){return f(p);});
+    for_all_elements_while(arrays_,[&](value_type* p){f(p);return true;});
   }
 
   template<typename F>
   static auto for_all_elements(const arrays_type& arrays_,F f)
+    ->decltype(f(nullptr,0,nullptr),void())
+  {
+    for_all_elements_while(
+      arrays_,[&](group_type* pg,unsigned int n,value_type* p)
+        {f(pg,n,p);return true;});
+  }
+
+  template<typename F>
+  void for_all_elements_while(F f)const
+  {
+    for_all_elements_while(arrays,f);
+  }
+
+  template<typename F>
+  static auto for_all_elements_while(const arrays_type& arrays_,F f)
+    ->decltype(f(nullptr),void())
+  {
+    for_all_elements_while(
+      arrays_,[&](group_type*,unsigned int,value_type* p){return f(p);});
+  }
+
+  template<typename F>
+  static auto for_all_elements_while(const arrays_type& arrays_,F f)
     ->decltype(f(nullptr,0,nullptr),void())
   {
     auto p=arrays_.elements;
@@ -1892,7 +2072,7 @@ private:
       auto mask=pg->match_really_occupied();
       while(mask){
         auto n=unchecked_countr_zero(mask);
-        f(pg,n,p+n);
+        if(!f(pg,n,p+n))return;
         mask&=mask-1;
       }
     }
@@ -1922,6 +2102,7 @@ private:
 
 #undef BOOST_UNORDERED_ASSUME
 #undef BOOST_UNORDERED_HAS_BUILTIN
+#undef BOOST_UNORDERED_STATIC_ASSERT_HASH_PRED
 #ifdef BOOST_UNORDERED_LITTLE_ENDIAN_NEON
 #undef BOOST_UNORDERED_LITTLE_ENDIAN_NEON
 #endif

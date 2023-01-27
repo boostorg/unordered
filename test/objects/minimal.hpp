@@ -206,6 +206,11 @@ namespace test {
       hash& operator=(hash const&) { return *this; }
       ~hash() {}
 
+#if defined(BOOST_UNORDERED_FOA_TESTS)
+      hash(hash&&) = default;
+      hash& operator=(hash&&) = default;
+#endif
+
       std::size_t operator()(T const&) const { return 0; }
 #if BOOST_UNORDERED_CHECK_ADDR_OPERATOR_NOT_USED
       ampersand_operator_used operator&() const
@@ -223,6 +228,11 @@ namespace test {
       equal_to(equal_to const&) {}
       equal_to& operator=(equal_to const&) { return *this; }
       ~equal_to() {}
+
+#if defined(BOOST_UNORDERED_FOA_TESTS)
+      equal_to(equal_to&&) = default;
+      equal_to& operator=(equal_to&&) = default;
+#endif
 
       bool operator()(T const&, T const&) const { return true; }
 #if BOOST_UNORDERED_CHECK_ADDR_OPERATOR_NOT_USED
