@@ -22,6 +22,7 @@ move
 mp11
 predef
 preprocessor
+static_assert
 throw_exception
 tuple
 type_traits
@@ -29,8 +30,6 @@ type_traits
 # Secondary dependencies
 
 describe
-static_assert
-winapi
 )
 
 foreach(dep IN LISTS deps)
