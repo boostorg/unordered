@@ -402,6 +402,7 @@ struct map_insert_or_assign_type : map_inserter_base
   }
 } map_insert_or_assign;
 
+#ifdef BOOST_UNORDERED_FOA_TESTS
 // clang-format off
 UNORDERED_TEST(insert_exception_test,
     ((test_map_)(test_node_map_))
@@ -414,6 +415,20 @@ UNORDERED_TEST(insert_rehash_exception_test,
     ((default_generator)(limited_range)(generate_collisions))
 )
 // clang-format on
+#else
+// clang-format off
+UNORDERED_TEST(insert_exception_test,
+    ((test_map_))
+    ((try_emplace)(try_emplace2)(map_insert_operator)(map_insert_or_assign))
+    ((default_generator)(limited_range)(generate_collisions))
+)
+UNORDERED_TEST(insert_rehash_exception_test,
+    ((test_map_))
+    ((try_emplace)(try_emplace2)(map_insert_operator)(map_insert_or_assign))
+    ((default_generator)(limited_range)(generate_collisions))
+)
+// clang-format on
+#endif
 
 // Range insert tests
 
