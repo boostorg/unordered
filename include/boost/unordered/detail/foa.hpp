@@ -1499,9 +1499,8 @@ public:
   void merge(table<TypePolicy,Hash2,Pred2,Allocator>& x)
   {
     x.for_all_elements([&,this](group_type* pg,unsigned int n,element_type* p){
-      if(emplace_impl(type_policy::move(*p)).second){
-        x.erase(iterator{pg,n,p});
-      }
+      erase_on_exit e{x,{pg,n,p}};
+      if(!emplace_impl(type_policy::move(*p)).second)e.rollback();
     });
   }
 
@@ -1567,6 +1566,17 @@ private:
   {
     ~clear_on_exit(){x.clear();}
     table& x;
+  };
+
+  struct erase_on_exit
+  {
+    ~erase_on_exit(){if(!rollback_)x.erase(it);}
+
+    void rollback(){rollback_=true;}
+
+    table&   x;
+    iterator it;
+    bool     rollback_=false;
   };
 
   Hash&            h(){return hash_base::get();}
