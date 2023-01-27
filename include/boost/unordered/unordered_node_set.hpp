@@ -45,16 +45,16 @@ namespace boost {
           value_type* p;
 
           /*
-           * we use a defined copy constructor here so the type is no longer
+           * we use a deleted copy constructor here so the type is no longer
            * trivially copy-constructible which inhibits our memcpy
            * optimizations when copying the tables
            */
-          element_type() : p(nullptr) {}
-          element_type(element_type const& rhs) : p(rhs.p) {}
+          element_type() = default;
+          element_type(element_type const&) = delete;
         };
 
-        static value_type& value_from(element_type x) { return *x.p; }
-        static Key const& extract(element_type k) { return *k.p; }
+        static value_type& value_from(element_type const& x) { return *x.p; }
+        static Key const& extract(element_type const& k) { return *k.p; }
         static element_type&& move(element_type& x) { return std::move(x); }
         static value_type&& move(value_type& x) { return std::move(x); }
 

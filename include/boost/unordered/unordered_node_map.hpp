@@ -48,15 +48,15 @@ namespace boost {
           value_type* p;
 
           /*
-           * we use a defined copy constructor here so the type is no longer
+           * we use a deleted copy constructor here so the type is no longer
            * trivially copy-constructible which inhibits our memcpy
            * optimizations when copying the tables
            */
-          element_type() : p(nullptr) {}
-          element_type(element_type const& rhs) : p(rhs.p) {}
+          element_type() = default;
+          element_type(element_type const&) = delete;
         };
 
-        static value_type& value_from(element_type x) { return *(x.p); }
+        static value_type& value_from(element_type const& x) { return *(x.p); }
 
         template <class K, class V>
         static raw_key_type const& extract(std::pair<K, V> const& kv)
@@ -64,7 +64,7 @@ namespace boost {
           return kv.first;
         }
 
-        static raw_key_type const& extract(element_type kv)
+        static raw_key_type const& extract(element_type const& kv)
         {
           return kv.p->first;
         }
