@@ -1,6 +1,6 @@
 /* Fast open-addressing hash table.
  *
- * Copyright 2022 Joaquin M Lopez Munoz.
+ * Copyright 2022-2023 Joaquin M Lopez Munoz.
  * Distributed under the Boost Software License, Version 1.0.
  * (See accompanying file LICENSE_1_0.txt or copy at
  * http://www.boost.org/LICENSE_1_0.txt)
@@ -345,8 +345,8 @@ struct group15
 
   inline int match(std::size_t hash)const
   {
-    return simde_mm_movemask_epi8(
-      vceqq_s8(m,vdupq_n_s8(reduced_hash(hash))))&0x7FFF;
+    return simde_mm_movemask_epi8(vceqq_s8(
+      m,vdupq_n_s8(static_cast<signed char>(reduced_hash(hash)))))&0x7FFF;
   }
 
   inline bool is_not_overflowed(std::size_t hash)const
