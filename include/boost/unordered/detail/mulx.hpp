@@ -107,11 +107,13 @@ inline std::size_t mulx( std::size_t x ) noexcept
 {
 #if defined(BOOST_UNORDERED_64B_ARCHITECTURE)
 
+    // multiplier is phi
     return (std::size_t)mulx64( (boost::uint64_t)x, 0x9E3779B97F4A7C15ull );
 
 #else /* 32 bits assumed */
 
-    return mulx32( x, 0x9E3779B9u );
+    // multiplier from https://arxiv.org/abs/2001.05304
+    return mulx32( x, 0xE817FB2Du );
 
 #endif
 }
