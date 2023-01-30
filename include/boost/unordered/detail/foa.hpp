@@ -1386,14 +1386,49 @@ public:
   template<typename... Args>
   BOOST_FORCEINLINE std::pair<iterator,bool> emplace(Args&&... args)
   {
-    using emplace_type = typename std::conditional<
+    /* We dispatch based on whether or not the value_type is constructible from
+     * an rvalue refernce to the deduced emplace_type. We do this specifically
+     * for the csae of the node-based containers. To this end, we're able to
+     * avoid allocating a node when a duplicate element is attempted to be
+     * inserted. For immovable types, we instead dispatch to the routine that
+     * unconditionally allocates via `type_policy::construct()`.
+     */
+    return emplace_dispatch(
       std::is_constructible<
-        init_type, Args...
-      >::value,
-      init_type,
-      value_type
-    >::type;
-    return emplace_impl(emplace_type(std::forward<Args>(args)...));
+        value_type,
+        emplace_type<Args...>&&>{},
+      std::forward<Args>(args)...);
+  }
+
+  template<typename... Args>
+  BOOST_FORCEINLINE std::pair<iterator,bool> emplace_dispatch(
+    std::true_type,Args&&... args
+  ) {
+    using emplace_type_t = emplace_type<Args...>;
+    return emplace_impl(emplace_type_t(std::forward<Args>(args)...));
+  }
+
+  template<typename... Args>
+  BOOST_FORCEINLINE std::pair<iterator,bool> emplace_dispatch(
+    std::false_type,Args&&... args
+  ) {
+    struct guard {
+      table& t;
+      element_type& x;
+      bool destroy;
+      ~guard(){
+        if(destroy) {
+          type_policy::destroy(t.al(),&x);
+        }
+      }
+    };
+
+    element_type x;
+    type_policy::construct(al(),&x,std::forward<Args>(args)...);
+    guard g{*this,x,true};
+    auto itp=emplace_impl(type_policy::move(x));
+    g.destroy=!itp.second;
+    return itp;
   }
 
   template<typename Key,typename... Args>
@@ -1561,6 +1596,15 @@ public:
 private:
   template<typename,typename,typename,typename> friend class table;
   using arrays_type=table_arrays<element_type,group_type,size_policy>;
+
+  template<typename... Args>
+  using emplace_type = typename std::conditional<
+      std::is_constructible<
+        init_type,Args...
+      >::value,
+      init_type,
+      value_type
+    >::type;
 
   struct clear_on_exit
   {
