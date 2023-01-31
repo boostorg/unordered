@@ -76,15 +76,19 @@ namespace boost {
         static void construct(A& al, element_type* p, Args&&... args)
         {
           p->p = boost::to_address(boost::allocator_allocate(al, 1));
-          try {
+          BOOST_TRY
+          {
             boost::allocator_construct(al, p->p, std::forward<Args>(args)...);
-          } catch (...) {
+          }
+          BOOST_CATCH(...)
+          {
             boost::allocator_deallocate(al,
               boost::pointer_traits<
                 typename boost::allocator_pointer<A>::type>::pointer_to(*p->p),
               1);
-            throw;
+            BOOST_RETHROW
           }
+          BOOST_CATCH_END
         }
 
         template <class A> static void destroy(A& al, element_type* p) noexcept
