@@ -89,52 +89,52 @@ template <class X> void simple_test(X const& a)
 
 template <class X> static void simple_set_tests(X*)
 {
-  X set;
+  X x;
 
-  simple_test(set);
+  simple_test(x);
 
-  set.insert(1);
-  set.insert(2);
-  set.insert(1456);
-  simple_test(set);
+  x.insert(1);
+  x.insert(2);
+  x.insert(1456);
+  simple_test(x);
 }
 
 #ifndef BOOST_UNORDERED_FOA_TESTS
 template <class X> static void simple_multiset_tests(X*)
 {
-  X multiset;
-  simple_test(multiset);
+  X x;
+  simple_test(x);
 
   for (int i1 = 0; i1 < 1000; ++i1) {
     int count = rand() % 10, index = rand();
     for (int j = 0; j < count; ++j)
-      multiset.insert(index);
+      x.insert(index);
   }
-  simple_test(multiset);
+  simple_test(x);
 }
 #endif
 
 template <class X> static void simple_map_tests(X*)
 {
-  X map;
+  X x;
 
   for (int i2 = 0; i2 < 1000; ++i2) {
-    map.insert(std::pair<const int, int>(rand(), rand()));
+    x.insert(std::pair<const int, int>(rand(), rand()));
   }
-  simple_test(map);
+  simple_test(x);
 }
 
 #ifndef BOOST_UNORDERED_FOA_TESTS
 template <class X> static void simple_multimap_tests(X*)
 {
-  X multimap;
+  X x;
 
   for (int i3 = 0; i3 < 1000; ++i3) {
     int count = rand() % 10, index = rand();
     for (int j = 0; j < count; ++j)
-      multimap.insert(std::pair<const int, int>(index, rand()));
+      x.insert(std::pair<const int, int>(index, rand()));
   }
-  simple_test(multimap);
+  simple_test(x);
 }
 #endif
 

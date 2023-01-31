@@ -244,8 +244,6 @@ namespace noexcept_tests {
 
   template <class X> static void test_nothrow_move_when_noexcept(X*)
   {
-    X throwing_set;
-
     if (have_is_nothrow_move) {
       BOOST_TEST(boost::is_nothrow_move_constructible<X>::value);
     }
