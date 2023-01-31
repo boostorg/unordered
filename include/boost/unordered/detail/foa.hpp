@@ -1400,37 +1400,6 @@ public:
       std::forward<Args>(args)...);
   }
 
-  template<typename... Args>
-  BOOST_FORCEINLINE std::pair<iterator,bool> emplace_dispatch(
-    std::true_type,Args&&... args
-  ) {
-    using emplace_type_t = emplace_type<Args...>;
-    return emplace_impl(emplace_type_t(std::forward<Args>(args)...));
-  }
-
-  template<typename... Args>
-  BOOST_FORCEINLINE std::pair<iterator,bool> emplace_dispatch(
-    std::false_type,Args&&... args
-  ) {
-    struct guard {
-      table& t;
-      element_type& x;
-      bool destroy;
-      ~guard(){
-        if(destroy) {
-          type_policy::destroy(t.al(),&x);
-        }
-      }
-    };
-
-    element_type x;
-    type_policy::construct(al(),&x,std::forward<Args>(args)...);
-    guard g{*this,x,true};
-    auto itp=emplace_impl(type_policy::move(x));
-    g.destroy=!itp.second;
-    return itp;
-  }
-
   template<typename Key,typename... Args>
   BOOST_FORCEINLINE std::pair<iterator,bool> try_emplace(
     Key&& x,Args&&... args)
@@ -1886,6 +1855,29 @@ private:
 #if defined(BOOST_MSVC)
 #pragma warning(pop) /* C4800 */
 #endif
+
+  template<typename... Args>
+  BOOST_FORCEINLINE std::pair<iterator,bool> emplace_dispatch(
+    std::true_type,Args&&... args
+  ) {
+    using emplace_type_t = emplace_type<Args...>;
+    return emplace_impl(emplace_type_t(std::forward<Args>(args)...));
+  }
+
+  template<typename... Args>
+  BOOST_FORCEINLINE std::pair<iterator,bool> emplace_dispatch(
+    std::false_type,Args&&... args
+  ) {
+    alignas(element_type)
+    unsigned char buf[sizeof(element_type)];
+    element_type* p = reinterpret_cast<element_type*>(buf);
+
+    type_policy::construct(al(),p,std::forward<Args>(args)...);
+    destroy_element_on_exit d{this,p};
+    (void)d;
+
+    return emplace_impl(type_policy::move(*p));
+  }
 
   template<typename... Args>
   BOOST_FORCEINLINE std::pair<iterator,bool> emplace_impl(Args&&... args)
