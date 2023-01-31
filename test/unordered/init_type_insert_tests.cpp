@@ -117,9 +117,7 @@ static void test_move_only()
   boost::unordered_flat_map<move_only, int, std::hash<move_only> > map;
 
   using init_type = decltype(map)::init_type;
-  static_assert(
-    std::is_same<decltype(std::make_pair(move_only(1), v)), init_type>::value,
-    "");
+  static_assert(std::is_same<std::pair<move_only, int>, init_type>::value, "");
 
   map.insert(std::make_pair(move_only(1), v));
   map.insert({move_only(2), v});
@@ -269,9 +267,7 @@ static void test_immovable()
   boost::unordered_node_map<immovable, int, std::hash<immovable> > map;
 
   using init_type = decltype(map)::init_type;
-  static_assert(
-    std::is_same<decltype(std::make_pair(immovable(1), v)), init_type>::value,
-    "");
+  static_assert(std::is_same<std::pair<immovable, int>, init_type>::value, "");
 
   map.emplace(1, v);
   map.emplace(2, v);
