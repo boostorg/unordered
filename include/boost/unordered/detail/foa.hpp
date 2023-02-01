@@ -1394,9 +1394,9 @@ public:
      * unconditionally allocates via `type_policy::construct()`.
      */
     return emplace_dispatch(
-      std::is_same<
+      std::is_constructible<
         value_type,
-        element_type>{},
+        emplace_type<Args...>&&>{},
       std::forward<Args>(args)...);
   }
 
