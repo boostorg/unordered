@@ -7,9 +7,16 @@
 #error "This test is only for the FOA-style conatiners"
 #endif
 
+#include "../helpers/test.hpp"
 #include "../helpers/unordered.hpp"
 
-#include "../helpers/test.hpp"
+#include <boost/config.hpp>
+
+#if defined(BOOST_LIBSTDCXX_VERSION)
+#if BOOST_LIBSTDCXX_VERSION < 60000
+#define BOOST_UNORDERED_NO_INIT_TYPE_TESTS
+#endif
+#endif
 
 struct move_only
 {
@@ -38,6 +45,8 @@ namespace std {
 
 } // namespace std
 
+#ifndef BOOST_UNORDERED_NO_INIT_TYPE_TESTS
+
 struct immovable
 {
   int x_ = -1;
@@ -64,6 +73,8 @@ namespace std {
   };
 
 } // namespace std
+
+#endif
 
 struct raii_tracker
 {
@@ -262,6 +273,7 @@ static void test_insert_hint_tracking()
 
 static void test_immovable()
 {
+#ifndef BOOST_UNORDERED_NO_INIT_TYPE_TESTS
   int const v = 128;
 
   boost::unordered_node_map<immovable, int, std::hash<immovable> > map;
@@ -276,6 +288,7 @@ static void test_immovable()
 
   map.rehash(1024);
   BOOST_TEST_GE(map.bucket_count(), 1024u);
+#endif
 }
 
 static void test_insert_node_tracking()
