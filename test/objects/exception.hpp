@@ -259,11 +259,13 @@ namespace test {
       bool operator()(std::pair<object, object> const& x1,
         std::pair<object, object> const& x2) const
       {
-        bool const first_is_eq =
-          !less_impl(x1.first, x2.first) && !less_impl(x2.first, x1.first);
-
-        return less_impl(x1.first, x2.first) ||
-               (first_is_eq && less_impl(x1.second, x2.second));
+        if (less_impl(x1.first, x2.first)) {
+          return true;
+        }
+        if (less_impl(x2.first, x1.first)) {
+          return false;
+        }
+        return less_impl(x1.second, x2.second);
       }
 
       bool less_impl(object const& x1, object const& x2) const
