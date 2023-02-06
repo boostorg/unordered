@@ -11,6 +11,8 @@
 #ifndef BOOST_UNORDERED_DETAIL_FOA_HPP
 #define BOOST_UNORDERED_DETAIL_FOA_HPP
 
+#include <iostream>
+
 #include <boost/assert.hpp>
 #include <boost/config.hpp>
 #include <boost/config/workaround.hpp>
@@ -1498,6 +1500,14 @@ public:
     }
   }
 
+  void extract(const_iterator pos, element_type* p)noexcept
+  {
+    BOOST_ASSERT(pos!=end());
+    type_policy::construct(al(),p,type_policy::move(*pos.p));
+    destroy_element(pos.p);
+    recover_slot(pos.pc);
+  }
+
   // TODO: should we accept different allocator too?
   template<typename Hash2,typename Pred2>
   void merge(table<TypePolicy,Hash2,Pred2,Allocator>& x)
@@ -1878,7 +1888,7 @@ private:
 
     return emplace_impl(type_policy::move(*p));
   }
-
+public:
   template<typename... Args>
   BOOST_FORCEINLINE std::pair<iterator,bool> emplace_impl(Args&&... args)
   {
@@ -1903,7 +1913,7 @@ private:
       };  
     }
   }
-
+private:
   static std::size_t capacity_for(std::size_t n)
   {
     return size_policy::size(size_index_for<group_type,size_policy>(n))*N-1;

@@ -1,4 +1,4 @@
-// Copyright (C) 2022 Christian Mazakas
+// Copyright (C) 2022-2023 Christian Mazakas
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -16,6 +16,7 @@
 
 #include <boost/core/allocator_access.hpp>
 #include <boost/functional/hash.hpp>
+#include <boost/optional/optional.hpp>
 #include <boost/throw_exception.hpp>
 
 #include <initializer_list>
@@ -36,6 +37,7 @@ namespace boost {
       template <class Key, class T> struct node_map_types
       {
         using key_type = Key;
+        using mapped_type = T;
         using raw_key_type = typename std::remove_const<Key>::type;
         using raw_mapped_type = typename std::remove_const<T>::type;
 
@@ -79,8 +81,12 @@ namespace boost {
         template <class A>
         static void construct(A&, element_type* p, element_type&& x)
         {
+          std::cout << "should be seeing this: construct(A&, element_type* p, "
+                       "element_type&& x)"
+                    << std::endl;
           p->p = x.p;
           x.p = nullptr;
+          std::cout << "p->p is now: " << p->p << std::endl;
         }
 
         template <class A>
@@ -111,6 +117,7 @@ namespace boost {
         template <class A> static void destroy(A& al, element_type* p) noexcept
         {
           if (p->p) {
+            std::cout << "going to deallocate: " << p->p << std::endl;
             boost::allocator_destroy(al, p->p);
             boost::allocator_deallocate(al,
               boost::pointer_traits<
@@ -118,6 +125,95 @@ namespace boost {
               1);
           }
         }
+      };
+
+      template <class NodeMapTypes, class Allocator> struct node_handle
+      {
+      private:
+        using type_policy = NodeMapTypes;
+        using element_type = typename type_policy::element_type;
+
+        template <class Key, class T, class Hash, class Pred, class Alloc>
+        friend class boost::unordered::unordered_node_map;
+
+      public:
+        using value_type = typename NodeMapTypes::value_type;
+        using key_type = typename NodeMapTypes::key_type;
+        using mapped_type = typename NodeMapTypes::mapped_type;
+        using allocator_type = Allocator;
+
+      private:
+        alignas(element_type) unsigned char x[sizeof(element_type)];
+        alignas(Allocator) unsigned char a[sizeof(Allocator)];
+        bool empty_;
+
+        element_type& element() noexcept
+        {
+          BOOST_ASSERT(!empty());
+          return *reinterpret_cast<element_type*>(x);
+        }
+
+        element_type const& element() const noexcept
+        {
+          BOOST_ASSERT(!empty());
+          return *reinterpret_cast<element_type const*>(x);
+        }
+
+        Allocator& al() noexcept
+        {
+          BOOST_ASSERT(!empty());
+          return *reinterpret_cast<Allocator*>(a);
+        }
+
+        Allocator const& al() const noexcept
+        {
+          BOOST_ASSERT(!empty());
+          return *reinterpret_cast<Allocator const*>(a);
+        }
+
+      public:
+        constexpr node_handle() noexcept = default;
+
+        node_handle(node_handle&& nh) noexcept
+        {
+          new (a) Allocator(std::move(nh.al()));
+          type_policy::construct(al(), reinterpret_cast<element_type*>(x),
+            type_policy::move(nh.element()));
+
+          reinterpret_cast<Allocator*>(nh.a)->~Allocator();
+          nh.empty_ = true;
+        }
+
+        ~node_handle()
+        {
+          if (!empty()) {
+            type_policy::destroy(al(), reinterpret_cast<element_type*>(x));
+            reinterpret_cast<Allocator*>(a)->~Allocator();
+            empty_ = true;
+          }
+        }
+
+        key_type& key() const
+        {
+          return const_cast<key_type&>(type_policy::extract(element()));
+        }
+
+        mapped_type& mapped() const
+        {
+          return const_cast<mapped_type&>(
+            type_policy::value_from(element()).second);
+        }
+
+        allocator_type get_allocator() const noexcept { return al(); }
+        explicit operator bool() const noexcept { return !empty(); }
+        BOOST_ATTRIBUTE_NODISCARD bool empty() const noexcept { return empty_; }
+      };
+
+      template <class Iterator, class NodeType> struct insert_return_type
+      {
+        Iterator position;
+        bool inserted;
+        NodeType node;
       };
     } // namespace detail
 
@@ -153,6 +249,9 @@ namespace boost {
         typename boost::allocator_const_pointer<allocator_type>::type;
       using iterator = typename table_type::iterator;
       using const_iterator = typename table_type::const_iterator;
+      using node_type = detail::node_handle<map_types, allocator_type>;
+      using insert_return_type =
+        detail::insert_return_type<iterator, node_type>;
 
       unordered_node_map() : unordered_node_map(0) {}
 
@@ -342,6 +441,22 @@ namespace boost {
         this->insert(ilist.begin(), ilist.end());
       }
 
+      insert_return_type insert(node_type&& nh)
+      {
+        if (nh.empty()) {
+          return {end(), false, node_type{}};
+        }
+
+        BOOST_ASSERT(get_allocator() == nh.get_allocator());
+
+        auto itp = table_.emplace_impl(map_types::move(nh.element()));
+        if (itp.second) {
+          return {itp.first, true, node_type{}};
+        } else {
+          return {itp.first, false, std::move(nh)};
+        }
+      }
+
       template <class M>
       std::pair<iterator, bool> insert_or_assign(key_type const& key, M&& obj)
       {
@@ -496,6 +611,52 @@ namespace boost {
         noexcept(std::declval<table_type&>().swap(std::declval<table_type&>())))
       {
         table_.swap(rhs.table_);
+      }
+
+      node_type extract(const_iterator pos)
+      {
+        BOOST_ASSERT(pos != end());
+        node_type nh;
+        table_.extract(
+          pos, reinterpret_cast<typename map_types::element_type*>(nh.x));
+        new (&nh.a) allocator_type(get_allocator());
+        nh.empty_ = false;
+        return nh;
+      }
+
+      node_type extract(key_type const& key)
+      {
+        auto pos = find(key);
+        node_type nh;
+        if (pos != end()) {
+          table_.extract(
+            pos, reinterpret_cast<typename map_types::element_type*>(nh.x));
+          new (&nh.a) allocator_type(get_allocator());
+          nh.empty_ = false;
+        } else {
+          nh.empty_ = true;
+        }
+        return nh;
+      }
+
+      template <class K>
+      typename std::enable_if<
+        boost::unordered::detail::transparent_non_iterable<K,
+          unordered_node_map>::value,
+        node_type>::type
+      extract(K const& key)
+      {
+        auto pos = find(key);
+        node_type nh;
+        if (pos != end()) {
+          table_.extract(
+            pos, reinterpret_cast<typename map_types::element_type*>(nh.x));
+          new (&nh.a) allocator_type(get_allocator());
+          nh.empty_ = false;
+        } else {
+          nh.empty_ = true;
+        }
+        return nh;
       }
 
       template <class H2, class P2>

@@ -1,12 +1,12 @@
 
 // Copyright 2016 Daniel James.
+// Copyright 2023 Christian Mazakas
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include "../helpers/postfix.hpp"
+#include "../helpers/unordered.hpp"
 #include "../helpers/prefix.hpp"
-#include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
 
 #include "../helpers/helpers.hpp"
 #include "../helpers/metafunctions.hpp"
@@ -16,6 +16,33 @@
 #include <boost/type_traits/is_same.hpp>
 #include <set>
 #include <string>
+
+#ifdef BOOST_UNORDERED_FOA_TESTS
+UNORDERED_AUTO_TEST (example1_5) {
+  typedef boost::unordered_node_map<int, std::string>::insert_return_type
+    insert_return_type;
+
+  boost::unordered_node_map<int, std::string> src;
+  src.emplace(1, "one");
+  src.emplace(2, "two");
+  src.emplace(3, "buckle my shoe");
+  boost::unordered_node_map<int, std::string> dst;
+  dst.emplace(3, "three");
+
+  dst.insert(src.extract(src.find(1)));
+  dst.insert(src.extract(2));
+  insert_return_type r = dst.insert(src.extract(3));
+
+  BOOST_TEST(src.empty());
+  BOOST_TEST(dst.size() == 3);
+  BOOST_TEST(dst[1] == "one");
+  BOOST_TEST(dst[2] == "two");
+  BOOST_TEST(dst[3] == "three");
+  BOOST_TEST(!r.inserted);
+  BOOST_TEST(r.position == dst.find(3));
+  BOOST_TEST(r.node.mapped() == "buckle my shoe");
+}
+#else
 
 UNORDERED_AUTO_TEST (example1) {
   typedef boost::unordered_map<int, std::string>::insert_return_type
@@ -546,5 +573,7 @@ UNORDERED_AUTO_TEST (insert_node_handle_unique_tests2) {
     BOOST_TEST(x2.size() == 4);
   }
 }
+
+#endif
 
 RUN_TESTS()
