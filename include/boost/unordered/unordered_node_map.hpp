@@ -81,12 +81,8 @@ namespace boost {
         template <class A>
         static void construct(A&, element_type* p, element_type&& x)
         {
-          std::cout << "should be seeing this: construct(A&, element_type* p, "
-                       "element_type&& x)"
-                    << std::endl;
           p->p = x.p;
           x.p = nullptr;
-          std::cout << "p->p is now: " << p->p << std::endl;
         }
 
         template <class A>
@@ -117,7 +113,6 @@ namespace boost {
         template <class A> static void destroy(A& al, element_type* p) noexcept
         {
           if (p->p) {
-            std::cout << "going to deallocate: " << p->p << std::endl;
             boost::allocator_destroy(al, p->p);
             boost::allocator_deallocate(al,
               boost::pointer_traits<
