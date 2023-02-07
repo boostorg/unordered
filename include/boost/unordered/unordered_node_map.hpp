@@ -16,7 +16,6 @@
 
 #include <boost/core/allocator_access.hpp>
 #include <boost/functional/hash.hpp>
-#include <boost/optional/optional.hpp>
 #include <boost/throw_exception.hpp>
 
 #include <initializer_list>
@@ -56,6 +55,11 @@ namespace boost {
            */
           element_type() = default;
           element_type(element_type const&) = delete;
+          element_type(element_type&& rhs) noexcept
+          {
+            p = rhs.p;
+            rhs.p = nullptr;
+          }
         };
 
         static value_type& value_from(element_type const& x) { return *(x.p); }
@@ -122,7 +126,7 @@ namespace boost {
         }
       };
 
-      template <class NodeMapTypes, class Allocator> struct node_handle
+      template <class NodeMapTypes, class Allocator> struct node_map_handle
       {
       private:
         using type_policy = NodeMapTypes;
@@ -132,7 +136,6 @@ namespace boost {
         friend class boost::unordered::unordered_node_map;
 
       public:
-        using value_type = typename NodeMapTypes::value_type;
         using key_type = typename NodeMapTypes::key_type;
         using mapped_type = typename NodeMapTypes::mapped_type;
         using allocator_type = Allocator;
@@ -167,24 +170,22 @@ namespace boost {
         }
 
       public:
-        constexpr node_handle() noexcept = default;
+        constexpr node_map_handle() noexcept = default;
 
-        node_handle(node_handle&& nh) noexcept
+        node_map_handle(node_map_handle&& nh) noexcept
         {
           // neither of these move constructors are allowed to throw exceptions
           // so we can get away with rote placement new
           //
           new (a) Allocator(std::move(nh.al()));
-          type_policy::construct(al(), reinterpret_cast<element_type*>(x),
-            type_policy::move(nh.element()));
-
+          new (x) element_type(std::move(nh.element()));
           empty_ = false;
 
           reinterpret_cast<Allocator*>(nh.a)->~Allocator();
           nh.empty_ = true;
         }
 
-        ~node_handle()
+        ~node_map_handle()
         {
           if (!empty()) {
             type_policy::destroy(al(), reinterpret_cast<element_type*>(x));
@@ -207,13 +208,6 @@ namespace boost {
         allocator_type get_allocator() const noexcept { return al(); }
         explicit operator bool() const noexcept { return !empty(); }
         BOOST_ATTRIBUTE_NODISCARD bool empty() const noexcept { return empty_; }
-      };
-
-      template <class Iterator, class NodeType> struct insert_return_type
-      {
-        Iterator position;
-        bool inserted;
-        NodeType node;
       };
     } // namespace detail
 
@@ -249,7 +243,9 @@ namespace boost {
         typename boost::allocator_const_pointer<allocator_type>::type;
       using iterator = typename table_type::iterator;
       using const_iterator = typename table_type::const_iterator;
-      using node_type = detail::node_handle<map_types, allocator_type>;
+      using node_type = detail::node_map_handle<map_types,
+        typename boost::allocator_rebind<Allocator,
+          typename map_types::value_type>::type>;
       using insert_return_type =
         detail::insert_return_type<iterator, node_type>;
 
@@ -455,6 +451,18 @@ namespace boost {
         } else {
           return {itp.first, false, std::move(nh)};
         }
+      }
+
+      iterator insert(const_iterator, node_type&& nh)
+      {
+        if (nh.empty()) {
+          return end();
+        }
+
+        BOOST_ASSERT(get_allocator() == nh.get_allocator());
+
+        auto itp = table_.emplace_impl(map_types::move(nh.element()));
+        return itp.first;
       }
 
       template <class M>

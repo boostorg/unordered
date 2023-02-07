@@ -82,6 +82,15 @@
 namespace boost{
 namespace unordered{
 namespace detail{
+
+template <class Iterator,class NodeType>
+struct insert_return_type
+{
+  Iterator position;
+  bool     inserted;
+  NodeType node;
+};
+
 namespace foa{
 
 static const std::size_t default_bucket_count = 0;

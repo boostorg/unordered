@@ -5,8 +5,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include "../helpers/postfix.hpp"
-#include "../helpers/unordered.hpp"
 #include "../helpers/prefix.hpp"
+#include "../helpers/unordered.hpp"
 
 #include "../helpers/helpers.hpp"
 #include "../helpers/metafunctions.hpp"
@@ -17,42 +17,19 @@
 #include <set>
 #include <string>
 
-#ifdef BOOST_UNORDERED_FOA_TESTS
-UNORDERED_AUTO_TEST (example1_5) {
-  typedef boost::unordered_node_map<int, std::string>::insert_return_type
-    insert_return_type;
+template <template <class Key, class T, class Hash = boost::hash<Key>,
+  class Pred = std::equal_to<Key>,
+  class Allocator = std::allocator<std::pair<Key const, T> > >
+  class Map>
+static void example1()
+{
+  typedef typename Map<int, std::string>::insert_return_type insert_return_type;
 
-  boost::unordered_node_map<int, std::string> src;
+  Map<int, std::string> src;
   src.emplace(1, "one");
   src.emplace(2, "two");
   src.emplace(3, "buckle my shoe");
-  boost::unordered_node_map<int, std::string> dst;
-  dst.emplace(3, "three");
-
-  dst.insert(src.extract(src.find(1)));
-  dst.insert(src.extract(2));
-  insert_return_type r = dst.insert(src.extract(3));
-
-  BOOST_TEST(src.empty());
-  BOOST_TEST(dst.size() == 3);
-  BOOST_TEST(dst[1] == "one");
-  BOOST_TEST(dst[2] == "two");
-  BOOST_TEST(dst[3] == "three");
-  BOOST_TEST(!r.inserted);
-  BOOST_TEST(r.position == dst.find(3));
-  BOOST_TEST(r.node.mapped() == "buckle my shoe");
-}
-#else
-
-UNORDERED_AUTO_TEST (example1) {
-  typedef boost::unordered_map<int, std::string>::insert_return_type
-    insert_return_type;
-
-  boost::unordered_map<int, std::string> src;
-  src.emplace(1, "one");
-  src.emplace(2, "two");
-  src.emplace(3, "buckle my shoe");
-  boost::unordered_map<int, std::string> dst;
+  Map<int, std::string> dst;
   dst.emplace(3, "three");
 
   dst.insert(src.extract(src.find(1)));
@@ -69,12 +46,16 @@ UNORDERED_AUTO_TEST (example1) {
   BOOST_TEST(r.node.mapped() == "buckle my shoe");
 }
 
-UNORDERED_AUTO_TEST (example2) {
-  boost::unordered_set<int> src;
+template <template <class Key, class Hash = boost::hash<Key>,
+  class Pred = std::equal_to<Key>, class Allocator = std::allocator<Key> >
+  class Set>
+static void example2()
+{
+  Set<int> src;
   src.insert(1);
   src.insert(3);
   src.insert(5);
-  boost::unordered_set<int> dst;
+  Set<int> dst;
   dst.insert(2);
   dst.insert(4);
   dst.insert(5);
@@ -84,14 +65,18 @@ UNORDERED_AUTO_TEST (example2) {
   // dst == {1, 2, 3, 4, 5}
 }
 
-UNORDERED_AUTO_TEST (example3) {
-  typedef boost::unordered_set<int>::iterator iterator;
+template <template <class Key, class Hash = boost::hash<Key>,
+  class Pred = std::equal_to<Key>, class Allocator = std::allocator<Key> >
+  class Set>
+static void example3()
+{
+  typedef typename Set<int>::iterator iterator;
 
-  boost::unordered_set<int> src;
+  Set<int> src;
   src.insert(1);
   src.insert(3);
   src.insert(5);
-  boost::unordered_set<int> dst;
+  Set<int> dst;
   dst.insert(2);
   dst.insert(4);
   dst.insert(5);
@@ -115,17 +100,26 @@ UNORDERED_AUTO_TEST (example3) {
   BOOST_TEST(it == dst2.end());
 }
 
-UNORDERED_AUTO_TEST (failed_insertion_with_hint) {
+template <template <class Key, class T, class Hash = boost::hash<Key>,
+            class Pred = std::equal_to<Key>,
+            class Allocator = std::allocator<std::pair<Key const, T> > >
+          class Map,
+  template <class Key, class Hash = boost::hash<Key>,
+    class Pred = std::equal_to<Key>, class Allocator = std::allocator<Key> >
+  class Set>
+static void failed_insertion_with_hint()
+{
   {
-    boost::unordered_set<int> src;
-    boost::unordered_set<int> dst;
+    Set<int> src;
+    Set<int> dst;
     src.emplace(10);
     src.emplace(20);
     dst.emplace(10);
     dst.emplace(20);
 
-    boost::unordered_set<int>::node_type nh = src.extract(10);
+    typename Set<int>::node_type nh = src.extract(10);
 
+    std::cout << "performing relevant test now" << std::endl;
     BOOST_TEST(dst.insert(dst.find(10), boost::move(nh)) == dst.find(10));
     BOOST_TEST(nh);
     BOOST_TEST(!nh.empty());
@@ -143,14 +137,14 @@ UNORDERED_AUTO_TEST (failed_insertion_with_hint) {
   }
 
   {
-    boost::unordered_map<int, int> src;
-    boost::unordered_map<int, int> dst;
+    Map<int, int> src;
+    Map<int, int> dst;
     src.emplace(10, 30);
     src.emplace(20, 5);
     dst.emplace(10, 20);
     dst.emplace(20, 2);
 
-    boost::unordered_map<int, int>::node_type nh = src.extract(10);
+    typename Map<int, int>::node_type nh = src.extract(10);
     BOOST_TEST(dst.insert(dst.find(10), boost::move(nh)) == dst.find(10));
     BOOST_TEST(nh);
     BOOST_TEST(!nh.empty());
@@ -170,6 +164,23 @@ UNORDERED_AUTO_TEST (failed_insertion_with_hint) {
     BOOST_TEST(dst.count(10) == 1);
     BOOST_TEST(dst.count(20) == 1);
   }
+}
+
+#ifdef BOOST_UNORDERED_FOA_TESTS
+
+UNORDERED_AUTO_TEST (examples) {
+  example1<boost::unordered_node_map>();
+  example2<boost::unordered_node_set>();
+  example3<boost::unordered_node_set>();
+  failed_insertion_with_hint<boost::unordered_node_map,
+    boost::unordered_node_set>();
+}
+#else
+UNORDERED_AUTO_TEST (examples) {
+  example1<boost::unordered_map>();
+  example2<boost::unordered_set>();
+  example3<boost::unordered_set>();
+  failed_insertion_with_hint<boost::unordered_map, boost::unordered_set>();
 }
 
 template <typename NodeHandle>

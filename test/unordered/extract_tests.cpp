@@ -4,7 +4,6 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-
 #include "../helpers/unordered.hpp"
 
 #include "../helpers/equivalent.hpp"
@@ -115,12 +114,13 @@ namespace extract_tests {
 
 #ifdef BOOST_UNORDERED_FOA_TESTS
   boost::unordered_node_map<test::object, test::object, test::hash,
-    test::equal_to,
-    test::allocator1<std::pair<test::object const, test::object> > >*
-    test_node_map;
+    test::equal_to, test::allocator1<test::object> >* test_node_map;
 
-  UNORDERED_TEST(
-    extract_tests1, ((test_node_map))((default_generator)(generate_collisions)))
+  boost::unordered_node_set<test::object, test::hash, test::equal_to,
+    test::allocator1<test::object> >* test_node_set;
+
+  UNORDERED_TEST(extract_tests1,
+    ((test_node_map)(test_node_set))((default_generator)(generate_collisions)))
 #else
   boost::unordered_set<test::object, test::hash, test::equal_to,
     test::allocator1<test::object> >* test_set;

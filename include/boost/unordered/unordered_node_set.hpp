@@ -51,6 +51,11 @@ namespace boost {
            */
           element_type() = default;
           element_type(element_type const&) = delete;
+          element_type(element_type&& rhs) noexcept
+          {
+            p = rhs.p;
+            rhs.p = nullptr;
+          }
         };
 
         static value_type& value_from(element_type const& x) { return *x.p; }
@@ -102,6 +107,84 @@ namespace boost {
           }
         }
       };
+
+      template <class NodeSetTypes, class Allocator> struct node_set_handle
+      {
+      private:
+        using type_policy = NodeSetTypes;
+        using element_type = typename type_policy::element_type;
+
+        template <class Key, class Hash, class Pred, class Alloc>
+        friend class boost::unordered::unordered_node_set;
+
+      public:
+        using value_type = typename NodeSetTypes::value_type;
+        using allocator_type = Allocator;
+
+      private:
+        alignas(element_type) unsigned char x[sizeof(element_type)];
+        alignas(Allocator) unsigned char a[sizeof(Allocator)];
+        bool empty_;
+
+        element_type& element() noexcept
+        {
+          BOOST_ASSERT(!empty());
+          return *reinterpret_cast<element_type*>(x);
+        }
+
+        element_type const& element() const noexcept
+        {
+          BOOST_ASSERT(!empty());
+          return *reinterpret_cast<element_type const*>(x);
+        }
+
+        Allocator& al() noexcept
+        {
+          BOOST_ASSERT(!empty());
+          return *reinterpret_cast<Allocator*>(a);
+        }
+
+        Allocator const& al() const noexcept
+        {
+          BOOST_ASSERT(!empty());
+          return *reinterpret_cast<Allocator const*>(a);
+        }
+
+      public:
+        constexpr node_set_handle() noexcept = default;
+
+        node_set_handle(node_set_handle&& nh) noexcept
+        {
+          // neither of these move constructors are allowed to throw exceptions
+          // so we can get away with rote placement new
+          //
+          new (a) Allocator(std::move(nh.al()));
+          new (x) element_type(std::move(nh.element()));
+          empty_ = false;
+
+          reinterpret_cast<Allocator*>(nh.a)->~Allocator();
+          nh.empty_ = true;
+        }
+
+        ~node_set_handle()
+        {
+          if (!empty()) {
+            type_policy::destroy(al(), reinterpret_cast<element_type*>(x));
+            reinterpret_cast<Allocator*>(a)->~Allocator();
+            empty_ = true;
+          }
+        }
+
+        value_type& value() const
+        {
+          BOOST_ASSERT(!empty());
+          return const_cast<value_type&>(type_policy::extract(element()));
+        }
+
+        allocator_type get_allocator() const noexcept { return al(); }
+        explicit operator bool() const noexcept { return !empty(); }
+        BOOST_ATTRIBUTE_NODISCARD bool empty() const noexcept { return empty_; }
+      };
     } // namespace detail
 
     template <class Key, class Hash, class KeyEqual, class Allocator>
@@ -135,6 +218,11 @@ namespace boost {
         typename boost::allocator_const_pointer<allocator_type>::type;
       using iterator = typename table_type::iterator;
       using const_iterator = typename table_type::const_iterator;
+      using node_type = detail::node_set_handle<set_types,
+        typename boost::allocator_rebind<Allocator,
+          typename set_types::value_type>::type>;
+      using insert_return_type =
+        detail::insert_return_type<iterator, node_type>;
 
       unordered_node_set() : unordered_node_set(0) {}
 
@@ -339,6 +427,34 @@ namespace boost {
         this->insert(ilist.begin(), ilist.end());
       }
 
+      insert_return_type insert(node_type&& nh)
+      {
+        if (nh.empty()) {
+          return {end(), false, node_type{}};
+        }
+
+        BOOST_ASSERT(get_allocator() == nh.get_allocator());
+
+        auto itp = table_.emplace_impl(set_types::move(nh.element()));
+        if (itp.second) {
+          return {itp.first, true, node_type{}};
+        } else {
+          return {itp.first, false, std::move(nh)};
+        }
+      }
+
+      iterator insert(const_iterator, node_type&& nh)
+      {
+        if (nh.empty()) {
+          return end();
+        }
+
+        BOOST_ASSERT(get_allocator() == nh.get_allocator());
+
+        auto itp = table_.emplace_impl(set_types::move(nh.element()));
+        return itp.first;
+      }
+
       template <class... Args>
       BOOST_FORCEINLINE std::pair<iterator, bool> emplace(Args&&... args)
       {
@@ -381,6 +497,52 @@ namespace boost {
         noexcept(std::declval<table_type&>().swap(std::declval<table_type&>())))
       {
         table_.swap(rhs.table_);
+      }
+
+      node_type extract(const_iterator pos)
+      {
+        BOOST_ASSERT(pos != end());
+        node_type nh;
+        table_.extract(
+          pos, reinterpret_cast<typename set_types::element_type*>(nh.x));
+        new (&nh.a) allocator_type(get_allocator());
+        nh.empty_ = false;
+        return nh;
+      }
+
+      node_type extract(key_type const& key)
+      {
+        auto pos = find(key);
+        node_type nh;
+        if (pos != end()) {
+          table_.extract(
+            pos, reinterpret_cast<typename set_types::element_type*>(nh.x));
+          new (&nh.a) allocator_type(get_allocator());
+          nh.empty_ = false;
+        } else {
+          nh.empty_ = true;
+        }
+        return nh;
+      }
+
+      template <class K>
+      typename std::enable_if<
+        boost::unordered::detail::transparent_non_iterable<K,
+          unordered_node_set>::value,
+        node_type>::type
+      extract(K const& key)
+      {
+        auto pos = find(key);
+        node_type nh;
+        if (pos != end()) {
+          table_.extract(
+            pos, reinterpret_cast<typename set_types::element_type*>(nh.x));
+          new (&nh.a) allocator_type(get_allocator());
+          nh.empty_ = false;
+        } else {
+          nh.empty_ = true;
+        }
+        return nh;
       }
 
       template <class H2, class P2>
