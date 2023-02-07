@@ -79,7 +79,7 @@ namespace boost {
         }
 
         template <class A>
-        static void construct(A&, element_type* p, element_type&& x)
+        static void construct(A&, element_type* p, element_type&& x) noexcept
         {
           p->p = x.p;
           x.p = nullptr;
@@ -171,9 +171,14 @@ namespace boost {
 
         node_handle(node_handle&& nh) noexcept
         {
+          // neither of these move constructors are allowed to throw exceptions
+          // so we can get away with rote placement new
+          //
           new (a) Allocator(std::move(nh.al()));
           type_policy::construct(al(), reinterpret_cast<element_type*>(x),
             type_policy::move(nh.element()));
+
+          empty_ = false;
 
           reinterpret_cast<Allocator*>(nh.a)->~Allocator();
           nh.empty_ = true;
