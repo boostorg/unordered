@@ -56,6 +56,10 @@ namespace boost {
             p = rhs.p;
             rhs.p = nullptr;
           }
+
+          void swap(element_type& rhs) noexcept {
+            std::swap(p, rhs.p);
+          }
         };
 
         static value_type& value_from(element_type const& x) { return *x.p; }
@@ -117,19 +121,20 @@ namespace boost {
           detail::foa::node_handle_base<NodeSetTypes, Allocator>;
 
         using base_type::element;
-        using base_type::type_policy;
+        using typename base_type::type_policy;
 
         template <class Key, class Hash, class Pred, class Alloc>
         friend class boost::unordered::unordered_node_set;
 
       public:
-        using value_type = typename NodeSetTypes::value_type;
-
-      public:
         using base_type::empty;
+        using base_type::swap;
+
+        using value_type = typename NodeSetTypes::value_type;
 
         constexpr node_set_handle() noexcept = default;
         node_set_handle(node_set_handle&& nh) noexcept = default;
+        node_set_handle& operator=(node_set_handle&&) noexcept = default;
 
         value_type& value() const
         {

@@ -166,23 +166,6 @@ static void failed_insertion_with_hint()
   }
 }
 
-#ifdef BOOST_UNORDERED_FOA_TESTS
-
-UNORDERED_AUTO_TEST (examples) {
-  example1<boost::unordered_node_map>();
-  example2<boost::unordered_node_set>();
-  example3<boost::unordered_node_set>();
-  failed_insertion_with_hint<boost::unordered_node_map,
-    boost::unordered_node_set>();
-}
-#else
-UNORDERED_AUTO_TEST (examples) {
-  example1<boost::unordered_map>();
-  example2<boost::unordered_set>();
-  example3<boost::unordered_set>();
-  failed_insertion_with_hint<boost::unordered_map, boost::unordered_set>();
-}
-
 template <typename NodeHandle>
 bool node_handle_compare(
   NodeHandle const& nh, typename NodeHandle::value_type const& x)
@@ -269,19 +252,37 @@ template <typename Container> void node_handle_tests_impl(Container& c)
   BOOST_TEST(!n4);
 }
 
-UNORDERED_AUTO_TEST (node_handle_tests) {
-  boost::unordered_set<int> x1;
+template <template <class Key, class T, class Hash = boost::hash<Key>,
+            class Pred = std::equal_to<Key>,
+            class Allocator = std::allocator<std::pair<Key const, T> > >
+          class Map,
+  template <class Key, class Hash = boost::hash<Key>,
+    class Pred = std::equal_to<Key>, class Allocator = std::allocator<Key> >
+  class Set>
+static void node_handle_tests()
+{
+  Set<int> x1;
   x1.emplace(100);
   x1.emplace(140);
   x1.emplace(-55);
   node_handle_tests_impl(x1);
 
-  boost::unordered_map<int, std::string> x2;
+  Map<int, std::string> x2;
   x2.emplace(10, "ten");
   x2.emplace(-23, "twenty");
   x2.emplace(-76, "thirty");
   node_handle_tests_impl(x2);
 }
+
+#ifdef BOOST_UNORDERED_FOA_TESTS
+
+template <class X> typename X::iterator insert_empty_node(X& x)
+{
+  typedef typename X::node_type node_type;
+  return x.insert(node_type()).position;
+}
+
+#else
 
 template <class Key, class T, class Hash, class KeyEqual, class Allocator>
 typename boost::unordered_map<Key, T, Hash, KeyEqual, Allocator>::iterator
@@ -326,8 +327,10 @@ insert_empty_node(boost::unordered_multiset<T, Hash, KeyEqual, Allocator>& c)
   return c.insert(node_type());
 }
 
+#endif
+
 template <typename Container1, typename Container2>
-void insert_node_handle_unique(Container1& c1, Container2& c2)
+static void insert_node_handle_unique(Container1& c1, Container2& c2)
 {
   typedef typename Container1::node_type node_type;
   typedef typename Container1::value_type value_type;
@@ -368,7 +371,7 @@ void insert_node_handle_unique(Container1& c1, Container2& c2)
 }
 
 template <typename Container1, typename Container2>
-void insert_node_handle_unique2(Container1& c1, Container2& c2)
+static void insert_node_handle_unique2(Container1& c1, Container2& c2)
 {
   typedef typename Container1::node_type node_type;
   typedef typename Container1::value_type value_type;
@@ -400,6 +403,130 @@ void insert_node_handle_unique2(Container1& c1, Container2& c2)
   }
 }
 
+struct hash_thing
+{
+  std::size_t operator()(int x) const
+  {
+    return static_cast<std::size_t>(x * 13 + 5);
+  }
+};
+
+#ifdef BOOST_UNORDERED_FOA_TESTS
+
+UNORDERED_AUTO_TEST (examples) {
+  example1<boost::unordered_node_map>();
+  example2<boost::unordered_node_set>();
+  example3<boost::unordered_node_set>();
+  failed_insertion_with_hint<boost::unordered_node_map,
+    boost::unordered_node_set>();
+  node_handle_tests<boost::unordered_node_map, boost::unordered_node_set>();
+}
+
+UNORDERED_AUTO_TEST (insert_node_handle_unique_tests) {
+  {
+    boost::unordered_node_set<int> x1;
+    boost::unordered_node_set<int> x2;
+    x1.emplace(100);
+    x1.emplace(140);
+    x1.emplace(-55);
+    x2.emplace(140);
+    insert_node_handle_unique(x1, x2);
+    BOOST_TEST(x2.size() == 3);
+  }
+
+  {
+    boost::unordered_node_set<int> x1;
+    boost::unordered_node_set<int> x2;
+    x1.emplace(100);
+    x1.emplace(140);
+    x1.emplace(-55);
+    x2.emplace(140);
+    insert_node_handle_unique(x1, x2);
+    BOOST_TEST(x2.size() == 3);
+  }
+
+  {
+    boost::unordered_node_map<int, int, hash_thing> x1;
+    boost::unordered_node_map<int, int> x2;
+    x1.emplace(67, 50);
+    x1.emplace(23, 45);
+    x1.emplace(18, 19);
+    x2.emplace(23, 50);
+    x2.emplace(12, 49);
+    insert_node_handle_unique(x1, x2);
+    BOOST_TEST(x2.size() == 4);
+  }
+
+  {
+    boost::unordered_node_map<int, int, hash_thing> x1;
+    boost::unordered_node_map<int, int> x2;
+    x1.emplace(67, 50);
+    x1.emplace(23, 45);
+    x1.emplace(18, 19);
+    x2.emplace(23, 50);
+    x2.emplace(12, 49);
+    insert_node_handle_unique(x1, x2);
+    BOOST_TEST(x2.size() == 4);
+  }
+}
+
+UNORDERED_AUTO_TEST (insert_node_handle_unique_tests2) {
+  {
+    boost::unordered_node_set<int> x1;
+    boost::unordered_node_set<int> x2;
+    x1.emplace(100);
+    x1.emplace(140);
+    x1.emplace(-55);
+    x2.emplace(140);
+    insert_node_handle_unique2(x1, x2);
+    BOOST_TEST(x2.size() == 3);
+  }
+
+  {
+    boost::unordered_node_set<int> x1;
+    boost::unordered_node_set<int> x2;
+    x1.emplace(100);
+    x1.emplace(140);
+    x1.emplace(-55);
+    x2.emplace(140);
+    insert_node_handle_unique2(x1, x2);
+    BOOST_TEST(x2.size() == 3);
+  }
+
+  {
+    boost::unordered_node_map<int, int, hash_thing> x1;
+    boost::unordered_node_map<int, int> x2;
+    x1.emplace(67, 50);
+    x1.emplace(23, 45);
+    x1.emplace(18, 19);
+    x2.emplace(23, 50);
+    x2.emplace(12, 49);
+    insert_node_handle_unique2(x1, x2);
+    BOOST_TEST(x2.size() == 4);
+  }
+
+  {
+    boost::unordered_node_map<int, int, hash_thing> x1;
+    boost::unordered_node_map<int, int> x2;
+    x1.emplace(67, 50);
+    x1.emplace(23, 45);
+    x1.emplace(18, 19);
+    x2.emplace(23, 50);
+    x2.emplace(12, 49);
+    insert_node_handle_unique2(x1, x2);
+    BOOST_TEST(x2.size() == 4);
+  }
+}
+
+#else
+UNORDERED_AUTO_TEST (examples) {
+  example1<boost::unordered_map>();
+  example2<boost::unordered_set>();
+  example3<boost::unordered_set>();
+  failed_insertion_with_hint<boost::unordered_map, boost::unordered_set>();
+  node_handle_tests<boost::unordered_map, boost::unordered_set>();
+}
+
 template <typename Container1, typename Container2>
 void insert_node_handle_equiv(Container1& c1, Container2& c2)
 {
@@ -426,14 +553,6 @@ void insert_node_handle_equiv(Container1& c1, Container2& c2)
     BOOST_TEST(boost::to_address(r) == v_ptr);
   }
 }
-
-struct hash_thing
-{
-  std::size_t operator()(int x) const
-  {
-    return static_cast<std::size_t>(x * 13 + 5);
-  }
-};
 
 UNORDERED_AUTO_TEST (insert_node_handle_unique_tests) {
   {

@@ -142,27 +142,57 @@ struct node_handle_base
     }
 
   public:
-    constexpr node_handle_base() noexcept = default;
+    constexpr node_handle_base()noexcept=default;
 
     node_handle_base(node_handle_base&& nh) noexcept
     {
-      if (!nh.empty()) {
+      if (!nh.empty()){
         // neither of these move constructors are allowed to throw exceptions
         // so we can get away with rote placement new
         //
-        new (a_) Allocator(std::move(nh.al()));
-        new (x_) element_type(std::move(nh.element()));
-        empty_ = false;
+        new(a_)Allocator(std::move(nh.al()));
+        new(x_)element_type(std::move(nh.element()));
+        empty_=false;
 
+        reinterpret_cast<element_type*>(nh.x_)->~element_type();
         reinterpret_cast<Allocator*>(nh.a_)->~Allocator();
         nh.empty_ = true;
       }
+    }
+
+    node_handle_base& operator=(node_handle_base&& nh)noexcept
+    {
+      bool const pocma=
+        boost::allocator_propagate_on_container_move_assignment<
+          Allocator>::type::value;
+
+      if(!empty()){
+        type_policy::destroy(al(),reinterpret_cast<element_type*>(x_));
+        reinterpret_cast<element_type*>(x_)->~element_type();
+        if (pocma&&!nh.empty()){al()=std::move(nh.al());}
+      }
+
+      if(!nh.empty()){
+        new(x_)element_type(std::move(nh.element()));
+        if(empty()){new(a_)Allocator(std::move(nh.al()));}
+        empty_=false;
+
+        reinterpret_cast<element_type*>(nh.x_)->~element_type();
+        reinterpret_cast<Allocator*>(nh.a_)->~Allocator();
+        nh.empty_=true;
+      }else if (!empty()){
+        reinterpret_cast<Allocator*>(a_)->~Allocator();
+        empty_=true;
+      }
+
+      return *this;
     }
 
     ~node_handle_base()
     {
       if(!empty()){
         type_policy::destroy(al(),reinterpret_cast<element_type*>(x_));
+        reinterpret_cast<element_type*>(x_)->~element_type();
         reinterpret_cast<Allocator*>(a_)->~Allocator();
         empty_=true;
       }
@@ -171,6 +201,55 @@ struct node_handle_base
     allocator_type get_allocator()const noexcept{return al();}
     explicit operator bool()const noexcept{ return !empty();}
     BOOST_ATTRIBUTE_NODISCARD bool empty()const noexcept{return empty_;}
+
+    void swap(node_handle_base& nh) noexcept(
+      boost::allocator_is_always_equal<Allocator>::type::value||
+      boost::allocator_propagate_on_container_swap<Allocator>::type::value)
+    {
+      using std::swap;
+
+      bool const pocs=
+        boost::allocator_propagate_on_container_swap<Allocator>::type::value;
+
+      if (!empty()&&!nh.empty()){
+        BOOST_ASSERT(pocs || al()==nh.al());
+
+        element().swap(nh.element());
+
+        if(pocs){
+          swap(al(),nh.al());
+        }
+
+        return;
+      }
+
+      if (empty()&&nh.empty()){return;}
+
+      if (empty()){
+        new(x_)element_type(std::move(nh.element()));
+        new(a_)Allocator(nh.al());
+        empty_=false;
+
+        reinterpret_cast<element_type*>(nh.x_)->~element_type();
+        reinterpret_cast<Allocator*>(nh.a_)->~Allocator();
+        nh.empty_=true;
+      }else{
+        new(nh.x_)element_type(std::move(element()));
+        new(nh.a_)Allocator(al());
+        nh.empty_=false;
+
+        reinterpret_cast<element_type*>(x_)->~element_type();
+        reinterpret_cast<Allocator*>(a_)->~Allocator();
+        empty_=true;
+      }
+    }
+
+    friend
+    void swap(node_handle_base& lhs,node_handle_base& rhs)
+      noexcept(noexcept(lhs.swap(rhs)))
+    {
+      return lhs.swap(rhs);
+    }
 };
 
 static const std::size_t default_bucket_count = 0;
