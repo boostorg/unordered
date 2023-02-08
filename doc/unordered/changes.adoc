@@ -10,6 +10,8 @@
 
 * Extended heterogeneous lookup to more member functions as specified in
   https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2363r3.html[P2363].
+* Replaced the previous post-mixing process for open-addressing containers with 
+  a new algorithm based on extended multiplication by a constant.
 
 == Release 1.81.0 - Major update
 
