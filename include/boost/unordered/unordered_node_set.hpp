@@ -108,82 +108,34 @@ namespace boost {
         }
       };
 
-      template <class NodeSetTypes, class Allocator> struct node_set_handle
+      template <class NodeSetTypes, class Allocator>
+      struct node_set_handle
+          : public detail::foa::node_handle_base<NodeSetTypes, Allocator>
       {
       private:
-        using type_policy = NodeSetTypes;
-        using element_type = typename type_policy::element_type;
+        using base_type =
+          detail::foa::node_handle_base<NodeSetTypes, Allocator>;
+
+        using base_type::element;
+        using base_type::type_policy;
 
         template <class Key, class Hash, class Pred, class Alloc>
         friend class boost::unordered::unordered_node_set;
 
       public:
         using value_type = typename NodeSetTypes::value_type;
-        using allocator_type = Allocator;
-
-      private:
-        alignas(element_type) unsigned char x[sizeof(element_type)];
-        alignas(Allocator) unsigned char a[sizeof(Allocator)];
-        bool empty_;
-
-        element_type& element() noexcept
-        {
-          BOOST_ASSERT(!empty());
-          return *reinterpret_cast<element_type*>(x);
-        }
-
-        element_type const& element() const noexcept
-        {
-          BOOST_ASSERT(!empty());
-          return *reinterpret_cast<element_type const*>(x);
-        }
-
-        Allocator& al() noexcept
-        {
-          BOOST_ASSERT(!empty());
-          return *reinterpret_cast<Allocator*>(a);
-        }
-
-        Allocator const& al() const noexcept
-        {
-          BOOST_ASSERT(!empty());
-          return *reinterpret_cast<Allocator const*>(a);
-        }
 
       public:
+        using base_type::empty;
+
         constexpr node_set_handle() noexcept = default;
-
-        node_set_handle(node_set_handle&& nh) noexcept
-        {
-          // neither of these move constructors are allowed to throw exceptions
-          // so we can get away with rote placement new
-          //
-          new (a) Allocator(std::move(nh.al()));
-          new (x) element_type(std::move(nh.element()));
-          empty_ = false;
-
-          reinterpret_cast<Allocator*>(nh.a)->~Allocator();
-          nh.empty_ = true;
-        }
-
-        ~node_set_handle()
-        {
-          if (!empty()) {
-            type_policy::destroy(al(), reinterpret_cast<element_type*>(x));
-            reinterpret_cast<Allocator*>(a)->~Allocator();
-            empty_ = true;
-          }
-        }
+        node_set_handle(node_set_handle&& nh) noexcept = default;
 
         value_type& value() const
         {
           BOOST_ASSERT(!empty());
           return const_cast<value_type&>(type_policy::extract(element()));
         }
-
-        allocator_type get_allocator() const noexcept { return al(); }
-        explicit operator bool() const noexcept { return !empty(); }
-        BOOST_ATTRIBUTE_NODISCARD bool empty() const noexcept { return empty_; }
       };
     } // namespace detail
 
@@ -222,7 +174,7 @@ namespace boost {
         typename boost::allocator_rebind<Allocator,
           typename set_types::value_type>::type>;
       using insert_return_type =
-        detail::insert_return_type<iterator, node_type>;
+        detail::foa::insert_return_type<iterator, node_type>;
 
       unordered_node_set() : unordered_node_set(0) {}
 
@@ -503,10 +455,8 @@ namespace boost {
       {
         BOOST_ASSERT(pos != end());
         node_type nh;
-        table_.extract(
-          pos, reinterpret_cast<typename set_types::element_type*>(nh.x));
-        new (&nh.a) allocator_type(get_allocator());
-        nh.empty_ = false;
+        auto elem = table_.extract(pos);
+        nh.emplace(std::move(elem), get_allocator());
         return nh;
       }
 
@@ -515,12 +465,8 @@ namespace boost {
         auto pos = find(key);
         node_type nh;
         if (pos != end()) {
-          table_.extract(
-            pos, reinterpret_cast<typename set_types::element_type*>(nh.x));
-          new (&nh.a) allocator_type(get_allocator());
-          nh.empty_ = false;
-        } else {
-          nh.empty_ = true;
+          auto elem = table_.extract(pos);
+          nh.emplace(std::move(elem), get_allocator());
         }
         return nh;
       }
@@ -535,12 +481,8 @@ namespace boost {
         auto pos = find(key);
         node_type nh;
         if (pos != end()) {
-          table_.extract(
-            pos, reinterpret_cast<typename set_types::element_type*>(nh.x));
-          new (&nh.a) allocator_type(get_allocator());
-          nh.empty_ = false;
-        } else {
-          nh.empty_ = true;
+          auto elem = table_.extract(pos);
+          nh.emplace(std::move(elem), get_allocator());
         }
         return nh;
       }

@@ -82,6 +82,7 @@
 namespace boost{
 namespace unordered{
 namespace detail{
+namespace foa{
 
 template <class Iterator,class NodeType>
 struct insert_return_type
@@ -91,7 +92,86 @@ struct insert_return_type
   NodeType node;
 };
 
-namespace foa{
+template <class NodeTypes,class Allocator>
+struct node_handle_base
+{
+  protected:
+    using type_policy=NodeTypes;
+    using element_type=typename type_policy::element_type;
+
+  public:
+    using allocator_type = Allocator;
+
+  private:
+    alignas(element_type) unsigned char x_[sizeof(element_type)];
+    alignas(Allocator) unsigned char a_[sizeof(Allocator)];
+    bool empty_=true;
+
+  protected:
+    element_type& element()noexcept
+    {
+      BOOST_ASSERT(!empty());
+      return *reinterpret_cast<element_type*>(x_);
+    }
+
+    element_type const& element()const noexcept
+    {
+      BOOST_ASSERT(!empty());
+      return *reinterpret_cast<element_type const*>(x_);
+    }
+
+    Allocator& al()noexcept
+    {
+      BOOST_ASSERT(!empty());
+      return *reinterpret_cast<Allocator*>(a_);
+    }
+
+    Allocator const& al()const noexcept
+    {
+      BOOST_ASSERT(!empty());
+      return *reinterpret_cast<Allocator const*>(a_);
+    }
+
+    void emplace(element_type x,Allocator a)
+    {
+      BOOST_ASSERT(empty());
+
+      new(x_)element_type(std::move(x));
+      new(a_)Allocator(a);
+      empty_=false;
+    }
+
+  public:
+    constexpr node_handle_base() noexcept = default;
+
+    node_handle_base(node_handle_base&& nh) noexcept
+    {
+      if (!nh.empty()) {
+        // neither of these move constructors are allowed to throw exceptions
+        // so we can get away with rote placement new
+        //
+        new (a_) Allocator(std::move(nh.al()));
+        new (x_) element_type(std::move(nh.element()));
+        empty_ = false;
+
+        reinterpret_cast<Allocator*>(nh.a_)->~Allocator();
+        nh.empty_ = true;
+      }
+    }
+
+    ~node_handle_base()
+    {
+      if(!empty()){
+        type_policy::destroy(al(),reinterpret_cast<element_type*>(x_));
+        reinterpret_cast<Allocator*>(a_)->~Allocator();
+        empty_=true;
+      }
+    }
+
+    allocator_type get_allocator()const noexcept{return al();}
+    explicit operator bool()const noexcept{ return !empty();}
+    BOOST_ATTRIBUTE_NODISCARD bool empty()const noexcept{return empty_;}
+};
 
 static const std::size_t default_bucket_count = 0;
 
@@ -1509,12 +1589,13 @@ public:
     }
   }
 
-  void extract(const_iterator pos, element_type* p)noexcept
+  element_type extract(const_iterator pos)noexcept
   {
     BOOST_ASSERT(pos!=end());
-    type_policy::construct(al(),p,type_policy::move(*pos.p));
+    element_type x=std::move(*pos.p);
     destroy_element(pos.p);
     recover_slot(pos.pc);
+    return x;
   }
 
   // TODO: should we accept different allocator too?
