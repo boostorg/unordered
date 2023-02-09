@@ -92,32 +92,32 @@ struct insert_return_type
   NodeType node;
 };
 
-template <class NodeTypes,class Allocator>
+template <class TypePolicy,class Allocator>
 struct node_handle_base
 {
   protected:
-    using type_policy=NodeTypes;
+    using type_policy=TypePolicy;
+    using value_type=typename type_policy::value_type;
     using element_type=typename type_policy::element_type;
 
   public:
     using allocator_type = Allocator;
 
   private:
-    alignas(element_type) unsigned char x_[sizeof(element_type)];
-    alignas(Allocator) unsigned char a_[sizeof(Allocator)];
-    bool empty_=true;
+    value_type* p_=nullptr;
+    alignas(Allocator) unsigned char a_[sizeof(Allocator)]={0};
 
   protected:
-    element_type& element()noexcept
+    value_type& element()noexcept
     {
       BOOST_ASSERT(!empty());
-      return *reinterpret_cast<element_type*>(x_);
+      return *p_;
     }
 
-    element_type const& element()const noexcept
+    value_type const& element()const noexcept
     {
       BOOST_ASSERT(!empty());
-      return *reinterpret_cast<element_type const*>(x_);
+      return *p_;
     }
 
     Allocator& al()noexcept
@@ -132,13 +132,23 @@ struct node_handle_base
       return *reinterpret_cast<Allocator const*>(a_);
     }
 
-    void emplace(element_type x,Allocator a)
+    void emplace(value_type* p,Allocator a)
     {
       BOOST_ASSERT(empty());
-
-      new(x_)element_type(std::move(x));
+      p_=p;
       new(a_)Allocator(a);
-      empty_=false;
+    }
+
+    void emplace(element_type&& x,Allocator a)
+    {
+      emplace(x.p,a);
+      x.p=nullptr;
+    }
+
+    void clear()
+    {
+      al().~Allocator();
+      p_=nullptr;
     }
 
   public:
@@ -147,16 +157,8 @@ struct node_handle_base
     node_handle_base(node_handle_base&& nh) noexcept
     {
       if (!nh.empty()){
-        // neither of these move constructors are allowed to throw exceptions
-        // so we can get away with rote placement new
-        //
-        new(a_)Allocator(std::move(nh.al()));
-        new(x_)element_type(std::move(nh.element()));
-        empty_=false;
-
-        reinterpret_cast<element_type*>(nh.x_)->~element_type();
-        reinterpret_cast<Allocator*>(nh.a_)->~Allocator();
-        nh.empty_ = true;
+        emplace(nh.p_,nh.al());
+        nh.clear();
       }
     }
 
@@ -167,22 +169,19 @@ struct node_handle_base
           Allocator>::type::value;
 
       if(!empty()){
-        type_policy::destroy(al(),reinterpret_cast<element_type*>(x_));
-        reinterpret_cast<element_type*>(x_)->~element_type();
+        type_policy::destroy(al(),p_);
         if (pocma&&!nh.empty()){al()=std::move(nh.al());}
       }
 
       if(!nh.empty()){
-        new(x_)element_type(std::move(nh.element()));
         if(empty()){new(a_)Allocator(std::move(nh.al()));}
-        empty_=false;
+        p_=nh.p_;
 
-        reinterpret_cast<element_type*>(nh.x_)->~element_type();
+        nh.p_=nullptr;
         reinterpret_cast<Allocator*>(nh.a_)->~Allocator();
-        nh.empty_=true;
       }else if (!empty()){
         reinterpret_cast<Allocator*>(a_)->~Allocator();
-        empty_=true;
+        p_=nullptr;
       }
 
       return *this;
@@ -191,16 +190,14 @@ struct node_handle_base
     ~node_handle_base()
     {
       if(!empty()){
-        type_policy::destroy(al(),reinterpret_cast<element_type*>(x_));
-        reinterpret_cast<element_type*>(x_)->~element_type();
+        type_policy::destroy(al(),p_);
         reinterpret_cast<Allocator*>(a_)->~Allocator();
-        empty_=true;
       }
     }
 
     allocator_type get_allocator()const noexcept{return al();}
     explicit operator bool()const noexcept{ return !empty();}
-    BOOST_ATTRIBUTE_NODISCARD bool empty()const noexcept{return empty_;}
+    BOOST_ATTRIBUTE_NODISCARD bool empty()const noexcept{return p_==nullptr;}
 
     void swap(node_handle_base& nh) noexcept(
       boost::allocator_is_always_equal<Allocator>::type::value||
@@ -214,7 +211,9 @@ struct node_handle_base
       if (!empty()&&!nh.empty()){
         BOOST_ASSERT(pocs || al()==nh.al());
 
-        element().swap(nh.element());
+        value_type *p=p_;
+        p_=nh.p_;
+        nh.p_=p;
 
         if(pocs){
           swap(al(),nh.al());
@@ -226,21 +225,11 @@ struct node_handle_base
       if (empty()&&nh.empty()){return;}
 
       if (empty()){
-        new(x_)element_type(std::move(nh.element()));
-        new(a_)Allocator(nh.al());
-        empty_=false;
-
-        reinterpret_cast<element_type*>(nh.x_)->~element_type();
-        reinterpret_cast<Allocator*>(nh.a_)->~Allocator();
-        nh.empty_=true;
+        emplace(nh.p_,nh.al());
+        nh.clear();
       }else{
-        new(nh.x_)element_type(std::move(element()));
-        new(nh.a_)Allocator(al());
-        nh.empty_=false;
-
-        reinterpret_cast<element_type*>(x_)->~element_type();
-        reinterpret_cast<Allocator*>(a_)->~Allocator();
-        empty_=true;
+        nh.emplace(p_,al());
+        clear();
       }
     }
 
@@ -1668,13 +1657,12 @@ public:
     }
   }
 
-  element_type extract(const_iterator pos)noexcept
+  element_type extract(const_iterator pos)
   {
     BOOST_ASSERT(pos!=end());
-    element_type x=std::move(*pos.p);
-    destroy_element(pos.p);
-    recover_slot(pos.pc);
-    return x;
+    erase_on_exit e{*this,iterator{const_iterator_cast_tag{},pos}};
+    (void)e;
+    return std::move(*pos.p);
   }
 
   // TODO: should we accept different allocator too?

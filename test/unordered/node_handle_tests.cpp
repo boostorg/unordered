@@ -119,7 +119,6 @@ static void failed_insertion_with_hint()
 
     typename Set<int>::node_type nh = src.extract(10);
 
-    std::cout << "performing relevant test now" << std::endl;
     BOOST_TEST(dst.insert(dst.find(10), boost::move(nh)) == dst.find(10));
     BOOST_TEST(nh);
     BOOST_TEST(!nh.empty());

@@ -56,10 +56,6 @@ namespace boost {
             p = rhs.p;
             rhs.p = nullptr;
           }
-
-          void swap(element_type& rhs) noexcept {
-            std::swap(p, rhs.p);
-          }
         };
 
         static value_type& value_from(element_type const& x) { return *x.p; }
@@ -100,14 +96,19 @@ namespace boost {
           BOOST_CATCH_END
         }
 
+        template <class A> static void destroy(A& al, value_type* p) noexcept
+        {
+          boost::allocator_destroy(al, p);
+          boost::allocator_deallocate(al,
+            boost::pointer_traits<
+              typename boost::allocator_pointer<A>::type>::pointer_to(*p),
+            1);
+        }
+
         template <class A> static void destroy(A& al, element_type* p) noexcept
         {
           if (p->p) {
-            boost::allocator_destroy(al, p->p);
-            boost::allocator_deallocate(al,
-              boost::pointer_traits<
-                typename boost::allocator_pointer<A>::type>::pointer_to(*p->p),
-              1);
+            destroy(al, p->p);
           }
         }
       };
@@ -139,7 +140,7 @@ namespace boost {
         value_type& value() const
         {
           BOOST_ASSERT(!empty());
-          return const_cast<value_type&>(type_policy::extract(element()));
+          return const_cast<value_type&>(element());
         }
       };
     } // namespace detail
@@ -392,8 +393,12 @@ namespace boost {
 
         BOOST_ASSERT(get_allocator() == nh.get_allocator());
 
-        auto itp = table_.emplace_impl(set_types::move(nh.element()));
+        typename set_types::element_type x;
+        x.p=std::addressof(nh.element());
+
+        auto itp = table_.emplace_impl(std::move(x));
         if (itp.second) {
+          nh.clear();
           return {itp.first, true, node_type{}};
         } else {
           return {itp.first, false, std::move(nh)};
