@@ -93,7 +93,7 @@ struct node_handle_base
     }
 
   public:
-    constexpr node_handle_base()noexcept=default;
+    constexpr node_handle_base()noexcept{}
 
     node_handle_base(node_handle_base&& nh) noexcept
     {
