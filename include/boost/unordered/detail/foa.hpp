@@ -84,163 +84,6 @@ namespace unordered{
 namespace detail{
 namespace foa{
 
-template <class Iterator,class NodeType>
-struct insert_return_type
-{
-  Iterator position;
-  bool     inserted;
-  NodeType node;
-};
-
-template <class TypePolicy,class Allocator>
-struct node_handle_base
-{
-  protected:
-    using type_policy=TypePolicy;
-    using value_type=typename type_policy::value_type;
-    using element_type=typename type_policy::element_type;
-
-  public:
-    using allocator_type = Allocator;
-
-  private:
-    value_type* p_=nullptr;
-    alignas(Allocator) unsigned char a_[sizeof(Allocator)]={0};
-
-  protected:
-    value_type& element()noexcept
-    {
-      BOOST_ASSERT(!empty());
-      return *p_;
-    }
-
-    value_type const& element()const noexcept
-    {
-      BOOST_ASSERT(!empty());
-      return *p_;
-    }
-
-    Allocator& al()noexcept
-    {
-      BOOST_ASSERT(!empty());
-      return *reinterpret_cast<Allocator*>(a_);
-    }
-
-    Allocator const& al()const noexcept
-    {
-      BOOST_ASSERT(!empty());
-      return *reinterpret_cast<Allocator const*>(a_);
-    }
-
-    void emplace(value_type* p,Allocator a)
-    {
-      BOOST_ASSERT(empty());
-      p_=p;
-      new(a_)Allocator(a);
-    }
-
-    void emplace(element_type&& x,Allocator a)
-    {
-      emplace(x.p,a);
-      x.p=nullptr;
-    }
-
-    void clear()
-    {
-      al().~Allocator();
-      p_=nullptr;
-    }
-
-  public:
-    constexpr node_handle_base()noexcept=default;
-
-    node_handle_base(node_handle_base&& nh) noexcept
-    {
-      if (!nh.empty()){
-        emplace(nh.p_,nh.al());
-        nh.clear();
-      }
-    }
-
-    node_handle_base& operator=(node_handle_base&& nh)noexcept
-    {
-      bool const pocma=
-        boost::allocator_propagate_on_container_move_assignment<
-          Allocator>::type::value;
-
-      if(!empty()){
-        type_policy::destroy(al(),p_);
-        if (pocma&&!nh.empty()){al()=std::move(nh.al());}
-      }
-
-      if(!nh.empty()){
-        if(empty()){new(a_)Allocator(std::move(nh.al()));}
-        p_=nh.p_;
-
-        nh.p_=nullptr;
-        reinterpret_cast<Allocator*>(nh.a_)->~Allocator();
-      }else if (!empty()){
-        reinterpret_cast<Allocator*>(a_)->~Allocator();
-        p_=nullptr;
-      }
-
-      return *this;
-    }
-
-    ~node_handle_base()
-    {
-      if(!empty()){
-        type_policy::destroy(al(),p_);
-        reinterpret_cast<Allocator*>(a_)->~Allocator();
-      }
-    }
-
-    allocator_type get_allocator()const noexcept{return al();}
-    explicit operator bool()const noexcept{ return !empty();}
-    BOOST_ATTRIBUTE_NODISCARD bool empty()const noexcept{return p_==nullptr;}
-
-    void swap(node_handle_base& nh) noexcept(
-      boost::allocator_is_always_equal<Allocator>::type::value||
-      boost::allocator_propagate_on_container_swap<Allocator>::type::value)
-    {
-      using std::swap;
-
-      bool const pocs=
-        boost::allocator_propagate_on_container_swap<Allocator>::type::value;
-
-      if (!empty()&&!nh.empty()){
-        BOOST_ASSERT(pocs || al()==nh.al());
-
-        value_type *p=p_;
-        p_=nh.p_;
-        nh.p_=p;
-
-        if(pocs){
-          swap(al(),nh.al());
-        }
-
-        return;
-      }
-
-      if (empty()&&nh.empty()){return;}
-
-      if (empty()){
-        emplace(nh.p_,nh.al());
-        nh.clear();
-      }else{
-        nh.emplace(p_,al());
-        clear();
-      }
-    }
-
-    friend
-    void swap(node_handle_base& lhs,node_handle_base& rhs)
-      noexcept(noexcept(lhs.swap(rhs)))
-    {
-      return lhs.swap(rhs);
-    }
-};
-
 static const std::size_t default_bucket_count = 0;
 
 /* foa::table is an open-addressing hash table serving as the foundational core
@@ -1583,6 +1426,14 @@ public:
   BOOST_FORCEINLINE std::pair<iterator,bool>
   insert(value_type&& x){return emplace_impl(std::move(x));}
 
+  template<typename T=element_type>
+  BOOST_FORCEINLINE
+  typename std::enable_if<
+    !std::is_same<T,value_type>::value,
+    std::pair<iterator,bool>
+  >::type
+  insert(element_type&& x){return emplace_impl(std::move(x));}
+
   template<
     bool dependent_value=false,
     typename std::enable_if<
@@ -2045,7 +1896,7 @@ private:
 
     return emplace_impl(type_policy::move(*p));
   }
-public:
+
   template<typename... Args>
   BOOST_FORCEINLINE std::pair<iterator,bool> emplace_impl(Args&&... args)
   {
@@ -2070,7 +1921,7 @@ public:
       };  
     }
   }
-private:
+
   static std::size_t capacity_for(std::size_t n)
   {
     return size_policy::size(size_index_for<group_type,size_policy>(n))*N-1;

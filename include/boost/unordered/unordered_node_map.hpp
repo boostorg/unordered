@@ -11,6 +11,7 @@
 #endif
 
 #include <boost/unordered/detail/foa.hpp>
+#include <boost/unordered/detail/foa/node_handle.hpp>
 #include <boost/unordered/detail/type_traits.hpp>
 #include <boost/unordered/unordered_node_map_fwd.hpp>
 
@@ -139,16 +140,12 @@ namespace boost {
         using base_type =
           detail::foa::node_handle_base<NodeMapTypes, Allocator>;
 
-        using base_type::element;
         using typename base_type::type_policy;
 
         template <class Key, class T, class Hash, class Pred, class Alloc>
         friend class boost::unordered::unordered_node_map;
 
       public:
-        using base_type::empty;
-        using base_type::swap;
-
         using key_type = typename NodeMapTypes::key_type;
         using mapped_type = typename NodeMapTypes::mapped_type;
 
@@ -159,14 +156,14 @@ namespace boost {
 
         key_type& key() const
         {
-          BOOST_ASSERT(!empty());
-          return const_cast<key_type&>(element().first);
+          BOOST_ASSERT(!this->empty());
+          return const_cast<key_type&>(this->element().first);
         }
 
         mapped_type& mapped() const
         {
-          BOOST_ASSERT(!empty());
-          return const_cast<mapped_type&>(element().second);
+          BOOST_ASSERT(!this->empty());
+          return const_cast<mapped_type&>(this->element().second);
         }
       };
     } // namespace detail
@@ -408,7 +405,7 @@ namespace boost {
         typename map_types::element_type x;
         x.p=std::addressof(nh.element());
 
-        auto itp = table_.emplace_impl(std::move(x));
+        auto itp = table_.insert(std::move(x));
         if (itp.second) {
           nh.clear();
           return {itp.first, true, node_type{}};
@@ -425,7 +422,7 @@ namespace boost {
 
         BOOST_ASSERT(get_allocator() == nh.get_allocator());
 
-        auto itp = table_.emplace_impl(map_types::move(nh.element()));
+        auto itp = table_.insert(map_types::move(nh.element()));
         return itp.first;
       }
 
@@ -597,12 +594,7 @@ namespace boost {
       node_type extract(key_type const& key)
       {
         auto pos = find(key);
-        node_type nh;
-        if (pos != end()) {
-          auto elem = table_.extract(pos);
-          nh.emplace(std::move(elem), get_allocator());
-        }
-        return nh;
+        return pos!=end()?extract(pos):node_type();
       }
 
       template <class K>
@@ -613,12 +605,7 @@ namespace boost {
       extract(K const& key)
       {
         auto pos = find(key);
-        node_type nh;
-        if (pos != end()) {
-          auto elem = table_.extract(pos);
-          nh.emplace(std::move(elem), get_allocator());
-        }
-        return nh;
+        return pos!=end()?extract(pos):node_type();
       }
 
       template <class H2, class P2>
