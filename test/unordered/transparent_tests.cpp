@@ -1397,7 +1397,6 @@ multimap_extract_const_overload_compile_test()
 
 template <class UnorderedMap> void test_map_transparent_extract(UnorderedMap*)
 {
-#ifndef BOOST_UNORDERED_FOA_TESTS
   typedef typename UnorderedMap::node_type node_type;
   typedef typename UnorderedMap::const_iterator const_iterator;
   typedef std::pair<const_iterator, const_iterator> const_iterator_pair;
@@ -1433,13 +1432,11 @@ template <class UnorderedMap> void test_map_transparent_extract(UnorderedMap*)
   BOOST_TEST(nh.empty());
 
   BOOST_TEST_EQ(key::count_, expected_key_count);
-#endif
 }
 
 template <class UnorderedMap>
 void test_map_non_transparent_extract(UnorderedMap*)
 {
-#ifndef BOOST_UNORDERED_FOA_TESTS
   typedef typename UnorderedMap::node_type node_type;
   typedef typename UnorderedMap::const_iterator const_iterator;
   typedef std::pair<const_iterator, const_iterator> const_iterator_pair;
@@ -1480,7 +1477,6 @@ void test_map_non_transparent_extract(UnorderedMap*)
   ++key_count;
   BOOST_TEST(nh.empty());
   BOOST_TEST_EQ(key::count_, key_count);
-#endif
 }
 
 template <class UnorderedMap>
@@ -1887,7 +1883,6 @@ template <class UnorderedSet> void test_set_transparent_extract(UnorderedSet*)
 template <class UnorderedSet>
 void test_set_non_transparent_extract(UnorderedSet*)
 {
-#ifndef BOOST_UNORDERED_FOA_TESTS
   typedef typename UnorderedSet::node_type node_type;
 
   count_reset();
@@ -1941,7 +1936,6 @@ void test_set_non_transparent_extract(UnorderedSet*)
   BOOST_TEST_EQ(set.size(), set_size);
 
   BOOST_TEST_EQ(key::count_, key_count);
-#endif
 }
 
 template <class UnorderedSet> void test_set_transparent_bucket(UnorderedSet*)
@@ -2114,7 +2108,7 @@ UNORDERED_TEST(test_map_transparent_erase,
   ((test_trans_map)(test_trans_node_map)))
 
 UNORDERED_TEST(test_map_transparent_extract,
-  ((test_trans_map)(test_trans_node_map)))
+  ((test_trans_node_map)))
 
 UNORDERED_TEST(test_map_transparent_try_emplace,
   ((test_trans_map)(test_trans_node_map)))
@@ -2148,8 +2142,7 @@ UNORDERED_TEST(test_map_non_transparent_erase,
     (test_node_map1)(test_node_map2)(test_node_map3)))
 
 UNORDERED_TEST(test_map_non_transparent_extract,
-  ((test_map1)(test_map2)(test_map3)
-    (test_node_map1)(test_node_map2)(test_node_map3)))
+  ((test_node_map1)(test_node_map2)(test_node_map3)))
 
 UNORDERED_TEST(test_map_non_transparent_try_emplace,
   ((test_map1)(test_map2)(test_map3)
@@ -2284,7 +2277,7 @@ UNORDERED_TEST(test_set_transparent_equal_range,
   ((test_trans_set)(test_trans_node_set)))
 
 UNORDERED_TEST(test_set_transparent_extract,
-  ((test_trans_set)(test_trans_node_set)))
+  ((test_trans_node_set)))
 
 UNORDERED_TEST(test_set_transparent_bucket,
   ((test_trans_set)(test_trans_node_set)))
@@ -2309,8 +2302,7 @@ UNORDERED_TEST(test_set_non_transparent_equal_range,
    (test_node_set1)(test_node_set2)(test_node_set3)))
 
 UNORDERED_TEST(test_set_non_transparent_extract,
-  ((test_set1)(test_set2)(test_set3)
-   (test_node_set1)(test_node_set2)(test_node_set3)))
+  ((test_node_set1)(test_node_set2)(test_node_set3)))
 
 UNORDERED_TEST(test_set_non_transparent_bucket,
   ((test_set1)(test_set2)(test_set3)
