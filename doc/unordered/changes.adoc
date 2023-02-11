@@ -6,8 +6,10 @@
 :github-pr-url: https://github.com/boostorg/unordered/pull
 :cpp: C++
 
-== Release 1.82.0
+== Release 1.82.0 - Major update
 
+* Added node-based, open-addressing containers
+  `boost::unordered_node_map` and `boost::unordered_node_set`.
 * Extended heterogeneous lookup to more member functions as specified in
   https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2363r3.html[P2363].
 * Replaced the previous post-mixing process for open-addressing containers with 
