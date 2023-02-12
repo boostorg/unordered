@@ -10,7 +10,7 @@ being node-based, it provides pointer/iterator stability and node handling funct
 Its performance lies between those of `boost::unordered_map` and `boost::unordered_flat_map`.
 
 As a result of its using open addressing, the interface of `boost::unordered_node_map` deviates in
-a number of aspects from that of `boost::unordered_node_map`/`std::unordered_node_map`: 
+a number of aspects from that of `boost::unordered_map`/`std::unordered_map`: 
 
   - `begin()` is not constant-time.
   - `erase(iterator)` returns `void`.
