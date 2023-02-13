@@ -38,24 +38,24 @@ struct node_handle_base
 {
   protected:
     using type_policy=TypePolicy;
-    using value_type=typename type_policy::value_type;
     using element_type=typename type_policy::element_type;
 
   public:
     using allocator_type = Allocator;
 
   private:
-    value_type* p_=nullptr;
+    using node_value_type=typename type_policy::value_type;
+    node_value_type* p_=nullptr;
     BOOST_ATTRIBUTE_NO_UNIQUE_ADDRESS opt_storage<Allocator> a_;
 
   protected:
-    value_type& element()noexcept
+    node_value_type& element()noexcept
     {
       BOOST_ASSERT(!empty());
       return *p_;
     }
 
-    value_type const& element()const noexcept
+    node_value_type const& element()const noexcept
     {
       BOOST_ASSERT(!empty());
       return *p_;
@@ -73,7 +73,7 @@ struct node_handle_base
       return a_.t_;
     }
 
-    void emplace(value_type* p,Allocator a)
+    void emplace(node_value_type* p,Allocator a)
     {
       BOOST_ASSERT(empty());
       p_=p;
@@ -158,7 +158,7 @@ struct node_handle_base
       if (!empty()&&!nh.empty()){
         BOOST_ASSERT(pocs || al()==nh.al());
 
-        value_type *p=p_;
+        node_value_type *p=p_;
         p_=nh.p_;
         nh.p_=p;
 
