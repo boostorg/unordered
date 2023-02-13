@@ -106,8 +106,69 @@ namespace boost {
 }
 ----
 
-`boost::unordered_flat_set` and `boost::unordered_flat_map` require a
-reasonably compliant C++11 compiler.
+Starting in Boost 1.82, the containers `boost::unordered_node_set` and `boost::unordered_node_map`
+are introduced: they use open addressing like `boost::unordered_flat_set` and `boost::unordered_flat_map`,
+but internally store element _nodes_, like `boost::unordered_set` and `boost::unordered_map`,
+which provide stability of pointers and references to the elements:
+
+[source,c++]
+----
+// #include <boost/unordered/unordered_node_set.hpp>
+//
+// Note: no multiset version
+
+namespace boost {
+    template <
+        class Key,
+        class Hash = boost::hash<Key>,
+        class Pred = std::equal_to<Key>,
+        class Alloc = std::allocator<Key> >
+    class unordered_node_set;
+}
+----
+
+[source,c++]
+----
+// #include <boost/unordered/unordered_node_map.hpp>
+//
+// Note: no multimap version
+
+namespace boost {
+    template <
+        class Key, class Mapped,
+        class Hash = boost::hash<Key>,
+        class Pred = std::equal_to<Key>,
+        class Alloc = std::allocator<std::pair<Key const, Mapped> > >
+    class unordered_node_map;
+}
+----
+
+These are all the containers provided by Boost.Unordered:
+
+[caption=, title='Table {counter:table-counter}. Boost.Unordered containers']
+[cols="1,1,.^1", frame=all, grid=rows]
+|===
+^h|
+^h|*Node-based*
+^h|*Flat*
+
+^.^h|*Closed addressing*
+^| `boost::unordered_set` +
+`boost::unordered_map` +
+`boost::unordered_multiset` +
+`boost::unordered_multimap`
+^| 
+
+^.^h|*Open addressing*
+^| `boost::unordered_node_set` +
+`boost::unordered_node_map`
+^| `boost::unordered_flat_set` +
+`boost::unordered_flat_map`
+
+|===
+
+Closed-addressing containers are pass:[C++]98-compatible. Open-addressing containers require a
+reasonably compliant pass:[C++]11 compiler.
 
 Boost.Unordered containers are used in a similar manner to the normal associative
 containers:
