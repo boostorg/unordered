@@ -1,6 +1,6 @@
 
 // Copyright 2006-2009 Daniel James.
-// Copyright 2022 Christian Mazakas.
+// Copyright 2022-2023 Christian Mazakas.
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -36,9 +36,21 @@ UNORDERED_AUTO_TEST (set_tests) {
 
 #ifdef BOOST_UNORDERED_FOA_TESTS
   typedef boost::unordered_flat_set<int> set;
+
+  test_equal_insertion<set>(values[0], values[0] + 1);
+  test_equal_insertion<set>(values[1], values[1] + 2);
+  test_equal_insertion<set>(values[2], values[2] + 2);
+  test_equal_insertion<set>(values[3], values[3] + 2);
+  test_equal_insertion<set>(values[4], values[4] + 3);
+
+  typedef boost::unordered_node_set<int> node_set;
+  test_equal_insertion<node_set>(values[0], values[0] + 1);
+  test_equal_insertion<node_set>(values[1], values[1] + 2);
+  test_equal_insertion<node_set>(values[2], values[2] + 2);
+  test_equal_insertion<node_set>(values[3], values[3] + 2);
+  test_equal_insertion<node_set>(values[4], values[4] + 3);
 #else
   typedef boost::unordered_set<int> set;
-#endif
 
   test_equal_insertion<set>(values[0], values[0] + 1);
   test_equal_insertion<set>(values[1], values[1] + 2);
@@ -52,6 +64,8 @@ UNORDERED_AUTO_TEST (set_tests) {
   test_equal_insertion<multiset>(values[2], values[2] + 2);
   test_equal_insertion<multiset>(values[3], values[3] + 2);
   test_equal_insertion<multiset>(values[4], values[4] + 3);
+#endif
+
 }
 
 UNORDERED_AUTO_TEST (map_tests) {
@@ -65,11 +79,16 @@ UNORDERED_AUTO_TEST (map_tests) {
   v[2].push_back(std::pair<int const, int>(9, 13));
   v[2].push_back(std::pair<int const, int>(432, 24));
 
-  for (int i = 0; i < 5; ++i)
 #ifdef BOOST_UNORDERED_FOA_TESTS
+  for (int i = 0; i < 5; ++i)
     test_equal_insertion<boost::unordered_flat_map<int, int> >(
       v[i].begin(), v[i].end());
+
+  for (int i2 = 0; i2 < 5; ++i2)
+    test_equal_insertion<boost::unordered_node_map<int, int> >(
+      v[i2].begin(), v[i2].end());
 #else
+  for (int i = 0; i < 5; ++i)
     test_equal_insertion<boost::unordered_map<int, int> >(
       v[i].begin(), v[i].end());
 
