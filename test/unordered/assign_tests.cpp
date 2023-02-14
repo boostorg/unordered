@@ -1,6 +1,6 @@
 
 // Copyright 2006-2009 Daniel James.
-// Copyright 2022 Christian Mazakas.
+// Copyright 2022-2023 Christian Mazakas.
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -209,40 +209,75 @@ namespace assign_tests {
 #ifdef BOOST_UNORDERED_FOA_TESTS
   boost::unordered_flat_map<test::object, test::object, test::hash,
     test::equal_to, std::allocator<test::object> >* test_map_std_alloc;
+  boost::unordered_node_map<test::object, test::object, test::hash,
+    test::equal_to, std::allocator<test::object> >* test_node_map_std_alloc;
 
   boost::unordered_flat_set<test::object, test::hash, test::equal_to,
     test::allocator1<test::object> >* test_set;
+  boost::unordered_node_set<test::object, test::hash, test::equal_to,
+    test::allocator1<test::object> >* test_node_set;
   boost::unordered_flat_map<test::object, test::object, test::hash,
     test::equal_to, test::allocator2<test::object> >* test_map;
+  boost::unordered_node_map<test::object, test::object, test::hash,
+    test::equal_to, test::allocator2<test::object> >* test_node_map;
 
   boost::unordered_flat_set<test::object, test::hash, test::equal_to,
     test::cxx11_allocator<test::object, test::propagate_assign> >*
     test_set_prop_assign;
+  boost::unordered_node_set<test::object, test::hash, test::equal_to,
+    test::cxx11_allocator<test::object, test::propagate_assign> >*
+    test_node_set_prop_assign;
   boost::unordered_flat_map<test::object, test::object, test::hash,
     test::equal_to,
     test::cxx11_allocator<test::object, test::propagate_assign> >*
     test_map_prop_assign;
+  boost::unordered_node_map<test::object, test::object, test::hash,
+    test::equal_to,
+    test::cxx11_allocator<test::object, test::propagate_assign> >*
+    test_node_map_prop_assign;
 
   boost::unordered_flat_set<test::object, test::hash, test::equal_to,
     test::cxx11_allocator<test::object, test::no_propagate_assign> >*
     test_set_no_prop_assign;
+  boost::unordered_node_set<test::object, test::hash, test::equal_to,
+    test::cxx11_allocator<test::object, test::no_propagate_assign> >*
+    test_node_set_no_prop_assign;
   boost::unordered_flat_map<test::object, test::object, test::hash,
     test::equal_to,
     test::cxx11_allocator<test::object, test::no_propagate_assign> >*
     test_map_no_prop_assign;
+  boost::unordered_node_map<test::object, test::object, test::hash,
+    test::equal_to,
+    test::cxx11_allocator<test::object, test::no_propagate_assign> >*
+    test_node_map_no_prop_assign;
 
   UNORDERED_AUTO_TEST (check_traits) {
     BOOST_TEST(!is_propagate(test_set));
     BOOST_TEST(is_propagate(test_set_prop_assign));
     BOOST_TEST(!is_propagate(test_set_no_prop_assign));
+
+    BOOST_TEST(!is_propagate(test_node_set));
+    BOOST_TEST(is_propagate(test_node_set_prop_assign));
+    BOOST_TEST(!is_propagate(test_node_set_no_prop_assign));
   }
 
   UNORDERED_TEST(assign_tests1,
-    ((test_map_std_alloc)(test_set)(test_map)(test_set_prop_assign)(test_map_prop_assign)(test_set_no_prop_assign)(test_map_no_prop_assign))(
+    ((test_map_std_alloc)(test_node_map_std_alloc)
+     (test_set)(test_node_set)
+     (test_map)(test_node_map)
+     (test_set_prop_assign)(test_node_set_prop_assign)
+     (test_map_prop_assign)(test_node_map_prop_assign)
+     (test_set_no_prop_assign)(test_node_set_no_prop_assign)
+     (test_map_no_prop_assign)(test_node_map_no_prop_assign))(
       (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(assign_tests2,
-    ((test_set)(test_map)(test_set_prop_assign)(test_map_prop_assign)(test_set_no_prop_assign)(test_map_no_prop_assign))(
+    ((test_set)(test_node_set)
+     (test_map)(test_node_map)
+     (test_set_prop_assign)(test_node_set_prop_assign)
+     (test_map_prop_assign)(test_node_map_prop_assign)
+     (test_set_no_prop_assign)(test_node_set_no_prop_assign)
+     (test_map_no_prop_assign)(test_node_map_no_prop_assign))(
       (default_generator)(generate_collisions)(limited_range)))
 #else
   boost::unordered_map<test::object, test::object, test::hash, test::equal_to,
@@ -315,6 +350,12 @@ namespace assign_tests {
     std::initializer_list<std::pair<int const, int> > init;
 #ifdef BOOST_UNORDERED_FOA_TESTS
     boost::unordered_flat_map<int, int> x1;
+    boost::unordered_node_map<int, int> x2;
+    x2[25] = 3;
+    x2[16] = 10;
+    BOOST_TEST(!x2.empty());
+    x2 = init;
+    BOOST_TEST(x2.empty());
 #else
     boost::unordered_map<int, int> x1;
 #endif
@@ -333,6 +374,12 @@ namespace assign_tests {
 
 #ifdef BOOST_UNORDERED_FOA_TESTS
     boost::unordered_flat_set<int> x;
+    boost::unordered_node_set<int> y;
+    y.insert(10);
+    y.insert(20);
+    y = {1, 2, -10};
+    BOOST_TEST(y.find(10) == y.end());
+    BOOST_TEST(y.find(-10) != y.end());
 #else
     boost::unordered_set<int> x;
 #endif
