@@ -1,6 +1,6 @@
 
 // Copyright 2006-2009 Daniel James.
-// Copyright (C) 2022 Christian Mazakas
+// Copyright (C) 2022-2023 Christian Mazakas
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -138,9 +138,13 @@ namespace find_tests {
     test::allocator2<test::object> >* test_set;
   boost::unordered_flat_map<test::object, test::object, test::hash, test::equal_to,
     test::allocator2<test::object> >* test_map;
+  boost::unordered_node_set<test::object, test::hash, test::equal_to,
+    test::allocator2<test::object> >* test_node_set;
+  boost::unordered_node_map<test::object, test::object, test::hash, test::equal_to,
+    test::allocator2<test::object> >* test_node_map;
 
   UNORDERED_TEST(
-    find_tests1, ((test_set)(test_map))(
+    find_tests1, ((test_set)(test_map)(test_node_set)(test_node_map))(
                    (default_generator)(generate_collisions)(limited_range)))
 #else
   boost::unordered_set<test::object, test::hash, test::equal_to,
