@@ -1,6 +1,6 @@
 
 // Copyright 2006-2010 Daniel James.
-// Copyright (C) 2022 Christian Mazakas
+// Copyright (C) 2022-2023 Christian Mazakas
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -17,6 +17,7 @@
 #include "../helpers/input_iterator.hpp"
 #include "../helpers/helpers.hpp"
 
+#include <boost/move/core.hpp>
 #include <vector>
 
 namespace insert_tests {
@@ -693,6 +694,69 @@ namespace insert_tests {
     BOOST_TEST_EQ(x.size(), 1000u);
   }
 
+  struct pointer_constructible
+  {
+    int x;
+
+    pointer_constructible(int x_) : x(x_) {}
+    pointer_constructible(pointer_constructible const& p) : x(p.x) {}
+    pointer_constructible(pointer_constructible* const&) : x(-1) {}
+    pointer_constructible(BOOST_RV_REF(pointer_constructible*)) : x(-1) {}
+  };
+
+  struct pointer_constructible_hash
+  {
+    typedef void is_transparent;
+
+    std::size_t operator()(pointer_constructible const& p) const
+    {
+      return boost::hash<int>()(p.x);
+    }
+  };
+
+  struct pointer_constructible_equal_to
+  {
+    typedef void is_transparent;
+
+    bool operator()(
+      pointer_constructible const& lhs, pointer_constructible const& rhs) const
+    {
+      return lhs.x == rhs.x;
+    }
+  };
+
+  template <class X>
+  static void set_tests2(X*)
+  {
+    X set, set2;
+
+    pointer_constructible pc(1337);
+    pointer_constructible* const addr_pc = &pc;
+
+    set.insert(pc);      // 1337
+    set.insert(&pc);     // -1
+    set.insert(addr_pc); // -1
+
+    BOOST_TEST_EQ(set.size(), 2u);
+    BOOST_TEST(set.find(pc) != set.end());
+    BOOST_TEST(set.find(-1) != set.end());
+    BOOST_TEST(set.find(-2) == set.end());
+
+    set2 = set;
+
+    BOOST_TEST_EQ(set2.size(), 2u);
+    BOOST_TEST(set2.find(pc) != set2.end());
+    BOOST_TEST(set2.find(-1) != set2.end());
+    BOOST_TEST(set2.find(-2) == set2.end());
+
+    set.rehash(set.bucket_count() + 1);
+
+    BOOST_TEST_EQ(set.size(), 2u);
+    BOOST_TEST(set.find(pc) != set.end());
+    BOOST_TEST(set.find(-1) != set.end());
+    BOOST_TEST(set.find(-2) == set.end());
+  }
+
   template <class X>
   void try_emplace_tests(X*, test::random_generator generator)
   {
@@ -892,45 +956,62 @@ namespace insert_tests {
 #ifdef BOOST_UNORDERED_FOA_TESTS
   boost::unordered_flat_set<test::movable, test::hash, test::equal_to,
     std::allocator<test::movable> >* test_set_std_alloc;
+  boost::unordered_node_set<test::movable, test::hash, test::equal_to,
+    std::allocator<test::movable> >* test_node_set_std_alloc;
   boost::unordered_flat_set<test::object, test::hash, test::equal_to,
     test::allocator1<test::object> >* test_set;
+  boost::unordered_node_set<test::movable, test::hash, test::equal_to,
+    test::allocator1<test::object> >* test_node_set;
   boost::unordered_flat_map<test::movable, test::movable, test::hash,
     test::equal_to, test::allocator2<test::movable> >* test_map;
+  boost::unordered_node_map<test::movable, test::movable, test::hash,
+    test::equal_to, test::allocator2<test::movable> >* test_node_map;
+
+  boost::unordered_flat_set<pointer_constructible, pointer_constructible_hash,
+    pointer_constructible_equal_to, test::allocator1<pointer_constructible> >*
+    test_pc_set;
+  boost::unordered_node_set<pointer_constructible, pointer_constructible_hash,
+    pointer_constructible_equal_to, test::allocator1<pointer_constructible> >*
+    test_pc_node_set;
 
   UNORDERED_TEST(unique_insert_tests1,
-    ((test_set_std_alloc)(test_set)(test_map))(
+    ((test_set_std_alloc)(test_node_set_std_alloc)
+     (test_set)(test_node_set)(test_map)(test_node_map))(
       (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(
-    insert_tests2, ((test_set)(test_map))(
+    insert_tests2, ((test_set)(test_node_set)(test_map)(test_node_map))(
                      (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(unique_emplace_tests1,
-    ((test_set_std_alloc)(test_set)(test_map))(
+    ((test_set_std_alloc)(test_set)(test_node_set)(test_map)(test_node_map))(
       (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(move_emplace_tests,
-    ((test_set_std_alloc)(test_set)(test_map))(
+    ((test_set_std_alloc)(test_set)(test_node_set)(test_map)(test_node_map))(
       (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(default_emplace_tests,
-    ((test_set_std_alloc)(test_set)(test_map))(
+    ((test_set_std_alloc)(test_set)(test_node_set)(test_map)(test_node_map))(
       (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(map_tests,
-    ((test_map))((default_generator)(generate_collisions)(limited_range)))
+    ((test_map)(test_node_map))
+    ((default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(
-    map_tests2, ((test_map))((default_generator)(generate_collisions)))
+    map_tests2, ((test_map)(test_node_map))((default_generator)(generate_collisions)))
 
   UNORDERED_TEST(map_insert_range_test1,
-    ((test_map))((default_generator)(generate_collisions)(limited_range)))
+    ((test_map)(test_node_map))((default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(map_insert_range_test2,
-    ((test_map))((default_generator)(generate_collisions)(limited_range)))
+    ((test_map)(test_node_map))((default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(
-    set_tests, ((test_set_std_alloc)(test_set))((default_generator)))
+    set_tests, ((test_set_std_alloc)(test_set)(test_node_set))((default_generator)))
+
+  UNORDERED_TEST(set_tests2, ((test_pc_set)(test_pc_node_set)))
 #else
   boost::unordered_set<test::movable, test::hash, test::equal_to,
     std::allocator<test::movable> >* test_set_std_alloc;
@@ -945,6 +1026,10 @@ namespace insert_tests {
     test::allocator2<test::movable> >* test_map;
   boost::unordered_multimap<test::object, test::object, test::hash,
     test::equal_to, test::allocator1<test::object> >* test_multimap;
+
+  boost::unordered_set<pointer_constructible, pointer_constructible_hash,
+    pointer_constructible_equal_to, test::allocator1<pointer_constructible> >*
+    test_pc_set;
 
   UNORDERED_TEST(unique_insert_tests1,
     ((test_set_std_alloc)(test_set)(test_map))(
@@ -990,6 +1075,8 @@ namespace insert_tests {
 
   UNORDERED_TEST(
     set_tests, ((test_set_std_alloc)(test_set)(test_multiset))((default_generator)))
+
+  UNORDERED_TEST(set_tests2, ((test_pc_set)))
 #endif
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
@@ -1009,23 +1096,19 @@ namespace insert_tests {
     }
   };
 
-  UNORDERED_AUTO_TEST (insert_initializer_list_set) {
-#ifdef BOOST_UNORDERED_FOA_TESTS
-    boost::unordered_flat_set<int> set;
-#else
-    boost::unordered_set<int> set;
-#endif
+  template <template <class Key, class Hash = boost::hash<Key>,
+    class Pred = std::equal_to<Key>, class Allocator = std::allocator<Key> >
+    class Set>
+  static void insert_initializer_list_set_impl()
+  {
+    Set<int> set;
+
     set.insert({1, 2, 3, 1});
     BOOST_TEST_EQ(set.size(), 3u);
     BOOST_TEST(set.find(1) != set.end());
     BOOST_TEST(set.find(4) == set.end());
 
-#ifdef BOOST_UNORDERED_FOA_TESTS
-  boost::unordered_flat_set<initialize_from_two_ints> set2;
-#else
-    boost::unordered_set<initialize_from_two_ints> set2;
-#endif
-
+    Set<initialize_from_two_ints> set2;
 #if defined(__GNUC__) && (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 5))
     set2.insert({{1, 2}});
 #else
@@ -1053,6 +1136,16 @@ namespace insert_tests {
     BOOST_TEST(set2.find({8, 7}) == set2.end());
   }
 
+  UNORDERED_AUTO_TEST (insert_initializer_list_set) {
+#ifdef BOOST_UNORDERED_FOA_TESTS
+    insert_initializer_list_set_impl<boost::unordered_flat_set>();
+    insert_initializer_list_set_impl<boost::unordered_node_set>();
+#else
+    insert_initializer_list_set_impl<boost::unordered_set>();
+    boost::unordered_set<int> set;
+#endif
+  }
+
 #ifndef BOOST_UNORDERED_FOA_TESTS
 #if !BOOST_WORKAROUND(BOOST_MSVC, == 1800)
 
@@ -1074,17 +1167,30 @@ namespace insert_tests {
 #endif
 #endif
 
-  UNORDERED_AUTO_TEST (insert_initializer_list_map) {
-#ifdef BOOST_UNORDERED_FOA_TESTS
-  boost::unordered_flat_map<std::string, std::string> map;
-#else
-    boost::unordered_map<std::string, std::string> map;
-  #endif
-    // map.insert({});
+  template <class X> static void insert_initializer_list_map(X*)
+  {
+    X map;
+
     BOOST_TEST(map.empty());
     map.insert({{"a", "b"}, {"a", "b"}, {"d", ""}});
     BOOST_TEST_EQ(map.size(), 2u);
   }
+
+#ifdef BOOST_UNORDERED_FOA_TESTS
+  static boost::unordered_flat_map<std::string, std::string>* test_str_map;
+  static boost::unordered_node_map<std::string, std::string>* test_str_node_map;
+
+  // clang-format off
+  UNORDERED_TEST(insert_initializer_list_map,
+    ((test_str_map)(test_str_node_map)))
+  // clang-format on
+#else
+  static boost::unordered_map<std::string, std::string>* test_str_map;
+
+  // clang-format off
+  UNORDERED_TEST(insert_initializer_list_map, ((test_str_map)))
+  // clang-format on
+#endif
 
 #ifndef BOOST_UNORDERED_FOA_TESTS
   UNORDERED_AUTO_TEST (insert_initializer_list_multimap) {
@@ -1124,64 +1230,71 @@ namespace insert_tests {
     }
   };
 
-  UNORDERED_AUTO_TEST (map_emplace_test) {
-    {
-#ifdef BOOST_UNORDERED_FOA_TESTS
-      boost::unordered_flat_map<int, overloaded_constructor, test::hash,
-        test::equal_to,
-        test::allocator1<std::pair<int const, overloaded_constructor> > >
-        x;
-#else
-
-      boost::unordered_map<int, overloaded_constructor, test::hash,
-        test::equal_to,
-        test::allocator1<std::pair<int const, overloaded_constructor> > >
-        x;
-#endif
-
+  template <class X> static void map_emplace_test(X*)
+  {
+    X x;
 #if !BOOST_UNORDERED_SUN_WORKAROUNDS1
-      x.emplace();
-      BOOST_TEST(
-        x.find(0) != x.end() && x.find(0)->second == overloaded_constructor());
+    x.emplace();
+    BOOST_TEST(
+      x.find(0) != x.end() && x.find(0)->second == overloaded_constructor());
 #endif
 
-      x.emplace(2, 3);
-      BOOST_TEST(
-        x.find(2) != x.end() && x.find(2)->second == overloaded_constructor(3));
+    x.emplace(2, 3);
+    BOOST_TEST(
+      x.find(2) != x.end() && x.find(2)->second == overloaded_constructor(3));
 
-      x.try_emplace(5);
-      BOOST_TEST(
-        x.find(5) != x.end() && x.find(5)->second == overloaded_constructor());
-    }
-
-#ifndef BOOST_UNORDERED_FOA_TESTS
-    {
-      boost::unordered_multimap<int, overloaded_constructor, test::hash,
-        test::equal_to,
-        test::allocator1<std::pair<int const, overloaded_constructor> > >
-        x;
-
-#if !BOOST_UNORDERED_SUN_WORKAROUNDS1
-      x.emplace();
-      BOOST_TEST(
-        x.find(0) != x.end() && x.find(0)->second == overloaded_constructor());
-#endif
-
-      x.emplace(2, 3);
-      BOOST_TEST(
-        x.find(2) != x.end() && x.find(2)->second == overloaded_constructor(3));
-    }
-#endif
+    x.try_emplace(5);
+    BOOST_TEST(
+      x.find(5) != x.end() && x.find(5)->second == overloaded_constructor());
   }
 
-  UNORDERED_AUTO_TEST (set_emplace_test) {
-#ifdef BOOST_UNORDERED_FOA_TESTS
-    boost::unordered_flat_set<overloaded_constructor> x;
-    overloaded_constructor check;
-#else
-    boost::unordered_set<overloaded_constructor> x;
-    overloaded_constructor check;
+#ifndef BOOST_UNORDERED_FOA_TESTS
+  template <class X> static void multimap_emplace_test(X*)
+  {
+    X x;
+#if !BOOST_UNORDERED_SUN_WORKAROUNDS1
+    x.emplace();
+    BOOST_TEST(
+      x.find(0) != x.end() && x.find(0)->second == overloaded_constructor());
 #endif
+
+    x.emplace(2, 3);
+    BOOST_TEST(
+      x.find(2) != x.end() && x.find(2)->second == overloaded_constructor(3));
+  }
+#endif
+
+#ifdef BOOST_UNORDERED_FOA_TESTS
+  static boost::unordered_flat_map<int, overloaded_constructor, test::hash,
+    test::equal_to,
+    test::allocator1<std::pair<int const, overloaded_constructor> > >*
+    test_oc_map;
+
+  static boost::unordered_node_map<int, overloaded_constructor, test::hash,
+    test::equal_to,
+    test::allocator1<std::pair<int const, overloaded_constructor> > >*
+    test_oc_node_map;
+
+  UNORDERED_TEST(map_emplace_test, ((test_oc_map)(test_oc_node_map)))
+#else
+  static boost::unordered_map<int, overloaded_constructor, test::hash,
+    test::equal_to,
+    test::allocator1<std::pair<int const, overloaded_constructor> > >*
+    test_oc_map;
+
+  static boost::unordered_multimap<int, overloaded_constructor, test::hash,
+    test::equal_to,
+    test::allocator1<std::pair<int const, overloaded_constructor> > >*
+    test_oc_multimap;
+
+  UNORDERED_TEST(map_emplace_test, ((test_oc_map)))
+  UNORDERED_TEST(multimap_emplace_test, ((test_oc_multimap)))
+#endif
+
+  template <class X> static void set_emplace_test(X*)
+  {
+    X x;
+    overloaded_constructor check;
 
 #if !BOOST_UNORDERED_SUN_WORKAROUNDS1
     x.emplace();
@@ -1208,6 +1321,18 @@ namespace insert_tests {
     check = overloaded_constructor(7, 8, 9, 10);
     BOOST_TEST(x.find(check) != x.end() && *x.find(check) == check);
   }
+
+#ifdef BOOST_UNORDERED_FOA_TESTS
+  static boost::unordered_flat_set<overloaded_constructor>* test_oc_set;
+  static boost::unordered_node_set<overloaded_constructor>* test_oc_node_set;
+
+  UNORDERED_TEST(set_emplace_test, ((test_oc_set)(test_oc_node_set)))
+#else
+  static boost::unordered_set<overloaded_constructor>* test_oc_set;
+  static boost::unordered_multiset<overloaded_constructor>* test_oc_multiset;
+
+  UNORDERED_TEST(set_emplace_test, ((test_oc_set)(test_oc_multiset)))
+#endif
 
   struct derived_from_piecewise_construct_t
     : boost::unordered::piecewise_construct_t
@@ -1358,6 +1483,14 @@ namespace insert_tests {
 
 #ifndef BOOST_UNORDERED_FOA_TESTS
 
+  static boost::unordered_map<overloaded_constructor, overloaded_constructor,
+    boost::hash<overloaded_constructor>, std::equal_to<overloaded_constructor>,
+    test::allocator1<std::pair<overloaded_constructor const,
+      overloaded_constructor> > >* test_pw_oc_map;
+
+  static boost::unordered_set<std::pair<overloaded_constructor,
+    overloaded_constructor> >* test_pair_oc_set;
+
 #define PIECEWISE_TEST_NAME boost_tuple_piecewise_tests
 #define PIECEWISE_NAMESPACE boost::unordered
 #define TUPLE_NAMESPACE boost
@@ -1389,6 +1522,14 @@ namespace insert_tests {
 #if !defined(BOOST_NO_CXX11_HDR_TUPLE) &&                                      \
   BOOST_UNORDERED_HAVE_PIECEWISE_CONSTRUCT
 
+#ifdef BOOST_UNORDERED_FOA_TESTS
+  static boost::unordered_flat_set<std::pair<overloaded_constructor,
+    overloaded_constructor> >* test_pair_oc_set;
+
+  static boost::unordered_node_set<std::pair<overloaded_constructor,
+    overloaded_constructor> >* test_pair_oc_node_set;
+#endif
+
 #define PIECEWISE_TEST_NAME std_piecewise_tests
 #define PIECEWISE_NAMESPACE std
 #define TUPLE_NAMESPACE std
@@ -1402,27 +1543,17 @@ RUN_TESTS_QUIET()
 
 #else // PIECEWISE_TEST_NAME
 
-UNORDERED_AUTO_TEST (PIECEWISE_TEST_NAME) {
+#define MAP_PIECEWISE_TEST BOOST_PP_CAT(map_, PIECEWISE_TEST_NAME)
+#define SET_PIECEWISE_TEST BOOST_PP_CAT(set_, PIECEWISE_TEST_NAME)
+
+  template <class X>
+  static void MAP_PIECEWISE_TEST(X*)
+  {
 #if EMULATING_PIECEWISE_CONSTRUCTION
   test::detail::disable_construction_tracking _scoped;
 #endif
 
-  {
-#if defined(BOOST_UNORDERED_FOA_TESTS)
-    boost::unordered_flat_map<overloaded_constructor, overloaded_constructor,
-      boost::hash<overloaded_constructor>,
-      std::equal_to<overloaded_constructor>,
-      test::allocator1<
-        std::pair<overloaded_constructor const, overloaded_constructor> > >
-      x;
-#else
-    boost::unordered_map<overloaded_constructor, overloaded_constructor,
-      boost::hash<overloaded_constructor>,
-      std::equal_to<overloaded_constructor>,
-      test::allocator1<
-        std::pair<overloaded_constructor const, overloaded_constructor> > >
-      x;
-#endif
+    X x;
 
     x.emplace(PIECEWISE_NAMESPACE::piecewise_construct,
       TUPLE_NAMESPACE::make_tuple(), TUPLE_NAMESPACE::make_tuple());
@@ -1466,70 +1597,102 @@ UNORDERED_AUTO_TEST (PIECEWISE_TEST_NAME) {
                x.find(overloaded_constructor(2, 3))->second ==
                  overloaded_constructor(4, 5, 6));
   }
-#ifndef BOOST_UNORDERED_FOA_TESTS
+
+  template <class X>
+  static void SET_PIECEWISE_TEST(X*)
   {
-    boost::unordered_multimap<overloaded_constructor, overloaded_constructor,
-      boost::hash<overloaded_constructor>,
-      std::equal_to<overloaded_constructor>,
-      test::allocator1<
-        std::pair<overloaded_constructor const, overloaded_constructor> > >
-      x;
+#if EMULATING_PIECEWISE_CONSTRUCTION
+    test::detail::disable_construction_tracking _scoped;
+#endif
+
+    X x;
+    std::pair<overloaded_constructor, overloaded_constructor> check;
 
     x.emplace(PIECEWISE_NAMESPACE::piecewise_construct,
       TUPLE_NAMESPACE::make_tuple(), TUPLE_NAMESPACE::make_tuple());
-    BOOST_TEST(
-      x.find(overloaded_constructor()) != x.end() &&
-      x.find(overloaded_constructor())->second == overloaded_constructor());
+    BOOST_TEST(x.find(check) != x.end() && *x.find(check) == check);
 
-    x.emplace(convertible_to_piecewise(), TUPLE_NAMESPACE::make_tuple(1),
-      TUPLE_NAMESPACE::make_tuple());
-    BOOST_TEST(
-      x.find(overloaded_constructor(1)) != x.end() &&
-      x.find(overloaded_constructor(1))->second == overloaded_constructor());
-
-    x.emplace(piecewise_rvalue(), TUPLE_NAMESPACE::make_tuple(2, 3),
-      TUPLE_NAMESPACE::make_tuple(4, 5, 6));
-    BOOST_TEST(x.find(overloaded_constructor(2, 3)) != x.end() &&
-               x.find(overloaded_constructor(2, 3))->second ==
-                 overloaded_constructor(4, 5, 6));
-
-    derived_from_piecewise_construct_t d;
-    x.emplace(
-      d, TUPLE_NAMESPACE::make_tuple(9, 3, 1), TUPLE_NAMESPACE::make_tuple(10));
-    BOOST_TEST(x.find(overloaded_constructor(9, 3, 1)) != x.end() &&
-               x.find(overloaded_constructor(9, 3, 1))->second ==
-                 overloaded_constructor(10));
+    x.clear();
+    x.emplace(PIECEWISE_NAMESPACE::piecewise_construct,
+      TUPLE_NAMESPACE::make_tuple(1), TUPLE_NAMESPACE::make_tuple(2, 3));
+    check =
+      std::make_pair(overloaded_constructor(1), overloaded_constructor(2, 3));
+    BOOST_TEST(x.find(check) != x.end() && *x.find(check) == check);
   }
-#endif
-}
 
-UNORDERED_AUTO_TEST (BOOST_PP_CAT(PIECEWISE_TEST_NAME, 2)) {
+#if defined(BOOST_UNORDERED_FOA_TESTS)
+  static boost::unordered_flat_map<overloaded_constructor,
+    overloaded_constructor, boost::hash<overloaded_constructor>,
+    std::equal_to<overloaded_constructor>,
+    test::allocator1<std::pair<overloaded_constructor const,
+      overloaded_constructor> > >* test_pw_oc_map;
+
+  static boost::unordered_node_map<overloaded_constructor,
+    overloaded_constructor, boost::hash<overloaded_constructor>,
+    std::equal_to<overloaded_constructor>,
+    test::allocator1<std::pair<overloaded_constructor const,
+      overloaded_constructor> > >* test_pw_oc_node_map;
+
+  // clang-format off
+  UNORDERED_TEST(MAP_PIECEWISE_TEST, ((test_pw_oc_map)(test_pw_oc_node_map)))
+  // clang-format on
+#else
+  // clang-format off
+  UNORDERED_TEST(MAP_PIECEWISE_TEST, ((test_pw_oc_map)))
+  // clang-format on
+#endif
+
+#ifndef BOOST_UNORDERED_FOA_TESTS
+  UNORDERED_AUTO_TEST (BOOST_PP_CAT(multimap_, PIECEWISE_TEST_NAME)) {
+    {
 #if EMULATING_PIECEWISE_CONSTRUCTION
-  test::detail::disable_construction_tracking _scoped;
+      test::detail::disable_construction_tracking _scoped;
+#endif
+      boost::unordered_multimap<overloaded_constructor, overloaded_constructor,
+        boost::hash<overloaded_constructor>,
+        std::equal_to<overloaded_constructor>,
+        test::allocator1<
+          std::pair<overloaded_constructor const, overloaded_constructor> > >
+        x;
+
+      x.emplace(PIECEWISE_NAMESPACE::piecewise_construct,
+        TUPLE_NAMESPACE::make_tuple(), TUPLE_NAMESPACE::make_tuple());
+      BOOST_TEST(
+        x.find(overloaded_constructor()) != x.end() &&
+        x.find(overloaded_constructor())->second == overloaded_constructor());
+
+      x.emplace(convertible_to_piecewise(), TUPLE_NAMESPACE::make_tuple(1),
+        TUPLE_NAMESPACE::make_tuple());
+      BOOST_TEST(
+        x.find(overloaded_constructor(1)) != x.end() &&
+        x.find(overloaded_constructor(1))->second == overloaded_constructor());
+
+      x.emplace(piecewise_rvalue(), TUPLE_NAMESPACE::make_tuple(2, 3),
+        TUPLE_NAMESPACE::make_tuple(4, 5, 6));
+      BOOST_TEST(x.find(overloaded_constructor(2, 3)) != x.end() &&
+                 x.find(overloaded_constructor(2, 3))->second ==
+                   overloaded_constructor(4, 5, 6));
+
+      derived_from_piecewise_construct_t d;
+      x.emplace(d, TUPLE_NAMESPACE::make_tuple(9, 3, 1),
+        TUPLE_NAMESPACE::make_tuple(10));
+      BOOST_TEST(x.find(overloaded_constructor(9, 3, 1)) != x.end() &&
+                 x.find(overloaded_constructor(9, 3, 1))->second ==
+                   overloaded_constructor(10));
+    }
+  }
 #endif
 
 #ifdef BOOST_UNORDERED_FOA_TESTS
-  boost::unordered_flat_set<
-    std::pair<overloaded_constructor, overloaded_constructor> >
-    x;
+  // clang-format off
+  UNORDERED_TEST(SET_PIECEWISE_TEST,
+    ((test_pair_oc_set)(test_pair_oc_node_set)))
+  // clang-format on
 #else
-  boost::unordered_set<
-    std::pair<overloaded_constructor, overloaded_constructor> >
-    x;
+  // clang-format off
+  UNORDERED_TEST(SET_PIECEWISE_TEST, ((test_pair_oc_set)))
+  // clang-format on
 #endif
-  std::pair<overloaded_constructor, overloaded_constructor> check;
-
-  x.emplace(PIECEWISE_NAMESPACE::piecewise_construct,
-    TUPLE_NAMESPACE::make_tuple(), TUPLE_NAMESPACE::make_tuple());
-  BOOST_TEST(x.find(check) != x.end() && *x.find(check) == check);
-
-  x.clear();
-  x.emplace(PIECEWISE_NAMESPACE::piecewise_construct,
-    TUPLE_NAMESPACE::make_tuple(1), TUPLE_NAMESPACE::make_tuple(2, 3));
-  check =
-    std::make_pair(overloaded_constructor(1), overloaded_constructor(2, 3));
-  BOOST_TEST(x.find(check) != x.end() && *x.find(check) == check);
-}
 
 #undef PIECEWISE_TEST_NAME
 #undef PIECEWISE_NAMESPACE
