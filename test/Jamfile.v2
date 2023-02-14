@@ -94,6 +94,7 @@ run exception/erase_exception_tests.cpp ;
 run exception/rehash_exception_tests.cpp ;
 run exception/swap_exception_tests.cpp : : : <define>BOOST_UNORDERED_SWAP_METHOD=2 ;
 run exception/merge_exception_tests.cpp ;
+run exception/less_tests.cpp ;
 
 run unordered/narrow_cast_tests.cpp ;
 run quick.cpp ;
