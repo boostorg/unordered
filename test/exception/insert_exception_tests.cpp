@@ -1,6 +1,6 @@
 
 // Copyright 2006-2009 Daniel James.
-// Copyright 2022 Christian Mazakas.
+// Copyright 2022-2023 Christian Mazakas.
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #include "./containers.hpp"
@@ -229,10 +229,12 @@ using test::generate_collisions;
 #ifdef BOOST_UNORDERED_FOA_TESTS
 test_set* test_set_;
 test_map* test_map_;
+test_node_set* test_node_set_;
+test_node_map* test_node_map_;
 
 // clang-format off
 UNORDERED_TEST(insert_exception_test,
-    ((test_set_)(test_map_))
+    ((test_set_)(test_map_)(test_node_set_)(test_node_map_))
     ((insert_lvalue)(insert_lvalue_begin)(insert_lvalue_end)
      (insert_lvalue_pos)(insert_single_item_range)
      (emplace_lvalue)(emplace_lvalue_begin)(emplace_lvalue_end)
@@ -242,7 +244,7 @@ UNORDERED_TEST(insert_exception_test,
 )
 
 UNORDERED_TEST(insert_rehash_exception_test,
-    ((test_set_)(test_map_))
+    ((test_set_)(test_map_)(test_node_set_)(test_node_map_))
     ((insert_lvalue)(insert_lvalue_begin)(insert_lvalue_end)
      (insert_lvalue_pos)(insert_single_item_range)
      (emplace_lvalue)(emplace_lvalue_begin)(emplace_lvalue_end)
@@ -314,15 +316,16 @@ struct pair_emplace2_type : inserter_base
 
 #ifdef BOOST_UNORDERED_FOA_TESTS
 test_pair_set* test_pair_set_;
+test_pair_node_set* test_pair_node_set_;
 
 // clang-format off
 UNORDERED_TEST(insert_exception_test,
-    ((test_pair_set_)(test_map_))
+    ((test_pair_set_)(test_map_)(test_pair_node_set_)(test_node_map_))
     ((pair_emplace)(pair_emplace2))
     ((default_generator)(limited_range)(generate_collisions))
 )
 UNORDERED_TEST(insert_rehash_exception_test,
-    ((test_pair_set_)(test_map_))
+    ((test_pair_set_)(test_map_)(test_pair_node_set_)(test_node_map_))
     ((pair_emplace)(pair_emplace2))
     ((default_generator)(limited_range)(generate_collisions))
 )
@@ -399,6 +402,20 @@ struct map_insert_or_assign_type : map_inserter_base
   }
 } map_insert_or_assign;
 
+#ifdef BOOST_UNORDERED_FOA_TESTS
+// clang-format off
+UNORDERED_TEST(insert_exception_test,
+    ((test_map_)(test_node_map_))
+    ((try_emplace)(try_emplace2)(map_insert_operator)(map_insert_or_assign))
+    ((default_generator)(limited_range)(generate_collisions))
+)
+UNORDERED_TEST(insert_rehash_exception_test,
+    ((test_map_)(test_node_map_))
+    ((try_emplace)(try_emplace2)(map_insert_operator)(map_insert_or_assign))
+    ((default_generator)(limited_range)(generate_collisions))
+)
+// clang-format on
+#else
 // clang-format off
 UNORDERED_TEST(insert_exception_test,
     ((test_map_))
@@ -411,6 +428,7 @@ UNORDERED_TEST(insert_rehash_exception_test,
     ((default_generator)(limited_range)(generate_collisions))
 )
 // clang-format on
+#endif
 
 // Range insert tests
 
@@ -459,12 +477,12 @@ void insert_range_rehash_exception_test(T*, test::random_generator gen)
 #ifdef BOOST_UNORDERED_FOA_TESTS
 // clang-format off
 UNORDERED_TEST(insert_range_exception_test,
-    ((test_set_)(test_map_))
+    ((test_set_)(test_map_)(test_node_set_)(test_node_map_))
     ((default_generator)(limited_range)(generate_collisions))
 )
 
 UNORDERED_TEST(insert_range_rehash_exception_test,
-    ((test_set_)(test_map_))
+    ((test_set_)(test_map_)(test_node_set_)(test_node_map_))
     ((default_generator)(limited_range)(generate_collisions))
 )
 // clang-format on
