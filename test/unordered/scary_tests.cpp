@@ -1,4 +1,4 @@
-// Copyright 2022 Christian Mazakas.
+// Copyright 2022-2023 Christian Mazakas.
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -312,7 +312,10 @@ void set_scary_test()
 UNORDERED_AUTO_TEST (scary_tests) {
 #ifdef BOOST_UNORDERED_FOA_TESTS
   map_scary_test<boost::unordered_flat_map>();
+  map_scary_test<boost::unordered_node_map>();
+
   set_scary_test<boost::unordered_flat_set>();
+  set_scary_test<boost::unordered_node_set>();
 #else
   map_scary_test<boost::unordered_map>();
   map_scary_test<boost::unordered_multimap>();
