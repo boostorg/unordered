@@ -1,6 +1,6 @@
 
 // Copyright 2009 Daniel James.
-// Copyright 2022 Christian Mazakas.
+// Copyright 2022-2023 Christian Mazakas.
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -13,11 +13,12 @@ namespace x {
   {
 #ifdef BOOST_UNORDERED_FOA_TESTS
     boost::unordered_flat_map<D, D> x;
+    boost::unordered_node_map<D, D> y;
 #else
     boost::unordered_map<D, D> x;
 #endif
   };
-}
+} // namespace x
 
 namespace incomplete_test {
   // Declare, but don't define some types.
@@ -33,11 +34,11 @@ namespace incomplete_test {
   typedef boost::unordered_flat_map<value, value, hash, equals,
     allocator<std::pair<value const, value> > >
     map;
-  typedef boost::unordered_flat_map<value, value, hash, equals,
+  typedef boost::unordered_flat_set<value, hash, equals, allocator<value> > set;
+  typedef boost::unordered_node_map<value, value, hash, equals,
     allocator<std::pair<value const, value> > >
     multimap;
-  typedef boost::unordered_flat_set<value, hash, equals, allocator<value> > set;
-  typedef boost::unordered_flat_set<value, hash, equals, allocator<value> >
+  typedef boost::unordered_node_set<value, hash, equals, allocator<value> >
     multiset;
 #else
   typedef boost::unordered_map<value, value, hash, equals,
@@ -97,7 +98,7 @@ namespace incomplete_test {
   };
   struct struct2
   {
-    boost::unordered_flat_map<struct2, struct2, hash, equals,
+    boost::unordered_node_map<struct2, struct2, hash, equals,
       allocator<std::pair<struct2 const, struct2> > >
       x;
   };
@@ -107,7 +108,7 @@ namespace incomplete_test {
   };
   struct struct4
   {
-    boost::unordered_flat_set<struct4, hash, equals, allocator<struct4> > x;
+    boost::unordered_node_set<struct4, hash, equals, allocator<struct4> > x;
   };
 #else
   struct struct1
@@ -195,7 +196,7 @@ namespace incomplete_test {
   bool operator==(struct2 const&, struct2 const&) { return true; }
   bool operator==(struct3 const&, struct3 const&) { return true; }
   bool operator==(struct4 const&, struct4 const&) { return true; }
-}
+} // namespace incomplete_test
 
 int main()
 {
