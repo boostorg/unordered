@@ -1,6 +1,6 @@
 
 // Copyright 2008-2009 Daniel James.
-// Copyright 2022 Christian Mazakas.
+// Copyright 2022-2023 Christian Mazakas.
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or move at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -408,18 +408,68 @@ namespace move_tests {
     test::cxx11_allocator<std::pair<test::object const, test::object>,
       test::no_propagate_move> >* test_map_no_prop_move;
 
+  boost::unordered_node_map<test::object, test::object, test::hash,
+    test::equal_to,
+    std::allocator<std::pair<test::object const, test::object> > >*
+    test_node_map_std_alloc;
+
+  boost::unordered_node_set<test::object, test::hash, test::equal_to,
+    test::allocator2<test::object> >* test_node_set;
+  boost::unordered_node_map<test::object, test::object, test::hash,
+    test::equal_to,
+    test::allocator1<std::pair<test::object const, test::object> > >*
+    test_node_map;
+
+  boost::unordered_node_set<test::object, test::hash, test::equal_to,
+    test::cxx11_allocator<test::object, test::propagate_move> >*
+    test_node_set_prop_move;
+  boost::unordered_node_map<test::object, test::object, test::hash,
+    test::equal_to,
+    test::cxx11_allocator<std::pair<test::object const, test::object>,
+      test::propagate_move> >* test_node_map_prop_move;
+
+  boost::unordered_node_set<test::object, test::hash, test::equal_to,
+    test::cxx11_allocator<test::object, test::no_propagate_move> >*
+    test_node_set_no_prop_move;
+  boost::unordered_node_map<test::object, test::object, test::hash,
+    test::equal_to,
+    test::cxx11_allocator<std::pair<test::object const, test::object>,
+      test::no_propagate_move> >* test_node_map_no_prop_move;
+
+  // clang-format off
   UNORDERED_TEST(move_construct_tests1,
-    ((test_map_std_alloc)(test_set)(test_map)(test_set_prop_move)(test_map_prop_move)(test_set_no_prop_move)(test_map_no_prop_move))(
+    ((test_map_std_alloc)(test_set)(test_map)
+     (test_set_prop_move)(test_map_prop_move)
+     (test_set_no_prop_move)(test_map_no_prop_move)
+     (test_node_map_std_alloc)(test_node_set)(test_node_map)
+     (test_node_set_prop_move)(test_node_map_prop_move)
+     (test_node_set_no_prop_move)(test_node_map_no_prop_move))(
       (default_generator)(generate_collisions)(limited_range)))
   UNORDERED_TEST(move_assign_tests1,
-    ((test_map_std_alloc)(test_set)(test_map)(test_set_prop_move)(test_map_prop_move)(test_set_no_prop_move)(test_map_no_prop_move))(
+    ((test_map_std_alloc)(test_set)(test_map)
+     (test_set_prop_move)(test_map_prop_move)
+     (test_set_no_prop_move)(test_map_no_prop_move)
+     (test_node_map_std_alloc)(test_node_set)(test_node_map)
+     (test_node_set_prop_move)(test_node_map_prop_move)
+     (test_node_set_no_prop_move)(test_node_map_no_prop_move))(
       (default_generator)(generate_collisions)(limited_range)))
   UNORDERED_TEST(move_construct_tests2,
-    ((test_set)(test_map)(test_set_prop_move)(test_map_prop_move)(test_set_no_prop_move)(test_map_no_prop_move))(
+    ((test_set)(test_map)
+     (test_set_prop_move)(test_map_prop_move)
+     (test_set_no_prop_move)(test_map_no_prop_move)
+     (test_node_set)(test_node_map)
+     (test_node_set_prop_move)(test_node_map_prop_move)
+     (test_node_set_no_prop_move)(test_node_map_no_prop_move))(
       (default_generator)(generate_collisions)(limited_range)))
   UNORDERED_TEST(move_assign_tests2,
-    ((test_set)(test_map)(test_set_prop_move)(test_map_prop_move)(test_set_no_prop_move)(test_map_no_prop_move))(
+    ((test_set)(test_map)
+     (test_set_prop_move)(test_map_prop_move)
+     (test_set_no_prop_move)(test_map_no_prop_move)
+     (test_node_set)(test_node_map)
+     (test_node_set_prop_move)(test_node_map_prop_move)
+     (test_node_set_no_prop_move)(test_node_map_no_prop_move))(
       (default_generator)(generate_collisions)(limited_range)))
+  // clang-format on
 #else
   boost::unordered_map<test::object, test::object, test::hash, test::equal_to,
     std::allocator<std::pair<test::object const, test::object> > >*
