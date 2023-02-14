@@ -30,17 +30,50 @@ namespace boost {
 #pragma warning(disable : 4714) /* marked as __forceinline not inlined */
 #endif
 
-    template <class Key, class Hash, class KeyEqual, class Allocator>
-    class unordered_flat_set
-    {
-      struct set_types
+    namespace detail {
+      template <class Key> struct flat_set_types
       {
         using key_type = Key;
         using init_type = Key;
         using value_type = Key;
+
         static Key const& extract(value_type const& key) { return key; }
-        static Key&& move(value_type& x) { return std::move(x); }
+
+        using element_type = value_type;
+
+        static Key& value_from(element_type& x) { return x; }
+
+        static element_type&& move(element_type& x) { return std::move(x); }
+
+        template <class A>
+        static void construct(A& al, element_type* p, element_type const& copy)
+        {
+          boost::allocator_construct(al, p, copy);
+        }
+
+        template <class A>
+        static void construct(A& al, element_type* p, Key&& x)
+        {
+          boost::allocator_construct(al, p, std::move(x));
+        }
+
+        template <class A, class... Args>
+        static void construct(A& al, element_type* p, Args&&... args)
+        {
+          boost::allocator_construct(al, p, std::forward<Args>(args)...);
+        }
+
+        template <class A> static void destroy(A& al, element_type* p) noexcept
+        {
+          boost::allocator_destroy(al, p);
+        }
       };
+    } // namespace detail
+
+    template <class Key, class Hash, class KeyEqual, class Allocator>
+    class unordered_flat_set
+    {
+      using set_types = detail::flat_set_types<Key>;
 
       using table_type = detail::foa::table<set_types, Hash, KeyEqual,
         typename boost::allocator_rebind<Allocator,
