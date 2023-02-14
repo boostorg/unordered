@@ -32,10 +32,8 @@ namespace boost {
 #pragma warning(disable : 4714) /* marked as __forceinline not inlined */
 #endif
 
-    template <class Key, class T, class Hash, class KeyEqual, class Allocator>
-    class unordered_flat_map
-    {
-      struct map_types
+    namespace detail {
+      template <class Key, class T> struct flat_map_types
       {
         using key_type = Key;
         using raw_key_type = typename std::remove_const<Key>::type;
@@ -45,19 +43,46 @@ namespace boost {
         using moved_type = std::pair<raw_key_type&&, raw_mapped_type&&>;
         using value_type = std::pair<Key const, T>;
 
+        using element_type = value_type;
+
+        static value_type& value_from(element_type& x) { return x; }
+
         template <class K, class V>
         static raw_key_type const& extract(std::pair<K, V> const& kv)
         {
           return kv.first;
         }
 
-        static moved_type move(value_type& x)
+        static moved_type move(element_type& x)
         {
           // TODO: we probably need to launder here
           return {std::move(const_cast<raw_key_type&>(x.first)),
             std::move(const_cast<raw_mapped_type&>(x.second))};
         }
+
+        template <class A>
+        static void construct(A& al, element_type* p, moved_type&& x)
+        {
+          boost::allocator_construct(al, p, std::move(x));
+        }
+
+        template <class A, class... Args>
+        static void construct(A& al, element_type* p, Args&&... args)
+        {
+          boost::allocator_construct(al, p, std::forward<Args>(args)...);
+        }
+
+        template <class A> static void destroy(A& al, element_type* p) noexcept
+        {
+          boost::allocator_destroy(al, p);
+        }
       };
+    } // namespace detail
+
+    template <class Key, class T, class Hash, class KeyEqual, class Allocator>
+    class unordered_flat_map
+    {
+      using map_types = detail::flat_map_types<Key, T>;
 
       using table_type = detail::foa::table<map_types, Hash, KeyEqual,
         typename boost::allocator_rebind<Allocator,
