@@ -143,6 +143,7 @@ build_foa scary_tests ;
 build_foa init_type_insert_tests ;
 build_foa max_load_tests ;
 build_foa extract_tests ;
+build_foa node_handle_tests ;
 
 run unordered/hash_is_avalanching_test.cpp ;
 
