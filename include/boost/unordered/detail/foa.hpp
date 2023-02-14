@@ -805,12 +805,15 @@ class table;
 /* internal conversion from const_iterator to iterator */
 class const_iterator_cast_tag {}; 
 
-template<typename Value,typename Group,bool Const>
+template<typename TypePolicy,typename Group,bool Const>
 class table_iterator
 {
+  using type_policy=TypePolicy;
+  using table_element_type=typename type_policy::element_type;
+
 public:
   using difference_type=std::ptrdiff_t;
-  using value_type=Value;
+  using value_type=typename type_policy::value_type;
   using pointer=
     typename std::conditional<Const,value_type const*,value_type*>::type;
   using reference=
@@ -821,14 +824,15 @@ public:
 
   table_iterator()=default;
   template<bool Const2,typename std::enable_if<!Const2>::type* =nullptr>
-  table_iterator(const table_iterator<Value,Group,Const2>& x):
+  table_iterator(const table_iterator<TypePolicy,Group,Const2>& x):
     pc{x.pc},p{x.p}{}
   table_iterator(
-    const_iterator_cast_tag, const table_iterator<Value,Group,true>& x):
+    const_iterator_cast_tag, const table_iterator<TypePolicy,Group,true>& x):
     pc{x.pc},p{x.p}{}
 
-  inline reference operator*()const noexcept{return *p;}
-  inline pointer operator->()const noexcept{return p;}
+  inline reference operator*()const noexcept{return type_policy::value_from(*p);}
+  inline pointer operator->()const noexcept
+    {return std::addressof(type_policy::value_from(*p));}
   inline table_iterator& operator++()noexcept{increment();return *this;}
   inline table_iterator operator++(int)noexcept
     {auto x=*this;increment();return x;}
@@ -843,9 +847,9 @@ private:
   template<typename,typename,bool> friend class table_iterator;
   template<typename,typename,typename,typename> friend class table;
 
-  table_iterator(Group* pg,std::size_t n,const Value* p_):
+  table_iterator(Group* pg,std::size_t n,const table_element_type* p_):
     pc{reinterpret_cast<unsigned char*>(const_cast<Group*>(pg))+n},
-    p{const_cast<Value*>(p_)}
+    p{const_cast<table_element_type*>(p_)}
     {}
 
   inline std::size_t rebase() noexcept
@@ -879,8 +883,8 @@ private:
     }
   }
 
-  unsigned char *pc=nullptr;
-  Value         *p=nullptr;
+  unsigned char      *pc=nullptr;
+  table_element_type *p=nullptr;
 };
 
 /* table_arrays controls allocation, initialization and deallocation of
@@ -921,7 +925,10 @@ struct table_arrays
   template<typename Allocator>
   static table_arrays new_(Allocator& al,std::size_t n)
   {
-    using alloc_traits=boost::allocator_traits<Allocator>;
+    // using alloc_traits=boost::allocator_traits<Allocator>;
+    using storage_allocator=
+      typename boost::allocator_rebind<Allocator, Value>::type;
+    using storage_traits=boost::allocator_traits<storage_allocator>;
 
     auto         groups_size_index=size_index_for<group_type,size_policy>(n);
     auto         groups_size=size_policy::size(groups_size_index);
@@ -931,8 +938,9 @@ struct table_arrays
       arrays.groups=dummy_groups<group_type,size_policy::min_size()>();
     }
     else{
-      arrays.elements=
-        boost::to_address(alloc_traits::allocate(al,buffer_size(groups_size)));
+      auto sal=storage_allocator(al);
+      arrays.elements=boost::to_address(
+        storage_traits::allocate(sal,buffer_size(groups_size)));
       
       /* Align arrays.groups to sizeof(group_type). table_iterator critically
        * depends on such alignment for its increment operation.
@@ -956,13 +964,15 @@ struct table_arrays
   template<typename Allocator>
   static void delete_(Allocator& al,table_arrays& arrays)noexcept
   {
-    using alloc_traits=boost::allocator_traits<Allocator>;
+    using storage_alloc=typename boost::allocator_rebind<Allocator,Value>::type;
+    using alloc_traits=boost::allocator_traits<storage_alloc>;
     using pointer=typename alloc_traits::pointer;
     using pointer_traits=boost::pointer_traits<pointer>;
 
+    auto sal=storage_alloc(al);
     if(arrays.elements){
       alloc_traits::deallocate(
-        al,pointer_traits::pointer_to(*arrays.elements),
+        sal,pointer_traits::pointer_to(*arrays.elements),
         buffer_size(arrays.groups_size_mask+1));
     }
   }
@@ -1174,6 +1184,7 @@ public:
   using key_type=typename type_policy::key_type;
   using init_type=typename type_policy::init_type;
   using value_type=typename type_policy::value_type;
+  using element_type=typename type_policy::element_type;
 
 private:
   static constexpr bool has_mutable_iterator=
@@ -1189,10 +1200,10 @@ public:
   using const_reference=const value_type&;
   using size_type=std::size_t;
   using difference_type=std::ptrdiff_t;
-  using const_iterator=table_iterator<value_type,group_type,true>;
+  using const_iterator=table_iterator<type_policy,group_type,true>;
   using iterator=typename std::conditional<
     has_mutable_iterator,
-    table_iterator<value_type,group_type,false>,
+    table_iterator<type_policy,group_type,false>,
     const_iterator>::type;
 
   table(
@@ -1243,15 +1254,15 @@ public:
       /* This works because subsequent x.clear() does not depend on the
        * elements' values.
        */
-      x.for_all_elements([this](value_type* p){
-        unchecked_insert(type_policy::move(*p));
+      x.for_all_elements([this](element_type* p){
+        unchecked_insert(type_policy::move(type_policy::value_from(*p)));
       });
     }
   }
 
   ~table()noexcept
   {
-    for_all_elements([this](value_type* p){
+    for_all_elements([this](element_type* p){
       destroy_element(p);
     });
     delete_arrays(arrays);
@@ -1340,8 +1351,8 @@ public:
         /* This works because subsequent x.clear() does not depend on the
          * elements' values.
          */
-        x.for_all_elements([this](value_type* p){
-          unchecked_insert(type_policy::move(*p));
+        x.for_all_elements([this](element_type* p){
+          unchecked_insert(type_policy::move(type_policy::value_from(*p)));
         });
       }
     }
@@ -1375,14 +1386,18 @@ public:
   template<typename... Args>
   BOOST_FORCEINLINE std::pair<iterator,bool> emplace(Args&&... args)
   {
-    using emplace_type = typename std::conditional<
+    /* We dispatch based on whether or not the value_type is constructible from
+     * an rvalue refernce to the deduced emplace_type. We do this specifically
+     * for the csae of the node-based containers. To this end, we're able to
+     * avoid allocating a node when a duplicate element is attempted to be
+     * inserted. For immovable types, we instead dispatch to the routine that
+     * unconditionally allocates via `type_policy::construct()`.
+     */
+    return emplace_dispatch(
       std::is_constructible<
-        init_type, Args...
-      >::value,
-      init_type,
-      value_type
-    >::type;
-    return emplace_impl(emplace_type(std::forward<Args>(args)...));
+        value_type,
+        emplace_type<Args...>&&>{},
+      std::forward<Args>(args)...);
   }
 
   template<typename Key,typename... Args>
@@ -1408,6 +1423,14 @@ public:
   template<typename=void>
   BOOST_FORCEINLINE std::pair<iterator,bool>
   insert(value_type&& x){return emplace_impl(std::move(x));}
+
+  template<typename T=element_type>
+  BOOST_FORCEINLINE
+  typename std::enable_if<
+    !std::is_same<T,value_type>::value,
+    std::pair<iterator,bool>
+  >::type
+  insert(element_type&& x){return emplace_impl(std::move(x));}
 
   template<
     bool dependent_value=false,
@@ -1483,14 +1506,21 @@ public:
     }
   }
 
+  element_type extract(const_iterator pos)
+  {
+    BOOST_ASSERT(pos!=end());
+    erase_on_exit e{*this,iterator{const_iterator_cast_tag{},pos}};
+    (void)e;
+    return std::move(*pos.p);
+  }
+
   // TODO: should we accept different allocator too?
   template<typename Hash2,typename Pred2>
   void merge(table<TypePolicy,Hash2,Pred2,Allocator>& x)
   {
-    x.for_all_elements([&,this](group_type* pg,unsigned int n,value_type* p){
-      if(emplace_impl(type_policy::move(*p)).second){
-        x.erase(iterator{pg,n,p});
-      }
+    x.for_all_elements([&,this](group_type* pg,unsigned int n,element_type* p){
+      erase_on_exit e{x,{pg,n,p}};
+      if(!emplace_impl(type_policy::move(*p)).second)e.rollback();
     });
   }
 
@@ -1550,12 +1580,33 @@ public:
 
 private:
   template<typename,typename,typename,typename> friend class table;
-  using arrays_type=table_arrays<value_type,group_type,size_policy>;
+  using arrays_type=table_arrays<element_type,group_type,size_policy>;
+
+  template<typename... Args>
+  using emplace_type = typename std::conditional<
+      std::is_constructible<
+        init_type,Args...
+      >::value,
+      init_type,
+      value_type
+    >::type;
 
   struct clear_on_exit
   {
     ~clear_on_exit(){x.clear();}
     table& x;
+  };
+
+  struct erase_on_exit
+  {
+    erase_on_exit(table& x_,iterator it_):x{x_},it{it_}{}
+    ~erase_on_exit(){if(!rollback_)x.erase(it);}
+
+    void rollback(){rollback_=true;}
+
+    table&   x;
+    iterator it;
+    bool     rollback_=false;
   };
 
   Hash&            h(){return hash_base::get();}
@@ -1576,13 +1627,13 @@ private:
   }
 
   template<typename... Args>
-  void construct_element(value_type* p,Args&&... args)
+  void construct_element(element_type* p,Args&&... args)
   {
-    alloc_traits::construct(al(),p,std::forward<Args>(args)...);
+    type_policy::construct(al(),p,std::forward<Args>(args)...);
   }
 
   template<typename... Args>
-  void construct_element(value_type* p,try_emplace_args_t,Args&&... args)
+  void construct_element(element_type* p,try_emplace_args_t,Args&&... args)
   {
     construct_element_from_try_emplace_args(
       p,
@@ -1592,9 +1643,9 @@ private:
 
   template<typename Key,typename... Args>
   void construct_element_from_try_emplace_args(
-    value_type* p,std::false_type,Key&& x,Args&&... args)
+    element_type* p,std::false_type,Key&& x,Args&&... args)
   {
-    alloc_traits::construct(
+    type_policy::construct(
       al(),p,
       std::piecewise_construct,
       std::forward_as_tuple(std::forward<Key>(x)),
@@ -1607,21 +1658,21 @@ private:
 
   template<typename Key>
   void construct_element_from_try_emplace_args(
-    value_type* p,std::true_type,Key&& x)
+    element_type* p,std::true_type,Key&& x)
   {
-    alloc_traits::construct(al(),p,std::forward<Key>(x));
+    type_policy::construct(al(),p,std::forward<Key>(x));
   }
 
-  void destroy_element(value_type* p)noexcept
+  void destroy_element(element_type* p)noexcept
   {
-    alloc_traits::destroy(al(),p);
+    type_policy::destroy(al(),p);
   }
 
   struct destroy_element_on_exit
   {
     ~destroy_element_on_exit(){this_->destroy_element(p);}
-    table      *this_;
-    value_type *p;
+    table        *this_;
+    element_type *p;
   };
 
   void copy_elements_from(const table& x)
@@ -1632,7 +1683,7 @@ private:
       fast_copy_elements_from(x);
     }
     else{
-      x.for_all_elements([this](const value_type* p){
+      x.for_all_elements([this](const element_type* p){
         unchecked_insert(*p);
       });
     }
@@ -1657,9 +1708,9 @@ private:
         bool,
 #if BOOST_WORKAROUND(BOOST_LIBSTDCXX_VERSION,<50000)
         /* std::is_trivially_copy_constructible not provided */
-        boost::has_trivial_copy<value_type>::value
+        boost::has_trivial_copy<element_type>::value
 #else
-        std::is_trivially_copy_constructible<value_type>::value
+        std::is_trivially_copy_constructible<element_type>::value
 #endif
         &&(
           is_std_allocator<Allocator>::value||
@@ -1683,14 +1734,14 @@ private:
   {
     std::size_t num_constructed=0;
     BOOST_TRY{
-      x.for_all_elements([&,this](const value_type* p){
+      x.for_all_elements([&,this](const element_type* p){
         construct_element(arrays.elements+(p-x.arrays.elements),*p);
         ++num_constructed;
       });
     }
     BOOST_CATCH(...){
       if(num_constructed){
-        x.for_all_elements_while([&,this](const value_type* p){
+        x.for_all_elements_while([&,this](const element_type* p){
           destroy_element(arrays.elements+(p-x.arrays.elements));
           return --num_constructed!=0;
         });
@@ -1760,7 +1811,7 @@ private:
     return size_policy::position(hash,arrays_.groups_size_index);
   }
 
-  static inline void prefetch_elements(const value_type* p)
+  static inline void prefetch_elements(const element_type* p)
   {
     /* We have experimentally confirmed that ARM architectures get a higher
      * speedup when around the first half of the element slots in a group are
@@ -1820,6 +1871,29 @@ private:
 #if defined(BOOST_MSVC)
 #pragma warning(pop) /* C4800 */
 #endif
+
+  template<typename... Args>
+  BOOST_FORCEINLINE std::pair<iterator,bool> emplace_dispatch(
+    std::true_type,Args&&... args
+  ) {
+    using emplace_type_t = emplace_type<Args...>;
+    return emplace_impl(emplace_type_t(std::forward<Args>(args)...));
+  }
+
+  template<typename... Args>
+  BOOST_FORCEINLINE std::pair<iterator,bool> emplace_dispatch(
+    std::false_type,Args&&... args
+  ) {
+    alignas(element_type)
+    unsigned char buf[sizeof(element_type)];
+    element_type* p = reinterpret_cast<element_type*>(buf);
+
+    type_policy::construct(al(),p,std::forward<Args>(args)...);
+    destroy_element_on_exit d{this,p};
+    (void)d;
+
+    return emplace_impl(type_policy::move(*p));
+  }
 
   template<typename... Args>
   BOOST_FORCEINLINE std::pair<iterator,bool> emplace_impl(Args&&... args)
@@ -1896,20 +1970,20 @@ private:
   {
     std::size_t num_destroyed=0;
     BOOST_TRY{
-      for_all_elements([&,this](value_type* p){
+      for_all_elements([&,this](element_type* p){
         nosize_transfer_element(p,new_arrays_,num_destroyed);
       });
     }
     BOOST_CATCH(...){
       if(num_destroyed){
         for_all_elements_while(
-          [&,this](group_type* pg,unsigned int n,value_type*){
+          [&,this](group_type* pg,unsigned int n,element_type*){
             recover_slot(pg,n);
             return --num_destroyed!=0;
           }
         );
       }
-      for_all_elements(new_arrays_,[this](value_type* p){
+      for_all_elements(new_arrays_,[this](element_type* p){
         destroy_element(p);
       });
       delete_arrays(new_arrays_);
@@ -1920,7 +1994,7 @@ private:
     /* either all moved and destroyed or all copied */
     BOOST_ASSERT(num_destroyed==size()||num_destroyed==0);
     if(num_destroyed!=size()){
-      for_all_elements([this](value_type* p){
+      for_all_elements([this](element_type* p){
         destroy_element(p);
       });
     }
@@ -1955,18 +2029,19 @@ private:
   }
 
   void nosize_transfer_element(
-    value_type* p,const arrays_type& arrays_,std::size_t& num_destroyed)
+    element_type* p,const arrays_type& arrays_,std::size_t& num_destroyed)
   {
     nosize_transfer_element(
       p,hash_for(key_from(*p)),arrays_,num_destroyed,
       std::integral_constant< /* std::move_if_noexcept semantics */
         bool,
         std::is_nothrow_move_constructible<init_type>::value||
-        !std::is_copy_constructible<init_type>::value>{});
+        !std::is_same<element_type,value_type>::value||
+        !std::is_copy_constructible<element_type>::value>{});
   }
 
   void nosize_transfer_element(
-    value_type* p,std::size_t hash,const arrays_type& arrays_,
+    element_type* p,std::size_t hash,const arrays_type& arrays_,
     std::size_t& num_destroyed,std::true_type /* ->move */)
   {
     /* Destroy p even if an an exception is thrown in the middle of move
@@ -1980,12 +2055,12 @@ private:
   }
 
   void nosize_transfer_element(
-    value_type* p,std::size_t hash,const arrays_type& arrays_,
+    element_type* p,std::size_t hash,const arrays_type& arrays_,
     std::size_t& /*num_destroyed*/,std::false_type /* ->copy */)
   {
     nosize_unchecked_emplace_at(
       arrays_,position_for(hash,arrays_),hash,
-      const_cast<const value_type&>(*p));
+      const_cast<const element_type&>(*p));
   }
 
   template<typename... Args>
@@ -2022,8 +2097,8 @@ private:
   std::size_t erase_if_impl(Predicate pr)
   {
     std::size_t s=size();
-    for_all_elements([&,this](group_type* pg,unsigned int n,value_type* p){
-      if(pr(*p)) erase(iterator{pg,n,p});
+    for_all_elements([&,this](group_type* pg,unsigned int n,element_type* p){
+      if(pr(type_policy::value_from(*p))) erase(iterator{pg,n,p});
     });
     return std::size_t(s-size());
   }
@@ -2038,7 +2113,7 @@ private:
   static auto for_all_elements(const arrays_type& arrays_,F f)
     ->decltype(f(nullptr),void())
   {
-    for_all_elements_while(arrays_,[&](value_type* p){f(p);return true;});
+    for_all_elements_while(arrays_,[&](element_type* p){f(p);return true;});
   }
 
   template<typename F>
@@ -2046,7 +2121,7 @@ private:
     ->decltype(f(nullptr,0,nullptr),void())
   {
     for_all_elements_while(
-      arrays_,[&](group_type* pg,unsigned int n,value_type* p)
+      arrays_,[&](group_type* pg,unsigned int n,element_type* p)
         {f(pg,n,p);return true;});
   }
 
@@ -2061,7 +2136,7 @@ private:
     ->decltype(f(nullptr),void())
   {
     for_all_elements_while(
-      arrays_,[&](group_type*,unsigned int,value_type* p){return f(p);});
+      arrays_,[&](group_type*,unsigned int,element_type* p){return f(p);});
   }
 
   template<typename F>
