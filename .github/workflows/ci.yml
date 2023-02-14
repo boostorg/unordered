@@ -72,7 +72,8 @@ jobs:
               compiler: clang-14,  cxxstd: '17,20,2b',          os: ubuntu-22.04, ccache_key: "san2" }
 
           # OSX, clang
-          - { compiler: clang,     cxxstd: '03,11,14,17,2a',    os: macos-11, sanitize: yes }
+          - { compiler: clang,     cxxstd: '03,11,14,17,2a',    os: macos-11, }
+          - { compiler: clang,     cxxstd: '03,11,14,17,2a',    os: macos-12, sanitize: yes }
 
     timeout-minutes: 120
     runs-on: ${{matrix.os}}
