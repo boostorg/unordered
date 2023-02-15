@@ -1833,7 +1833,6 @@ multiset_extract_const_overload_compile_test()
 
 template <class UnorderedSet> void test_set_transparent_extract(UnorderedSet*)
 {
-#ifndef BOOST_UNORDERED_FOA_TESTS
   typedef typename UnorderedSet::node_type node_type;
 
   count_reset();
@@ -1877,7 +1876,6 @@ template <class UnorderedSet> void test_set_transparent_extract(UnorderedSet*)
   BOOST_TEST_EQ(set.size(), set_size);
 
   BOOST_TEST_EQ(key::count_, expected_key_count);
-#endif
 }
 
 template <class UnorderedSet>
