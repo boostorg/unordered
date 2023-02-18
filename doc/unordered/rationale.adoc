@@ -4,9 +4,10 @@
 
 = Implementation Rationale
 
-== boost::unordered_[multi]set and boost::unordered_[multi]map
+== Closed-addressing containers 
 
-These containers adhere to the standard requirements for unordered associative
+`boost::unordered_[multi]set` and `boost::unordered_[multi]map`
+adhere to the standard requirements for unordered associative
 containers, so the interface was fixed. But there are
 still some implementation decisions to make. The priorities are
 conformance to the standard and portability.
@@ -73,7 +74,7 @@ Since release 1.80.0, prime numbers are chosen for the number of buckets in
 tandem with sophisticated modulo arithmetic. This removes the need for "mixing"
 the result of the user's hash function as was used for release 1.79.0.
 
-== boost::unordered_flat_set/unordered_node_set and boost::unordered_flat_map/unordered_node_map
+== Open-addresing containers 
 
 The C++ standard specification of unordered associative containers impose
 severe limitations on permissible implementations, the most important being

@@ -262,7 +262,7 @@ The diagram shows the basic internal layout of `boost::unordered_flat_map`/`unor
 .Open-addressing layout used by Boost.Unordered.
 image::foa.png[align=center]
 
-As with all open-addressing containers, elements (or element nodes in the case of
+As with all open-addressing containers, elements (or pointers to the element nodes in the case of
 `boost::unordered_node_map` and `boost::unordered_node_set`) are stored directly in the bucket array.
 This array is logically divided into 2^_n_^ _groups_ of 15 elements each.
 In addition to the bucket array, there is an associated _metadata array_ with 2^_n_^
