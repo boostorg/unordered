@@ -337,7 +337,11 @@ static void insert_node_handle_unique(Container1& c1, Container2& c2)
     (boost::is_same<node_type, typename Container2::node_type>::value));
 
   typedef typename Container1::iterator iterator1;
+  typedef typename Container2::iterator iterator2;
   typedef typename Container2::insert_return_type insert_return_type2;
+
+  Container1 c1_copy(c1);
+  Container2 c2_copy;
 
   iterator1 r1 = insert_empty_node(c1);
   insert_return_type2 r2 = c2.insert(node_type());
@@ -365,6 +369,24 @@ static void insert_node_handle_unique(Container1& c1, Container2& c2)
         test::get_key<Container2>(*r.position) == test::get_key<Container2>(v));
       BOOST_TEST(r.node);
       node_handle_compare(r.node, v);
+    }
+  }
+
+  while (!c1_copy.empty()) {
+    value_type v = *c1_copy.begin();
+    value_type const* v_ptr = boost::to_address(c1_copy.begin());
+    std::size_t count = c2_copy.count(test::get_key<Container1>(v));
+    iterator2 pos =
+      c2_copy.insert(c2_copy.begin(), c1_copy.extract(c1_copy.begin()));
+    if (!count) {
+      BOOST_TEST_EQ(c2_copy.count(test::get_key<Container1>(v)), count + 1);
+      BOOST_TEST(pos != c2.end());
+      BOOST_TEST(boost::to_address(pos) == v_ptr);
+    } else {
+      BOOST_TEST_EQ(c2_copy.count(test::get_key<Container1>(v)), count);
+      BOOST_TEST(pos != c2_copy.end());
+      BOOST_TEST(
+        test::get_key<Container2>(*pos) == test::get_key<Container2>(v));
     }
   }
 }
