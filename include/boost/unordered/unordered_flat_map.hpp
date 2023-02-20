@@ -60,12 +60,6 @@ namespace boost {
             std::move(const_cast<raw_mapped_type&>(x.second))};
         }
 
-        template <class A>
-        static void construct(A& al, element_type* p, moved_type&& x)
-        {
-          boost::allocator_construct(al, p, std::move(x));
-        }
-
         template <class A, class... Args>
         static void construct(A& al, element_type* p, Args&&... args)
         {

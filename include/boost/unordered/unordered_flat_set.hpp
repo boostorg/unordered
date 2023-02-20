@@ -51,12 +51,6 @@ namespace boost {
           boost::allocator_construct(al, p, copy);
         }
 
-        template <class A>
-        static void construct(A& al, element_type* p, Key&& x)
-        {
-          boost::allocator_construct(al, p, std::move(x));
-        }
-
         template <class A, class... Args>
         static void construct(A& al, element_type* p, Args&&... args)
         {
