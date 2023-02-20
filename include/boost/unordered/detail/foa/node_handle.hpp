@@ -160,33 +160,30 @@ struct node_handle_base
       boost::allocator_is_always_equal<Allocator>::type::value||
       boost::allocator_propagate_on_container_swap<Allocator>::type::value)
     {
-      using std::swap;
+      if(this!=&nh){
+        if(empty()){
+          if(nh.empty()) {
+            /* nothing to do here */
+          } else {
+            emplace(nh.p_, nh.al());
+            nh.reset();
+          }
+        }else{
+          if(nh.empty()){
+            nh.emplace(p_,al());
+            reset();
+          }else{
+            bool const pocs=
+              boost::allocator_propagate_on_container_swap<
+                Allocator>::type::value;
 
-      bool const pocs=
-        boost::allocator_propagate_on_container_swap<Allocator>::type::value;
+            BOOST_ASSERT(pocs || al()==nh.al());
 
-      if (!empty()&&!nh.empty()){
-        BOOST_ASSERT(pocs || al()==nh.al());
-
-        node_value_type *p=p_;
-        p_=nh.p_;
-        nh.p_=p;
-
-        if(pocs){
-          swap(al(),nh.al());
+            using std::swap;
+            swap(p_,nh.p_);
+            if(pocs)swap(al(),nh.al());
+          }
         }
-
-        return;
-      }
-
-      if (empty()&&nh.empty()){return;}
-
-      if (empty()){
-        emplace(nh.p_,nh.al());
-        nh.clear();
-      }else{
-        nh.emplace(p_,al());
-        clear();
       }
     }
 
