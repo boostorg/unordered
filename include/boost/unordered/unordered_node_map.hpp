@@ -422,8 +422,16 @@ namespace boost {
 
         BOOST_ASSERT(get_allocator() == nh.get_allocator());
 
-        auto itp = table_.insert(map_types::move(nh.element()));
-        return itp.first;
+        typename map_types::element_type x;
+        x.p = std::addressof(nh.element());
+
+        auto itp = table_.insert(std::move(x));
+        if (itp.second) {
+          nh.reset();
+          return itp.first;
+        } else {
+          return itp.first;
+        }
       }
 
       template <class M>
@@ -594,7 +602,7 @@ namespace boost {
       node_type extract(key_type const& key)
       {
         auto pos = find(key);
-        return pos!=end()?extract(pos):node_type();
+        return pos != end() ? extract(pos) : node_type();
       }
 
       template <class K>
@@ -605,7 +613,7 @@ namespace boost {
       extract(K const& key)
       {
         auto pos = find(key);
-        return pos!=end()?extract(pos):node_type();
+        return pos != end() ? extract(pos) : node_type();
       }
 
       template <class H2, class P2>

@@ -410,8 +410,16 @@ namespace boost {
 
         BOOST_ASSERT(get_allocator() == nh.get_allocator());
 
-        auto itp = table_.insert(set_types::move(nh.element()));
-        return itp.first;
+        typename set_types::element_type x;
+        x.p=std::addressof(nh.element());
+
+        auto itp = table_.insert(std::move(x));
+        if (itp.second) {
+          nh.reset();
+          return itp.first;
+        } else {
+          return itp.first;
+        }
       }
 
       template <class... Args>
