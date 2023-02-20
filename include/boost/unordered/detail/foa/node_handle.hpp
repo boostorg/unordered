@@ -105,32 +105,42 @@ struct node_handle_base
 
     node_handle_base& operator=(node_handle_base&& nh)noexcept
     {
-      bool const pocma=
-        boost::allocator_propagate_on_container_move_assignment<
-          Allocator>::type::value;
+      if(this!=&nh){
+        if(empty()){
+          if(nh.empty()){                      /* empty(),  nh.empty() */
+            /* nothing to do */
+          }else{                               /* empty(), !nh.empty() */
+            emplace(nh.p_,std::move(nh.al()));
+            nh.reset();
+          }
+        }else{
+          if(nh.empty()){                      /* !empty(),  nh.empty() */
+            type_policy::destroy(al(),p_);
+            reset();
+          }else{                               /* !empty(), !nh.empty() */
+            bool const pocma=
+              boost::allocator_propagate_on_container_move_assignment<
+                Allocator>::type::value;
 
-      BOOST_ASSERT(
-        pocma
-        ||empty()
-        ||nh.empty()
-        ||(al()==nh.al()));
+            BOOST_ASSERT(pocma||al()==nh.al());
 
-      if(!empty()){
-        type_policy::destroy(al(),p_);
-        if (pocma&&!nh.empty()){al()=std::move(nh.al());}
+            type_policy::destroy(al(),p_);
+            if(pocma){
+              al()=std::move(nh.al());
+            }
+
+            p_=nh.p_;
+            nh.reset();
+          }
+        }
+      }else{
+        if(empty()){                           /* empty(),  nh.empty() */
+          /* nothing to do */
+        }else{                                 /* !empty(), !nh.empty() */
+          type_policy::destroy(al(),p_);
+          reset();
+        }
       }
-
-      if(!nh.empty()){
-        if(empty()){new(&a_.t_)Allocator(std::move(nh.al()));}
-        p_=nh.p_;
-
-        nh.p_=nullptr;
-        nh.a_.t_.~Allocator();
-      }else if (!empty()){
-        a_.t_.~Allocator();
-        p_=nullptr;
-      }
-
       return *this;
     }
 
