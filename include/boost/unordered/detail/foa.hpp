@@ -965,13 +965,13 @@ struct table_arrays
   static void delete_(Allocator& al,table_arrays& arrays)noexcept
   {
     using storage_alloc=typename boost::allocator_rebind<Allocator,Value>::type;
-    using alloc_traits=boost::allocator_traits<storage_alloc>;
-    using pointer=typename alloc_traits::pointer;
+    using storage_traits=boost::allocator_traits<storage_alloc>;
+    using pointer=typename storage_traits::pointer;
     using pointer_traits=boost::pointer_traits<pointer>;
 
     auto sal=storage_alloc(al);
     if(arrays.elements){
-      alloc_traits::deallocate(
+      storage_traits::deallocate(
         sal,pointer_traits::pointer_to(*arrays.elements),
         buffer_size(arrays.groups_size_mask+1));
     }
