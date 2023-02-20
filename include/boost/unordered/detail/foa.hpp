@@ -926,7 +926,6 @@ struct table_arrays
   template<typename Allocator>
   static table_arrays new_(Allocator& al,std::size_t n)
   {
-    // using alloc_traits=boost::allocator_traits<Allocator>;
     using storage_allocator=
       typename boost::allocator_rebind<Allocator, Value>::type;
     using storage_traits=boost::allocator_traits<storage_allocator>;
