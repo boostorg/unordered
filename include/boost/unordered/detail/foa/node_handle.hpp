@@ -86,7 +86,7 @@ struct node_handle_base
       x.p=nullptr;
     }
 
-    void clear()
+    void reset()
     {
       al().~Allocator();
       p_=nullptr;
@@ -99,7 +99,7 @@ struct node_handle_base
     {
       if (!nh.empty()){
         emplace(nh.p_,nh.al());
-        nh.clear();
+        nh.reset();
       }
     }
 
@@ -138,7 +138,7 @@ struct node_handle_base
     {
       if(!empty()){
         type_policy::destroy(al(),p_);
-        a_.t_.~Allocator();
+        reset();
       }
     }
 

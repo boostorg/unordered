@@ -395,7 +395,7 @@ namespace boost {
 
         auto itp = table_.insert(std::move(x));
         if (itp.second) {
-          nh.clear();
+          nh.reset();
           return {itp.first, true, node_type{}};
         } else {
           return {itp.first, false, std::move(nh)};
