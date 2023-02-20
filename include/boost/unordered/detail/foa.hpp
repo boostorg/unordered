@@ -1509,7 +1509,7 @@ public:
   element_type extract(const_iterator pos)
   {
     BOOST_ASSERT(pos!=end());
-    erase_on_exit e{*this,iterator{const_iterator_cast_tag{},pos}};
+    erase_on_exit e{*this,pos};
     (void)e;
     return std::move(*pos.p);
   }
@@ -1599,14 +1599,14 @@ private:
 
   struct erase_on_exit
   {
-    erase_on_exit(table& x_,iterator it_):x{x_},it{it_}{}
+    erase_on_exit(table& x_,const_iterator it_):x{x_},it{it_}{}
     ~erase_on_exit(){if(!rollback_)x.erase(it);}
 
     void rollback(){rollback_=true;}
 
-    table&   x;
-    iterator it;
-    bool     rollback_=false;
+    table&         x;
+    const_iterator it;
+    bool           rollback_=false;
   };
 
   Hash&            h(){return hash_base::get();}
