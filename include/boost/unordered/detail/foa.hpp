@@ -1393,7 +1393,7 @@ public:
      * inserted. For immovable types, we instead dispatch to the routine that
      * unconditionally allocates via `type_policy::construct()`.
      */
-    return emplace_dispatch(
+    return emplace_value(
       std::is_constructible<
         value_type,
         emplace_type<Args...>&&>{},
@@ -1873,16 +1873,16 @@ private:
 #endif
 
   template<typename... Args>
-  BOOST_FORCEINLINE std::pair<iterator,bool> emplace_dispatch(
-    std::true_type,Args&&... args
+  BOOST_FORCEINLINE std::pair<iterator,bool> emplace_value(
+    std::true_type /* movable value_type */,Args&&... args
   ) {
     using emplace_type_t = emplace_type<Args...>;
     return emplace_impl(emplace_type_t(std::forward<Args>(args)...));
   }
 
   template<typename... Args>
-  BOOST_FORCEINLINE std::pair<iterator,bool> emplace_dispatch(
-    std::false_type,Args&&... args
+  BOOST_FORCEINLINE std::pair<iterator,bool> emplace_value(
+    std::false_type /* immovable value_type */,Args&&... args
   ) {
     alignas(element_type)
     unsigned char buf[sizeof(element_type)];
