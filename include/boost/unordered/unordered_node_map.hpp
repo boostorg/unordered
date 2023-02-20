@@ -132,13 +132,13 @@ namespace boost {
         }
       };
 
-      template <class NodeMapTypes, class Allocator>
+      template <class TypePolicy, class Allocator>
       struct node_map_handle
-          : public detail::foa::node_handle_base<NodeMapTypes, Allocator>
+          : public detail::foa::node_handle_base<TypePolicy, Allocator>
       {
       private:
         using base_type =
-          detail::foa::node_handle_base<NodeMapTypes, Allocator>;
+          detail::foa::node_handle_base<TypePolicy, Allocator>;
 
         using typename base_type::type_policy;
 
@@ -146,8 +146,8 @@ namespace boost {
         friend class boost::unordered::unordered_node_map;
 
       public:
-        using key_type = typename NodeMapTypes::key_type;
-        using mapped_type = typename NodeMapTypes::mapped_type;
+        using key_type = typename TypePolicy::key_type;
+        using mapped_type = typename TypePolicy::mapped_type;
 
         constexpr node_map_handle() noexcept = default;
         node_map_handle(node_map_handle&& nh) noexcept = default;

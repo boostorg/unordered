@@ -114,13 +114,13 @@ namespace boost {
         }
       };
 
-      template <class NodeSetTypes, class Allocator>
+      template <class TypePolicy, class Allocator>
       struct node_set_handle
-          : public detail::foa::node_handle_base<NodeSetTypes, Allocator>
+          : public detail::foa::node_handle_base<TypePolicy, Allocator>
       {
       private:
         using base_type =
-          detail::foa::node_handle_base<NodeSetTypes, Allocator>;
+          detail::foa::node_handle_base<TypePolicy, Allocator>;
 
         using typename base_type::type_policy;
 
@@ -128,7 +128,7 @@ namespace boost {
         friend class boost::unordered::unordered_node_set;
 
       public:
-        using value_type = typename NodeSetTypes::value_type;
+        using value_type = typename TypePolicy::value_type;
 
         constexpr node_set_handle() noexcept = default;
         node_set_handle(node_set_handle&& nh) noexcept = default;
