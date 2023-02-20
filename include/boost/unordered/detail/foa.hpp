@@ -1387,8 +1387,8 @@ public:
   BOOST_FORCEINLINE std::pair<iterator,bool> emplace(Args&&... args)
   {
     /* We dispatch based on whether or not the value_type is constructible from
-     * an rvalue refernce to the deduced emplace_type. We do this specifically
-     * for the csae of the node-based containers. To this end, we're able to
+     * an rvalue reference of the deduced emplace_type. We do this specifically
+     * for the case of the node-based containers. To this end, we're able to
      * avoid allocating a node when a duplicate element is attempted to be
      * inserted. For immovable types, we instead dispatch to the routine that
      * unconditionally allocates via `type_policy::construct()`.
