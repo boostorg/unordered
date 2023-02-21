@@ -1111,50 +1111,70 @@ _STL_RESTORE_DEPRECATED_WARNING
 #pragma warning(disable:4702)
 #endif
 
+/* We expose the hard-coded max load factor so that tests can use it without
+ * needing to pull it from an instantiated class template such as the table
+ * class
+ */
+constexpr static float const mlf = 0.875f;
+
 /* foa::table interface departs in a number of ways from that of C++ unordered
  * associative containers because it's not for end-user consumption
- * (boost::unordered_flat_[map|set] wrappers complete it as appropriate) and,
- * more importantly, because of fundamental restrictions imposed by open
- * addressing:
- * 
- *   - value_type must be moveable.
- *   - Pointer stability is not kept under rehashing.
+ * (boost::unordered_[flat|node]_[map|set]) wrappers complete it as
+ * appropriate).
+ *
+ * The table supports two main modes of operation: node-based and flat. In the
+ * node-based case, buckets store pointers to individually heap-allocated
+ * elements. For flat, buckets directly store elements.
+ *
+ * For both tables:
+ *
  *   - begin() is not O(1).
  *   - No bucket API.
  *   - Load factor is fixed and can't be set by the user.
- *   - No extract API.
  * 
+ * For the inline table:
+ *
+ *   - value_type must be moveable.
+ *   - Pointer stability is not kept under rehashing.
+ *   - No extract API.
+ *
  * The TypePolicy template parameter is used to generate instantiations
  * suitable for either maps or sets, and introduces non-standard init_type:
- * 
+ *
  *   - TypePolicy::key_type and TypePolicy::value_type have the obvious
  *     meaning.
+ *
  *   - TypePolicy::init_type is the type implicitly converted to when
  *     writing x.insert({...}). For maps, this is std::pair<Key,T> rather
  *     than std::pair<const Key,T> so that, for instance, x.insert({"hello",0})
  *     produces a cheaply moveable std::string&& ("hello") rather than
  *     a copyable const std::string&&. foa::table::insert is extended to accept
  *     both init_type and value_type references.
- *   - TypePolicy::move(value_type&) returns a temporary object for value
- *     transfer on rehashing, move copy/assignment, and merge. For maps, this
+ *
+ *   - TypePolicy::move(element_type&) returns a temporary object for value
+ *     transfer on rehashing, move copy/assignment, and merge. For flat map, this
  *     object is a std::pair<Key&&,T&&>, which is generally cheaper to move
- *     than std::pair<const Key,T>&& because of the constness in Key.
+ *     than std::pair<const Key,T>&& because of the constness in Key. For
+ *     node-based tables, this is used to transfer ownership of pointer.
+ *
  *   - TypePolicy::extract returns a const reference to the key part of
- *     a value of type value_type, init_type or
+ *     a value of type value_type, init_type, element_type or
  *     decltype(TypePolicy::move(...)).
- * 
- *  try_emplace, erase and find support heterogenous lookup by default, that is,
- *  without checking for any ::is_transparent typedefs --the checking is done by
- *  boost::unordered_flat_[map|set].
- * 
- *  At the moment, we're not supporting allocators with fancy pointers.
- *  Allocator::pointer must be convertible to/from regular pointers.
+ *
+ *   - TypePolicy::element_type is the type that table_arrays uses when
+ *     allocating buckets. For flat containers, this is value_type. For node
+ *     containers, this is a strong typedef to value_type*.
+ *
+ *   - TypePolicy::value_from returns a mutable reference to value_type from
+ *     a given element_type. This is used when elements of the table themselves
+ *     need to be moved, such as during move construction/assignment when
+ *     allocators are unequal and there is no propagation. For all other cases,
+ *     the element_type itself is moved.
+ *
+ * try_emplace, erase and find support heterogenous lookup by default, that is,
+ * without checking for any ::is_transparent typedefs --the checking is done by
+ * boost::unordered_[flat|node]_[map|set].
  */
-
-/* We pull this out so the tests don't have to rely on a magic constant or
- * instantiate the table class template as it can be quite gory.
- */
-constexpr static float const mlf = 0.875f;
 
 template<typename TypePolicy,typename Hash,typename Pred,typename Allocator>
 class 
