@@ -45,12 +45,6 @@ namespace boost {
 
         static element_type&& move(element_type& x) { return std::move(x); }
 
-        template <class A>
-        static void construct(A& al, element_type* p, element_type const& copy)
-        {
-          boost::allocator_construct(al, p, copy);
-        }
-
         template <class A, class... Args>
         static void construct(A& al, element_type* p, Args&&... args)
         {
