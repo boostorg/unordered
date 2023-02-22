@@ -1,6 +1,6 @@
 
 // Copyright 2006-2009 Daniel James.
-// Copyright 2022 Christian Mazakas.
+// Copyright 2022-2023 Christian Mazakas.
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -86,12 +86,17 @@ namespace load_factor_tests {
 #ifdef BOOST_UNORDERED_FOA_TESTS
   boost::unordered_flat_set<int>* int_set_ptr;
   boost::unordered_flat_map<int, int>* int_map_ptr;
+  boost::unordered_node_set<int>* int_node_set_ptr;
+  boost::unordered_node_map<int, int>* int_node_map_ptr;
 
-  UNORDERED_TEST(set_load_factor_tests, ((int_set_ptr)(int_map_ptr)))
+  // clang-format off
+  UNORDERED_TEST(set_load_factor_tests, 
+    ((int_set_ptr)(int_map_ptr)(int_node_set_ptr)(int_node_map_ptr)))
 
   UNORDERED_TEST(load_factor_insert_tests,
-    ((int_set_ptr)(int_map_ptr))(
+    ((int_set_ptr)(int_map_ptr)(int_node_set_ptr)(int_node_map_ptr))(
       (default_generator)(generate_collisions)(limited_range)))
+// clang-format on
 #else
   boost::unordered_set<int>* int_set_ptr;
   boost::unordered_multiset<int>* int_multiset_ptr;

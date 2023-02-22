@@ -1,6 +1,6 @@
 
 # Copyright 2006-2008 Daniel James.
-# Copyright 2022 Christian Mazakas
+# Copyright 2022-2023 Christian Mazakas
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -26,6 +26,7 @@ project
 
         <toolset>gcc-4.4:<cxxflags>-Wno-strict-aliasing
         <toolset>gcc-4.4:<cxxflags>-fno-deduce-init-list
+        <toolset>clang-14:<cxxflags>-Wunused-template
 
         <toolset>gcc:<warnings-as-errors>on
         <toolset>clang:<warnings-as-errors>on
@@ -94,6 +95,7 @@ run exception/erase_exception_tests.cpp ;
 run exception/rehash_exception_tests.cpp ;
 run exception/swap_exception_tests.cpp : : : <define>BOOST_UNORDERED_SWAP_METHOD=2 ;
 run exception/merge_exception_tests.cpp ;
+run exception/less_tests.cpp ;
 
 run unordered/narrow_cast_tests.cpp ;
 run quick.cpp ;
@@ -140,6 +142,8 @@ build_foa erase_if ;
 build_foa scary_tests ;
 build_foa init_type_insert_tests ;
 build_foa max_load_tests ;
+build_foa extract_tests ;
+build_foa node_handle_tests ;
 
 run unordered/hash_is_avalanching_test.cpp ;
 

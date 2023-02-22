@@ -1,18 +1,18 @@
 
 // Copyright 2006-2009 Daniel James.
-// Copyright (C) 2022 Christian Mazakas
+// Copyright (C) 2022-2023 Christian Mazakas
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include "../helpers/unordered.hpp"
 
-#include "../helpers/test.hpp"
-#include "../objects/test.hpp"
-#include "../objects/cxx11_allocator.hpp"
-#include "../helpers/random_values.hpp"
-#include "../helpers/tracker.hpp"
 #include "../helpers/equivalent.hpp"
 #include "../helpers/invariants.hpp"
+#include "../helpers/random_values.hpp"
+#include "../helpers/test.hpp"
+#include "../helpers/tracker.hpp"
+#include "../objects/cxx11_allocator.hpp"
+#include "../objects/test.hpp"
 
 test::seed_t initialize_seed(9063);
 
@@ -482,31 +482,82 @@ namespace copy_tests {
     allocator<std::pair<int const, int> > >*
     test_map_trivially_copyable_no_construct;
 
+  boost::unordered_node_set<test::object, test::hash, test::equal_to,
+    test::allocator1<test::object> >* test_node_set;
+  boost::unordered_node_map<test::object, test::object, test::hash,
+    test::equal_to, test::allocator1<test::object> >* test_node_map;
+
+  boost::unordered_node_set<test::object, test::hash, test::equal_to,
+    test::cxx11_allocator<test::object, test::select_copy> >*
+    test_node_set_select_copy;
+  boost::unordered_node_map<test::object, test::object, test::hash,
+    test::equal_to, test::cxx11_allocator<test::object, test::select_copy> >*
+    test_node_map_select_copy;
+
+  boost::unordered_node_set<test::object, test::hash, test::equal_to,
+    test::cxx11_allocator<test::object, test::no_select_copy> >*
+    test_node_set_no_select_copy;
+  boost::unordered_node_map<test::object, test::object, test::hash,
+    test::equal_to, test::cxx11_allocator<test::object, test::no_select_copy> >*
+    test_node_map_no_select_copy;
+
+  boost::unordered_node_set<int, test::hash, test::equal_to,
+    test::allocator1<int> >* test_node_set_trivially_copyable;
+  boost::unordered_node_map<int, int, test::hash, test::equal_to,
+    test::allocator1<std::pair<int const, int> > >*
+    test_node_map_trivially_copyable;
+
+  boost::unordered_node_set<int, test::hash, test::equal_to,
+    std::allocator<int> >* test_node_set_trivially_copyable_std_allocator;
+  boost::unordered_node_map<int, int, test::hash, test::equal_to,
+    std::allocator<std::pair<int const, int> > >*
+    test_node_map_trivially_copyable_std_allocator;
+
+  boost::unordered_node_set<int, test::hash, test::equal_to, allocator<int> >*
+    test_node_set_trivially_copyable_no_construct;
+  boost::unordered_node_map<int, int, test::hash, test::equal_to,
+    allocator<std::pair<int const, int> > >*
+    test_node_map_trivially_copyable_no_construct;
+
   // clang-format off
   UNORDERED_TEST(copy_construct_tests1,
     ((test_set)(test_map)(test_set_select_copy)(test_map_select_copy)
      (test_set_no_select_copy)(test_map_no_select_copy)
-     (test_set_trivially_copyable)(test_map_trivially_copyable))
+     (test_set_trivially_copyable)(test_map_trivially_copyable)
+     (test_node_set)(test_node_map)(test_node_set_select_copy)(test_node_map_select_copy)
+     (test_node_set_no_select_copy)(test_node_map_no_select_copy)
+     (test_node_set_trivially_copyable)(test_node_map_trivially_copyable))
     ((default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(copy_construct_tests2,
     ((test_set)(test_map)(test_set_select_copy)(test_map_select_copy)
      (test_set_no_select_copy)(test_map_no_select_copy)
-     (test_set_trivially_copyable)(test_map_trivially_copyable))
+     (test_set_trivially_copyable)(test_map_trivially_copyable)
+     (test_node_set)(test_node_map)(test_node_set_select_copy)(test_node_map_select_copy)
+     (test_node_set_no_select_copy)(test_node_map_no_select_copy)
+     (test_node_set_trivially_copyable)(test_node_map_trivially_copyable))
     ((default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(copy_construct_tests_std_allocator1,
     ((test_set_trivially_copyable_std_allocator)
      (test_map_trivially_copyable_std_allocator)
      (test_set_trivially_copyable_no_construct)
-     (test_map_trivially_copyable_no_construct))
+     (test_map_trivially_copyable_no_construct)
+     (test_node_set_trivially_copyable_std_allocator)
+     (test_node_map_trivially_copyable_std_allocator)
+     (test_node_set_trivially_copyable_no_construct)
+     (test_node_map_trivially_copyable_no_construct))
     ((default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(copy_construct_tests_std_allocator2,
     ((test_set_trivially_copyable_std_allocator)
      (test_map_trivially_copyable_std_allocator)
      (test_set_trivially_copyable_no_construct)
-     (test_map_trivially_copyable_no_construct))
+     (test_map_trivially_copyable_no_construct)
+     (test_node_set_trivially_copyable_std_allocator)
+     (test_node_map_trivially_copyable_std_allocator)
+     (test_node_set_trivially_copyable_no_construct)
+     (test_node_map_trivially_copyable_no_construct))
     ((default_generator)(generate_collisions)(limited_range)))
   // clang-format on
 #else
@@ -545,13 +596,23 @@ namespace copy_tests {
     test::equal_to, test::cxx11_allocator<test::object, test::no_select_copy> >*
     test_multimap_no_select_copy;
 
+  // clang-format off
   UNORDERED_TEST(copy_construct_tests1,
-    ((test_set)(test_multiset)(test_map)(test_multimap)(test_set_select_copy)(test_multiset_select_copy)(test_map_select_copy)(test_multimap_select_copy)(test_set_no_select_copy)(test_multiset_no_select_copy)(test_map_no_select_copy)(test_multimap_no_select_copy))(
+    ((test_set)(test_multiset)(test_map)(test_multimap)
+     (test_set_select_copy)(test_multiset_select_copy)
+     (test_map_select_copy)(test_multimap_select_copy)
+     (test_set_no_select_copy)(test_multiset_no_select_copy)
+     (test_map_no_select_copy)(test_multimap_no_select_copy))(
       (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(copy_construct_tests2,
-    ((test_set)(test_multiset)(test_map)(test_multimap)(test_set_select_copy)(test_multiset_select_copy)(test_map_select_copy)(test_multimap_select_copy)(test_set_no_select_copy)(test_multiset_no_select_copy)(test_map_no_select_copy)(test_multimap_no_select_copy))(
+    ((test_set)(test_multiset)(test_map)(test_multimap)
+     (test_set_select_copy)(test_multiset_select_copy)
+     (test_map_select_copy)(test_multimap_select_copy)
+     (test_set_no_select_copy)(test_multiset_no_select_copy)
+     (test_map_no_select_copy)(test_multimap_no_select_copy))(
       (default_generator)(generate_collisions)(limited_range)))
+  // clang-format on
 #endif
 } // namespace copy_tests
 

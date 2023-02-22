@@ -110,6 +110,8 @@ UNORDERED_AUTO_TEST (unordered_erase_if) {
 #ifdef BOOST_UNORDERED_FOA_TESTS
   test_map_erase_if<boost::unordered_flat_map<std::string, int> >();
   test_set_erase_if<boost::unordered_flat_set<int> >();
+  test_map_erase_if<boost::unordered_node_map<std::string, int> >();
+  test_set_erase_if<boost::unordered_node_set<int> >();
 #else
   test_map_erase_if<boost::unordered_map<std::string, int> >();
   test_map_erase_if<boost::unordered_multimap<std::string, int> >();

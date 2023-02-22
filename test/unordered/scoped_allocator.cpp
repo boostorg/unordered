@@ -1,5 +1,5 @@
 
-// Copyright 2021-2022 Christian Mazakas.
+// Copyright 2021-2023 Christian Mazakas.
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -65,21 +65,12 @@ typedef std::scoped_allocator_adaptor<test::allocator<pair_type>,
   test::allocator<boost::uint64_t> >
   allocator_type;
 
-#ifdef BOOST_UNORDERED_FOA_TESTS
-typedef boost::unordered_flat_map<const boost::uint64_t, vector_type,
-  boost::hash<boost::uint64_t>, std::equal_to<boost::uint64_t>, allocator_type>
-  map_type;
-#else
-typedef boost::unordered_map<const boost::uint64_t, vector_type,
-  boost::hash<boost::uint64_t>, std::equal_to<boost::uint64_t>, allocator_type>
-  map_type;
-#endif
-
-UNORDERED_AUTO_TEST (scoped_allocator) {
+template <class X> static void scoped_allocator(X*)
+{
   allocator_type alloc(
     test::allocator<pair_type>(1337), test::allocator<boost::uint64_t>(7331));
 
-  map_type map(alloc);
+  X map(alloc);
 
   for (unsigned i = 0; i < 10; ++i) {
     boost::ignore_unused(map[i]);
@@ -87,6 +78,24 @@ UNORDERED_AUTO_TEST (scoped_allocator) {
 
   BOOST_TEST(map.size() == 10);
 }
+
+#ifdef BOOST_UNORDERED_FOA_TESTS
+static boost::unordered_flat_map<const boost::uint64_t, vector_type,
+  boost::hash<boost::uint64_t>, std::equal_to<boost::uint64_t>, allocator_type>*
+  test_map;
+
+static boost::unordered_node_map<const boost::uint64_t, vector_type,
+  boost::hash<boost::uint64_t>, std::equal_to<boost::uint64_t>, allocator_type>*
+  test_node_map;
+
+UNORDERED_TEST(scoped_allocator, ((test_map)(test_node_map)))
+#else
+static boost::unordered_map<const boost::uint64_t, vector_type,
+  boost::hash<boost::uint64_t>, std::equal_to<boost::uint64_t>, allocator_type>*
+  test_map;
+
+UNORDERED_TEST(scoped_allocator, ((test_map)))
+#endif
 
 RUN_TESTS()
 

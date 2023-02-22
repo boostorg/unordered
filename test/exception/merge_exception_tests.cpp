@@ -1,6 +1,6 @@
 
 // Copyright 2017-2018 Daniel James.
-// Copyright 2022 Christian Mazakas.
+// Copyright 2022-2023 Christian Mazakas.
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -64,6 +64,12 @@ boost::unordered_flat_set<test::exception::object, test::exception::hash,
 boost::unordered_flat_map<test::exception::object, test::exception::object,
   test::exception::hash, test::exception::equal_to,
   test::exception::allocator2<test::exception::object> >* test_map_;
+boost::unordered_node_set<test::exception::object, test::exception::hash,
+  test::exception::equal_to,
+  test::exception::allocator<test::exception::object> >* test_node_set_;
+boost::unordered_node_map<test::exception::object, test::exception::object,
+  test::exception::hash, test::exception::equal_to,
+  test::exception::allocator2<test::exception::object> >* test_node_map_;
 
 // clang-format off
 UNORDERED_MULTI_TEST(set_merge, merge_exception_test,
@@ -99,6 +105,40 @@ UNORDERED_MULTI_TEST(map_merge_collisions, merge_exception_test,
     ((generate_collisions))
     ((generate_collisions))
 )
+UNORDERED_MULTI_TEST(node_set_merge, merge_exception_test,
+    ((test_node_set_))
+    ((test_node_set_))
+    (/* (0x0000)(0x6400) */(0x0064)/* (0x0a64)(0x3232) */)
+    ((0x0000)(0x0001)(0x0102))
+    ((default_generator)(limited_range))
+    ((default_generator)(limited_range))
+)
+UNORDERED_MULTI_TEST(node_map_merge, merge_exception_test,
+    ((test_node_map_))
+    ((test_node_map_))
+    ((0x0000)(0x6400)(0x0064)(0x0a64)(0x3232))
+    ((0x0101)(0x0200)(0x0201))
+    ((default_generator)(limited_range))
+    ((default_generator)(limited_range))
+)
+// Run fewer generate_collisions tests, as they're slow.
+UNORDERED_MULTI_TEST(node_set_merge_collisions, merge_exception_test,
+    ((test_node_set_))
+    ((test_node_set_))
+    ((0x0a0a))
+    ((0x0202)(0x0100)(0x0201))
+    ((generate_collisions))
+    ((generate_collisions))
+)
+UNORDERED_MULTI_TEST(node_map_merge_collisions, merge_exception_test,
+    ((test_node_map_))
+    ((test_node_map_))
+    ((0x0a0a))
+    ((0x0000)(0x0002)(0x0102))
+    ((generate_collisions))
+    ((generate_collisions))
+)
+// clang-format on
 #else
 boost::unordered_set<test::exception::object, test::exception::hash,
   test::exception::equal_to,

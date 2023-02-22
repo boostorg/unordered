@@ -262,7 +262,7 @@ namespace test {
         if (less_impl(x1.first, x2.first)) {
           return true;
         }
-        if (!less_impl(x1.first, x2.first)) {
+        if (less_impl(x2.first, x1.first)) {
           return false;
         }
         return less_impl(x1.second, x2.second);

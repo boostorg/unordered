@@ -1,5 +1,5 @@
 
-// Copyright (C) 2022 Christian Mazakas
+// Copyright (C) 2022-2023 Christian Mazakas
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or move at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -335,12 +335,14 @@ namespace move_tests {
       static_cast<typename T::size_type>(std::distance(y.begin(), y.end())));
   }
 
+#ifndef BOOST_UNORDERED_FOA_TESTS
   template <class T> static void extract(T& y, test::random_values<T> const& v)
   {
     (void)y.extract(get_key(*v.begin()));
     BOOST_TEST_EQ(y.size(),
       static_cast<typename T::size_type>(std::distance(y.begin(), y.end())));
   }
+#endif
 
   template <class T> static void merge(T& y, test::random_values<T> const& v)
   {
@@ -375,6 +377,7 @@ namespace move_tests {
       static_cast<typename T::size_type>(std::distance(y.begin(), y.end())));
   }
 
+#ifndef BOOST_UNORDERED_FOA_TESTS
   template <class T> static void buckets(T& y, test::random_values<T> const& v)
   {
     (void)y.begin(0);
@@ -384,6 +387,7 @@ namespace move_tests {
     (void)y.bucket_size(0);
     (void)y.bucket(get_key(*v.begin()));
   }
+#endif
 
   template <class T>
   static void double_move_construct(T& y, test::random_values<T> const&)
@@ -607,9 +611,38 @@ namespace move_tests {
     test::cxx11_allocator<std::pair<test::object const, test::object>,
       test::no_propagate_move> >* test_map_no_prop_move;
 
+  boost::unordered_node_set<test::object, test::hash, test::equal_to,
+    test::allocator2<test::object> >* test_node_set;
+  boost::unordered_node_map<test::object, test::object, test::hash,
+    test::equal_to,
+    test::allocator1<std::pair<test::object const, test::object> > >*
+    test_node_map;
+
+  boost::unordered_node_set<test::object, test::hash, test::equal_to,
+    test::cxx11_allocator<test::object, test::propagate_move> >*
+    test_node_set_prop_move;
+  boost::unordered_node_map<test::object, test::object, test::hash,
+    test::equal_to,
+    test::cxx11_allocator<std::pair<test::object const, test::object>,
+      test::propagate_move> >* test_node_map_prop_move;
+
+  boost::unordered_node_set<test::object, test::hash, test::equal_to,
+    test::cxx11_allocator<test::object, test::no_propagate_move> >*
+    test_node_set_no_prop_move;
+  boost::unordered_node_map<test::object, test::object, test::hash,
+    test::equal_to,
+    test::cxx11_allocator<std::pair<test::object const, test::object>,
+      test::no_propagate_move> >* test_node_map_no_prop_move;
+
+  // clang-format off
   UNORDERED_TEST(post_move_tests,
-    ((test_set)(test_map)(test_set_prop_move)(test_map_prop_move)(test_set_no_prop_move)(test_map_no_prop_move))(
+    ((test_set)(test_map)(test_set_prop_move)(test_map_prop_move)
+     (test_set_no_prop_move)(test_map_no_prop_move)
+     (test_node_set)(test_node_map)
+     (test_node_set_prop_move)(test_node_map_prop_move)
+     (test_node_set_no_prop_move)(test_node_map_no_prop_move))(
       (default_generator)(generate_collisions)(limited_range)))
+// clang-format on
 #else
   boost::unordered_map<test::object, test::object, test::hash, test::equal_to,
     std::allocator<std::pair<test::object const, test::object> > >*
@@ -654,12 +687,14 @@ namespace move_tests {
     test::cxx11_allocator<std::pair<test::object const, test::object>,
       test::no_propagate_move> >* test_multimap_no_prop_move;
 
+// clang-format off
   UNORDERED_TEST(post_move_tests,
     ((test_set)(test_multiset)(test_map)(test_multimap)(test_set_prop_move)(
       test_multiset_prop_move)(test_map_prop_move)(test_multimap_prop_move)(
       test_set_no_prop_move)(test_multiset_no_prop_move)(test_map_no_prop_move)(
       test_multimap_no_prop_move))(
       (default_generator)(generate_collisions)(limited_range)))
+// clang-format on
 #endif
 }
 

@@ -1,6 +1,6 @@
 
 // Copyright 2006-2010 Daniel James.
-// Copyright (C) 2022 Christian Mazakas
+// Copyright (C) 2022-2023 Christian Mazakas
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -655,23 +655,27 @@ namespace constructor_tests {
 
   boost::unordered_flat_set<test::object, test::hash, test::equal_to,
     test::allocator1<test::object> >* test_set;
+  boost::unordered_node_set<test::object, test::hash, test::equal_to,
+    test::allocator1<test::object> >* test_node_set;
   boost::unordered_flat_map<test::object, test::object, test::hash,
     test::equal_to, test::allocator2<test::object> >* test_map;
+  boost::unordered_node_map<test::object, test::object, test::hash,
+    test::equal_to, test::allocator2<test::object> >* test_node_map;
 
   UNORDERED_TEST(constructor_tests1,
-    ((test_map_std_alloc)(test_set)(test_map))(
+    ((test_map_std_alloc)(test_set)(test_node_set)(test_map)(test_node_map))(
       (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(constructor_tests2,
-    ((test_set)(test_map))(
+    ((test_set)(test_node_set)(test_map)(test_node_map))(
       (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(map_constructor_test,
-    ((test_map_std_alloc)(test_map))(
+    ((test_map_std_alloc)(test_map)(test_node_map))(
       (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(no_alloc_default_construct_test,
-    ((test_set)(test_map))(
+    ((test_set)(test_node_set)(test_map)(test_node_map))(
       (default_generator)(generate_collisions)(limited_range)))
 #else
   boost::unordered_map<test::object, test::object, test::hash, test::equal_to,
@@ -709,6 +713,8 @@ namespace constructor_tests {
     std::initializer_list<int> init;
 #ifdef BOOST_UNORDERED_FOA_TESTS
     boost::unordered_flat_set<int> x1 = init;
+    boost::unordered_node_set<int> x2 = init;
+    BOOST_TEST(x2.empty());
 #else
     boost::unordered_set<int> x1 = init;
 #endif
@@ -722,6 +728,9 @@ namespace constructor_tests {
   UNORDERED_AUTO_TEST (test_initializer_list) {
 #ifdef BOOST_UNORDERED_FOA_TESTS
     boost::unordered_flat_set<int> x1 = {2, 10, 45, -5};
+    boost::unordered_node_set<int> x2 = {2, 10, 45, -5};
+    BOOST_TEST(x2.find(10) != x2.end());
+    BOOST_TEST(x2.find(46) == x2.end());
 #else
     boost::unordered_set<int> x1 = {2, 10, 45, -5};
 #endif

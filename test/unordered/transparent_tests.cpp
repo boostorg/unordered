@@ -64,7 +64,7 @@ struct key_equal
 
 void count_reset() { key::count_ = 0; }
 
-template <class UnorderedMap> void test_map_transparent_count()
+template <class UnorderedMap> void test_map_transparent_count(UnorderedMap*)
 {
   count_reset();
 
@@ -92,7 +92,7 @@ template <class UnorderedMap> void test_map_transparent_count()
   BOOST_TEST_EQ(key::count_, expected_key_count);
 }
 
-template <class UnorderedMap> void test_map_non_transparent_count()
+template <class UnorderedMap> void test_map_non_transparent_count(UnorderedMap*)
 {
   count_reset();
 
@@ -126,7 +126,7 @@ template <class UnorderedMap> void test_map_non_transparent_count()
   BOOST_TEST_EQ(key::count_, key_count);
 }
 
-template <class UnorderedSet> void test_set_transparent_count()
+template <class UnorderedSet> void test_set_transparent_count(UnorderedSet*)
 {
   count_reset();
 
@@ -154,7 +154,7 @@ template <class UnorderedSet> void test_set_transparent_count()
   BOOST_TEST_EQ(key::count_, expected_key_count);
 }
 
-template <class UnorderedSet> void test_set_non_transparent_count()
+template <class UnorderedSet> void test_set_non_transparent_count(UnorderedSet*)
 {
   count_reset();
 
@@ -188,7 +188,7 @@ template <class UnorderedSet> void test_set_non_transparent_count()
   BOOST_TEST_EQ(key::count_, key_count);
 }
 
-template <class UnorderedMap> void test_map_transparent_find()
+template <class UnorderedMap> void test_map_transparent_find(UnorderedMap*)
 {
   count_reset();
 
@@ -249,7 +249,7 @@ template <class UnorderedMap> void test_map_transparent_find()
   }
 }
 
-template <class UnorderedMap> void test_map_non_transparent_find()
+template <class UnorderedMap> void test_map_non_transparent_find(UnorderedMap*)
 {
   count_reset();
 
@@ -310,7 +310,7 @@ template <class UnorderedMap> void test_map_non_transparent_find()
   }
 }
 
-template <class UnorderedSet> void test_set_transparent_find()
+template <class UnorderedSet> void test_set_transparent_find(UnorderedSet*)
 {
   count_reset();
 
@@ -362,7 +362,7 @@ template <class UnorderedSet> void test_set_transparent_find()
   }
 }
 
-template <class UnorderedSet> void test_set_non_transparent_find()
+template <class UnorderedSet> void test_set_non_transparent_find(UnorderedSet*)
 {
   count_reset();
 
@@ -422,7 +422,8 @@ template <class UnorderedSet> void test_set_non_transparent_find()
   }
 }
 
-template <class UnorderedMap> void test_map_transparent_equal_range()
+template <class UnorderedMap>
+void test_map_transparent_equal_range(UnorderedMap*)
 {
   count_reset();
 
@@ -576,7 +577,8 @@ template <class UnorderedMap> void test_map_transparent_equal_range()
   }
 }
 
-template <class UnorderedMap> void test_map_non_transparent_equal_range()
+template <class UnorderedMap>
+void test_map_non_transparent_equal_range(UnorderedMap*)
 {
   count_reset();
 
@@ -731,7 +733,8 @@ template <class UnorderedMap> void test_map_non_transparent_equal_range()
   }
 }
 
-template <class UnorderedSet> void test_set_transparent_equal_range()
+template <class UnorderedSet>
+void test_set_transparent_equal_range(UnorderedSet*)
 {
   count_reset();
 
@@ -881,7 +884,8 @@ template <class UnorderedSet> void test_set_transparent_equal_range()
   }
 }
 
-template <class UnorderedSet> void test_set_non_transparent_equal_range()
+template <class UnorderedSet>
+void test_set_non_transparent_equal_range(UnorderedSet*)
 {
   count_reset();
 
@@ -1114,7 +1118,7 @@ multimap_erase_const_overload_compile_test()
 }
 #endif
 
-template <class UnorderedMap> void test_map_transparent_erase()
+template <class UnorderedMap> void test_map_transparent_erase(UnorderedMap*)
 {
   count_reset();
 
@@ -1156,7 +1160,7 @@ template <class UnorderedMap> void test_map_transparent_erase()
   BOOST_TEST_EQ(key::count_, expected_key_count);
 }
 
-template <class UnorderedMap> void test_map_non_transparent_erase()
+template <class UnorderedMap> void test_map_non_transparent_erase(UnorderedMap*)
 {
   count_reset();
 
@@ -1271,7 +1275,7 @@ multiset_erase_const_overload_compile_test()
 }
 #endif
 
-template <class UnorderedSet> void test_set_transparent_erase()
+template <class UnorderedSet> void test_set_transparent_erase(UnorderedSet*)
 {
   count_reset();
 
@@ -1313,7 +1317,7 @@ template <class UnorderedSet> void test_set_transparent_erase()
   BOOST_TEST_EQ(key::count_, expected_key_count);
 }
 
-template <class UnorderedSet> void test_set_non_transparent_erase()
+template <class UnorderedSet> void test_set_non_transparent_erase(UnorderedSet*)
 {
   count_reset();
 
@@ -1391,9 +1395,8 @@ multimap_extract_const_overload_compile_test()
 }
 #endif
 
-template <class UnorderedMap> void test_map_transparent_extract()
+template <class UnorderedMap> void test_map_transparent_extract(UnorderedMap*)
 {
-#ifndef BOOST_UNORDERED_FOA_TESTS
   typedef typename UnorderedMap::node_type node_type;
   typedef typename UnorderedMap::const_iterator const_iterator;
   typedef std::pair<const_iterator, const_iterator> const_iterator_pair;
@@ -1429,12 +1432,11 @@ template <class UnorderedMap> void test_map_transparent_extract()
   BOOST_TEST(nh.empty());
 
   BOOST_TEST_EQ(key::count_, expected_key_count);
-#endif
 }
 
-template <class UnorderedMap> void test_map_non_transparent_extract()
+template <class UnorderedMap>
+void test_map_non_transparent_extract(UnorderedMap*)
 {
-#ifndef BOOST_UNORDERED_FOA_TESTS
   typedef typename UnorderedMap::node_type node_type;
   typedef typename UnorderedMap::const_iterator const_iterator;
   typedef std::pair<const_iterator, const_iterator> const_iterator_pair;
@@ -1475,10 +1477,10 @@ template <class UnorderedMap> void test_map_non_transparent_extract()
   ++key_count;
   BOOST_TEST(nh.empty());
   BOOST_TEST_EQ(key::count_, key_count);
-#endif
 }
 
-template <class UnorderedMap> void test_map_transparent_try_emplace()
+template <class UnorderedMap>
+void test_map_transparent_try_emplace(UnorderedMap*)
 {
   count_reset();
 
@@ -1516,7 +1518,8 @@ template <class UnorderedMap> void test_map_transparent_try_emplace()
   BOOST_TEST_EQ(key::count_, key_count + 1);
 }
 
-template <class UnorderedMap> void test_map_non_transparent_try_emplace()
+template <class UnorderedMap>
+void test_map_non_transparent_try_emplace(UnorderedMap*)
 {
   count_reset();
 
@@ -1555,7 +1558,8 @@ template <class UnorderedMap> void test_map_non_transparent_try_emplace()
   BOOST_TEST(p == map.find(5));
 }
 
-template <class UnorderedMap> void test_map_transparent_insert_or_assign()
+template <class UnorderedMap>
+void test_map_transparent_insert_or_assign(UnorderedMap*)
 {
   count_reset();
 
@@ -1595,7 +1599,8 @@ template <class UnorderedMap> void test_map_transparent_insert_or_assign()
   BOOST_TEST_EQ(key::count_, key_count + 1);
 }
 
-template <class UnorderedMap> void test_map_non_transparent_insert_or_assign()
+template <class UnorderedMap>
+void test_map_non_transparent_insert_or_assign(UnorderedMap*)
 {
   count_reset();
 
@@ -1636,7 +1641,7 @@ template <class UnorderedMap> void test_map_non_transparent_insert_or_assign()
   BOOST_TEST(p == map.find(5));
 }
 
-template <class UnorderedMap> void test_map_transparent_subscript()
+template <class UnorderedMap> void test_map_transparent_subscript(UnorderedMap*)
 {
   count_reset();
 
@@ -1658,7 +1663,8 @@ template <class UnorderedMap> void test_map_transparent_subscript()
   BOOST_TEST_EQ(key::count_, key_count + 1);
 }
 
-template <class UnorderedMap> void test_map_non_transparent_subscript()
+template <class UnorderedMap>
+void test_map_non_transparent_subscript(UnorderedMap*)
 {
   count_reset();
 
@@ -1681,7 +1687,7 @@ template <class UnorderedMap> void test_map_non_transparent_subscript()
   BOOST_TEST_EQ(key::count_, key_count + 2);
 }
 
-template <class UnorderedMap> void test_map_transparent_at()
+template <class UnorderedMap> void test_map_transparent_at(UnorderedMap*)
 {
   count_reset();
 
@@ -1710,7 +1716,7 @@ template <class UnorderedMap> void test_map_transparent_at()
   BOOST_TEST_EQ(key::count_, key_count);
 }
 
-template <class UnorderedMap> void test_map_non_transparent_at()
+template <class UnorderedMap> void test_map_non_transparent_at(UnorderedMap*)
 {
   count_reset();
 
@@ -1742,7 +1748,7 @@ template <class UnorderedMap> void test_map_non_transparent_at()
   BOOST_TEST_EQ(key::count_, key_count + 1);
 }
 
-template <class UnorderedMap> void test_map_transparent_bucket()
+template <class UnorderedMap> void test_map_transparent_bucket(UnorderedMap*)
 {
 #ifndef BOOST_UNORDERED_FOA_TESTS
   count_reset();
@@ -1763,7 +1769,8 @@ template <class UnorderedMap> void test_map_transparent_bucket()
 #endif
 }
 
-template <class UnorderedMap> void test_map_non_transparent_bucket()
+template <class UnorderedMap>
+void test_map_non_transparent_bucket(UnorderedMap*)
 {
 #ifndef BOOST_UNORDERED_FOA_TESTS
   count_reset();
@@ -1824,9 +1831,8 @@ multiset_extract_const_overload_compile_test()
 }
 #endif
 
-template <class UnorderedSet> void test_set_transparent_extract()
+template <class UnorderedSet> void test_set_transparent_extract(UnorderedSet*)
 {
-#ifndef BOOST_UNORDERED_FOA_TESTS
   typedef typename UnorderedSet::node_type node_type;
 
   count_reset();
@@ -1870,12 +1876,11 @@ template <class UnorderedSet> void test_set_transparent_extract()
   BOOST_TEST_EQ(set.size(), set_size);
 
   BOOST_TEST_EQ(key::count_, expected_key_count);
-#endif
 }
 
-template <class UnorderedSet> void test_set_non_transparent_extract()
+template <class UnorderedSet>
+void test_set_non_transparent_extract(UnorderedSet*)
 {
-#ifndef BOOST_UNORDERED_FOA_TESTS
   typedef typename UnorderedSet::node_type node_type;
 
   count_reset();
@@ -1929,10 +1934,9 @@ template <class UnorderedSet> void test_set_non_transparent_extract()
   BOOST_TEST_EQ(set.size(), set_size);
 
   BOOST_TEST_EQ(key::count_, key_count);
-#endif
 }
 
-template <class UnorderedSet> void test_set_transparent_bucket()
+template <class UnorderedSet> void test_set_transparent_bucket(UnorderedSet*)
 {
 #ifndef BOOST_UNORDERED_FOA_TESTS
   count_reset();
@@ -1953,7 +1957,8 @@ template <class UnorderedSet> void test_set_transparent_bucket()
 #endif
 }
 
-template <class UnorderedSet> void test_set_non_transparent_bucket()
+template <class UnorderedSet>
+void test_set_non_transparent_bucket(UnorderedSet*)
 {
 #ifndef BOOST_UNORDERED_FOA_TESTS
   count_reset();
@@ -1974,7 +1979,7 @@ template <class UnorderedSet> void test_set_non_transparent_bucket()
 #endif
 }
 
-template <class UnorderedSet> void test_set_transparent_insert()
+template <class UnorderedSet> void test_set_transparent_insert(UnorderedSet*)
 {
   count_reset();
 
@@ -2019,7 +2024,8 @@ template <class UnorderedSet> void test_set_transparent_insert()
   set.insert(set.begin(), set.end());
 }
 
-template <class UnorderedSet> void test_set_non_transparent_insert()
+template <class UnorderedSet>
+void test_set_non_transparent_insert(UnorderedSet*)
 {
   count_reset();
 
@@ -2069,272 +2075,305 @@ template <class Key, class T, class Hash, class KeyEqual> struct map_type
 #endif
 };
 
-void test_unordered_map()
-{
-  {
-    typedef map_type<key, int, transparent_hasher, transparent_key_equal>::type
-      unordered_map;
-
-    test_map_transparent_count<unordered_map>();
-    test_map_transparent_find<unordered_map>();
-    test_map_transparent_equal_range<unordered_map>();
-    test_map_transparent_erase<unordered_map>();
-    test_map_transparent_extract<unordered_map>();
-    test_map_transparent_try_emplace<unordered_map>();
-    test_map_transparent_insert_or_assign<unordered_map>();
-    test_map_transparent_subscript<unordered_map>();
-    test_map_transparent_at<unordered_map>();
-    test_map_transparent_bucket<unordered_map>();
-  }
-
-  {
-    // non-transparent Hash, non-transparent KeyEqual
-    //
-    typedef map_type<key, int, hasher, key_equal>::type unordered_map;
-
-    test_map_non_transparent_count<unordered_map>();
-    test_map_non_transparent_find<unordered_map>();
-    test_map_non_transparent_equal_range<unordered_map>();
-    test_map_non_transparent_erase<unordered_map>();
-    test_map_non_transparent_extract<unordered_map>();
-    test_map_non_transparent_try_emplace<unordered_map>();
-    test_map_non_transparent_insert_or_assign<unordered_map>();
-    test_map_non_transparent_subscript<unordered_map>();
-    test_map_non_transparent_at<unordered_map>();
-    test_map_non_transparent_bucket<unordered_map>();
-  }
-
-  {
-    // transparent Hash, non-transparent KeyEqual
-    //
-    typedef map_type<key, int, transparent_hasher, key_equal>::type
-      unordered_map;
-
-    test_map_non_transparent_count<unordered_map>();
-    test_map_non_transparent_find<unordered_map>();
-    test_map_non_transparent_equal_range<unordered_map>();
-    test_map_non_transparent_erase<unordered_map>();
-    test_map_non_transparent_extract<unordered_map>();
-    test_map_non_transparent_try_emplace<unordered_map>();
-    test_map_non_transparent_insert_or_assign<unordered_map>();
-    test_map_non_transparent_subscript<unordered_map>();
-    test_map_non_transparent_at<unordered_map>();
-    test_map_non_transparent_bucket<unordered_map>();
-  }
-
-  {
-    // non-transparent Hash, transparent KeyEqual
-    //
-    typedef map_type<key, int, hasher, transparent_key_equal>::type
-      unordered_map;
-
-    test_map_non_transparent_count<unordered_map>();
-    test_map_non_transparent_find<unordered_map>();
-    test_map_non_transparent_equal_range<unordered_map>();
-    test_map_non_transparent_erase<unordered_map>();
-    test_map_non_transparent_extract<unordered_map>();
-    test_map_non_transparent_try_emplace<unordered_map>();
-    test_map_non_transparent_insert_or_assign<unordered_map>();
-    test_map_non_transparent_subscript<unordered_map>();
-    test_map_non_transparent_at<unordered_map>();
-    test_map_non_transparent_bucket<unordered_map>();
-  }
-}
-
-#ifndef BOOST_UNORDERED_FOA_TESTS
-void test_unordered_multimap()
-{
-  {
-    typedef boost::unordered_multimap<key, int, transparent_hasher,
-      transparent_key_equal>
-      unordered_multimap;
-
-    test_map_transparent_count<unordered_multimap>();
-    test_map_transparent_find<unordered_multimap>();
-    test_map_transparent_equal_range<unordered_multimap>();
-    test_map_transparent_erase<unordered_multimap>();
-    test_map_transparent_extract<unordered_multimap>();
-    test_map_transparent_bucket<unordered_multimap>();
-  }
-
-  {
-    // non-transparent Hash, non-transparent KeyEqual
-    //
-    typedef boost::unordered_multimap<key, int, hasher, key_equal>
-      unordered_multimap;
-
-    test_map_non_transparent_count<unordered_multimap>();
-    test_map_non_transparent_find<unordered_multimap>();
-    test_map_non_transparent_equal_range<unordered_multimap>();
-    test_map_non_transparent_erase<unordered_multimap>();
-    test_map_non_transparent_extract<unordered_multimap>();
-    test_map_non_transparent_bucket<unordered_multimap>();
-  }
-
-  {
-    // transparent Hash, non-transparent KeyEqual
-    //
-    typedef boost::unordered_multimap<key, int, transparent_hasher, key_equal>
-      unordered_multimap;
-
-    test_map_non_transparent_count<unordered_multimap>();
-    test_map_non_transparent_find<unordered_multimap>();
-    test_map_non_transparent_equal_range<unordered_multimap>();
-    test_map_non_transparent_erase<unordered_multimap>();
-    test_map_non_transparent_extract<unordered_multimap>();
-    test_map_non_transparent_bucket<unordered_multimap>();
-  }
-
-  {
-    // non-transparent Hash, transparent KeyEqual
-    //
-    typedef boost::unordered_multimap<key, int, hasher, transparent_key_equal>
-      unordered_multimap;
-
-    test_map_non_transparent_count<unordered_multimap>();
-    test_map_non_transparent_find<unordered_multimap>();
-    test_map_non_transparent_equal_range<unordered_multimap>();
-    test_map_non_transparent_erase<unordered_multimap>();
-    test_map_non_transparent_extract<unordered_multimap>();
-    test_map_non_transparent_bucket<unordered_multimap>();
-  }
-}
-#endif
-
-template <class Key, class Hash, class KeyEqual> struct set_type
-{
 #ifdef BOOST_UNORDERED_FOA_TESTS
-  typedef boost::unordered_flat_set<Key, Hash, KeyEqual> type;
+static boost::unordered_flat_map<key, int, transparent_hasher,
+  transparent_key_equal>* test_trans_map;
+static boost::unordered_flat_map<key, int, hasher, key_equal>* test_map1;
+static boost::unordered_flat_map<key, int, transparent_hasher, key_equal>*
+  test_map2;
+static boost::unordered_flat_map<key, int, hasher, transparent_key_equal>*
+  test_map3;
+
+static boost::unordered_node_map<key, int, transparent_hasher,
+  transparent_key_equal>* test_trans_node_map;
+static boost::unordered_node_map<key, int, hasher, key_equal>* test_node_map1;
+static boost::unordered_node_map<key, int, transparent_hasher, key_equal>*
+  test_node_map2;
+static boost::unordered_node_map<key, int, hasher, transparent_key_equal>*
+  test_node_map3;
+
+// clang-format off
+UNORDERED_TEST(test_map_transparent_count,
+  ((test_trans_map)(test_trans_node_map)))
+
+UNORDERED_TEST(test_map_transparent_find,
+  ((test_trans_map)(test_trans_node_map)))
+
+UNORDERED_TEST(test_map_transparent_equal_range,
+  ((test_trans_map)(test_trans_node_map)))
+
+UNORDERED_TEST(test_map_transparent_erase,
+  ((test_trans_map)(test_trans_node_map)))
+
+UNORDERED_TEST(test_map_transparent_extract,
+  ((test_trans_node_map)))
+
+UNORDERED_TEST(test_map_transparent_try_emplace,
+  ((test_trans_map)(test_trans_node_map)))
+
+UNORDERED_TEST(test_map_transparent_insert_or_assign,
+  ((test_trans_map)(test_trans_node_map)))
+
+UNORDERED_TEST(test_map_transparent_subscript,
+  ((test_trans_map)(test_trans_node_map)))
+
+UNORDERED_TEST(test_map_transparent_at,
+  ((test_trans_map)(test_trans_node_map)))
+
+UNORDERED_TEST(test_map_transparent_bucket,
+  ((test_trans_map)(test_trans_node_map)))
+
+UNORDERED_TEST(test_map_non_transparent_count,
+  ((test_map1)(test_map2)(test_map3)
+    (test_node_map1)(test_node_map2)(test_node_map3)))
+
+UNORDERED_TEST(test_map_non_transparent_find,
+  ((test_map1)(test_map2)(test_map3)
+    (test_node_map1)(test_node_map2)(test_node_map3)))
+
+UNORDERED_TEST(test_map_non_transparent_equal_range,
+  ((test_map1)(test_map2)(test_map3)
+    (test_node_map1)(test_node_map2)(test_node_map3)))
+
+UNORDERED_TEST(test_map_non_transparent_erase,
+  ((test_map1)(test_map2)(test_map3)
+    (test_node_map1)(test_node_map2)(test_node_map3)))
+
+UNORDERED_TEST(test_map_non_transparent_extract,
+  ((test_node_map1)(test_node_map2)(test_node_map3)))
+
+UNORDERED_TEST(test_map_non_transparent_try_emplace,
+  ((test_map1)(test_map2)(test_map3)
+    (test_node_map1)(test_node_map2)(test_node_map3)))
+
+UNORDERED_TEST(test_map_non_transparent_insert_or_assign,
+  ((test_map1)(test_map2)(test_map3)
+    (test_node_map1)(test_node_map2)(test_node_map3)))
+
+UNORDERED_TEST(test_map_non_transparent_subscript,
+  ((test_map1)(test_map2)(test_map3)
+    (test_node_map1)(test_node_map2)(test_node_map3)))
+
+UNORDERED_TEST(test_map_non_transparent_at,
+  ((test_map1)(test_map2)(test_map3)
+    (test_node_map1)(test_node_map2)(test_node_map3)))
+
+UNORDERED_TEST(test_map_non_transparent_bucket,
+  ((test_map1)(test_map2)(test_map3)
+    (test_node_map1)(test_node_map2)(test_node_map3)))
+// clang-format on
 #else
-  typedef boost::unordered_set<Key, Hash, KeyEqual> type;
-#endif
-};
+static boost::unordered_map<key, int, transparent_hasher,
+  transparent_key_equal>* test_trans_map;
+static boost::unordered_map<key, int, hasher, key_equal>* test_map1;
+static boost::unordered_map<key, int, transparent_hasher, key_equal>* test_map2;
+static boost::unordered_map<key, int, hasher, transparent_key_equal>* test_map3;
 
-void test_unordered_set()
-{
-  {
-    typedef set_type<key, transparent_hasher, transparent_key_equal>::type
-      unordered_set;
+static boost::unordered_multimap<key, int, transparent_hasher,
+  transparent_key_equal>* test_trans_multimap;
+static boost::unordered_multimap<key, int, hasher, key_equal>* test_multimap1;
+static boost::unordered_multimap<key, int, transparent_hasher, key_equal>*
+  test_multimap2;
+static boost::unordered_multimap<key, int, hasher, transparent_key_equal>*
+  test_multimap3;
 
-    test_set_transparent_count<unordered_set>();
-    test_set_transparent_find<unordered_set>();
-    test_set_transparent_erase<unordered_set>();
-    test_set_transparent_equal_range<unordered_set>();
-    test_set_transparent_extract<unordered_set>();
-    test_set_transparent_bucket<unordered_set>();
-    test_set_transparent_insert<unordered_set>();
-  }
+// clang-format off
+UNORDERED_TEST(test_map_transparent_count,
+  ((test_trans_map)(test_trans_multimap)))
 
-  {
-    // non-transparent Hash, non-transparent KeyEqual
-    //
-    typedef set_type<key, hasher, key_equal>::type unordered_set;
+UNORDERED_TEST(test_map_transparent_find,
+  ((test_trans_map)(test_trans_multimap)))
 
-    test_set_non_transparent_count<unordered_set>();
-    test_set_non_transparent_find<unordered_set>();
-    test_set_non_transparent_erase<unordered_set>();
-    test_set_non_transparent_equal_range<unordered_set>();
-    test_set_non_transparent_extract<unordered_set>();
-    test_set_non_transparent_bucket<unordered_set>();
-    test_set_non_transparent_insert<unordered_set>();
-  }
+UNORDERED_TEST(test_map_transparent_equal_range,
+  ((test_trans_map)(test_trans_multimap)))
 
-  {
-    // transparent Hash, non-transparent KeyEqual
-    //
-    typedef set_type<key, transparent_hasher, key_equal>::type unordered_set;
+UNORDERED_TEST(test_map_transparent_erase,
+  ((test_trans_map)(test_trans_multimap)))
 
-    test_set_non_transparent_count<unordered_set>();
-    test_set_non_transparent_find<unordered_set>();
-    test_set_non_transparent_erase<unordered_set>();
-    test_set_non_transparent_equal_range<unordered_set>();
-    test_set_non_transparent_extract<unordered_set>();
-    test_set_non_transparent_bucket<unordered_set>();
-    test_set_non_transparent_insert<unordered_set>();
-  }
+UNORDERED_TEST(test_map_transparent_extract,
+  ((test_trans_map)(test_trans_multimap)))
 
-  {
-    // non-transparent Hash, transparent KeyEqual
-    //
-    typedef set_type<key, hasher, transparent_key_equal>::type unordered_set;
+UNORDERED_TEST(test_map_transparent_try_emplace,
+  ((test_trans_map)))
 
-    test_set_non_transparent_count<unordered_set>();
-    test_set_non_transparent_find<unordered_set>();
-    test_set_non_transparent_erase<unordered_set>();
-    test_set_non_transparent_equal_range<unordered_set>();
-    test_set_non_transparent_extract<unordered_set>();
-    test_set_non_transparent_bucket<unordered_set>();
-    test_set_non_transparent_insert<unordered_set>();
-  }
-}
+UNORDERED_TEST(test_map_transparent_insert_or_assign,
+  ((test_trans_map)))
 
-#ifndef BOOST_UNORDERED_FOA_TESTS
-void test_unordered_multiset()
-{
-  {
-    typedef boost::unordered_multiset<key, transparent_hasher,
-      transparent_key_equal>
-      unordered_set;
+UNORDERED_TEST(test_map_transparent_subscript,
+  ((test_trans_map)))
 
-    test_set_transparent_count<unordered_set>();
-    test_set_transparent_find<unordered_set>();
-    test_set_transparent_erase<unordered_set>();
-    test_set_transparent_equal_range<unordered_set>();
-    test_set_transparent_extract<unordered_set>();
-    test_set_transparent_bucket<unordered_set>();
-  }
+UNORDERED_TEST(test_map_transparent_at,
+  ((test_trans_map)))
 
-  {
-    // non-transparent Hash, non-transparent KeyEqual
-    //
-    typedef boost::unordered_multiset<key, hasher, key_equal> unordered_set;
+UNORDERED_TEST(test_map_transparent_bucket,
+  ((test_trans_map)(test_trans_multimap)))
 
-    test_set_non_transparent_count<unordered_set>();
-    test_set_non_transparent_find<unordered_set>();
-    test_set_non_transparent_erase<unordered_set>();
-    test_set_non_transparent_equal_range<unordered_set>();
-    test_set_non_transparent_extract<unordered_set>();
-    test_set_non_transparent_bucket<unordered_set>();
-  }
+UNORDERED_TEST(test_map_non_transparent_count,
+  ((test_map1)(test_map2)(test_map3)
+    (test_multimap1)(test_multimap2)(test_multimap3)))
 
-  {
-    // transparent Hash, non-transparent KeyEqual
-    //
-    typedef boost::unordered_multiset<key, transparent_hasher, key_equal>
-      unordered_set;
+UNORDERED_TEST(test_map_non_transparent_find,
+  ((test_map1)(test_map2)(test_map3)
+    (test_multimap1)(test_multimap2)(test_multimap3)))
 
-    test_set_non_transparent_count<unordered_set>();
-    test_set_non_transparent_find<unordered_set>();
-    test_set_non_transparent_erase<unordered_set>();
-    test_set_non_transparent_equal_range<unordered_set>();
-    test_set_non_transparent_extract<unordered_set>();
-    test_set_non_transparent_bucket<unordered_set>();
-  }
+UNORDERED_TEST(test_map_non_transparent_equal_range,
+  ((test_map1)(test_map2)(test_map3)
+    (test_multimap1)(test_multimap2)(test_multimap3)))
 
-  {
-    // non-transparent Hash, transparent KeyEqual
-    //
-    typedef boost::unordered_multiset<key, hasher, transparent_key_equal>
-      unordered_set;
+UNORDERED_TEST(test_map_non_transparent_erase,
+  ((test_map1)(test_map2)(test_map3)
+    (test_multimap1)(test_multimap2)(test_multimap3)))
 
-    test_set_non_transparent_count<unordered_set>();
-    test_set_non_transparent_find<unordered_set>();
-    test_set_non_transparent_erase<unordered_set>();
-    test_set_non_transparent_equal_range<unordered_set>();
-    test_set_non_transparent_extract<unordered_set>();
-    test_set_non_transparent_bucket<unordered_set>();
-  }
-}
+UNORDERED_TEST(test_map_non_transparent_extract,
+  ((test_map1)(test_map2)(test_map3)
+    (test_multimap1)(test_multimap2)(test_multimap3)))
+
+UNORDERED_TEST(test_map_non_transparent_try_emplace,
+  ((test_map1)(test_map2)(test_map3)))
+
+UNORDERED_TEST(test_map_non_transparent_insert_or_assign,
+  ((test_map1)(test_map2)(test_map3)))
+
+UNORDERED_TEST(test_map_non_transparent_subscript,
+  ((test_map1)(test_map2)(test_map3)))
+
+UNORDERED_TEST(test_map_non_transparent_at,
+  ((test_map1)(test_map2)(test_map3)))
+
+UNORDERED_TEST(test_map_non_transparent_bucket,
+  ((test_map1)(test_map2)(test_map3)
+    (test_multimap1)(test_multimap2)(test_multimap3)))
+// clang-format on
 #endif
 
-UNORDERED_AUTO_TEST (transparent_ops) {
-  test_unordered_map();
-  test_unordered_set();
+#ifdef BOOST_UNORDERED_FOA_TESTS
+static boost::unordered_flat_set<key, transparent_hasher,
+  transparent_key_equal>* test_trans_set;
+static boost::unordered_node_set<key, transparent_hasher,
+  transparent_key_equal>* test_trans_node_set;
 
-#ifndef BOOST_UNORDERED_FOA_TESTS
-  test_unordered_multimap();
-  test_unordered_multiset();
+static boost::unordered_flat_set<key, hasher, key_equal>* test_set1;
+static boost::unordered_flat_set<key, transparent_hasher, key_equal>* test_set2;
+static boost::unordered_flat_set<key, hasher, transparent_key_equal>* test_set3;
+static boost::unordered_node_set<key, hasher, key_equal>* test_node_set1;
+static boost::unordered_node_set<key, transparent_hasher, key_equal>*
+  test_node_set2;
+static boost::unordered_node_set<key, hasher, transparent_key_equal>*
+  test_node_set3;
+
+// clang-format off
+UNORDERED_TEST(test_set_transparent_count,
+  ((test_trans_set)(test_trans_node_set)))
+
+UNORDERED_TEST(test_set_transparent_find,
+  ((test_trans_set)(test_trans_node_set)))
+
+UNORDERED_TEST(test_set_transparent_erase,
+  ((test_trans_set)(test_trans_node_set)))
+
+UNORDERED_TEST(test_set_transparent_equal_range,
+  ((test_trans_set)(test_trans_node_set)))
+
+UNORDERED_TEST(test_set_transparent_extract,
+  ((test_trans_node_set)))
+
+UNORDERED_TEST(test_set_transparent_bucket,
+  ((test_trans_set)(test_trans_node_set)))
+
+UNORDERED_TEST(test_set_transparent_insert,
+  ((test_trans_set)(test_trans_node_set)))
+
+UNORDERED_TEST(test_set_non_transparent_count,
+  ((test_set1)(test_set2)(test_set3)
+   (test_node_set1)(test_node_set2)(test_node_set3)))
+
+UNORDERED_TEST(test_set_non_transparent_find,
+  ((test_set1)(test_set2)(test_set3)
+   (test_node_set1)(test_node_set2)(test_node_set3)))
+
+UNORDERED_TEST(test_set_non_transparent_erase,
+  ((test_set1)(test_set2)(test_set3)
+   (test_node_set1)(test_node_set2)(test_node_set3)))
+
+UNORDERED_TEST(test_set_non_transparent_equal_range,
+  ((test_set1)(test_set2)(test_set3)
+   (test_node_set1)(test_node_set2)(test_node_set3)))
+
+UNORDERED_TEST(test_set_non_transparent_extract,
+  ((test_node_set1)(test_node_set2)(test_node_set3)))
+
+UNORDERED_TEST(test_set_non_transparent_bucket,
+  ((test_set1)(test_set2)(test_set3)
+   (test_node_set1)(test_node_set2)(test_node_set3)))
+
+UNORDERED_TEST(test_set_non_transparent_insert,
+  ((test_set1)(test_set2)(test_set3)
+   (test_node_set1)(test_node_set2)(test_node_set3)))
+// clang-format on
+#else
+static boost::unordered_set<key, transparent_hasher, transparent_key_equal>*
+  test_trans_set;
+static boost::unordered_multiset<key, transparent_hasher,
+  transparent_key_equal>* test_trans_multiset;
+
+static boost::unordered_set<key, hasher, key_equal>* test_set1;
+static boost::unordered_set<key, transparent_hasher, key_equal>* test_set2;
+static boost::unordered_set<key, hasher, transparent_key_equal>* test_set3;
+static boost::unordered_multiset<key, hasher, key_equal>* test_multiset1;
+static boost::unordered_multiset<key, transparent_hasher, key_equal>*
+  test_multiset2;
+static boost::unordered_multiset<key, hasher, transparent_key_equal>*
+  test_multiset3;
+
+// clang-format off
+UNORDERED_TEST(test_set_transparent_count,
+  ((test_trans_set)(test_trans_multiset)))
+
+UNORDERED_TEST(test_set_transparent_find,
+  ((test_trans_set)(test_trans_multiset)))
+
+UNORDERED_TEST(test_set_transparent_erase,
+  ((test_trans_set)(test_trans_multiset)))
+
+UNORDERED_TEST(test_set_transparent_equal_range,
+  ((test_trans_set)(test_trans_multiset)))
+
+UNORDERED_TEST(test_set_transparent_extract,
+  ((test_trans_set)(test_trans_multiset)))
+
+UNORDERED_TEST(test_set_transparent_bucket,
+  ((test_trans_set)(test_trans_multiset)))
+
+UNORDERED_TEST(test_set_transparent_insert,
+  ((test_trans_set)))
+
+UNORDERED_TEST(test_set_non_transparent_count,
+  ((test_set1)(test_set2)(test_set3)
+   (test_multiset1)(test_multiset2)(test_multiset3)))
+
+UNORDERED_TEST(test_set_non_transparent_find,
+  ((test_set1)(test_set2)(test_set3)
+   (test_multiset1)(test_multiset2)(test_multiset3)))
+
+UNORDERED_TEST(test_set_non_transparent_erase,
+  ((test_set1)(test_set2)(test_set3)
+   (test_multiset1)(test_multiset2)(test_multiset3)))
+
+UNORDERED_TEST(test_set_non_transparent_equal_range,
+  ((test_set1)(test_set2)(test_set3)
+   (test_multiset1)(test_multiset2)(test_multiset3)))
+
+UNORDERED_TEST(test_set_non_transparent_extract,
+  ((test_set1)(test_set2)(test_set3)
+   (test_multiset1)(test_multiset2)(test_multiset3)))
+
+UNORDERED_TEST(test_set_non_transparent_bucket,
+  ((test_set1)(test_set2)(test_set3)
+   (test_multiset1)(test_multiset2)(test_multiset3)))
+
+UNORDERED_TEST(test_set_non_transparent_insert,
+  ((test_set1)(test_set2)(test_set3)))
+// clang-format on
 #endif
-}
 
 RUN_TESTS()

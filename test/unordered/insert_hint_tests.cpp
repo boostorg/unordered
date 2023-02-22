@@ -1,6 +1,6 @@
 
 // Copyright 2016 Daniel James.
-// Copyright 2022 Christian Mazakas.
+// Copyright 2022-2023 Christian Mazakas.
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -88,12 +88,11 @@ namespace insert_hint {
     }
   }
 #endif
-  UNORDERED_AUTO_TEST (insert_hint_unique) {
-#ifdef BOOST_UNORDERED_FOA_TESTS
-    typedef boost::unordered_flat_set<int> container;
-#else
-    typedef boost::unordered_set<int> container;
-#endif
+
+  template <class X> static void insert_hint_unique(X*)
+  {
+    typedef X container;
+
     container x;
     x.insert(x.cbegin(), 10);
     BOOST_TEST_EQ(x.size(), 1u);
@@ -101,12 +100,10 @@ namespace insert_hint {
     test::check_equivalent_keys(x);
   }
 
-  UNORDERED_AUTO_TEST (insert_hint_unique_single) {
-#ifdef BOOST_UNORDERED_FOA_TESTS
-    typedef boost::unordered_flat_set<int> container;
-#else
-    typedef boost::unordered_set<int> container;
-#endif
+  template <class X> static void insert_hint_unique_single(X*)
+  {
+    typedef X container;
+
     container x;
     x.insert(10);
 
@@ -121,6 +118,18 @@ namespace insert_hint {
     BOOST_TEST_EQ(x.count(20), 1u);
     test::check_equivalent_keys(x);
   }
-}
+
+#ifdef BOOST_UNORDERED_FOA_TESTS
+  static boost::unordered_flat_set<int>* test_set;
+  static boost::unordered_node_set<int>* test_node_set;
+
+  UNORDERED_TEST(insert_hint_unique, ((test_set)(test_node_set)))
+  UNORDERED_TEST(insert_hint_unique_single, ((test_set)(test_node_set)))
+#else
+  static boost::unordered_set<int>* test_set;
+  UNORDERED_TEST(insert_hint_unique, ((test_set)))
+  UNORDERED_TEST(insert_hint_unique_single, ((test_set)))
+#endif
+} // namespace insert_hint
 
 RUN_TESTS()
