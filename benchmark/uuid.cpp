@@ -1,4 +1,5 @@
 // Copyright 2021, 2022 Peter Dimov.
+// Copyright 2023 Joaquin M Lopez Munoz.
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -6,6 +7,7 @@
 #define _SILENCE_CXX20_CISO646_REMOVED_WARNING
 
 #include <boost/unordered_map.hpp>
+#include <boost/unordered/unordered_node_map.hpp>
 #include <boost/unordered/unordered_flat_map.hpp>
 #include <boost/endian/conversion.hpp>
 #include <boost/core/detail/splitmix64.hpp>
@@ -340,6 +342,9 @@ template<class K, class V> using std_unordered_map =
 template<class K, class V> using boost_unordered_map =
     boost::unordered_map<K, V, boost::hash<K>, std::equal_to<K>, allocator_for<K, V>>;
 
+template<class K, class V> using boost_unordered_node_map =
+    boost::unordered_node_map<K, V, boost::hash<K>, std::equal_to<K>, allocator_for<K, V>>;
+
 template<class K, class V> using boost_unordered_flat_map =
     boost::unordered_flat_map<K, V, boost::hash<K>, std::equal_to<K>, allocator_for<K, V>>;
 
@@ -366,6 +371,7 @@ int main()
 
     test<std_unordered_map>( "std::unordered_map" );
     test<boost_unordered_map>( "boost::unordered_map" );
+    test<boost_unordered_node_map>( "boost::unordered_node_map" );
     test<boost_unordered_flat_map>( "boost::unordered_flat_map" );
 
 #ifdef HAVE_ANKERL_UNORDERED_DENSE

@@ -1,4 +1,5 @@
 // Copyright 2021, 2022 Peter Dimov.
+// Copyright 2023 Joaquin M Lopez Munoz.
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
@@ -6,6 +7,7 @@
 #define _SILENCE_CXX20_CISO646_REMOVED_WARNING
 
 #include <boost/unordered_map.hpp>
+#include <boost/unordered/unordered_node_map.hpp>
 #include <boost/unordered/unordered_flat_map.hpp>
 #include <boost/regex.hpp>
 #ifdef HAVE_ABSEIL
@@ -227,6 +229,9 @@ template<class K, class V> using std_unordered_map =
 template<class K, class V> using boost_unordered_map =
     boost::unordered_map<K, V, boost::hash<K>, std::equal_to<K>, allocator_for<K, V>>;
 
+template<class K, class V> using boost_unordered_node_map =
+    boost::unordered_node_map<K, V, boost::hash<K>, std::equal_to<K>, allocator_for<K, V>>;
+
 template<class K, class V> using boost_unordered_flat_map =
     boost::unordered_flat_map<K, V, boost::hash<K>, std::equal_to<K>, allocator_for<K, V>>;
 
@@ -300,6 +305,9 @@ std::unordered_map<K, V, fnv1a_hash, std::equal_to<K>, allocator_for<K, V>>;
 template<class K, class V> using boost_unordered_map_fnv1a =
     boost::unordered_map<K, V, fnv1a_hash, std::equal_to<K>, allocator_for<K, V>>;
 
+template<class K, class V> using boost_unordered_node_map_fnv1a =
+    boost::unordered_node_map<K, V, fnv1a_hash, std::equal_to<K>, allocator_for<K, V>>;
+
 template<class K, class V> using boost_unordered_flat_map_fnv1a =
     boost::unordered_flat_map<K, V, fnv1a_hash, std::equal_to<K>, allocator_for<K, V>>;
 
@@ -328,6 +336,7 @@ int main()
 
     test<std_unordered_map>( "std::unordered_map" );
     test<boost_unordered_map>( "boost::unordered_map" );
+    test<boost_unordered_node_map>( "boost::unordered_node_map" );
     test<boost_unordered_flat_map>( "boost::unordered_flat_map" );
 
 #ifdef HAVE_ANKERL_UNORDERED_DENSE
@@ -345,6 +354,7 @@ int main()
 
     test<std_unordered_map_fnv1a>( "std::unordered_map, FNV-1a" );
     test<boost_unordered_map_fnv1a>( "boost::unordered_map, FNV-1a" );
+    test<boost_unordered_node_map_fnv1a>( "boost::unordered_node_map, FNV-1a" );
     test<boost_unordered_flat_map_fnv1a>( "boost::unordered_flat_map, FNV-1a" );
 
 #ifdef HAVE_ANKERL_UNORDERED_DENSE
