@@ -105,6 +105,9 @@ struct node_handle_base
 
     node_handle_base& operator=(node_handle_base&& nh)noexcept
     {
+      element_type x;
+      x.p=p_;
+
       if(this!=&nh){
         if(empty()){
           if(nh.empty()){                      /* empty(),  nh.empty() */
@@ -115,7 +118,7 @@ struct node_handle_base
           }
         }else{
           if(nh.empty()){                      /* !empty(),  nh.empty() */
-            type_policy::destroy(al(),p_);
+            type_policy::destroy(al(),&x);
             reset();
           }else{                               /* !empty(), !nh.empty() */
             bool const pocma=
@@ -124,7 +127,7 @@ struct node_handle_base
 
             BOOST_ASSERT(pocma||al()==nh.al());
 
-            type_policy::destroy(al(),p_);
+            type_policy::destroy(al(),&x);
             if(pocma){
               al()=std::move(nh.al());
             }
@@ -137,7 +140,7 @@ struct node_handle_base
         if(empty()){                           /* empty(),  nh.empty() */
           /* nothing to do */
         }else{                                 /* !empty(), !nh.empty() */
-          type_policy::destroy(al(),p_);
+          type_policy::destroy(al(),&x);
           reset();
         }
       }
@@ -147,7 +150,9 @@ struct node_handle_base
     ~node_handle_base()
     {
       if(!empty()){
-        type_policy::destroy(al(),p_);
+        element_type x;
+        x.p=p_;
+        type_policy::destroy(al(),&x);
         reset();
       }
     }

@@ -53,6 +53,11 @@ namespace boost {
           return kv.first;
         }
 
+        static moved_type move(init_type& x)
+        {
+          return {std::get<0>(std::move(x)), std::get<1>(std::move(x))};
+        }
+
         static moved_type move(element_type& x)
         {
           // TODO: we probably need to launder here
@@ -61,9 +66,24 @@ namespace boost {
         }
 
         template <class A, class... Args>
-        static void construct(A& al, element_type* p, Args&&... args)
+        static void construct(A& al, init_type* p, Args&&... args)
         {
           boost::allocator_construct(al, p, std::forward<Args>(args)...);
+        }
+
+        template <class A, class... Args>
+        static void construct(A& al, element_type* p, Args&&... args)
+        {
+          using alloc_type =
+            typename boost::allocator_rebind<A, value_type>::type;
+          alloc_type alloc(al);
+          std::allocator_traits<alloc_type>::construct(
+            alloc, p, std::forward<Args>(args)...);
+        }
+
+        template <class A> static void destroy(A& al, init_type* p) noexcept
+        {
+          boost::allocator_destroy(al, p);
         }
 
         template <class A> static void destroy(A& al, element_type* p) noexcept

@@ -79,6 +79,12 @@ namespace boost {
         }
 
         template <class A, class... Args>
+        static void construct(A& al, value_type* p, Args&&... args)
+        {
+          boost::allocator_construct(al, p, std::forward<Args>(args)...);
+        }
+
+        template <class A, class... Args>
         static void construct(A& al, element_type* p, Args&&... args)
         {
           p->p = boost::to_address(boost::allocator_allocate(al, 1));
@@ -100,16 +106,16 @@ namespace boost {
         template <class A> static void destroy(A& al, value_type* p) noexcept
         {
           boost::allocator_destroy(al, p);
-          boost::allocator_deallocate(al,
-            boost::pointer_traits<
-              typename boost::allocator_pointer<A>::type>::pointer_to(*p),
-            1);
         }
 
         template <class A> static void destroy(A& al, element_type* p) noexcept
         {
           if (p->p) {
             destroy(al, p->p);
+            boost::allocator_deallocate(al,
+              boost::pointer_traits<typename boost::allocator_pointer<
+                A>::type>::pointer_to(*(p->p)),
+              1);
           }
         }
       };
@@ -119,8 +125,7 @@ namespace boost {
           : public detail::foa::node_handle_base<TypePolicy, Allocator>
       {
       private:
-        using base_type =
-          detail::foa::node_handle_base<TypePolicy, Allocator>;
+        using base_type = detail::foa::node_handle_base<TypePolicy, Allocator>;
 
         using typename base_type::type_policy;
 
@@ -391,7 +396,7 @@ namespace boost {
         BOOST_ASSERT(get_allocator() == nh.get_allocator());
 
         typename set_types::element_type x;
-        x.p=std::addressof(nh.element());
+        x.p = std::addressof(nh.element());
 
         auto itp = table_.insert(std::move(x));
         if (itp.second) {
@@ -411,7 +416,7 @@ namespace boost {
         BOOST_ASSERT(get_allocator() == nh.get_allocator());
 
         typename set_types::element_type x;
-        x.p=std::addressof(nh.element());
+        x.p = std::addressof(nh.element());
 
         auto itp = table_.insert(std::move(x));
         if (itp.second) {
@@ -478,7 +483,7 @@ namespace boost {
       node_type extract(key_type const& key)
       {
         auto pos = find(key);
-        return pos!=end()?extract(pos):node_type();
+        return pos != end() ? extract(pos) : node_type();
       }
 
       template <class K>
@@ -489,7 +494,7 @@ namespace boost {
       extract(K const& key)
       {
         auto pos = find(key);
-        return pos!=end()?extract(pos):node_type();
+        return pos != end() ? extract(pos) : node_type();
       }
 
       template <class H2, class P2>

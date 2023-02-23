@@ -1129,6 +1129,25 @@ _STL_RESTORE_DEPRECATED_WARNING
  */
 constexpr static float const mlf = 0.875f;
 
+template <class T>
+union storage
+{
+  T t_;
+  storage(){}
+  ~storage(){}
+};
+
+template <class TypePolicy,class A,class T>
+struct drop_guard
+{
+  using type_policy=TypePolicy;
+
+  A& a;
+  T* p;
+  ~drop_guard(){type_policy::destroy(a,p);};
+};
+
+
 /* foa::table interface departs in a number of ways from that of C++ unordered
  * associative containers because it's not for end-user consumption
  * (boost::unordered_[flat|node]_[map|set]) wrappers complete it as
@@ -1418,18 +1437,35 @@ public:
   template<typename... Args>
   BOOST_FORCEINLINE std::pair<iterator,bool> emplace(Args&&... args)
   {
-    /* We dispatch based on whether or not the value_type is constructible from
-     * an rvalue reference of the deduced emplace_type. We do this specifically
-     * for the case of the node-based containers. To this end, we're able to
-     * avoid allocating a node when a duplicate element is attempted to be
-     * inserted. For immovable types, we instead dispatch to the routine that
-     * unconditionally allocates via `type_policy::construct()`.
-     */
-    return emplace_value(
+    using emplace_type=typename std::conditional<
+      std::is_constructible<init_type,Args...>::value,
+      init_type,
+      value_type
+    >::type;
+
+    using insert_type=typename std::conditional<
       std::is_constructible<
-        value_type,
-        emplace_type<Args...>&&>{},
-      std::forward<Args>(args)...);
+        value_type,emplace_type>::value,
+      emplace_type,element_type
+    >::type;
+
+    using alloc_insert_type=typename std::conditional<
+      std::is_constructible<
+        value_type,emplace_type>::value,
+      emplace_type,value_type
+    >::type;
+
+    using alloc_type=
+      typename boost::allocator_rebind<Allocator,alloc_insert_type>::type;
+
+    storage<insert_type> s;
+    alloc_type           alloc{al()};
+    auto                *p=std::addressof(s.t_);
+
+    type_policy::construct(alloc,p,std::forward<Args>(args)...);
+
+    drop_guard<type_policy,alloc_type,insert_type> guard{alloc,p};
+    return emplace_impl(type_policy::move(*p));
   }
 
   template<typename Key,typename... Args>
@@ -1613,15 +1649,6 @@ public:
 private:
   template<typename,typename,typename,typename> friend class table;
   using arrays_type=table_arrays<element_type,group_type,size_policy>;
-
-  template<typename... Args>
-  using emplace_type = typename std::conditional<
-      std::is_constructible<
-        init_type,Args...
-      >::value,
-      init_type,
-      value_type
-    >::type;
 
   struct clear_on_exit
   {
@@ -1903,29 +1930,6 @@ private:
 #if defined(BOOST_MSVC)
 #pragma warning(pop) /* C4800 */
 #endif
-
-  template<typename... Args>
-  BOOST_FORCEINLINE std::pair<iterator,bool> emplace_value(
-    std::true_type /* movable value_type */,Args&&... args
-  ) {
-    using emplace_type_t = emplace_type<Args...>;
-    return emplace_impl(emplace_type_t(std::forward<Args>(args)...));
-  }
-
-  template<typename... Args>
-  BOOST_FORCEINLINE std::pair<iterator,bool> emplace_value(
-    std::false_type /* immovable value_type */,Args&&... args
-  ) {
-    alignas(element_type)
-    unsigned char buf[sizeof(element_type)];
-    element_type* p = reinterpret_cast<element_type*>(buf);
-
-    type_policy::construct(al(),p,std::forward<Args>(args)...);
-    destroy_element_on_exit d{this,p};
-    (void)d;
-
-    return emplace_impl(type_policy::move(*p));
-  }
 
   template<typename... Args>
   BOOST_FORCEINLINE std::pair<iterator,bool> emplace_impl(Args&&... args)

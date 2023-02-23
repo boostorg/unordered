@@ -77,6 +77,11 @@ namespace boost {
         }
 
         static element_type&& move(element_type& x) { return std::move(x); }
+        static moved_type move(init_type& x)
+        {
+          return {std::get<0>(std::move(x)), std::get<1>(std::move(x))};
+        }
+
         static moved_type move(value_type& x)
         {
           return {std::move(const_cast<raw_key_type&>(x.first)),
@@ -97,6 +102,18 @@ namespace boost {
         }
 
         template <class A, class... Args>
+        static void construct(A& al, init_type* p, Args&&... args)
+        {
+          boost::allocator_construct(al, p, std::forward<Args>(args)...);
+        }
+
+        template <class A, class... Args>
+        static void construct(A& al, value_type* p, Args&&... args)
+        {
+          boost::allocator_construct(al, p, std::forward<Args>(args)...);
+        }
+
+        template <class A, class... Args>
         static void construct(A& al, element_type* p, Args&&... args)
         {
           p->p = boost::to_address(boost::allocator_allocate(al, 1));
@@ -106,10 +123,11 @@ namespace boost {
           }
           BOOST_CATCH(...)
           {
-            boost::allocator_deallocate(al,
-              boost::pointer_traits<
-                typename boost::allocator_pointer<A>::type>::pointer_to(*p->p),
-              1);
+            using pointer_type=typename boost::allocator_pointer<A>::type;
+            using pointer_traits=boost::pointer_traits<pointer_type>;
+
+            boost::allocator_deallocate(
+              al,pointer_traits::pointer_to(*(p->p)),1);
             BOOST_RETHROW
           }
           BOOST_CATCH_END
@@ -118,16 +136,22 @@ namespace boost {
         template <class A> static void destroy(A& al, value_type* p) noexcept
         {
           boost::allocator_destroy(al, p);
-          boost::allocator_deallocate(al,
-            boost::pointer_traits<
-              typename boost::allocator_pointer<A>::type>::pointer_to(*p),
-            1);
+        }
+
+        template <class A> static void destroy(A& al, init_type* p) noexcept
+        {
+          boost::allocator_destroy(al, p);
         }
 
         template <class A> static void destroy(A& al, element_type* p) noexcept
         {
           if (p->p) {
-            destroy(al,p->p);
+            using pointer_type=typename boost::allocator_pointer<A>::type;
+            using pointer_traits=boost::pointer_traits<pointer_type>;
+
+            destroy(al, p->p);
+            boost::allocator_deallocate(
+              al,pointer_traits::pointer_to(*(p->p)), 1);
           }
         }
       };
@@ -137,8 +161,7 @@ namespace boost {
           : public detail::foa::node_handle_base<TypePolicy, Allocator>
       {
       private:
-        using base_type =
-          detail::foa::node_handle_base<TypePolicy, Allocator>;
+        using base_type = detail::foa::node_handle_base<TypePolicy, Allocator>;
 
         using typename base_type::type_policy;
 
