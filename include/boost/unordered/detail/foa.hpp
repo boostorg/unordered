@@ -39,24 +39,24 @@
 #include <type_traits>
 #include <utility>
 
-#if !defined(BOOST_UNORDERED_DISABLE_SSE2)&& \
-    !defined(BOOST_UNORDERED_ENABLE_SSE2)
-#if defined(__SSE2__)|| \
+#if !defined(BOOST_UNORDERED_DISABLE_SSE2)
+#if defined(BOOST_UNORDERED_ENABLE_SSE2)|| \
+    defined(__SSE2__)|| \
     defined(_M_X64)||(defined(_M_IX86_FP)&&_M_IX86_FP>=2)
-#define BOOST_UNORDERED_ENABLE_SSE2
+#define BOOST_UNORDERED_SSE2
 #endif
 #endif
 
-#if !defined(BOOST_UNORDERED_DISABLE_LITTLE_ENDIAN_NEON)&& \
-    !defined(BOOST_UNORDERED_ENABLE_LITTLE_ENDIAN_NEON)
-#if defined(__ARM_NEON)&&!defined(__ARM_BIG_ENDIAN)
-#define BOOST_UNORDERED_ENABLE_LITTLE_ENDIAN_NEON
+#if !defined(BOOST_UNORDERED_DISABLE_NEON)
+#if defined(BOOST_UNORDERED_ENABLE_NEON)||\
+    (defined(__ARM_NEON)&&!defined(__ARM_BIG_ENDIAN))
+#define BOOST_UNORDERED_LITTLE_ENDIAN_NEON
 #endif
 #endif
 
-#if defined(BOOST_UNORDERED_ENABLE_SSE2)
+#if defined(BOOST_UNORDERED_SSE2)
 #include <emmintrin.h>
-#elif defined(BOOST_UNORDERED_ENABLE_LITTLE_ENDIAN_NEON)
+#elif defined(BOOST_UNORDERED_LITTLE_ENDIAN_NEON)
 #include <arm_neon.h>
 #endif
 
@@ -156,7 +156,7 @@ static const std::size_t default_bucket_count = 0;
  * metadata to all zeros.
  */
 
-#if defined(BOOST_UNORDERED_ENABLE_SSE2)
+#if defined(BOOST_UNORDERED_SSE2)
 
 struct group15
 {
@@ -315,7 +315,7 @@ private:
   alignas(16) __m128i m;
 };
 
-#elif defined(BOOST_UNORDERED_ENABLE_LITTLE_ENDIAN_NEON)
+#elif defined(BOOST_UNORDERED_LITTLE_ENDIAN_NEON)
 
 struct group15
 {
@@ -1040,7 +1040,7 @@ inline void prefetch(const void* p)
   (void) p;
 #if defined(BOOST_GCC)||defined(BOOST_CLANG)
   __builtin_prefetch((const char*)p);
-#elif defined(BOOST_UNORDERED_ENABLE_SSE2)
+#elif defined(BOOST_UNORDERED_SSE2)
   _mm_prefetch((const char*)p,_MM_HINT_T0);
 #endif    
 }
@@ -2213,4 +2213,10 @@ private:
 #undef BOOST_UNORDERED_ASSUME
 #undef BOOST_UNORDERED_HAS_BUILTIN
 #undef BOOST_UNORDERED_STATIC_ASSERT_HASH_PRED
+#ifdef BOOST_UNORDERED_LITTLE_ENDIAN_NEON
+#undef BOOST_UNORDERED_LITTLE_ENDIAN_NEON
+#endif
+#ifdef BOOST_UNORDERED_SSE2
+#undef BOOST_UNORDERED_SSE2
+#endif
 #endif
