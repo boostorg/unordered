@@ -320,7 +320,7 @@ int main()
 
     test<std_unordered_map>( "std::unordered_map" );
     test<boost_unordered_map>( "boost::unordered_map" );
-    test<boost_unordered_flat_map>( "boost::unordered_node_map" );
+    test<boost_unordered_node_map>( "boost::unordered_node_map" );
     test<boost_unordered_flat_map>( "boost::unordered_flat_map" );
 
 #ifdef HAVE_ANKERL_UNORDERED_DENSE
