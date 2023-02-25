@@ -5,9 +5,9 @@
 
 :cpp: C++
 
-== Closed-addressing containers: unordered_[multi]set, unordered_[multi]map
+== Closed-addressing containers
 
-The intent of Boost.Unordered is to provide a conformant
+`unordered_[multi]set` and `unordered_[multi]map` are intended to provide a conformant
 implementation of the {cpp}20 standard that will work with {cpp}98 upwards.
 This wide compatibility does mean some compromises have to be made.
 With a compiler and library that fully support {cpp}11, the differences should
@@ -117,27 +117,29 @@ Variadic constructor arguments for `emplace` are only used when both
 rvalue references and variadic template parameters are available.
 Otherwise `emplace` can only take up to 10 constructors arguments.
 
-== Open-addressing containers: unordered_flat_set, unordered_flat_map
+== Open-addressing containers
 
 The C++ standard does not currently provide any open-addressing container
-specification to adhere to, so `boost::unordered_flat_set` and
-`boost::unordered_flat_map` take inspiration from `std::unordered_set` and
+specification to adhere to, so `boost::unordered_flat_set`/`unordered_node_set` and
+`boost::unordered_flat_map`/`unordered_node_map` take inspiration from `std::unordered_set` and
 `std::unordered_map`, respectively, and depart from their interface where
 convenient or as dictated by their internal data structure, which is
-radically different from that imposed by the standard (closed addressing, node based).
+radically different from that imposed by the standard (closed addressing).
 
-`unordered_flat_set` and `unordered_flat_map` only work with reasonably
+Open-addressing containers provided by Boost.Unordered only work with reasonably
 compliant C++11 (or later) compilers. Language-level features such as move semantics
 and variadic template parameters are then not emulated. 
-`unordered_flat_set` and `unordered_flat_map` are fully https://en.cppreference.com/w/cpp/named_req/AllocatorAwareContainer[AllocatorAware^].
+The containers are fully https://en.cppreference.com/w/cpp/named_req/AllocatorAwareContainer[AllocatorAware^].
 
 The main differences with C++ unordered associative containers are:
 
-* `value_type` must be move-constructible.
-* Pointer stability is not kept under rehashing.
-* `begin()` is not constant-time.
-* `erase(iterator)` returns `void` instead of an iterator to the following element.
-* There is no API for bucket handling (except `bucket_count`) or node extraction/insertion.
-* The maximum load factor of the container is managed internally and can't be set by the user. The maximum load,
-exposed through the public function `max_load`, may decrease on erasure under high-load conditions.
-
+* In general:
+  ** `begin()` is not constant-time.
+  ** `erase(iterator)` returns `void` instead of an iterator to the following element.
+  ** There is no API for bucket handling (except `bucket_count`).
+  ** The maximum load factor of the container is managed internally and can't be set by the user. The maximum load,
+     exposed through the public function `max_load`, may decrease on erasure under high-load conditions.
+* Flat containers (`boost::unordered_flat_set` and `boost::unordered_flat_map`):
+  ** `value_type` must be move-constructible.
+  ** Pointer stability is not kept under rehashing.
+  ** There is no API for node extraction/insertion.

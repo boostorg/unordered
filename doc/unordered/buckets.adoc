@@ -134,7 +134,8 @@ h|*Method* h|*Description*
 |Changes the number of buckets so that there at least `n` buckets, and so that the load factor is less than the maximum load factor.
 
 2+^h| *Open-addressing containers only* +
-`boost::unordered_flat_set`, `boost::unordered_flat_map` 
+`boost::unordered_flat_set`, `boost::unordered_flat_map` +
+`boost::unordered_node_set`, `boost::unordered_node_map` +
 h|*Method* h|*Description*
 
 |`size_type max_load() const`
@@ -160,8 +161,9 @@ change the number of buckets when this happens. Iterators can be
 invalidated by calls to `insert`, `rehash` and `reserve`.
 
 As for pointers and references,
-they are never invalidated for closed-addressing containers (`boost::unordered_[multi]set`, `boost::unordered_[multi]map`),
-but they will when rehashing occurs for open-addressing
+they are never invalidated for node-based containers 
+(`boost::unordered_[multi]set`, `boost::unordered_[multi]map`, `boost::unordered_node_set`, `boost::unordered_node_map`),
+but they will when rehashing occurs for
 `boost::unordered_flat_set` and `boost::unordered_flat_map`: this is because
 these containers store elements directly into their holding buckets, so
 when allocating a new bucket array the elements must be transferred by means of move construction.
@@ -252,15 +254,16 @@ xref:#rationale_boostunordered_multiset_and_boostunordered_multimap[correspondin
 
 == Open Addressing Implementation
 
-The diagram shows the basic internal layout of `boost::unordered_flat_map` and
-`boost:unordered_flat_set`.
+The diagram shows the basic internal layout of `boost::unordered_flat_map`/`unordered_node_map` and
+`boost:unordered_flat_set`/`unordered_node_set`.
 
 
 [#img-foa-layout]
 .Open-addressing layout used by Boost.Unordered.
 image::foa.png[align=center]
 
-As with all open-addressing containers, elements are stored directly in the bucket array.
+As with all open-addressing containers, elements (or pointers to the element nodes in the case of
+`boost::unordered_node_map` and `boost::unordered_node_set`) are stored directly in the bucket array.
 This array is logically divided into 2^_n_^ _groups_ of 15 elements each.
 In addition to the bucket array, there is an associated _metadata array_ with 2^_n_^
 16-byte words.

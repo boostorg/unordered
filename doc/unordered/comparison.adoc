@@ -33,8 +33,8 @@
 
 |Iterators, pointers and references to the container's elements are never invalidated.
 |<<buckets_iterator_invalidation,Iterators can be invalidated by calls to insert or rehash>>. +
-**Closed-addressing containers:** Pointers and references to the container's elements are never invalidated. +
-**Open-addressing containers:** Pointers and references to the container's elements are invalidated when rehashing occurs.
+**Node-based containers:** Pointers and references to the container's elements are never invalidated. +
+**Flat containers:** Pointers and references to the container's elements are invalidated when rehashing occurs.
 
 |Iterators iterate through the container in the order defined by the comparison object.
 |Iterators iterate through the container in an arbitrary order, that can change as elements are inserted, although equivalent elements are always adjacent.
