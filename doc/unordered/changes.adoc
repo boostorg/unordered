@@ -8,6 +8,8 @@
 
 == Release 1.82.0 - Major update
 
+* {cpp}03 support is planned for deprecation. Boost 1.84.0 will no longer support
+  {cpp}03 mode and {cpp}11 will become the new minimum for using the library.
 * Added node-based, open-addressing containers
   `boost::unordered_node_map` and `boost::unordered_node_set`.
 * Extended heterogeneous lookup to more member functions as specified in
