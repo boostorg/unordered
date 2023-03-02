@@ -1130,11 +1130,11 @@ _STL_RESTORE_DEPRECATED_WARNING
 constexpr static float const mlf = 0.875f;
 
 template <class T>
-union storage
+union uninitialized_storage
 {
   T t_;
-  storage(){}
-  ~storage(){}
+  uninitialized_storage(){}
+  ~uninitialized_storage(){}
 };
 
 template <class TypePolicy,class A,class T>
@@ -1449,8 +1449,8 @@ public:
       emplace_type,element_type
     >::type;
 
-    storage<insert_type> s;
-    auto                *p=std::addressof(s.t_);
+    uninitialized_storage<insert_type> s;
+    auto                              *p=std::addressof(s.t_);
 
     type_policy::construct(al(),p,std::forward<Args>(args)...);
 
