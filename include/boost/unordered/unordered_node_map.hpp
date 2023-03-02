@@ -79,7 +79,7 @@ namespace boost {
         static element_type&& move(element_type& x) { return std::move(x); }
         static moved_type move(init_type& x)
         {
-          return {std::get<0>(std::move(x)), std::get<1>(std::move(x))};
+          return {std::move(x.first), std::move(x.second)};
         }
 
         static moved_type move(value_type& x)
