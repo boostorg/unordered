@@ -72,13 +72,9 @@ namespace boost {
         }
 
         template <class A, class... Args>
-        static void construct(A& al, element_type* p, Args&&... args)
+        static void construct(A& al, value_type* p, Args&&... args)
         {
-          using alloc_type =
-            typename boost::allocator_rebind<A, value_type>::type;
-          alloc_type alloc(al);
-          std::allocator_traits<alloc_type>::construct(
-            alloc, p, std::forward<Args>(args)...);
+          boost::allocator_construct(al, p, std::forward<Args>(args)...);
         }
 
         template <class A> static void destroy(A& al, init_type* p) noexcept
@@ -86,7 +82,7 @@ namespace boost {
           boost::allocator_destroy(al, p);
         }
 
-        template <class A> static void destroy(A& al, element_type* p) noexcept
+        template <class A> static void destroy(A& al, value_type* p) noexcept
         {
           boost::allocator_destroy(al, p);
         }

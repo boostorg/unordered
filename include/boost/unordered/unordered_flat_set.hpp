@@ -46,12 +46,12 @@ namespace boost {
         static element_type&& move(element_type& x) { return std::move(x); }
 
         template <class A, class... Args>
-        static void construct(A& al, element_type* p, Args&&... args)
+        static void construct(A& al, value_type* p, Args&&... args)
         {
           boost::allocator_construct(al, p, std::forward<Args>(args)...);
         }
 
-        template <class A> static void destroy(A& al, element_type* p) noexcept
+        template <class A> static void destroy(A& al, value_type* p) noexcept
         {
           boost::allocator_destroy(al, p);
         }
