@@ -1449,22 +1449,12 @@ public:
       emplace_type,element_type
     >::type;
 
-    using alloc_insert_type=typename std::conditional<
-      std::is_constructible<
-        value_type,emplace_type>::value,
-      emplace_type,value_type
-    >::type;
-
-    using alloc_type=
-      typename boost::allocator_rebind<Allocator,alloc_insert_type>::type;
-
     storage<insert_type> s;
-    alloc_type           alloc{al()};
     auto                *p=std::addressof(s.t_);
 
-    type_policy::construct(alloc,p,std::forward<Args>(args)...);
+    type_policy::construct(al(),p,std::forward<Args>(args)...);
 
-    drop_guard<type_policy,alloc_type,insert_type> guard{alloc,p};
+    drop_guard<type_policy,Allocator,insert_type> guard{al(),p};
     return emplace_impl(type_policy::move(*p));
   }
 
