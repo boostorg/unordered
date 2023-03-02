@@ -123,11 +123,11 @@ namespace boost {
           }
           BOOST_CATCH(...)
           {
-            using pointer_type=typename boost::allocator_pointer<A>::type;
-            using pointer_traits=boost::pointer_traits<pointer_type>;
+            using pointer_type = typename boost::allocator_pointer<A>::type;
+            using pointer_traits = boost::pointer_traits<pointer_type>;
 
             boost::allocator_deallocate(
-              al,pointer_traits::pointer_to(*(p->p)),1);
+              al, pointer_traits::pointer_to(*(p->p)), 1);
             BOOST_RETHROW
           }
           BOOST_CATCH_END
@@ -146,12 +146,12 @@ namespace boost {
         template <class A> static void destroy(A& al, element_type* p) noexcept
         {
           if (p->p) {
-            using pointer_type=typename boost::allocator_pointer<A>::type;
-            using pointer_traits=boost::pointer_traits<pointer_type>;
+            using pointer_type = typename boost::allocator_pointer<A>::type;
+            using pointer_traits = boost::pointer_traits<pointer_type>;
 
             destroy(al, p->p);
             boost::allocator_deallocate(
-              al,pointer_traits::pointer_to(*(p->p)), 1);
+              al, pointer_traits::pointer_to(*(p->p)), 1);
           }
         }
       };
