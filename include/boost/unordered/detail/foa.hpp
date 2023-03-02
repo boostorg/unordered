@@ -1137,17 +1137,6 @@ union uninitialized_storage
   ~uninitialized_storage(){}
 };
 
-template <class TypePolicy,class A,class T>
-struct drop_guard
-{
-  using type_policy=TypePolicy;
-
-  A& a;
-  T* p;
-  ~drop_guard(){type_policy::destroy(a,p);};
-};
-
-
 /* foa::table interface departs in a number of ways from that of C++ unordered
  * associative containers because it's not for end-user consumption
  * (boost::unordered_[flat|node]_[map|set]) wrappers complete it as
@@ -1454,7 +1443,7 @@ public:
 
     type_policy::construct(al(),p,std::forward<Args>(args)...);
 
-    drop_guard<type_policy,Allocator,insert_type> guard{al(),p};
+    destroy_on_exit<insert_type> guard{al(),p};
     return emplace_impl(type_policy::move(*p));
   }
 
@@ -1656,6 +1645,16 @@ private:
     table&         x;
     const_iterator it;
     bool           rollback_=false;
+  };
+
+  template <class T>
+  struct destroy_on_exit
+  {
+    using type_policy=TypePolicy;
+
+    Allocator &a;
+    T         *p;
+    ~destroy_on_exit(){type_policy::destroy(a,p);};
   };
 
   Hash&            h(){return hash_base::get();}
