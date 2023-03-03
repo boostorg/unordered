@@ -11,6 +11,7 @@
 #endif
 
 #include <boost/unordered/detail/foa.hpp>
+#include <boost/unordered/detail/foa/element_type.hpp>
 #include <boost/unordered/detail/foa/node_handle.hpp>
 #include <boost/unordered/detail/type_traits.hpp>
 #include <boost/unordered/unordered_node_set_fwd.hpp>
@@ -41,23 +42,7 @@ namespace boost {
 
         static Key const& extract(value_type const& key) { return key; }
 
-        struct element_type
-        {
-          value_type* p;
-
-          /*
-           * we use a deleted copy constructor here so the type is no longer
-           * trivially copy-constructible which inhibits our memcpy
-           * optimizations when copying the tables
-           */
-          element_type() = default;
-          element_type(element_type const&) = delete;
-          element_type(element_type&& rhs) noexcept
-          {
-            p = rhs.p;
-            rhs.p = nullptr;
-          }
-        };
+        using element_type=foa::element_type<value_type>;
 
         static value_type& value_from(element_type const& x) { return *x.p; }
         static Key const& extract(element_type const& k) { return *k.p; }
@@ -142,7 +127,7 @@ namespace boost {
         value_type& value() const
         {
           BOOST_ASSERT(!this->empty());
-          return const_cast<value_type&>(this->element());
+          return const_cast<value_type&>(this->data());
         }
       };
     } // namespace detail
@@ -395,10 +380,7 @@ namespace boost {
 
         BOOST_ASSERT(get_allocator() == nh.get_allocator());
 
-        typename set_types::element_type x;
-        x.p = std::addressof(nh.element());
-
-        auto itp = table_.insert(std::move(x));
+        auto itp = table_.insert(std::move(nh.element()));
         if (itp.second) {
           nh.reset();
           return {itp.first, true, node_type{}};
@@ -415,10 +397,7 @@ namespace boost {
 
         BOOST_ASSERT(get_allocator() == nh.get_allocator());
 
-        typename set_types::element_type x;
-        x.p = std::addressof(nh.element());
-
-        auto itp = table_.insert(std::move(x));
+        auto itp = table_.insert(std::move(nh.element()));
         if (itp.second) {
           nh.reset();
           return itp.first;
