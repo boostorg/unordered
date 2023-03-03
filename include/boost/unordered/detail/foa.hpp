@@ -1171,11 +1171,20 @@ union uninitialized_storage
  *     a copyable const std::string&&. foa::table::insert is extended to accept
  *     both init_type and value_type references.
  *
- *   - TypePolicy::move(element_type&) returns a temporary object for value
- *     transfer on rehashing, move copy/assignment, and merge. For flat map, this
- *     object is a std::pair<Key&&,T&&>, which is generally cheaper to move
- *     than std::pair<const Key,T>&& because of the constness in Key. For
- *     node-based tables, this is used to transfer ownership of pointer.
+ *   - TypePolicy::construct and TypePolicy::destroy are used for the
+ *     construction and destruction of the internal types: value_type, init_type
+ *     and element_type. For flat containers, these are often all synonyms for
+ *     each other but for the node-based map, each one is a distinct type. These
+ *     are used for allocator-aware construction and destruction of the types
+ *     during insertion.
+ * 
+ *   - TypePolicy::move is used to provide move semantics for the internal
+ *     types used by the container during rehashing and emplace. These types
+ *     are init_type, value_type and emplace_type. During insertion, a
+ *     stack-local type will be created based on the constructibility of the
+ *     value_type and the supplied arguments. TypePolicy::move is used here
+ *     for transfer of ownership. Similarly, TypePolicy::move is also used
+ *     during rehashing when elements are moved to the new table.
  *
  *   - TypePolicy::extract returns a const reference to the key part of
  *     a value of type value_type, init_type, element_type or
