@@ -1659,8 +1659,6 @@ private:
   template <class T>
   struct destroy_on_exit
   {
-    using type_policy=TypePolicy;
-
     Allocator &a;
     T         *p;
     ~destroy_on_exit(){type_policy::destroy(a,p);};
