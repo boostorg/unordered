@@ -75,7 +75,7 @@ jobs:
           - { compiler: clang,     cxxstd: '03,11,14,17,2a',    os: macos-11, }
           - { compiler: clang,     cxxstd: '03,11,14,17,2a',    os: macos-12, sanitize: yes }
 
-    timeout-minutes: 120
+    timeout-minutes: 180
     runs-on: ${{matrix.os}}
     container: ${{matrix.container}}
     env: {B2_USE_CCACHE: 1}

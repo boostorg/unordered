@@ -6,7 +6,7 @@ local library = "unordered";
 
 local triggers =
 {
-    branch: [ "master", "develop", "feature/*", "bugfix/*" ]
+    branch: [ "master", "develop", "feature/*", "bugfix/*", "fix/*", "pr/*" ]
 };
 
 local ubsan = { UBSAN: '1', UBSAN_OPTIONS: 'print_stacktrace=1' };
