@@ -1471,7 +1471,7 @@ public:
   iterator begin()noexcept
   {
     iterator it{arrays.groups,0,arrays.elements};
-    if(!(arrays.groups[0].match_occupied()&0x1))++it;
+    if(arrays.elements&&!(arrays.groups[0].match_occupied()&0x1))++it;
     return it;
   }
 
