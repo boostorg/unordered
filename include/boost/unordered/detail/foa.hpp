@@ -1129,6 +1129,14 @@ _STL_RESTORE_DEPRECATED_WARNING
  */
 constexpr static float const mlf = 0.875f;
 
+template <class T>
+union uninitialized_storage
+{
+  T t_;
+  uninitialized_storage(){}
+  ~uninitialized_storage(){}
+};
+
 /* foa::table interface departs in a number of ways from that of C++ unordered
  * associative containers because it's not for end-user consumption
  * (boost::unordered_[flat|node]_[map|set]) wrappers complete it as
@@ -1163,11 +1171,17 @@ constexpr static float const mlf = 0.875f;
  *     a copyable const std::string&&. foa::table::insert is extended to accept
  *     both init_type and value_type references.
  *
- *   - TypePolicy::move(element_type&) returns a temporary object for value
- *     transfer on rehashing, move copy/assignment, and merge. For flat map, this
- *     object is a std::pair<Key&&,T&&>, which is generally cheaper to move
- *     than std::pair<const Key,T>&& because of the constness in Key. For
- *     node-based tables, this is used to transfer ownership of pointer.
+ *   - TypePolicy::construct and TypePolicy::destroy are used for the
+ *     construction and destruction of the internal types: value_type, init_type
+ *     and element_type.
+ * 
+ *   - TypePolicy::move is used to provide move semantics for the internal
+ *     types used by the container during rehashing and emplace. These types
+ *     are init_type, value_type and emplace_type. During insertion, a
+ *     stack-local type will be created based on the constructibility of the
+ *     value_type and the supplied arguments. TypePolicy::move is used here
+ *     for transfer of ownership. Similarly, TypePolicy::move is also used
+ *     during rehashing when elements are moved to the new table.
  *
  *   - TypePolicy::extract returns a const reference to the key part of
  *     a value of type value_type, init_type, element_type or
@@ -1418,18 +1432,25 @@ public:
   template<typename... Args>
   BOOST_FORCEINLINE std::pair<iterator,bool> emplace(Args&&... args)
   {
-    /* We dispatch based on whether or not the value_type is constructible from
-     * an rvalue reference of the deduced emplace_type. We do this specifically
-     * for the case of the node-based containers. To this end, we're able to
-     * avoid allocating a node when a duplicate element is attempted to be
-     * inserted. For immovable types, we instead dispatch to the routine that
-     * unconditionally allocates via `type_policy::construct()`.
-     */
-    return emplace_value(
+    using emplace_type=typename std::conditional<
+      std::is_constructible<init_type,Args...>::value,
+      init_type,
+      value_type
+    >::type;
+
+    using insert_type=typename std::conditional<
       std::is_constructible<
-        value_type,
-        emplace_type<Args...>&&>{},
-      std::forward<Args>(args)...);
+        value_type,emplace_type>::value,
+      emplace_type,element_type
+    >::type;
+
+    uninitialized_storage<insert_type> s;
+    auto                              *p=std::addressof(s.t_);
+
+    type_policy::construct(al(),p,std::forward<Args>(args)...);
+
+    destroy_on_exit<insert_type> guard{al(),p};
+    return emplace_impl(type_policy::move(*p));
   }
 
   template<typename Key,typename... Args>
@@ -1614,15 +1635,6 @@ private:
   template<typename,typename,typename,typename> friend class table;
   using arrays_type=table_arrays<element_type,group_type,size_policy>;
 
-  template<typename... Args>
-  using emplace_type = typename std::conditional<
-      std::is_constructible<
-        init_type,Args...
-      >::value,
-      init_type,
-      value_type
-    >::type;
-
   struct clear_on_exit
   {
     ~clear_on_exit(){x.clear();}
@@ -1639,6 +1651,14 @@ private:
     table&         x;
     const_iterator it;
     bool           rollback_=false;
+  };
+
+  template <class T>
+  struct destroy_on_exit
+  {
+    Allocator &a;
+    T         *p;
+    ~destroy_on_exit(){type_policy::destroy(a,p);};
   };
 
   Hash&            h(){return hash_base::get();}
@@ -1903,29 +1923,6 @@ private:
 #if defined(BOOST_MSVC)
 #pragma warning(pop) /* C4800 */
 #endif
-
-  template<typename... Args>
-  BOOST_FORCEINLINE std::pair<iterator,bool> emplace_value(
-    std::true_type /* movable value_type */,Args&&... args
-  ) {
-    using emplace_type_t = emplace_type<Args...>;
-    return emplace_impl(emplace_type_t(std::forward<Args>(args)...));
-  }
-
-  template<typename... Args>
-  BOOST_FORCEINLINE std::pair<iterator,bool> emplace_value(
-    std::false_type /* immovable value_type */,Args&&... args
-  ) {
-    alignas(element_type)
-    unsigned char buf[sizeof(element_type)];
-    element_type* p = reinterpret_cast<element_type*>(buf);
-
-    type_policy::construct(al(),p,std::forward<Args>(args)...);
-    destroy_element_on_exit d{this,p};
-    (void)d;
-
-    return emplace_impl(type_policy::move(*p));
-  }
 
   template<typename... Args>
   BOOST_FORCEINLINE std::pair<iterator,bool> emplace_impl(Args&&... args)

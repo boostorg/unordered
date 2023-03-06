@@ -45,20 +45,30 @@ struct node_handle_base
 
   private:
     using node_value_type=typename type_policy::value_type;
-    node_value_type* p_=nullptr;
+    element_type p_;
     BOOST_ATTRIBUTE_NO_UNIQUE_ADDRESS opt_storage<Allocator> a_;
 
   protected:
-    node_value_type& element()noexcept
+    node_value_type& data()noexcept
     {
-      BOOST_ASSERT(!empty());
-      return *p_;
+      return *(p_.p);
     }
 
-    node_value_type const& element()const noexcept
+    node_value_type const& data()const noexcept
+    {
+      return *(p_.p);
+    }
+
+    element_type& element()noexcept
     {
       BOOST_ASSERT(!empty());
-      return *p_;
+      return p_;
+    }
+
+    element_type const& element()const noexcept
+    {
+      BOOST_ASSERT(!empty());
+      return p_;
     }
 
     Allocator& al()noexcept
@@ -73,32 +83,29 @@ struct node_handle_base
       return a_.t_;
     }
 
-    void emplace(node_value_type* p,Allocator a)
-    {
-      BOOST_ASSERT(empty());
-      p_=p;
-      new(&a_.t_)Allocator(a);
-    }
-
     void emplace(element_type&& x,Allocator a)
     {
-      emplace(x.p,a);
+      BOOST_ASSERT(empty());
+      auto* p=x.p;
+      p_.p=p;
+      new(&a_.t_)Allocator(a);
       x.p=nullptr;
     }
 
     void reset()
     {
-      al().~Allocator();
-      p_=nullptr;
+      a_.t_.~Allocator();
+      p_.p=nullptr;
     }
 
   public:
-    constexpr node_handle_base()noexcept{}
+    constexpr node_handle_base()noexcept:p_{nullptr}{}
 
     node_handle_base(node_handle_base&& nh) noexcept
     {
+      p_.p = nullptr;
       if (!nh.empty()){
-        emplace(nh.p_,nh.al());
+        emplace(std::move(nh.p_),nh.al());
         nh.reset();
       }
     }
@@ -110,12 +117,12 @@ struct node_handle_base
           if(nh.empty()){                      /* empty(),  nh.empty() */
             /* nothing to do */
           }else{                               /* empty(), !nh.empty() */
-            emplace(nh.p_,std::move(nh.al()));
+            emplace(std::move(nh.p_),std::move(nh.al()));
             nh.reset();
           }
         }else{
           if(nh.empty()){                      /* !empty(),  nh.empty() */
-            type_policy::destroy(al(),p_);
+            type_policy::destroy(al(),&p_);
             reset();
           }else{                               /* !empty(), !nh.empty() */
             bool const pocma=
@@ -124,12 +131,12 @@ struct node_handle_base
 
             BOOST_ASSERT(pocma||al()==nh.al());
 
-            type_policy::destroy(al(),p_);
+            type_policy::destroy(al(),&p_);
             if(pocma){
               al()=std::move(nh.al());
             }
 
-            p_=nh.p_;
+            p_=std::move(nh.p_);
             nh.reset();
           }
         }
@@ -137,7 +144,7 @@ struct node_handle_base
         if(empty()){                           /* empty(),  nh.empty() */
           /* nothing to do */
         }else{                                 /* !empty(), !nh.empty() */
-          type_policy::destroy(al(),p_);
+          type_policy::destroy(al(),&p_);
           reset();
         }
       }
@@ -147,14 +154,14 @@ struct node_handle_base
     ~node_handle_base()
     {
       if(!empty()){
-        type_policy::destroy(al(),p_);
+        type_policy::destroy(al(),&p_);
         reset();
       }
     }
 
     allocator_type get_allocator()const noexcept{return al();}
     explicit operator bool()const noexcept{ return !empty();}
-    BOOST_ATTRIBUTE_NODISCARD bool empty()const noexcept{return p_==nullptr;}
+    BOOST_ATTRIBUTE_NODISCARD bool empty()const noexcept{return p_.p==nullptr;}
 
     void swap(node_handle_base& nh) noexcept(
       boost::allocator_is_always_equal<Allocator>::type::value||
@@ -165,12 +172,12 @@ struct node_handle_base
           if(nh.empty()) {
             /* nothing to do here */
           } else {
-            emplace(nh.p_, nh.al());
+            emplace(std::move(nh.p_), nh.al());
             nh.reset();
           }
         }else{
           if(nh.empty()){
-            nh.emplace(p_,al());
+            nh.emplace(std::move(p_),al());
             reset();
           }else{
             bool const pocs=
@@ -180,7 +187,7 @@ struct node_handle_base
             BOOST_ASSERT(pocs || al()==nh.al());
 
             using std::swap;
-            swap(p_,nh.p_);
+            p_.swap(nh.p_);
             if(pocs)swap(al(),nh.al());
           }
         }

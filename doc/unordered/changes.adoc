@@ -16,6 +16,9 @@
   https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2363r5.html[P2363].
 * Replaced the previous post-mixing process for open-addressing containers with 
   a new algorithm based on extended multiplication by a constant.
+* Fixed bug in internal emplace() impl where stack-local types were not properly
+  constructed using the Allocator of the container which breaks uses-allocator
+  construction.
 
 == Release 1.81.0 - Major update
 
