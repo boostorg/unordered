@@ -1173,10 +1173,7 @@ union uninitialized_storage
  *
  *   - TypePolicy::construct and TypePolicy::destroy are used for the
  *     construction and destruction of the internal types: value_type, init_type
- *     and element_type. For flat containers, these are often all synonyms for
- *     each other but for the node-based map, each one is a distinct type. These
- *     are used for allocator-aware construction and destruction of the types
- *     during insertion.
+ *     and element_type.
  * 
  *   - TypePolicy::move is used to provide move semantics for the internal
  *     types used by the container during rehashing and emplace. These types
