@@ -326,6 +326,181 @@ private:
   alignas(16) __m128i m;
 };
 
+struct group14
+{
+  static constexpr int N=14;
+  static constexpr bool regular_layout=true;
+
+  struct dummy_group_type
+  {
+    alignas(16) unsigned char storage[N+2]={0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0};
+  };
+
+  inline void initialize(){m=_mm_setzero_si128();}
+
+  inline void set(std::size_t pos,std::size_t hash)
+  {
+    BOOST_ASSERT(pos<N);
+    at(pos)=reduced_hash(hash);
+  }
+
+  inline void set_sentinel()
+  {
+    at(N-1)=sentinel_;
+  }
+
+  inline bool is_sentinel(std::size_t pos)const
+  {
+    BOOST_ASSERT(pos<N);
+    return at(pos)==sentinel_;
+  }
+
+  static inline bool is_sentinel(unsigned char* pc)noexcept
+  {
+    return *pc==sentinel_;
+  }
+
+  inline void reset(std::size_t pos)
+  {
+    BOOST_ASSERT(pos<N);
+    at(pos)=available_;
+  }
+
+  static inline void reset(unsigned char* pc)
+  {
+    *pc=available_;
+  }
+
+  inline int match(std::size_t hash)const
+  {
+    return _mm_movemask_epi8(
+      _mm_cmpeq_epi8(m,_mm_set1_epi32(match_word(hash))))&0x3FFF;
+  }
+
+  inline bool is_not_overflowed(std::size_t hash)const
+  {
+    static constexpr unsigned shift[]={
+      0x0001,0x0002,0x0004,0x0008,0x0010,0x0020,0x0040,0x0080,
+      0x0100,0x0200,0x0400,0x0800,0x1000,0x2000,0x4000,0x8000
+    };
+
+    return !(overflow()&shift[hash%16]);
+  }
+
+  inline void mark_overflow(std::size_t hash)
+  {
+    auto r=static_cast<short>(1<<(hash%16));
+    auto x=_mm_setr_epi16(0,0,0,0,0,0,0,r);
+    m=_mm_or_si128(m,x);
+
+//     unsigned r=1<<(hash%16);
+
+//     unsigned char a=reinterpret_cast<unsigned char*>(&r)[0];
+//     unsigned char b=reinterpret_cast<unsigned char*>(&r)[1];
+
+//     at(N)|=a;
+//     at(N+1)|=b;
+  }
+
+  static inline bool maybe_caused_overflow(unsigned char* pc)
+  {
+    std::size_t pos=reinterpret_cast<uintptr_t>(pc)%sizeof(group14);
+    auto       *pg=reinterpret_cast<group14*>(pc-pos);
+    return !pg->is_not_overflowed(*pc);
+  };
+
+  inline int match_available()const
+  {
+    return _mm_movemask_epi8(
+      _mm_cmpeq_epi8(m,_mm_setzero_si128()))&0x3FFF;
+  }
+
+  static inline bool is_occupied(unsigned char* pc)noexcept
+  {
+    return *pc!=available_;
+  }
+
+  inline int match_occupied()const
+  {
+    return (~match_available())&0x3FFF;
+  }
+
+  inline int match_really_occupied()const /* excluding sentinel */
+  {
+    return at(N-1)==sentinel_?match_occupied()&0x1FFF:match_occupied();
+  }
+
+private:
+  static constexpr unsigned char available_=0,
+                                 sentinel_=1;
+
+  inline static int match_word(std::size_t hash)
+  {
+    static constexpr boost::uint32_t word[]=
+    {
+      0x10101010u,0x11111111u,0x02020202u,0x03030303u,0x04040404u,0x05050505u,0x06060606u,0x07070707u,
+      0x08080808u,0x09090909u,0x0A0A0A0Au,0x0B0B0B0Bu,0x0C0C0C0Cu,0x0D0D0D0Du,0x0E0E0E0Eu,0x0F0F0F0Fu,
+      0x10101010u,0x11111111u,0x12121212u,0x13131313u,0x14141414u,0x15151515u,0x16161616u,0x17171717u,
+      0x18181818u,0x19191919u,0x1A1A1A1Au,0x1B1B1B1Bu,0x1C1C1C1Cu,0x1D1D1D1Du,0x1E1E1E1Eu,0x1F1F1F1Fu,
+      0x20202020u,0x21212121u,0x22222222u,0x23232323u,0x24242424u,0x25252525u,0x26262626u,0x27272727u,
+      0x28282828u,0x29292929u,0x2A2A2A2Au,0x2B2B2B2Bu,0x2C2C2C2Cu,0x2D2D2D2Du,0x2E2E2E2Eu,0x2F2F2F2Fu,
+      0x30303030u,0x31313131u,0x32323232u,0x33333333u,0x34343434u,0x35353535u,0x36363636u,0x37373737u,
+      0x38383838u,0x39393939u,0x3A3A3A3Au,0x3B3B3B3Bu,0x3C3C3C3Cu,0x3D3D3D3Du,0x3E3E3E3Eu,0x3F3F3F3Fu,
+      0x40404040u,0x41414141u,0x42424242u,0x43434343u,0x44444444u,0x45454545u,0x46464646u,0x47474747u,
+      0x48484848u,0x49494949u,0x4A4A4A4Au,0x4B4B4B4Bu,0x4C4C4C4Cu,0x4D4D4D4Du,0x4E4E4E4Eu,0x4F4F4F4Fu,
+      0x50505050u,0x51515151u,0x52525252u,0x53535353u,0x54545454u,0x55555555u,0x56565656u,0x57575757u,
+      0x58585858u,0x59595959u,0x5A5A5A5Au,0x5B5B5B5Bu,0x5C5C5C5Cu,0x5D5D5D5Du,0x5E5E5E5Eu,0x5F5F5F5Fu,
+      0x60606060u,0x61616161u,0x62626262u,0x63636363u,0x64646464u,0x65656565u,0x66666666u,0x67676767u,
+      0x68686868u,0x69696969u,0x6A6A6A6Au,0x6B6B6B6Bu,0x6C6C6C6Cu,0x6D6D6D6Du,0x6E6E6E6Eu,0x6F6F6F6Fu,
+      0x70707070u,0x71717171u,0x72727272u,0x73737373u,0x74747474u,0x75757575u,0x76767676u,0x77777777u,
+      0x78787878u,0x79797979u,0x7A7A7A7Au,0x7B7B7B7Bu,0x7C7C7C7Cu,0x7D7D7D7Du,0x7E7E7E7Eu,0x7F7F7F7Fu,
+      0x80808080u,0x81818181u,0x82828282u,0x83838383u,0x84848484u,0x85858585u,0x86868686u,0x87878787u,
+      0x88888888u,0x89898989u,0x8A8A8A8Au,0x8B8B8B8Bu,0x8C8C8C8Cu,0x8D8D8D8Du,0x8E8E8E8Eu,0x8F8F8F8Fu,
+      0x90909090u,0x91919191u,0x92929292u,0x93939393u,0x94949494u,0x95959595u,0x96969696u,0x97979797u,
+      0x98989898u,0x99999999u,0x9A9A9A9Au,0x9B9B9B9Bu,0x9C9C9C9Cu,0x9D9D9D9Du,0x9E9E9E9Eu,0x9F9F9F9Fu,
+      0xA0A0A0A0u,0xA1A1A1A1u,0xA2A2A2A2u,0xA3A3A3A3u,0xA4A4A4A4u,0xA5A5A5A5u,0xA6A6A6A6u,0xA7A7A7A7u,
+      0xA8A8A8A8u,0xA9A9A9A9u,0xAAAAAAAAu,0xABABABABu,0xACACACACu,0xADADADADu,0xAEAEAEAEu,0xAFAFAFAFu,
+      0xB0B0B0B0u,0xB1B1B1B1u,0xB2B2B2B2u,0xB3B3B3B3u,0xB4B4B4B4u,0xB5B5B5B5u,0xB6B6B6B6u,0xB7B7B7B7u,
+      0xB8B8B8B8u,0xB9B9B9B9u,0xBABABABAu,0xBBBBBBBBu,0xBCBCBCBCu,0xBDBDBDBDu,0xBEBEBEBEu,0xBFBFBFBFu,
+      0xC0C0C0C0u,0xC1C1C1C1u,0xC2C2C2C2u,0xC3C3C3C3u,0xC4C4C4C4u,0xC5C5C5C5u,0xC6C6C6C6u,0xC7C7C7C7u,
+      0xC8C8C8C8u,0xC9C9C9C9u,0xCACACACAu,0xCBCBCBCBu,0xCCCCCCCCu,0xCDCDCDCDu,0xCECECECEu,0xCFCFCFCFu,
+      0xD0D0D0D0u,0xD1D1D1D1u,0xD2D2D2D2u,0xD3D3D3D3u,0xD4D4D4D4u,0xD5D5D5D5u,0xD6D6D6D6u,0xD7D7D7D7u,
+      0xD8D8D8D8u,0xD9D9D9D9u,0xDADADADAu,0xDBDBDBDBu,0xDCDCDCDCu,0xDDDDDDDDu,0xDEDEDEDEu,0xDFDFDFDFu,
+      0xE0E0E0E0u,0xE1E1E1E1u,0xE2E2E2E2u,0xE3E3E3E3u,0xE4E4E4E4u,0xE5E5E5E5u,0xE6E6E6E6u,0xE7E7E7E7u,
+      0xE8E8E8E8u,0xE9E9E9E9u,0xEAEAEAEAu,0xEBEBEBEBu,0xECECECECu,0xEDEDEDEDu,0xEEEEEEEEu,0xEFEFEFEFu,
+      0xF0F0F0F0u,0xF1F1F1F1u,0xF2F2F2F2u,0xF3F3F3F3u,0xF4F4F4F4u,0xF5F5F5F5u,0xF6F6F6F6u,0xF7F7F7F7u,
+      0xF8F8F8F8u,0xF9F9F9F9u,0xFAFAFAFAu,0xFBFBFBFBu,0xFCFCFCFCu,0xFDFDFDFDu,0xFEFEFEFEu,0xFFFFFFFFu,
+    };
+
+    return (int)word[narrow_cast<unsigned char>(hash)];
+  }
+
+  inline static unsigned char reduced_hash(std::size_t hash)
+  {
+    return narrow_cast<unsigned char>(match_word(hash));
+  }
+
+  inline unsigned char& at(std::size_t pos)
+  {
+    return reinterpret_cast<unsigned char*>(&m)[pos];
+  }
+
+  inline unsigned char at(std::size_t pos)const
+  {
+    return reinterpret_cast<const unsigned char*>(&m)[pos];
+  }
+
+  inline unsigned overflow()const
+  {
+    unsigned x=0;
+    reinterpret_cast<unsigned char*>(&x)[0]=at(N);
+    reinterpret_cast<unsigned char*>(&x)[1]=at(N+1);
+    return x;
+  }
+
+  alignas(16) __m128i m;
+};
+
 #elif defined(BOOST_UNORDERED_LITTLE_ENDIAN_NEON)
 
 struct group15
@@ -1272,7 +1447,7 @@ table:empty_value<Hash,0>,empty_value<Pred,1>,empty_value<Allocator,2>
   using pred_base=empty_value<Pred,1>;
   using allocator_base=empty_value<Allocator,2>;
   using type_policy=TypePolicy;
-  using group_type=group15;
+  using group_type=group14;
   static constexpr auto N=group_type::N;
   using size_policy=pow2_size_policy;
   using prober=pow2_quadratic_prober;
