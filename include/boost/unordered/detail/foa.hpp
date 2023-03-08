@@ -892,7 +892,7 @@ private:
 
   inline void increment()noexcept
   {
-    BOOST_UNORDERED_ASSUME(p!=nullptr);
+    BOOST_ASSERT(p!=nullptr);
     increment(std::integral_constant<bool,regular_layout>{});
   }
 
