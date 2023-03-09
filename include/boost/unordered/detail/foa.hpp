@@ -389,17 +389,7 @@ struct group14
 
   inline void mark_overflow(std::size_t hash)
   {
-    auto r=static_cast<short>(1<<(hash%16));
-    auto x=_mm_setr_epi16(0,0,0,0,0,0,0,r);
-    m=_mm_or_si128(m,x);
-
-//     unsigned r=1<<(hash%16);
-
-//     unsigned char a=reinterpret_cast<unsigned char*>(&r)[0];
-//     unsigned char b=reinterpret_cast<unsigned char*>(&r)[1];
-
-//     at(N)|=a;
-//     at(N+1)|=b;
+    overflow()|=static_cast<boost::uint16_t>(1<<(hash%16));
   }
 
   static inline bool maybe_caused_overflow(unsigned char* pc)
@@ -490,12 +480,14 @@ private:
     return reinterpret_cast<const unsigned char*>(&m)[pos];
   }
 
-  inline unsigned overflow()const
+  inline boost::uint16_t& overflow()
   {
-    unsigned x=0;
-    reinterpret_cast<unsigned char*>(&x)[0]=at(N);
-    reinterpret_cast<unsigned char*>(&x)[1]=at(N+1);
-    return x;
+    return reinterpret_cast<boost::uint16_t*>(&m)[7];
+  }
+
+  inline boost::uint16_t overflow()const
+  {
+    return reinterpret_cast<boost::uint16_t const*>(&m)[7];
   }
 
   alignas(16) __m128i m;
@@ -1447,7 +1439,11 @@ table:empty_value<Hash,0>,empty_value<Pred,1>,empty_value<Allocator,2>
   using pred_base=empty_value<Pred,1>;
   using allocator_base=empty_value<Allocator,2>;
   using type_policy=TypePolicy;
+#if defined(BOOST_UNORDERED_SSE2)
   using group_type=group14;
+#else
+  using group_type=group15;
+#endif
   static constexpr auto N=group_type::N;
   using size_policy=pow2_size_policy;
   using prober=pow2_quadratic_prober;
