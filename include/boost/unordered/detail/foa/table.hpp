@@ -261,7 +261,8 @@ public:
   iterator begin()noexcept
   {
     iterator it{this->arrays.groups,0,this->arrays.elements};
-    if(!(this->arrays.groups[0].match_occupied()&0x1))++it;
+    if(this->arrays.elements&&
+       !(this->arrays.groups[0].match_occupied()&0x1))++it;
     return it;
   }
 
