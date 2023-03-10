@@ -360,7 +360,7 @@ public:
   }
 
   void swap(table& x)
-    noexcept(std::declval<super&>().swap(std::declval<super&>()))
+    noexcept(noexcept(std::declval<super&>().swap(std::declval<super&>())))
   {
     super::swap(x);
   }
