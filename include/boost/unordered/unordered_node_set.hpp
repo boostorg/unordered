@@ -10,9 +10,9 @@
 #pragma once
 #endif
 
-#include <boost/unordered/detail/foa.hpp>
 #include <boost/unordered/detail/foa/element_type.hpp>
 #include <boost/unordered/detail/foa/node_handle.hpp>
+#include <boost/unordered/detail/foa/table.hpp>
 #include <boost/unordered/detail/type_traits.hpp>
 #include <boost/unordered/unordered_node_set_fwd.hpp>
 

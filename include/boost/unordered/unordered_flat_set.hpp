@@ -10,7 +10,7 @@
 #pragma once
 #endif
 
-#include <boost/unordered/detail/foa.hpp>
+#include <boost/unordered/detail/foa/table.hpp>
 #include <boost/unordered/detail/type_traits.hpp>
 #include <boost/unordered/unordered_flat_set_fwd.hpp>
 
