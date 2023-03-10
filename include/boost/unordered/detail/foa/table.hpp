@@ -407,6 +407,7 @@ public:
 
   using super::capacity;
   using super::load_factor;
+  using super::max_load_factor;
   using super::max_load;
   using super::rehash;
   using super::reserve;
