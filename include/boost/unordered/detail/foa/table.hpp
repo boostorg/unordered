@@ -296,7 +296,7 @@ public:
 
     type_policy::construct(this->al(),p,std::forward<Args>(args)...);
 
-    typename destroy_on_exit<insert_type> guard{this->al(),p};
+    typename super::destroy_on_exit<insert_type> guard{this->al(),p};
     return emplace_impl(type_policy::move(*p));
   }
 
