@@ -296,7 +296,7 @@ public:
 
     type_policy::construct(this->al(),p,std::forward<Args>(args)...);
 
-    destroy_on_exit<insert_type> guard{this->al(),p};
+    typename destroy_on_exit<insert_type> guard{this->al(),p};
     return emplace_impl(type_policy::move(*p));
   }
 
@@ -417,8 +417,6 @@ public:
   }
 
 private:
-  using super::destroy_on_exit;
-
   struct erase_on_exit
   {
     erase_on_exit(table& x_,const_iterator it_):x{x_},it{it_}{}
