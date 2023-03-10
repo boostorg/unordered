@@ -1360,7 +1360,7 @@ protected:
   
   float load_factor()const noexcept
   {
-    if capacity()==0)return 0;
+    if(capacity()==0)return 0;
     else             return float(size())/float(capacity());
   }
 
