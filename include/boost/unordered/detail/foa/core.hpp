@@ -1093,7 +1093,7 @@ __declspec(empty_bases) /* activate EBO with multiple inheritance */
 
 table_core:empty_value<Hash,0>,empty_value<Pred,1>,empty_value<Allocator,2>
 {
-protected:
+public:
   using type_policy=TypePolicy;
   using group_type=group15;
   static constexpr auto N=group_type::N;
