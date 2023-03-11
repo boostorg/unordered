@@ -22,6 +22,7 @@
 #include <boost/core/pointer_traits.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/predef.h>
+#include <boost/static_assert.hpp>
 #include <boost/type_traits/has_trivial_copy.hpp>
 #include <boost/type_traits/is_nothrow_swappable.hpp>
 #include <boost/unordered/detail/narrow_cast.hpp>
@@ -158,6 +159,7 @@ static constexpr std::size_t default_bucket_count=0;
 
 #if defined(BOOST_UNORDERED_SSE2)
 
+template<template<typename> class IntegralWrapper>
 struct group15
 {
   static constexpr int N=15;
@@ -168,7 +170,11 @@ struct group15
     alignas(16) unsigned char storage[N+1]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0};
   };
 
-  inline void initialize(){m=_mm_setzero_si128();}
+  inline void initialize()
+  {
+    _mm_store_si128(
+      reinterpret_cast<__m128i*>(m),_mm_setzero_si128());
+  }
 
   inline void set(std::size_t pos,std::size_t hash)
   {
@@ -200,13 +206,14 @@ struct group15
 
   static inline void reset(unsigned char* pc)
   {
-    *pc=available_;
+    *reinterpret_cast<slot_type*>(pc)=available_;
   }
 
   inline int match(std::size_t hash)const
   {
+    auto w=_mm_load_si128(reinterpret_cast<const __m128i*>(m));
     return _mm_movemask_epi8(
-      _mm_cmpeq_epi8(m,_mm_set1_epi32(match_word(hash))))&0x7FFF;
+      _mm_cmpeq_epi8(w,_mm_set1_epi32(match_word(hash))))&0x7FFF;
   }
 
   inline bool is_not_overflowed(std::size_t hash)const
@@ -218,12 +225,7 @@ struct group15
 
   inline void mark_overflow(std::size_t hash)
   {
-#if BOOST_WORKAROUND(BOOST_GCC,>=50000 && BOOST_GCC<60000)
-    overflow()=static_cast<unsigned char>(
-      overflow()|static_cast<unsigned char>(1<<(hash%8)));
-#else
     overflow()|=static_cast<unsigned char>(1<<(hash%8));
-#endif
   }
 
   static inline bool maybe_caused_overflow(unsigned char* pc)
@@ -235,13 +237,14 @@ struct group15
 
   inline int match_available()const
   {
+    auto w=_mm_load_si128(reinterpret_cast<const __m128i*>(m));
     return _mm_movemask_epi8(
-      _mm_cmpeq_epi8(m,_mm_setzero_si128()))&0x7FFF;
+      _mm_cmpeq_epi8(w,_mm_setzero_si128()))&0x7FFF;
   }
 
   static inline bool is_occupied(unsigned char* pc)noexcept
   {
-    return *pc!=available_;
+    return *reinterpret_cast<slot_type*>(pc)!=available_;
   }
 
   inline int match_occupied()const
@@ -255,6 +258,9 @@ struct group15
   }
 
 private:
+  using slot_type=IntegralWrapper<unsigned char>;
+  BOOST_STATIC_ASSERT(sizeof(slot_type)==1);
+
   static constexpr unsigned char available_=0,
                                  sentinel_=1;
 
@@ -304,31 +310,32 @@ private:
     return narrow_cast<unsigned char>(match_word(hash));
   }
 
-  inline unsigned char& at(std::size_t pos)
+  inline slot_type& at(std::size_t pos)
   {
-    return reinterpret_cast<unsigned char*>(&m)[pos];
+    return m[pos];
   }
 
-  inline unsigned char at(std::size_t pos)const
+  inline const slot_type& at(std::size_t pos)const
   {
-    return reinterpret_cast<const unsigned char*>(&m)[pos];
+    return m[pos];
   }
 
-  inline unsigned char& overflow()
-  {
-    return at(N);
-  }
-
-  inline unsigned char overflow()const
+  inline slot_type& overflow()
   {
     return at(N);
   }
 
-  alignas(16) __m128i m;
+  inline const slot_type& overflow()const
+  {
+    return at(N);
+  }
+
+  alignas(16) slot_type m[16];
 };
 
 #elif defined(BOOST_UNORDERED_LITTLE_ENDIAN_NEON)
 
+template<template<typename> class IntegralWrapper>
 struct group15
 {
   static constexpr int N=15;
@@ -339,7 +346,10 @@ struct group15
     alignas(16) unsigned char storage[N+1]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0};
   };
 
-  inline void initialize(){m=vdupq_n_s8(0);}
+  inline void initialize()
+  {
+    vst1q_u8(reinterpret_cast<uint8_t*>(m),vdupq_n_s8(0));
+  }
 
   inline void set(std::size_t pos,std::size_t hash)
   {
@@ -360,7 +370,7 @@ struct group15
 
   static inline bool is_sentinel(unsigned char* pc)noexcept
   {
-    return *pc==sentinel_;
+    return *reinterpret_cast<slot_type*>(pc)==sentinel_;
   }
 
   inline void reset(std::size_t pos)
@@ -371,13 +381,14 @@ struct group15
 
   static inline void reset(unsigned char* pc)
   {
-    *pc=available_;
+    *reinterpret_cast<slot_type*>(pc)=available_;
   }
 
   inline int match(std::size_t hash)const
   {
     return simde_mm_movemask_epi8(vceqq_s8(
-      m,vdupq_n_s8(static_cast<signed char>(reduced_hash(hash)))))&0x7FFF;
+      vld1q_u8(reinterpret_cast<const uint8_t*>(m)),
+      vdupq_n_s8(static_cast<signed char>(reduced_hash(hash)))))&0x7FFF;
   }
 
   inline bool is_not_overflowed(std::size_t hash)const
@@ -401,18 +412,21 @@ struct group15
 
   inline int match_available()const
   {
-    return simde_mm_movemask_epi8(vceqq_s8(m,vdupq_n_s8(0)))&0x7FFF;
+    return simde_mm_movemask_epi8(vceqq_s8(
+      vld1q_u8(reinterpret_cast<const uint8_t*>(m)),
+      vdupq_n_s8(0)))&0x7FFF;
   }
 
   static inline bool is_occupied(unsigned char* pc)noexcept
   {
-    return *pc!=available_;
+    return *reinterpret_cast<slot_typê*>(pc)!=available_;
   }
 
   inline int match_occupied()const
   {
-    return simde_mm_movemask_epi8(
-      vcgtq_u8(vreinterpretq_u8_s8(m),vdupq_n_u8(0)))&0x7FFF;
+    return simde_mm_movemask_epi8(vcgtq_u8(
+      vreinterpretq_u8_s8(vld1q_u8(reinterpret_cast<const uint8_t*>(m))),
+      vdupq_n_u8(0)))&0x7FFF;
   }
 
   inline int match_really_occupied()const /* excluding sentinel */
@@ -421,6 +435,9 @@ struct group15
   }
 
 private:
+  using slot_type=IntegralWrapper<unsigned char>;
+  BOOST_STATIC_ASSERT(sizeof(slot_type)==1);
+
   static constexpr unsigned char available_=0,
                                  sentinel_=1;
 
@@ -473,31 +490,32 @@ private:
 #endif
   }
 
-  inline unsigned char& at(std::size_t pos)
+  inline slot_type& at(std::size_t pos)
   {
-    return reinterpret_cast<unsigned char*>(&m)[pos];
+    return m[pos];
   }
 
-  inline unsigned char at(std::size_t pos)const
+  inline const slot_type& at(std::size_t pos)const
   {
-    return reinterpret_cast<const unsigned char*>(&m)[pos];
+    return m[pos];
   }
 
-  inline unsigned char& overflow()
-  {
-    return at(N);
-  }
-
-  inline unsigned char overflow()const
+  inline slot_type& overflow()
   {
     return at(N);
   }
 
-  alignas(16) int8x16_t m;
+  inline const slot_type& overflow()const
+  {
+    return at(N);
+  }
+
+  alignas(16) slot_type m[16];
 };
 
 #else /* non-SIMD */
 
+template<template<typename> class IntegralWrapper>
 struct group15
 {
   static constexpr int N=15;
@@ -590,6 +608,9 @@ struct group15
   }
 
 private:
+  using word_type=IntegralWrapper<uint64_t>;
+  BOOST_STATIC_ASSERT(sizeof(slot_type)==1);
+
   static constexpr unsigned char available_=0,
                                  sentinel_=1;
 
@@ -624,7 +645,7 @@ private:
     set_impl(m[1],pos,n>>4);
   }
 
-  static inline void set_impl(boost::uint64_t& x,std::size_t pos,std::size_t n)
+  static inline void set_impl(word_type& x,std::size_t pos,std::size_t n)
   {
     static constexpr boost::uint64_t mask[]=
     {
@@ -670,7 +691,7 @@ private:
     return          y&0x7FFF;
   }
 
-  alignas(16) boost::uint64_t m[2];
+  alignas(16) word_type m[2];
 };
 
 #endif
@@ -1064,7 +1085,10 @@ struct try_emplace_args_t{};
 #pragma warning(disable:4702)
 #endif
 
-template<typename TypePolicy,typename Hash,typename Pred,typename Allocator>
+template<
+  typename TypePolicy,typename Group,typename Hash,typename Pred,
+  typename Allocator
+>
 class 
 
 #if defined(_MSC_VER)&&_MSC_FULL_VER>=190023918
@@ -1075,7 +1099,7 @@ table_core:empty_value<Hash,0>,empty_value<Pred,1>,empty_value<Allocator,2>
 {
 public:
   using type_policy=TypePolicy;
-  using group_type=group15;
+  using group_type=Group;
   static constexpr auto N=group_type::N;
   using size_policy=pow2_size_policy;
   using prober=pow2_quadratic_prober;
@@ -1103,8 +1127,8 @@ public:
   using locator=table_locator<group_type,element_type>;
 
   table_core(
-    std::size_t n=0,const Hash& h_=Hash(),const Pred& pred_=Pred(),
-    const Allocator& al_=Allocator()):
+    std::size_t n=default_bucket_count,const Hash& h_=Hash(),
+    const Pred& pred_=Pred(),const Allocator& al_=Allocator()):
     hash_base{empty_init,h_},pred_base{empty_init,pred_},
     allocator_base{empty_init,al_},size_{0},arrays(new_arrays(n)),
     ml{initial_max_load()}
@@ -1576,7 +1600,8 @@ public:
   std::size_t ml;
 
 private:
-  template<typename,typename,typename,typename> friend class table_core;
+  template<typename,typename,typename,typename,typename>
+  friend class table_core;
 
   using hash_base=empty_value<Hash,0>;
   using pred_base=empty_value<Pred,1>;

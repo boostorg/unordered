@@ -14,6 +14,7 @@
 
 #include <boost/assert.hpp>
 #include <boost/config.hpp>
+#include <boost/config/workaround.hpp>
 #include <boost/unordered/detail/foa/core.hpp>
 #include <cstddef>
 #include <iterator>
@@ -25,6 +26,24 @@ namespace boost{
 namespace unordered{
 namespace detail{
 namespace foa{
+
+template<typename Integral>
+struct plain_integral
+{
+  operator Integral()const{return n;}
+  void operator=(Integral m){n=m;}
+
+  void operator|=(Integral m)
+  {
+#if BOOST_WORKAROUND(BOOST_GCC,>=50000 && BOOST_GCC<60000)
+    n=static_cast<Integral>(n|m);
+#else
+    n|=m;
+#endif
+  }
+
+  Integral n;
+};
 
 template<typename,typename,typename,typename>
 class table;
@@ -81,7 +100,8 @@ public:
     const_iterator_cast_tag, const table_iterator<TypePolicy,Group,true>& x):
     pc{x.pc},p{x.p}{}
 
-  inline reference operator*()const noexcept{return type_policy::value_from(*p);}
+  inline reference operator*()const noexcept
+    {return type_policy::value_from(*p);}
   inline pointer operator->()const noexcept
     {return std::addressof(type_policy::value_from(*p));}
   inline table_iterator& operator++()noexcept{increment();return *this;}
@@ -181,7 +201,7 @@ union uninitialized_storage
 
 /* foa::table interface departs in a number of ways from that of C++ unordered
  * associative containers because it's not for end-user consumption
- * (boost::unordered_[flat|node]_[map|set]) wrappers complete it as
+ * (boost::unordered_[flat|node]_[map|set] wrappers complete it as
  * appropriate).
  *
  * The table supports two main modes of operation: flat and node-based. In the
@@ -208,9 +228,10 @@ union uninitialized_storage
 #include <boost/unordered/detail/foa/ignore_wshadow.hpp>
 
 template<typename TypePolicy,typename Hash,typename Pred,typename Allocator>
-class table:table_core<TypePolicy,Hash,Pred,Allocator>
+class table:table_core<TypePolicy,group15<plain_integral>,Hash,Pred,Allocator>
 {
-  using super=table_core<TypePolicy,Hash,Pred,Allocator>;
+  using super=
+    table_core<TypePolicy,group15<plain_integral>,Hash,Pred,Allocator>;
   using type_policy=typename super::type_policy;
   using group_type=typename super::group_type;
   using super::N;
@@ -244,8 +265,8 @@ public:
     const_iterator>::type;
 
   table(
-    std::size_t n=0,const Hash& h_=Hash(),const Pred& pred_=Pred(),
-    const Allocator& al_=Allocator()):
+    std::size_t n=default_bucket_count,const Hash& h_=Hash(),
+    const Pred& pred_=Pred(),const Allocator& al_=Allocator()):
     super{n,h_,pred_,al_}
     {}
 
