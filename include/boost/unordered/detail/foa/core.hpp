@@ -348,7 +348,7 @@ struct group15
 
   inline void initialize()
   {
-    vst1q_u8(reinterpret_cast<uint8_t*>(m),vdupq_n_s8(0));
+    vst1q_u8(reinterpret_cast<uint8_t*>(m),vdupq_n_u8(0));
   }
 
   inline void set(std::size_t pos,std::size_t hash)
