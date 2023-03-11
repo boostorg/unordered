@@ -226,7 +226,7 @@ private:
     !std::is_same<key_type,value_type>::value;
 
 public:
-  using typename super::hasher;
+  using hasher=typename super::hasher;
   using typename super::key_equal;
   using typename super::allocator_type;
   using typename super::pointer;
