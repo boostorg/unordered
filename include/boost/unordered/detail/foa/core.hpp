@@ -609,7 +609,7 @@ struct group15
 
 private:
   using word_type=IntegralWrapper<uint64_t>;
-  BOOST_STATIC_ASSERT(sizeof(slot_type)==1);
+  BOOST_STATIC_ASSERT(sizeof(word_type)==8);
 
   static constexpr unsigned char available_=0,
                                  sentinel_=1;
