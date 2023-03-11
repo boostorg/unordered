@@ -211,17 +211,17 @@ template<typename TypePolicy,typename Hash,typename Pred,typename Allocator>
 class table:table_core<TypePolicy,Hash,Pred,Allocator>
 {
   using super=table_core<TypePolicy,Hash,Pred,Allocator>;
-  using typename super::type_policy;
-  using typename super::group_type;
+  using type_policy=typename super::type_policy;
+  using group_type=typename super::group_type;
   using super::N;
-  using typename super::prober;
-  using typename super::locator;
+  using prober=typename super::prober;
+  using locator=typename super::locator;
 
 public:
-  using typename super::key_type;
-  using typename super::init_type;
-  using typename super::value_type;
-  using typename super::element_type;
+  using key_type=typename super::key_type;
+  using init_type=typename super::init_type;
+  using value_type=typename super::value_type;
+  using element_type=typename super::element_type;
 
 private:
   static constexpr bool has_mutable_iterator=
@@ -229,14 +229,14 @@ private:
 
 public:
   using hasher=typename super::hasher;
-  using typename super::key_equal;
-  using typename super::allocator_type;
-  using typename super::pointer;
-  using typename super::const_pointer;
-  using typename super::reference;
-  using typename super::const_reference;
-  using typename super::size_type;
-  using typename super::difference_type;
+  using key_equal=typename super::key_equal;
+  using allocator_type=typename super::allocator_type;
+  using pointer=typename super::pointer;
+  using const_pointer=typename super::const_pointer;
+  using reference=typename super::reference;
+  using const_reference=typename super::const_reference;
+  using size_type=typename super::size_type;
+  using difference_type=typename super::difference_type;
   using const_iterator=table_iterator<type_policy,group_type,true>;
   using iterator=typename std::conditional<
     has_mutable_iterator,
