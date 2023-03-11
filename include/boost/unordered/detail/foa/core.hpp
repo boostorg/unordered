@@ -162,8 +162,8 @@ static constexpr std::size_t default_bucket_count=0;
 template<template<typename> class IntegralWrapper>
 struct group15
 {
-  static constexpr int N=15;
-  static constexpr bool regular_layout=true;
+  static constexpr std::size_t N=15;
+  static constexpr bool        regular_layout=true;
 
   struct dummy_group_type
   {
@@ -338,8 +338,8 @@ private:
 template<template<typename> class IntegralWrapper>
 struct group15
 {
-  static constexpr int N=15;
-  static constexpr bool regular_layout=true;
+  static constexpr std::size_t N=15;
+  static constexpr bool        regular_layout=true;
 
   struct dummy_group_type
   {
@@ -518,8 +518,8 @@ private:
 template<template<typename> class IntegralWrapper>
 struct group15
 {
-  static constexpr int N=15;
-  static constexpr bool regular_layout=false;
+  static constexpr std::size_t N=15;
+  static constexpr bool        regular_layout=false;
 
   struct dummy_group_type
   {
