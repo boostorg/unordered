@@ -42,6 +42,15 @@ struct plain_integral
 #endif
   }
 
+  void operator&=(Integral m)
+  {
+#if BOOST_WORKAROUND(BOOST_GCC,>=50000 && BOOST_GCC<60000)
+    n=static_cast<Integral>(n&m);
+#else
+    n&=m;
+#endif
+  }
+
   Integral n;
 };
 
