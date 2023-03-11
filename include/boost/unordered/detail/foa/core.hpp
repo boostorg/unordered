@@ -991,41 +991,6 @@ _STL_RESTORE_DEPRECATED_WARNING
 #pragma warning(pop)
 #endif
 
-#if defined(BOOST_GCC)
-/* GCC's -Wshadow triggers at scenarios like this: 
- *
- *   struct foo{};
- *   template<typename Base>
- *   struct derived:Base
- *   {
- *     void f(){int foo;}
- *   };
- * 
- *   derived<foo>x;
- *   x.f(); // declaration of "foo" in derived::f shadows base type "foo"
- *
- * This makes shadowing warnings unavoidable in general when a class template
- * derives from user-provided classes, as is the case with table_core and
- * empty_value's below.
- */
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wshadow"
-#endif
-
-#if defined(BOOST_MSVC)
-#pragma warning(push)
-#pragma warning(disable:4714) /* marked as __forceinline not inlined */
-#endif
-
-#if BOOST_WORKAROUND(BOOST_MSVC,<=1900)
-/* VS2015 marks as unreachable generic catch clauses around non-throwing
- * code.
- */
-#pragma warning(push)
-#pragma warning(disable:4702)
-#endif
-
 /* We expose the hard-coded max load factor so that tests can use it without
  * needing to pull it from an instantiated class template such as the table
  * class.
@@ -1083,6 +1048,21 @@ struct try_emplace_args_t{};
  *     allocators are unequal and there is no propagation. For all other cases,
  *     the element_type itself is moved.
  */
+
+#include <boost/unordered/detail/foa/ignore_wshadow.hpp>
+
+#if defined(BOOST_MSVC)
+#pragma warning(push)
+#pragma warning(disable:4714) /* marked as __forceinline not inlined */
+#endif
+
+#if BOOST_WORKAROUND(BOOST_MSVC,<=1900)
+/* VS2015 marks as unreachable generic catch clauses around non-throwing
+ * code.
+ */
+#pragma warning(push)
+#pragma warning(disable:4702)
+#endif
 
 template<typename TypePolicy,typename Hash,typename Pred,typename Allocator>
 class 
@@ -1878,9 +1858,7 @@ private:
 #pragma warning(pop) /* C4714 */
 #endif
 
-#if defined(BOOST_GCC)
-#pragma GCC diagnostic pop /* ignored "-Wshadow" */
-#endif
+#include <boost/unordered/detail/foa/restore_wshadow.hpp>
 
 } /* namespace foa */
 } /* namespace detail */

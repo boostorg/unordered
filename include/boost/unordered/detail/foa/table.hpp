@@ -205,6 +205,8 @@ union uninitialized_storage
  * boost::unordered_[flat|node]_[map|set].
  */
 
+#include <boost/unordered/detail/foa/ignore_wshadow.hpp>
+
 template<typename TypePolicy,typename Hash,typename Pred,typename Allocator>
 class table:table_core<TypePolicy,Hash,Pred,Allocator>
 {
@@ -503,6 +505,8 @@ private:
     }
   }
 };
+
+#include <boost/unordered/detail/foa/restore_wshadow.hpp>
 
 } /* namespace foa */
 } /* namespace detail */
