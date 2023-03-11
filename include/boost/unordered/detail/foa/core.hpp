@@ -425,7 +425,7 @@ struct group15
   inline int match_occupied()const
   {
     return simde_mm_movemask_epi8(vcgtq_u8(
-      vld1q_u8(reinterpret_cast<const uint8_t*>(m))),
+      vld1q_u8(reinterpret_cast<const uint8_t*>(m)),
       vdupq_n_u8(0)))&0x7FFF;
   }
 
