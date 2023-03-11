@@ -419,7 +419,7 @@ struct group15
 
   static inline bool is_occupied(unsigned char* pc)noexcept
   {
-    return *reinterpret_cast<slot_typê*>(pc)!=available_;
+    return *reinterpret_cast<slot_type*>(pc)!=available_;
   }
 
   inline int match_occupied()const
