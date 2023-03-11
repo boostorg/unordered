@@ -386,9 +386,9 @@ struct group15
 
   inline int match(std::size_t hash)const
   {
-    return simde_mm_movemask_epi8(vceqq_s8(
+    return simde_mm_movemask_epi8(vceqq_u8(
       vld1q_u8(reinterpret_cast<const uint8_t*>(m)),
-      vdupq_n_s8(static_cast<signed char>(reduced_hash(hash)))))&0x7FFF;
+      vdupq_n_u8(reduced_hash(hash))))&0x7FFF;
   }
 
   inline bool is_not_overflowed(std::size_t hash)const
@@ -412,9 +412,9 @@ struct group15
 
   inline int match_available()const
   {
-    return simde_mm_movemask_epi8(vceqq_s8(
+    return simde_mm_movemask_epi8(vceqq_u8(
       vld1q_u8(reinterpret_cast<const uint8_t*>(m)),
-      vdupq_n_s8(0)))&0x7FFF;
+      vdupq_n_u8(0)))&0x7FFF;
   }
 
   static inline bool is_occupied(unsigned char* pc)noexcept
@@ -425,7 +425,7 @@ struct group15
   inline int match_occupied()const
   {
     return simde_mm_movemask_epi8(vcgtq_u8(
-      vreinterpretq_u8_s8(vld1q_u8(reinterpret_cast<const uint8_t*>(m))),
+      vld1q_u8(reinterpret_cast<const uint8_t*>(m))),
       vdupq_n_u8(0)))&0x7FFF;
   }
 
