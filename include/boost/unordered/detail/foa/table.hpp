@@ -216,13 +216,16 @@ private:
  * boost::unordered_[flat|node]_[map|set].
  */
 
+template <typename TypePolicy,typename Hash,typename Pred,typename Allocator>
+using table_core_impl=
+  table_core<TypePolicy,group15<plain_integral>,std::size_t,Hash,Pred,Allocator>;
+
 #include <boost/unordered/detail/foa/ignore_wshadow.hpp>
 
 template<typename TypePolicy,typename Hash,typename Pred,typename Allocator>
-class table:table_core<TypePolicy,group15<plain_integral>,Hash,Pred,Allocator>
+class table:table_core_impl<TypePolicy,Hash,Pred,Allocator>
 {
-  using super=
-    table_core<TypePolicy,group15<plain_integral>,Hash,Pred,Allocator>;
+  using super=table_core_impl<TypePolicy,Hash,Pred,Allocator>;
   using type_policy=typename super::type_policy;
   using group_type=typename super::group_type;
   using super::N;
@@ -500,7 +503,7 @@ private:
     if(it!=end()){
       return {it,false};
     }
-    if(BOOST_LIKELY(this->available)){
+    if(BOOST_LIKELY(this->available!=0)){
       return {
         make_iterator(
           this->unchecked_emplace_at(pos0,hash,std::forward<Args>(args)...)),

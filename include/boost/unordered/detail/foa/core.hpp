@@ -1115,8 +1115,8 @@ union uninitialized_storage
 #endif
 
 template<
-  typename TypePolicy,typename Group,typename Hash,typename Pred,
-  typename Allocator
+  typename TypePolicy,typename Group,typename SizeImpl,
+  typename Hash,typename Pred,typename Allocator
 >
 class 
 
@@ -1160,7 +1160,7 @@ public:
     const Pred& pred_=Pred(),const Allocator& al_=Allocator()):
     hash_base{empty_init,h_},pred_base{empty_init,pred_},
     allocator_base{empty_init,al_},arrays(new_arrays(n)),
-    ml{initial_max_load()},available{ml}
+    ml{initial_max_load()},available{std::size_t(ml)}
     {}
 
   table_core(const table_core& x):
@@ -1174,11 +1174,11 @@ public:
     hash_base{empty_init,std::move(x.h())},
     pred_base{empty_init,std::move(x.pred())},
     allocator_base{empty_init,std::move(x.al())},
-    arrays(x.arrays),ml{x.ml},available{x.available}
+    arrays(x.arrays),ml{std::size_t(x.ml)},available{std::size_t(x.available)}
   {
     x.arrays=x.new_arrays(0);
     x.ml=x.initial_max_load();
-    x.available=x.ml;
+    x.available=std::size_t(x.ml);
   }
 
   table_core(const table_core& x,const Allocator& al_):
@@ -1379,7 +1379,7 @@ public:
       }
       arrays.groups[arrays.groups_size_mask].set_sentinel();
       ml=initial_max_load();
-      available=ml;
+      available=std::size_t(ml);
     }
   }
 
@@ -1625,11 +1625,11 @@ public:
   }
 
   arrays_type arrays;
-  std::size_t ml;
-  std::size_t available;
+  SizeImpl    ml;
+  SizeImpl    available;
 
 private:
-  template<typename,typename,typename,typename,typename>
+  template<typename,typename,typename,typename,typename,typename>
   friend class table_core;
 
   using hash_base=empty_value<Hash,0>;
@@ -1689,7 +1689,7 @@ private:
       std::memcpy(
         arrays.groups,x.arrays.groups,
         (arrays.groups_size_mask+1)*sizeof(group_type));
-      available=x.available;
+      available=std::size_t(x.available);
     }
   }
 
@@ -1752,9 +1752,10 @@ private:
      * that average probe length won't increase unboundedly in repeated
      * insert/erase cycles (drift).
      */
-    ml-=group_type::maybe_caused_overflow(pc);
+    auto ov=group_type::maybe_caused_overflow(pc);
+    ml-=ov;
     group_type::reset(pc);
-    ++available;
+    available+=!ov;
   }
 
   void recover_slot(group_type* pg,std::size_t pos)
@@ -1820,7 +1821,9 @@ private:
     }
     delete_arrays(arrays);
     arrays=new_arrays_;
+    auto s=size();
     ml=initial_max_load();
+    available=ml-s;
   }
 
   void noshrink_reserve(std::size_t n)
@@ -1836,7 +1839,9 @@ private:
         auto new_arrays_=new_arrays(n);
         delete_arrays(arrays);
         arrays=new_arrays_;
+        auto s=size();
         ml=initial_max_load();
+        available=ml-s;
       }
     }
   }
