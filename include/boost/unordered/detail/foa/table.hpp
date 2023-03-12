@@ -33,23 +33,13 @@ struct plain_integral
   operator Integral()const{return n;}
   void operator=(Integral m){n=m;}
 
-  void operator|=(Integral m)
-  {
 #if BOOST_WORKAROUND(BOOST_GCC,>=50000 && BOOST_GCC<60000)
-    n=static_cast<Integral>(n|m);
+  void operator|=(Integral m){n=static_cast<Integral>(n|m);}
+  void operator&=(Integral m){n=static_cast<Integral>(n&m);}
 #else
-    n|=m;
+  void operator|=(Integral m){n|=m;}
+  void operator&=(Integral m){n&=m;}
 #endif
-  }
-
-  void operator&=(Integral m)
-  {
-#if BOOST_WORKAROUND(BOOST_GCC,>=50000 && BOOST_GCC<60000)
-    n=static_cast<Integral>(n&m);
-#else
-    n&=m;
-#endif
-  }
 
   Integral n;
 };
