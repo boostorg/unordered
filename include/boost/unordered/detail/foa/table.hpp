@@ -190,14 +190,6 @@ private:
   table_element_type *p=nullptr;
 };
 
-template <class T>
-union uninitialized_storage
-{
-  T t_;
-  uninitialized_storage(){}
-  ~uninitialized_storage(){}
-};
-
 /* foa::table interface departs in a number of ways from that of C++ unordered
  * associative containers because it's not for end-user consumption
  * (boost::unordered_[flat|node]_[map|set] wrappers complete it as
@@ -508,7 +500,7 @@ private:
     if(it!=end()){
       return {it,false};
     }
-    if(BOOST_LIKELY(this->size_<this->ml)){
+    if(BOOST_LIKELY(this->available)){
       return {
         make_iterator(
           this->unchecked_emplace_at(pos0,hash,std::forward<Args>(args)...)),

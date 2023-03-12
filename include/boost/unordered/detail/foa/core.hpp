@@ -152,6 +152,8 @@ static constexpr std::size_t default_bucket_count=0;
  * "logical" 128-bit word, and so forth. With this layout, match can be
  * implemented with 4 ANDs, 3 shifts, 2 XORs, 1 OR and 1 NOT.
  * 
+ * TODO: Explain IntegralWrapper.
+ * 
  * group15 has no user-defined ctor so that it's a trivial type and can be
  * initialized via memset etc. Where needed, group15::initialize sets the
  * metadata to all zeros.
@@ -240,6 +242,12 @@ struct group15
     auto w=_mm_load_si128(reinterpret_cast<const __m128i*>(m));
     return _mm_movemask_epi8(
       _mm_cmpeq_epi8(w,_mm_setzero_si128()))&0x7FFF;
+  }
+
+  inline bool is_occupied(std::size_t pos)const
+  {
+    BOOST_ASSERT(pos<N);
+    return at(pos)!=available_;
   }
 
   static inline bool is_occupied(unsigned char* pc)noexcept
@@ -417,6 +425,12 @@ struct group15
       vdupq_n_u8(0)))&0x7FFF;
   }
 
+  inline bool is_occupied(std::size_t pos)const
+  {
+    BOOST_ASSERT(pos<N);
+    return at(pos)!=available_;
+  }
+
   static inline bool is_occupied(unsigned char* pc)noexcept
   {
     return *reinterpret_cast<slot_type*>(pc)!=available_;
@@ -592,6 +606,13 @@ struct group15
     boost::uint32_t y=static_cast<boost::uint32_t>(x&(x>>32));
     y&=y>>16;
     return y&0x7FFF;
+  }
+
+  inline bool is_occupied(std::size_t pos)const
+  {
+    BOOST_ASSERT(pos<N);
+    boost::uint64_t x=m[0]|m[1];
+    return (x&(0x0001000100010001ull<<pos))!=0;
   }
 
   inline int match_occupied()const
@@ -1028,6 +1049,14 @@ struct table_locator
 
 struct try_emplace_args_t{};
 
+template <class T>
+union uninitialized_storage
+{
+  T t_;
+  uninitialized_storage(){}
+  ~uninitialized_storage(){}
+};
+
 /* table_core. The TypePolicy template parameter is used to generate
  * instantiations suitable for either maps or sets, and introduces non-standard
  * init_type and element_type:
@@ -1130,8 +1159,8 @@ public:
     std::size_t n=default_bucket_count,const Hash& h_=Hash(),
     const Pred& pred_=Pred(),const Allocator& al_=Allocator()):
     hash_base{empty_init,h_},pred_base{empty_init,pred_},
-    allocator_base{empty_init,al_},size_{0},arrays(new_arrays(n)),
-    ml{initial_max_load()}
+    allocator_base{empty_init,al_},arrays(new_arrays(n)),
+    ml{initial_max_load()},available{ml}
     {}
 
   table_core(const table_core& x):
@@ -1145,11 +1174,11 @@ public:
     hash_base{empty_init,std::move(x.h())},
     pred_base{empty_init,std::move(x.pred())},
     allocator_base{empty_init,std::move(x.al())},
-    size_{x.size_},arrays(x.arrays),ml{x.ml}
+    arrays(x.arrays),ml{x.ml},available{x.available}
   {
-    x.size_=0;
     x.arrays=x.new_arrays(0);
     x.ml=x.initial_max_load();
+    x.available=x.ml;
   }
 
   table_core(const table_core& x,const Allocator& al_):
@@ -1162,9 +1191,9 @@ public:
     table_core{0,std::move(x.h()),std::move(x.pred()),al_}
   {
     if(al()==x.al()){
-      std::swap(size_,x.size_);
       std::swap(arrays,x.arrays);
       std::swap(ml,x.ml);
+      std::swap(available,x.available);
     }
     else{
       reserve(x.size());
@@ -1261,9 +1290,9 @@ public:
       if(pocma||al()==x.al()){
         reserve(0);
         move_assign_if<pocma>(al(),x.al());
-        swap(size_,x.size_);
         swap(arrays,x.arrays);
         swap(ml,x.ml);
+        swap(available,x.available);
       }
       else{
         /* noshrink: favor memory reuse over tightness */
@@ -1289,7 +1318,7 @@ public:
   allocator_type get_allocator()const noexcept{return al();}
 
   bool        empty()const noexcept{return size()==0;}
-  std::size_t size()const noexcept{return size_;}
+  std::size_t size()const noexcept{return ml-available;}
   std::size_t max_size()const noexcept{return SIZE_MAX;}
 
   // TODO unify erase?
@@ -1329,9 +1358,9 @@ public:
 
     swap(h(),x.h());
     swap(pred(),x.pred());
-    swap(size_,x.size_);
     swap(arrays,x.arrays);
     swap(ml,x.ml);
+    swap(available,x.available);
   }
 
   void clear()noexcept
@@ -1349,8 +1378,8 @@ public:
         pg->initialize();
       }
       arrays.groups[arrays.groups_size_mask].set_sentinel();
-      size_=0;
       ml=initial_max_load();
+      available=ml;
     }
   }
 
@@ -1493,7 +1522,7 @@ public:
   {
     auto res=nosize_unchecked_emplace_at(
       arrays,pos0,hash,std::forward<Args>(args)...);
-    ++size_;
+    --available;
     return res;
   }
 
@@ -1512,7 +1541,7 @@ public:
      * ideal conditions, yielding F ~ 0.0165 ~ 1/61.
      */
     auto    new_arrays_=new_arrays(std::size_t(
-              std::ceil(static_cast<float>(size_+size_/61+1)/mlf)));
+              std::ceil(static_cast<float>(size()+size()/61+1)/mlf)));
     locator it;
     BOOST_TRY{
       /* strong exception guarantee -> try insertion before rehash */
@@ -1528,7 +1557,7 @@ public:
 
     /* new_arrays_ lifetime taken care of by unchecked_rehash */
     unchecked_rehash(new_arrays_);
-    ++size_;
+    --available;
     return it;
   }
 
@@ -1595,9 +1624,9 @@ public:
     }
   }
 
-  std::size_t size_;
   arrays_type arrays;
   std::size_t ml;
+  std::size_t available;
 
 private:
   template<typename,typename,typename,typename,typename>
@@ -1660,7 +1689,7 @@ private:
       std::memcpy(
         arrays.groups,x.arrays.groups,
         (arrays.groups_size_mask+1)*sizeof(group_type));
-      size_=x.size();
+      available=x.available;
     }
   }
 
@@ -1725,7 +1754,7 @@ private:
      */
     ml-=group_type::maybe_caused_overflow(pc);
     group_type::reset(pc);
-    --size_;
+    ++available;
   }
 
   void recover_slot(group_type* pg,std::size_t pos)
