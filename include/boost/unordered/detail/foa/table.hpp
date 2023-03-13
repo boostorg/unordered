@@ -297,25 +297,9 @@ public:
   template<typename... Args>
   BOOST_FORCEINLINE std::pair<iterator,bool> emplace(Args&&... args)
   {
-    using emplace_type=typename std::conditional<
-      std::is_constructible<init_type,Args...>::value,
-      init_type,
-      value_type
-    >::type;
-
-    using insert_type=typename std::conditional<
-      std::is_constructible<
-        value_type,emplace_type>::value,
-      emplace_type,element_type
-    >::type;
-
-    uninitialized_storage<insert_type> s;
-    auto                              *p=std::addressof(s.t_);
-
-    type_policy::construct(this->al(),p,std::forward<Args>(args)...);
-
-    typename super::template destroy_on_exit<insert_type> guard{this->al(),p};
-    return emplace_impl(type_policy::move(*p));
+    auto x=alloc_make_insert_type<type_policy>(
+      this->al(),std::forward<Args>(args)...);
+    return emplace_impl(type_policy::move(x.value()));
   }
 
   template<typename Key,typename... Args>

@@ -1049,13 +1049,44 @@ struct table_locator
 
 struct try_emplace_args_t{};
 
-template <class T>
-union uninitialized_storage
+template<typename TypePolicy,typename Allocator,typename... Args>
+class alloc_cted_insert_type
 {
-  T t_;
-  uninitialized_storage(){}
-  ~uninitialized_storage(){}
+  using emplace_type=typename std::conditional<
+    std::is_constructible<typename TypePolicy::init_type,Args...>::value,
+    typename TypePolicy::init_type,
+    typename TypePolicy::value_type
+  >::type;
+
+  using insert_type=typename std::conditional<
+    std::is_constructible<typename TypePolicy::value_type,emplace_type>::value,
+    emplace_type,typename TypePolicy::element_type
+  >::type;
+
+  Allocator                          al;
+  alignas(insert_type) unsigned char storage[sizeof(insert_type)];
+
+public:
+  alloc_cted_insert_type(const Allocator& al_,Args&&... args):al{al_}
+  {
+    TypePolicy::construct(al,data(),std::forward<Args>(args)...);
+  }
+
+  ~alloc_cted_insert_type()
+  {
+    TypePolicy::destroy(al,data());
+  }
+
+  insert_type* data(){return reinterpret_cast<insert_type*>(&storage);}
+  insert_type& value(){return *data();}
 };
+
+template<typename TypePolicy,typename Allocator,typename... Args>
+alloc_cted_insert_type<TypePolicy,Allocator,Args...>
+alloc_make_insert_type(const Allocator& al,Args&&... args)
+{
+  return {al,std::forward<Args>(args)...};
+}
 
 /* table_core. The TypePolicy template parameter is used to generate
  * instantiations suitable for either maps or sets, and introduces non-standard
@@ -1421,14 +1452,6 @@ public:
     table_core& x;
   };
 
-  template <class T>
-  struct destroy_on_exit
-  {
-    Allocator &a;
-    T         *p;
-    ~destroy_on_exit(){type_policy::destroy(a,p);};
-  };
-
   Hash&            h(){return hash_base::get();}
   const Hash&      h()const{return hash_base::get();}
   Pred&            pred(){return pred_base::get();}
@@ -1752,10 +1775,10 @@ private:
      * that average probe length won't increase unboundedly in repeated
      * insert/erase cycles (drift).
      */
-    auto ov=group_type::maybe_caused_overflow(pc);
-    ml-=ov;
+    bool ofw=group_type::maybe_caused_overflow(pc);
     group_type::reset(pc);
-    available+=!ov;
+    ml-=ofw;
+    available+=!ofw;
   }
 
   void recover_slot(group_type* pg,std::size_t pos)
