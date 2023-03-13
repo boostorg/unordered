@@ -1063,8 +1063,8 @@ class alloc_cted_insert_type
     emplace_type,typename TypePolicy::element_type
   >::type;
 
-  Allocator                          al;
   alignas(insert_type) unsigned char storage[sizeof(insert_type)];
+  Allocator                          al;
 
 public:
   alloc_cted_insert_type(const Allocator& al_,Args&&... args):al{al_}
