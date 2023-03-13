@@ -222,6 +222,11 @@ using table_core_impl=
 
 #include <boost/unordered/detail/foa/ignore_wshadow.hpp>
 
+#if defined(BOOST_MSVC)
+#pragma warning(push)
+#pragma warning(disable:4714) /* marked as __forceinline not inlined */
+#endif
+
 template<typename TypePolicy,typename Hash,typename Pred,typename Allocator>
 class table:table_core_impl<TypePolicy,Hash,Pred,Allocator>
 {
@@ -504,6 +509,10 @@ private:
     }
   }
 };
+
+#if defined(BOOST_MSVC)
+#pragma warning(pop) /* C4714 */
+#endif
 
 #include <boost/unordered/detail/foa/restore_wshadow.hpp>
 
