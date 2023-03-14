@@ -564,7 +564,7 @@ private:
     reserve_available(concurrent_table& x_):x{x_}
     {
       do{
-        available=x.available.load(std::memory_order_acquire);
+        available=x.available.load(std::memory_order_relaxed);
       }while(
         available&&!x.available.compare_exchange_weak(available,available-1));
     }
@@ -597,12 +597,8 @@ private:
       boost::uint32_t counter=insert_counter(pos0);
       if(unprotected_visit(k,pos0,hash,f))return 0;
 
-#if 1
       reserve_available ra(*this);
       if(BOOST_LIKELY(ra.succeeded())){
-#else
-      if(BOOST_LIKELY(this->available!=0)){
-#endif
         for(prober pb(pos0);;pb.next(this->arrays.groups_size_mask)){
           auto pos=pb.get();
           auto pg=this->arrays.groups+pos;
@@ -620,11 +616,7 @@ private:
                 }
                 auto p=this->arrays.elements+pos*N+n;
                 this->construct_element(p,std::forward<Args>(args)...);
-#if 1
                 ra.commit();
-#else
-                --(this->available);
-#endif
                 f(type_policy::value_from(*p)); 
                 return 1;
               }
