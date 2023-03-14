@@ -580,6 +580,26 @@ private:
     bool              commit_=false;
   };
 
+  struct reserve_slot
+  {
+    reserve_slot(group_type* pg_,std::size_t pos_,std::size_t hash):
+      pg{pg_},pos{pos_}
+    {
+      pg->set(pos,hash);
+    }
+
+    ~reserve_slot()
+    {
+      if(!commit_)pg->reset(pos);
+    }
+
+    void commit(){commit_=true;}
+
+    group_type  *pg;
+    std::size_t pos;
+    bool        commit_=false;
+  };
+
   template<typename F,typename... Args>
   BOOST_FORCEINLINE int
   unprotected_norehash_emplace_or_visit(F&& f,Args&&... args)
@@ -593,8 +613,9 @@ private:
       boost::uint32_t counter=insert_counter(pos0);
       if(unprotected_visit(k,pos0,hash,std::forward<F>(f)))return 0;
 
-      reserve_size rs(*this);
-      if(BOOST_LIKELY(rs.succeeded())){
+#if 1
+      reserve_size rsize(*this);
+      if(BOOST_LIKELY(rsize.succeeded())){
         for(prober pb(pos0);;pb.next(this->arrays.groups_size_mask)){
           auto pos=pb.get();
           auto pg=this->arrays.groups+pos;
@@ -604,15 +625,15 @@ private:
             do{
               auto n=unchecked_countr_zero(mask);
               if(BOOST_LIKELY(!pg->is_occupied(n))){
-                pg->set(n,hash);
+                reserve_slot rslot{pg,n,hash};
                 if(BOOST_UNLIKELY(insert_counter(pos0)++!=counter)){
                   /* other thread inserted from pos0, need to start over */
-                  pg->reset(n);
                   goto startover;
                 }
                 auto p=this->arrays.elements+pos*N+n;
                 this->construct_element(p,std::forward<Args>(args)...);
-                rs.commit();
+                rslot.commit();
+                rsize.commit();
                 f(type_policy::value_from(*p)); 
                 return 1;
               }
@@ -623,6 +644,46 @@ private:
         }
       }
       else return -1;
+#else
+      if(BOOST_LIKELY(++(this->size_)<=this->ml)){
+        BOOST_TRY{
+          for(prober pb(pos0);;pb.next(this->arrays.groups_size_mask)){
+            auto pos=pb.get();
+            auto pg=this->arrays.groups+pos;
+            auto mask=pg->match_available();
+            if(BOOST_LIKELY(mask!=0)){
+              auto lck=exclusive_access(pos);
+              do{
+                auto n=unchecked_countr_zero(mask);
+                if(BOOST_LIKELY(!pg->is_occupied(n))){
+                  pg->set(n,hash);
+                  if(BOOST_UNLIKELY(insert_counter(pos0)++!=counter)){
+                    /* other thread inserted from pos0, need to start over */
+                    pg->reset(n);
+                    --(this->size_);
+                    goto startover;
+                  }
+                  auto p=this->arrays.elements+pos*N+n;
+                  this->construct_element(p,std::forward<Args>(args)...);
+                  return 1;
+                }
+                mask&=mask-1;
+              }while(mask);
+            }
+            pg->mark_overflow(hash);
+          }
+        }
+        BOOST_CATCH(...){
+          --(this->size_);
+          BOOST_RETHROW
+        }
+        BOOST_CATCH_END
+      }
+      else{
+        --(this->size_);
+        return -1;
+      }
+#endif
     }
   }
 
