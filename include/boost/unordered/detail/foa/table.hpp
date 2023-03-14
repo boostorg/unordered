@@ -492,7 +492,7 @@ private:
     if(it!=end()){
       return {it,false};
     }
-    if(BOOST_LIKELY(this->available!=0)){
+    if(BOOST_LIKELY(this->size_<this->ml)){
       return {
         make_iterator(
           this->unchecked_emplace_at(pos0,hash,std::forward<Args>(args)...)),

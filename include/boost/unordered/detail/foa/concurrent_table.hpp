@@ -255,9 +255,9 @@ public:
   std::size_t size()const noexcept
   {
     auto lck=shared_access();
-    std::size_t ml_=this->ml; /* load order matters */
-    std::size_t available_=this->available;
-    return ml_-available_;
+    std::size_t ml_=this->ml;
+    std::size_t size_=this->size_;
+    return size_<=ml_?size_:ml_;
   }
 
   using super::max_size; 
@@ -522,7 +522,7 @@ private:
       this->al(),std::forward<Args>(args)...);
     int res=unprotected_norehash_emplace_or_visit(
       std::forward<F>(f),type_policy::move(x.value()));
-    if(res>=0)return res!=0;
+    if(BOOST_LIKELY(res>=0))return res!=0;
 
     lck.unlock();
 
@@ -553,34 +553,30 @@ private:
         auto lck=shared_access();
         int res=unprotected_norehash_emplace_or_visit(
           std::forward<F>(f),std::forward<Args>(args)...);
-        if(res>=0)return res!=0;
+        if(BOOST_LIKELY(res>=0))return res!=0;
       }
       rehash_if_full();
     }
   }
 
-  struct reserve_available
+  struct reserve_size
   {
-    reserve_available(concurrent_table& x_):x{x_}
+    reserve_size(concurrent_table& x_):x{x_}
     {
-      do{
-        available=x.available.load(std::memory_order_relaxed);
-      }while(
-        available&&!x.available.compare_exchange_weak(available,available-1));
+      size_=++x.size_;
     }
 
-    ~reserve_available()
+    ~reserve_size()
     {
-      if(!commit_&&available){
-        x.available.fetch_add(1,std::memory_order_release);
-      }
+      if(!commit_)--x.size_;
     }
 
-    bool succeeded()const{return available!=0;}
+    bool succeeded()const{return size_<=x.ml;}
+
     void commit(){commit_=true;}
 
     concurrent_table &x;
-    std::size_t       available;
+    std::size_t       size_;
     bool              commit_=false;
   };
 
@@ -595,10 +591,10 @@ private:
     for(;;){
     startover:
       boost::uint32_t counter=insert_counter(pos0);
-      if(unprotected_visit(k,pos0,hash,f))return 0;
+      if(unprotected_visit(k,pos0,hash,std::forward<F>(f)))return 0;
 
-      reserve_available ra(*this);
-      if(BOOST_LIKELY(ra.succeeded())){
+      reserve_size rs(*this);
+      if(BOOST_LIKELY(rs.succeeded())){
         for(prober pb(pos0);;pb.next(this->arrays.groups_size_mask)){
           auto pos=pb.get();
           auto pg=this->arrays.groups+pos;
@@ -616,7 +612,7 @@ private:
                 }
                 auto p=this->arrays.elements+pos*N+n;
                 this->construct_element(p,std::forward<Args>(args)...);
-                ra.commit();
+                rs.commit();
                 f(type_policy::value_from(*p)); 
                 return 1;
               }
@@ -634,7 +630,7 @@ private:
   {
     auto lck=exclusive_access();
     // TODO: use same mechanism as unchecked_emplace_with_rehash
-    if(!this->available)this->super::rehash(super::capacity()+1);
+    if(this->size_==this->ml)this->super::rehash(super::capacity()+1);
   }
 
   shared_lock_guard shared_access()const
