@@ -634,7 +634,6 @@ private:
                 this->construct_element(p,std::forward<Args>(args)...);
                 rslot.commit();
                 rsize.commit();
-                f(type_policy::value_from(*p)); 
                 return 1;
               }
               mask&=mask-1;
