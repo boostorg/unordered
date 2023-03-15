@@ -295,8 +295,7 @@ public:
   BOOST_FORCEINLINE bool try_emplace_or_visit(Key&& x,F f,Args&&... args)
   {
     return emplace_or_visit_impl(
-      std::forward<F>(f),
-      try_emplace_args_t{},std::forward<Key>(x),std::forward<Args>(args)...);
+      f,try_emplace_args_t{},std::forward<Key>(x),std::forward<Args>(args)...);
   }
 
   template<typename Key>
@@ -308,27 +307,26 @@ public:
   template<typename F,typename... Args>
   BOOST_FORCEINLINE bool emplace_or_visit(F f,Args&&... args)
   {
-    return construct_and_emplace_or_visit(
-      std::forward<F>(f),std::forward<Args>(args)...);
+    return construct_and_emplace_or_visit(f,std::forward<Args>(args)...);
   }
 
   template<typename F>
   BOOST_FORCEINLINE bool insert_or_visit(const init_type& x,F f)
-    {return emplace_or_visit_impl(std::forward<F>(f),x);}
+    {return emplace_or_visit_impl(f,x);}
 
   template<typename F>
   BOOST_FORCEINLINE bool insert_or_visit(init_type&& x,F f)
-    {return emplace_or_visit_impl(std::forward<F>(f),std::move(x));}
+    {return emplace_or_visit_impl(f,std::move(x));}
 
   /* typename=void tilts call ambiguities in favor of init_type */
 
   template<typename F,typename=void>
   BOOST_FORCEINLINE bool insert_or_visit(const value_type& x,F f)
-    {return emplace_or_visit_impl(std::forward<F>(f),x);}
+    {return emplace_or_visit_impl(f,x);}
 
   template<typename F,typename=void>
   BOOST_FORCEINLINE bool insert_or_visit(value_type&& x,F f)
-    {return emplace_or_visit_impl(std::forward<F>(f),std::move(x));}
+    {return emplace_or_visit_impl(f,std::move(x));}
 
   template<typename Key,typename F>
   BOOST_FORCEINLINE std::size_t erase_if(Key&& x,F f)
@@ -462,7 +460,7 @@ private:
   {
     return unprotected_internal_visit(
       x,pos0,hash,
-      [&,this](group_type*,unsigned int,element_type* p)
+      [&](group_type*,unsigned int,element_type* p)
         {f(type_policy::value_from(*p));});
   }
 
