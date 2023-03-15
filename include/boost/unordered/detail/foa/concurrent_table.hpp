@@ -127,8 +127,8 @@ struct atomic_integral
 {
   operator Integral()const{return n.load(std::memory_order_acquire);}
   void operator=(Integral m){n.store(m,std::memory_order_release);}
-  void operator|=(Integral m){n.fetch_or(m,std::memory_order_acq_rel);}
-  void operator&=(Integral m){n.fetch_and(m,std::memory_order_acq_rel);}
+  void operator|=(Integral m){n.fetch_or(m,std::memory_order_release);}
+  void operator&=(Integral m){n.fetch_and(m,std::memory_order_release);}
 
   std::atomic<Integral> n;
 };
@@ -295,7 +295,8 @@ public:
   BOOST_FORCEINLINE bool try_emplace_or_visit(Key&& x,F f,Args&&... args)
   {
     return emplace_or_visit_impl(
-      f,try_emplace_args_t{},std::forward<Key>(x),std::forward<Args>(args)...);
+      std::forward<F>(f),
+      try_emplace_args_t{},std::forward<Key>(x),std::forward<Args>(args)...);
   }
 
   template<typename Key>
@@ -313,21 +314,21 @@ public:
 
   template<typename F>
   BOOST_FORCEINLINE bool insert_or_visit(const init_type& x,F f)
-    {return emplace_or_visit_impl(x,std::forward<F>(f));}
+    {return emplace_or_visit_impl(std::forward<F>(f),x);}
 
   template<typename F>
   BOOST_FORCEINLINE bool insert_or_visit(init_type&& x,F f)
-    {return emplace_or_visit_impl(std::move(x),std::forward<F>(f));}
+    {return emplace_or_visit_impl(std::forward<F>(f),std::move(x));}
 
   /* typename=void tilts call ambiguities in favor of init_type */
 
   template<typename F,typename=void>
   BOOST_FORCEINLINE bool insert_or_visit(const value_type& x,F f)
-    {return emplace_or_visit_impl(x,std::forward<F>(f));}
+    {return emplace_or_visit_impl(std::forward<F>(f),x);}
 
   template<typename F,typename=void>
   BOOST_FORCEINLINE bool insert_or_visit(value_type&& x,F f)
-    {return emplace_or_visit_impl(std::move(x),std::forward<F>(f));}
+    {return emplace_or_visit_impl(std::forward<F>(f),std::move(x));}
 
   template<typename Key,typename F>
   BOOST_FORCEINLINE std::size_t erase_if(Key&& x,F f)
@@ -690,7 +691,8 @@ private:
   {
     auto lck=exclusive_access();
     // TODO: use same mechanism as unchecked_emplace_with_rehash
-    if(this->size_==this->ml)this->super::rehash(super::capacity()+1);
+    //if(this->size_>=this->ml/2)super::rehash(super::capacity()+1);
+    super::rehash(super::capacity()+1);
   }
 
   shared_lock_guard shared_access()const
