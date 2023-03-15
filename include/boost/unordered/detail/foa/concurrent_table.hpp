@@ -51,8 +51,8 @@ public:
     return mutexes[pos];
   }
 
-  void lock()noexcept{for(auto&m:mutexes)m.lock();}
-  void unlock()noexcept{for(auto&m:mutexes)m.unlock();}
+  void lock()noexcept{for(auto& m:mutexes)m.lock();}
+  void unlock()noexcept{for(auto n=N;n--;)mutexes[n].unlock();}
 
 private:
   mutable std::array<Mutex,N> mutexes;
