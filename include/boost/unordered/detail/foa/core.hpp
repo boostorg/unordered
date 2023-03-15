@@ -1209,7 +1209,7 @@ public:
   {
     x.arrays=x.new_arrays(0);
     x.ml=x.initial_max_load();
-    x.size_=std::size_t(x.size_);
+    x.size_=0;
   }
 
   table_core(const table_core& x,const Allocator& al_):
