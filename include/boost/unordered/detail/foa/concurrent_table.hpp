@@ -51,8 +51,8 @@ public:
     return mutexes[pos];
   }
 
-  void lock()noexcept{for(auto& m:mutexes)m.lock();}
-  void unlock()noexcept{for(auto n=N;n--;)mutexes[n].unlock();}
+  void lock()noexcept{for(std::size_t n=0;n<N;)mutexes[n++].lock();}
+  void unlock()noexcept{for(auto n=N;n>0;)mutexes[--n].unlock();}
 
 private:
   mutable std::array<Mutex,N> mutexes;
@@ -614,7 +614,6 @@ private:
       boost::uint32_t counter=insert_counter(pos0);
       if(unprotected_visit(k,pos0,hash,std::forward<F>(f)))return 0;
 
-#if 1
       reserve_size rsize(*this);
       if(BOOST_LIKELY(rsize.succeeded())){
         for(prober pb(pos0);;pb.next(this->arrays.groups_size_mask)){
@@ -644,55 +643,14 @@ private:
         }
       }
       else return -1;
-#else
-      if(BOOST_LIKELY(++(this->size_)<=this->ml)){
-        BOOST_TRY{
-          for(prober pb(pos0);;pb.next(this->arrays.groups_size_mask)){
-            auto pos=pb.get();
-            auto pg=this->arrays.groups+pos;
-            auto mask=pg->match_available();
-            if(BOOST_LIKELY(mask!=0)){
-              auto lck=exclusive_access(pos);
-              do{
-                auto n=unchecked_countr_zero(mask);
-                if(BOOST_LIKELY(!pg->is_occupied(n))){
-                  pg->set(n,hash);
-                  if(BOOST_UNLIKELY(insert_counter(pos0)++!=counter)){
-                    /* other thread inserted from pos0, need to start over */
-                    pg->reset(n);
-                    --(this->size_);
-                    goto startover;
-                  }
-                  auto p=this->arrays.elements+pos*N+n;
-                  this->construct_element(p,std::forward<Args>(args)...);
-                  return 1;
-                }
-                mask&=mask-1;
-              }while(mask);
-            }
-            pg->mark_overflow(hash);
-          }
-        }
-        BOOST_CATCH(...){
-          --(this->size_);
-          BOOST_RETHROW
-        }
-        BOOST_CATCH_END
-      }
-      else{
-        --(this->size_);
-        return -1;
-      }
-#endif
     }
   }
 
-  BOOST_NOINLINE void rehash_if_full()
+  void rehash_if_full()
   {
     auto lck=exclusive_access();
     // TODO: use same mechanism as unchecked_emplace_with_rehash
-    //if(this->size_>=this->ml/2)super::rehash(super::capacity()+1);
-    super::rehash(super::capacity()+1);
+    if(this->size_==this->ml)super::rehash(super::capacity()+1);
   }
 
   shared_lock_guard shared_access()const
