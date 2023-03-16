@@ -1634,6 +1634,7 @@ public:
   static auto for_all_elements_while(const arrays_type& arrays_,F f)
     ->decltype(f(nullptr,0,nullptr),void())
   {
+#if 0
     auto p=arrays_.elements;
     if(!p){return;}
     for(auto pg=arrays_.groups,last=pg+arrays_.groups_size_mask+1;
@@ -1645,6 +1646,26 @@ public:
         mask&=mask-1;
       }
     }
+#else
+    auto p=arrays_.elements;
+    if(!p){return;}
+    auto pg=arrays_.groups;
+    for(auto last=pg+arrays_.groups_size_mask;
+        pg!=last;++pg,p+=N){
+      auto mask=pg->match_occupied();
+      while(mask){
+        auto n=unchecked_countr_zero(mask);
+        if(!f(pg,n,p+n))return;
+        mask&=mask-1;
+      }
+    }
+    auto mask=pg->match_really_occupied();
+    while(mask){
+      auto n=unchecked_countr_zero(mask);
+      if(!f(pg,n,p+n))return;
+      mask&=mask-1;
+    }
+#endif
   }
 
   arrays_type arrays;
