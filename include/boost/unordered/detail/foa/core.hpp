@@ -1634,12 +1634,12 @@ public:
   static auto for_all_elements_while(const arrays_type& arrays_,F f)
     ->decltype(f(nullptr,0,nullptr),void())
   {
-#if 0
+#if 1
     auto p=arrays_.elements;
     if(!p){return;}
     for(auto pg=arrays_.groups,last=pg+arrays_.groups_size_mask+1;
         pg!=last;++pg,p+=N){
-      auto mask=pg->match_really_occupied();
+      auto mask=pg->match_occupied()&~(int(pg==last-1)<<(N-1));
       while(mask){
         auto n=unchecked_countr_zero(mask);
         if(!f(pg,n,p+n))return;
