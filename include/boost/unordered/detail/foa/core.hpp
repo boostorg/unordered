@@ -1634,7 +1634,7 @@ public:
   static auto for_all_elements_while(const arrays_type& arrays_,F f)
     ->decltype(f(nullptr,0,nullptr),void())
   {
-#if 1
+#if 0
     auto p=arrays_.elements;
     if(!p){return;}
     for(auto pg=arrays_.groups,last=pg+arrays_.groups_size_mask+1;
