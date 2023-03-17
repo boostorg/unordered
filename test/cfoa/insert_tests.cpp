@@ -5,8 +5,10 @@
 #include "../helpers/generators.hpp"
 #include "../helpers/test.hpp"
 
-#include <boost/container_hash/hash.hpp>
 #include <boost/unordered/concurrent_flat_map.hpp>
+
+#include <boost/container_hash/hash.hpp>
+#include <boost/unordered/unordered_flat_map.hpp>
 
 #include <atomic>
 #include <iostream>
@@ -111,29 +113,57 @@ std::vector<std::pair<raii const, raii> > make_random_values(
     int b = generate(p, rg);
     v.emplace_back(raii{a}, raii{b});
   }
-
-  raii::reset_counts();
-
   return v;
 }
 
 namespace {
   test::seed_t initialize_seed(78937);
 
-  template <class X> void insert(X*, test::random_generator generator)
+  struct lvalue_inserter_type
   {
-    raii::reset_counts();
-
-    auto values = make_random_values(1024, generator);
-    BOOST_TEST_GT(values.size(), 0);
-
+    template <class T, class X>
+    void operator()(std::vector<T> const& values, X& x)
     {
-      X x;
-
       for (auto const& r : values) {
         bool b = x.insert(r);
         (void)b;
       }
+    }
+  } lvalue_inserter;
+
+  struct rvalue_inserter_type
+  {
+    template <class T, class X> void operator()(std::vector<T>& values, X& x)
+    {
+      for (auto& r : values) {
+        bool b = x.insert(std::move(r));
+        (void)b;
+      }
+    }
+  } rvalue_inserter;
+
+  template <class X, class F>
+  void insert(X*, F inserter, test::random_generator generator)
+  {
+    auto values = make_random_values(1024, generator);
+    BOOST_TEST_GT(values.size(), 0);
+
+    auto reference_map =
+      boost::unordered_flat_map<raii, raii>(values.begin(), values.end());
+
+    raii::reset_counts();
+
+    {
+      X x;
+
+      inserter(values, x);
+
+      BOOST_TEST_EQ(x.size(), reference_map.size());
+
+      using value_type = typename X::value_type;
+      BOOST_TEST_EQ(x.size(), x.visit_all([&](value_type const& kv) {
+        BOOST_TEST(reference_map.contains(kv.first));
+      }));
     }
 
     BOOST_TEST_GE(raii::default_constructor, 0);
@@ -157,7 +187,11 @@ using test::default_generator;
 using test::generate_collisions;
 using test::limited_range;
 
+// clang-format off
 UNORDERED_TEST(
-  insert, ((map))((default_generator)(generate_collisions)(limited_range)))
+  insert, ((map))
+          ((lvalue_inserter)(rvalue_inserter))
+          ((default_generator)(generate_collisions)(limited_range)))
+// clang-format on
 
 RUN_TESTS()

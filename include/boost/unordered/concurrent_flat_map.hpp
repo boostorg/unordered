@@ -89,7 +89,7 @@ namespace boost {
     class concurrent_flat_map
     {
     private:
-      using type_policy = detail::concurrent_map_types<Key,T>;
+      using type_policy = detail::concurrent_map_types<Key, T>;
 
       detail::foa::concurrent_table<type_policy, Hash, Pred, Allocator> table_;
 
@@ -117,9 +117,19 @@ namespace boost {
       {
       }
 
-      bool insert(value_type const& obj)
+      /// Capacity
+      ///
+
+      size_type size() const noexcept { return table_.size(); }
+
+      /// Modifiers
+      ///
+
+      bool insert(value_type const& obj) { return table_.insert(obj); }
+
+      template <class F> std::size_t visit_all(F f)
       {
-        return table_.insert(obj);
+        return table_.visit_all(std::move(f));
       }
     };
   } // namespace unordered
