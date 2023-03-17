@@ -1585,7 +1585,7 @@ public:
   }
 
   template<typename Predicate>
-  std::size_t erase_if_impl(Predicate pr)
+  std::size_t erase_if_impl(Predicate&& pr)
   {
     std::size_t s=size();
     for_all_elements([&,this](group_type* pg,unsigned int n,element_type* p){
