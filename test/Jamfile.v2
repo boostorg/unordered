@@ -157,3 +157,10 @@ run exception/erase_exception_tests.cpp       : : : $(CPP11) <define>BOOST_UNORD
 run exception/rehash_exception_tests.cpp      : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_rehash_exception_tests ;
 run exception/swap_exception_tests.cpp        : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_swap_exception_tests ;
 run exception/merge_exception_tests.cpp       : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_merge_exception_tests ;
+
+rule build_cfoa ( name )
+{
+  run cfoa/$(name).cpp : : : $(CPP11) : cfoa_$(name) ;
+}
+
+build_cfoa insert_tests ;
