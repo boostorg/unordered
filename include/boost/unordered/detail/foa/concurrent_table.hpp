@@ -796,7 +796,7 @@ private:
   {
     for_all_elements_exec(
       std::forward<ExecutionPolicy>(policy),
-      [&](group_type* pg,unsigned int n,element_type* p){f(p);});
+      [&](group_type* /* pg */,unsigned int /* n */,element_type* p){f(p);});
   }
 
   template<typename ExecutionPolicy,typename F>
