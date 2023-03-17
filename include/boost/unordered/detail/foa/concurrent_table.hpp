@@ -37,22 +37,7 @@ namespace detail{
 namespace foa{
 
 template<typename T>
-struct
-
-#if defined(__cpp_lib_hardware_interference_size)
-#if defined(BOOST_GCC)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Winterference-size"
-#endif
-alignas(std::hardware_destructive_interference_size)
-#if defined(BOOST_GCC)
-#pragma GCC diagnostic pop
-#endif
-#else
-alignas(64)
-#endif
-
-cacheline_protected:T
+struct alignas(64) cacheline_protected:T
 {
   using T::T;
 };
