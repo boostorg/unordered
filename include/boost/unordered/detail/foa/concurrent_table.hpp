@@ -28,6 +28,7 @@
 
 #if defined(BOOST_UNORDERED_PARALLEL_ALGORITHMS)
 #include <algorithm>
+#include <execution>
 #endif
 
 namespace boost{
