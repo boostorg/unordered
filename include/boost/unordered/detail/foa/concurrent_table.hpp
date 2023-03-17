@@ -26,7 +26,7 @@
 #include <type_traits>
 #include <utility>
 
-#if !defined(BOOST_NO_CXX17_HDR_EXECUTION)
+#if defined(BOOST_UNORDERED_PARALLEL_ALGORITHMS)
 #include <algorithm>
 #endif
 
@@ -197,7 +197,7 @@ class concurrent_table:concurrent_table_core_impl<TypePolicy,Hash,Pred,Allocator
   using super::N;
   using prober=typename super::prober;
 
-#if !defined(BOOST_NO_CXX17_HDR_EXECUTION)
+#if defined(BOOST_UNORDERED_PARALLEL_ALGORITHMS)
   template<typename ExecutionPolicy>
   using is_execution_policy=std::is_execution_policy<
     typename std::remove_cv<
@@ -287,7 +287,7 @@ public:
       visit_all([&](const value_type& v){f(v);});
   }
 
-#if !defined(BOOST_NO_CXX17_HDR_EXECUTION)
+#if defined(BOOST_UNORDERED_PARALLEL_ALGORITHMS)
   template<typename ExecutionPolicy,typename F>
   void visit_all(ExecutionPolicy&& policy,F f)
   {
@@ -407,7 +407,7 @@ public:
     return super::erase_if_impl(std::forward<F>(f));
   }
 
-#if !defined(BOOST_NO_CXX17_HDR_EXECUTION)
+#if defined(BOOST_UNORDERED_PARALLEL_ALGORITHMS)
   template<typename ExecutionPolicy,typename F>
   auto erase_if(ExecutionPolicy&& policy,F f)->typename std::enable_if<
     is_execution_policy<ExecutionPolicy>::value,void>::type
@@ -782,7 +782,7 @@ private:
     if(this->size_==this->ml)super::rehash(super::capacity()+1);
   }
 
-#if !defined(BOOST_NO_CXX17_HDR_EXECUTION)
+#if defined(BOOST_UNORDERED_PARALLEL_ALGORITHMS)
   template<typename ExecutionPolicy,typename F>
   auto for_all_elements_exec(ExecutionPolicy&& policy,F f)
     ->decltype(f(nullptr),void())
