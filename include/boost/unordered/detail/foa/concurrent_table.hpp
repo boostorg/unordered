@@ -823,7 +823,7 @@ private:
 #endif
 
   /* TODO: thread_counter should be static */
-  mutable std::atomic_uint thread_counter=0;
+  mutable std::atomic_uint thread_counter{0};
   mutable multimutex_type  mutexes;
 };
 
