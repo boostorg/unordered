@@ -579,9 +579,9 @@ private:
 
   std::size_t unprotected_size()const
   {
-    std::size_t ml_=this->ml;
-    std::size_t size_=this->size_;
-    return size_<=ml_?size_:ml_;
+    std::size_t m=this->ml;
+    std::size_t s=this->size_;
+    return s<=m?s:m;
   }
 
   struct erase_on_exit
