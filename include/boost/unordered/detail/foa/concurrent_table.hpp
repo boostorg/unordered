@@ -189,11 +189,10 @@ group_access* dummy_group_accesses()
   /* TODO: describe
    */
 
-  static constexpr group_access::dummy_group_access_type
+  static group_access::dummy_group_access_type
   storage[Size]={typename group_access::dummy_group_access_type(),};
 
-  return reinterpret_cast<group_access*>(
-    const_cast<typename group_access::dummy_group_access_type*>(storage));
+  return reinterpret_cast<group_access*>(storage);
 }
 
 template<typename Value,typename Group,typename SizePolicy>
