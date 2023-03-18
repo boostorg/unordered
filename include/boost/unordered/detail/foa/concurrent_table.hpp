@@ -214,7 +214,6 @@ struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy>
       using access_alloc=
         typename boost::allocator_rebind<Allocator,group_access>::type;
       using access_traits=boost::allocator_traits<access_alloc>;
-      using pointer=typename access_traits::pointer;
 
       BOOST_TRY{
         auto aal=access_alloc(al);
