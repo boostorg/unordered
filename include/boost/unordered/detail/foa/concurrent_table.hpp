@@ -183,6 +183,19 @@ struct concurrent_group:Group,group_access
   };
 };
 
+template<std::size_t Size>
+group_access* dummy_group_accesses()
+{
+  /* TODO: describe
+   */
+
+  static constexpr group_access::dummy_group_access_type
+  storage[Size]={typename group_access::dummy_group_access_type(),};
+
+  return reinterpret_cast<group_access*>(
+    const_cast<typename group_access::dummy_group_access_type*>(storage));
+}
+
 template<typename Value,typename Group,typename SizePolicy>
 struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy>
 {
@@ -192,29 +205,38 @@ struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy>
   static concurrent_table_arrays new_(Allocator& al,std::size_t n)
   {
     concurrent_table_arrays arrays={super::new_(al,n),nullptr};
-    //if(arrays.elements){
+    if(!arrays.elements){
+      arrays.group_accesses=dummy_group_accesses<SizePolicy::min_size()>();
+    }
+    else{
       using access_alloc=
         typename boost::allocator_rebind<Allocator,group_access>::type;
       using access_traits=boost::allocator_traits<access_alloc>;
       using pointer=typename access_traits::pointer;
       using pointer_traits=boost::pointer_traits<pointer>;
 
-      // TODO: protect with BOOST_TRY
-      auto aal=access_alloc(al);
-      arrays.group_accesses=boost::to_address(
-        access_traits::allocate(aal,arrays.groups_size_mask+1));
+      BOOST_TRY{
+        auto aal=access_alloc(al);
+        arrays.group_accesses=boost::to_address(
+          access_traits::allocate(aal,arrays.groups_size_mask+1));
 
-      for(std::size_t n=0;n<arrays.groups_size_mask+1;++n){
-        new(arrays.group_accesses+n) group_access();
+        for(std::size_t n=0;n<arrays.groups_size_mask+1;++n){
+          new(arrays.group_accesses+n) group_access();
+        }
       }
-    //}
+      BOOST_CATCH(...){
+        super::delete_(al,arrays);
+        BOOST_RETHROW
+      }
+      BOOST_CATCH_END
+    }
     return arrays;
   }
 
   template<typename Allocator>
   static void delete_(Allocator& al,concurrent_table_arrays& arrays)noexcept
   {
-    //if(arrays.elements){
+    if(arrays.elements){
       using access_alloc=
         typename boost::allocator_rebind<Allocator,group_access>::type;
       using access_traits=boost::allocator_traits<access_alloc>;
@@ -225,7 +247,7 @@ struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy>
       access_traits::deallocate(
         aal,pointer_traits::pointer_to(*arrays.group_accesses),
         arrays.groups_size_mask+1);
-    //}
+    }
   }
 
   group_access *group_accesses;
