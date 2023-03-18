@@ -248,6 +248,7 @@ struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy>
         aal,pointer_traits::pointer_to(*arrays.group_accesses),
         arrays.groups_size_mask+1);
     }
+    super::delete_(al,arrays);
   }
 
   group_access *group_accesses;
