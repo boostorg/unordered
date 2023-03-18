@@ -223,8 +223,8 @@ struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy>
         arrays.group_accesses=boost::to_address(
           access_traits::allocate(aal,arrays.groups_size_mask+1));
 
-        for(std::size_t n=0;n<arrays.groups_size_mask+1;++n){
-          new(arrays.group_accesses+n) group_access();
+        for(std::size_t i=0;i<arrays.groups_size_mask+1;++i){
+          new(arrays.group_accesses+i) group_access();
         }
       }
       BOOST_CATCH(...){
