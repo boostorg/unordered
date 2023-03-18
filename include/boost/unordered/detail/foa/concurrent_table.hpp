@@ -311,9 +311,7 @@ public:
   std::size_t size()const noexcept
   {
     auto lck=shared_access();
-    std::size_t ml_=this->ml;
-    std::size_t size_=this->size_;
-    return size_<=ml_?size_:ml_;
+    return unprotected_size();
   }
 
   using super::max_size; 
@@ -485,7 +483,9 @@ public:
   float load_factor()const noexcept
   {
     auto lck=shared_access();
-    return super::load_factor();
+    if(super::capacity()==0)return 0;
+    else                    return float(unprotected_size())/
+                                   float(super::capacity());
   }
 
   using super::max_load_factor;
@@ -566,6 +566,13 @@ private:
   std::atomic_uint32_t& insert_counter(std::size_t pos)const
   {
     return this->arrays.groups[pos].insert_counter();
+  }
+
+  std::size_t unprotected_size()const
+  {
+    std::size_t ml_=this->ml;
+    std::size_t size_=this->size_;
+    return size_<=ml_?size_:ml_;
   }
 
   struct erase_on_exit
