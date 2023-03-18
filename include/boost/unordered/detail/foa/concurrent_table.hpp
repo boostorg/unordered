@@ -43,6 +43,11 @@ namespace unordered{
 namespace detail{
 namespace foa{
 
+#if defined(BOOST_MSVC)
+#pragma warning(push)
+#pragma warning(disable:4324) /* padded structure due to alignas */
+#endif
+
 template<typename T>
 struct alignas(64) cacheline_protected:T
 {
@@ -101,11 +106,6 @@ private:
 };
 
 /* copied from boost/multi_index/detail/scoped_bilock.hpp */
-
-#if defined(BOOST_MSVC)
-#pragma warning(push)
-#pragma warning(disable:4324) /* padded structure due to alignas */
-#endif
 
 template<typename Mutex>
 class scoped_bilock
