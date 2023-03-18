@@ -218,7 +218,8 @@ private:
 
 template <typename TypePolicy,typename Hash,typename Pred,typename Allocator>
 using table_core_impl=
-  table_core<TypePolicy,group15<plain_integral>,std::size_t,Hash,Pred,Allocator>;
+  table_core<TypePolicy,group15<plain_integral>,table_arrays,
+  std::size_t,Hash,Pred,Allocator>;
 
 #include <boost/unordered/detail/foa/ignore_wshadow.hpp>
 

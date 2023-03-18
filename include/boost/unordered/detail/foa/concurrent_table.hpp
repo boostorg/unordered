@@ -182,13 +182,70 @@ struct concurrent_group:Group,group_access
   };
 };
 
+template<typename Value,typename Group,typename SizePolicy>
+struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy>
+{
+  using super=table_arrays<Value,Group,SizePolicy>;
+
+  template<typename Allocator>
+  static concurrent_table_arrays new_(Allocator& al,std::size_t n)
+  {
+    concurrent_table_arrays arrays={super::new_(al,n),nullptr};
+    //if(arrays.elements){
+      using access_alloc=
+        typename boost::allocator_rebind<Allocator,group_access>::type;
+      using access_traits=boost::allocator_traits<access_alloc>;
+      using pointer=typename access_traits::pointer;
+      using pointer_traits=boost::pointer_traits<pointer>;
+
+      // TODO: protect with BOOST_TRY
+      auto aal=access_alloc(al);
+      arrays.group_accesses=boost::to_address(
+        access_traits::allocate(aal,arrays.groups_size_mask+1));
+
+      for(std::size_t n=0;n<arrays.groups_size_mask+1;++n){
+        new(arrays.group_accesses+n) group_access();
+      }
+    //}
+    return arrays;
+  }
+
+  template<typename Allocator>
+  static void delete_(Allocator& al,concurrent_table_arrays& arrays)noexcept
+  {
+    //if(arrays.elements){
+      using access_alloc=
+        typename boost::allocator_rebind<Allocator,group_access>::type;
+      using access_traits=boost::allocator_traits<access_alloc>;
+      using pointer=typename access_traits::pointer;
+      using pointer_traits=boost::pointer_traits<pointer>;
+
+      auto aal=access_alloc(al);
+      access_traits::deallocate(
+        aal,pointer_traits::pointer_to(*arrays.group_accesses),
+        arrays.groups_size_mask+1);
+    //}
+  }
+
+  group_access *group_accesses;
+};
+
 /* TODO: describe foa::concurrent_table.
  */
 
 template <typename TypePolicy,typename Hash,typename Pred,typename Allocator>
 using concurrent_table_core_impl=table_core<
-  TypePolicy,concurrent_group<group15<atomic_integral>>,std::atomic_size_t,
-  Hash,Pred,Allocator>;
+  TypePolicy,
+
+#if defined(BOOST_UNORDERED_EMBEDDED_GROUP_ACCESS)
+  concurrent_group<group15<atomic_integral>>,
+  table_arrays,
+#else
+  group15<atomic_integral>,
+  concurrent_table_arrays,
+#endif
+
+  std::atomic_size_t,Hash,Pred,Allocator>;
 
 #include <boost/unordered/detail/foa/ignore_wshadow.hpp>
 
@@ -529,8 +586,15 @@ private:
   using shared_lock_guard=shared_lock<mutex_type>;
   using exclusive_lock_guard=lock_guard<multimutex_type>;
   using exclusive_bilock_guard=scoped_bilock<multimutex_type>;
+
+#if defined(BOOST_UNORDERED_EMBEDDED_GROUP_ACCESS)
   using group_shared_lock_guard=typename group_type::shared_lock_guard;
   using group_exclusive_lock_guard=typename group_type::exclusive_lock_guard;
+#else
+  using group_shared_lock_guard=typename group_access::shared_lock_guard;
+  using group_exclusive_lock_guard=typename group_access::exclusive_lock_guard;
+#endif
+
 
   concurrent_table(const concurrent_table& x,exclusive_lock_guard):
     super{x}{}
@@ -562,6 +626,7 @@ private:
     return {x.mutexes,y.mutexes};
   }
 
+#if defined(BOOST_UNORDERED_EMBEDDED_GROUP_ACCESS)
   group_shared_lock_guard shared_access(std::size_t pos)const
   {
     return this->arrays.groups[pos].shared_access();
@@ -576,6 +641,22 @@ private:
   {
     return this->arrays.groups[pos].insert_counter();
   }
+#else
+  group_shared_lock_guard shared_access(std::size_t pos)const
+  {
+    return this->arrays.group_accesses[pos].shared_access();
+  }
+
+  group_exclusive_lock_guard exclusive_access(std::size_t pos)const
+  {
+    return this->arrays.group_accesses[pos].exclusive_access();
+  }
+
+  std::atomic_uint32_t& insert_counter(std::size_t pos)const
+  {
+    return this->arrays.group_accesses[pos].insert_counter();
+  }
+#endif
 
   std::size_t unprotected_size()const
   {

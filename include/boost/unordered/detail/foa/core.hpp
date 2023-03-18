@@ -1134,8 +1134,8 @@ alloc_make_insert_type(const Allocator& al,Args&&... args)
 #endif
 
 template<
-  typename TypePolicy,typename Group,typename SizeImpl,
-  typename Hash,typename Pred,typename Allocator
+  typename TypePolicy,typename Group,template<typename...> class Arrays,
+  typename SizeImpl,typename Hash,typename Pred,typename Allocator
 >
 class 
 
@@ -1158,7 +1158,7 @@ public:
   >::type;
   using alloc_traits=boost::allocator_traits<Allocator>;
   using element_type=typename type_policy::element_type;
-  using arrays_type=table_arrays<element_type,group_type,size_policy>;
+  using arrays_type=Arrays<element_type,group_type,size_policy>;
 
   using key_type=typename type_policy::key_type;
   using init_type=typename type_policy::init_type;
@@ -1646,7 +1646,10 @@ public:
   SizeImpl    size_;
 
 private:
-  template<typename,typename,typename,typename,typename,typename>
+  template<
+    typename,typename,template<typename...> class,
+    typename,typename,typename,typename
+  >
   friend class table_core;
 
   using hash_base=empty_value<Hash,0>;
