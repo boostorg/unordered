@@ -26,6 +26,13 @@
 #include <type_traits>
 #include <utility>
 
+#if !defined(BOOST_UNORDERED_DISABLE_PARALLEL_ALGORITHMS)
+#if defined(BOOST_UNORDERED_ENABLE_PARALLEL_ALGORITHMS)|| \
+    !defined(BOOST_NO_CXX17_HDR_EXECUTION)
+#define BOOST_UNORDERED_PARALLEL_ALGORITHMS
+#endif
+#endif
+
 #if defined(BOOST_UNORDERED_PARALLEL_ALGORITHMS)
 #include <algorithm>
 #include <execution>
