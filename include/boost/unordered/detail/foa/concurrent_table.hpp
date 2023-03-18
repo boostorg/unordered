@@ -65,7 +65,7 @@ public:
   void unlock()noexcept{for(auto n=N;n>0;)mutexes[--n].unlock();}
 
 private:
-  mutable std::array<Mutex,N> mutexes;
+  std::array<Mutex,N> mutexes;
 };
 
 /* std::shared_lock is C++14 */
