@@ -201,10 +201,13 @@ struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy>
 {
   using super=table_arrays<Value,Group,SizePolicy>;
 
+  concurrent_table_arrays(const super& arrays,group_access *pga):
+    super{arrays},group_accesses{pga}{}
+
   template<typename Allocator>
   static concurrent_table_arrays new_(Allocator& al,std::size_t n)
   {
-    concurrent_table_arrays arrays={super::new_(al,n),nullptr};
+    concurrent_table_arrays arrays{super::new_(al,n),nullptr};
     if(!arrays.elements){
       arrays.group_accesses=dummy_group_accesses<SizePolicy::min_size()>();
     }
