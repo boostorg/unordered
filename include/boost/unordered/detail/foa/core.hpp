@@ -260,11 +260,6 @@ struct group15
     return (~match_available())&0x7FFF;
   }
 
-  inline int match_really_occupied()const /* excluding sentinel */
-  {
-    return at(N-1)==sentinel_?match_occupied()&0x3FFF:match_occupied();
-  }
-
 private:
   using slot_type=IntegralWrapper<unsigned char>;
   BOOST_STATIC_ASSERT(sizeof(slot_type)==1);
@@ -443,11 +438,6 @@ struct group15
       vdupq_n_u8(0)))&0x7FFF;
   }
 
-  inline int match_really_occupied()const /* excluding sentinel */
-  {
-    return at(N-1)==sentinel_?match_occupied()&0x3FFF:match_occupied();
-  }
-
 private:
   using slot_type=IntegralWrapper<unsigned char>;
   BOOST_STATIC_ASSERT(sizeof(slot_type)==1);
@@ -621,11 +611,6 @@ struct group15
     boost::uint32_t y=narrow_cast<boost::uint32_t>(x|(x>>32));
     y|=y>>16;
     return y&0x7FFF;
-  }
-
-  inline int match_really_occupied()const /* excluding sentinel */
-  {
-    return ~(match_impl(0)|match_impl(1))&0x7FFF;
   }
 
 private:
@@ -1403,7 +1388,7 @@ public:
     if(p){
       for(auto pg=arrays.groups,last=pg+arrays.groups_size_mask+1;
           pg!=last;++pg,p+=N){
-        auto mask=pg->match_really_occupied();
+        auto mask=match_really_occupied(pg,last);
         while(mask){
           destroy_element(p+unchecked_countr_zero(mask));
           mask&=mask-1;
@@ -1518,6 +1503,12 @@ public:
     std::size_t hash,const arrays_type& arrays_)
   {
     return size_policy::position(hash,arrays_.groups_size_index);
+  }
+
+  static inline int match_really_occupied(group_type* pg,group_type* last)
+  {
+    /* excluding the sentinel */
+    return pg->match_occupied()&~(int(pg==last-1)<<(N-1));
   }
 
   static inline void prefetch_elements(const element_type* p)
@@ -1637,38 +1628,17 @@ public:
   static auto for_all_elements_while(const arrays_type& arrays_,F f)
     ->decltype(f(nullptr,0,nullptr),void())
   {
-#if 1
     auto p=arrays_.elements;
     if(!p){return;}
     for(auto pg=arrays_.groups,last=pg+arrays_.groups_size_mask+1;
         pg!=last;++pg,p+=N){
-      auto mask=pg->match_occupied()&~(int(pg==last-1)<<(N-1));
+      auto mask=match_really_occupied(pg,last);
       while(mask){
         auto n=unchecked_countr_zero(mask);
         if(!f(pg,n,p+n))return;
         mask&=mask-1;
       }
     }
-#else
-    auto p=arrays_.elements;
-    if(!p){return;}
-    auto pg=arrays_.groups;
-    for(auto last=pg+arrays_.groups_size_mask;
-        pg!=last;++pg,p+=N){
-      auto mask=pg->match_occupied();
-      while(mask){
-        auto n=unchecked_countr_zero(mask);
-        if(!f(pg,n,p+n))return;
-        mask&=mask-1;
-      }
-    }
-    auto mask=pg->match_really_occupied();
-    while(mask){
-      auto n=unchecked_countr_zero(mask);
-      if(!f(pg,n,p+n))return;
-      mask&=mask-1;
-    }
-#endif
   }
 
   arrays_type arrays;

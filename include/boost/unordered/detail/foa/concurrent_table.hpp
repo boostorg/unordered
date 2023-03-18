@@ -805,7 +805,7 @@ private:
   {
     for_all_elements_exec(
       std::forward<ExecutionPolicy>(policy),
-      [&](group_type* /* pg */,unsigned int /* n */,element_type* p){f(p);});
+      [&](group_type*,unsigned int,element_type* p){f(p);});
   }
 
   template<typename ExecutionPolicy,typename F>
@@ -820,7 +820,7 @@ private:
         std::size_t pos=&g-first;
         auto        p=this->arrays.elements+pos*N;
         auto        lck=exclusive_access(pos);
-        auto        mask=g.match_really_occupied();
+        auto        mask=this->match_really_occupied(&g,last);
         while(mask){
           auto n=unchecked_countr_zero(mask);
           f(&g,n,p+n);
