@@ -867,6 +867,9 @@ struct table_arrays
   static constexpr auto N=group_type::N;
   using size_policy=SizePolicy;
 
+  table_arrays(std::size_t gsi,std::size_t gsm,group_type *pg,value_type *pe):
+    groups_size_index{gsi},groups_size_mask{gsm},groups{pg},elements{pe}{}
+
   template<typename Allocator>
   static table_arrays new_(Allocator& al,std::size_t n)
   {
