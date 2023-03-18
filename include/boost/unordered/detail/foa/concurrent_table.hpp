@@ -102,6 +102,11 @@ private:
 
 /* copied from boost/multi_index/detail/scoped_bilock.hpp */
 
+#if defined(BOOST_MSVC)
+#pragma warning(push)
+#pragma warning(disable:4324) /* padded structure due to alignas */
+#endif
+
 template<typename Mutex>
 class scoped_bilock
 {
@@ -129,6 +134,10 @@ private:
   alignas(lock_guard_type) unsigned char storage1[sizeof(lock_guard_type)],
                                          storage2[sizeof(lock_guard_type)];
 };
+
+#if defined(BOOST_MSVC)
+#pragma warning(pop) /* C4324 */
+#endif
 
 /* TODO: describe atomic_integral and group_access */
 
