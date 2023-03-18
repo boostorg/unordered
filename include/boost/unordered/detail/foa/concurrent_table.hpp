@@ -162,14 +162,15 @@ struct group_access
   using mutex_type=rw_spinlock;
   using shared_lock_guard=shared_lock<mutex_type>;
   using exclusive_lock_guard=lock_guard<mutex_type>;
+  using insert_counter_type=std::atomic<boost::uint32_t>;
 
-  shared_lock_guard     shared_access(){return shared_lock_guard{m};}
-  exclusive_lock_guard  exclusive_access(){return exclusive_lock_guard{m};}
-  std::atomic_uint32_t& insert_counter(){return cnt;}
+  shared_lock_guard    shared_access(){return shared_lock_guard{m};}
+  exclusive_lock_guard exclusive_access(){return exclusive_lock_guard{m};}
+  insert_counter_type& insert_counter(){return cnt;}
 
 private:
-  mutex_type           m;
-  std::atomic_uint32_t cnt;
+  mutex_type          m;
+  insert_counter_type cnt;
 };
 
 template<typename Group>
@@ -245,7 +246,7 @@ using concurrent_table_core_impl=table_core<
   concurrent_table_arrays,
 #endif
 
-  std::atomic_size_t,Hash,Pred,Allocator>;
+  std::atomic<std::size_t>,Hash,Pred,Allocator>;
 
 #include <boost/unordered/detail/foa/ignore_wshadow.hpp>
 
@@ -590,9 +591,11 @@ private:
 #if defined(BOOST_UNORDERED_EMBEDDED_GROUP_ACCESS)
   using group_shared_lock_guard=typename group_type::shared_lock_guard;
   using group_exclusive_lock_guard=typename group_type::exclusive_lock_guard;
+  using group_insert_counter_type=typename group_type::insert_counter_type;
 #else
   using group_shared_lock_guard=typename group_access::shared_lock_guard;
   using group_exclusive_lock_guard=typename group_access::exclusive_lock_guard;
+  using group_insert_counter_type=typename group_access::insert_counter_type;
 #endif
 
 
@@ -637,7 +640,7 @@ private:
     return this->arrays.groups[pos].exclusive_access();
   }
 
-  std::atomic_uint32_t& insert_counter(std::size_t pos)const
+  group_insert_counter_type& insert_counter(std::size_t pos)const
   {
     return this->arrays.groups[pos].insert_counter();
   }
@@ -652,7 +655,7 @@ private:
     return this->arrays.group_accesses[pos].exclusive_access();
   }
 
-  std::atomic_uint32_t& insert_counter(std::size_t pos)const
+  group_insert_counter_type& insert_counter(std::size_t pos)const
   {
     return this->arrays.group_accesses[pos].insert_counter();
   }
@@ -913,8 +916,8 @@ private:
 #endif
 
   /* TODO: thread_counter should be static */
-  mutable std::atomic_uint thread_counter{0};
-  mutable multimutex_type  mutexes;
+  mutable std::atomic<unsigned int> thread_counter{0};
+  mutable multimutex_type           mutexes;
 };
 
 #if defined(BOOST_MSVC)
