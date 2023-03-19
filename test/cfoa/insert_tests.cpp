@@ -146,7 +146,7 @@ namespace {
   void insert(X*, F inserter, test::random_generator generator)
   {
     auto values = make_random_values(1024, generator);
-    BOOST_TEST_GT(values.size(), 0);
+    BOOST_TEST_GT(values.size(), 0u);
 
     auto reference_map =
       boost::unordered_flat_map<raii, raii>(values.begin(), values.end());
