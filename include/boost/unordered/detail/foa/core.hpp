@@ -1546,22 +1546,17 @@ public:
     return res;
   }
 
+  BOOST_NOINLINE void unchecked_rehash_for_growth()
+  {
+    auto new_arrays_=new_arrays_for_growth();
+    unchecked_rehash(new_arrays_);
+  }
+
   template<typename... Args>
   BOOST_NOINLINE locator
   unchecked_emplace_with_rehash(std::size_t hash,Args&&... args)
   {
-    /* Due to the anti-drift mechanism (see recover_slot), new_arrays_ may be
-     * of the same size as the old arrays; in the limit, erasing one element at
-     * full load and then inserting could bring us back to the same capacity
-     * after a costly rehash. To avoid this, we jump to the next capacity level
-     * when the number of erased elements is <= 10% of total elements at full
-     * load, which is implemented by requesting additional F*size elements,
-     * with F = P * 10% / (1 - P * 10%), where P is the probability of an
-     * element having caused overflow; P has been measured as ~0.162 under
-     * ideal conditions, yielding F ~ 0.0165 ~ 1/61.
-     */
-    auto    new_arrays_=new_arrays(std::size_t(
-              std::ceil(static_cast<float>(size()+size()/61+1)/mlf)));
+    auto    new_arrays_=new_arrays_for_growth();
     locator it;
     BOOST_TRY{
       /* strong exception guarantee -> try insertion before rehash */
@@ -1662,6 +1657,22 @@ private:
   arrays_type new_arrays(std::size_t n)
   {
     return arrays_type::new_(al(),n);
+  }
+
+  arrays_type new_arrays_for_growth()
+  {
+    /* Due to the anti-drift mechanism (see recover_slot), the new arrays may
+     * be of the same size as the old arrays; in the limit, erasing one
+     * element at full load and then inserting could bring us back to the same
+     * capacity after a costly rehash. To avoid this, we jump to the next
+     * capacity level when the number of erased elements is <= 10% of total
+     * elements at full load, which is implemented by requesting additional
+     * F*size elements, with F = P * 10% / (1 - P * 10%), where P is the
+     * probability of an element having caused overflow; P has been measured as
+     * ~0.162 under ideal conditions, yielding F ~ 0.0165 ~ 1/61.
+     */
+    return new_arrays(std::size_t(
+      std::ceil(static_cast<float>(size()+size()/61+1)/mlf)));
   }
 
   void delete_arrays(arrays_type& arrays_)noexcept

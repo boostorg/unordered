@@ -621,7 +621,6 @@ private:
   using group_insert_counter_type=typename group_access::insert_counter_type;
 #endif
 
-
   concurrent_table(const concurrent_table& x,exclusive_lock_guard):
     super{x}{}
   concurrent_table(concurrent_table&& x,exclusive_lock_guard):
@@ -901,8 +900,7 @@ private:
   void rehash_if_full()
   {
     auto lck=exclusive_access();
-    // TODO: use same mechanism as unchecked_emplace_with_rehash
-    if(this->size_==this->ml)super::rehash(super::capacity()+1);
+    if(this->size_==this->ml)this->unchecked_rehash_for_growth();
   }
 
 #if defined(BOOST_UNORDERED_PARALLEL_ALGORITHMS)
