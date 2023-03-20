@@ -8,11 +8,16 @@
 #include <boost/unordered/concurrent_flat_map.hpp>
 
 #include <boost/container_hash/hash.hpp>
+#include <boost/core/span.hpp>
 #include <boost/unordered/unordered_flat_map.hpp>
 
 #include <atomic>
+#include <condition_variable>
 #include <iostream>
+#include <thread>
 #include <vector>
+
+constexpr std::size_t const num_threads = 16;
 
 struct raii
 {
@@ -55,19 +60,19 @@ struct raii
     return *this;
   }
 
-  static void reset_counts()
+  friend bool operator==(raii const& lhs, raii const& rhs)
   {
-    default_constructor = 0;
-    copy_constructor = 0;
-    move_constructor = 0;
-    destructor = 0;
-    copy_assignment = 0;
-    move_assignment = 0;
+    return lhs.x_ == rhs.x_;
+  }
+
+  friend bool operator!=(raii const& lhs, raii const& rhs)
+  {
+    return !(lhs == rhs);
   }
 
   friend std::ostream& operator<<(std::ostream& os, raii const& rhs)
   {
-    os << "{ x_: " << rhs.x_ << "}";
+    os << "{ x_: " << rhs.x_ << " }";
     return os;
   }
 
@@ -78,14 +83,14 @@ struct raii
     return os;
   }
 
-  friend bool operator==(raii const& lhs, raii const& rhs)
+  static void reset_counts()
   {
-    return lhs.x_ == rhs.x_;
-  }
-
-  friend bool operator!=(raii const& lhs, raii const& rhs)
-  {
-    return !(lhs == rhs);
+    default_constructor = 0;
+    copy_constructor = 0;
+    move_constructor = 0;
+    destructor = 0;
+    copy_assignment = 0;
+    move_assignment = 0;
   }
 };
 
@@ -102,16 +107,15 @@ std::size_t hash_value(raii const& r) noexcept
   return hasher(r.x_);
 }
 
-std::vector<std::pair<raii const, raii> > make_random_values(
-  std::size_t count, test::random_generator rg)
+template <class F>
+auto make_random_values(std::size_t count, F f) -> std::vector<decltype(f())>
 {
-  std::vector<std::pair<raii const, raii> > v;
+  using vector_type = std::vector<decltype(f())>;
+
+  vector_type v;
   v.reserve(count);
   for (std::size_t i = 0; i < count; ++i) {
-    int* p = nullptr;
-    int a = generate(p, rg);
-    int b = generate(p, rg);
-    v.emplace_back(raii{a}, raii{b});
+    v.emplace_back(f());
   }
   return v;
 }
@@ -119,14 +123,104 @@ std::vector<std::pair<raii const, raii> > make_random_values(
 namespace {
   test::seed_t initialize_seed(78937);
 
+  struct value_type_generator_type
+  {
+    std::pair<raii const, raii> operator()(test::random_generator rg)
+    {
+      int* p = nullptr;
+      int a = generate(p, rg);
+      int b = generate(p, rg);
+      return std::make_pair(raii{a}, raii{b});
+    }
+  } value_type_generator;
+
+  struct init_type_generator_type
+  {
+    std::pair<raii, raii> operator()(test::random_generator rg)
+    {
+      int* p = nullptr;
+      int a = generate(p, rg);
+      int b = generate(p, rg);
+      return std::make_pair(raii{a}, raii{b});
+    }
+  } init_type_generator;
+
+  template <class T>
+  std::vector<boost::span<T> > split(
+    std::vector<T>& vec, std::size_t const nt /* num threads*/)
+  {
+    std::vector<boost::span<T> > subslices;
+    subslices.reserve(nt);
+
+    boost::span<T> s(vec);
+
+    auto a = vec.size() / nt;
+    auto b = a;
+    if (vec.size() % nt != 0) {
+      ++b;
+    }
+
+    auto num_a = nt;
+    auto num_b = std::size_t{0};
+
+    if (nt * b > vec.size()) {
+      num_a = nt * b - vec.size();
+      num_b = nt - num_a;
+    }
+
+    auto sub_b = s.subspan(0, num_b * b);
+    auto sub_a = s.subspan(num_b * b);
+
+    for (std::size_t i = 0; i < num_b; ++i) {
+      subslices.push_back(sub_b.subspan(i * b, b));
+    }
+
+    for (std::size_t i = 0; i < num_a; ++i) {
+      auto const is_last = i == (num_a - 1);
+      subslices.push_back(
+        sub_a.subspan(i * a, is_last ? boost::dynamic_extent : a));
+    }
+
+    return subslices;
+  }
+
   struct lvalue_inserter_type
   {
-    template <class T, class X>
-    void operator()(std::vector<T> const& values, X& x)
+    template <class T, class X> void operator()(std::vector<T>& values, X& x)
     {
-      for (auto const& r : values) {
-        bool b = x.insert(r);
-        (void)b;
+      std::mutex m;
+      std::vector<std::thread> threads;
+      std::condition_variable cv;
+
+      auto ready = false;
+
+      auto subslices = split(values, num_threads);
+
+      BOOST_ASSERT(subslices.size() == num_threads);
+
+      for (std::size_t i = 0; i < num_threads; ++i) {
+        threads.emplace_back([&x, &m, &ready, &subslices, &cv, i] {
+          std::unique_lock<std::mutex> lk(m);
+          cv.wait(lk, [&] { return ready; });
+          lk.unlock();
+
+          auto s = subslices[i];
+
+          for (auto const& r : s) {
+            bool b = x.insert(r);
+            (void)b;
+          }
+        });
+      }
+
+      {
+        std::unique_lock<std::mutex> lk(m);
+        ready = true;
+      }
+      cv.notify_all();
+
+      for (auto& t : threads) {
+        t.join();
       }
     }
   } lvalue_inserter;
@@ -142,10 +236,18 @@ namespace {
     }
   } rvalue_inserter;
 
-  template <class X, class F>
-  void insert(X*, F inserter, test::random_generator generator)
+  struct iterator_range_inserter_type
   {
-    auto values = make_random_values(1024, generator);
+    template <class T, class X> void operator()(std::vector<T>& values, X& x)
+    {
+      x.insert(values.begin(), values.end());
+    }
+  } iterator_range_inserter;
+
+  template <class X, class G, class F>
+  void insert(X*, G gen, F inserter, test::random_generator rg)
+  {
+    auto values = make_random_values(1024 * 1024, [&] { return gen(rg); });
     BOOST_TEST_GT(values.size(), 0u);
 
     auto reference_map =
@@ -190,8 +292,9 @@ using test::limited_range;
 // clang-format off
 UNORDERED_TEST(
   insert, ((map))
-          ((lvalue_inserter)(rvalue_inserter))
-          ((default_generator)(generate_collisions)(limited_range)))
+          ((value_type_generator)(init_type_generator))
+          ((lvalue_inserter)(rvalue_inserter)(iterator_range_inserter))
+          ((default_generator)(limited_range)))
 // clang-format on
 
 RUN_TESTS()

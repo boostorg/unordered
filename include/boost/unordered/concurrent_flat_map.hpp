@@ -126,6 +126,18 @@ namespace boost {
       ///
 
       bool insert(value_type const& obj) { return table_.insert(obj); }
+      bool insert(value_type&& obj) { return table_.insert(obj); }
+
+      bool insert(init_type const& obj) { return table_.insert(obj); }
+      bool insert(init_type&& obj) { return table_.insert(std::move(obj)); }
+
+      template <class InputIterator>
+      void insert(InputIterator begin, InputIterator end)
+      {
+        for (auto pos = begin; pos != end; ++pos) {
+          table_.insert(*pos);
+        }
+      }
 
       template <class F> std::size_t visit_all(F f)
       {
