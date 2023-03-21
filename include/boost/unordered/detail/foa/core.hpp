@@ -83,6 +83,12 @@
   }while(0)
 #endif
 
+#ifdef __has_feature
+#define BOOST_UNORDERED_HAS_FEATURE(x) __has_feature(x)
+#else
+#define BOOST_UNORDERED_HAS_FEATURE(x) 0
+#endif
+
 #define BOOST_UNORDERED_STATIC_ASSERT_HASH_PRED(Hash, Pred)                    \
   static_assert(boost::is_nothrow_swappable<Hash>::value,                      \
     "Template parameter Hash is required to be nothrow Swappable.");           \
@@ -213,9 +219,8 @@ struct group15
 
   inline int match(std::size_t hash)const
   {
-    auto w=_mm_load_si128(reinterpret_cast<const __m128i*>(m));
     return _mm_movemask_epi8(
-      _mm_cmpeq_epi8(w,_mm_set1_epi32(match_word(hash))))&0x7FFF;
+      _mm_cmpeq_epi8(load_si128(),_mm_set1_epi32(match_word(hash))))&0x7FFF;
   }
 
   inline bool is_not_overflowed(std::size_t hash)const
@@ -239,9 +244,8 @@ struct group15
 
   inline int match_available()const
   {
-    auto w=_mm_load_si128(reinterpret_cast<const __m128i*>(m));
     return _mm_movemask_epi8(
-      _mm_cmpeq_epi8(w,_mm_setzero_si128()))&0x7FFF;
+      _mm_cmpeq_epi8(load_si128(),_mm_setzero_si128()))&0x7FFF;
   }
 
   inline bool is_occupied(std::size_t pos)const
@@ -266,6 +270,23 @@ private:
 
   static constexpr unsigned char available_=0,
                                  sentinel_=1;
+
+  inline __m128i load_si128()const
+  {
+#if BOOST_UNORDERED_HAS_FEATURE(thread_sanitizer)
+    /* ThreadSanitizer complains on 1-byte atomic writes combined with
+     * 16-byte atomic reads.
+     */
+
+    return _mm_set_epi8(
+      (char)m[15],(char)m[14],(char)m[13],(char)m[12],
+      (char)m[11],(char)m[10],(char)m[ 9],(char)m[ 8],
+      (char)m[ 7],(char)m[ 6],(char)m[ 5],(char)m[ 4],
+      (char)m[ 3],(char)m[ 2],(char)m[ 1],(char)m[ 0]);
+#else
+    return _mm_load_si128(reinterpret_cast<const __m128i*>(m));
+#endif
+  }
 
   inline static int match_word(std::size_t hash)
   {
@@ -1955,5 +1976,6 @@ private:
 } /* namespace boost */
 
 #undef BOOST_UNORDERED_STATIC_ASSERT_HASH_PRED
+#undef BOOST_UNORDERED_HAS_FEATURE
 #undef BOOST_UNORDERED_HAS_BUILTIN
 #endif
