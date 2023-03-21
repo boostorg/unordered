@@ -89,6 +89,11 @@
 #define BOOST_UNORDERED_HAS_FEATURE(x) 0
 #endif
 
+#if BOOST_UNORDERED_HAS_FEATURE(thread_sanitizer)|| \
+    defined(__SANITIZE_THREAD__)
+#define BOOST_UNORDERED_THREAD_SANITIZER
+#endif
+
 #define BOOST_UNORDERED_STATIC_ASSERT_HASH_PRED(Hash, Pred)                    \
   static_assert(boost::is_nothrow_swappable<Hash>::value,                      \
     "Template parameter Hash is required to be nothrow Swappable.");           \
@@ -273,7 +278,7 @@ private:
 
   inline __m128i load_si128()const
   {
-#if BOOST_UNORDERED_HAS_FEATURE(thread_sanitizer)
+#if defined(BOOST_UNORDERED_THREAD_SANITIZER)
     /* ThreadSanitizer complains on 1-byte atomic writes combined with
      * 16-byte atomic reads.
      */
