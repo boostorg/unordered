@@ -900,6 +900,7 @@ struct table_arrays
 
       for (std::size_t i=0;i<groups_size;++i){
         new(arrays.groups+i) group_type();
+        arrays.groups[i].initialize();
       }
 
       /* memset is faster/not slower than initializing groups individually.
