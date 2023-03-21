@@ -870,25 +870,20 @@ private:
         for(prober pb(pos0);;pb.next(this->arrays.groups_size_mask)){
           auto pos=pb.get();
           auto pg=this->arrays.groups+pos;
+          auto lck=exclusive_access(pos);
           auto mask=pg->match_available();
           if(BOOST_LIKELY(mask!=0)){
-            auto lck=exclusive_access(pos);
-            do{
-              auto n=unchecked_countr_zero(mask);
-              if(BOOST_LIKELY(!pg->is_occupied(n))){
-                reserve_slot rslot{pg,n,hash};
-                if(BOOST_UNLIKELY(insert_counter(pos0)++!=counter)){
-                  /* other thread inserted from pos0, need to start over */
-                  goto startover;
-                }
-                auto p=this->arrays.elements+pos*N+n;
-                this->construct_element(p,std::forward<Args>(args)...);
-                rslot.commit();
-                rsize.commit();
-                return 1;
-              }
-              mask&=mask-1;
-            }while(mask);
+            auto n=unchecked_countr_zero(mask);
+            reserve_slot rslot{pg,n,hash};
+            if(BOOST_UNLIKELY(insert_counter(pos0)++!=counter)){
+              /* other thread inserted from pos0, need to start over */
+              goto startover;
+            }
+            auto p=this->arrays.elements+pos*N+n;
+            this->construct_element(p,std::forward<Args>(args)...);
+            rslot.commit();
+            rsize.commit();
+            return 1;
           }
           pg->mark_overflow(hash);
         }
