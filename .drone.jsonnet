@@ -354,7 +354,7 @@ local windows_pipeline(name, image, environment, arch = "amd64") =
     linux_pipeline(
         "Linux 22.04 Clang 14 libc++ 64 TSAN",
         "cppalliance/droneubuntu2204:1",
-        { TOOLSET: 'clang', COMPILER: 'clang++-14', ADDRMD: '64', TARGET: 'libs/unordered/test//cfoa_tests', CXXSTD: '11,14,17,20', STDLIB: libc++ } + tsan,
+        { TOOLSET: 'clang', COMPILER: 'clang++-14', ADDRMD: '64', TARGET: 'libs/unordered/test//cfoa_tests', CXXSTD: '11,14,17,20', STDLIB: 'libc++' } + tsan,
         "clang-14 libc++-14-dev libc++abi-14-dev",
     ),
 
