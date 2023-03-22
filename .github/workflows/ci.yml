@@ -82,6 +82,7 @@ jobs:
           # OSX, clang
           - { compiler: clang,     cxxstd: '03,11,14,17,2a',    os: macos-11, }
           - { compiler: clang,     cxxstd: '03,11,14,17,2a',    os: macos-12, sanitize: yes }
+          - { compiler: clang,     cxxstd: '11,14,17,2a',       os: macos-12, thread-sanitize: yes, targets: 'libs/unordered/test//cfoa_tests' }
 
     timeout-minutes: 180
     runs-on: ${{matrix.os}}
