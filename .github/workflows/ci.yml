@@ -191,7 +191,7 @@ jobs:
           B2_COMPILER: ${{matrix.compiler}}
           B2_CXXSTD: ${{matrix.cxxstd}}
           B2_SANITIZE: ${{matrix.sanitize}}
-          B2_TSAN: ${{matrx.thread-sanitize}}
+          B2_TSAN: ${{matrix.thread-sanitize}}
           B2_TARGETS: ${{matrix.targets}}
           B2_STDLIB: ${{matrix.stdlib}}
           # More entries can be added in the same way, see the B2_ARGS assignment in ci/enforce.sh for the possible keys.
