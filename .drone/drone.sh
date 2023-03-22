@@ -24,4 +24,4 @@ python tools/boostdep/depinst/depinst.py $LIBRARY
 ./b2 -d0 headers
 
 echo "using $TOOLSET : : $COMPILER ;" > ~/user-config.jam
-./b2 -j3 $TARGET toolset=$TOOLSET cxxstd=$CXXSTD variant=debug,release ${ADDRMD:+address-model=$ADDRMD} ${STDLIB:+$STDLIB} ${UBSAN:+undefined-sanitizer=norecover debug-symbols=on} ${ASAN:+address-sanitizer=norecover debug-symbols=on} ${TSAN:+thread-sanitizer=norecover debug-symbols=on} ${LINKFLAGS:+linkflags=$LINKFLAGS}
+./b2 -j3 $TARGET toolset=$TOOLSET cxxstd=$CXXSTD variant=debug,release ${ADDRMD:+address-model=$ADDRMD} ${STDLIB:+stdlib=$STDLIB} ${UBSAN:+undefined-sanitizer=norecover debug-symbols=on} ${ASAN:+address-sanitizer=norecover debug-symbols=on} ${TSAN:+thread-sanitizer=norecover debug-symbols=on} ${LINKFLAGS:+linkflags=$LINKFLAGS}
