@@ -76,7 +76,8 @@ jobs:
               compiler: clang-14,  cxxstd: '17,20,2b',          os: ubuntu-22.04, ccache_key: "san2" }
 
           - { name: "cfoa tsan (clang)", cxxstd: '11,14,17,20,2b', os: ubuntu-22.04, compiler: clang-14,
-              targets: 'libs/unordered/test//cfoa_tests', thread-sanitize: yes }
+              targets: 'libs/unordered/test//cfoa_tests', thread-sanitize: yes, 
+              stdlib: libc++, install: 'clang-14 libc++-14-dev libc++abi-14-dev' }
 
           # OSX, clang
           - { compiler: clang,     cxxstd: '03,11,14,17,2a',    os: macos-11, }
