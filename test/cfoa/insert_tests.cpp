@@ -188,37 +188,22 @@ namespace {
   {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
     {
-      std::mutex m;
       std::vector<std::thread> threads;
-      std::condition_variable cv;
-
-      auto ready = false;
-
       auto subslices = split(values, num_threads);
 
-      BOOST_ASSERT(subslices.size() == num_threads);
-
       for (std::size_t i = 0; i < num_threads; ++i) {
-        threads.emplace_back([&x, &m, &ready, &subslices, &cv, i] {
-          std::unique_lock<std::mutex> lk(m);
-          cv.wait(lk, [&] { return ready; });
-          lk.unlock();
+        threads.emplace_back([&x, &subslices, i] {
+          std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-          auto s = subslices[i];
-
-          for (auto const& r : s) {
-            bool b = x.insert(r);
-            (void)b;
+          {
+            auto s = subslices[i];
+            for (auto const& r : s) {
+              bool b = x.insert(r);
+              (void)b;
+            }
           }
         });
       }
-
-      {
-        std::unique_lock<std::mutex> lk(m);
-        ready = true;
-      }
-      cv.notify_all();
-
       for (auto& t : threads) {
         t.join();
       }
@@ -229,9 +214,32 @@ namespace {
   {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
     {
-      for (auto& r : values) {
-        bool b = x.insert(std::move(r));
-        (void)b;
+      BOOST_TEST_EQ(raii::copy_constructor, 0);
+
+      std::vector<std::thread> threads;
+      auto subslices = split(values, num_threads);
+
+      for (std::size_t i = 0; i < num_threads; ++i) {
+        threads.emplace_back([&x, &subslices, i] {
+          std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+          {
+            auto s = subslices[i];
+            for (auto& r : s) {
+              bool b = x.insert(std::move(r));
+              (void)b;
+            }
+          }
+        });
+      }
+      for (auto& t : threads) {
+        t.join();
+      }
+
+      if (std::is_same<T, typename X::value_type>::value) {
+        BOOST_TEST_EQ(raii::copy_constructor, x.size());
+      } else {
+        BOOST_TEST_EQ(raii::copy_constructor, 0);
       }
     }
   } rvalue_inserter;
@@ -240,14 +248,29 @@ namespace {
   {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
     {
-      x.insert(values.begin(), values.end());
+      std::vector<std::thread> threads;
+      auto subslices = split(values, num_threads);
+
+      for (std::size_t i = 0; i < num_threads; ++i) {
+        threads.emplace_back([&x, &subslices, i] {
+          std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+          {
+            auto s = subslices[i];
+            x.insert(s.begin(), s.end());
+          }
+        });
+      }
+      for (auto& t : threads) {
+        t.join();
+      }
     }
   } iterator_range_inserter;
 
   template <class X, class G, class F>
   void insert(X*, G gen, F inserter, test::random_generator rg)
   {
-    auto values = make_random_values(1024 * 1024, [&] { return gen(rg); });
+    auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
     BOOST_TEST_GT(values.size(), 0u);
 
     auto reference_map =
@@ -264,7 +287,10 @@ namespace {
 
       using value_type = typename X::value_type;
       BOOST_TEST_EQ(x.size(), x.visit_all([&](value_type const& kv) {
-        BOOST_TEST(reference_map.contains(kv.first));
+        if (BOOST_TEST(reference_map.contains(kv.first)) &&
+            rg == test::sequential) {
+          BOOST_TEST_EQ(kv.second, reference_map[kv.first]);
+        }
       }));
     }
 
@@ -286,15 +312,15 @@ namespace {
 } // namespace
 
 using test::default_generator;
-using test::generate_collisions;
 using test::limited_range;
+using test::sequential;
 
 // clang-format off
 UNORDERED_TEST(
   insert, ((map))
           ((value_type_generator)(init_type_generator))
           ((lvalue_inserter)(rvalue_inserter)(iterator_range_inserter))
-          ((default_generator)(limited_range)))
+          ((default_generator)(sequential)(limited_range)))
 // clang-format on
 
 RUN_TESTS()
