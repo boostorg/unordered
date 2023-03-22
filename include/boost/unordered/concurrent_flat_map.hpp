@@ -126,7 +126,7 @@ namespace boost {
       ///
 
       bool insert(value_type const& obj) { return table_.insert(obj); }
-      bool insert(value_type&& obj) { return table_.insert(obj); }
+      bool insert(value_type&& obj) { return table_.insert(std::move(obj)); }
 
       bool insert(init_type const& obj) { return table_.insert(obj); }
       bool insert(init_type&& obj) { return table_.insert(std::move(obj)); }
@@ -143,6 +143,10 @@ namespace boost {
       {
         return table_.visit_all(std::move(f));
       }
+
+      /// Hash Policy
+      ///
+      void rehash(size_type n) { table_.rehash(n); }
     };
   } // namespace unordered
 } // namespace boost
