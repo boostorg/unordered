@@ -146,8 +146,8 @@ struct atomic_integral
 {
   operator Integral()const{return n.load(std::memory_order_relaxed);}
   void operator=(Integral m){n.store(m,std::memory_order_relaxed);}
-  void operator|=(Integral m){n.fetch_or(m,std::memory_order_relaxed);}
-  void operator&=(Integral m){n.fetch_and(m,std::memory_order_relaxed);}
+  void operator|=(Integral m){n.fetch_or(m,std::memory_order_acq_rel);}
+  void operator&=(Integral m){n.fetch_and(m,std::memory_order_acq_rel);}
 
   std::atomic<Integral> n;
 };
