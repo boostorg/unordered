@@ -206,7 +206,7 @@ jobs:
 
       - name: Run tests
         if: '!matrix.coverity'
-        run: ci/build.sh
+        run: B2_TARGETS=${{matrix.targets}} ci/build.sh
 
       - name: Upload coverage
         if: matrix.coverage
