@@ -184,31 +184,50 @@ namespace {
     return subslices;
   }
 
+  template <class T, class F> void thread_runner(std::vector<T>& values, F f)
+  {
+    std::vector<std::thread> threads;
+    auto subslices = split(values, num_threads);
+
+    for (std::size_t i = 0; i < num_threads; ++i) {
+      threads.emplace_back([&f, &subslices, i] {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        auto s = subslices[i];
+        f(s);
+      });
+    }
+    for (auto& t : threads) {
+      t.join();
+    }
+  }
+
   struct lvalue_inserter_type
   {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
     {
-      std::vector<std::thread> threads;
-      auto subslices = split(values, num_threads);
-
-      for (std::size_t i = 0; i < num_threads; ++i) {
-        threads.emplace_back([&x, &subslices, i] {
-          std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-          {
-            auto s = subslices[i];
-            for (auto const& r : s) {
-              bool b = x.insert(r);
-              (void)b;
-            }
+      std::atomic_uint64_t num_inserts{0};
+      thread_runner(values, [&x, &num_inserts](boost::span<T> s) {
+        for (auto const& r : s) {
+          bool b = x.insert(r);
+          if (b) {
+            ++num_inserts;
           }
-        });
-      }
-      for (auto& t : threads) {
-        t.join();
-      }
+        }
+      });
+      BOOST_TEST_EQ(num_inserts, x.size());
     }
   } lvalue_inserter;
+
+  struct norehash_lvalue_inserter_type : public lvalue_inserter_type
+  {
+    template <class T, class X> void operator()(std::vector<T>& values, X& x)
+    {
+      x.reserve(values.size());
+      lvalue_inserter_type::operator()(values, x);
+      BOOST_TEST_EQ(raii::copy_constructor, 2 * x.size());
+      BOOST_TEST_EQ(raii::move_constructor, 0);
+    }
+  } norehash_lvalue_inserter;
 
   struct rvalue_inserter_type
   {
@@ -216,25 +235,16 @@ namespace {
     {
       BOOST_TEST_EQ(raii::copy_constructor, 0);
 
-      std::vector<std::thread> threads;
-      auto subslices = split(values, num_threads);
-
-      for (std::size_t i = 0; i < num_threads; ++i) {
-        threads.emplace_back([&x, &subslices, i] {
-          std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-          {
-            auto s = subslices[i];
-            for (auto& r : s) {
-              bool b = x.insert(std::move(r));
-              (void)b;
-            }
+      std::atomic_uint64_t num_inserts{0};
+      thread_runner(values, [&x, &num_inserts](boost::span<T> s) {
+        for (auto& r : s) {
+          bool b = x.insert(std::move(r));
+          if (b) {
+            ++num_inserts;
           }
-        });
-      }
-      for (auto& t : threads) {
-        t.join();
-      }
+        }
+      });
+      BOOST_TEST_EQ(num_inserts, x.size());
 
       if (std::is_same<T, typename X::value_type>::value) {
         BOOST_TEST_EQ(raii::copy_constructor, x.size());
@@ -244,26 +254,33 @@ namespace {
     }
   } rvalue_inserter;
 
+  struct norehash_rvalue_inserter_type : public rvalue_inserter_type
+  {
+    template <class T, class X> void operator()(std::vector<T>& values, X& x)
+    {
+      x.reserve(values.size());
+
+      BOOST_TEST_EQ(raii::copy_constructor, 0);
+      BOOST_TEST_EQ(raii::move_constructor, 0);
+
+      rvalue_inserter_type::operator()(values, x);
+
+      if (std::is_same<T, typename X::value_type>::value) {
+        BOOST_TEST_EQ(raii::copy_constructor, x.size());
+        BOOST_TEST_EQ(raii::move_constructor, x.size());
+      } else {
+        BOOST_TEST_EQ(raii::copy_constructor, 0);
+        BOOST_TEST_EQ(raii::move_constructor, 2 * x.size());
+      }
+    }
+  } norehash_rvalue_inserter;
+
   struct iterator_range_inserter_type
   {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
     {
-      std::vector<std::thread> threads;
-      auto subslices = split(values, num_threads);
-
-      for (std::size_t i = 0; i < num_threads; ++i) {
-        threads.emplace_back([&x, &subslices, i] {
-          std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-          {
-            auto s = subslices[i];
-            x.insert(s.begin(), s.end());
-          }
-        });
-      }
-      for (auto& t : threads) {
-        t.join();
-      }
+      thread_runner(
+        values, [&x](boost::span<T> s) { x.insert(s.begin(), s.end()); });
     }
   } iterator_range_inserter;
 
@@ -271,11 +288,8 @@ namespace {
   void insert(X*, G gen, F inserter, test::random_generator rg)
   {
     auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
-    BOOST_TEST_GT(values.size(), 0u);
-
     auto reference_map =
       boost::unordered_flat_map<raii, raii>(values.begin(), values.end());
-
     raii::reset_counts();
 
     {
@@ -287,10 +301,72 @@ namespace {
 
       using value_type = typename X::value_type;
       BOOST_TEST_EQ(x.size(), x.visit_all([&](value_type const& kv) {
-        if (BOOST_TEST(reference_map.contains(kv.first)) &&
-            rg == test::sequential) {
+        BOOST_TEST(reference_map.contains(kv.first));
+        if (rg == test::sequential) {
           BOOST_TEST_EQ(kv.second, reference_map[kv.first]);
         }
+      }));
+    }
+
+    BOOST_TEST_GE(raii::default_constructor, 0);
+    BOOST_TEST_GE(raii::copy_constructor, 0);
+    BOOST_TEST_GE(raii::move_constructor, 0);
+    BOOST_TEST_GT(raii::destructor, 0);
+
+    BOOST_TEST_EQ(raii::default_constructor + raii::copy_constructor +
+                    raii::move_constructor,
+      raii::destructor);
+
+    BOOST_TEST_EQ(raii::copy_assignment, 0);
+    BOOST_TEST_EQ(raii::move_assignment, 0);
+  }
+
+  template <class X> void insert_initializer_list(X*)
+  {
+    using value_type = typename X::value_type;
+
+    std::initializer_list<value_type> values{
+      value_type{raii{0}, raii{0}},
+      value_type{raii{1}, raii{1}},
+      value_type{raii{2}, raii{2}},
+      value_type{raii{3}, raii{3}},
+      value_type{raii{4}, raii{4}},
+      value_type{raii{5}, raii{5}},
+      value_type{raii{6}, raii{6}},
+      value_type{raii{6}, raii{6}},
+      value_type{raii{7}, raii{7}},
+      value_type{raii{8}, raii{8}},
+      value_type{raii{9}, raii{9}},
+      value_type{raii{10}, raii{10}},
+      value_type{raii{9}, raii{9}},
+      value_type{raii{8}, raii{8}},
+      value_type{raii{7}, raii{7}},
+      value_type{raii{6}, raii{6}},
+      value_type{raii{5}, raii{5}},
+      value_type{raii{4}, raii{4}},
+      value_type{raii{3}, raii{3}},
+      value_type{raii{2}, raii{2}},
+      value_type{raii{1}, raii{1}},
+      value_type{raii{0}, raii{0}},
+    };
+
+    std::vector<raii> dummy;
+
+    auto reference_map =
+      boost::unordered_flat_map<raii, raii>(values.begin(), values.end());
+    raii::reset_counts();
+
+    {
+      X x;
+
+      thread_runner(
+        dummy, [&x, &values](boost::span<raii>) { x.insert(values); });
+
+      BOOST_TEST_EQ(x.size(), reference_map.size());
+
+      BOOST_TEST_EQ(x.size(), x.visit_all([&](value_type const& kv) {
+        BOOST_TEST(reference_map.contains(kv.first));
+        BOOST_TEST_EQ(kv.second, reference_map[kv.first]);
       }));
     }
 
@@ -317,10 +393,16 @@ using test::sequential;
 
 // clang-format off
 UNORDERED_TEST(
-  insert, ((map))
-          ((value_type_generator)(init_type_generator))
-          ((lvalue_inserter)(rvalue_inserter)(iterator_range_inserter))
-          ((default_generator)(sequential)(limited_range)))
+  insert_initializer_list,
+  ((map)))
+
+UNORDERED_TEST(
+  insert,
+  ((map))
+  ((value_type_generator)(init_type_generator))
+  ((lvalue_inserter)(rvalue_inserter)(iterator_range_inserter)
+   (norehash_lvalue_inserter)(norehash_rvalue_inserter))
+  ((default_generator)(sequential)(limited_range)))
 // clang-format on
 
 RUN_TESTS()
