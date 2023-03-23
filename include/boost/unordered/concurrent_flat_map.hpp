@@ -139,6 +139,11 @@ namespace boost {
         }
       }
 
+      void insert(std::initializer_list<value_type> ilist)
+      {
+        this->insert(ilist.begin(), ilist.end());
+      }
+
       template <class F> std::size_t visit_all(F f)
       {
         return table_.visit_all(std::move(f));
@@ -147,6 +152,7 @@ namespace boost {
       /// Hash Policy
       ///
       void rehash(size_type n) { table_.rehash(n); }
+      void reserve(size_type n) { table_.reserve(n); }
     };
   } // namespace unordered
 } // namespace boost
