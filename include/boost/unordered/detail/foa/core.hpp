@@ -225,7 +225,7 @@ struct group15
   inline int match(std::size_t hash)const
   {
     return _mm_movemask_epi8(
-      _mm_cmpeq_epi8(load_si128(),_mm_set1_epi32(match_word(hash))))&0x7FFF;
+      _mm_cmpeq_epi8(load_metadata(),_mm_set1_epi32(match_word(hash))))&0x7FFF;
   }
 
   inline bool is_not_overflowed(std::size_t hash)const
@@ -250,7 +250,7 @@ struct group15
   inline int match_available()const
   {
     return _mm_movemask_epi8(
-      _mm_cmpeq_epi8(load_si128(),_mm_setzero_si128()))&0x7FFF;
+      _mm_cmpeq_epi8(load_metadata(),_mm_setzero_si128()))&0x7FFF;
   }
 
   inline bool is_occupied(std::size_t pos)const
@@ -276,7 +276,7 @@ private:
   static constexpr unsigned char available_=0,
                                  sentinel_=1;
 
-  inline __m128i load_si128()const
+  inline __m128i load_metadata()const
   {
 #if defined(BOOST_UNORDERED_THREAD_SANITIZER)
     /* ThreadSanitizer complains on 1-byte atomic writes combined with
@@ -416,8 +416,7 @@ struct group15
   inline int match(std::size_t hash)const
   {
     return simde_mm_movemask_epi8(vceqq_u8(
-      vld1q_u8(reinterpret_cast<const uint8_t*>(m)),
-      vdupq_n_u8(reduced_hash(hash))))&0x7FFF;
+      load_metadata(),vdupq_n_u8(reduced_hash(hash))))&0x7FFF;
   }
 
   inline bool is_not_overflowed(std::size_t hash)const
@@ -442,8 +441,7 @@ struct group15
   inline int match_available()const
   {
     return simde_mm_movemask_epi8(vceqq_u8(
-      vld1q_u8(reinterpret_cast<const uint8_t*>(m)),
-      vdupq_n_u8(0)))&0x7FFF;
+      load_metadata(),vdupq_n_u8(0)))&0x7FFF;
   }
 
   inline bool is_occupied(std::size_t pos)const
@@ -460,8 +458,7 @@ struct group15
   inline int match_occupied()const
   {
     return simde_mm_movemask_epi8(vcgtq_u8(
-      vld1q_u8(reinterpret_cast<const uint8_t*>(m)),
-      vdupq_n_u8(0)))&0x7FFF;
+      load_metadata(),vdupq_n_u8(0)))&0x7FFF;
   }
 
 private:
@@ -470,6 +467,22 @@ private:
 
   static constexpr unsigned char available_=0,
                                  sentinel_=1;
+
+  inline uint8x16_t load_metadata()const
+  {
+#if defined(BOOST_UNORDERED_THREAD_SANITIZER)
+    /* ThreadSanitizer complains on 1-byte atomic writes combined with
+     * 16-byte atomic reads.
+     */
+
+    alignas(16) uint8_t data[16]={
+      m[ 0],m[ 1],m[ 2],m[ 3],m[ 4],m[ 5],m[ 6],m[ 7],
+      m[ 8],m[ 9],m[10],m[11],m[12],m[13],m[14],m[15]};
+    return vld1q_u8(data);
+#else
+    return vld1q_u8(reinterpret_cast<const uint8_t*>(m));
+#endif
+  }
 
   inline static unsigned char reduced_hash(std::size_t hash)
   {
