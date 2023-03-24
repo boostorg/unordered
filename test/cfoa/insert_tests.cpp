@@ -32,7 +32,7 @@ struct raii
   int x_ = -1;
 
   raii() { ++default_constructor; }
-  explicit raii(int const x) : x_{x} { ++default_constructor; }
+  raii(int const x) : x_{x} { ++default_constructor; }
   raii(raii const& rhs) : x_{rhs.x_} { ++copy_constructor; }
   raii(raii&& rhs) noexcept : x_{rhs.x_}
   {
@@ -147,24 +147,22 @@ namespace {
 
   template <class T>
   std::vector<boost::span<T> > split(
-    std::vector<T>& vec, std::size_t const nt /* num threads*/)
+    boost::span<T> s, std::size_t const nt /* num threads*/)
   {
     std::vector<boost::span<T> > subslices;
     subslices.reserve(nt);
 
-    boost::span<T> s(vec);
-
-    auto a = vec.size() / nt;
+    auto a = s.size() / nt;
     auto b = a;
-    if (vec.size() % nt != 0) {
+    if (s.size() % nt != 0) {
       ++b;
     }
 
     auto num_a = nt;
     auto num_b = std::size_t{0};
 
-    if (nt * b > vec.size()) {
-      num_a = nt * b - vec.size();
+    if (nt * b > s.size()) {
+      num_a = nt * b - s.size();
       num_b = nt - num_a;
     }
 
@@ -187,7 +185,7 @@ namespace {
   template <class T, class F> void thread_runner(std::vector<T>& values, F f)
   {
     std::vector<std::thread> threads;
-    auto subslices = split(values, num_threads);
+    auto subslices = split<T>(values, num_threads);
 
     for (std::size_t i = 0; i < num_threads; ++i) {
       threads.emplace_back([&f, &subslices, i] {
@@ -215,6 +213,8 @@ namespace {
         }
       });
       BOOST_TEST_EQ(num_inserts, x.size());
+      BOOST_TEST_EQ(raii::copy_assignment, 0);
+      BOOST_TEST_EQ(raii::move_assignment, 0);
     }
   } lvalue_inserter;
 
@@ -251,6 +251,9 @@ namespace {
       } else {
         BOOST_TEST_EQ(raii::copy_constructor, 0);
       }
+
+      BOOST_TEST_EQ(raii::copy_assignment, 0);
+      BOOST_TEST_EQ(raii::move_assignment, 0);
     }
   } rvalue_inserter;
 
@@ -281,8 +284,78 @@ namespace {
     {
       thread_runner(
         values, [&x](boost::span<T> s) { x.insert(s.begin(), s.end()); });
+
+      BOOST_TEST_EQ(raii::copy_assignment, 0);
+      BOOST_TEST_EQ(raii::move_assignment, 0);
     }
   } iterator_range_inserter;
+
+  struct lvalue_insert_or_assign_copy_assign_type
+  {
+    template <class T, class X> void operator()(std::vector<T>& values, X& x)
+    {
+      thread_runner(values, [&x](boost::span<T> s) {
+        for (auto& r : s) {
+          x.insert_or_assign(r.first, r.second);
+        }
+      });
+
+      BOOST_TEST_EQ(raii::copy_constructor, 2 * x.size());
+      // don't check move construction count here because of rehashing
+      BOOST_TEST_GT(raii::move_constructor, 0);
+      BOOST_TEST_EQ(raii::copy_assignment, values.size() - x.size());
+      BOOST_TEST_EQ(raii::move_assignment, 0);
+    }
+  } lvalue_insert_or_assign_copy_assign;
+
+  struct lvalue_insert_or_assign_move_assign_type
+  {
+    template <class T, class X> void operator()(std::vector<T>& values, X& x)
+    {
+      thread_runner(values, [&x](boost::span<T> s) {
+        for (auto& r : s) {
+          x.insert_or_assign(r.first, std::move(r.second));
+        }
+      });
+
+      BOOST_TEST_EQ(raii::copy_constructor, x.size());
+      BOOST_TEST_GT(raii::move_constructor, x.size()); // rehashing
+      BOOST_TEST_EQ(raii::copy_assignment, 0);
+      BOOST_TEST_EQ(raii::move_assignment, values.size() - x.size());
+    }
+  } lvalue_insert_or_assign_move_assign;
+
+  struct rvalue_insert_or_assign_copy_assign_type
+  {
+    template <class T, class X> void operator()(std::vector<T>& values, X& x)
+    {
+      thread_runner(values, [&x](boost::span<T> s) {
+        for (auto& r : s) {
+          x.insert_or_assign(std::move(r.first), r.second);
+        }
+      });
+
+      BOOST_TEST_EQ(raii::copy_constructor, x.size());
+      BOOST_TEST_GT(raii::move_constructor, x.size()); // rehashing
+      BOOST_TEST_EQ(raii::copy_assignment, values.size() - x.size());
+      BOOST_TEST_EQ(raii::move_assignment, 0);
+    }
+  } rvalue_insert_or_assign_copy_assign;
+
+  struct rvalue_insert_or_assign_move_assign_type
+  {
+    template <class T, class X> void operator()(std::vector<T>& values, X& x)
+    {
+      thread_runner(values, [&x](boost::span<T> s) {
+        for (auto& r : s) {
+          x.insert_or_assign(std::move(r.first), std::move(r.second));
+        }
+      });
+
+      BOOST_TEST_EQ(raii::copy_assignment, 0);
+      BOOST_TEST_EQ(raii::move_assignment, values.size() - x.size());
+    }
+  } rvalue_insert_or_assign_move_assign;
 
   template <class X, class G, class F>
   void insert(X*, G gen, F inserter, test::random_generator rg)
@@ -316,9 +389,6 @@ namespace {
     BOOST_TEST_EQ(raii::default_constructor + raii::copy_constructor +
                     raii::move_constructor,
       raii::destructor);
-
-    BOOST_TEST_EQ(raii::copy_assignment, 0);
-    BOOST_TEST_EQ(raii::move_assignment, 0);
   }
 
   template <class X> void insert_initializer_list(X*)
@@ -402,6 +472,21 @@ UNORDERED_TEST(
   ((value_type_generator)(init_type_generator))
   ((lvalue_inserter)(rvalue_inserter)(iterator_range_inserter)
    (norehash_lvalue_inserter)(norehash_rvalue_inserter))
+  ((default_generator)(sequential)(limited_range)))
+
+UNORDERED_TEST(
+  insert,
+  ((map))
+  ((value_type_generator))
+  ((lvalue_insert_or_assign_copy_assign)(lvalue_insert_or_assign_move_assign))
+  ((default_generator)(sequential)(limited_range)))
+
+UNORDERED_TEST(
+  insert,
+  ((map))
+  ((init_type_generator))
+  ((lvalue_insert_or_assign_copy_assign)(lvalue_insert_or_assign_move_assign)
+   (rvalue_insert_or_assign_copy_assign)(rvalue_insert_or_assign_move_assign))
   ((default_generator)(sequential)(limited_range)))
 // clang-format on
 

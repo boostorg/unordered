@@ -149,6 +149,20 @@ namespace boost {
         return table_.visit_all(std::move(f));
       }
 
+      template <class M> bool insert_or_assign(key_type const& k, M&& obj)
+      {
+        return table_.try_emplace_or_visit(
+          k, [&](value_type& m) { m.second = std::forward<M>(obj); },
+          std::forward<M>(obj));
+      }
+
+      template <class M> bool insert_or_assign(key_type&& k, M&& obj)
+      {
+        return table_.try_emplace_or_visit(
+          std::move(k), [&](value_type& m) { m.second = std::forward<M>(obj); },
+          std::forward<M>(obj));
+      }
+
       /// Hash Policy
       ///
       void rehash(size_type n) { table_.rehash(n); }
