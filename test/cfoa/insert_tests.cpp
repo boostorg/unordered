@@ -205,7 +205,7 @@ namespace {
   {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
     {
-      std::atomic_uint64_t num_inserts{0};
+      std::atomic<std::uint64_t> num_inserts{0};
       thread_runner(values, [&x, &num_inserts](boost::span<T> s) {
         for (auto const& r : s) {
           bool b = x.insert(r);
@@ -235,7 +235,7 @@ namespace {
     {
       BOOST_TEST_EQ(raii::copy_constructor, 0);
 
-      std::atomic_uint64_t num_inserts{0};
+      std::atomic<std::uint64_t> num_inserts{0};
       thread_runner(values, [&x, &num_inserts](boost::span<T> s) {
         for (auto& r : s) {
           bool b = x.insert(std::move(r));
