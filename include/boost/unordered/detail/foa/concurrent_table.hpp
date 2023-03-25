@@ -346,16 +346,16 @@ public:
   }
 
   template<typename Key,typename F>
-  BOOST_FORCEINLINE std::size_t visit(const Key& x,F f)
+  BOOST_FORCEINLINE std::size_t visit(const Key& x,F&& f)
   {
     auto lck=shared_access();
     auto hash=this->hash_for(x);
     return unprotected_visit(
-      group_exclusive{},x,this->position_for(hash),hash,f);
+      group_exclusive{},x,this->position_for(hash),hash,std::forward<F>(f));
   }
 
   template<typename Key,typename F>
-  BOOST_FORCEINLINE std::size_t visit(const Key& x,F f)const
+  BOOST_FORCEINLINE std::size_t visit(const Key& x,F&& f)const
   {
     auto lck=shared_access();
     auto hash=this->hash_for(x);
@@ -364,40 +364,43 @@ public:
       [&](const value_type& v){f(v);});
   }
 
-  template<typename F> std::size_t visit_all(F f)
+  template<typename F> std::size_t visit_all(F&& f)
   {
-    // TODO: replace with group-protected algorithm
     auto lck=shared_access();
     std::size_t res=0;
-    this->for_all_elements([&](element_type* p){
+    for_all_elements(group_exclusive{},[&](element_type* p){
       f(type_policy::value_from(*p));
       ++res;
     });
     return res;
   }
 
-  template<typename F> std::size_t visit_all(F f)const
+  template<typename F> std::size_t visit_all(F&& f)const
   {
-    // TODO: replace with group-protected algorithm
-    return const_cast<concurrent_table*>(this)->
-      visit_all([&](const value_type& v){f(v);});
+    auto lck=shared_access();
+    std::size_t res=0;
+    for_all_elements(group_shared{},[&](element_type* p){
+      f(const_cast<const value_type&>(type_policy::value_from(*p)));
+      ++res;
+    });
+    return res;
   }
 
 #if defined(BOOST_UNORDERED_PARALLEL_ALGORITHMS)
   template<typename ExecutionPolicy,typename F>
-  void visit_all(ExecutionPolicy&& policy,F f)
+  void visit_all(ExecutionPolicy&& policy,F&& f)
   {
     auto lck=shared_access();
-    for_all_elements_exec(
+    for_all_elements(
       group_exclusive{},std::forward<ExecutionPolicy>(policy),
       [&](element_type* p){f(type_policy::value_from(*p));});
   }
 
   template<typename ExecutionPolicy,typename F>
-  void visit_all(ExecutionPolicy&& policy,F f)const
+  void visit_all(ExecutionPolicy&& policy,F&& f)const
   {
     auto lck=shared_access();
-    for_all_elements_exec(
+    for_all_elements(
       group_shared{},std::forward<ExecutionPolicy>(policy),
       [&](element_type* p)
       {f(const_cast<const value_type&>(type_policy::value_from(*p)));});
@@ -444,35 +447,47 @@ public:
   }
 
   template<typename Key,typename F,typename... Args>
-  BOOST_FORCEINLINE bool try_emplace_or_visit(Key&& x,F f,Args&&... args)
+  BOOST_FORCEINLINE bool try_emplace_or_visit(Key&& x,F&& f,Args&&... args)
   {
     return emplace_or_visit_impl(
-      f,try_emplace_args_t{},std::forward<Key>(x),std::forward<Args>(args)...);
+      group_exclusive{},std::forward<F>(f),
+      try_emplace_args_t{},std::forward<Key>(x),std::forward<Args>(args)...);
   }
 
   template<typename F,typename... Args>
-  BOOST_FORCEINLINE bool emplace_or_visit(F f,Args&&... args)
+  BOOST_FORCEINLINE bool emplace_or_visit(F&& f,Args&&... args)
   {
-    return construct_and_emplace_or_visit(f,std::forward<Args>(args)...);
+    return construct_and_emplace_or_visit(
+      group_exclusive{},std::forward<F>(f),std::forward<Args>(args)...);
   }
 
   template<typename F>
-  BOOST_FORCEINLINE bool insert_or_visit(const init_type& x,F f)
-    {return emplace_or_visit_impl(f,x);}
+  BOOST_FORCEINLINE bool insert_or_visit(const init_type& x,F&& f)
+  {
+    return emplace_or_visit_impl(group_exclusive{},std::forward<F>(f),x);
+  }
 
   template<typename F>
-  BOOST_FORCEINLINE bool insert_or_visit(init_type&& x,F f)
-    {return emplace_or_visit_impl(f,std::move(x));}
+  BOOST_FORCEINLINE bool insert_or_visit(init_type&& x,F&& f)
+  {
+    return emplace_or_visit_impl(
+      group_exclusive{},std::forward<F>(f),std::move(x));
+  }
 
   /* typename=void tilts call ambiguities in favor of init_type */
 
   template<typename F,typename=void>
-  BOOST_FORCEINLINE bool insert_or_visit(const value_type& x,F f)
-    {return emplace_or_visit_impl(f,x);}
+  BOOST_FORCEINLINE bool insert_or_visit(const value_type& x,F&& f)
+  {
+    return emplace_or_visit_impl(group_exclusive{},std::forward<F>(f),x);
+  }
 
   template<typename F,typename=void>
-  BOOST_FORCEINLINE bool insert_or_visit(value_type&& x,F f)
-    {return emplace_or_visit_impl(f,std::move(x));}
+  BOOST_FORCEINLINE bool insert_or_visit(value_type&& x,F&& f)
+  {
+    return emplace_or_visit_impl(
+      group_exclusive{},std::forward<F>(f),std::move(x));
+  }
 
   template<typename Key>
   BOOST_FORCEINLINE std::size_t erase(Key&& x)
@@ -481,7 +496,7 @@ public:
   }
 
   template<typename Key,typename F>
-  BOOST_FORCEINLINE auto erase_if(Key&& x,F f)->typename std::enable_if<
+  BOOST_FORCEINLINE auto erase_if(Key&& x,F&& f)->typename std::enable_if<
     !is_execution_policy<Key>::value,std::size_t>::type
   {
     auto lck=shared_access();
@@ -499,21 +514,27 @@ public:
   template<typename F>
   std::size_t erase_if(F&& f)
   {
-    // TODO: replace with group-protected algorithm
     auto lck=shared_access();
-    return super::erase_if_impl(std::forward<F>(f));
+    std::size_t s=size();
+    for_all_elements(
+      group_exclusive{},
+      [&,this](group_type* pg,unsigned int n,element_type* p){
+        if(f(const_cast<const value_type&>(type_policy::value_from(*p)))){
+          super::erase(pg,n,p);
+        }
+      });
+    return std::size_t(s-size());
   }
 
 #if defined(BOOST_UNORDERED_PARALLEL_ALGORITHMS)
   template<typename ExecutionPolicy,typename F>
-  auto erase_if(ExecutionPolicy&& policy,F f)->typename std::enable_if<
+  auto erase_if(ExecutionPolicy&& policy,F&& f)->typename std::enable_if<
     is_execution_policy<ExecutionPolicy>::value,void>::type
   {
     auto lck=shared_access();
-    for_all_elements_exec(
+    for_all_elements(
       group_exclusive{},std::forward<ExecutionPolicy>(policy),
-      [&,this](group_type* pg,unsigned int n,element_type* p)
-      {
+      [&,this](group_type* pg,unsigned int n,element_type* p){
         if(f(const_cast<const value_type&>(type_policy::value_from(*p)))){
           super::erase(pg,n,p);
         }
@@ -538,13 +559,15 @@ public:
   template<typename Hash2,typename Pred2>
   void merge(concurrent_table<TypePolicy,Hash2,Pred2,Allocator>& x)
   {
-    // TODO: replace with group-protected algorithm
     // TODO: consider grabbing shared access on *this at this level
-    auto lck=x.shared_access(); // TODO: can deadlock if x1.merge(x2) while x2.merge(x1)
-    x.for_all_elements([&,this](group_type* pg,unsigned int n,element_type* p){
-      erase_on_exit e{x,pg,n,p};
-      if(!emplace_impl(type_policy::move(*p)))e.rollback();
-    });
+    // TODO: can deadlock if x1.merge(x2) while x2.merge(x1)
+    auto lck=x.shared_access();
+    x.for_all_elements(
+      group_exclusive{},
+      [&,this](group_type* pg,unsigned int n,element_type* p){
+        erase_on_exit e{x,pg,n,p};
+        if(!emplace_impl(type_policy::move(*p)))e.rollback();
+      });
   }
 
   template<typename Hash2,typename Pred2>
@@ -609,9 +632,9 @@ public:
   }
 
   template<typename Predicate>
-  friend std::size_t erase_if(concurrent_table& x,Predicate pr)
+  friend std::size_t erase_if(concurrent_table& x,Predicate&& pr)
   {
-    return x.erase_if(pr);
+    return x.erase_if(std::forward<Predicate>(pr));
   }
 
 private:
@@ -789,49 +812,52 @@ private:
   BOOST_FORCEINLINE bool construct_and_emplace(Args&&... args)
   {
     return construct_and_emplace_or_visit(
-      [](value_type&){},std::forward<Args>(args)...);
+      group_shared{},[](const value_type&){},std::forward<Args>(args)...);
   }
 
-  template<typename F,typename... Args>
-  BOOST_FORCEINLINE bool construct_and_emplace_or_visit(F&& f,Args&&... args)
+  template<typename GroupAccessMode,typename F,typename... Args>
+  BOOST_FORCEINLINE bool construct_and_emplace_or_visit(
+    GroupAccessMode access_mode,F&& f,Args&&... args)
   {
     auto lck=shared_access();
 
     auto x=alloc_make_insert_type<type_policy>(
       this->al(),std::forward<Args>(args)...);
     int res=unprotected_norehash_emplace_or_visit(
-      std::forward<F>(f),type_policy::move(x.value()));
+      access_mode,std::forward<F>(f),type_policy::move(x.value()));
     if(BOOST_LIKELY(res>=0))return res!=0;
 
     lck.unlock();
 
     rehash_if_full();
     return noinline_emplace_or_visit(
-      std::forward<F>(f),type_policy::move(x.value()));
+      access_mode,std::forward<F>(f),type_policy::move(x.value()));
   }
 
   template<typename... Args>
   BOOST_FORCEINLINE bool emplace_impl(Args&&... args)
   {
     return emplace_or_visit_impl(
-      [](value_type&){},std::forward<Args>(args)...);
+      group_shared{},[](const value_type&){},std::forward<Args>(args)...);
   }
 
-  template<typename F,typename... Args>
-  BOOST_NOINLINE bool noinline_emplace_or_visit(F&& f,Args&&... args)
+  template<typename GroupAccessMode,typename F,typename... Args>
+  BOOST_NOINLINE bool noinline_emplace_or_visit(
+    GroupAccessMode access_mode,F&& f,Args&&... args)
   {
     return emplace_or_visit_impl(
-      std::forward<F>(f),std::forward<Args>(args)...);
+      access_mode,std::forward<F>(f),std::forward<Args>(args)...);
   }
 
-  template<typename F,typename... Args>
-  BOOST_FORCEINLINE bool emplace_or_visit_impl(F&& f,Args&&... args)
+  template<typename GroupAccessMode,typename F,typename... Args>
+  BOOST_FORCEINLINE bool emplace_or_visit_impl(
+    GroupAccessMode access_mode,F&& f,Args&&... args)
   {
     for(;;){
       {
         auto lck=shared_access();
         int res=unprotected_norehash_emplace_or_visit(
-          std::forward<F>(f),std::forward<Args>(args)...);
+          access_mode,std::forward<F>(f),std::forward<Args>(args)...);
         if(BOOST_LIKELY(res>=0))return res!=0;
       }
       rehash_if_full();
@@ -879,9 +905,10 @@ private:
     bool        commit_=false;
   };
 
-  template<typename F,typename... Args>
+  template<typename GroupAccessMode,typename F,typename... Args>
   BOOST_FORCEINLINE int
-  unprotected_norehash_emplace_or_visit(F&& f,Args&&... args)
+  unprotected_norehash_emplace_or_visit(
+    GroupAccessMode access_mode,F&& f,Args&&... args)
   {
     const auto       &k=this->key_from(std::forward<Args>(args)...);
     auto             hash=this->hash_for(k);
@@ -891,14 +918,14 @@ private:
     startover:
       boost::uint32_t counter=insert_counter(pos0);
       if(unprotected_visit(
-        group_exclusive{},k,pos0,hash,std::forward<F>(f)))return 0;
+        access_mode,k,pos0,hash,std::forward<F>(f)))return 0;
 
       reserve_size rsize(*this);
       if(BOOST_LIKELY(rsize.succeeded())){
         for(prober pb(pos0);;pb.next(this->arrays.groups_size_mask)){
           auto pos=pb.get();
           auto pg=this->arrays.groups+pos;
-          auto lck=exclusive_access(pos);
+          auto lck=access(group_exclusive{},pos);
           auto mask=pg->match_available();
           if(BOOST_LIKELY(mask!=0)){
             auto n=unchecked_countr_zero(mask);
@@ -926,23 +953,49 @@ private:
     if(this->size_==this->ml)this->unchecked_rehash_for_growth();
   }
 
+  template<typename GroupAccessMode,typename F>
+  auto for_all_elements(GroupAccessMode access_mode,F f)
+    ->decltype(f(nullptr),void())
+  {
+    for_all_elements(
+      access_mode,[&](group_type*,unsigned int,element_type* p){f(p);});
+  }
+
+  template<typename GroupAccessMode,typename F>
+  auto for_all_elements(GroupAccessMode access_mode,F f)
+    ->decltype(f(nullptr,0,nullptr),void())
+  {
+    auto p=this->arrays.elements;
+    if(!p)return;
+    for(auto pg=this->arrays.groups,last=pg+this->arrays.groups_size_mask+1;
+        pg!=last;++pg,p+=N){
+      auto lck=access(access_mode,pg-this->arrays.groups);
+      auto mask=this->match_really_occupied(pg,last);
+      while(mask){
+        auto n=unchecked_countr_zero(mask);
+        f(pg,n,p+n);
+        mask&=mask-1;
+      }
+    }
+  }
+
 #if defined(BOOST_UNORDERED_PARALLEL_ALGORITHMS)
   template<typename GroupAccessMode,typename ExecutionPolicy,typename F>
-  auto for_all_elements_exec(
+  auto for_all_elements(
     GroupAccessMode access_mode,ExecutionPolicy&& policy,F f)
     ->decltype(f(nullptr),void())
   {
-    for_all_elements_exec(
+    for_all_elements(
       access_mode,std::forward<ExecutionPolicy>(policy),
       [&](group_type*,unsigned int,element_type* p){f(p);});
   }
 
   template<typename GroupAccessMode,typename ExecutionPolicy,typename F>
-  auto for_all_elements_exec(
+  auto for_all_elements(
     GroupAccessMode access_mode,ExecutionPolicy&& policy,F f)
     ->decltype(f(nullptr,0,nullptr),void())
   {
-    auto lck=shared_access();
+    if(!this->arrays.elements)return;
     auto first=this->arrays.groups,
          last=first+this->arrays.groups_size_mask+1;
     std::for_each(std::forward<ExecutionPolicy>(policy),first,last,
