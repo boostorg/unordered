@@ -422,14 +422,14 @@ public:
   template<typename Predicate>
   friend std::size_t erase_if(table& x,Predicate&& pr)
   {
-    std::size_t s=size();
+    std::size_t s=x.size();
     x.for_all_elements(
       [&](group_type* pg,unsigned int n,element_type* p){
         if(pr(const_cast<const value_type&>(type_policy::value_from(*p)))){
-          x.erase(pg,n,p);
+          x.super::erase(pg,n,p);
         }
       });
-    return std::size_t(s-size());
+    return std::size_t(s-x.size());
   }
 
 private:
