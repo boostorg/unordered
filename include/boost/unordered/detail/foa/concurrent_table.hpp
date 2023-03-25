@@ -969,7 +969,7 @@ private:
     if(!p)return;
     for(auto pg=this->arrays.groups,last=pg+this->arrays.groups_size_mask+1;
         pg!=last;++pg,p+=N){
-      auto lck=access(access_mode,pg-this->arrays.groups);
+      auto lck=access(access_mode,(std::size_t)(pg-this->arrays.groups));
       auto mask=this->match_really_occupied(pg,last);
       while(mask){
         auto n=unchecked_countr_zero(mask);
