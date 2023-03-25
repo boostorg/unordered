@@ -422,10 +422,16 @@ public:
   template<typename Predicate>
   friend std::size_t erase_if(table& x,Predicate& pr)
   {
+    using value_reference=typename std::conditional<
+      std::is_same<key_type,value_type>::value,
+      const_reference,
+      reference
+    >::type;
+
     std::size_t s=x.size();
     x.for_all_elements(
       [&](group_type* pg,unsigned int n,element_type* p){
-        if(pr(const_cast<const value_type&>(type_policy::value_from(*p)))){
+        if(pr(const_cast<value_reference>(type_policy::value_from(*p)))){
           x.super::erase(pg,n,p);
         }
       });
