@@ -423,10 +423,10 @@ public:
   friend std::size_t erase_if(table& x,Predicate&& pr)
   {
     std::size_t s=size();
-    this->for_all_elements(
-      [&,this](group_type* pg,unsigned int n,element_type* p){
+    x.for_all_elements(
+      [&](group_type* pg,unsigned int n,element_type* p){
         if(pr(const_cast<const value_type&>(type_policy::value_from(*p))){
-          this->erase(pg,n,p);
+          x.erase(pg,n,p);
         }
       });
     return std::size_t(s-size());
