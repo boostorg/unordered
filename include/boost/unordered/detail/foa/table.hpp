@@ -420,9 +420,16 @@ public:
   using super::reserve;
 
   template<typename Predicate>
-  friend std::size_t erase_if(table& x,Predicate pr)
+  friend std::size_t erase_if(table& x,Predicate&& pr)
   {
-    return x.erase_if_impl(pr);
+    std::size_t s=size();
+    this->for_all_elements(
+      [&,this](group_type* pg,unsigned int n,element_type* p){
+        if(pr(const_cast<const value_type&>(type_policy::value_from(*p))){
+          this->erase(pg,n,p);
+        }
+      });
+    return std::size_t(s-size());
   }
 
 private:

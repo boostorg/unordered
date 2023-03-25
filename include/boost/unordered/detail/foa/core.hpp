@@ -1616,16 +1616,6 @@ public:
     return it;
   }
 
-  template<typename Predicate>
-  std::size_t erase_if_impl(Predicate&& pr)
-  {
-    std::size_t s=size();
-    for_all_elements([&,this](group_type* pg,unsigned int n,element_type* p){
-      if(pr(type_policy::value_from(*p))) erase(pg,n,p);
-    });
-    return std::size_t(s-size());
-  }
-
   template<typename F>
   void for_all_elements(F f)const
   {
