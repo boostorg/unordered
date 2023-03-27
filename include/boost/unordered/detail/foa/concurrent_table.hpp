@@ -453,16 +453,26 @@ public:
       group_exclusive{},std::forward<F>(f),std::move(x));
   }
 
-  /* typename=void tilts call ambiguities in favor of init_type */
+  /* SFINAE tilts call ambiguities in favor of init_type */
 
-  template<typename F,typename=void>
-  BOOST_FORCEINLINE bool insert_or_visit(const value_type& x,F&& f)
+  template<typename Value,typename F>
+  BOOST_FORCEINLINE auto insert_or_visit(const Value& x,F&& f)
+    ->typename std::enable_if<
+      !std::is_same<init_type,value_type>::value&&
+      std::is_same<Value,value_type>::value,
+      bool
+    >::type
   {
     return emplace_or_visit_impl(group_exclusive{},std::forward<F>(f),x);
   }
 
-  template<typename F,typename=void>
-  BOOST_FORCEINLINE bool insert_or_visit(value_type&& x,F&& f)
+  template<typename Value,typename F>
+  BOOST_FORCEINLINE auto insert_or_visit(Value&& x,F&& f)
+    ->typename std::enable_if<
+      !std::is_same<init_type,value_type>::value&&
+      std::is_same<Value,value_type>::value,
+      bool
+    >::type
   {
     return emplace_or_visit_impl(
       group_exclusive{},std::forward<F>(f),std::move(x));
