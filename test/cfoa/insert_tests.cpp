@@ -8,6 +8,7 @@
 #include <boost/unordered/concurrent_flat_map.hpp>
 
 #include <boost/container_hash/hash.hpp>
+#include <boost/core/ignore_unused.hpp>
 #include <boost/core/span.hpp>
 #include <boost/unordered/unordered_flat_map.hpp>
 
@@ -18,6 +19,26 @@
 #include <vector>
 
 constexpr std::size_t const num_threads = 16;
+
+struct transparent_hash
+{
+  using is_transparent = void;
+
+  template <class T> std::size_t operator()(T const& t) const noexcept
+  {
+    return boost::hash<T>()(t);
+  }
+};
+
+struct transparent_key_equal
+{
+  using is_transparent = void;
+
+  template <class T, class U> bool operator()(T const& lhs, U const& rhs) const
+  {
+    return lhs == rhs;
+  }
+};
 
 struct raii
 {
@@ -68,6 +89,25 @@ struct raii
   friend bool operator!=(raii const& lhs, raii const& rhs)
   {
     return !(lhs == rhs);
+  }
+
+  friend bool operator==(raii const& lhs, int const x)
+  {
+    return lhs.x_ == x;
+  }
+  friend bool operator!=(raii const& lhs, int const x)
+  {
+    return !(lhs.x_ == x);
+  }
+
+  friend bool operator==(int const x, raii const& rhs)
+  {
+    return rhs.x_ == x;
+  }
+
+  friend bool operator!=(int const x, raii const& rhs)
+  {
+    return !(rhs.x_ == x);
   }
 
   friend std::ostream& operator<<(std::ostream& os, raii const& rhs)
@@ -300,6 +340,7 @@ namespace {
         }
       });
 
+      BOOST_TEST_EQ(raii::default_constructor, 0);
       BOOST_TEST_EQ(raii::copy_constructor, 2 * x.size());
       // don't check move construction count here because of rehashing
       BOOST_TEST_GT(raii::move_constructor, 0);
@@ -318,6 +359,7 @@ namespace {
         }
       });
 
+      BOOST_TEST_EQ(raii::default_constructor, 0);
       BOOST_TEST_EQ(raii::copy_constructor, x.size());
       BOOST_TEST_GT(raii::move_constructor, x.size()); // rehashing
       BOOST_TEST_EQ(raii::copy_assignment, 0);
@@ -335,6 +377,7 @@ namespace {
         }
       });
 
+      BOOST_TEST_EQ(raii::default_constructor, 0);
       BOOST_TEST_EQ(raii::copy_constructor, x.size());
       BOOST_TEST_GT(raii::move_constructor, x.size()); // rehashing
       BOOST_TEST_EQ(raii::copy_assignment, values.size() - x.size());
@@ -352,10 +395,61 @@ namespace {
         }
       });
 
+      BOOST_TEST_EQ(raii::default_constructor, 0);
       BOOST_TEST_EQ(raii::copy_assignment, 0);
       BOOST_TEST_EQ(raii::move_assignment, values.size() - x.size());
     }
   } rvalue_insert_or_assign_move_assign;
+
+  struct transparent_insert_or_assign_copy_assign_type
+  {
+    template <class T, class X> void operator()(std::vector<T>& values, X& x)
+    {
+      using is_transparent =
+        typename boost::make_void<typename X::hasher::is_transparent,
+          typename X::key_equal::is_transparent>::type;
+
+      boost::ignore_unused<is_transparent>();
+
+      BOOST_TEST_EQ(raii::default_constructor, 0);
+
+      thread_runner(values, [&x](boost::span<T> s) {
+        for (auto& r : s) {
+          x.insert_or_assign(r.first.x_, r.second);
+        }
+      });
+
+      BOOST_TEST_EQ(raii::default_constructor, x.size());
+      BOOST_TEST_EQ(raii::copy_constructor, x.size());
+      BOOST_TEST_GT(raii::move_constructor, x.size()); // rehashing
+      BOOST_TEST_EQ(raii::copy_assignment, values.size() - x.size());
+      BOOST_TEST_EQ(raii::move_assignment, 0);
+    }
+  } transparent_insert_or_assign_copy_assign;
+
+  struct transparent_insert_or_assign_move_assign_type
+  {
+    template <class T, class X> void operator()(std::vector<T>& values, X& x)
+    {
+      using is_transparent =
+        typename boost::make_void<typename X::hasher::is_transparent,
+          typename X::key_equal::is_transparent>::type;
+
+      boost::ignore_unused<is_transparent>();
+
+      thread_runner(values, [&x](boost::span<T> s) {
+        for (auto& r : s) {
+          x.insert_or_assign(r.first.x_, std::move(r.second));
+        }
+      });
+
+      BOOST_TEST_EQ(raii::default_constructor, x.size());
+      BOOST_TEST_EQ(raii::copy_constructor, 0);
+      BOOST_TEST_GT(raii::move_constructor, 2 * x.size()); // rehashing
+      BOOST_TEST_EQ(raii::copy_assignment, 0);
+      BOOST_TEST_EQ(raii::move_assignment, values.size() - x.size());
+    }
+  } transparent_insert_or_assign_move_assign;
 
   template <class X, class G, class F>
   void insert(X*, G gen, F inserter, test::random_generator rg)
@@ -454,6 +548,8 @@ namespace {
   }
 
   boost::unordered::concurrent_flat_map<raii, raii>* map;
+  boost::unordered::concurrent_flat_map<raii, raii, transparent_hash,
+    transparent_key_equal>* transparent_map;
 
 } // namespace
 
@@ -487,6 +583,13 @@ UNORDERED_TEST(
   ((init_type_generator))
   ((lvalue_insert_or_assign_copy_assign)(lvalue_insert_or_assign_move_assign)
    (rvalue_insert_or_assign_copy_assign)(rvalue_insert_or_assign_move_assign))
+  ((default_generator)(sequential)(limited_range)))
+
+UNORDERED_TEST(
+  insert,
+  ((transparent_map))
+  ((init_type_generator))
+  ((transparent_insert_or_assign_copy_assign)(transparent_insert_or_assign_move_assign))
   ((default_generator)(sequential)(limited_range)))
 // clang-format on
 

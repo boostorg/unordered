@@ -16,6 +16,7 @@
 #define BOOST_UNORDERED_CONCURRENT_FLAT_MAP_HPP
 
 #include <boost/unordered/detail/foa/concurrent_table.hpp>
+#include <boost/unordered/detail/type_traits.hpp>
 
 #include <boost/container_hash/hash.hpp>
 #include <boost/core/allocator_access.hpp>
@@ -160,6 +161,17 @@ namespace boost {
       {
         return table_.try_emplace_or_visit(
           std::move(k), [&](value_type& m) { m.second = std::forward<M>(obj); },
+          std::forward<M>(obj));
+      }
+
+      template <class K, class M>
+      typename std::enable_if<
+        detail::are_transparent<K, hasher, key_equal>::value, bool>::type
+      insert_or_assign(K&& k, M&& obj)
+      {
+        return table_.try_emplace_or_visit(
+          std::forward<K>(k),
+          [&](value_type& m) { m.second = std::forward<M>(obj); },
           std::forward<M>(obj));
       }
 
