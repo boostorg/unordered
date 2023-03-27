@@ -279,7 +279,8 @@ using concurrent_table_core_impl=table_core<
 #endif
 
 template<typename TypePolicy,typename Hash,typename Pred,typename Allocator>
-class concurrent_table:concurrent_table_core_impl<TypePolicy,Hash,Pred,Allocator>
+class concurrent_table:
+  concurrent_table_core_impl<TypePolicy,Hash,Pred,Allocator>
 {
   using super=concurrent_table_core_impl<TypePolicy,Hash,Pred,Allocator>;
   using type_policy=typename super::type_policy;
