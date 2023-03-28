@@ -42,13 +42,13 @@ struct transparent_key_equal
 
 struct raii
 {
-  static std::atomic_int default_constructor;
-  static std::atomic_int copy_constructor;
-  static std::atomic_int move_constructor;
-  static std::atomic_int destructor;
+  static std::atomic<std::uint32_t> default_constructor;
+  static std::atomic<std::uint32_t> copy_constructor;
+  static std::atomic<std::uint32_t> move_constructor;
+  static std::atomic<std::uint32_t> destructor;
 
-  static std::atomic_int copy_assignment;
-  static std::atomic_int move_assignment;
+  static std::atomic<std::uint32_t> copy_assignment;
+  static std::atomic<std::uint32_t> move_assignment;
 
   int x_ = -1;
 
@@ -128,12 +128,12 @@ struct raii
   }
 };
 
-std::atomic_int raii::default_constructor{0};
-std::atomic_int raii::copy_constructor{0};
-std::atomic_int raii::move_constructor{0};
-std::atomic_int raii::destructor{0};
-std::atomic_int raii::copy_assignment{0};
-std::atomic_int raii::move_assignment{0};
+std::atomic<std::uint32_t> raii::default_constructor{0};
+std::atomic<std::uint32_t> raii::copy_constructor{0};
+std::atomic<std::uint32_t> raii::move_constructor{0};
+std::atomic<std::uint32_t> raii::destructor{0};
+std::atomic<std::uint32_t> raii::copy_assignment{0};
+std::atomic<std::uint32_t> raii::move_assignment{0};
 
 std::size_t hash_value(raii const& r) noexcept
 {
