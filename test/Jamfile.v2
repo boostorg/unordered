@@ -158,6 +158,55 @@ run exception/rehash_exception_tests.cpp      : : : $(CPP11) <define>BOOST_UNORD
 run exception/swap_exception_tests.cpp        : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_swap_exception_tests ;
 run exception/merge_exception_tests.cpp       : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_merge_exception_tests ;
 
+alias foa_tests :
+  hash_is_avalanching_test
+  foa_fwd_set_test
+  foa_fwd_map_test
+  foa_compile_set
+  foa_compile_map
+  foa_noexcept_tests
+  foa_incomplete_test
+  foa_simple_tests
+  foa_equivalent_keys_tests
+  foa_constructor_tests
+  foa_copy_tests
+  foa_move_tests
+  foa_post_move_tests
+  foa_assign_tests
+  foa_insert_tests
+  foa_insert_hint_tests
+  foa_emplace_tests
+  foa_erase_tests
+  foa_merge_tests
+  foa_find_tests
+  foa_at_tests
+  foa_load_factor_tests
+  foa_rehash_tests
+  foa_equality_tests
+  foa_swap_tests
+  foa_transparent_tests
+  foa_reserve_tests
+  foa_contains_tests
+  foa_erase_if
+  foa_scary_tests
+  foa_init_type_insert_tests
+  foa_max_load_tests
+  foa_extract_tests
+  foa_node_handle_tests
+  foa_uses_allocator
+  foa_link_test
+  foa_scoped_allocator
+  foa_constructor_exception_tests
+  foa_copy_exception_tests
+  foa_assign_exception_tests
+  foa_move_assign_exception_tests
+  foa_insert_exception_tests
+  foa_erase_exception_tests
+  foa_rehash_exception_tests
+  foa_swap_exception_tests
+  foa_merge_exception_tests
+;
+
 rule build_cfoa ( name )
 {
   run cfoa/$(name).cpp : : : $(CPP11) : cfoa_$(name) ;
