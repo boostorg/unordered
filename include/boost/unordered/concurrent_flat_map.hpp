@@ -175,6 +175,40 @@ namespace boost {
           std::forward<M>(obj));
       }
 
+      template <class F> bool insert_or_visit(value_type const& obj, F f)
+      {
+        return table_.insert_or_visit(obj, std::move(f));
+      }
+
+      template <class F> bool insert_or_visit(value_type&& obj, F f)
+      {
+        return table_.insert_or_visit(std::move(obj), std::move(f));
+      }
+
+      template <class F> bool insert_or_visit(init_type const& obj, F f)
+      {
+        return table_.insert_or_visit(obj, std::move(f));
+      }
+
+      template <class F> bool insert_or_visit(init_type&& obj, F f)
+      {
+        return table_.insert_or_visit(std::move(obj), std::move(f));
+      }
+
+      template <class InputIterator, class F>
+      void insert_or_visit(InputIterator first, InputIterator last, F f)
+      {
+        for (; first != last; ++first) {
+          table_.insert_or_visit(*first, f);
+        }
+      }
+
+      template <class F>
+      void insert_or_visit(std::initializer_list<value_type> ilist, F f)
+      {
+        this->insert_or_visit(ilist.begin(), ilist.end(), std::move(f));
+      }
+
       /// Hash Policy
       ///
       void rehash(size_type n) { table_.rehash(n); }
