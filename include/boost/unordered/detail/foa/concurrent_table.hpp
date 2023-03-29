@@ -656,7 +656,6 @@ private:
 
   shared_lock_guard shared_access()const
   {
-    // TODO: make this more sophisticated (even distribution)
     thread_local auto id=(++thread_counter)%mutexes.size();
 
     return shared_lock_guard{mutexes[id]};
@@ -1051,10 +1050,12 @@ private:
   }
 #endif
 
-  /* TODO: thread_counter should be static */
-  mutable std::atomic<unsigned int> thread_counter{0};
-  mutable multimutex_type           mutexes;
+  static std::atomic<std::size_t> thread_counter;
+  mutable multimutex_type         mutexes;
 };
+
+template<typename T,typename H,typename P,typename A>
+std::atomic<std::size_t> concurrent_table<T,H,P,A>::thread_counter=0;
 
 #if defined(BOOST_MSVC)
 #pragma warning(pop) /* C4714 */
