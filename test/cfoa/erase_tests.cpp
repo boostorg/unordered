@@ -21,7 +21,7 @@ namespace {
         }
       });
 
-      BOOST_TEST_EQ(x.size(), 0);
+      BOOST_TEST_EQ(x.size(), 0u);
       BOOST_TEST(x.empty());
     }
   } lvalue_eraser;
@@ -52,10 +52,10 @@ namespace {
       eraser(values, x);
     }
 
-    BOOST_TEST_GE(raii::default_constructor, 0);
-    BOOST_TEST_GE(raii::copy_constructor, 0);
-    BOOST_TEST_GE(raii::move_constructor, 0);
-    BOOST_TEST_GT(raii::destructor, 0);
+    BOOST_TEST_GE(raii::default_constructor, 0u);
+    BOOST_TEST_GE(raii::copy_constructor, 0u);
+    BOOST_TEST_GE(raii::move_constructor, 0u);
+    BOOST_TEST_GT(raii::destructor, 0u);
 
     BOOST_TEST_EQ(raii::default_constructor + raii::copy_constructor +
                     raii::move_constructor,

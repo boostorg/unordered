@@ -25,8 +25,8 @@ namespace {
         }
       });
       BOOST_TEST_EQ(num_inserts, x.size());
-      BOOST_TEST_EQ(raii::copy_assignment, 0);
-      BOOST_TEST_EQ(raii::move_assignment, 0);
+      BOOST_TEST_EQ(raii::copy_assignment, 0u);
+      BOOST_TEST_EQ(raii::move_assignment, 0u);
     }
   } lvalue_inserter;
 
@@ -37,7 +37,7 @@ namespace {
       x.reserve(values.size());
       lvalue_inserter_type::operator()(values, x);
       BOOST_TEST_EQ(raii::copy_constructor, 2 * x.size());
-      BOOST_TEST_EQ(raii::move_constructor, 0);
+      BOOST_TEST_EQ(raii::move_constructor, 0u);
     }
   } norehash_lvalue_inserter;
 
@@ -45,7 +45,7 @@ namespace {
   {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
     {
-      BOOST_TEST_EQ(raii::copy_constructor, 0);
+      BOOST_TEST_EQ(raii::copy_constructor, 0u);
 
       std::atomic<std::uint64_t> num_inserts{0};
       thread_runner(values, [&x, &num_inserts](boost::span<T> s) {
@@ -61,11 +61,11 @@ namespace {
       if (std::is_same<T, typename X::value_type>::value) {
         BOOST_TEST_EQ(raii::copy_constructor, x.size());
       } else {
-        BOOST_TEST_EQ(raii::copy_constructor, 0);
+        BOOST_TEST_EQ(raii::copy_constructor, 0u);
       }
 
-      BOOST_TEST_EQ(raii::copy_assignment, 0);
-      BOOST_TEST_EQ(raii::move_assignment, 0);
+      BOOST_TEST_EQ(raii::copy_assignment, 0u);
+      BOOST_TEST_EQ(raii::move_assignment, 0u);
     }
   } rvalue_inserter;
 
@@ -75,8 +75,8 @@ namespace {
     {
       x.reserve(values.size());
 
-      BOOST_TEST_EQ(raii::copy_constructor, 0);
-      BOOST_TEST_EQ(raii::move_constructor, 0);
+      BOOST_TEST_EQ(raii::copy_constructor, 0u);
+      BOOST_TEST_EQ(raii::move_constructor, 0u);
 
       rvalue_inserter_type::operator()(values, x);
 
@@ -84,7 +84,7 @@ namespace {
         BOOST_TEST_EQ(raii::copy_constructor, x.size());
         BOOST_TEST_EQ(raii::move_constructor, x.size());
       } else {
-        BOOST_TEST_EQ(raii::copy_constructor, 0);
+        BOOST_TEST_EQ(raii::copy_constructor, 0u);
         BOOST_TEST_EQ(raii::move_constructor, 2 * x.size());
       }
     }
@@ -97,8 +97,8 @@ namespace {
       thread_runner(
         values, [&x](boost::span<T> s) { x.insert(s.begin(), s.end()); });
 
-      BOOST_TEST_EQ(raii::copy_assignment, 0);
-      BOOST_TEST_EQ(raii::move_assignment, 0);
+      BOOST_TEST_EQ(raii::copy_assignment, 0u);
+      BOOST_TEST_EQ(raii::move_assignment, 0u);
     }
   } iterator_range_inserter;
 
@@ -112,12 +112,12 @@ namespace {
         }
       });
 
-      BOOST_TEST_EQ(raii::default_constructor, 0);
+      BOOST_TEST_EQ(raii::default_constructor, 0u);
       BOOST_TEST_EQ(raii::copy_constructor, 2 * x.size());
       // don't check move construction count here because of rehashing
       BOOST_TEST_GT(raii::move_constructor, 0u);
       BOOST_TEST_EQ(raii::copy_assignment, values.size() - x.size());
-      BOOST_TEST_EQ(raii::move_assignment, 0);
+      BOOST_TEST_EQ(raii::move_assignment, 0u);
     }
   } lvalue_insert_or_assign_copy_assign;
 
@@ -131,10 +131,10 @@ namespace {
         }
       });
 
-      BOOST_TEST_EQ(raii::default_constructor, 0);
+      BOOST_TEST_EQ(raii::default_constructor, 0u);
       BOOST_TEST_EQ(raii::copy_constructor, x.size());
       BOOST_TEST_GT(raii::move_constructor, x.size()); // rehashing
-      BOOST_TEST_EQ(raii::copy_assignment, 0);
+      BOOST_TEST_EQ(raii::copy_assignment, 0u);
       BOOST_TEST_EQ(raii::move_assignment, values.size() - x.size());
     }
   } lvalue_insert_or_assign_move_assign;
@@ -149,11 +149,11 @@ namespace {
         }
       });
 
-      BOOST_TEST_EQ(raii::default_constructor, 0);
+      BOOST_TEST_EQ(raii::default_constructor, 0u);
       BOOST_TEST_EQ(raii::copy_constructor, x.size());
       BOOST_TEST_GT(raii::move_constructor, x.size()); // rehashing
       BOOST_TEST_EQ(raii::copy_assignment, values.size() - x.size());
-      BOOST_TEST_EQ(raii::move_assignment, 0);
+      BOOST_TEST_EQ(raii::move_assignment, 0u);
     }
   } rvalue_insert_or_assign_copy_assign;
 
@@ -167,10 +167,10 @@ namespace {
         }
       });
 
-      BOOST_TEST_EQ(raii::default_constructor, 0);
-      BOOST_TEST_EQ(raii::copy_constructor, 0);
+      BOOST_TEST_EQ(raii::default_constructor, 0u);
+      BOOST_TEST_EQ(raii::copy_constructor, 0u);
       BOOST_TEST_GE(raii::move_constructor, 2 * x.size());
-      BOOST_TEST_EQ(raii::copy_assignment, 0);
+      BOOST_TEST_EQ(raii::copy_assignment, 0u);
       BOOST_TEST_EQ(raii::move_assignment, values.size() - x.size());
     }
   } rvalue_insert_or_assign_move_assign;
@@ -185,7 +185,7 @@ namespace {
 
       boost::ignore_unused<is_transparent>();
 
-      BOOST_TEST_EQ(raii::default_constructor, 0);
+      BOOST_TEST_EQ(raii::default_constructor, 0u);
 
       thread_runner(values, [&x](boost::span<T> s) {
         for (auto& r : s) {
@@ -197,7 +197,7 @@ namespace {
       BOOST_TEST_EQ(raii::copy_constructor, x.size());
       BOOST_TEST_GT(raii::move_constructor, x.size()); // rehashing
       BOOST_TEST_EQ(raii::copy_assignment, values.size() - x.size());
-      BOOST_TEST_EQ(raii::move_assignment, 0);
+      BOOST_TEST_EQ(raii::move_assignment, 0u);
     }
   } transparent_insert_or_assign_copy_assign;
 
@@ -218,9 +218,9 @@ namespace {
       });
 
       BOOST_TEST_EQ(raii::default_constructor, x.size());
-      BOOST_TEST_EQ(raii::copy_constructor, 0);
+      BOOST_TEST_EQ(raii::copy_constructor, 0u);
       BOOST_TEST_GT(raii::move_constructor, 2 * x.size()); // rehashing
-      BOOST_TEST_EQ(raii::copy_assignment, 0);
+      BOOST_TEST_EQ(raii::copy_assignment, 0u);
       BOOST_TEST_EQ(raii::move_assignment, values.size() - x.size());
     }
   } transparent_insert_or_assign_move_assign;
@@ -248,11 +248,11 @@ namespace {
       BOOST_TEST_EQ(num_inserts, x.size());
       BOOST_TEST_EQ(num_invokes, values.size() - x.size());
 
-      BOOST_TEST_EQ(raii::default_constructor, 0);
+      BOOST_TEST_EQ(raii::default_constructor, 0u);
       BOOST_TEST_EQ(raii::copy_constructor, 2 * x.size());
       // don't check move construction count here because of rehashing
-      BOOST_TEST_GT(raii::move_constructor, 0);
-      BOOST_TEST_EQ(raii::move_assignment, 0);
+      BOOST_TEST_GT(raii::move_constructor, 0u);
+      BOOST_TEST_EQ(raii::move_assignment, 0u);
     }
   } lvalue_insert_or_visit_const_visitor;
 
@@ -279,11 +279,11 @@ namespace {
       BOOST_TEST_EQ(num_inserts, x.size());
       BOOST_TEST_EQ(num_invokes, values.size() - x.size());
 
-      BOOST_TEST_EQ(raii::default_constructor, 0);
+      BOOST_TEST_EQ(raii::default_constructor, 0u);
       BOOST_TEST_EQ(raii::copy_constructor, 2 * x.size());
       // don't check move construction count here because of rehashing
-      BOOST_TEST_GT(raii::move_constructor, 0);
-      BOOST_TEST_EQ(raii::move_assignment, 0);
+      BOOST_TEST_GT(raii::move_constructor, 0u);
+      BOOST_TEST_EQ(raii::move_assignment, 0u);
     }
   } lvalue_insert_or_visit_mut_visitor;
 
@@ -310,13 +310,13 @@ namespace {
       BOOST_TEST_EQ(num_inserts, x.size());
       BOOST_TEST_EQ(num_invokes, values.size() - x.size());
 
-      BOOST_TEST_EQ(raii::default_constructor, 0);
+      BOOST_TEST_EQ(raii::default_constructor, 0u);
 
       if (std::is_same<T, typename X::value_type>::value) {
         BOOST_TEST_EQ(raii::copy_constructor, x.size());
         BOOST_TEST_GE(raii::move_constructor, x.size());
       } else {
-        BOOST_TEST_EQ(raii::copy_constructor, 0);
+        BOOST_TEST_EQ(raii::copy_constructor, 0u);
         BOOST_TEST_GE(raii::move_constructor, 2 * x.size());
       }
     }
@@ -345,12 +345,12 @@ namespace {
       BOOST_TEST_EQ(num_inserts, x.size());
       BOOST_TEST_EQ(num_invokes, values.size() - x.size());
 
-      BOOST_TEST_EQ(raii::default_constructor, 0);
+      BOOST_TEST_EQ(raii::default_constructor, 0u);
       if (std::is_same<T, typename X::value_type>::value) {
         BOOST_TEST_EQ(raii::copy_constructor, x.size());
         BOOST_TEST_GE(raii::move_constructor, x.size());
       } else {
-        BOOST_TEST_EQ(raii::copy_constructor, 0);
+        BOOST_TEST_EQ(raii::copy_constructor, 0u);
         BOOST_TEST_GE(raii::move_constructor, 2 * x.size());
       }
     }
@@ -371,9 +371,9 @@ namespace {
 
       BOOST_TEST_EQ(num_invokes, values.size() - x.size());
 
-      BOOST_TEST_EQ(raii::default_constructor, 0);
+      BOOST_TEST_EQ(raii::default_constructor, 0u);
       BOOST_TEST_EQ(raii::copy_constructor, 2 * x.size());
-      BOOST_TEST_GT(raii::move_constructor, 0);
+      BOOST_TEST_GT(raii::move_constructor, 0u);
     }
   } iterator_range_insert_or_visit_const_visitor;
 
@@ -392,9 +392,9 @@ namespace {
 
       BOOST_TEST_EQ(num_invokes, values.size() - x.size());
 
-      BOOST_TEST_EQ(raii::default_constructor, 0);
+      BOOST_TEST_EQ(raii::default_constructor, 0u);
       BOOST_TEST_EQ(raii::copy_constructor, 2 * x.size());
-      BOOST_TEST_GT(raii::move_constructor, 0);
+      BOOST_TEST_GT(raii::move_constructor, 0u);
     }
   } iterator_range_insert_or_visit_mut_visitor;
 
@@ -422,10 +422,10 @@ namespace {
       }));
     }
 
-    BOOST_TEST_GE(raii::default_constructor, 0);
-    BOOST_TEST_GE(raii::copy_constructor, 0);
-    BOOST_TEST_GE(raii::move_constructor, 0);
-    BOOST_TEST_GT(raii::destructor, 0);
+    BOOST_TEST_GE(raii::default_constructor, 0u);
+    BOOST_TEST_GE(raii::copy_constructor, 0u);
+    BOOST_TEST_GE(raii::move_constructor, 0u);
+    BOOST_TEST_GT(raii::destructor, 0u);
 
     BOOST_TEST_EQ(raii::default_constructor + raii::copy_constructor +
                     raii::move_constructor,
@@ -482,17 +482,17 @@ namespace {
         }));
       }
 
-      BOOST_TEST_GE(raii::default_constructor, 0);
-      BOOST_TEST_GE(raii::copy_constructor, 0);
-      BOOST_TEST_GE(raii::move_constructor, 0);
-      BOOST_TEST_GT(raii::destructor, 0);
+      BOOST_TEST_GE(raii::default_constructor, 0u);
+      BOOST_TEST_GE(raii::copy_constructor, 0u);
+      BOOST_TEST_GE(raii::move_constructor, 0u);
+      BOOST_TEST_GT(raii::destructor, 0u);
 
       BOOST_TEST_EQ(raii::default_constructor + raii::copy_constructor +
                       raii::move_constructor,
         raii::destructor);
 
-      BOOST_TEST_EQ(raii::copy_assignment, 0);
-      BOOST_TEST_EQ(raii::move_assignment, 0);
+      BOOST_TEST_EQ(raii::copy_assignment, 0u);
+      BOOST_TEST_EQ(raii::move_assignment, 0u);
     }
 
     {
@@ -525,17 +525,17 @@ namespace {
         }));
       }
 
-      BOOST_TEST_GE(raii::default_constructor, 0);
-      BOOST_TEST_GE(raii::copy_constructor, 0);
-      BOOST_TEST_GE(raii::move_constructor, 0);
-      BOOST_TEST_GT(raii::destructor, 0);
+      BOOST_TEST_GE(raii::default_constructor, 0u);
+      BOOST_TEST_GE(raii::copy_constructor, 0u);
+      BOOST_TEST_GE(raii::move_constructor, 0u);
+      BOOST_TEST_GT(raii::destructor, 0u);
 
       BOOST_TEST_EQ(raii::default_constructor + raii::copy_constructor +
                       raii::move_constructor,
         raii::destructor);
 
-      BOOST_TEST_EQ(raii::copy_assignment, 0);
-      BOOST_TEST_EQ(raii::move_assignment, 0);
+      BOOST_TEST_EQ(raii::copy_assignment, 0u);
+      BOOST_TEST_EQ(raii::move_assignment, 0u);
     }
   }
 
