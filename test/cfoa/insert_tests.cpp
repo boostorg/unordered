@@ -337,7 +337,7 @@ namespace {
       BOOST_TEST_EQ(raii::default_constructor, 0);
       BOOST_TEST_EQ(raii::copy_constructor, 2 * x.size());
       // don't check move construction count here because of rehashing
-      BOOST_TEST_GT(raii::move_constructor, 0);
+      BOOST_TEST_GT(raii::move_constructor, 0u);
       BOOST_TEST_EQ(raii::copy_assignment, values.size() - x.size());
       BOOST_TEST_EQ(raii::move_assignment, 0);
     }
