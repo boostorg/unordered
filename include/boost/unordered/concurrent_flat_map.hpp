@@ -123,6 +123,11 @@ namespace boost {
 
       size_type size() const noexcept { return table_.size(); }
 
+      BOOST_ATTRIBUTE_NODISCARD bool empty() const noexcept
+      {
+        return size() == 0;
+      }
+
       /// Modifiers
       ///
 
@@ -208,6 +213,8 @@ namespace boost {
       {
         this->insert_or_visit(ilist.begin(), ilist.end(), std::move(f));
       }
+
+      size_type erase(key_type const& k) { return table_.erase(k); }
 
       /// Hash Policy
       ///
