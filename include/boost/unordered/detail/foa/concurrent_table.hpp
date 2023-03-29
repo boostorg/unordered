@@ -1118,7 +1118,7 @@ private:
 };
 
 template<typename T,typename H,typename P,typename A>
-std::atomic<std::size_t> concurrent_table<T,H,P,A>::thread_counter=0;
+std::atomic<std::size_t> concurrent_table<T,H,P,A>::thread_counter={};
 
 #if defined(BOOST_MSVC)
 #pragma warning(pop) /* C4714 */
