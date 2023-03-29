@@ -654,51 +654,51 @@ private:
     concurrent_table&& x,const Allocator& al_,exclusive_lock_guard):
     super{std::move(x),al_}{}
 
-  shared_lock_guard shared_access()const
+  inline shared_lock_guard shared_access()const
   {
     thread_local auto id=(++thread_counter)%mutexes.size();
 
     return shared_lock_guard{mutexes[id]};
   }
 
-  exclusive_lock_guard exclusive_access()const
+  inline exclusive_lock_guard exclusive_access()const
   {
     return exclusive_lock_guard{mutexes};
   }
 
-  exclusive_bilock_guard exclusive_access(
+  inline exclusive_bilock_guard exclusive_access(
     const concurrent_table& x,const concurrent_table& y)
   {
     return {x.mutexes,y.mutexes};
   }
 
 #if defined(BOOST_UNORDERED_EMBEDDED_GROUP_ACCESS)
-  group_shared_lock_guard shared_access(std::size_t pos)const
+  inline group_shared_lock_guard shared_access(std::size_t pos)const
   {
     return this->arrays.groups[pos].shared_access();
   }
 
-  group_exclusive_lock_guard exclusive_access(std::size_t pos)const
+  inline group_exclusive_lock_guard exclusive_access(std::size_t pos)const
   {
     return this->arrays.groups[pos].exclusive_access();
   }
 
-  group_insert_counter_type& insert_counter(std::size_t pos)const
+  inline group_insert_counter_type& insert_counter(std::size_t pos)const
   {
     return this->arrays.groups[pos].insert_counter();
   }
 #else
-  group_shared_lock_guard shared_access(std::size_t pos)const
+  inline group_shared_lock_guard shared_access(std::size_t pos)const
   {
     return this->arrays.group_accesses[pos].shared_access();
   }
 
-  group_exclusive_lock_guard exclusive_access(std::size_t pos)const
+  inline group_exclusive_lock_guard exclusive_access(std::size_t pos)const
   {
     return this->arrays.group_accesses[pos].exclusive_access();
   }
 
-  group_insert_counter_type& insert_counter(std::size_t pos)const
+  inline group_insert_counter_type& insert_counter(std::size_t pos)const
   {
     return this->arrays.group_accesses[pos].insert_counter();
   }
@@ -709,12 +709,13 @@ private:
   using group_shared=std::false_type;
   using group_exclusive=std::true_type;
 
-  group_shared_lock_guard access(group_shared,std::size_t pos)const
+  inline group_shared_lock_guard access(group_shared,std::size_t pos)const
   {
     return shared_access(pos);
   }
 
-  group_exclusive_lock_guard access(group_exclusive,std::size_t pos)const
+  inline group_exclusive_lock_guard access(
+    group_exclusive,std::size_t pos)const
   {
     return exclusive_access(pos);
   }
@@ -724,8 +725,9 @@ private:
    * access is always const regardless of group access.
    */
 
-  static const value_type& cast_for(group_shared,value_type& x){return x;}
-  static typename std::conditional<
+  static inline const value_type& cast_for(group_shared,value_type& x)
+    {return x;}
+  static inline typename std::conditional<
     std::is_same<key_type,value_type>::value,
     const value_type&,
     value_type&
