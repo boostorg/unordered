@@ -310,6 +310,15 @@ public:
   using allocator_type=typename super::allocator_type;
   using size_type=typename super::size_type;
 
+private:
+  template<typename Value,typename T>
+  using enable_if_is_value_type=typename std::enable_if<
+    !std::is_same<init_type,value_type>::value&&
+    std::is_same<Value,value_type>::value,
+    T
+  >::type;
+
+public:
   concurrent_table(
     std::size_t n=default_bucket_count,const Hash& h_=Hash(),
     const Pred& pred_=Pred(),const Allocator& al_=Allocator()):
@@ -358,6 +367,12 @@ public:
     return visit_impl(group_shared{},x,std::forward<F>(f));
   }
 
+  template<typename Key,typename F>
+  BOOST_FORCEINLINE std::size_t cvisit(const Key& x,F&& f)const
+  {
+    return visit(x,std::forward<F>(f));
+  }
+
   template<typename F> std::size_t visit_all(F&& f)
   {
     return visit_all_impl(group_exclusive{},std::forward<F>(f));
@@ -366,6 +381,11 @@ public:
   template<typename F> std::size_t visit_all(F&& f)const
   {
     return visit_all_impl(group_shared{},std::forward<F>(f));
+  }
+
+  template<typename F> std::size_t cvisit_all(F&& f)const
+  {
+    return visit_all(std::forward<F>(f));
   }
 
 #if defined(BOOST_UNORDERED_PARALLEL_ALGORITHMS)
@@ -383,6 +403,12 @@ public:
     visit_all_impl(
       group_shared{},
       std::forward<ExecutionPolicy>(policy),std::forward<F>(f));
+  }
+
+  template<typename ExecutionPolicy,typename F>
+  void cvisit_all(ExecutionPolicy&& policy,F&& f)const
+  {
+    visit_all(std::forward<ExecutionPolicy>(policy),std::forward<F>(f));
   }
 #endif
 
@@ -433,11 +459,26 @@ public:
       try_emplace_args_t{},std::forward<Key>(x),std::forward<Args>(args)...);
   }
 
+  template<typename Key,typename F,typename... Args>
+  BOOST_FORCEINLINE bool try_emplace_or_cvisit(Key&& x,F&& f,Args&&... args)
+  {
+    return emplace_or_visit_impl(
+      group_shared{},std::forward<F>(f),
+      try_emplace_args_t{},std::forward<Key>(x),std::forward<Args>(args)...);
+  }
+
   template<typename F,typename... Args>
   BOOST_FORCEINLINE bool emplace_or_visit(F&& f,Args&&... args)
   {
     return construct_and_emplace_or_visit(
       group_exclusive{},std::forward<F>(f),std::forward<Args>(args)...);
+  }
+
+  template<typename F,typename... Args>
+  BOOST_FORCEINLINE bool emplace_or_cvisit(F&& f,Args&&... args)
+  {
+    return construct_and_emplace_or_visit(
+      group_shared{},std::forward<F>(f),std::forward<Args>(args)...);
   }
 
   template<typename F>
@@ -447,35 +488,55 @@ public:
   }
 
   template<typename F>
+  BOOST_FORCEINLINE bool insert_or_cvisit(const init_type& x,F&& f)
+  {
+    return emplace_or_visit_impl(group_shared{},std::forward<F>(f),x);
+  }
+
+  template<typename F>
   BOOST_FORCEINLINE bool insert_or_visit(init_type&& x,F&& f)
   {
     return emplace_or_visit_impl(
       group_exclusive{},std::forward<F>(f),std::move(x));
   }
 
+  template<typename F>
+  BOOST_FORCEINLINE bool insert_or_cvisit(init_type&& x,F&& f)
+  {
+    return emplace_or_visit_impl(
+      group_shared{},std::forward<F>(f),std::move(x));
+  }
+
   /* SFINAE tilts call ambiguities in favor of init_type */
 
   template<typename Value,typename F>
   BOOST_FORCEINLINE auto insert_or_visit(const Value& x,F&& f)
-    ->typename std::enable_if<
-      !std::is_same<init_type,value_type>::value&&
-      std::is_same<Value,value_type>::value,
-      bool
-    >::type
+    ->enable_if_is_value_type<Value,bool>
   {
     return emplace_or_visit_impl(group_exclusive{},std::forward<F>(f),x);
   }
 
   template<typename Value,typename F>
+  BOOST_FORCEINLINE auto insert_or_cvisit(const Value& x,F&& f)
+    ->enable_if_is_value_type<Value,bool>
+  {
+    return emplace_or_visit_impl(group_shared{},std::forward<F>(f),x);
+  }
+
+  template<typename Value,typename F>
   BOOST_FORCEINLINE auto insert_or_visit(Value&& x,F&& f)
-    ->typename std::enable_if<
-      !std::is_same<init_type,value_type>::value&&
-      std::is_same<Value,value_type>::value,
-      bool
-    >::type
+    ->enable_if_is_value_type<Value,bool>
   {
     return emplace_or_visit_impl(
       group_exclusive{},std::forward<F>(f),std::move(x));
+  }
+
+  template<typename Value,typename F>
+  BOOST_FORCEINLINE auto insert_or_cvisit(Value&& x,F&& f)
+    ->enable_if_is_value_type<Value,bool>
+  {
+    return emplace_or_visit_impl(
+      group_shared{},std::forward<F>(f),std::move(x));
   }
 
   template<typename Key>
