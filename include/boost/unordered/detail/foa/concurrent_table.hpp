@@ -54,6 +54,10 @@ struct alignas(64) cacheline_protected:T
   using T::T;
 };
 
+#if defined(BOOST_MSVC)
+#pragma warning(pop) /* C4324 */
+#endif
+
 template<typename Mutex,std::size_t N>
 class multimutex
 {
@@ -105,39 +109,36 @@ private:
   Mutex &m;
 };
 
-/* copied from boost/multi_index/detail/scoped_bilock.hpp */
+/* inspired by boost/multi_index/detail/scoped_bilock.hpp */
 
 template<typename Mutex>
 class scoped_bilock
 {
 public:
-  scoped_bilock(Mutex& m1,Mutex& m2)noexcept:mutex_eq{&m1==&m2}
+  scoped_bilock(Mutex& m1,Mutex& m2)noexcept
   {
     bool mutex_lt=std::less<Mutex*>{}(&m1,&m2);
 
-    ::new (static_cast<void*>(&storage1)) lock_guard_type(mutex_lt?m1:m2);
-    if(!mutex_eq)
-      ::new (static_cast<void*>(&storage2)) lock_guard_type(mutex_lt?m2:m1);
+    pm1=mutex_lt?&m1:&m2;
+    pm1->lock();
+    if(&m1==&m2){
+      pm2=nullptr;
+    }
+    else{
+      pm2=mutex_lt?&m2:&m1;
+      pm2->lock();
+    }
   }
 
   ~scoped_bilock()noexcept
   {
-    reinterpret_cast<lock_guard_type*>(&storage1)->~lock_guard_type();
-    if(!mutex_eq)
-      reinterpret_cast<lock_guard_type*>(&storage2)->~lock_guard_type();
+    if(pm2)pm2->unlock();
+    pm1->unlock();
   }
 
 private:
-  using lock_guard_type=lock_guard<Mutex>;
-
-  bool                                   mutex_eq;
-  alignas(lock_guard_type) unsigned char storage1[sizeof(lock_guard_type)],
-                                         storage2[sizeof(lock_guard_type)];
+  Mutex *pm1,*pm2;
 };
-
-#if defined(BOOST_MSVC)
-#pragma warning(pop) /* C4324 */
-#endif
 
 /* TODO: describe atomic_integral and group_access */
 
