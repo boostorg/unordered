@@ -94,7 +94,7 @@ private:
   bool owns=true;
 };
 
-/* VS in pre-C++17 mode has trouble returning std::lock_guard due to
+/* VS in pre-C++17 mode can't implement RVO for std::lock_guard due to
  * its copy constructor being deleted.
  */
 
@@ -129,6 +129,9 @@ public:
       pm2->lock();
     }
   }
+
+  /* not used but VS in pre-C++17 mode needs to see it for RVO */
+  scoped_bilock(const scoped_bilock&);
 
   ~scoped_bilock()noexcept
   {
