@@ -16,7 +16,7 @@
 
 constexpr std::size_t const num_threads = 16;
 
-struct transparent_hash
+struct transp_hash
 {
   using is_transparent = void;
 
@@ -26,7 +26,7 @@ struct transparent_hash
   }
 };
 
-struct transparent_key_equal
+struct transp_key_equal
 {
   using is_transparent = void;
 

@@ -175,7 +175,7 @@ namespace {
     }
   } rvalue_insert_or_assign_move_assign;
 
-  struct transparent_insert_or_assign_copy_assign_type
+  struct trans_insert_or_assign_copy_assign_type
   {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
     {
@@ -199,9 +199,9 @@ namespace {
       BOOST_TEST_EQ(raii::copy_assignment, values.size() - x.size());
       BOOST_TEST_EQ(raii::move_assignment, 0u);
     }
-  } transparent_insert_or_assign_copy_assign;
+  } trans_insert_or_assign_copy_assign;
 
-  struct transparent_insert_or_assign_move_assign_type
+  struct trans_insert_or_assign_move_assign_type
   {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
     {
@@ -223,7 +223,7 @@ namespace {
       BOOST_TEST_EQ(raii::copy_assignment, 0u);
       BOOST_TEST_EQ(raii::move_assignment, values.size() - x.size());
     }
-  } transparent_insert_or_assign_move_assign;
+  } trans_insert_or_assign_move_assign;
 
   struct lvalue_insert_or_visit_const_visitor_type
   {
@@ -540,8 +540,8 @@ namespace {
   }
 
   boost::unordered::concurrent_flat_map<raii, raii>* map;
-  boost::unordered::concurrent_flat_map<raii, raii, transparent_hash,
-    transparent_key_equal>* transparent_map;
+  boost::unordered::concurrent_flat_map<raii, raii, transp_hash,
+    transp_key_equal>* trans_map;
 
 } // namespace
 
@@ -575,9 +575,9 @@ UNORDERED_TEST(
 
 UNORDERED_TEST(
   insert,
-  ((transparent_map))
+  ((trans_map))
   ((init_type_generator))
-  ((transparent_insert_or_assign_copy_assign)(transparent_insert_or_assign_move_assign))
+  ((trans_insert_or_assign_copy_assign)(trans_insert_or_assign_move_assign))
   ((default_generator)(sequential)(limited_range)))
 // clang-format on
 
