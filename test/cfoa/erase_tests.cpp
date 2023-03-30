@@ -15,14 +15,37 @@ namespace {
   {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
     {
-      thread_runner(values, [&values, &x](boost::span<T>) {
+      std::atomic<std::uint64_t> num_erased{0};
+      auto const old_size = x.size();
+
+      auto const old_dc = +raii::default_constructor;
+      auto const old_cc = +raii::copy_constructor;
+      auto const old_mc = +raii::move_constructor;
+
+      auto const old_d = +raii::destructor;
+
+      BOOST_TEST_EQ(raii::default_constructor + raii::copy_constructor +
+                      raii::move_constructor,
+        raii::destructor + 2 * x.size());
+
+      thread_runner(values, [&values, &num_erased, &x](boost::span<T>) {
         for (auto const& k : values) {
-          x.erase(k.first);
+          auto count = x.erase(k.first);
+          num_erased += count;
+          BOOST_TEST_LE(count, 1u);
+          BOOST_TEST_GE(count, 0u);
         }
       });
 
+      BOOST_TEST_EQ(raii::default_constructor, old_dc);
+      BOOST_TEST_EQ(raii::copy_constructor, old_cc);
+      BOOST_TEST_EQ(raii::move_constructor, old_mc);
+
+      BOOST_TEST_EQ(raii::destructor, old_d + 2 * old_size);
+
       BOOST_TEST_EQ(x.size(), 0u);
       BOOST_TEST(x.empty());
+      BOOST_TEST_EQ(num_erased, old_size);
     }
   } lvalue_eraser;
 
