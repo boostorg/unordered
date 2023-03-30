@@ -564,16 +564,17 @@ public:
   template<typename F>
   std::size_t erase_if(F&& f)
   {
-    auto lck=shared_access();
-    std::size_t s=unprotected_size();
+    auto        lck=shared_access();
+    std::size_t res=0;
     for_all_elements(
       group_exclusive{},
       [&,this](group_type* pg,unsigned int n,element_type* p){
         if(f(cast_for(group_exclusive{},type_policy::value_from(*p)))){
           super::erase(pg,n,p);
+          ++res;
         }
       });
-    return std::size_t(s-unprotected_size());
+    return res;
   }
 
 #if defined(BOOST_UNORDERED_PARALLEL_ALGORITHMS)
