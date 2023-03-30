@@ -216,6 +216,14 @@ namespace boost {
 
       size_type erase(key_type const& k) { return table_.erase(k); }
 
+      template <class K>
+      typename std::enable_if<
+        detail::are_transparent<K, hasher, key_equal>::value, size_type>::type
+      erase(K&& k)
+      {
+        return table_.erase(std::forward<K>(k));
+      }
+
       /// Hash Policy
       ///
       void rehash(size_type n) { table_.rehash(n); }
