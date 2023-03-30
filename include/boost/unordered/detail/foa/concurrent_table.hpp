@@ -791,13 +791,15 @@ private:
    * access is always const regardless of group access.
    */
 
-  static inline const value_type& cast_for(group_shared,value_type& x)
-    {return x;}
+  static inline const value_type&
+  cast_for(group_shared,value_type& x){return x;}
+
   static inline typename std::conditional<
     std::is_same<key_type,value_type>::value,
     const value_type&,
     value_type&
-  >::type                  cast_for(group_exclusive,value_type& x){return x;}
+  >::type
+  cast_for(group_exclusive,value_type& x){return x;}
 
   struct erase_on_exit
   {
