@@ -66,8 +66,8 @@ namespace {
                       raii::move_constructor,
         raii::destructor + 2 * x.size());
 
-      thread_runner(values, [&values, &num_erased, &x](boost::span<T>) {
-        for (auto const& k : values) {
+      thread_runner(values, [&num_erased, &x](boost::span<T> s) {
+        for (auto const& k : s) {
           auto count = x.erase(k.first.x_);
           num_erased += count;
           BOOST_TEST_LE(count, 1u);
@@ -79,13 +79,171 @@ namespace {
       BOOST_TEST_EQ(raii::copy_constructor, old_cc);
       BOOST_TEST_EQ(raii::move_constructor, old_mc);
 
-      BOOST_TEST_EQ(raii::destructor, old_d + 2 * old_size);
+      BOOST_TEST_EQ(raii::destructor, old_d + 2 * num_erased);
 
       BOOST_TEST_EQ(x.size(), 0u);
       BOOST_TEST(x.empty());
       BOOST_TEST_EQ(num_erased, old_size);
     }
   } transp_lvalue_eraser;
+
+  struct lvalue_eraser_if_type
+  {
+    template <class T, class X> void operator()(std::vector<T>& values, X& x)
+    {
+      using value_type = typename X::value_type;
+
+      std::atomic<std::uint64_t> num_erased{0};
+
+      auto const old_size = x.size();
+
+      auto const old_dc = +raii::default_constructor;
+      auto const old_cc = +raii::copy_constructor;
+      auto const old_mc = +raii::move_constructor;
+
+      auto const old_d = +raii::destructor;
+
+      auto max = 0;
+      x.visit_all([&max](value_type const& v) {
+        if (v.second.x_ > max) {
+          max = v.second.x_;
+        }
+      });
+
+      auto threshold = max / 2;
+
+      auto expected_erasures = 0u;
+      x.visit_all([&expected_erasures, threshold](value_type const& v) {
+        if (v.second.x_ > threshold) {
+          ++expected_erasures;
+        }
+      });
+
+      thread_runner(values, [&num_erased, &x, threshold](boost::span<T> s) {
+        for (auto const& k : s) {
+          auto count = x.erase_if(k.first,
+            [threshold](value_type& v) { return v.second.x_ > threshold; });
+          num_erased += count;
+          BOOST_TEST_LE(count, 1u);
+          BOOST_TEST_GE(count, 0u);
+        }
+      });
+
+      BOOST_TEST_EQ(num_erased, expected_erasures);
+      BOOST_TEST_EQ(x.size(), old_size - num_erased);
+
+      BOOST_TEST_EQ(raii::default_constructor, old_dc);
+      BOOST_TEST_EQ(raii::copy_constructor, old_cc);
+      BOOST_TEST_EQ(raii::move_constructor, old_mc);
+
+      BOOST_TEST_EQ(raii::destructor, old_d + 2 * num_erased);
+    }
+  } lvalue_eraser_if;
+
+  struct transp_lvalue_eraser_if_type
+  {
+    template <class T, class X> void operator()(std::vector<T>& values, X& x)
+    {
+      using value_type = typename X::value_type;
+
+      std::atomic<std::uint64_t> num_erased{0};
+
+      auto const old_size = x.size();
+
+      auto const old_dc = +raii::default_constructor;
+      auto const old_cc = +raii::copy_constructor;
+      auto const old_mc = +raii::move_constructor;
+
+      auto const old_d = +raii::destructor;
+
+      auto max = 0;
+      x.visit_all([&max](value_type const& v) {
+        if (v.second.x_ > max) {
+          max = v.second.x_;
+        }
+      });
+
+      auto threshold = max / 2;
+
+      auto expected_erasures = 0u;
+      x.visit_all([&expected_erasures, threshold](value_type const& v) {
+        if (v.second.x_ > threshold) {
+          ++expected_erasures;
+        }
+      });
+
+      thread_runner(values, [&num_erased, &x, threshold](boost::span<T> s) {
+        for (auto const& k : s) {
+          auto count = x.erase_if(k.first.x_,
+            [threshold](value_type& v) { return v.second.x_ > threshold; });
+          num_erased += count;
+          BOOST_TEST_LE(count, 1u);
+          BOOST_TEST_GE(count, 0u);
+        }
+      });
+
+      BOOST_TEST_EQ(num_erased, expected_erasures);
+      BOOST_TEST_EQ(x.size(), old_size - num_erased);
+
+      BOOST_TEST_EQ(raii::default_constructor, old_dc);
+      BOOST_TEST_EQ(raii::copy_constructor, old_cc);
+      BOOST_TEST_EQ(raii::move_constructor, old_mc);
+
+      BOOST_TEST_EQ(raii::destructor, old_d + 2 * num_erased);
+    }
+  } transp_lvalue_eraser_if;
+
+  struct erase_if_type
+  {
+    template <class T, class X> void operator()(std::vector<T>& values, X& x)
+    {
+      using value_type = typename X::value_type;
+
+      std::atomic<std::uint64_t> num_erased{0};
+
+      auto const old_size = x.size();
+
+      auto const old_dc = +raii::default_constructor;
+      auto const old_cc = +raii::copy_constructor;
+      auto const old_mc = +raii::move_constructor;
+
+      auto const old_d = +raii::destructor;
+
+      auto max = 0;
+      x.visit_all([&max](value_type const& v) {
+        if (v.second.x_ > max) {
+          max = v.second.x_;
+        }
+      });
+
+      auto threshold = max / 2;
+
+      auto expected_erasures = 0u;
+      x.visit_all([&expected_erasures, threshold](value_type const& v) {
+        if (v.second.x_ > threshold) {
+          ++expected_erasures;
+        }
+      });
+
+      thread_runner(values, [&num_erased, &x, threshold](boost::span<T> s) {
+        for (auto const& k : s) {
+          (void)k;
+          auto count = x.erase_if(
+            [threshold](value_type& v) { return v.second.x_ > threshold; });
+          num_erased += count;
+        }
+      });
+
+      BOOST_TEST_EQ(num_erased, expected_erasures);
+      BOOST_TEST_EQ(x.size(), old_size - num_erased);
+
+      BOOST_TEST_EQ(raii::default_constructor, old_dc);
+      BOOST_TEST_EQ(raii::copy_constructor, old_cc);
+      BOOST_TEST_EQ(raii::move_constructor, old_mc);
+
+      BOOST_TEST_EQ(raii::destructor, old_d + 2 * num_erased);
+    }
+  } erase_if;
 
   template <class X, class G, class F>
   void erase(X*, G gen, F eraser, test::random_generator rg)
@@ -138,14 +296,14 @@ UNORDERED_TEST(
   erase,
   ((map))
   ((value_type_generator)(init_type_generator))
-  ((lvalue_eraser))
+  ((lvalue_eraser)(lvalue_eraser_if)(erase_if))
   ((default_generator)(sequential)(limited_range)))
 
 UNORDERED_TEST(
   erase,
   ((transparent_map))
   ((value_type_generator)(init_type_generator))
-  ((lvalue_eraser)(transp_lvalue_eraser))
+  ((transp_lvalue_eraser)(transp_lvalue_eraser_if))
   ((default_generator)(sequential)(limited_range)))
 
 // clang-format on
