@@ -152,7 +152,7 @@ namespace boost {
 
       template <class F> std::size_t visit_all(F f)
       {
-        return table_.visit_all(std::move(f));
+        return table_.visit_all(f);
       }
 
       template <class M> bool insert_or_assign(key_type const& k, M&& obj)
@@ -182,22 +182,22 @@ namespace boost {
 
       template <class F> bool insert_or_visit(value_type const& obj, F f)
       {
-        return table_.insert_or_visit(obj, std::move(f));
+        return table_.insert_or_visit(obj, f);
       }
 
       template <class F> bool insert_or_visit(value_type&& obj, F f)
       {
-        return table_.insert_or_visit(std::move(obj), std::move(f));
+        return table_.insert_or_visit(std::move(obj), f);
       }
 
       template <class F> bool insert_or_visit(init_type const& obj, F f)
       {
-        return table_.insert_or_visit(obj, std::move(f));
+        return table_.insert_or_visit(obj, f);
       }
 
       template <class F> bool insert_or_visit(init_type&& obj, F f)
       {
-        return table_.insert_or_visit(std::move(obj), std::move(f));
+        return table_.insert_or_visit(std::move(obj), f);
       }
 
       template <class InputIterator, class F>
@@ -211,7 +211,7 @@ namespace boost {
       template <class F>
       void insert_or_visit(std::initializer_list<value_type> ilist, F f)
       {
-        this->insert_or_visit(ilist.begin(), ilist.end(), std::move(f));
+        this->insert_or_visit(ilist.begin(), ilist.end(), f);
       }
 
       size_type erase(key_type const& k) { return table_.erase(k); }
