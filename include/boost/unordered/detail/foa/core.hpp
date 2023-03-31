@@ -937,15 +937,10 @@ struct table_arrays
           reinterpret_cast<uintptr_t>(p))%sizeof(group_type);
       arrays.groups=reinterpret_cast<group_type*>(p);
 
-      for (std::size_t i=0;i<groups_size;++i){
-        new(arrays.groups+i) group_type();
-        arrays.groups[i].initialize();
-      }
-
       /* memset is faster/not slower than initializing groups individually.
        * This assumes all zeros is group_type's default layout. 
        */
-      // std::memset(arrays.groups,0,sizeof(group_type)*groups_size);
+      std::memset(arrays.groups,0,sizeof(group_type)*groups_size);
       arrays.groups[groups_size-1].set_sentinel();
     }
     return arrays;

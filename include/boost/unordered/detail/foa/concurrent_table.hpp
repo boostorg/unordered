@@ -156,13 +156,13 @@ struct atomic_integral
   std::atomic<Integral> n;
 };
 
+/* Group-level concurrency protection. It provides a rw mutex plus an
+ * atomic insertion counter for optimistic insertion (see
+ * unprotected_norehash_emplace_or_visit).
+ */
+
 struct group_access
 {    
-  struct dummy_group_access_type
-  {
-    boost::uint32_t storage[2]={0,0};
-  };
-
   using mutex_type=rw_spinlock;
   using shared_lock_guard=shared_lock<mutex_type>;
   using exclusive_lock_guard=lock_guard<mutex_type>;
@@ -174,30 +174,24 @@ struct group_access
 
 private:
   mutex_type          m;
-  insert_counter_type cnt;
-};
-
-template<typename Group>
-struct concurrent_group:Group,group_access
-{
-  struct dummy_group_type
-  {
-    typename Group::dummy_group_type      group_storage;
-    group_access::dummy_group_access_type access_storage;
-  };
+  insert_counter_type cnt=0;
 };
 
 template<std::size_t Size>
 group_access* dummy_group_accesses()
 {
-  /* TODO: describe
+  /* Default group_access array to provide to empty containers without
+   * incurring dynamic allocation. Mutexes won't actually ever be used,
+   * (no successful reduced hash match) and insertion counters won't ever
+   * be incremented (insertions won't succeed as capacity()==0).
    */
 
-  static group_access::dummy_group_access_type
-  storage[Size]={typename group_access::dummy_group_access_type(),};
+  static group_access accesses[Size];
 
-  return reinterpret_cast<group_access*>(storage);
+  return accesses;
 }
+
+/* subclasses table_arrays to add an additional group_access array */
 
 template<typename Value,typename Group,typename SizePolicy>
 struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy>
@@ -225,7 +219,7 @@ struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy>
           access_traits::allocate(aal,arrays.groups_size_mask+1));
 
         for(std::size_t i=0;i<arrays.groups_size_mask+1;++i){
-          new(arrays.group_accesses+i) group_access();
+          ::new (arrays.group_accesses+i) group_access();
         }
       }
       BOOST_CATCH(...){
@@ -263,16 +257,7 @@ struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy>
 
 template <typename TypePolicy,typename Hash,typename Pred,typename Allocator>
 using concurrent_table_core_impl=table_core<
-  TypePolicy,
-
-#if defined(BOOST_UNORDERED_EMBEDDED_GROUP_ACCESS)
-  concurrent_group<group15<atomic_integral>>,
-  table_arrays,
-#else
-  group15<atomic_integral>,
-  concurrent_table_arrays,
-#endif
-
+  TypePolicy,group15<atomic_integral>,concurrent_table_arrays,
   std::atomic<std::size_t>,Hash,Pred,Allocator>;
 
 #include <boost/unordered/detail/foa/ignore_wshadow.hpp>
@@ -701,16 +686,9 @@ private:
   using shared_lock_guard=shared_lock<mutex_type>;
   using exclusive_lock_guard=lock_guard<multimutex_type>;
   using exclusive_bilock_guard=scoped_bilock<multimutex_type>;
-
-#if defined(BOOST_UNORDERED_EMBEDDED_GROUP_ACCESS)
-  using group_shared_lock_guard=typename group_type::shared_lock_guard;
-  using group_exclusive_lock_guard=typename group_type::exclusive_lock_guard;
-  using group_insert_counter_type=typename group_type::insert_counter_type;
-#else
   using group_shared_lock_guard=typename group_access::shared_lock_guard;
   using group_exclusive_lock_guard=typename group_access::exclusive_lock_guard;
   using group_insert_counter_type=typename group_access::insert_counter_type;
-#endif
 
   concurrent_table(const concurrent_table& x,exclusive_lock_guard):
     super{x}{}
@@ -741,38 +719,6 @@ private:
     return {x.mutexes,y.mutexes};
   }
 
-#if defined(BOOST_UNORDERED_EMBEDDED_GROUP_ACCESS)
-  inline group_shared_lock_guard shared_access(std::size_t pos)const
-  {
-    return this->arrays.groups[pos].shared_access();
-  }
-
-  inline group_exclusive_lock_guard exclusive_access(std::size_t pos)const
-  {
-    return this->arrays.groups[pos].exclusive_access();
-  }
-
-  inline group_insert_counter_type& insert_counter(std::size_t pos)const
-  {
-    return this->arrays.groups[pos].insert_counter();
-  }
-#else
-  inline group_shared_lock_guard shared_access(std::size_t pos)const
-  {
-    return this->arrays.group_accesses[pos].shared_access();
-  }
-
-  inline group_exclusive_lock_guard exclusive_access(std::size_t pos)const
-  {
-    return this->arrays.group_accesses[pos].exclusive_access();
-  }
-
-  inline group_insert_counter_type& insert_counter(std::size_t pos)const
-  {
-    return this->arrays.group_accesses[pos].insert_counter();
-  }
-#endif
-
   /* Tag-dispatched shared/exclusive group access */
 
   using group_shared=std::false_type;
@@ -780,13 +726,18 @@ private:
 
   inline group_shared_lock_guard access(group_shared,std::size_t pos)const
   {
-    return shared_access(pos);
+    return this->arrays.group_accesses[pos].shared_access();
   }
 
   inline group_exclusive_lock_guard access(
     group_exclusive,std::size_t pos)const
   {
-    return exclusive_access(pos);
+    return this->arrays.group_accesses[pos].exclusive_access();
+  }
+
+  inline group_insert_counter_type& insert_counter(std::size_t pos)const
+  {
+    return this->arrays.group_accesses[pos].insert_counter();
   }
 
   /* Const casts value_type& according to the level of group access for
