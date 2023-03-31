@@ -553,16 +553,19 @@ public:
   BOOST_FORCEINLINE auto erase_if(Key&& x,F&& f)->typename std::enable_if<
     !is_execution_policy<Key>::value,std::size_t>::type
   {
-    auto lck=shared_access();
-    auto hash=this->hash_for(x);
-    return (std::size_t)unprotected_internal_visit(
+    auto        lck=shared_access();
+    auto        hash=this->hash_for(x);
+    std::size_t res=0;
+    unprotected_internal_visit(
       group_exclusive{},x,this->position_for(hash),hash,
       [&,this](group_type* pg,unsigned int n,element_type* p)
       {
         if(f(cast_for(group_exclusive{},type_policy::value_from(*p)))){
           super::erase(pg,n,p);
+          res=1;
         }
       });
+    return res;
   }
 
   template<typename F>
