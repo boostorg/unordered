@@ -225,7 +225,7 @@ namespace {
     }
   } trans_insert_or_assign_move_assign;
 
-  struct lvalue_insert_or_visit_const_visitor_type
+  struct lvalue_insert_or_cvisit_type
   {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
     {
@@ -233,7 +233,7 @@ namespace {
       std::atomic<std::uint64_t> num_invokes{0};
       thread_runner(values, [&x, &num_inserts, &num_invokes](boost::span<T> s) {
         for (auto& r : s) {
-          bool b = x.insert_or_visit(
+          bool b = x.insert_or_cvisit(
             r, [&num_invokes](typename X::value_type const& v) {
               (void)v;
               ++num_invokes;
@@ -254,9 +254,9 @@ namespace {
       BOOST_TEST_GT(raii::move_constructor, 0u);
       BOOST_TEST_EQ(raii::move_assignment, 0u);
     }
-  } lvalue_insert_or_visit_const_visitor;
+  } lvalue_insert_or_cvisit;
 
-  struct lvalue_insert_or_visit_mut_visitor_type
+  struct lvalue_insert_or_visit_type
   {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
     {
@@ -285,9 +285,9 @@ namespace {
       BOOST_TEST_GT(raii::move_constructor, 0u);
       BOOST_TEST_EQ(raii::move_assignment, 0u);
     }
-  } lvalue_insert_or_visit_mut_visitor;
+  } lvalue_insert_or_visit;
 
-  struct rvalue_insert_or_visit_const_visitor_type
+  struct rvalue_insert_or_cvisit_type
   {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
     {
@@ -295,7 +295,7 @@ namespace {
       std::atomic<std::uint64_t> num_invokes{0};
       thread_runner(values, [&x, &num_inserts, &num_invokes](boost::span<T> s) {
         for (auto& r : s) {
-          bool b = x.insert_or_visit(
+          bool b = x.insert_or_cvisit(
             std::move(r), [&num_invokes](typename X::value_type const& v) {
               (void)v;
               ++num_invokes;
@@ -320,9 +320,9 @@ namespace {
         BOOST_TEST_GE(raii::move_constructor, 2 * x.size());
       }
     }
-  } rvalue_insert_or_visit_const_visitor;
+  } rvalue_insert_or_cvisit;
 
-  struct rvalue_insert_or_visit_mut_visitor_type
+  struct rvalue_insert_or_visit_type
   {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
     {
@@ -354,9 +354,30 @@ namespace {
         BOOST_TEST_GE(raii::move_constructor, 2 * x.size());
       }
     }
-  } rvalue_insert_or_visit_mut_visitor;
+  } rvalue_insert_or_visit;
 
-  struct iterator_range_insert_or_visit_const_visitor_type
+  struct iterator_range_insert_or_cvisit_type
+  {
+    template <class T, class X> void operator()(std::vector<T>& values, X& x)
+    {
+      std::atomic<std::uint64_t> num_invokes{0};
+      thread_runner(values, [&x, &num_invokes](boost::span<T> s) {
+        x.insert_or_cvisit(
+          s.begin(), s.end(), [&num_invokes](typename X::value_type const& v) {
+            (void)v;
+            ++num_invokes;
+          });
+      });
+
+      BOOST_TEST_EQ(num_invokes, values.size() - x.size());
+
+      BOOST_TEST_EQ(raii::default_constructor, 0u);
+      BOOST_TEST_EQ(raii::copy_constructor, 2 * x.size());
+      BOOST_TEST_GT(raii::move_constructor, 0u);
+    }
+  } iterator_range_insert_or_cvisit;
+
+  struct iterator_range_insert_or_visit_type
   {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
     {
@@ -375,28 +396,7 @@ namespace {
       BOOST_TEST_EQ(raii::copy_constructor, 2 * x.size());
       BOOST_TEST_GT(raii::move_constructor, 0u);
     }
-  } iterator_range_insert_or_visit_const_visitor;
-
-  struct iterator_range_insert_or_visit_mut_visitor_type
-  {
-    template <class T, class X> void operator()(std::vector<T>& values, X& x)
-    {
-      std::atomic<std::uint64_t> num_invokes{0};
-      thread_runner(values, [&x, &num_invokes](boost::span<T> s) {
-        x.insert_or_visit(
-          s.begin(), s.end(), [&num_invokes](typename X::value_type const& v) {
-            (void)v;
-            ++num_invokes;
-          });
-      });
-
-      BOOST_TEST_EQ(num_invokes, values.size() - x.size());
-
-      BOOST_TEST_EQ(raii::default_constructor, 0u);
-      BOOST_TEST_EQ(raii::copy_constructor, 2 * x.size());
-      BOOST_TEST_GT(raii::move_constructor, 0u);
-    }
-  } iterator_range_insert_or_visit_mut_visitor;
+  } iterator_range_insert_or_visit;
 
   template <class X, class G, class F>
   void insert(X*, G gen, F inserter, test::random_generator rg)
@@ -507,7 +507,7 @@ namespace {
             ++num_invokes;
           });
 
-          x.insert_or_visit(
+          x.insert_or_cvisit(
             values, [&num_invokes](typename X::value_type const& v) {
               (void)v;
               ++num_invokes;
@@ -560,9 +560,9 @@ UNORDERED_TEST(
   ((value_type_generator)(init_type_generator))
   ((lvalue_inserter)(rvalue_inserter)(iterator_range_inserter)
    (norehash_lvalue_inserter)(norehash_rvalue_inserter)
-   (lvalue_insert_or_visit_const_visitor)(lvalue_insert_or_visit_mut_visitor)
-   (rvalue_insert_or_visit_const_visitor)(rvalue_insert_or_visit_mut_visitor)
-   (iterator_range_insert_or_visit_const_visitor)(iterator_range_insert_or_visit_mut_visitor))
+   (lvalue_insert_or_cvisit)(lvalue_insert_or_visit)
+   (rvalue_insert_or_cvisit)(rvalue_insert_or_visit)
+   (iterator_range_insert_or_cvisit)(iterator_range_insert_or_visit))
   ((default_generator)(sequential)(limited_range)))
 
 UNORDERED_TEST(

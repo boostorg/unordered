@@ -18,12 +18,22 @@
 #include <boost/unordered/detail/foa/concurrent_table.hpp>
 #include <boost/unordered/detail/type_traits.hpp>
 
+#include <boost/callable_traits/is_invocable.hpp>
 #include <boost/container_hash/hash.hpp>
 #include <boost/core/allocator_access.hpp>
 #include <boost/type_traits/type_identity.hpp>
 
 #include <functional>
 #include <utility>
+
+#define BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)                             \
+  static_assert(boost::callable_traits::is_invocable<F, value_type&>::value,   \
+    "The provided Callable must be invocable with `value_type&`");
+
+#define BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)                       \
+  static_assert(                                                               \
+    boost::callable_traits::is_invocable<F, value_type const&>::value,         \
+    "The provided Callable must be invocable with `value_type const&`");
 
 namespace boost {
   namespace unordered {
@@ -182,27 +192,32 @@ namespace boost {
 
       template <class F> bool insert_or_visit(value_type const& obj, F f)
       {
+        BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
         return table_.insert_or_visit(obj, f);
       }
 
       template <class F> bool insert_or_visit(value_type&& obj, F f)
       {
+        BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
         return table_.insert_or_visit(std::move(obj), f);
       }
 
       template <class F> bool insert_or_visit(init_type const& obj, F f)
       {
+        BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
         return table_.insert_or_visit(obj, f);
       }
 
       template <class F> bool insert_or_visit(init_type&& obj, F f)
       {
+        BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
         return table_.insert_or_visit(std::move(obj), f);
       }
 
       template <class InputIterator, class F>
       void insert_or_visit(InputIterator first, InputIterator last, F f)
       {
+        BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
         for (; first != last; ++first) {
           table_.insert_or_visit(*first, f);
         }
@@ -211,6 +226,47 @@ namespace boost {
       template <class F>
       void insert_or_visit(std::initializer_list<value_type> ilist, F f)
       {
+        BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
+        this->insert_or_visit(ilist.begin(), ilist.end(), f);
+      }
+
+      template <class F> bool insert_or_cvisit(value_type const& obj, F f)
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        return table_.insert_or_cvisit(obj, f);
+      }
+
+      template <class F> bool insert_or_cvisit(value_type&& obj, F f)
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        return table_.insert_or_cvisit(std::move(obj), f);
+      }
+
+      template <class F> bool insert_or_cvisit(init_type const& obj, F f)
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        return table_.insert_or_cvisit(obj, f);
+      }
+
+      template <class F> bool insert_or_cvisit(init_type&& obj, F f)
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        return table_.insert_or_cvisit(std::move(obj), f);
+      }
+
+      template <class InputIterator, class F>
+      void insert_or_cvisit(InputIterator first, InputIterator last, F f)
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        for (; first != last; ++first) {
+          table_.insert_or_cvisit(*first, f);
+        }
+      }
+
+      template <class F>
+      void insert_or_cvisit(std::initializer_list<value_type> ilist, F f)
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         this->insert_or_visit(ilist.begin(), ilist.end(), f);
       }
 
@@ -246,5 +302,8 @@ namespace boost {
     };
   } // namespace unordered
 } // namespace boost
+
+#undef BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE
+#undef BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE
 
 #endif // BOOST_UNORDERED_CONCURRENT_FLAT_MAP_HPP
