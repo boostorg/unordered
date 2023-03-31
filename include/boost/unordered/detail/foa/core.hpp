@@ -163,11 +163,12 @@ static constexpr std::size_t default_bucket_count=0;
  * "logical" 128-bit word, and so forth. With this layout, match can be
  * implemented with 4 ANDs, 3 shifts, 2 XORs, 1 OR and 1 NOT.
  * 
- * TODO: Explain IntegralWrapper.
- * 
- * group15 has no user-defined ctor so that it's a trivial type and can be
- * initialized via memset etc. Where needed, group15::initialize sets the
- * metadata to all zeros.
+ * IntegralWrapper<Integral> is used to implement group15's underlying
+ * metadata: it behaves as a plain integral for foa::table or introduces
+ * atomic ops for foa::concurrent_table. If IntegralWrapper<...> is trivially
+ * constructible, so is group15, in which case it can be initialized via memset
+ * etc. Where needed, group15::initialize resets the metadata to the all
+ * zeros (default state).
  */
 
 #if defined(BOOST_UNORDERED_SSE2)
@@ -937,10 +938,10 @@ struct table_arrays
           reinterpret_cast<uintptr_t>(p))%sizeof(group_type);
       arrays.groups=reinterpret_cast<group_type*>(p);
 
-      /* memset is faster/not slower than initializing groups individually.
-       * This assumes all zeros is group_type's default layout. 
-       */
-      std::memset(arrays.groups,0,sizeof(group_type)*groups_size);
+      initialize_groups(
+        arrays.groups,groups_size,
+        std::integral_constant<
+          bool,std::is_trivially_constructible<group_type>::value>{});
       arrays.groups[groups_size-1].set_sentinel();
     }
     return arrays;
@@ -974,6 +975,22 @@ struct table_arrays
 
     /* ceil(buffer_bytes/sizeof(value_type)) */
     return (buffer_bytes+sizeof(value_type)-1)/sizeof(value_type);
+  }
+
+  static void initialize_groups(
+    group_type* groups_,std::size_t size,std::true_type /* memset */)
+  {
+    /* Faster/not slower than manual, assumes all zeros is group_type's
+     * default layout.
+     */
+
+    std::memset(groups_,0,sizeof(group_type)*size);
+  }
+
+  static void initialize_groups(
+    group_type* groups_,std::size_t size,std::false_type /* manual */)
+  {
+    while(size--!=0)::new (groups_++) group_type();
   }
 
   std::size_t  groups_size_index;
