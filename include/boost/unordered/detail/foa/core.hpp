@@ -180,7 +180,7 @@ struct group15
 
   struct dummy_group_type
   {
-    alignas(16) unsigned char storage[N+1]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0};
+    /*alignas(16)*/ unsigned char storage[N+1]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0};
   };
 
   inline void initialize()
@@ -289,7 +289,7 @@ private:
       (char)m[ 7],(char)m[ 6],(char)m[ 5],(char)m[ 4],
       (char)m[ 3],(char)m[ 2],(char)m[ 1],(char)m[ 0]);
 #else
-    return _mm_load_si128(reinterpret_cast<const __m128i*>(m));
+    return /*_mm_load_si128*/_mm_loadu_si128(reinterpret_cast<const __m128i*>(m));
 #endif
   }
 
@@ -359,7 +359,7 @@ private:
     return at(N);
   }
 
-  alignas(16) slot_type m[16];
+  /*alignas(16)*/ slot_type m[16];
 };
 
 #elif defined(BOOST_UNORDERED_LITTLE_ENDIAN_NEON)
