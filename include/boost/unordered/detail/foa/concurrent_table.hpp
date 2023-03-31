@@ -174,7 +174,7 @@ struct group_access
 
 private:
   mutex_type          m;
-  insert_counter_type cnt=0;
+  insert_counter_type cnt{0};
 };
 
 template<std::size_t Size>
