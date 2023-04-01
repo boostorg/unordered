@@ -23,6 +23,7 @@
 #include <boost/cstdint.hpp>
 #include <boost/predef.h>
 #include <boost/static_assert.hpp>
+#include <boost/type_traits/has_trivial_constructor.hpp>
 #include <boost/type_traits/has_trivial_copy.hpp>
 #include <boost/type_traits/is_nothrow_swappable.hpp>
 #include <boost/unordered/detail/narrow_cast.hpp>
@@ -941,7 +942,14 @@ struct table_arrays
       initialize_groups(
         arrays.groups,groups_size,
         std::integral_constant<
-          bool,std::is_trivially_constructible<group_type>::value>{});
+          bool,
+#if BOOST_WORKAROUND(BOOST_LIBSTDCXX_VERSION,<50000)
+        /* std::is_trivially_constructible not provided */
+        boost::has_trivial_constructor<group_type>::value
+#else
+        std::is_trivially_constructible<group_type>::value
+#endif  
+        >{});
       arrays.groups[groups_size-1].set_sentinel();
     }
     return arrays;
