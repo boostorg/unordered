@@ -980,11 +980,14 @@ struct table_arrays
   static void initialize_groups(
     group_type* groups_,std::size_t size,std::true_type /* memset */)
   {
-    /* Faster/not slower than manual, assumes all zeros is group_type's
+    /* memset faster/not slower than manual, assumes all zeros is group_type's
      * default layout.
+     * reinterpret_cast: GCC may complain about group_type not being trivially
+     * copy-assignable when we're relying on trivial copy constructibility.
      */
 
-    std::memset(groups_,0,sizeof(group_type)*size);
+    std::memset(
+      reinterpret_cast<unsigned char*>(groups_),0,sizeof(group_type)*size);
   }
 
   static void initialize_groups(
