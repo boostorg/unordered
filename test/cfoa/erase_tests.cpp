@@ -245,6 +245,63 @@ namespace {
     }
   } erase_if;
 
+  struct erase_if_exec_policy_type
+  {
+    template <class T, class X> void operator()(std::vector<T>& values, X& x)
+    {
+#if defined(BOOST_UNORDERED_PARALLEL_ALGORITHMS)
+      using value_type = typename X::value_type;
+
+      std::atomic<std::uint64_t> num_invokes{0};
+
+      auto const old_size = x.size();
+
+      auto const old_dc = +raii::default_constructor;
+      auto const old_cc = +raii::copy_constructor;
+      auto const old_mc = +raii::move_constructor;
+
+      auto const old_d = +raii::destructor;
+
+      auto max = 0;
+      x.visit_all([&max](value_type const& v) {
+        if (v.second.x_ > max) {
+          max = v.second.x_;
+        }
+      });
+
+      auto threshold = max / 2;
+
+      auto expected_erasures = 0u;
+      x.visit_all([&expected_erasures, threshold](value_type const& v) {
+        if (v.second.x_ > threshold) {
+          ++expected_erasures;
+        }
+      });
+
+      thread_runner(values, [&num_invokes, &x, threshold](boost::span<T> s) {
+        (void)s;
+        x.erase_if(
+          std::execution::par_unseq, [&num_invokes, threshold](value_type& v) {
+            ++num_invokes;
+            return v.second.x_ > threshold;
+          });
+      });
+
+      BOOST_TEST_GE(+num_invokes, old_size);
+      BOOST_TEST_LE(+num_invokes, old_size * num_threads);
+
+      BOOST_TEST_EQ(raii::default_constructor, old_dc);
+      BOOST_TEST_EQ(raii::copy_constructor, old_cc);
+      BOOST_TEST_EQ(raii::move_constructor, old_mc);
+
+      BOOST_TEST_EQ(raii::destructor, old_d + 2 * expected_erasures);
+#else
+      (void)values;
+      (void)x;
+#endif
+    }
+  } erase_if_exec_policy;
+
   template <class X, class G, class F>
   void erase(X*, G gen, F eraser, test::random_generator rg)
   {
@@ -296,14 +353,14 @@ UNORDERED_TEST(
   erase,
   ((map))
   ((value_type_generator)(init_type_generator))
-  ((lvalue_eraser)(lvalue_eraser_if)(erase_if))
+  ((lvalue_eraser)(lvalue_eraser_if)(erase_if)(erase_if_exec_policy))
   ((default_generator)(sequential)(limited_range)))
 
 UNORDERED_TEST(
   erase,
   ((transparent_map))
   ((value_type_generator)(init_type_generator))
-  ((transp_lvalue_eraser)(transp_lvalue_eraser_if))
+  ((transp_lvalue_eraser)(transp_lvalue_eraser_if)(erase_if_exec_policy))
   ((default_generator)(sequential)(limited_range)))
 
 // clang-format on

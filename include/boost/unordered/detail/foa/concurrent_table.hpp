@@ -41,6 +41,23 @@
 namespace boost{
 namespace unordered{
 namespace detail{
+
+#if defined(BOOST_UNORDERED_PARALLEL_ALGORITHMS)
+
+template<typename ExecutionPolicy>
+using is_execution_policy=std::is_execution_policy<
+  typename std::remove_cv<
+    typename std::remove_reference<ExecutionPolicy>::type
+  >::type
+>;
+
+#else
+
+template<typename ExecutionPolicy>
+using is_execution_policy=std::false_type;
+
+#endif
+
 namespace foa{
 
 #if defined(BOOST_MSVC)
@@ -276,18 +293,6 @@ class concurrent_table:
   using group_type=typename super::group_type;
   using super::N;
   using prober=typename super::prober;
-
-#if defined(BOOST_UNORDERED_PARALLEL_ALGORITHMS)
-  template<typename ExecutionPolicy>
-  using is_execution_policy=std::is_execution_policy<
-    typename std::remove_cv<
-      typename std::remove_reference<ExecutionPolicy>::type
-    >::type
-  >;
-#else
-  template<typename ExecutionPolicy>
-  using is_execution_policy=std::false_type;
-#endif
 
 public:
   using key_type=typename super::key_type;
@@ -1060,7 +1065,7 @@ private:
          last=first+this->arrays.groups_size_mask+1;
     std::for_each(std::forward<ExecutionPolicy>(policy),first,last,
       [&,this](group_type& g){
-        std::size_t pos=&g-first;
+        std::size_t pos=static_cast<std::size_t>(&g-first);
         auto        p=this->arrays.elements+pos*N;
         auto        lck=access(access_mode,pos);
         auto        mask=this->match_really_occupied(&g,last);
