@@ -287,11 +287,23 @@ namespace boost {
 
       template <class K, class F>
       typename std::enable_if<
-        detail::are_transparent<K, hasher, key_equal>::value, size_type>::type
+        detail::are_transparent<K, hasher, key_equal>::value &&
+          !detail::is_execution_policy<K>::value,
+        size_type>::type
       erase_if(K&& k, F f)
       {
         return table_.erase_if(std::forward<K>(k), f);
       }
+
+#if defined(BOOST_UNORDERED_PARALLEL_ALGORITHMS)
+      template <class ExecPolicy, class F>
+      typename std::enable_if<detail::is_execution_policy<ExecPolicy>::value,
+        void>::type
+      erase_if(ExecPolicy p, F f)
+      {
+        table_.erase_if(p, f);
+      }
+#endif
 
       template <class F> size_type erase_if(F f) { return table_.erase_if(f); }
 
