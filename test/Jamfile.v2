@@ -214,5 +214,10 @@ rule build_cfoa ( name )
 
 build_cfoa insert_tests ;
 build_cfoa erase_tests ;
+build_cfoa try_emplace_tests ;
 
-alias cfoa_tests : cfoa_insert_tests cfoa_erase_tests ;
+alias cfoa_tests :
+  cfoa_insert_tests
+  cfoa_erase_tests
+  cfoa_try_emplace_tests
+;

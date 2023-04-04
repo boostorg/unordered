@@ -270,6 +270,66 @@ namespace boost {
         this->insert_or_visit(ilist.begin(), ilist.end(), f);
       }
 
+      template <class... Args>
+      bool try_emplace(key_type const& k, Args&&... args)
+      {
+        return table_.try_emplace(k, std::forward<Args>(args)...);
+      }
+
+      template <class... Args> bool try_emplace(key_type&& k, Args&&... args)
+      {
+        return table_.try_emplace(std::move(k), std::forward<Args>(args)...);
+      }
+
+      template <class K, class... Args>
+      typename std::enable_if<
+        detail::are_transparent<K, hasher, key_equal>::value, bool>::type
+      try_emplace(K&& k, Args&&... args)
+      {
+        return table_.try_emplace(
+          std::forward<K>(k), std::forward<Args>(args)...);
+      }
+
+      template <class F, class... Args>
+      bool try_emplace_or_visit(key_type const& k, F f, Args&&... args)
+      {
+        return table_.try_emplace_or_visit(k, f, std::forward<Args>(args)...);
+      }
+
+      template <class F, class... Args>
+      bool try_emplace_or_cvisit(key_type const& k, F f, Args&&... args)
+      {
+        return table_.try_emplace_or_cvisit(k, f, std::forward<Args>(args)...);
+      }
+
+      template <class F, class... Args>
+      bool try_emplace_or_visit(key_type&& k, F f, Args&&... args)
+      {
+        return table_.try_emplace_or_visit(
+          std::move(k), f, std::forward<Args>(args)...);
+      }
+
+      template <class F, class... Args>
+      bool try_emplace_or_cvisit(key_type&& k, F f, Args&&... args)
+      {
+        return table_.try_emplace_or_cvisit(
+          std::move(k), f, std::forward<Args>(args)...);
+      }
+
+      template <class K, class F, class... Args>
+      bool try_emplace_or_visit(K&& k, F f, Args&&... args)
+      {
+        return table_.try_emplace_or_visit(
+          std::forward<K>(k), f, std::forward<Args>(args)...);
+      }
+
+      template <class K, class F, class... Args>
+      bool try_emplace_or_cvisit(K&& k, F f, Args&&... args)
+      {
+        return table_.try_emplace_or_cvisit(
+          std::forward<K>(k), f, std::forward<Args>(args)...);
+      }
+
       size_type erase(key_type const& k) { return table_.erase(k); }
 
       template <class K>
