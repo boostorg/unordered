@@ -25,6 +25,7 @@ namespace {
         }
       });
       BOOST_TEST_EQ(num_inserts, x.size());
+      BOOST_TEST_EQ(raii::copy_constructor, 2 * x.size());
       BOOST_TEST_EQ(raii::copy_assignment, 0u);
       BOOST_TEST_EQ(raii::move_assignment, 0u);
     }

@@ -270,6 +270,23 @@ namespace boost {
         this->insert_or_visit(ilist.begin(), ilist.end(), f);
       }
 
+      template <class... Args> bool emplace(Args&&... args)
+      {
+        return table_.emplace(std::forward<Args>(args)...);
+      }
+
+      template <class F, class... Args>
+      bool emplace_or_visit(F f, Args&&... args)
+      {
+        return table_.emplace_or_visit(f, std::forward<Args>(args)...);
+      }
+
+      template <class F, class... Args>
+      bool emplace_or_cvisit(F f, Args&&... args)
+      {
+        return table_.emplace_or_cvisit(f, std::forward<Args>(args)...);
+      }
+
       template <class... Args>
       bool try_emplace(key_type const& k, Args&&... args)
       {
