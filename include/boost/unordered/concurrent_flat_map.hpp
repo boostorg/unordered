@@ -138,6 +138,56 @@ namespace boost {
         return size() == 0;
       }
 
+      template <class F> std::size_t visit(key_type const& k, F f)
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
+        return table_.visit(k, f);
+      }
+
+      template <class F> std::size_t visit(key_type const& k, F f) const
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        return table_.visit(k, f);
+      }
+
+      template <class F> std::size_t cvisit(key_type const& k, F f) const
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        return table_.visit(k, f);
+      }
+
+      template <class K, class F>
+      typename std::enable_if<
+        detail::are_transparent<K, hasher, key_equal>::value, std::size_t>::type
+      visit(K&& k, F f)
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
+        return table_.visit(std::forward<K>(k), f);
+      }
+
+      template <class K, class F>
+      typename std::enable_if<
+        detail::are_transparent<K, hasher, key_equal>::value, std::size_t>::type
+      visit(K&& k, F f) const
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        return table_.visit(std::forward<K>(k), f);
+      }
+
+      template <class K, class F>
+      typename std::enable_if<
+        detail::are_transparent<K, hasher, key_equal>::value, std::size_t>::type
+      cvisit(K&& k, F f) const
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        return table_.visit(std::forward<K>(k), f);
+      }
+
+      template <class F> std::size_t visit_all(F f)
+      {
+        return table_.visit_all(f);
+      }
+
       /// Modifiers
       ///
 
@@ -158,11 +208,6 @@ namespace boost {
       void insert(std::initializer_list<value_type> ilist)
       {
         this->insert(ilist.begin(), ilist.end());
-      }
-
-      template <class F> std::size_t visit_all(F f)
-      {
-        return table_.visit_all(f);
       }
 
       template <class M> bool insert_or_assign(key_type const& k, M&& obj)
