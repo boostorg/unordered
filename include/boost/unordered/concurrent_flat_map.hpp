@@ -278,12 +278,14 @@ namespace boost {
       template <class F, class... Args>
       bool emplace_or_visit(F f, Args&&... args)
       {
+        BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
         return table_.emplace_or_visit(f, std::forward<Args>(args)...);
       }
 
       template <class F, class... Args>
       bool emplace_or_cvisit(F f, Args&&... args)
       {
+        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         return table_.emplace_or_cvisit(f, std::forward<Args>(args)...);
       }
 
@@ -310,18 +312,21 @@ namespace boost {
       template <class F, class... Args>
       bool try_emplace_or_visit(key_type const& k, F f, Args&&... args)
       {
+        BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
         return table_.try_emplace_or_visit(k, f, std::forward<Args>(args)...);
       }
 
       template <class F, class... Args>
       bool try_emplace_or_cvisit(key_type const& k, F f, Args&&... args)
       {
+        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         return table_.try_emplace_or_cvisit(k, f, std::forward<Args>(args)...);
       }
 
       template <class F, class... Args>
       bool try_emplace_or_visit(key_type&& k, F f, Args&&... args)
       {
+        BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
         return table_.try_emplace_or_visit(
           std::move(k), f, std::forward<Args>(args)...);
       }
@@ -329,6 +334,7 @@ namespace boost {
       template <class F, class... Args>
       bool try_emplace_or_cvisit(key_type&& k, F f, Args&&... args)
       {
+        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         return table_.try_emplace_or_cvisit(
           std::move(k), f, std::forward<Args>(args)...);
       }
@@ -336,6 +342,7 @@ namespace boost {
       template <class K, class F, class... Args>
       bool try_emplace_or_visit(K&& k, F f, Args&&... args)
       {
+        BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
         return table_.try_emplace_or_visit(
           std::forward<K>(k), f, std::forward<Args>(args)...);
       }
@@ -343,6 +350,7 @@ namespace boost {
       template <class K, class F, class... Args>
       bool try_emplace_or_cvisit(K&& k, F f, Args&&... args)
       {
+        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         return table_.try_emplace_or_cvisit(
           std::forward<K>(k), f, std::forward<Args>(args)...);
       }
