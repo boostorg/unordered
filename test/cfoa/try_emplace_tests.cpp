@@ -86,7 +86,7 @@ namespace {
 
       if (std::is_same<T, typename X::value_type>::value) {
         BOOST_TEST_EQ(raii::copy_constructor, x.size());
-        BOOST_TEST_EQ(raii::move_constructor, 0);
+        BOOST_TEST_EQ(raii::move_constructor, 0u);
       } else {
         BOOST_TEST_EQ(raii::copy_constructor, 0u);
         BOOST_TEST_EQ(raii::move_constructor, x.size());
