@@ -185,8 +185,50 @@ namespace boost {
 
       template <class F> std::size_t visit_all(F f)
       {
+        BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
         return table_.visit_all(f);
       }
+
+      template <class F> std::size_t visit_all(F f) const
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        return table_.visit_all(f);
+      }
+
+      template <class F> std::size_t cvisit_all(F f) const
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        return table_.cvisit_all(f);
+      }
+
+#if defined(BOOST_UNORDERED_PARALLEL_ALGORITHMS)
+      template <class ExecPolicy, class F>
+      typename std::enable_if<detail::is_execution_policy<ExecPolicy>::value,
+        void>::type
+      visit_all(ExecPolicy p, F f)
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
+        table_.visit_all(p, f);
+      }
+
+      template <class ExecPolicy, class F>
+      typename std::enable_if<detail::is_execution_policy<ExecPolicy>::value,
+        void>::type
+      visit_all(ExecPolicy p, F f) const
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        table_.visit_all(p, f);
+      }
+
+      template <class ExecPolicy, class F>
+      typename std::enable_if<detail::is_execution_policy<ExecPolicy>::value,
+        void>::type
+      cvisit_all(ExecPolicy p, F f) const
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        table_.cvisit_all(p, f);
+      }
+#endif
 
       /// Modifiers
       ///
