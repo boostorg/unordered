@@ -17,13 +17,16 @@
 #include <boost/config.hpp>
 #include <boost/core/no_exceptions_support.hpp>
 #include <boost/cstdint.hpp>
+#include <boost/mp11/tuple.hpp>
 #include <boost/unordered/detail/foa/core.hpp>
 #include <boost/unordered/detail/foa/rw_spinlock.hpp>
+#include <boost/unordered/detail/foa/tuple_rotate_right.hpp>
 #include <cstddef>
 #include <functional>
 #include <memory>
 #include <new>
 #include <type_traits>
+#include <tuple>
 #include <utility>
 
 #if !defined(BOOST_UNORDERED_DISABLE_PARALLEL_ALGORITHMS)
@@ -445,34 +448,34 @@ public:
       try_emplace_args_t{},std::forward<Key>(x),std::forward<Args>(args)...);
   }
 
-  template<typename Key,typename F,typename... Args>
-  BOOST_FORCEINLINE bool try_emplace_or_visit(Key&& x,F&& f,Args&&... args)
+  template<typename Key,typename... Args>
+  BOOST_FORCEINLINE bool try_emplace_or_visit(Key&& x,Args&&... args)
   {
-    return emplace_or_visit_impl(
-      group_exclusive{},std::forward<F>(f),
+    return emplace_or_visit_flast(
+      group_exclusive{},
       try_emplace_args_t{},std::forward<Key>(x),std::forward<Args>(args)...);
   }
 
-  template<typename Key,typename F,typename... Args>
-  BOOST_FORCEINLINE bool try_emplace_or_cvisit(Key&& x,F&& f,Args&&... args)
+  template<typename Key,typename... Args>
+  BOOST_FORCEINLINE bool try_emplace_or_cvisit(Key&& x,Args&&... args)
   {
-    return emplace_or_visit_impl(
-      group_shared{},std::forward<F>(f),
+    return emplace_or_visit_flast(
+      group_shared{},
       try_emplace_args_t{},std::forward<Key>(x),std::forward<Args>(args)...);
   }
 
-  template<typename F,typename... Args>
-  BOOST_FORCEINLINE bool emplace_or_visit(F&& f,Args&&... args)
+  template<typename... Args>
+  BOOST_FORCEINLINE bool emplace_or_visit(Args&&... args)
   {
-    return construct_and_emplace_or_visit(
-      group_exclusive{},std::forward<F>(f),std::forward<Args>(args)...);
+    return construct_and_emplace_or_visit_flast(
+      group_exclusive{},std::forward<Args>(args)...);
   }
 
-  template<typename F,typename... Args>
-  BOOST_FORCEINLINE bool emplace_or_cvisit(F&& f,Args&&... args)
+  template<typename... Args>
+  BOOST_FORCEINLINE bool emplace_or_cvisit(Args&&... args)
   {
-    return construct_and_emplace_or_visit(
-      group_shared{},std::forward<F>(f),std::forward<Args>(args)...);
+    return construct_and_emplace_or_visit_flast(
+      group_shared{},std::forward<Args>(args)...);
   }
 
   template<typename F>
@@ -880,6 +883,30 @@ private:
       group_shared{},[](const value_type&){},std::forward<Args>(args)...);
   }
 
+  struct call_construct_and_emplace_or_visit
+  {
+    template<typename... Args>
+    BOOST_FORCEINLINE bool operator()(
+      concurrent_table* this_,Args&&... args)const
+    {
+      return this_->construct_and_emplace_or_visit(
+        std::forward<Args>(args)...);
+    }
+  };
+
+  template<typename GroupAccessMode,typename... Args>
+  BOOST_FORCEINLINE bool construct_and_emplace_or_visit_flast(
+    GroupAccessMode access_mode,Args&&... args)
+  {
+    return mp11::tuple_apply(
+      call_construct_and_emplace_or_visit{},
+      std::tuple_cat(
+        std::make_tuple(this,access_mode),
+        tuple_rotate_right(std::forward_as_tuple(std::forward<Args>(args)...))
+      )
+    );
+  }
+
   template<typename GroupAccessMode,typename F,typename... Args>
   BOOST_FORCEINLINE bool construct_and_emplace_or_visit(
     GroupAccessMode access_mode,F&& f,Args&&... args)
@@ -912,6 +939,29 @@ private:
   {
     return emplace_or_visit_impl(
       access_mode,std::forward<F>(f),std::forward<Args>(args)...);
+  }
+
+  struct call_emplace_or_visit_impl
+  {
+    template<typename... Args>
+    BOOST_FORCEINLINE bool operator()(
+      concurrent_table* this_,Args&&... args)const
+    {
+      return this_->emplace_or_visit_impl(std::forward<Args>(args)...);
+    }
+  };
+
+  template<typename GroupAccessMode,typename... Args>
+  BOOST_FORCEINLINE bool emplace_or_visit_flast(
+    GroupAccessMode access_mode,Args&&... args)
+  {
+    return mp11::tuple_apply(
+      call_emplace_or_visit_impl{},
+      std::tuple_cat(
+        std::make_tuple(this,access_mode),
+        tuple_rotate_right(std::forward_as_tuple(std::forward<Args>(args)...))
+      )
+    );
   }
 
   template<typename GroupAccessMode,typename F,typename... Args>

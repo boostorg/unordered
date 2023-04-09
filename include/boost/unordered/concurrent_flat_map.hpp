@@ -362,18 +362,20 @@ namespace boost {
         return table_.emplace(std::forward<Args>(args)...);
       }
 
-      template <class F, class... Args>
-      bool emplace_or_visit(F f, Args&&... args)
+      template <class Arg, class... Args>
+      bool emplace_or_visit(Arg&& arg, Args&&... args)
       {
-        BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
-        return table_.emplace_or_visit(f, std::forward<Args>(args)...);
+        //BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
+        return table_.emplace_or_visit(
+          std::forward<Arg>(arg), std::forward<Args>(args)...);
       }
 
-      template <class F, class... Args>
-      bool emplace_or_cvisit(F f, Args&&... args)
+      template <class Arg, class... Args>
+      bool emplace_or_cvisit(Arg&& arg, Args&&... args)
       {
-        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
-        return table_.emplace_or_cvisit(f, std::forward<Args>(args)...);
+        //BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        return table_.emplace_or_cvisit(
+          std::forward<Arg>(arg), std::forward<Args>(args)...);
       }
 
       template <class... Args>
@@ -396,50 +398,52 @@ namespace boost {
           std::forward<K>(k), std::forward<Args>(args)...);
       }
 
-      template <class F, class... Args>
-      bool try_emplace_or_visit(key_type const& k, F f, Args&&... args)
+      template <class Arg, class... Args>
+      bool try_emplace_or_visit(key_type const& k, Arg&& arg, Args&&... args)
       {
-        BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
-        return table_.try_emplace_or_visit(k, f, std::forward<Args>(args)...);
-      }
-
-      template <class F, class... Args>
-      bool try_emplace_or_cvisit(key_type const& k, F f, Args&&... args)
-      {
-        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
-        return table_.try_emplace_or_cvisit(k, f, std::forward<Args>(args)...);
-      }
-
-      template <class F, class... Args>
-      bool try_emplace_or_visit(key_type&& k, F f, Args&&... args)
-      {
-        BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
+        //BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
         return table_.try_emplace_or_visit(
-          std::move(k), f, std::forward<Args>(args)...);
+          k, std::forward<Arg>(arg), std::forward<Args>(args)...);
       }
 
-      template <class F, class... Args>
-      bool try_emplace_or_cvisit(key_type&& k, F f, Args&&... args)
+      template <class Arg, class... Args>
+      bool try_emplace_or_cvisit(key_type const& k, Arg&& arg, Args&&... args)
       {
-        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        //BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         return table_.try_emplace_or_cvisit(
-          std::move(k), f, std::forward<Args>(args)...);
+          k, std::forward<Arg>(arg), std::forward<Args>(args)...);
       }
 
-      template <class K, class F, class... Args>
-      bool try_emplace_or_visit(K&& k, F f, Args&&... args)
+      template <class Arg, class... Args>
+      bool try_emplace_or_visit(key_type&& k, Arg&& arg, Args&&... args)
       {
-        BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
+        //BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
         return table_.try_emplace_or_visit(
-          std::forward<K>(k), f, std::forward<Args>(args)...);
+          std::move(k), std::forward<Arg>(arg), std::forward<Args>(args)...);
       }
 
-      template <class K, class F, class... Args>
-      bool try_emplace_or_cvisit(K&& k, F f, Args&&... args)
+      template <class Arg, class... Args>
+      bool try_emplace_or_cvisit(key_type&& k, Arg&& arg, Args&&... args)
       {
-        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        //BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         return table_.try_emplace_or_cvisit(
-          std::forward<K>(k), f, std::forward<Args>(args)...);
+          std::move(k), std::forward<Arg>(arg), std::forward<Args>(args)...);
+      }
+
+      template <class K, class Arg, class... Args>
+      bool try_emplace_or_visit(K&& k, Arg&& arg, Args&&... args)
+      {
+        //BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
+        return table_.try_emplace_or_visit(
+          std::forward<K>(k), std::forward<Arg>(arg), std::forward<Args>(args)...);
+      }
+
+      template <class K, class Arg, class... Args>
+      bool try_emplace_or_cvisit(K&& k, Arg&& arg, Args&&... args)
+      {
+        //BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        return table_.try_emplace_or_cvisit(
+          std::forward<K>(k), std::forward<Arg>(arg), std::forward<Args>(args)...);
       }
 
       size_type erase(key_type const& k) { return table_.erase(k); }
