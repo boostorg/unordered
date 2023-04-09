@@ -255,15 +255,15 @@ namespace boost {
       template <class M> bool insert_or_assign(key_type const& k, M&& obj)
       {
         return table_.try_emplace_or_visit(
-          k, [&](value_type& m) { m.second = std::forward<M>(obj); },
-          std::forward<M>(obj));
+          k, std::forward<M>(obj),
+          [&](value_type& m) { m.second = std::forward<M>(obj); });
       }
 
       template <class M> bool insert_or_assign(key_type&& k, M&& obj)
       {
         return table_.try_emplace_or_visit(
-          std::move(k), [&](value_type& m) { m.second = std::forward<M>(obj); },
-          std::forward<M>(obj));
+          std::move(k), std::forward<M>(obj),
+          [&](value_type& m) { m.second = std::forward<M>(obj); });
       }
 
       template <class K, class M>
@@ -272,9 +272,8 @@ namespace boost {
       insert_or_assign(K&& k, M&& obj)
       {
         return table_.try_emplace_or_visit(
-          std::forward<K>(k),
-          [&](value_type& m) { m.second = std::forward<M>(obj); },
-          std::forward<M>(obj));
+          std::forward<K>(k), std::forward<M>(obj),
+          [&](value_type& m) { m.second = std::forward<M>(obj); });
       }
 
       template <class F> bool insert_or_visit(value_type const& obj, F f)
