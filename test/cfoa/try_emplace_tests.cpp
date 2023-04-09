@@ -178,12 +178,11 @@ namespace {
       thread_runner(values, [&x, &num_inserts, &num_invokes](boost::span<T> s) {
         for (auto& r : s) {
           bool b = x.try_emplace_or_visit(
-            r.first,
+            r.first, r.second.x_,
             [&num_invokes](typename X::value_type& v) {
               (void)v;
               ++num_invokes;
-            },
-            r.second.x_);
+            });
 
           if (b) {
             ++num_inserts;
@@ -249,12 +248,11 @@ namespace {
       thread_runner(values, [&x, &num_inserts, &num_invokes](boost::span<T> s) {
         for (auto& r : s) {
           bool b = x.try_emplace_or_visit(
-            std::move(r.first),
+            std::move(r.first), r.second.x_,
             [&num_invokes](typename X::value_type& v) {
               (void)v;
               ++num_invokes;
-            },
-            r.second.x_);
+            });
 
           if (b) {
             ++num_inserts;
@@ -314,12 +312,11 @@ namespace {
       thread_runner(values, [&x, &num_inserts, &num_invokes](boost::span<T> s) {
         for (auto& r : s) {
           bool b = x.try_emplace_or_visit(
-            r.first.x_,
+            r.first.x_, r.second.x_,
             [&num_invokes](typename X::value_type& v) {
               (void)v;
               ++num_invokes;
-            },
-            r.second.x_);
+            });
 
           if (b) {
             ++num_inserts;
