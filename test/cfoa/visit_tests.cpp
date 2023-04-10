@@ -41,7 +41,7 @@ namespace {
           values, [&x, &mut_visitor, &total_count](boost::span<T> s) {
             for (auto const& val : s) {
               auto r = val.first.x_;
-              BOOST_ASSERT(r >= 0);
+              BOOST_TEST(r >= 0);
 
               auto count = x.visit(val.first, mut_visitor);
               BOOST_TEST_EQ(count, 1u);
@@ -64,7 +64,7 @@ namespace {
           values, [&x, &const_visitor, &total_count](boost::span<T> s) {
             for (auto const& val : s) {
               auto r = val.first.x_;
-              BOOST_ASSERT(r >= 0);
+              BOOST_TEST(r >= 0);
 
               auto const& y = x;
               auto count = y.visit(val.first, const_visitor);
@@ -89,7 +89,7 @@ namespace {
           values, [&x, &const_visitor, &total_count](boost::span<T> s) {
             for (auto const& val : s) {
               auto r = val.first.x_;
-              BOOST_ASSERT(r >= 0);
+              BOOST_TEST(r >= 0);
 
               auto count = x.cvisit(val.first, const_visitor);
 
@@ -137,7 +137,7 @@ namespace {
           values, [&x, &mut_visitor, &total_count](boost::span<T> s) {
             for (auto const& val : s) {
               auto r = val.first.x_;
-              BOOST_ASSERT(r >= 0);
+              BOOST_TEST(r >= 0);
 
               auto count = x.visit(val.first.x_, mut_visitor);
 
@@ -161,7 +161,7 @@ namespace {
           values, [&x, &const_visitor, &total_count](boost::span<T> s) {
             for (auto const& val : s) {
               auto r = val.first.x_;
-              BOOST_ASSERT(r >= 0);
+              BOOST_TEST(r >= 0);
 
               auto const& y = x;
               auto count = y.visit(val.first.x_, const_visitor);
@@ -186,7 +186,7 @@ namespace {
           values, [&x, &const_visitor, &total_count](boost::span<T> s) {
             for (auto const& val : s) {
               auto r = val.first.x_;
-              BOOST_ASSERT(r >= 0);
+              BOOST_TEST(r >= 0);
 
               auto count = x.cvisit(val.first.x_, const_visitor);
 
