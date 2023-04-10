@@ -18,26 +18,48 @@
 #include <boost/unordered/detail/foa/concurrent_table.hpp>
 #include <boost/unordered/detail/type_traits.hpp>
 
-#include <boost/callable_traits/is_invocable.hpp>
 #include <boost/container_hash/hash.hpp>
 #include <boost/core/allocator_access.hpp>
+#include <boost/mp11/algorithm.hpp>
+#include <boost/mp11/list.hpp>
 #include <boost/type_traits/type_identity.hpp>
 
 #include <functional>
+#include <type_traits>
 #include <utility>
 
 #define BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)                             \
-  static_assert(boost::callable_traits::is_invocable<F, value_type&>::value,   \
+  static_assert(boost::unordered::detail::is_invocable<F, value_type&>::value, \
     "The provided Callable must be invocable with `value_type&`");
 
 #define BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)                       \
   static_assert(                                                               \
-    boost::callable_traits::is_invocable<F, value_type const&>::value,         \
+    boost::unordered::detail::is_invocable<F, value_type const&>::value,       \
     "The provided Callable must be invocable with `value_type const&`");
+
+#define BOOST_UNORDERED_COMMA ,
+
+#define BOOST_UNORDERED_LAST_ARG(Arg, Args)                                     \
+mp11::mp_back<mp11::mp_list<Arg BOOST_UNORDERED_COMMA Args>>
+
+#define BOOST_UNORDERED_STATIC_ASSERT_LAST_ARG_INVOCABLE(Arg, Args)             \
+BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(BOOST_UNORDERED_LAST_ARG(Arg, Args))
+
+#define BOOST_UNORDERED_STATIC_ASSERT_LAST_ARG_CONST_INVOCABLE(Arg, Args)       \
+BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(                                  \
+  BOOST_UNORDERED_LAST_ARG(Arg, Args))
 
 namespace boost {
   namespace unordered {
     namespace detail {
+      template <class F, class... Args>
+      struct is_invocable:
+        std::is_constructible<
+          std::function<void(Args...)>,
+          std::reference_wrapper<typename std::remove_reference<F>::type>
+        >
+      {};
+
       template <class Key, class T> struct concurrent_map_types
       {
         using key_type = Key;
@@ -364,7 +386,7 @@ namespace boost {
       template <class Arg, class... Args>
       bool emplace_or_visit(Arg&& arg, Args&&... args)
       {
-        //BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
+        BOOST_UNORDERED_STATIC_ASSERT_LAST_ARG_INVOCABLE(Arg, Args...)
         return table_.emplace_or_visit(
           std::forward<Arg>(arg), std::forward<Args>(args)...);
       }
@@ -372,7 +394,7 @@ namespace boost {
       template <class Arg, class... Args>
       bool emplace_or_cvisit(Arg&& arg, Args&&... args)
       {
-        //BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        BOOST_UNORDERED_STATIC_ASSERT_LAST_ARG_CONST_INVOCABLE(Arg, Args...)
         return table_.emplace_or_cvisit(
           std::forward<Arg>(arg), std::forward<Args>(args)...);
       }
@@ -400,7 +422,7 @@ namespace boost {
       template <class Arg, class... Args>
       bool try_emplace_or_visit(key_type const& k, Arg&& arg, Args&&... args)
       {
-        //BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
+        BOOST_UNORDERED_STATIC_ASSERT_LAST_ARG_INVOCABLE(Arg, Args...)
         return table_.try_emplace_or_visit(
           k, std::forward<Arg>(arg), std::forward<Args>(args)...);
       }
@@ -408,7 +430,7 @@ namespace boost {
       template <class Arg, class... Args>
       bool try_emplace_or_cvisit(key_type const& k, Arg&& arg, Args&&... args)
       {
-        //BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        BOOST_UNORDERED_STATIC_ASSERT_LAST_ARG_CONST_INVOCABLE(Arg, Args...)
         return table_.try_emplace_or_cvisit(
           k, std::forward<Arg>(arg), std::forward<Args>(args)...);
       }
@@ -416,7 +438,7 @@ namespace boost {
       template <class Arg, class... Args>
       bool try_emplace_or_visit(key_type&& k, Arg&& arg, Args&&... args)
       {
-        //BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
+        BOOST_UNORDERED_STATIC_ASSERT_LAST_ARG_INVOCABLE(Arg, Args...)
         return table_.try_emplace_or_visit(
           std::move(k), std::forward<Arg>(arg), std::forward<Args>(args)...);
       }
@@ -424,7 +446,7 @@ namespace boost {
       template <class Arg, class... Args>
       bool try_emplace_or_cvisit(key_type&& k, Arg&& arg, Args&&... args)
       {
-        //BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        BOOST_UNORDERED_STATIC_ASSERT_LAST_ARG_CONST_INVOCABLE(Arg, Args...)
         return table_.try_emplace_or_cvisit(
           std::move(k), std::forward<Arg>(arg), std::forward<Args>(args)...);
       }
@@ -432,7 +454,7 @@ namespace boost {
       template <class K, class Arg, class... Args>
       bool try_emplace_or_visit(K&& k, Arg&& arg, Args&&... args)
       {
-        //BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
+        BOOST_UNORDERED_STATIC_ASSERT_LAST_ARG_INVOCABLE(Arg, Args...)
         return table_.try_emplace_or_visit(
           std::forward<K>(k), std::forward<Arg>(arg), std::forward<Args>(args)...);
       }
@@ -440,7 +462,7 @@ namespace boost {
       template <class K, class Arg, class... Args>
       bool try_emplace_or_cvisit(K&& k, Arg&& arg, Args&&... args)
       {
-        //BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        BOOST_UNORDERED_STATIC_ASSERT_LAST_ARG_CONST_INVOCABLE(Arg, Args...)
         return table_.try_emplace_or_cvisit(
           std::forward<K>(k), std::forward<Arg>(arg), std::forward<Args>(args)...);
       }
@@ -492,5 +514,9 @@ namespace boost {
 
 #undef BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE
 #undef BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE
+#undef BOOST_UNORDERED_COMMA
+#undef BOOST_UNORDERED_LAST_ARG
+#undef BOOST_UNORDERED_STATIC_ASSERT_LAST_ARG_INVOCABLE
+#undef BOOST_UNORDERED_STATIC_ASSERT_LAST_ARG_CONST_INVOCABLE
 
 #endif // BOOST_UNORDERED_CONCURRENT_FLAT_MAP_HPP
