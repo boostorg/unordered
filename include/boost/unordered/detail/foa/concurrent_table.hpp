@@ -537,13 +537,13 @@ public:
   }
 
   template<typename Key>
-  BOOST_FORCEINLINE std::size_t erase(Key&& x)
+  BOOST_FORCEINLINE std::size_t erase(const Key& x)
   {
-    return erase_if(std::forward<Key>(x),[](const value_type&){return true;});
+    return erase_if(x,[](const value_type&){return true;});
   }
 
   template<typename Key,typename F>
-  BOOST_FORCEINLINE auto erase_if(Key&& x,F&& f)->typename std::enable_if<
+  BOOST_FORCEINLINE auto erase_if(const Key& x,F&& f)->typename std::enable_if<
     !is_execution_policy<Key>::value,std::size_t>::type
   {
     auto        lck=shared_access();
