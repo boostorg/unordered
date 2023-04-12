@@ -39,26 +39,26 @@
 
 #define BOOST_UNORDERED_COMMA ,
 
-#define BOOST_UNORDERED_LAST_ARG(Arg, Args)                                     \
-mp11::mp_back<mp11::mp_list<Arg BOOST_UNORDERED_COMMA Args>>
+#define BOOST_UNORDERED_LAST_ARG(Arg, Args)                                    \
+  mp11::mp_back<mp11::mp_list<Arg BOOST_UNORDERED_COMMA Args> >
 
-#define BOOST_UNORDERED_STATIC_ASSERT_LAST_ARG_INVOCABLE(Arg, Args)             \
-BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(BOOST_UNORDERED_LAST_ARG(Arg, Args))
+#define BOOST_UNORDERED_STATIC_ASSERT_LAST_ARG_INVOCABLE(Arg, Args)            \
+  BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(BOOST_UNORDERED_LAST_ARG(Arg, Args))
 
-#define BOOST_UNORDERED_STATIC_ASSERT_LAST_ARG_CONST_INVOCABLE(Arg, Args)       \
-BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(                                  \
-  BOOST_UNORDERED_LAST_ARG(Arg, Args))
+#define BOOST_UNORDERED_STATIC_ASSERT_LAST_ARG_CONST_INVOCABLE(Arg, Args)      \
+  BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(                               \
+    BOOST_UNORDERED_LAST_ARG(Arg, Args))
 
 namespace boost {
   namespace unordered {
     namespace detail {
+
       template <class F, class... Args>
-      struct is_invocable:
-        std::is_constructible<
-          std::function<void(Args...)>,
-          std::reference_wrapper<typename std::remove_reference<F>::type>
-        >
-      {};
+      struct is_invocable
+          : std::is_constructible<std::function<void(Args...)>,
+              std::reference_wrapper<typename std::remove_reference<F>::type> >
+      {
+      };
 
       template <class Key, class T> struct concurrent_map_types
       {
@@ -142,11 +142,32 @@ namespace boost {
       using const_pointer =
         typename boost::allocator_const_pointer<allocator_type>::type;
 
-      concurrent_flat_map() : concurrent_flat_map(0) {}
+      concurrent_flat_map()
+          : concurrent_flat_map(detail::foa::default_bucket_count)
+      {
+      }
+
       explicit concurrent_flat_map(size_type n, const hasher& hf = hasher(),
         const key_equal& eql = key_equal(),
         const allocator_type& a = allocator_type())
           : table_(n, hf, eql, a)
+      {
+      }
+
+      template <class InputIterator>
+      concurrent_flat_map(InputIterator f, InputIterator l,
+        size_type n = detail::foa::default_bucket_count,
+        const hasher& hf = hasher(), const key_equal& eql = key_equal(),
+        const allocator_type& a = allocator_type())
+          : table_(n, hf, eql, a)
+      {
+        this->insert(f, l);
+      }
+
+      concurrent_flat_map(concurrent_flat_map const& rhs)
+          : table_(rhs.table_,
+              boost::allocator_select_on_container_copy_construction(
+                rhs.get_allocator()))
       {
       }
 
@@ -276,15 +297,13 @@ namespace boost {
 
       template <class M> bool insert_or_assign(key_type const& k, M&& obj)
       {
-        return table_.try_emplace_or_visit(
-          k, std::forward<M>(obj),
+        return table_.try_emplace_or_visit(k, std::forward<M>(obj),
           [&](value_type& m) { m.second = std::forward<M>(obj); });
       }
 
       template <class M> bool insert_or_assign(key_type&& k, M&& obj)
       {
-        return table_.try_emplace_or_visit(
-          std::move(k), std::forward<M>(obj),
+        return table_.try_emplace_or_visit(std::move(k), std::forward<M>(obj),
           [&](value_type& m) { m.second = std::forward<M>(obj); });
       }
 
@@ -293,8 +312,8 @@ namespace boost {
         detail::are_transparent<K, hasher, key_equal>::value, bool>::type
       insert_or_assign(K&& k, M&& obj)
       {
-        return table_.try_emplace_or_visit(
-          std::forward<K>(k), std::forward<M>(obj),
+        return table_.try_emplace_or_visit(std::forward<K>(k),
+          std::forward<M>(obj),
           [&](value_type& m) { m.second = std::forward<M>(obj); });
       }
 
@@ -455,16 +474,16 @@ namespace boost {
       bool try_emplace_or_visit(K&& k, Arg&& arg, Args&&... args)
       {
         BOOST_UNORDERED_STATIC_ASSERT_LAST_ARG_INVOCABLE(Arg, Args...)
-        return table_.try_emplace_or_visit(
-          std::forward<K>(k), std::forward<Arg>(arg), std::forward<Args>(args)...);
+        return table_.try_emplace_or_visit(std::forward<K>(k),
+          std::forward<Arg>(arg), std::forward<Args>(args)...);
       }
 
       template <class K, class Arg, class... Args>
       bool try_emplace_or_cvisit(K&& k, Arg&& arg, Args&&... args)
       {
         BOOST_UNORDERED_STATIC_ASSERT_LAST_ARG_CONST_INVOCABLE(Arg, Args...)
-        return table_.try_emplace_or_cvisit(
-          std::forward<K>(k), std::forward<Arg>(arg), std::forward<Args>(args)...);
+        return table_.try_emplace_or_cvisit(std::forward<K>(k),
+          std::forward<Arg>(arg), std::forward<Args>(args)...);
       }
 
       size_type erase(key_type const& k) { return table_.erase(k); }
@@ -508,6 +527,16 @@ namespace boost {
       ///
       void rehash(size_type n) { table_.rehash(n); }
       void reserve(size_type n) { table_.reserve(n); }
+
+      /// Observers
+      ///
+      allocator_type get_allocator() const noexcept
+      {
+        return table_.get_allocator();
+      }
+
+      hasher hash_function() const { return table_.hash_function(); }
+      key_equal key_eq() const { return table_.key_eq(); }
     };
   } // namespace unordered
 } // namespace boost

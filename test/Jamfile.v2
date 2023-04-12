@@ -175,7 +175,14 @@ alias foa_tests :
   foa_merge_exception_tests
 ;
 
-local CFOA_TESTS = insert_tests erase_tests try_emplace_tests emplace_tests visit_tests ;
+local CFOA_TESTS =
+  insert_tests
+  erase_tests
+  try_emplace_tests
+  emplace_tests
+  visit_tests
+  constructor_tests
+;
 
 for local test in $(CFOA_TESTS)
 {

@@ -36,6 +36,67 @@ struct transp_key_equal
   }
 };
 
+struct stateful_hash
+{
+  int x_ = -1;
+
+  stateful_hash() = default;
+  stateful_hash(stateful_hash const&) = default;
+  stateful_hash(stateful_hash&& rhs) noexcept
+  {
+    auto tmp = x_;
+    x_ = rhs.x_;
+    rhs.x_ = tmp;
+  }
+
+  stateful_hash(int const x) : x_{x} {}
+
+  template <class T> std::size_t operator()(T const& t) const noexcept
+  {
+    std::size_t h = static_cast<std::size_t>(x_);
+    boost::hash_combine(h, t);
+    return h;
+  }
+
+  bool operator==(stateful_hash const& rhs) const { return x_ == rhs.x_; }
+
+  friend std::ostream& operator<<(std::ostream& os, stateful_hash const& rhs)
+  {
+    os << "{ x_: " << rhs.x_ << " }";
+    return os;
+  }
+};
+
+struct stateful_key_equal
+{
+  int x_ = -1;
+
+  stateful_key_equal() = default;
+  stateful_key_equal(stateful_key_equal const&) = default;
+  stateful_key_equal(stateful_key_equal&& rhs) noexcept
+  {
+    auto tmp = x_;
+    x_ = rhs.x_;
+    rhs.x_ = tmp;
+  }
+
+  stateful_key_equal(int const x) : x_{x} {}
+
+  template <class T, class U> bool operator()(T const& t, U const& u) const
+  {
+    return t == u;
+  }
+
+  bool operator==(stateful_key_equal const& rhs) const { return x_ == rhs.x_; }
+
+  friend std::ostream& operator<<(
+    std::ostream& os, stateful_key_equal const& rhs)
+  {
+    os << "{ x_: " << rhs.x_ << " }";
+    return os;
+  }
+};
+
 struct raii
 {
   static std::atomic<std::uint32_t> default_constructor;
@@ -224,6 +285,16 @@ template <class T, class F> void thread_runner(std::vector<T>& values, F f)
   for (auto& t : threads) {
     t.join();
   }
+}
+
+template <class X, class Y>
+void test_matches_reference(X const& x, Y const& reference_map)
+{
+  using value_type = typename X::value_type;
+  BOOST_TEST_EQ(x.size(), x.visit_all([&](value_type const& kv) {
+    BOOST_TEST(reference_map.contains(kv.first));
+    BOOST_TEST_EQ(kv.second, reference_map.find(kv.first)->second);
+  }));
 }
 
 #endif // BOOST_UNORDERED_TEST_CFOA_HELPERS_HPP
