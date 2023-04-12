@@ -376,6 +376,51 @@ namespace {
       raii::destructor);
   }
 
+  template <class X, class G>
+  void empty_visit(X*, G gen, test::random_generator rg)
+  {
+    auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
+    raii::reset_counts();
+
+    {
+      X x;
+
+      std::uint64_t old_default_constructor = raii::default_constructor;
+      std::uint64_t old_copy_constructor = raii::copy_constructor;
+      std::uint64_t old_move_constructor = raii::move_constructor;
+      std::uint64_t old_copy_assignment = raii::copy_assignment;
+      std::uint64_t old_move_assignment = raii::move_assignment;
+
+      {
+        thread_runner(
+          values, [&x](boost::span<typename decltype(values)::value_type> s) {
+            std::atomic<std::uint64_t> num_visits{0};
+
+            x.visit_all(
+              [&num_visits](typename X::value_type const&) { ++num_visits; });
+            BOOST_TEST_EQ(num_visits, 0u);
+
+            for (auto const& val : s) {
+              auto count = x.visit(val.first,
+                [&num_visits](typename X::value_type const&) { ++num_visits; });
+              BOOST_TEST_EQ(count, 0u);
+            }
+          });
+      }
+
+      BOOST_TEST_EQ(old_default_constructor, raii::default_constructor);
+      BOOST_TEST_EQ(old_copy_constructor, raii::copy_constructor);
+      BOOST_TEST_EQ(old_move_constructor, raii::move_constructor);
+      BOOST_TEST_EQ(old_copy_assignment, raii::copy_assignment);
+      BOOST_TEST_EQ(old_move_assignment, raii::move_assignment);
+    }
+
+    BOOST_TEST_EQ(raii::default_constructor, 0u);
+    BOOST_TEST_EQ(raii::copy_constructor, 0u);
+    BOOST_TEST_EQ(raii::move_constructor, 0u);
+    BOOST_TEST_EQ(raii::destructor, 0u);
+  }
+
   boost::unordered::concurrent_flat_map<raii, raii>* map;
   boost::unordered::concurrent_flat_map<raii, raii, transp_hash,
     transp_key_equal>* transp_map;
@@ -401,6 +446,13 @@ UNORDERED_TEST(
   ((value_type_generator)(init_type_generator))
   ((transp_visitor))
   ((default_generator)(sequential)(limited_range)))
+
+UNORDERED_TEST(
+  empty_visit,
+  ((map)(transp_map))
+  ((value_type_generator)(init_type_generator))
+  ((default_generator)(sequential)(limited_range))
+)
 
 // clang-format on
 
