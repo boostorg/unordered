@@ -1833,12 +1833,7 @@ private:
 
   void copy_groups_array_from(const table_core& x) {
     copy_groups_array_from(x, std::integral_constant<bool,
-#if BOOST_WORKAROUND(BOOST_LIBSTDCXX_VERSION,<50000)
-      /* std::is_trivially_copyable not provided */
-      boost::has_trivial_copy<element_type>::value
-#else
-      std::is_trivially_copyable<element_type>::value
-#endif
+      std::is_trivially_copy_assignable<group_type>::value
       >{}
     );
   }
