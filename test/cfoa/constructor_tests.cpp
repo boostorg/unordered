@@ -12,6 +12,38 @@ using test::default_generator;
 using test::limited_range;
 using test::sequential;
 
+template <class T> struct soccc_allocator
+{
+  int x_ = -1;
+
+  using value_type = T;
+
+  soccc_allocator() = default;
+  soccc_allocator(soccc_allocator const&) = default;
+  soccc_allocator(soccc_allocator&&) = default;
+
+  soccc_allocator(int const x) : x_{x} {}
+
+  template <class U> soccc_allocator(soccc_allocator<U> const& rhs) : x_{rhs.x_}
+  {
+  }
+
+  T* allocate(std::size_t n)
+  {
+    return static_cast<T*>(::operator new(n * sizeof(T)));
+  }
+
+  void deallocate(T* p, std::size_t) { ::operator delete(p); }
+
+  soccc_allocator select_on_container_copy_construction() const
+  {
+    return {x_ + 1};
+  }
+
+  bool operator==(soccc_allocator const& rhs) const { return x_ == rhs.x_; }
+  bool operator!=(soccc_allocator const& rhs) const { return x_ != rhs.x_; }
+};
+
 using hasher = stateful_hash;
 using key_equal = stateful_key_equal;
 using allocator_type = std::allocator<std::pair<raii const, raii> >;
@@ -64,6 +96,20 @@ UNORDERED_AUTO_TEST (bucket_count_with_hasher_key_equal_and_allocator) {
     BOOST_TEST(x.get_allocator() == allocator_type{});
   }
   raii::reset_counts();
+}
+
+UNORDERED_AUTO_TEST (soccc) {
+  boost::unordered::concurrent_flat_map<raii, raii, hasher, key_equal,
+    soccc_allocator<std::pair<raii const, raii> > >
+    x;
+
+  boost::unordered::concurrent_flat_map<raii, raii, hasher, key_equal,
+    soccc_allocator<std::pair<raii const, raii> > >
+    y(x);
+
+  BOOST_TEST_EQ(y.hash_function(), x.hash_function());
+  BOOST_TEST_EQ(y.key_eq(), x.key_eq());
+  BOOST_TEST(y.get_allocator() != x.get_allocator());
 }
 
 namespace {
