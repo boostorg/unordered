@@ -1773,9 +1773,7 @@ private:
   {
     if(arrays.elements){
       copy_elements_array_from(x);
-      std::memcpy(
-        arrays.groups,x.arrays.groups,
-        (arrays.groups_size_mask+1)*sizeof(group_type));
+      copy_groups_array_from(x);
       size_=std::size_t(x.size_);
     }
   }
@@ -1831,6 +1829,34 @@ private:
       BOOST_RETHROW
     }
     BOOST_CATCH_END
+  }
+
+  void copy_groups_array_from(const table_core& x) {
+    copy_groups_array_from(x, std::integral_constant<bool,
+#if BOOST_WORKAROUND(BOOST_LIBSTDCXX_VERSION,<50000)
+      /* std::is_trivially_copyable not provided */
+      boost::has_trivial_copy<element_type>::value
+#else
+      std::is_trivially_copyable<element_type>::value
+#endif
+      >{}
+    );
+  }
+
+  void copy_groups_array_from(
+    const table_core& x, std::true_type /* -> memcpy */)
+  {
+    std::memcpy(
+      arrays.groups,x.arrays.groups,
+      (arrays.groups_size_mask+1)*sizeof(group_type));
+  }
+
+  void copy_groups_array_from(
+    const table_core& x, std::false_type /* -> manual */) 
+  {
+    for(std::size_t i=0;i<arrays.groups_size_mask+1;++i){
+      arrays.groups[i]=x.arrays.groups[i];
+    }
   }
 
   void recover_slot(unsigned char* pc)

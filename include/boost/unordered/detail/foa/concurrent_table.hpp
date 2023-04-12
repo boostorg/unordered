@@ -173,7 +173,15 @@ struct atomic_integral
   void operator|=(Integral m){n.fetch_or(m,std::memory_order_relaxed);}
   void operator&=(Integral m){n.fetch_and(m,std::memory_order_relaxed);}
 
+  atomic_integral& operator=(atomic_integral const& rhs) {
+    if(this!=&rhs){
+      n.store(rhs.n.load(std::memory_order_relaxed),std::memory_order_relaxed);
+    }
+    return *this;
+  }
+
   std::atomic<Integral> n;
+
 };
 
 /* Group-level concurrency protection. It provides a rw mutex plus an
