@@ -24,8 +24,12 @@ auto tuple_rotate_right_aux(mp11::index_sequence<Is...>,Tuple&& x)
     std::get<(Is+sizeof...(Is)-1)%sizeof...(Is)>(std::forward<Tuple>(x)))...
   >
 {
-  return {
-    std::get<(Is+sizeof...(Is)-1)%sizeof...(Is)>(std::forward<Tuple>(x))...};
+  return std::tuple<decltype(
+    std::get<(Is+sizeof...(Is)-1)%sizeof...(Is)>(std::forward<Tuple>(x)))...
+  >
+  {
+    std::get<(Is+sizeof...(Is)-1)%sizeof...(Is)>(std::forward<Tuple>(x))...
+  };
 }
 
 template<typename Tuple>
