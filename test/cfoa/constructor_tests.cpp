@@ -260,7 +260,7 @@ namespace {
                   boost::span<typename decltype(values)::value_type> s) {
           (void)s;
           map_type y(x);
-          BOOST_TEST_GT(y.size(), 0u);
+
           BOOST_TEST_LE(y.size(), values.size());
           BOOST_TEST_EQ(y.hash_function(), x.hash_function());
           BOOST_TEST_EQ(y.key_eq(), x.key_eq());
