@@ -25,6 +25,7 @@
 #include <boost/static_assert.hpp>
 #include <boost/type_traits/has_trivial_constructor.hpp>
 #include <boost/type_traits/has_trivial_copy.hpp>
+#include <boost/type_traits/has_trivial_assign.hpp>
 #include <boost/type_traits/is_nothrow_swappable.hpp>
 #include <boost/unordered/detail/narrow_cast.hpp>
 #include <boost/unordered/detail/mulx.hpp>
@@ -1833,7 +1834,12 @@ private:
 
   void copy_groups_array_from(const table_core& x) {
     copy_groups_array_from(x, std::integral_constant<bool,
+#if BOOST_WORKAROUND(BOOST_LIBSTDCXX_VERSION,<50000)
+      /* std::is_trivially_copy_assignable not provided */
+      boost::has_trivial_assign<group_type>::value
+#else
       std::is_trivially_copy_assignable<group_type>::value
+#endif
       >{}
     );
   }
