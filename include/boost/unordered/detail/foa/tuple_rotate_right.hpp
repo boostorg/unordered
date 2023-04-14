@@ -9,6 +9,7 @@
 #ifndef BOOST_UNORDERED_DETAIL_FOA_TUPLE_ROTATE_RIGHT_HPP
 #define BOOST_UNORDERED_DETAIL_FOA_TUPLE_ROTATE_RIGHT_HPP
 
+#include <boost/mp11/algorithm.hpp>
 #include <boost/mp11/integer_sequence.hpp>
 #include <tuple>
 #include <utility>
@@ -18,28 +19,28 @@ namespace unordered{
 namespace detail{
 namespace foa{
 
+template<typename Tuple>
+using tuple_rotate_right_return_type=mp11::mp_rotate_right_c<
+  typename std::remove_cv<typename std::remove_reference<Tuple>::type>::type,
+  1
+>;
+
 template<std::size_t... Is,typename Tuple>
-auto tuple_rotate_right_aux(mp11::index_sequence<Is...>,Tuple&& x)
-  ->std::tuple<decltype(
-    std::get<(Is+sizeof...(Is)-1)%sizeof...(Is)>(std::forward<Tuple>(x)))...
-  >
+tuple_rotate_right_return_type<Tuple>
+tuple_rotate_right_aux(mp11::index_sequence<Is...>,Tuple&& x)
 {
-  return std::tuple<decltype(
-    std::get<(Is+sizeof...(Is)-1)%sizeof...(Is)>(std::forward<Tuple>(x)))...
-  >
-  {
-    std::get<(Is+sizeof...(Is)-1)%sizeof...(Is)>(std::forward<Tuple>(x))...
-  };
+  return tuple_rotate_right_return_type<Tuple>{
+    std::get<(Is+sizeof...(Is)-1)%sizeof...(Is)>(std::forward<Tuple>(x))...};
 }
 
 template<typename Tuple>
-auto tuple_rotate_right(Tuple&& x)
-  ->decltype(tuple_rotate_right_aux(
-      mp11::make_index_sequence<std::tuple_size<Tuple>::value>{},
-      std::forward<Tuple>(x)))
+tuple_rotate_right_return_type<Tuple> tuple_rotate_right(Tuple&& x)
 {
+  using RawTuple=typename std::remove_cv<
+    typename std::remove_reference<Tuple>::type>::type;
+
   return tuple_rotate_right_aux(
-    mp11::make_index_sequence<std::tuple_size<Tuple>::value>{},
+    mp11::make_index_sequence<std::tuple_size<RawTuple>::value>{},
     std::forward<Tuple>(x));
 }
 
