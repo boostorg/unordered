@@ -106,6 +106,9 @@ public:
   shared_lock(Mutex& m_)noexcept:m{m_}{m.lock_shared();}
   ~shared_lock()noexcept{if(owns)m.unlock_shared();}
 
+  /* not used but VS in pre-C++17 mode needs to see it for RVO */
+  shared_lock(const shared_lock&);
+
   void lock(){BOOST_ASSERT(!owns);m.lock_shared();owns=true;}
   void unlock(){BOOST_ASSERT(owns);m.unlock_shared();owns=false;}
 
@@ -124,6 +127,9 @@ class lock_guard
 public:
   lock_guard(Mutex& m_)noexcept:m{m_}{m.lock();}
   ~lock_guard()noexcept{m.unlock();}
+
+  /* not used but VS in pre-C++17 mode needs to see it for RVO */
+  lock_guard(const lock_guard&);
 
 private:
   Mutex &m;
