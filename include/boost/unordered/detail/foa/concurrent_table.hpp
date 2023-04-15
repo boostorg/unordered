@@ -11,7 +11,6 @@
 #ifndef BOOST_UNORDERED_DETAIL_FOA_CONCURRENT_TABLE_HPP
 #define BOOST_UNORDERED_DETAIL_FOA_CONCURRENT_TABLE_HPP
 
-#include <array>
 #include <atomic>
 #include <boost/assert.hpp>
 #include <boost/config.hpp>
@@ -94,7 +93,7 @@ public:
   void unlock()noexcept{for(auto n=N;n>0;)mutexes[--n].unlock();}
 
 private:
-  std::array<Mutex,N> mutexes;
+  Mutex mutexes[N];
 };
 
 /* std::shared_lock is C++14 */
