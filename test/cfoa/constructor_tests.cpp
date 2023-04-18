@@ -51,6 +51,8 @@ using allocator_type = std::allocator<std::pair<raii const, raii> >;
 using map_type = boost::unordered::concurrent_flat_map<raii, raii, hasher,
   key_equal, allocator_type>;
 
+using value_type = typename map_type::value_type;
+
 UNORDERED_AUTO_TEST (default_constructor) {
   boost::unordered::concurrent_flat_map<raii, raii> x;
   BOOST_TEST(x.empty());
@@ -280,6 +282,117 @@ namespace {
     }
   }
 
+  template <class G> void move_constructor(G gen, test::random_generator rg)
+  {
+    {
+      map_type x(0, hasher(1), key_equal(2), allocator_type{});
+      auto const old_size = x.size();
+
+      map_type y(std::move(x));
+
+      BOOST_TEST_EQ(y.size(), old_size);
+      BOOST_TEST_EQ(y.hash_function(), hasher(1));
+      BOOST_TEST_EQ(y.key_eq(), key_equal(2));
+
+      BOOST_TEST_EQ(x.size(), 0u);
+      BOOST_TEST_EQ(x.hash_function(), hasher());
+      BOOST_TEST_EQ(x.key_eq(), key_equal());
+
+      BOOST_TEST(y.get_allocator() == x.get_allocator());
+    }
+
+    auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
+    auto reference_map =
+      boost::unordered_flat_map<raii, raii>(values.begin(), values.end());
+    raii::reset_counts();
+
+    {
+      map_type x(values.begin(), values.end(), 0, hasher(1), key_equal(2),
+        allocator_type{});
+
+      std::atomic_int num_transfers{0};
+
+      thread_runner(
+        values, [&x, &reference_map, &num_transfers](
+                  boost::span<typename decltype(values)::value_type> s) {
+          (void)s;
+
+          auto const old_size = x.size();
+          map_type y(std::move(x));
+
+          if (!y.empty()) {
+            ++num_transfers;
+
+            test_matches_reference(y, reference_map);
+            BOOST_TEST_EQ(y.size(), old_size);
+            BOOST_TEST_EQ(y.hash_function(), hasher(1));
+            BOOST_TEST_EQ(y.key_eq(), key_equal(2));
+          } else {
+            BOOST_TEST_EQ(y.size(), 0u);
+            BOOST_TEST_EQ(y.hash_function(), hasher());
+            BOOST_TEST_EQ(y.key_eq(), key_equal());
+          }
+
+          BOOST_TEST_EQ(x.size(), 0u);
+          BOOST_TEST_EQ(x.hash_function(), hasher());
+          BOOST_TEST_EQ(x.key_eq(), key_equal());
+
+          BOOST_TEST(y.get_allocator() == x.get_allocator());
+        });
+
+      BOOST_TEST_EQ(num_transfers, 1u);
+    }
+  }
+
+  template <class G>
+  void move_constructor_with_insertion(G gen, test::random_generator rg)
+  {
+    auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
+    auto reference_map =
+      boost::unordered_flat_map<raii, raii>(values.begin(), values.end());
+    raii::reset_counts();
+
+    {
+      map_type x(0, hasher(1), key_equal(2), allocator_type{});
+
+      auto f = [&x, &values] {
+        std::this_thread::sleep_for(std::chrono::milliseconds(95));
+        for (auto const& val : values) {
+          x.insert(val);
+        }
+      };
+
+      std::atomic_int num_transfers{0};
+
+      std::thread t1(f);
+      std::thread t2(f);
+
+      thread_runner(
+        values, [&x, &reference_map, &num_transfers, rg](
+                  boost::span<typename decltype(values)::value_type> s) {
+          (void)s;
+
+          map_type y(std::move(x));
+
+          if (!y.empty()) {
+            ++num_transfers;
+            y.cvisit_all([&reference_map, rg](value_type const& val) {
+              BOOST_TEST(reference_map.contains(val.first));
+              if (rg == sequential) {
+                BOOST_TEST_EQ(
+                  val.second, reference_map.find(val.first)->second);
+              }
+            });
+          }
+        });
+
+      t1.join();
+      t2.join();
+
+      BOOST_TEST_GE(num_transfers, 1u);
+    }
+  }
+
 } // namespace
 
 // clang-format off
@@ -295,6 +408,16 @@ UNORDERED_TEST(
 
 UNORDERED_TEST(
   copy_constructor_with_insertion,
+  ((value_type_generator))
+  ((default_generator)(sequential)(limited_range)))
+
+UNORDERED_TEST(
+  move_constructor,
+  ((value_type_generator))
+  ((default_generator)(sequential)(limited_range)))
+
+UNORDERED_TEST(
+  move_constructor_with_insertion,
   ((value_type_generator))
   ((default_generator)(sequential)(limited_range)))
 // clang-format on
