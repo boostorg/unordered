@@ -297,7 +297,31 @@ void test_matches_reference(X const& x, Y const& reference_map)
   }));
 }
 
-template <class T>
-using span_value_type = typename T::value_type;
+template <class X, class Y>
+void test_fuzzy_matches_reference(
+  X const& x, Y const& reference_map, test::random_generator rg)
+{
+  using value_type = typename X::value_type;
+  BOOST_TEST_EQ(x.size(), x.visit_all([&](value_type const& kv) {
+    BOOST_TEST(reference_map.contains(kv.first));
+    if (rg == test::sequential) {
+      BOOST_TEST_EQ(kv.second, reference_map.find(kv.first)->second);
+    }
+  }));
+}
+
+template <class T> using span_value_type = typename T::value_type;
+
+void check_raii_counts()
+{
+  BOOST_TEST_GE(raii::default_constructor, 0u);
+  BOOST_TEST_GE(raii::copy_constructor, 0u);
+  BOOST_TEST_GE(raii::move_constructor, 0u);
+  BOOST_TEST_GT(raii::destructor, 0u);
+
+  BOOST_TEST_EQ(
+    raii::default_constructor + raii::copy_constructor + raii::move_constructor,
+    raii::destructor);
+}
 
 #endif // BOOST_UNORDERED_TEST_CFOA_HELPERS_HPP

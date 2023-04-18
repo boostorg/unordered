@@ -176,6 +176,12 @@ namespace boost {
       {
       }
 
+      template <class InputIterator>
+      concurrent_flat_map(InputIterator f, InputIterator l, allocator_type a)
+          : concurrent_flat_map(f, l, 0, hasher(), key_equal(), a)
+      {
+      }
+
       /// Capacity
       ///
 

@@ -97,10 +97,11 @@ UNORDERED_AUTO_TEST (bucket_count_with_hasher_key_equal_and_allocator) {
     BOOST_TEST_EQ(x.key_eq(), key_equal(2));
     BOOST_TEST(x.get_allocator() == allocator_type{});
   }
-  raii::reset_counts();
 }
 
 UNORDERED_AUTO_TEST (soccc) {
+  raii::reset_counts();
+
   boost::unordered::concurrent_flat_map<raii, raii, hasher, key_equal,
     soccc_allocator<std::pair<raii const, raii> > >
     x;
@@ -134,7 +135,6 @@ namespace {
       if (rg == sequential) {
         BOOST_TEST_EQ(x.size(), values.size());
       }
-      raii::reset_counts();
     }
 
     {
@@ -149,7 +149,6 @@ namespace {
       if (rg == sequential) {
         BOOST_TEST_EQ(x.size(), values.size());
       }
-      raii::reset_counts();
     }
 
     {
@@ -164,7 +163,6 @@ namespace {
       if (rg == sequential) {
         BOOST_TEST_EQ(x.size(), values.size());
       }
-      raii::reset_counts();
     }
 
     {
@@ -179,7 +177,6 @@ namespace {
       if (rg == sequential) {
         BOOST_TEST_EQ(x.size(), values.size());
       }
-      raii::reset_counts();
     }
 
     {
@@ -195,8 +192,9 @@ namespace {
       if (rg == sequential) {
         BOOST_TEST_EQ(x.size(), values.size());
       }
-      raii::reset_counts();
     }
+
+    check_raii_counts();
   }
 
   template <class G> void copy_constructor(G gen, test::random_generator rg)
@@ -234,6 +232,8 @@ namespace {
           BOOST_TEST(y.get_allocator() == x.get_allocator());
         });
     }
+
+    check_raii_counts();
   }
 
   template <class G>
@@ -280,6 +280,8 @@ namespace {
       t1.join();
       t2.join();
     }
+
+    check_raii_counts();
   }
 
   template <class G> void move_constructor(G gen, test::random_generator rg)
@@ -342,6 +344,8 @@ namespace {
 
       BOOST_TEST_EQ(num_transfers, 1u);
     }
+
+    check_raii_counts();
   }
 
   template <class G>
@@ -391,6 +395,38 @@ namespace {
 
       BOOST_TEST_GE(num_transfers, 1u);
     }
+
+    check_raii_counts();
+  }
+
+  template <class G>
+  void iterator_range_with_allocator(G gen, test::random_generator rg)
+  {
+    auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
+    auto reference_map =
+      boost::unordered_flat_map<raii, raii>(values.begin(), values.end());
+
+    raii::reset_counts();
+
+    {
+      allocator_type a;
+      map_type x(values.begin(), values.end(), a);
+
+      BOOST_TEST_GT(x.size(), 0u);
+      BOOST_TEST_LE(x.size(), values.size());
+      if (rg == sequential) {
+        BOOST_TEST_EQ(x.size(), values.size());
+      }
+
+      BOOST_TEST_EQ(x.hash_function(), hasher());
+      BOOST_TEST_EQ(x.key_eq(), key_equal());
+
+      BOOST_TEST(x.get_allocator() == a);
+
+      test_fuzzy_matches_reference(x, reference_map, rg);
+    }
+
+    check_raii_counts();
   }
 
 } // namespace
@@ -418,6 +454,11 @@ UNORDERED_TEST(
 
 UNORDERED_TEST(
   move_constructor_with_insertion,
+  ((value_type_generator))
+  ((default_generator)(sequential)(limited_range)))
+
+UNORDERED_TEST(
+  iterator_range_with_allocator,
   ((value_type_generator))
   ((default_generator)(sequential)(limited_range)))
 // clang-format on
