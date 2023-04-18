@@ -297,4 +297,7 @@ void test_matches_reference(X const& x, Y const& reference_map)
   }));
 }
 
+template <class T>
+using span_value_type = typename T::value_type;
+
 #endif // BOOST_UNORDERED_TEST_CFOA_HELPERS_HPP

@@ -222,7 +222,7 @@ namespace {
 
       thread_runner(
         values, [&x, &reference_map](
-                  boost::span<typename decltype(values)::value_type> s) {
+                  boost::span<span_value_type<decltype(values)> > s) {
           (void)s;
           map_type y(x);
 
@@ -259,7 +259,7 @@ namespace {
 
       thread_runner(
         values, [&x, &reference_map, &values, rg](
-                  boost::span<typename decltype(values)::value_type> s) {
+                  boost::span<span_value_type<decltype(values)> > s) {
           (void)s;
           map_type y(x);
 
@@ -314,7 +314,7 @@ namespace {
 
       thread_runner(
         values, [&x, &reference_map, &num_transfers](
-                  boost::span<typename decltype(values)::value_type> s) {
+                  boost::span<span_value_type<decltype(values)> > s) {
           (void)s;
 
           auto const old_size = x.size();
@@ -356,20 +356,20 @@ namespace {
       map_type x(0, hasher(1), key_equal(2), allocator_type{});
 
       auto f = [&x, &values] {
-        std::this_thread::sleep_for(std::chrono::milliseconds(95));
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
         for (auto const& val : values) {
           x.insert(val);
         }
       };
 
-      std::atomic_int num_transfers{0};
+      std::atomic_uint num_transfers{0};
 
       std::thread t1(f);
       std::thread t2(f);
 
       thread_runner(
         values, [&x, &reference_map, &num_transfers, rg](
-                  boost::span<typename decltype(values)::value_type> s) {
+                  boost::span<span_value_type<decltype(values)> > s) {
           (void)s;
 
           map_type y(std::move(x));
