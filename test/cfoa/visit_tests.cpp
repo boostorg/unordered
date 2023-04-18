@@ -380,6 +380,9 @@ namespace {
   void empty_visit(X*, G gen, test::random_generator rg)
   {
     auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
+    using values_type = decltype(values);
+    using span_value_type = typename values_type::value_type;
+
     raii::reset_counts();
 
     {
@@ -392,20 +395,19 @@ namespace {
       std::uint64_t old_move_assignment = raii::move_assignment;
 
       {
-        thread_runner(
-          values, [&x](boost::span<typename decltype(values)::value_type> s) {
-            std::atomic<std::uint64_t> num_visits{0};
+        thread_runner(values, [&x](boost::span<span_value_type> s) {
+          std::atomic<std::uint64_t> num_visits{0};
 
-            x.visit_all(
+          x.visit_all(
+            [&num_visits](typename X::value_type const&) { ++num_visits; });
+          BOOST_TEST_EQ(num_visits, 0u);
+
+          for (auto const& val : s) {
+            auto count = x.visit(val.first,
               [&num_visits](typename X::value_type const&) { ++num_visits; });
-            BOOST_TEST_EQ(num_visits, 0u);
-
-            for (auto const& val : s) {
-              auto count = x.visit(val.first,
-                [&num_visits](typename X::value_type const&) { ++num_visits; });
-              BOOST_TEST_EQ(count, 0u);
-            }
-          });
+            BOOST_TEST_EQ(count, 0u);
+          }
+        });
       }
 
       BOOST_TEST_EQ(old_default_constructor, raii::default_constructor);
