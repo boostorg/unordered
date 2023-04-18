@@ -182,6 +182,11 @@ namespace boost {
       {
       }
 
+      explicit concurrent_flat_map(allocator_type a)
+          : table_(detail::foa::default_bucket_count, hasher(), key_equal(), a)
+      {
+      }
+
       /// Capacity
       ///
 

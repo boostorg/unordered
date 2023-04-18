@@ -312,7 +312,7 @@ namespace {
       map_type x(values.begin(), values.end(), 0, hasher(1), key_equal(2),
         allocator_type{});
 
-      std::atomic_int num_transfers{0};
+      std::atomic_uint num_transfers{0};
 
       thread_runner(
         values, [&x, &reference_map, &num_transfers](
@@ -427,6 +427,21 @@ namespace {
     }
 
     check_raii_counts();
+  }
+
+  UNORDERED_AUTO_TEST (explicit_allocator) {
+    raii::reset_counts();
+
+    {
+      allocator_type a;
+      map_type x(a);
+
+      BOOST_TEST_EQ(x.size(), 0u);
+      BOOST_TEST_EQ(x.hash_function(), hasher());
+      BOOST_TEST_EQ(x.key_eq(), key_equal());
+
+      BOOST_TEST(x.get_allocator() == a);
+    }
   }
 
 } // namespace
