@@ -202,26 +202,29 @@ namespace boost {
         return size() == 0;
       }
 
-      template <class F> std::size_t visit(key_type const& k, F f)
+      template <class F>
+      BOOST_FORCEINLINE std::size_t visit(key_type const& k, F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
         return table_.visit(k, f);
       }
 
-      template <class F> std::size_t visit(key_type const& k, F f) const
+      template <class F>
+      BOOST_FORCEINLINE std::size_t visit(key_type const& k, F f) const
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         return table_.visit(k, f);
       }
 
-      template <class F> std::size_t cvisit(key_type const& k, F f) const
+      template <class F>
+      BOOST_FORCEINLINE std::size_t cvisit(key_type const& k, F f) const
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         return table_.visit(k, f);
       }
 
       template <class K, class F>
-      typename std::enable_if<
+      BOOST_FORCEINLINE typename std::enable_if<
         detail::are_transparent<K, hasher, key_equal>::value, std::size_t>::type
       visit(K&& k, F f)
       {
@@ -230,7 +233,7 @@ namespace boost {
       }
 
       template <class K, class F>
-      typename std::enable_if<
+      BOOST_FORCEINLINE typename std::enable_if<
         detail::are_transparent<K, hasher, key_equal>::value, std::size_t>::type
       visit(K&& k, F f) const
       {
@@ -239,7 +242,7 @@ namespace boost {
       }
 
       template <class K, class F>
-      typename std::enable_if<
+      BOOST_FORCEINLINE typename std::enable_if<
         detail::are_transparent<K, hasher, key_equal>::value, std::size_t>::type
       cvisit(K&& k, F f) const
       {
@@ -247,19 +250,19 @@ namespace boost {
         return table_.visit(std::forward<K>(k), f);
       }
 
-      template <class F> std::size_t visit_all(F f)
+      template <class F> BOOST_FORCEINLINE std::size_t visit_all(F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
         return table_.visit_all(f);
       }
 
-      template <class F> std::size_t visit_all(F f) const
+      template <class F> BOOST_FORCEINLINE std::size_t visit_all(F f) const
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         return table_.visit_all(f);
       }
 
-      template <class F> std::size_t cvisit_all(F f) const
+      template <class F> BOOST_FORCEINLINE std::size_t cvisit_all(F f) const
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         return table_.cvisit_all(f);
@@ -267,27 +270,30 @@ namespace boost {
 
 #if defined(BOOST_UNORDERED_PARALLEL_ALGORITHMS)
       template <class ExecPolicy, class F>
-      typename std::enable_if<detail::is_execution_policy<ExecPolicy>::value,
-        void>::type
-      visit_all(ExecPolicy p, F f)
+      BOOST_FORCEINLINE
+        typename std::enable_if<detail::is_execution_policy<ExecPolicy>::value,
+          void>::type
+        visit_all(ExecPolicy p, F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
         table_.visit_all(p, f);
       }
 
       template <class ExecPolicy, class F>
-      typename std::enable_if<detail::is_execution_policy<ExecPolicy>::value,
-        void>::type
-      visit_all(ExecPolicy p, F f) const
+      BOOST_FORCEINLINE
+        typename std::enable_if<detail::is_execution_policy<ExecPolicy>::value,
+          void>::type
+        visit_all(ExecPolicy p, F f) const
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         table_.visit_all(p, f);
       }
 
       template <class ExecPolicy, class F>
-      typename std::enable_if<detail::is_execution_policy<ExecPolicy>::value,
-        void>::type
-      cvisit_all(ExecPolicy p, F f) const
+      BOOST_FORCEINLINE
+        typename std::enable_if<detail::is_execution_policy<ExecPolicy>::value,
+          void>::type
+        cvisit_all(ExecPolicy p, F f) const
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         table_.cvisit_all(p, f);
@@ -297,39 +303,53 @@ namespace boost {
       /// Modifiers
       ///
 
-      bool insert(value_type const& obj) { return table_.insert(obj); }
-      bool insert(value_type&& obj) { return table_.insert(std::move(obj)); }
+      BOOST_FORCEINLINE bool insert(value_type const& obj)
+      {
+        return table_.insert(obj);
+      }
+      BOOST_FORCEINLINE bool insert(value_type&& obj)
+      {
+        return table_.insert(std::move(obj));
+      }
 
-      bool insert(init_type const& obj) { return table_.insert(obj); }
-      bool insert(init_type&& obj) { return table_.insert(std::move(obj)); }
+      BOOST_FORCEINLINE bool insert(init_type const& obj)
+      {
+        return table_.insert(obj);
+      }
+      BOOST_FORCEINLINE bool insert(init_type&& obj)
+      {
+        return table_.insert(std::move(obj));
+      }
 
       template <class InputIterator>
-      void insert(InputIterator begin, InputIterator end)
+      BOOST_FORCEINLINE void insert(InputIterator begin, InputIterator end)
       {
         for (auto pos = begin; pos != end; ++pos) {
           table_.insert(*pos);
         }
       }
 
-      void insert(std::initializer_list<value_type> ilist)
+      BOOST_FORCEINLINE void insert(std::initializer_list<value_type> ilist)
       {
         this->insert(ilist.begin(), ilist.end());
       }
 
-      template <class M> bool insert_or_assign(key_type const& k, M&& obj)
+      template <class M>
+      BOOST_FORCEINLINE bool insert_or_assign(key_type const& k, M&& obj)
       {
         return table_.try_emplace_or_visit(k, std::forward<M>(obj),
           [&](value_type& m) { m.second = std::forward<M>(obj); });
       }
 
-      template <class M> bool insert_or_assign(key_type&& k, M&& obj)
+      template <class M>
+      BOOST_FORCEINLINE bool insert_or_assign(key_type&& k, M&& obj)
       {
         return table_.try_emplace_or_visit(std::move(k), std::forward<M>(obj),
           [&](value_type& m) { m.second = std::forward<M>(obj); });
       }
 
       template <class K, class M>
-      typename std::enable_if<
+      BOOST_FORCEINLINE typename std::enable_if<
         detail::are_transparent<K, hasher, key_equal>::value, bool>::type
       insert_or_assign(K&& k, M&& obj)
       {
@@ -338,32 +358,37 @@ namespace boost {
           [&](value_type& m) { m.second = std::forward<M>(obj); });
       }
 
-      template <class F> bool insert_or_visit(value_type const& obj, F f)
+      template <class F>
+      BOOST_FORCEINLINE bool insert_or_visit(value_type const& obj, F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
         return table_.insert_or_visit(obj, f);
       }
 
-      template <class F> bool insert_or_visit(value_type&& obj, F f)
+      template <class F>
+      BOOST_FORCEINLINE bool insert_or_visit(value_type&& obj, F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
         return table_.insert_or_visit(std::move(obj), f);
       }
 
-      template <class F> bool insert_or_visit(init_type const& obj, F f)
+      template <class F>
+      BOOST_FORCEINLINE bool insert_or_visit(init_type const& obj, F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
         return table_.insert_or_visit(obj, f);
       }
 
-      template <class F> bool insert_or_visit(init_type&& obj, F f)
+      template <class F>
+      BOOST_FORCEINLINE bool insert_or_visit(init_type&& obj, F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
         return table_.insert_or_visit(std::move(obj), f);
       }
 
       template <class InputIterator, class F>
-      void insert_or_visit(InputIterator first, InputIterator last, F f)
+      BOOST_FORCEINLINE void insert_or_visit(
+        InputIterator first, InputIterator last, F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
         for (; first != last; ++first) {
@@ -372,38 +397,44 @@ namespace boost {
       }
 
       template <class F>
-      void insert_or_visit(std::initializer_list<value_type> ilist, F f)
+      BOOST_FORCEINLINE void insert_or_visit(
+        std::initializer_list<value_type> ilist, F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
         this->insert_or_visit(ilist.begin(), ilist.end(), f);
       }
 
-      template <class F> bool insert_or_cvisit(value_type const& obj, F f)
+      template <class F>
+      BOOST_FORCEINLINE bool insert_or_cvisit(value_type const& obj, F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         return table_.insert_or_cvisit(obj, f);
       }
 
-      template <class F> bool insert_or_cvisit(value_type&& obj, F f)
+      template <class F>
+      BOOST_FORCEINLINE bool insert_or_cvisit(value_type&& obj, F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         return table_.insert_or_cvisit(std::move(obj), f);
       }
 
-      template <class F> bool insert_or_cvisit(init_type const& obj, F f)
+      template <class F>
+      BOOST_FORCEINLINE bool insert_or_cvisit(init_type const& obj, F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         return table_.insert_or_cvisit(obj, f);
       }
 
-      template <class F> bool insert_or_cvisit(init_type&& obj, F f)
+      template <class F>
+      BOOST_FORCEINLINE bool insert_or_cvisit(init_type&& obj, F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         return table_.insert_or_cvisit(std::move(obj), f);
       }
 
       template <class InputIterator, class F>
-      void insert_or_cvisit(InputIterator first, InputIterator last, F f)
+      BOOST_FORCEINLINE void insert_or_cvisit(
+        InputIterator first, InputIterator last, F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         for (; first != last; ++first) {
@@ -412,19 +443,20 @@ namespace boost {
       }
 
       template <class F>
-      void insert_or_cvisit(std::initializer_list<value_type> ilist, F f)
+      BOOST_FORCEINLINE void insert_or_cvisit(
+        std::initializer_list<value_type> ilist, F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         this->insert_or_visit(ilist.begin(), ilist.end(), f);
       }
 
-      template <class... Args> bool emplace(Args&&... args)
+      template <class... Args> BOOST_FORCEINLINE bool emplace(Args&&... args)
       {
         return table_.emplace(std::forward<Args>(args)...);
       }
 
       template <class Arg, class... Args>
-      bool emplace_or_visit(Arg&& arg, Args&&... args)
+      BOOST_FORCEINLINE bool emplace_or_visit(Arg&& arg, Args&&... args)
       {
         BOOST_UNORDERED_STATIC_ASSERT_LAST_ARG_INVOCABLE(Arg, Args...)
         return table_.emplace_or_visit(
@@ -432,7 +464,7 @@ namespace boost {
       }
 
       template <class Arg, class... Args>
-      bool emplace_or_cvisit(Arg&& arg, Args&&... args)
+      BOOST_FORCEINLINE bool emplace_or_cvisit(Arg&& arg, Args&&... args)
       {
         BOOST_UNORDERED_STATIC_ASSERT_LAST_ARG_CONST_INVOCABLE(Arg, Args...)
         return table_.emplace_or_cvisit(
@@ -440,18 +472,19 @@ namespace boost {
       }
 
       template <class... Args>
-      bool try_emplace(key_type const& k, Args&&... args)
+      BOOST_FORCEINLINE bool try_emplace(key_type const& k, Args&&... args)
       {
         return table_.try_emplace(k, std::forward<Args>(args)...);
       }
 
-      template <class... Args> bool try_emplace(key_type&& k, Args&&... args)
+      template <class... Args>
+      BOOST_FORCEINLINE bool try_emplace(key_type&& k, Args&&... args)
       {
         return table_.try_emplace(std::move(k), std::forward<Args>(args)...);
       }
 
       template <class K, class... Args>
-      typename std::enable_if<
+      BOOST_FORCEINLINE typename std::enable_if<
         detail::are_transparent<K, hasher, key_equal>::value, bool>::type
       try_emplace(K&& k, Args&&... args)
       {
@@ -460,7 +493,8 @@ namespace boost {
       }
 
       template <class Arg, class... Args>
-      bool try_emplace_or_visit(key_type const& k, Arg&& arg, Args&&... args)
+      BOOST_FORCEINLINE bool try_emplace_or_visit(
+        key_type const& k, Arg&& arg, Args&&... args)
       {
         BOOST_UNORDERED_STATIC_ASSERT_LAST_ARG_INVOCABLE(Arg, Args...)
         return table_.try_emplace_or_visit(
@@ -468,7 +502,8 @@ namespace boost {
       }
 
       template <class Arg, class... Args>
-      bool try_emplace_or_cvisit(key_type const& k, Arg&& arg, Args&&... args)
+      BOOST_FORCEINLINE bool try_emplace_or_cvisit(
+        key_type const& k, Arg&& arg, Args&&... args)
       {
         BOOST_UNORDERED_STATIC_ASSERT_LAST_ARG_CONST_INVOCABLE(Arg, Args...)
         return table_.try_emplace_or_cvisit(
@@ -476,7 +511,8 @@ namespace boost {
       }
 
       template <class Arg, class... Args>
-      bool try_emplace_or_visit(key_type&& k, Arg&& arg, Args&&... args)
+      BOOST_FORCEINLINE bool try_emplace_or_visit(
+        key_type&& k, Arg&& arg, Args&&... args)
       {
         BOOST_UNORDERED_STATIC_ASSERT_LAST_ARG_INVOCABLE(Arg, Args...)
         return table_.try_emplace_or_visit(
@@ -484,7 +520,8 @@ namespace boost {
       }
 
       template <class Arg, class... Args>
-      bool try_emplace_or_cvisit(key_type&& k, Arg&& arg, Args&&... args)
+      BOOST_FORCEINLINE bool try_emplace_or_cvisit(
+        key_type&& k, Arg&& arg, Args&&... args)
       {
         BOOST_UNORDERED_STATIC_ASSERT_LAST_ARG_CONST_INVOCABLE(Arg, Args...)
         return table_.try_emplace_or_cvisit(
@@ -492,7 +529,8 @@ namespace boost {
       }
 
       template <class K, class Arg, class... Args>
-      bool try_emplace_or_visit(K&& k, Arg&& arg, Args&&... args)
+      BOOST_FORCEINLINE bool try_emplace_or_visit(
+        K&& k, Arg&& arg, Args&&... args)
       {
         BOOST_UNORDERED_STATIC_ASSERT_LAST_ARG_INVOCABLE(Arg, Args...)
         return table_.try_emplace_or_visit(std::forward<K>(k),
@@ -500,30 +538,35 @@ namespace boost {
       }
 
       template <class K, class Arg, class... Args>
-      bool try_emplace_or_cvisit(K&& k, Arg&& arg, Args&&... args)
+      BOOST_FORCEINLINE bool try_emplace_or_cvisit(
+        K&& k, Arg&& arg, Args&&... args)
       {
         BOOST_UNORDERED_STATIC_ASSERT_LAST_ARG_CONST_INVOCABLE(Arg, Args...)
         return table_.try_emplace_or_cvisit(std::forward<K>(k),
           std::forward<Arg>(arg), std::forward<Args>(args)...);
       }
 
-      size_type erase(key_type const& k) { return table_.erase(k); }
+      BOOST_FORCEINLINE size_type erase(key_type const& k)
+      {
+        return table_.erase(k);
+      }
 
       template <class K>
-      typename std::enable_if<
+      BOOST_FORCEINLINE typename std::enable_if<
         detail::are_transparent<K, hasher, key_equal>::value, size_type>::type
       erase(K&& k)
       {
         return table_.erase(std::forward<K>(k));
       }
 
-      template <class F> size_type erase_if(key_type const& k, F f)
+      template <class F>
+      BOOST_FORCEINLINE size_type erase_if(key_type const& k, F f)
       {
         return table_.erase_if(k, f);
       }
 
       template <class K, class F>
-      typename std::enable_if<
+      BOOST_FORCEINLINE typename std::enable_if<
         detail::are_transparent<K, hasher, key_equal>::value &&
           !detail::is_execution_policy<K>::value,
         size_type>::type
@@ -534,15 +577,19 @@ namespace boost {
 
 #if defined(BOOST_UNORDERED_PARALLEL_ALGORITHMS)
       template <class ExecPolicy, class F>
-      typename std::enable_if<detail::is_execution_policy<ExecPolicy>::value,
-        void>::type
-      erase_if(ExecPolicy p, F f)
+      BOOST_FORCEINLINE
+        typename std::enable_if<detail::is_execution_policy<ExecPolicy>::value,
+          void>::type
+        erase_if(ExecPolicy p, F f)
       {
         table_.erase_if(p, f);
       }
 #endif
 
-      template <class F> size_type erase_if(F f) { return table_.erase_if(f); }
+      template <class F> BOOST_FORCEINLINE size_type erase_if(F f)
+      {
+        return table_.erase_if(f);
+      }
 
       /// Hash Policy
       ///
