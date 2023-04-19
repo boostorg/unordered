@@ -51,7 +51,7 @@ using allocator_type = std::allocator<std::pair<raii const, raii> >;
 using map_type = boost::unordered::concurrent_flat_map<raii, raii, hasher,
   key_equal, allocator_type>;
 
-using value_type = typename map_type::value_type;
+using map_value_type = typename map_type::value_type;
 
 UNORDERED_AUTO_TEST (default_constructor) {
   boost::unordered::concurrent_flat_map<raii, raii> x;
@@ -405,7 +405,7 @@ namespace {
 
           if (!y.empty()) {
             ++num_transfers;
-            y.cvisit_all([&reference_map, rg](value_type const& val) {
+            y.cvisit_all([&reference_map, rg](map_value_type const& val) {
               BOOST_TEST(reference_map.contains(val.first));
               if (rg == sequential) {
                 BOOST_TEST_EQ(
