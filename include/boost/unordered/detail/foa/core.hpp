@@ -1274,12 +1274,27 @@ public:
   }
 
   table_core(table_core&& x,const Allocator& al_):
-    table_core{0,std::move(x.h()),std::move(x.pred()),al_}
+    hash_base{empty_init,std::move(x.h())},
+    pred_base{empty_init,std::move(x.pred())},
+    allocator_base{empty_init,al_},arrays(new_arrays(0)),
+    ml{initial_max_load()},size_{0}
   {
     if(al()==x.al()){
       std::swap(arrays,x.arrays);
-      std::swap(ml,x.ml);
-      std::swap(size_,x.size_);
+
+      // when SizeImpl is an atomic<Integral> type, std::swap() can't be used
+      // as it's not MoveConstructible so we instead opt for this manual version
+      {
+        std::size_t tmp{size_};
+        size_=static_cast<std::size_t>(x.size_);
+        x.size_=tmp;
+      }
+
+      {
+        std::size_t tmp{ml};
+        ml=static_cast<std::size_t>(x.ml);
+        x.ml=tmp;
+      }
     }
     else{
       reserve(x.size());

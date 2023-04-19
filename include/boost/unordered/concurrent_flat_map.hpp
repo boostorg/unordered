@@ -192,6 +192,11 @@ namespace boost {
       {
       }
 
+      concurrent_flat_map(concurrent_flat_map&& rhs, allocator_type a)
+          : table_(std::move(rhs.table_), a)
+      {
+      }
+
       /// Capacity
       ///
 

@@ -44,9 +44,37 @@ template <class T> struct soccc_allocator
   bool operator!=(soccc_allocator const& rhs) const { return x_ != rhs.x_; }
 };
 
+template <class T> struct stateful_allocator
+{
+  int x_ = -1;
+
+  using value_type = T;
+
+  stateful_allocator() = default;
+  stateful_allocator(stateful_allocator const&) = default;
+  stateful_allocator(stateful_allocator&&) = default;
+
+  stateful_allocator(int const x) : x_{x} {}
+
+  template <class U>
+  stateful_allocator(stateful_allocator<U> const& rhs) : x_{rhs.x_}
+  {
+  }
+
+  T* allocate(std::size_t n)
+  {
+    return static_cast<T*>(::operator new(n * sizeof(T)));
+  }
+
+  void deallocate(T* p, std::size_t) { ::operator delete(p); }
+
+  bool operator==(stateful_allocator const& rhs) const { return x_ == rhs.x_; }
+  bool operator!=(stateful_allocator const& rhs) const { return x_ != rhs.x_; }
+};
+
 using hasher = stateful_hash;
 using key_equal = stateful_key_equal;
-using allocator_type = std::allocator<std::pair<raii const, raii> >;
+using allocator_type = stateful_allocator<std::pair<raii const, raii> >;
 
 using map_type = boost::unordered::concurrent_flat_map<raii, raii, hasher,
   key_equal, allocator_type>;
@@ -331,6 +359,7 @@ namespace {
     auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
     auto reference_map =
       boost::unordered_flat_map<raii, raii>(values.begin(), values.end());
+
     raii::reset_counts();
 
     {
@@ -338,6 +367,8 @@ namespace {
         allocator_type{});
 
       std::atomic_uint num_transfers{0};
+
+      auto const old_mc = +raii::move_constructor;
 
       thread_runner(
         values, [&x, &reference_map, &num_transfers](
@@ -368,6 +399,105 @@ namespace {
         });
 
       BOOST_TEST_EQ(num_transfers, 1u);
+      BOOST_TEST_EQ(raii::move_constructor, old_mc);
+    }
+
+    check_raii_counts();
+
+    // allocator-aware move constructor, unequal allocators
+    raii::reset_counts();
+
+    {
+      map_type x(values.begin(), values.end(), 0, hasher(1), key_equal(2),
+        allocator_type{1});
+
+      std::atomic_uint num_transfers{0};
+
+      auto const old_mc = +raii::move_constructor;
+      auto const old_size = x.size();
+
+      thread_runner(
+        values, [&x, &reference_map, &num_transfers, old_size](
+                  boost::span<span_value_type<decltype(values)> > s) {
+          (void)s;
+
+          auto a = allocator_type{2};
+          BOOST_TEST(a != x.get_allocator());
+
+          map_type y(std::move(x), a);
+
+          if (!y.empty()) {
+            ++num_transfers;
+
+            test_matches_reference(y, reference_map);
+            BOOST_TEST_EQ(y.size(), old_size);
+            BOOST_TEST_EQ(y.hash_function(), hasher(1));
+            BOOST_TEST_EQ(y.key_eq(), key_equal(2));
+          } else {
+            BOOST_TEST_EQ(y.size(), 0);
+            BOOST_TEST_EQ(y.hash_function(), hasher());
+            BOOST_TEST_EQ(y.key_eq(), key_equal());
+          }
+
+          BOOST_TEST_EQ(x.size(), 0);
+          BOOST_TEST_EQ(x.hash_function(), hasher());
+          BOOST_TEST_EQ(x.key_eq(), key_equal());
+
+          BOOST_TEST(y.get_allocator() != x.get_allocator());
+          BOOST_TEST(y.get_allocator() == a);
+        });
+
+      BOOST_TEST_EQ(num_transfers, 1u);
+      BOOST_TEST_EQ(raii::move_constructor, old_mc + (2 * old_size));
+    }
+
+    check_raii_counts();
+
+    // allocator-aware move constructor, equal allocators
+    raii::reset_counts();
+
+    {
+      map_type x(values.begin(), values.end(), 0, hasher(1), key_equal(2),
+        allocator_type{1});
+
+      std::atomic_uint num_transfers{0};
+
+      auto const old_mc = +raii::move_constructor;
+      auto const old_size = x.size();
+
+      thread_runner(
+        values, [&x, &reference_map, &num_transfers, old_size](
+                  boost::span<span_value_type<decltype(values)> > s) {
+          (void)s;
+
+          auto a = allocator_type{1};
+          BOOST_TEST(a == x.get_allocator());
+
+          map_type y(std::move(x), a);
+
+          if (!y.empty()) {
+            ++num_transfers;
+
+            test_matches_reference(y, reference_map);
+            BOOST_TEST_EQ(y.size(), old_size);
+            BOOST_TEST_EQ(y.hash_function(), hasher(1));
+            BOOST_TEST_EQ(y.key_eq(), key_equal(2));
+          } else {
+            BOOST_TEST_EQ(y.size(), 0);
+            BOOST_TEST_EQ(y.hash_function(), hasher());
+            BOOST_TEST_EQ(y.key_eq(), key_equal());
+          }
+
+          BOOST_TEST_EQ(x.size(), 0);
+          BOOST_TEST_EQ(x.hash_function(), hasher());
+          BOOST_TEST_EQ(x.key_eq(), key_equal());
+
+          BOOST_TEST(y.get_allocator() == x.get_allocator());
+          BOOST_TEST(y.get_allocator() == a);
+        });
+
+      BOOST_TEST_EQ(num_transfers, 1u);
+      BOOST_TEST_EQ(raii::move_constructor, old_mc);
     }
 
     check_raii_counts();
