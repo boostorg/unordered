@@ -212,6 +212,7 @@ namespace {
     auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
     auto reference_map =
       boost::unordered_flat_map<raii, raii>(values.begin(), values.end());
+
     raii::reset_counts();
 
     {
@@ -223,6 +224,30 @@ namespace {
                   boost::span<span_value_type<decltype(values)> > s) {
           (void)s;
           map_type y(x);
+
+          test_matches_reference(x, reference_map);
+          test_matches_reference(y, reference_map);
+          BOOST_TEST_EQ(y.size(), x.size());
+          BOOST_TEST_EQ(y.hash_function(), x.hash_function());
+          BOOST_TEST_EQ(y.key_eq(), x.key_eq());
+          BOOST_TEST(y.get_allocator() == x.get_allocator());
+        });
+    }
+
+    check_raii_counts();
+
+    raii::reset_counts();
+
+    {
+      allocator_type a;
+
+      map_type x(values.begin(), values.end(), 0, hasher(1), key_equal(2), a);
+
+      thread_runner(
+        values, [&x, &reference_map, a](
+                  boost::span<span_value_type<decltype(values)> > s) {
+          (void)s;
+          map_type y(x, a);
 
           test_matches_reference(x, reference_map);
           test_matches_reference(y, reference_map);

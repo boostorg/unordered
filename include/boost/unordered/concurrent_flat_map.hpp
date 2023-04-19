@@ -187,6 +187,11 @@ namespace boost {
       {
       }
 
+      concurrent_flat_map(concurrent_flat_map const& rhs, allocator_type a)
+          : table_(rhs.table_, a)
+      {
+      }
+
       /// Capacity
       ///
 
