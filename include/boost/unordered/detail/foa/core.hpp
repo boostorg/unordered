@@ -1226,6 +1226,7 @@ public:
   using alloc_traits=boost::allocator_traits<Allocator>;
   using element_type=typename type_policy::element_type;
   using arrays_type=Arrays<element_type,group_type,size_policy>;
+  using size_impl_type=SizeImpl;
 
   using key_type=typename type_policy::key_type;
   using init_type=typename type_policy::init_type;
@@ -1281,20 +1282,8 @@ public:
   {
     if(al()==x.al()){
       std::swap(arrays,x.arrays);
-
-      // when SizeImpl is an atomic<Integral> type, std::swap() can't be used
-      // as it's not MoveConstructible so we instead opt for this manual version
-      {
-        std::size_t tmp{size_};
-        size_=static_cast<std::size_t>(x.size_);
-        x.size_=tmp;
-      }
-
-      {
-        std::size_t tmp{ml};
-        ml=static_cast<std::size_t>(x.ml);
-        x.ml=tmp;
-      }
+      swap_size_impl(size_,x.size_);
+      swap_size_impl(ml,x.ml);
     }
     else{
       reserve(x.size());
@@ -1708,9 +1697,9 @@ public:
     }
   }
 
-  arrays_type arrays;
-  SizeImpl    ml;
-  SizeImpl    size_;
+  arrays_type    arrays;
+  size_impl_type ml;
+  size_impl_type size_;
 
 private:
   template<
@@ -1873,6 +1862,14 @@ private:
     for(std::size_t i=0;i<arrays.groups_size_mask+1;++i){
       arrays.groups[i]=x.arrays.groups[i];
     }
+  }
+
+  static inline void swap_size_impl(size_impl_type& x,size_impl_type& y)
+  {
+    /* std::swap can't be used on non-assignable atomics */
+    std::size_t tmp=x;
+    x=static_cast<std::size_t>(y);
+    y=tmp;
   }
 
   void recover_slot(unsigned char* pc)
