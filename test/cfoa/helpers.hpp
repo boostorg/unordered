@@ -24,6 +24,7 @@ struct transp_hash
 
   template <class T> std::size_t operator()(T const& t) const noexcept
   {
+    std::this_thread::yield();
     return boost::hash<T>()(t);
   }
 };
@@ -34,6 +35,7 @@ struct transp_key_equal
 
   template <class T, class U> bool operator()(T const& lhs, U const& rhs) const
   {
+    std::this_thread::yield();
     return lhs == rhs;
   }
 };
@@ -57,6 +59,7 @@ struct stateful_hash
   {
     std::size_t h = static_cast<std::size_t>(x_);
     boost::hash_combine(h, t);
+    std::this_thread::yield();
     return h;
   }
 
@@ -86,6 +89,7 @@ struct stateful_key_equal
 
   template <class T, class U> bool operator()(T const& t, U const& u) const
   {
+    std::this_thread::yield();
     return t == u;
   }
 
@@ -276,28 +280,28 @@ template <class T, class F> void thread_runner(std::vector<T>& values, F f)
 {
   std::mutex m;
   std::condition_variable cv;
-  bool ready = false;
+  std::size_t c = 0;
 
   std::vector<std::thread> threads;
   auto subslices = split<T>(values, num_threads);
 
   for (std::size_t i = 0; i < num_threads; ++i) {
-    threads.emplace_back([&f, &subslices, i, &m, &cv, &ready] {
+    threads.emplace_back([&f, &subslices, i, &m, &cv, &c] {
       {
         std::unique_lock<std::mutex> lk(m);
-        cv.wait(lk, [&] { return ready; });
+        ++c;
+        if (c == num_threads) {
+          lk.unlock();
+          cv.notify_all();
+        } else {
+          cv.wait(lk, [&] { return c == num_threads; });
+        }
       }
 
       auto s = subslices[i];
       f(s);
     });
   }
-
-  {
-    std::lock_guard<std::mutex> guard(m);
-    ready = true;
-  }
-  cv.notify_all();
 
   for (auto& t : threads) {
     t.join();
