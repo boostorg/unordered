@@ -294,7 +294,7 @@ struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy>
  *   - Iterators are not provided as they are not suitable for concurrent
  *     scenarios.
  *   - As a consequence, composite operations with regular containers
- *     (like, for instance, looking up and element and modifying it), must
+ *     (like, for instance, looking up an element and modifying it), must
  *     be provided natively without any intervening iterator/accesor.
  *     Visitation is a core concept in this design, either on its own (eg.
  *     visit(k) locates the element with key k *and* accesses it) or as part
@@ -312,11 +312,11 @@ struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy>
  *
  * Thread-safe concurrency is implemented using a two-level lock system:
  * 
- *   - The first level is container-wide and implemented with an array
- *     of rw spinlocks acting as a single rw mutex with very little
- *     false sharing on read (each thread is assigned a different spinlock
- *     in the array). At this level, write locking is only used for rehashing
- *     and container-wide operations (assignment, swap).
+ *   - A first container-level lock is implemented with an array of
+ *     rw spinlocks acting as a single rw mutex with very little
+ *     cache-coherence traffic on read (each thread is assigned a different
+ *     spinlock in the array). Container-level write locking is only used for
+ *     rehashing and container-wide operations (assignment, swap).
  *   - Each group of slots has an associated rw spinlock. Lookup is
  *     implemented in a (groupwise) lock-free manner until a reduced hash match
  *     is found, in which case the relevant group is locked and the slot is
