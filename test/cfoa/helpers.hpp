@@ -9,8 +9,10 @@
 #include <boost/unordered/unordered_flat_map.hpp>
 
 #include <atomic>
+#include <condition_variable>
 #include <cstddef>
 #include <iostream>
+#include <mutex>
 #include <thread>
 #include <vector>
 
@@ -272,16 +274,31 @@ std::vector<boost::span<T> > split(
 
 template <class T, class F> void thread_runner(std::vector<T>& values, F f)
 {
+  std::mutex m;
+  std::condition_variable cv;
+  bool ready = false;
+
   std::vector<std::thread> threads;
   auto subslices = split<T>(values, num_threads);
 
   for (std::size_t i = 0; i < num_threads; ++i) {
-    threads.emplace_back([&f, &subslices, i] {
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    threads.emplace_back([&f, &subslices, i, &m, &cv, &ready] {
+      {
+        std::unique_lock<std::mutex> lk(m);
+        cv.wait(lk, [&] { return ready; });
+      }
+
       auto s = subslices[i];
       f(s);
     });
   }
+
+  {
+    std::lock_guard<std::mutex> guard(m);
+    ready = true;
+  }
+  cv.notify_all();
+
   for (auto& t : threads) {
     t.join();
   }

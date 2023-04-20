@@ -297,11 +297,20 @@ namespace {
       boost::unordered_flat_map<raii, raii>(values.begin(), values.end());
     raii::reset_counts();
 
+    std::mutex m;
+    std::condition_variable cv;
+    bool ready = false;
+
     {
       map_type x(0, hasher(1), key_equal(2), allocator_type{});
 
-      auto f = [&x, &values] {
-        std::this_thread::sleep_for(std::chrono::milliseconds(75));
+      auto f = [&x, &values, &m, &cv, &ready] {
+        {
+          std::lock_guard<std::mutex> guard(m);
+          ready = true;
+        }
+        cv.notify_all();
+
         for (auto const& val : values) {
           x.insert(val);
         }
@@ -311,9 +320,15 @@ namespace {
       std::thread t2(f);
 
       thread_runner(
-        values, [&x, &reference_map, &values, rg](
+        values, [&x, &reference_map, &values, rg, &m, &cv, &ready](
                   boost::span<span_value_type<decltype(values)> > s) {
           (void)s;
+
+          {
+            std::unique_lock<std::mutex> lk(m);
+            cv.wait(lk, [&] { return ready; });
+          }
+
           map_type y(x);
 
           BOOST_TEST_LE(y.size(), values.size());
@@ -483,12 +498,12 @@ namespace {
             BOOST_TEST_EQ(y.hash_function(), hasher(1));
             BOOST_TEST_EQ(y.key_eq(), key_equal(2));
           } else {
-            BOOST_TEST_EQ(y.size(), 0);
+            BOOST_TEST_EQ(y.size(), 0u);
             BOOST_TEST_EQ(y.hash_function(), hasher());
             BOOST_TEST_EQ(y.key_eq(), key_equal());
           }
 
-          BOOST_TEST_EQ(x.size(), 0);
+          BOOST_TEST_EQ(x.size(), 0u);
           BOOST_TEST_EQ(x.hash_function(), hasher());
           BOOST_TEST_EQ(x.key_eq(), key_equal());
 
@@ -511,11 +526,20 @@ namespace {
       boost::unordered_flat_map<raii, raii>(values.begin(), values.end());
     raii::reset_counts();
 
+    std::mutex m;
+    std::condition_variable cv;
+    bool ready = false;
+
     {
       map_type x(0, hasher(1), key_equal(2), allocator_type{});
 
-      auto f = [&x, &values] {
-        std::this_thread::sleep_for(std::chrono::milliseconds(25));
+      auto f = [&x, &values, &m, &cv, &ready] {
+        {
+          std::lock_guard<std::mutex> guard(m);
+          ready = true;
+        }
+        cv.notify_all();
+
         for (auto const& val : values) {
           x.insert(val);
         }
@@ -527,9 +551,14 @@ namespace {
       std::thread t2(f);
 
       thread_runner(
-        values, [&x, &reference_map, &num_transfers, rg](
+        values, [&x, &reference_map, &num_transfers, rg, &m, &ready, &cv](
                   boost::span<span_value_type<decltype(values)> > s) {
           (void)s;
+
+          {
+            std::unique_lock<std::mutex> lk(m);
+            cv.wait(lk, [&] { return ready; });
+          }
 
           map_type y(std::move(x));
 
