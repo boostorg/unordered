@@ -628,6 +628,74 @@ namespace {
     }
   }
 
+  UNORDERED_AUTO_TEST (initializer_list_with_all_params) {
+    std::initializer_list<map_value_type> ilist{
+      map_value_type{raii{0}, raii{0}},
+      map_value_type{raii{1}, raii{1}},
+      map_value_type{raii{2}, raii{2}},
+      map_value_type{raii{3}, raii{3}},
+      map_value_type{raii{4}, raii{4}},
+      map_value_type{raii{5}, raii{5}},
+      map_value_type{raii{6}, raii{6}},
+      map_value_type{raii{6}, raii{6}},
+      map_value_type{raii{7}, raii{7}},
+      map_value_type{raii{8}, raii{8}},
+      map_value_type{raii{9}, raii{9}},
+      map_value_type{raii{10}, raii{10}},
+      map_value_type{raii{9}, raii{9}},
+      map_value_type{raii{8}, raii{8}},
+      map_value_type{raii{7}, raii{7}},
+      map_value_type{raii{6}, raii{6}},
+      map_value_type{raii{5}, raii{5}},
+      map_value_type{raii{4}, raii{4}},
+      map_value_type{raii{3}, raii{3}},
+      map_value_type{raii{2}, raii{2}},
+      map_value_type{raii{1}, raii{1}},
+      map_value_type{raii{0}, raii{0}},
+    };
+
+    raii::reset_counts();
+
+    map_type x(ilist, 0, hasher(1), key_equal(2), allocator_type(3));
+
+    BOOST_TEST_EQ(x.size(), 11u);
+    BOOST_TEST_EQ(x.hash_function(), hasher(1));
+    BOOST_TEST_EQ(x.key_eq(), key_equal(2));
+    BOOST_TEST(x.get_allocator() == allocator_type(3));
+  }
+
+  UNORDERED_AUTO_TEST (bucket_count_and_allocator) {
+    raii::reset_counts();
+
+    {
+      map_type x(0, allocator_type(3));
+      BOOST_TEST_EQ(x.size(), 0u);
+      BOOST_TEST_EQ(x.hash_function(), hasher());
+      BOOST_TEST_EQ(x.key_eq(), key_equal());
+      BOOST_TEST(x.get_allocator() == allocator_type(3));
+    }
+
+    {
+      map_type x(4096, allocator_type(3));
+      BOOST_TEST_EQ(x.size(), 0u);
+      BOOST_TEST_EQ(x.hash_function(), hasher());
+      BOOST_TEST_EQ(x.key_eq(), key_equal());
+      BOOST_TEST(x.get_allocator() == allocator_type(3));
+    }
+  }
+
+  UNORDERED_AUTO_TEST (bucket_count_with_hasher_and_allocator) {
+    raii::reset_counts();
+
+    {
+      map_type x(0, hasher(1), allocator_type(3));
+      BOOST_TEST_EQ(x.size(), 0u);
+      BOOST_TEST_EQ(x.hash_function(), hasher(1));
+      BOOST_TEST_EQ(x.key_eq(), key_equal());
+      BOOST_TEST(x.get_allocator() == allocator_type(3));
+    }
+  }
+
 } // namespace
 
 // clang-format off

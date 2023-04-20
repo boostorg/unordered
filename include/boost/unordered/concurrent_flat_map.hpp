@@ -197,6 +197,27 @@ namespace boost {
       {
       }
 
+      concurrent_flat_map(std::initializer_list<value_type> il,
+        size_type n = detail::foa::default_bucket_count,
+        const hasher& hf = hasher(), const key_equal& eql = key_equal(),
+        const allocator_type& a = allocator_type())
+          : concurrent_flat_map(n, hf, eql, a)
+      {
+        this->insert(il.begin(), il.end());
+      }
+
+      concurrent_flat_map(size_type n, const allocator_type& a)
+          : concurrent_flat_map(n, hasher(), key_equal(), a)
+      {
+      }
+
+      concurrent_flat_map(
+        size_type n, const hasher& hf, const allocator_type& a)
+          : concurrent_flat_map(n, hf, key_equal(), a)
+      {
+      }
+
+
       /// Capacity
       ///
 
