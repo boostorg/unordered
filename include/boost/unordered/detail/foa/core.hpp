@@ -1411,8 +1411,6 @@ public:
   std::size_t size()const noexcept{return size_;}
   std::size_t max_size()const noexcept{return SIZE_MAX;}
 
-  // TODO unify erase?
-
   BOOST_FORCEINLINE
   void erase(group_type* pg,unsigned int pos,element_type* p)noexcept
   {

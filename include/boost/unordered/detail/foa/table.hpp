@@ -27,6 +27,8 @@ namespace unordered{
 namespace detail{
 namespace foa{
 
+/* use plain integrals for group metadata storage */
+
 template<typename Integral>
 struct plain_integral
 {
@@ -211,9 +213,9 @@ private:
  *   - Pointer stability is not kept under rehashing.
  *   - No extract API.
  *
- * try_emplace, erase and find support heterogenous lookup by default, that is,
- * without checking for any ::is_transparent typedefs --the checking is done by
- * boost::unordered_[flat|node]_[map|set].
+ * try_emplace, erase and find support heterogeneous lookup by default,
+ * that is, without checking for any ::is_transparent typedefs --the
+ * checking is done by boost::unordered_[flat|node]_[map|set].
  */
 
 template <typename TypePolicy,typename Hash,typename Pred,typename Allocator>

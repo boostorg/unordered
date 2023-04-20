@@ -168,7 +168,7 @@ private:
   Mutex *pm1,*pm2;
 };
 
-/* TODO: describe atomic_integral and group_access */
+/* use atomics for group metadata storage */
 
 template<typename Integral>
 struct atomic_integral
@@ -184,7 +184,6 @@ struct atomic_integral
   }
 
   std::atomic<Integral> n;
-
 };
 
 /* Group-level concurrency protection. It provides a rw mutex plus an
@@ -283,7 +282,57 @@ struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy>
   group_access *group_accesses;
 };
 
-/* TODO: describe foa::concurrent_table.
+/* foa::concurrent_table serves as the foundation for end-user concurrent
+ * hash containers. The TypePolicy parameter can specify flat/node-based
+ * map-like and set-like containers, though currently we're only providing
+ * boost::concurrent_flat_map.
+ * 
+ * The exposed interface (completed by the wrapping containers) is not that
+ * of a regular container (in fact, it does not model Container as understood
+ * by the C++ standard):
+ * 
+ *   - Iterators are not provided as they are not suitable for concurrent
+ *     scenarios.
+ *   - As a consequence, composite operations with regular containers
+ *     (like, for instance, looking up and element and modifying it), must
+ *     be provided natively without any intervening iterator/accesor.
+ *     Visitation is a core concept in this design, either on its own (eg.
+ *     visit(k) locates the element with key k *and* accesses it) or as part
+ *     of a native composite operation (eg. try_emplace_or_visit). Visitation
+ *     is constant or mutating depending on whether the used table function is
+ *     const or not.
+ *   - The API provides member functions for all the meaningful composite
+ *     operations of the form "X (and|or) Y", where X, Y are one of the
+ *     primitives FIND, ACCESS, INSERT or ERASE.
+ * 
+ * Consult boost::unordered_flat_map docs for the full API reference.
+ * Heterogeneous lookup is suported by default, that is, without checking for
+ * any ::is_transparent typedefs --this checking is done by the wrapping
+ * containers.
+ *
+ * Thread-safe concurrency is implemented using a two-level lock system:
+ * 
+ *   - The first level is container-wide and implemented with an array
+ *     of rw spinlocks acting as a single rw mutex with very little
+ *     false sharing on read (each thread is assigned a different spinlock
+ *     in the array). At this level, write locking is only used for rehashing
+ *     and container-wide operations (assignment, swap).
+ *   - Each group of slots has an associated rw spinlock. Lookup is
+ *     implemented in a (groupwise) lock-free manner until a reduced hash match
+ *     is found, in which case the relevant group is locked and the slot is
+ *     double-checked for occupancy and compared with the key.
+ *   - Each group has also an associated so-called insertion counter used for
+ *     the following optimistic insertion algorithm:
+ *     - The value of the insertion counter for the initial group in the probe
+ *       sequence is recorded (let's call this value c0).
+ *     - Lookup and search for an available slot (if lookup failed) are
+ *       lock-free.
+ *     - When an available slot is located, it is preemptively occupied (its
+ *       reduced hash value is set) after locking and the insertion counter is
+ *       atomically incremented: if no other thread has incremented the counter
+ *       during the whole operation (which is checked by comparing with c0),
+ *       then we're good to go and complete the insertion, otherwise we roll
+ *       back and start over.
  */
 
 template <typename TypePolicy,typename Hash,typename Pred,typename Allocator>
