@@ -524,6 +524,7 @@ namespace {
     auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
     auto reference_map =
       boost::unordered_flat_map<raii, raii>(values.begin(), values.end());
+
     raii::reset_counts();
 
     std::mutex m;
@@ -696,6 +697,53 @@ namespace {
     }
   }
 
+  template <class G>
+  void iterator_range_with_bucket_count_and_allocator(
+    G gen, test::random_generator rg)
+  {
+    auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
+    auto reference_map =
+      boost::unordered_flat_map<raii, raii>(values.begin(), values.end());
+
+    raii::reset_counts();
+
+    {
+      allocator_type a(3);
+      map_type x(values.begin(), values.end(), 0, a);
+      test_fuzzy_matches_reference(x, reference_map, rg);
+
+      BOOST_TEST_EQ(x.hash_function(), hasher());
+      BOOST_TEST_EQ(x.key_eq(), key_equal());
+      BOOST_TEST(x.get_allocator() == a);
+    }
+
+    check_raii_counts();
+  }
+
+  template <class G>
+  void iterator_range_with_bucket_count_hasher_and_allocator(
+    G gen, test::random_generator rg)
+  {
+    auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
+    auto reference_map =
+      boost::unordered_flat_map<raii, raii>(values.begin(), values.end());
+
+    raii::reset_counts();
+
+    {
+      allocator_type a(3);
+      hasher hf(1);
+      map_type x(values.begin(), values.end(), 0, hf, a);
+      test_fuzzy_matches_reference(x, reference_map, rg);
+
+      BOOST_TEST_EQ(x.hash_function(), hf);
+      BOOST_TEST_EQ(x.key_eq(), key_equal());
+      BOOST_TEST(x.get_allocator() == a);
+    }
+
+    check_raii_counts();
+  }
+
 } // namespace
 
 // clang-format off
@@ -728,6 +776,17 @@ UNORDERED_TEST(
   iterator_range_with_allocator,
   ((value_type_generator))
   ((default_generator)(sequential)(limited_range)))
+
+UNORDERED_TEST(
+  iterator_range_with_bucket_count_and_allocator,
+  ((value_type_generator))
+  ((default_generator)(sequential)(limited_range)))
+
+UNORDERED_TEST(
+  iterator_range_with_bucket_count_hasher_and_allocator,
+  ((value_type_generator))
+  ((default_generator)(sequential)(limited_range)))
+
 // clang-format on
 
 RUN_TESTS()
