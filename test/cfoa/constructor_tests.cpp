@@ -434,12 +434,12 @@ namespace {
             BOOST_TEST_EQ(y.hash_function(), hasher(1));
             BOOST_TEST_EQ(y.key_eq(), key_equal(2));
           } else {
-            BOOST_TEST_EQ(y.size(), 0);
+            BOOST_TEST_EQ(y.size(), 0u);
             BOOST_TEST_EQ(y.hash_function(), hasher());
             BOOST_TEST_EQ(y.key_eq(), key_equal());
           }
 
-          BOOST_TEST_EQ(x.size(), 0);
+          BOOST_TEST_EQ(x.size(), 0u);
           BOOST_TEST_EQ(x.hash_function(), hasher());
           BOOST_TEST_EQ(x.key_eq(), key_equal());
 
@@ -515,7 +515,7 @@ namespace {
       map_type x(0, hasher(1), key_equal(2), allocator_type{});
 
       auto f = [&x, &values] {
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        std::this_thread::sleep_for(std::chrono::milliseconds(25));
         for (auto const& val : values) {
           x.insert(val);
         }
