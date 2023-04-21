@@ -44,34 +44,6 @@ template <class T> struct soccc_allocator
   bool operator!=(soccc_allocator const& rhs) const { return x_ != rhs.x_; }
 };
 
-template <class T> struct stateful_allocator
-{
-  int x_ = -1;
-
-  using value_type = T;
-
-  stateful_allocator() = default;
-  stateful_allocator(stateful_allocator const&) = default;
-  stateful_allocator(stateful_allocator&&) = default;
-
-  stateful_allocator(int const x) : x_{x} {}
-
-  template <class U>
-  stateful_allocator(stateful_allocator<U> const& rhs) : x_{rhs.x_}
-  {
-  }
-
-  T* allocate(std::size_t n)
-  {
-    return static_cast<T*>(::operator new(n * sizeof(T)));
-  }
-
-  void deallocate(T* p, std::size_t) { ::operator delete(p); }
-
-  bool operator==(stateful_allocator const& rhs) const { return x_ == rhs.x_; }
-  bool operator!=(stateful_allocator const& rhs) const { return x_ != rhs.x_; }
-};
-
 using hasher = stateful_hash;
 using key_equal = stateful_key_equal;
 using allocator_type = stateful_allocator<std::pair<raii const, raii> >;
