@@ -655,14 +655,61 @@ namespace {
       map_value_type{raii{0}, raii{0}},
     };
 
-    raii::reset_counts();
+    {
+      raii::reset_counts();
 
-    map_type x(ilist, 0, hasher(1), key_equal(2), allocator_type(3));
+      map_type x(ilist, 0, hasher(1), key_equal(2), allocator_type(3));
 
-    BOOST_TEST_EQ(x.size(), 11u);
-    BOOST_TEST_EQ(x.hash_function(), hasher(1));
-    BOOST_TEST_EQ(x.key_eq(), key_equal(2));
-    BOOST_TEST(x.get_allocator() == allocator_type(3));
+      BOOST_TEST_EQ(x.size(), 11u);
+      BOOST_TEST_EQ(x.hash_function(), hasher(1));
+      BOOST_TEST_EQ(x.key_eq(), key_equal(2));
+      BOOST_TEST(x.get_allocator() == allocator_type(3));
+
+      BOOST_TEST_EQ(raii::move_constructor, 0u);
+    }
+    check_raii_counts();
+
+    {
+      raii::reset_counts();
+
+      map_type x(ilist, allocator_type(3));
+
+      BOOST_TEST_EQ(x.size(), 11u);
+      BOOST_TEST_EQ(x.hash_function(), hasher());
+      BOOST_TEST_EQ(x.key_eq(), key_equal());
+      BOOST_TEST(x.get_allocator() == allocator_type(3));
+
+      BOOST_TEST_EQ(raii::move_constructor, 0u);
+    }
+    check_raii_counts();
+
+    {
+      raii::reset_counts();
+
+      map_type x(ilist, 0, allocator_type(3));
+
+      BOOST_TEST_EQ(x.size(), 11u);
+      BOOST_TEST_EQ(x.hash_function(), hasher());
+      BOOST_TEST_EQ(x.key_eq(), key_equal());
+      BOOST_TEST(x.get_allocator() == allocator_type(3));
+
+      BOOST_TEST_EQ(raii::move_constructor, 0u);
+    }
+    check_raii_counts();
+
+    {
+      raii::reset_counts();
+
+      map_type x(ilist, 0, hasher(1), allocator_type(3));
+
+      BOOST_TEST_EQ(x.size(), 11u);
+      BOOST_TEST_EQ(x.hash_function(), hasher(1));
+      BOOST_TEST_EQ(x.key_eq(), key_equal());
+      BOOST_TEST(x.get_allocator() == allocator_type(3));
+
+      BOOST_TEST_EQ(raii::move_constructor, 0u);
+    }
+    check_raii_counts();
   }
 
   UNORDERED_AUTO_TEST (bucket_count_and_allocator) {
