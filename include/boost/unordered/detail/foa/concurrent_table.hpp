@@ -304,6 +304,8 @@ struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy>
  *   - The API provides member functions for all the meaningful composite
  *     operations of the form "X (and|or) Y", where X, Y are one of the
  *     primitives FIND, ACCESS, INSERT or ERASE.
+ *   - Parallel versions of [c]visit_all(f) and erase_if(f) are provided based
+ *     on C++17 stdlib parallel algorithms.
  * 
  * Consult boost::unordered_flat_map docs for the full API reference.
  * Heterogeneous lookup is suported by default, that is, without checking for
@@ -316,23 +318,25 @@ struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy>
  *     rw spinlocks acting as a single rw mutex with very little
  *     cache-coherence traffic on read (each thread is assigned a different
  *     spinlock in the array). Container-level write locking is only used for
- *     rehashing and container-wide operations (assignment, swap).
- *   - Each group of slots has an associated rw spinlock. Lookup is
- *     implemented in a (groupwise) lock-free manner until a reduced hash match
- *     is found, in which case the relevant group is locked and the slot is
- *     double-checked for occupancy and compared with the key.
+ *     rehashing and other container-wide operations (assignment, swap, etc.)
+ *   - Each group of slots has an associated rw spinlock. A thread holds
+ *     at most one group lock at any given time. Lookup is implemented in
+ *     a (groupwise) lock-free manner until a reduced hash match is found, in
+ *     which case the relevant group is locked and the slot is double-checked
+ *     for occupancy and compared with the key.
  *   - Each group has also an associated so-called insertion counter used for
  *     the following optimistic insertion algorithm:
  *     - The value of the insertion counter for the initial group in the probe
- *       sequence is recorded (let's call this value c0).
- *     - Lookup and search for an available slot (if lookup failed) are
- *       lock-free.
+ *       sequence is locally recorded (let's call this value c0).
+ *     - Lookup is as described above. If lookup finds no equivalent element,
+ *       search for an available slot for insertion successively locks/unlocks
+ *       each group in the probing sequence.
  *     - When an available slot is located, it is preemptively occupied (its
- *       reduced hash value is set) after locking and the insertion counter is
- *       atomically incremented: if no other thread has incremented the counter
- *       during the whole operation (which is checked by comparing with c0),
- *       then we're good to go and complete the insertion, otherwise we roll
- *       back and start over.
+ *       reduced hash value is set) and the insertion counter is atomically
+ *       incremented: if no other thread has incremented the counter during the
+ *       whole operation (which is checked by comparing with c0), then we're
+ *       good to go and complete the insertion, otherwise we roll back and start
+ *       over.
  */
 
 template <typename TypePolicy,typename Hash,typename Pred,typename Allocator>
