@@ -252,6 +252,12 @@ namespace boost {
 
       ~concurrent_flat_map() = default;
 
+      concurrent_flat_map& operator=(concurrent_flat_map const& rhs)
+      {
+        table_ = rhs.table_;
+        return *this;
+      }
+
       /// Capacity
       ///
 

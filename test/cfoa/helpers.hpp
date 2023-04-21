@@ -70,6 +70,13 @@ struct stateful_hash
     os << "{ x_: " << rhs.x_ << " }";
     return os;
   }
+
+  friend void swap(stateful_hash& lhs, stateful_hash& rhs) noexcept
+  {
+    if (&lhs != &rhs) {
+      std::swap(lhs.x_, rhs.x_);
+    }
+  }
 };
 
 struct stateful_key_equal
@@ -100,6 +107,13 @@ struct stateful_key_equal
   {
     os << "{ x_: " << rhs.x_ << " }";
     return os;
+  }
+
+  friend void swap(stateful_key_equal& lhs, stateful_key_equal& rhs) noexcept
+  {
+    if (&lhs != &rhs) {
+      std::swap(lhs.x_, rhs.x_);
+    }
   }
 };
 

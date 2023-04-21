@@ -182,6 +182,7 @@ local CFOA_TESTS =
   emplace_tests
   visit_tests
   constructor_tests
+  assign_tests
 ;
 
 for local test in $(CFOA_TESTS)
