@@ -24,7 +24,7 @@ struct transp_hash
 
   template <class T> std::size_t operator()(T const& t) const noexcept
   {
-    std::this_thread::yield();
+    // std::this_thread::yield();
     return boost::hash<T>()(t);
   }
 };
@@ -35,7 +35,7 @@ struct transp_key_equal
 
   template <class T, class U> bool operator()(T const& lhs, U const& rhs) const
   {
-    std::this_thread::yield();
+    // std::this_thread::yield();
     return lhs == rhs;
   }
 };
@@ -59,7 +59,7 @@ struct stateful_hash
   {
     std::size_t h = static_cast<std::size_t>(x_);
     boost::hash_combine(h, t);
-    std::this_thread::yield();
+    // std::this_thread::yield();
     return h;
   }
 
@@ -96,7 +96,7 @@ struct stateful_key_equal
 
   template <class T, class U> bool operator()(T const& t, U const& u) const
   {
-    std::this_thread::yield();
+    // std::this_thread::yield();
     return t == u;
   }
 
