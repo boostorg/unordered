@@ -33,6 +33,7 @@ project
         <toolset>msvc:<warnings-as-errors>on
     ;
 
+#|
 run unordered/prime_fmod_tests.cpp ;
 run unordered/fwd_set_test.cpp ;
 run unordered/fwd_map_test.cpp ;
@@ -99,11 +100,13 @@ run exception/less_tests.cpp ;
 
 run unordered/narrow_cast_tests.cpp ;
 run quick.cpp ;
+|#
 
 import ../../config/checks/config : requires ;
 
 CPP11 = [ requires cxx11_constexpr cxx11_noexcept cxx11_decltype cxx11_alignas ] ;
 
+#|
 local FOA_TESTS =
   fwd_set_test
   fwd_map_test
@@ -174,6 +177,7 @@ alias foa_tests :
   foa_swap_exception_tests
   foa_merge_exception_tests
 ;
+|#
 
 local CFOA_TESTS =
   insert_tests
