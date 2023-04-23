@@ -54,8 +54,8 @@ jobs:
 #          - { name: Collect coverage, coverage: yes,
 #              compiler: gcc-8,     cxxstd: '03,11',          os: ubuntu-20.04, install: 'g++-8-multilib', address-model: '32,64', ccache_key: "cov" }
 
-#          - { name: "cfoa tsan (gcc)", cxxstd: '11,14,17,20,2b', os: ubuntu-22.04, compiler: gcc-12,
-#              targets: 'libs/unordered/test//cfoa_tests', thread-sanitize: yes }
+          - { name: "cfoa tsan (gcc)", cxxstd: '11,14,17,20,2b', os: ubuntu-22.04, compiler: gcc-12,
+              targets: 'libs/unordered/test//cfoa_tests', thread-sanitize: yes, ccache_key: "tsan-gcc" }
 
           # Linux, clang, libc++
 #          - { compiler: clang-7,   cxxstd: '03,11,14,17',       os: ubuntu-20.04, stdlib: libc++, install: 'clang-7 libc++-7-dev libc++abi-7-dev' }
@@ -75,14 +75,17 @@ jobs:
 #          - { name: "clang-14 w/ sanitizers (17,20,2b)", sanitize: yes,
 #              compiler: clang-14,  cxxstd: '17,20,2b',          os: ubuntu-22.04, ccache_key: "san2" }
 
-#          - { name: "cfoa tsan (clang)", cxxstd: '11,14,17,20,2b', os: ubuntu-22.04, compiler: clang-14,
-#              targets: 'libs/unordered/test//cfoa_tests', thread-sanitize: yes, 
-#              stdlib: libc++, install: 'clang-14 libc++-14-dev libc++abi-14-dev' }
+          - { name: "cfoa tsan (clang)", cxxstd: '11,14,17,20,2b', os: ubuntu-22.04, compiler: clang-14,
+              targets: 'libs/unordered/test//cfoa_tests', thread-sanitize: yes,
+              stdlib: libc++, install: 'clang-14 libc++-14-dev libc++abi-14-dev', ccache_key: "tsan-clang" }
 
           # OSX, clang
-          - { compiler: clang,     cxxstd: '03,11,14,17,2a',    os: macos-11, }
-          - { compiler: clang,     cxxstd: '03,11,14,17,2a',    os: macos-12, sanitize: yes }
-          - { compiler: clang,     cxxstd: '11,14,17,2a',       os: macos-12, thread-sanitize: yes, targets: 'libs/unordered/test//cfoa_tests' }
+          - { compiler: clang,     cxxstd: '11,14',    os: macos-11, ccache_key: "11-14" }
+          - { compiler: clang,     cxxstd: '17,2a',    os: macos-11, ccache_key: "17-2a" }
+          - { compiler: clang,     cxxstd: '11,14',    os: macos-12, sanitize: yes, ccache_key: "11-14" }
+          - { compiler: clang,     cxxstd: '17,2a',    os: macos-12, sanitize: yes, ccache_key: "17-2a" }
+          - { compiler: clang,     cxxstd: '11,14',    os: macos-12, thread-sanitize: yes, targets: 'libs/unordered/test//cfoa_tests', ccache_key: "tsan-macos-1" }
+          - { compiler: clang,     cxxstd: '17,2a',    os: macos-12, thread-sanitize: yes, targets: 'libs/unordered/test//cfoa_tests', ccache_key: "tsan-macos-2" }
 
     timeout-minutes: 240
     runs-on: ${{matrix.os}}
@@ -208,7 +211,7 @@ jobs:
 
       - name: Run tests
         if: '!matrix.coverity'
-        run: B2_TARGETS=${{matrix.targets}} B2_FLAGS='-l 1800' ci/build.sh
+        run: B2_TARGETS=${{matrix.targets}} B2_FLAGS='-l 3600' ci/build.sh
 
       - name: Upload coverage
         if: matrix.coverage
@@ -220,187 +223,3 @@ jobs:
         env:
           COVERITY_SCAN_NOTIFICATION_EMAIL: ${{ secrets.COVERITY_SCAN_NOTIFICATION_EMAIL }}
           COVERITY_SCAN_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
-
-  windows:
-    defaults:
-      run:
-        shell: cmd
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-#          - { toolset: msvc-14.0, cxxstd: '14,latest',       addrmd: '32,64', os: windows-2019, variant: 'debug,release' }
-#          - { toolset: msvc-14.2, cxxstd: '14,17,20,latest', addrmd: '32,64', os: windows-2019, variant: 'debug,release' }
-#          - { toolset: msvc-14.3, cxxstd: '14,17,20,latest', addrmd: '32,64', os: windows-2022, variant: 'debug,release' }
-#          - { toolset: msvc-14.3, cxxstd: '14',              addrmd: '64',    os: windows-2022, variant: 'debug', defines: '_ALLOW_RTCc_IN_STL', cxxflags: '/RTCc'              }
-#          - { toolset: msvc-14.3, cxxstd: '14',              addrmd: '32',    os: windows-2022, variant: 'debug', defines: '_ALLOW_RTCc_IN_STL', cxxflags: '"/RTCc /arch:IA32"' }
-          - { toolset: clang-win, cxxstd: '14,17,latest',    addrmd: '32,64', os: windows-2022, variant: 'debug,release' }
-#          - { toolset: gcc,       cxxstd: '03,11,14,17,2a',  addrmd: '64',    os: windows-2019, variant: 'debug,release' }
-
-    runs-on: ${{matrix.os}}
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Fetch Boost.CI
-        uses: actions/checkout@v3
-        with:
-          repository: boostorg/boost-ci
-          ref: master
-          path: boost-ci-cloned
-      - name: Get CI scripts folder
-        run: |
-            REM Copy ci folder if not testing Boost.CI
-            if "%GITHUB_REPOSITORY%" == "%GITHUB_REPOSITORY:boost-ci=%" xcopy /s /e /q /i /y boost-ci-cloned\ci .\ci
-            rmdir /s /q boost-ci-cloned
-
-      - name: Setup Boost
-        run: ci\github\install.bat
-
-      - name: Run tests
-        if: '!matrix.coverage'
-        run: ci\build.bat
-        env:
-          B2_TOOLSET: ${{matrix.toolset}}
-          B2_CXXSTD: ${{matrix.cxxstd}}
-          B2_ADDRESS_MODEL: ${{matrix.addrmd}}
-          B2_DEFINES: ${{matrix.defines}}
-          B2_VARIANT: ${{matrix.variant}}
-          B2_CXXFLAGS: ${{matrix.cxxflags}}
-
-      - name: Collect coverage
-        shell: powershell
-        if: matrix.coverage
-        run: ci\opencppcoverage.ps1
-        env:
-          B2_TOOLSET: ${{matrix.toolset}}
-          B2_CXXSTD: ${{matrix.cxxstd}}
-          B2_ADDRESS_MODEL: ${{matrix.addrmd}}
-
-      - name: Upload coverage
-        if: matrix.coverage
-        uses: codecov/codecov-action@v2
-        with:
-          files: __out/cobertura.xml
-
-  MSYS2:
-    defaults:
-      run:
-        shell: msys2 {0}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - { sys: MINGW32, compiler: gcc, cxxstd: '03,11,17,20' }
-          - { sys: MINGW64, compiler: gcc, cxxstd: '03,11,17,20' }
-
-    runs-on: windows-latest
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Setup MSYS2 environment
-        uses: msys2/setup-msys2@v2
-        with:
-          msystem: ${{matrix.sys}}
-          update: true
-          install: git python
-          pacboy: gcc:p cmake:p ninja:p
-
-      - name: Fetch Boost.CI
-        uses: actions/checkout@v3
-        with:
-          repository: boostorg/boost-ci
-          ref: master
-          path: boost-ci-cloned
-      - name: Get CI scripts folder
-        run: |
-            # Copy ci folder if not testing Boost.CI
-            [[ "$GITHUB_REPOSITORY" =~ "boost-ci" ]] || cp -r boost-ci-cloned/ci .
-            rm -rf boost-ci-cloned
-
-      - name: Setup Boost
-        env:
-          B2_COMPILER: ${{matrix.compiler}}
-          B2_CXXSTD: ${{matrix.cxxstd}}
-          B2_SANITIZE: ${{matrix.sanitize}}
-          B2_STDLIB: ${{matrix.stdlib}}
-        run: ci/github/install.sh
-
-      - name: Run tests
-        run: ci/build.sh
-
-      # Run also the CMake tests to avoid having to setup another matrix for CMake on MSYS
-      - name: Run CMake tests
-        run: |
-            cd "$BOOST_ROOT"
-            mkdir __build_cmake_test__ && cd __build_cmake_test__
-            cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBOOST_INCLUDE_LIBRARIES=$SELF -DBUILD_SHARED_LIBS=ON -DBUILD_TESTING=ON -DBoost_VERBOSE=ON ..
-            cmake --build . --target tests --config Debug -j$B2_JOBS
-            ctest --output-on-failure --build-config Debug
-
-  CMake:
-    defaults:
-      run:
-        shell: bash
-
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - { os: ubuntu-20.04, build_shared: ON,  build_type: Debug, generator: 'Unix Makefiles' }
-          - { os: windows-2019, build_shared: ON,  build_type: Debug, generator: 'Visual Studio 16 2019' }
-
-    timeout-minutes: 120
-    runs-on: ${{matrix.os}}
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Fetch Boost.CI
-        uses: actions/checkout@v3
-        with:
-          repository: boostorg/boost-ci
-          ref: master
-          path: boost-ci-cloned
-      - name: Get CI scripts folder
-        run: |
-            # Copy ci folder if not testing Boost.CI
-            [[ "$GITHUB_REPOSITORY" =~ "boost-ci" ]] || cp -r boost-ci-cloned/ci .
-            rm -rf boost-ci-cloned
-      - name: Setup Boost
-        env: {B2_DONT_BOOTSTRAP: 1}
-        run: source ci/github/install.sh
-
-      - name: Run CMake tests
-        run: |
-            cd "$BOOST_ROOT"
-            mkdir __build_cmake_test__ && cd __build_cmake_test__
-            cmake -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DBOOST_INCLUDE_LIBRARIES=$SELF -DBUILD_SHARED_LIBS=${{matrix.build_shared}} -DBUILD_TESTING=ON -DBoost_VERBOSE=ON ..
-            cmake --build . --target tests --config ${{matrix.build_type}} -j$B2_JOBS
-            ctest --output-on-failure --build-config ${{matrix.build_type}}
-
-      - name: Run CMake subdir tests
-        run: |
-            cmake_test_folder="$BOOST_ROOT/libs/$SELF/test/cmake_test" # New unified folder
-            [ -d "$cmake_test_folder" ] || cmake_test_folder="$BOOST_ROOT/libs/$SELF/test/cmake_subdir_test"
-            cd "$cmake_test_folder"
-            mkdir __build_cmake_subdir_test__ && cd __build_cmake_subdir_test__
-            cmake -G "${{matrix.generator}}" -DBOOST_CI_INSTALL_TEST=OFF -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DBUILD_SHARED_LIBS=${{matrix.build_shared}} ..
-            cmake --build . --config ${{matrix.build_type}} -j$B2_JOBS
-            ctest --output-on-failure --build-config ${{matrix.build_type}}
-
-      - name: Install Library
-        run: |
-            cd "$BOOST_ROOT"
-            mkdir __build_cmake_install_test__ && cd __build_cmake_install_test__
-            cmake -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DBOOST_INCLUDE_LIBRARIES=$SELF -DBUILD_SHARED_LIBS=${{matrix.build_shared}} -DCMAKE_INSTALL_PREFIX=~/.local -DBoost_VERBOSE=ON -DBoost_DEBUG=ON ..
-            cmake --build . --target install --config ${{matrix.build_type}} -j$B2_JOBS
-      - name: Run CMake install tests
-        run: |
-            cmake_test_folder="$BOOST_ROOT/libs/$SELF/test/cmake_test" # New unified folder
-            [ -d "$cmake_test_folder" ] || cmake_test_folder="$BOOST_ROOT/libs/$SELF/test/cmake_install_test"
-            cd "$cmake_test_folder"
-            mkdir __build_cmake_install_test__ && cd __build_cmake_install_test__
-            cmake -G "${{matrix.generator}}" -DBOOST_CI_INSTALL_TEST=ON -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DBUILD_SHARED_LIBS=${{matrix.build_shared}} -DCMAKE_PREFIX_PATH=~/.local ..
-            cmake --build . --config ${{matrix.build_type}} -j$B2_JOBS
-            ctest --output-on-failure --build-config ${{matrix.build_type}}
