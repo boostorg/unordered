@@ -1,5 +1,11 @@
+// Copyright (C) 2023 Christian Mazakas
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
 #ifndef BOOST_UNORDERED_TEST_CFOA_HELPERS_HPP
 #define BOOST_UNORDERED_TEST_CFOA_HELPERS_HPP
+
+#include "latch.hpp"
 
 #include "../helpers/generators.hpp"
 #include "../helpers/test.hpp"
@@ -320,25 +326,14 @@ std::vector<boost::span<T> > split(
 
 template <class T, class F> void thread_runner(std::vector<T>& values, F f)
 {
-  std::mutex m;
-  std::condition_variable cv;
-  std::size_t c = 0;
+  boost::latch latch(num_threads);
 
   std::vector<std::thread> threads;
   auto subslices = split<T>(values, num_threads);
 
   for (std::size_t i = 0; i < num_threads; ++i) {
-    threads.emplace_back([&f, &subslices, i, &m, &cv, &c] {
-      {
-        std::unique_lock<std::mutex> lk(m);
-        ++c;
-        if (c == num_threads) {
-          lk.unlock();
-          cv.notify_all();
-        } else {
-          cv.wait(lk, [&] { return c == num_threads; });
-        }
-      }
+    threads.emplace_back([&f, &subslices, i, &latch] {
+      latch.arrive_and_wait();
 
       auto s = subslices[i];
       f(s);
