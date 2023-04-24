@@ -84,8 +84,8 @@ jobs:
           - { compiler: clang,     cxxstd: '17,2a',    os: macos-11, ccache_key: "17-2a" }
           - { compiler: clang,     cxxstd: '11,14',    os: macos-12, sanitize: yes, ccache_key: "11-14" }
           - { compiler: clang,     cxxstd: '17,2a',    os: macos-12, sanitize: yes, ccache_key: "17-2a" }
-          - { compiler: clang,     cxxstd: '11,14',    os: macos-12, thread-sanitize: yes, targets: 'libs/unordered/test//cfoa_tests', ccache_key: "tsan-macos-1" }
-          - { compiler: clang,     cxxstd: '17,2a',    os: macos-12, thread-sanitize: yes, targets: 'libs/unordered/test//cfoa_tests', ccache_key: "tsan-macos-2" }
+          - { compiler: clang,     cxxstd: '11,14',    os: macos-12, variant: release, thread-sanitize: yes, targets: 'libs/unordered/test//cfoa_tests', ccache_key: "tsan-macos-1" }
+          - { compiler: clang,     cxxstd: '17,2a',    os: macos-12, variant: release, thread-sanitize: yes, targets: 'libs/unordered/test//cfoa_tests', ccache_key: "tsan-macos-2" }
 
     timeout-minutes: 240
     runs-on: ${{matrix.os}}
@@ -199,6 +199,7 @@ jobs:
           B2_TSAN: ${{matrix.thread-sanitize}}
           B2_TARGETS: ${{matrix.targets}}
           B2_STDLIB: ${{matrix.stdlib}}
+          B2_VARIANT: ${{matrix.variant}}
           # More entries can be added in the same way, see the B2_ARGS assignment in ci/enforce.sh for the possible keys.
           # B2_DEFINES: ${{matrix.defines}}
           # Variables set here (to non-empty) will override the top-level environment variables, e.g.
