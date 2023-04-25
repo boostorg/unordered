@@ -674,14 +674,11 @@ public:
   template<typename Hash2,typename Pred2>
   void merge(concurrent_table<TypePolicy,Hash2,Pred2,Allocator>& x)
   {
-    // TODO: consider grabbing shared access on *this at this level
-    // TODO: can deadlock if x1.merge(x2) while x2.merge(x1)
-    auto lck=x.shared_access();
-    x.for_all_elements(
-      group_exclusive{},
+    auto lck=exclusive_access(*this,x);
+    x.super::for_all_elements( /* super::for_all_elements -> unprotected */
       [&,this](group_type* pg,unsigned int n,element_type* p){
         erase_on_exit e{x,pg,n,p};
-        if(!emplace_impl(type_policy::move(*p)))e.rollback();
+        if(!unprotected_emplace(type_policy::move(*p)))e.rollback();
       });
   }
 
@@ -1043,6 +1040,18 @@ private:
     }
   }
 
+  template<typename... Args>
+  BOOST_FORCEINLINE bool unprotected_emplace(Args&&... args)
+  {
+    // TODO: could be made more efficient (nonconcurrent scenario)
+    for(;;){
+      int res=unprotected_norehash_emplace_or_visit(
+        group_shared{},[](const value_type&){},std::forward<Args>(args)...);
+      if(BOOST_LIKELY(res>=0))return res!=0;
+      unprotected_rehash_if_full();
+    }
+  }
+
   struct reserve_size
   {
     reserve_size(concurrent_table& x_):x{x_}
@@ -1129,6 +1138,11 @@ private:
   void rehash_if_full()
   {
     auto lck=exclusive_access();
+    unprotected_rehash_if_full();
+  }
+
+  void unprotected_rehash_if_full()
+  {
     if(this->size_==this->ml)this->unchecked_rehash_for_growth();
   }
 
