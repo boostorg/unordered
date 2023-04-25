@@ -114,7 +114,7 @@ namespace {
 
   void test_arrive_and_wait()
   {
-    constexpr std::ptrdiff_t n = 16;
+    std::ptrdiff_t const n = 16;
 
     boost::latch l(2 * n);
 
@@ -122,7 +122,8 @@ namespace {
 
     std::vector<std::thread> threads;
     for (int i = 0; i < n; ++i) {
-      threads.emplace_back([&l, &xs, i] {
+      threads.emplace_back([&l, &xs, i, n] {
+        (void)n;
         for (int j = 0; j < n; ++j) {
           BOOST_TEST_EQ(xs[j], 0);
         }
