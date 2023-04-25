@@ -21,8 +21,10 @@
 #include <mutex>
 #include <thread>
 #include <vector>
+#include <type_traits>
 
-constexpr std::size_t const num_threads = 16;
+static std::size_t const num_threads =
+  std::max(2u, std::thread::hardware_concurrency());
 
 struct transp_hash
 {
@@ -326,7 +328,7 @@ std::vector<boost::span<T> > split(
 
 template <class T, class F> void thread_runner(std::vector<T>& values, F f)
 {
-  boost::latch latch(num_threads);
+  boost::latch latch(static_cast<std::ptrdiff_t>(num_threads));
 
   std::vector<std::thread> threads;
   auto subslices = split<T>(values, num_threads);
