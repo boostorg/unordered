@@ -6,6 +6,12 @@
 
 #include <boost/unordered/concurrent_flat_map.hpp>
 
+#if defined(__clang__) && defined(__has_warning)
+#if __has_warning("-Wself-assign-overloaded")
+#pragma clang diagnostic ignored "-Wself-assign-overloaded"
+#endif
+#endif
+
 test::seed_t initialize_seed{2762556623};
 
 using test::default_generator;
@@ -21,6 +27,43 @@ using map_type = boost::unordered::concurrent_flat_map<raii, raii, hasher,
 
 using map_value_type = typename map_type::value_type;
 
+template <class T> struct pocca_allocator
+{
+  using propagate_on_container_copy_assignment = std::true_type;
+
+  int x_ = -1;
+
+  using value_type = T;
+
+  pocca_allocator() = default;
+  pocca_allocator(pocca_allocator const&) = default;
+  pocca_allocator(pocca_allocator&&) = default;
+
+  pocca_allocator(int const x) : x_{x} {}
+
+  pocca_allocator& operator=(pocca_allocator const& rhs)
+  {
+    if (this != &rhs) {
+      x_ = rhs.x_;
+    }
+    return *this;
+  }
+
+  template <class U> pocca_allocator(pocca_allocator<U> const& rhs) : x_{rhs.x_}
+  {
+  }
+
+  T* allocate(std::size_t n)
+  {
+    return static_cast<T*>(::operator new(n * sizeof(T)));
+  }
+
+  void deallocate(T* p, std::size_t) { ::operator delete(p); }
+
+  bool operator==(pocca_allocator const& rhs) const { return x_ == rhs.x_; }
+  bool operator!=(pocca_allocator const& rhs) const { return x_ != rhs.x_; }
+};
+
 namespace {
   template <class G> void copy_assign(G gen, test::random_generator rg)
   {
@@ -28,30 +71,31 @@ namespace {
     auto reference_map =
       boost::unordered_flat_map<raii, raii>(values.begin(), values.end());
 
-    // to test:
-    // self-assign
-    // propagation
-    //
-
     // lhs empty, rhs empty
     {
       raii::reset_counts();
 
       map_type x(0, hasher(1), key_equal(2), allocator_type(3));
-      map_type y;
 
-      BOOST_TEST(x.empty());
-      BOOST_TEST(y.empty());
-      y = x;
+      thread_runner(values, [&x](boost::span<map_value_type> s) {
+        (void)s;
+
+        map_type y;
+
+        BOOST_TEST(x.empty());
+        BOOST_TEST(y.empty());
+
+        y = x;
+
+        BOOST_TEST_EQ(x.hash_function(), y.hash_function());
+        BOOST_TEST_EQ(x.key_eq(), y.key_eq());
+        BOOST_TEST(x.get_allocator() != y.get_allocator());
+      });
 
       BOOST_TEST_EQ(raii::destructor, 0u);
       BOOST_TEST_EQ(raii::copy_assignment, 0u);
       BOOST_TEST_EQ(raii::move_assignment, 0u);
       BOOST_TEST_EQ(raii::copy_constructor, 0u);
-
-      BOOST_TEST_EQ(x.hash_function(), y.hash_function());
-      BOOST_TEST_EQ(x.key_eq(), y.key_eq());
-      BOOST_TEST(x.get_allocator() != y.get_allocator());
     }
 
     // lhs non-empty, rhs empty
@@ -60,23 +104,28 @@ namespace {
 
       map_type x(0, hasher(1), key_equal(2), allocator_type(3));
 
-      map_type y(values.begin(), values.end(), values.size());
+      auto const old_size = reference_map.size();
 
-      auto const old_cc = +raii::copy_constructor;
-      auto const old_size = y.size();
+      thread_runner(values, [&x, &values](boost::span<map_value_type> s) {
+        (void)s;
 
-      BOOST_TEST(x.empty());
-      BOOST_TEST(!y.empty());
-      y = x;
+        map_type y(values.begin(), values.end(), values.size());
 
-      BOOST_TEST_EQ(raii::destructor, 2 * old_size);
+        BOOST_TEST(x.empty());
+        BOOST_TEST(!y.empty());
+
+        y = x;
+
+        BOOST_TEST_EQ(x.hash_function(), y.hash_function());
+        BOOST_TEST_EQ(x.key_eq(), y.key_eq());
+        BOOST_TEST(x.get_allocator() != y.get_allocator());
+      });
+
+      BOOST_TEST_EQ(raii::destructor, num_threads * (2 * old_size));
       BOOST_TEST_EQ(raii::copy_assignment, 0u);
       BOOST_TEST_EQ(raii::move_assignment, 0u);
-      BOOST_TEST_EQ(raii::copy_constructor, old_cc);
-
-      BOOST_TEST_EQ(x.hash_function(), y.hash_function());
-      BOOST_TEST_EQ(x.key_eq(), y.key_eq());
-      BOOST_TEST(x.get_allocator() != y.get_allocator());
+      BOOST_TEST_EQ(
+        raii::copy_constructor, num_threads * 2 * reference_map.size());
     }
     check_raii_counts();
 
@@ -87,23 +136,31 @@ namespace {
       map_type x(values.begin(), values.end(), values.size(), hasher(1),
         key_equal(2), allocator_type(3));
 
-      map_type y;
       auto const old_cc = +raii::copy_constructor;
 
-      BOOST_TEST(!x.empty());
-      BOOST_TEST(y.empty());
-      y = x;
+      thread_runner(
+        values, [&x, &reference_map](boost::span<map_value_type> s) {
+          (void)s;
 
-      BOOST_TEST_EQ(raii::destructor, 0u);
+          map_type y;
+
+          BOOST_TEST(!x.empty());
+          BOOST_TEST(y.empty());
+
+          y = x;
+
+          BOOST_TEST_EQ(x.hash_function(), y.hash_function());
+          BOOST_TEST_EQ(x.key_eq(), y.key_eq());
+          BOOST_TEST(x.get_allocator() != y.get_allocator());
+
+          test_matches_reference(y, reference_map);
+        });
+
+      BOOST_TEST_EQ(raii::destructor, num_threads * 2 * x.size());
       BOOST_TEST_EQ(raii::copy_assignment, 0u);
       BOOST_TEST_EQ(raii::move_assignment, 0u);
-      BOOST_TEST_EQ(raii::copy_constructor, old_cc + (2 * x.size()));
-
-      BOOST_TEST_EQ(x.hash_function(), y.hash_function());
-      BOOST_TEST_EQ(x.key_eq(), y.key_eq());
-      BOOST_TEST(x.get_allocator() != y.get_allocator());
-
-      test_matches_reference(y, reference_map);
+      BOOST_TEST_EQ(
+        raii::copy_constructor, old_cc + (num_threads * 2 * x.size()));
     }
     check_raii_counts();
 
@@ -114,27 +171,104 @@ namespace {
       map_type x(values.begin(), values.end(), values.size(), hasher(1),
         key_equal(2), allocator_type(3));
 
-      map_type y(values.begin(), values.end(), values.size());
-
-      auto const old_size = y.size();
+      auto const old_size = x.size();
       auto const old_cc = +raii::copy_constructor;
 
-      BOOST_TEST(!x.empty());
-      BOOST_TEST(!y.empty());
-      y = x;
+      thread_runner(values, [&x, &values](boost::span<map_value_type> s) {
+        (void)s;
 
-      BOOST_TEST_EQ(raii::destructor, 2 * old_size);
+        map_type y(values.begin(), values.end(), values.size());
+
+        BOOST_TEST(!x.empty());
+        BOOST_TEST(!y.empty());
+
+        y = x;
+
+        BOOST_TEST_EQ(x.hash_function(), y.hash_function());
+        BOOST_TEST_EQ(x.key_eq(), y.key_eq());
+        BOOST_TEST(x.get_allocator() != y.get_allocator());
+      });
+
+      BOOST_TEST_EQ(raii::destructor, 2 * num_threads * 2 * old_size);
       BOOST_TEST_EQ(raii::copy_assignment, 0u);
       BOOST_TEST_EQ(raii::move_assignment, 0u);
-      BOOST_TEST_EQ(raii::copy_constructor, old_cc + (2 * x.size()));
+      BOOST_TEST_EQ(
+        raii::copy_constructor, old_cc + (2 * num_threads * 2 * x.size()));
+    }
+    check_raii_counts();
 
-      BOOST_TEST_EQ(x.hash_function(), y.hash_function());
-      BOOST_TEST_EQ(x.key_eq(), y.key_eq());
-      BOOST_TEST(x.get_allocator() != y.get_allocator());
+    // self-assign
+    {
+      raii::reset_counts();
+
+      map_type x(values.begin(), values.end(), values.size(), hasher(1),
+        key_equal(2), allocator_type(3));
+
+      auto const old_cc = +raii::copy_constructor;
+
+      thread_runner(
+        values, [&x, &reference_map](boost::span<map_value_type> s) {
+          (void)s;
+
+          BOOST_TEST(!x.empty());
+
+          x = x;
+
+          BOOST_TEST_EQ(x.hash_function(), hasher(1));
+          BOOST_TEST_EQ(x.key_eq(), key_equal(2));
+          BOOST_TEST(x.get_allocator() == allocator_type(3));
+
+          test_matches_reference(x, reference_map);
+        });
+
+      BOOST_TEST_EQ(raii::destructor, 0u);
+      BOOST_TEST_EQ(raii::copy_assignment, 0u);
+      BOOST_TEST_EQ(raii::move_assignment, 0u);
+      BOOST_TEST_EQ(raii::copy_constructor, old_cc);
+    }
+    check_raii_counts();
+
+    // propagation
+    {
+      using pocca_allocator_type =
+        pocca_allocator<std::pair<const raii, raii> >;
+
+      using pocca_map_type = boost::unordered::concurrent_flat_map<raii, raii,
+        hasher, key_equal, pocca_allocator_type>;
+
+      raii::reset_counts();
+
+      pocca_map_type x(values.begin(), values.end(), values.size(), hasher(1),
+        key_equal(2), pocca_allocator_type(3));
+
+      auto const old_size = x.size();
+      auto const old_cc = +raii::copy_constructor;
+
+      thread_runner(values, [&x, &values](boost::span<map_value_type> s) {
+        (void)s;
+
+        pocca_map_type y(values.begin(), values.end(), values.size());
+
+        BOOST_TEST(!x.empty());
+        BOOST_TEST(!y.empty());
+
+        BOOST_TEST(x.get_allocator() != y.get_allocator());
+
+        y = x;
+
+        BOOST_TEST_EQ(x.hash_function(), y.hash_function());
+        BOOST_TEST_EQ(x.key_eq(), y.key_eq());
+        BOOST_TEST(x.get_allocator() == y.get_allocator());
+      });
+
+      BOOST_TEST_EQ(raii::destructor, 2 * num_threads * 2 * old_size);
+      BOOST_TEST_EQ(raii::copy_assignment, 0u);
+      BOOST_TEST_EQ(raii::move_assignment, 0u);
+      BOOST_TEST_EQ(
+        raii::copy_constructor, old_cc + (2 * num_threads * 2 * x.size()));
     }
     check_raii_counts();
   }
-
 } // namespace
 
 // clang-format off
