@@ -1043,13 +1043,21 @@ private:
   template<typename... Args>
   BOOST_FORCEINLINE bool unprotected_emplace(Args&&... args)
   {
+    const auto &k=this->key_from(std::forward<Args>(args)...);
+    auto        hash=this->hash_for(k);
+    auto        pos0=this->position_for(hash);
+
     // TODO: could be made more efficient (nonconcurrent scenario)
-    for(;;){
-      int res=unprotected_norehash_emplace_or_visit(
-        group_shared{},[](const value_type&){},std::forward<Args>(args)...);
-      if(BOOST_LIKELY(res>=0))return res!=0;
-      unprotected_rehash_if_full();
+    if(unprotected_visit(
+      group_shared{},k,pos0,hash,[](const value_type&){}))return false;
+
+    if(BOOST_LIKELY(this->size_<this->ml)){
+      this->unchecked_emplace_at(pos0,hash,std::forward<Args>(args)...);
     }
+    else{
+      this->unchecked_emplace_with_rehash(hash,std::forward<Args>(args)...);
+    }
+    return true;
   }
 
   struct reserve_size
@@ -1098,9 +1106,9 @@ private:
   unprotected_norehash_emplace_or_visit(
     GroupAccessMode access_mode,F&& f,Args&&... args)
   {
-    const auto       &k=this->key_from(std::forward<Args>(args)...);
-    auto             hash=this->hash_for(k);
-    auto             pos0=this->position_for(hash);
+    const auto &k=this->key_from(std::forward<Args>(args)...);
+    auto        hash=this->hash_for(k);
+    auto        pos0=this->position_for(hash);
 
     for(;;){
     startover:
