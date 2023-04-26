@@ -259,9 +259,9 @@ namespace boost {
       }
 
       concurrent_flat_map& operator=(concurrent_flat_map&& rhs)
-        noexcept(std::allocator_traits<Allocator>::is_always_equal::value ||
-                 std::allocator_traits<
-                   Allocator>::propagate_on_container_move_assignment::value)
+        noexcept(boost::allocator_is_always_equal<Allocator>::type::value ||
+                 boost::allocator_propagate_on_container_move_assignment<
+                   Allocator>::type::value)
       {
         table_ = std::move(rhs.table_);
         return *this;
