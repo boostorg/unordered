@@ -258,6 +258,15 @@ namespace boost {
         return *this;
       }
 
+      concurrent_flat_map& operator=(concurrent_flat_map&& rhs)
+        noexcept(std::allocator_traits<Allocator>::is_always_equal::value ||
+                 std::allocator_traits<
+                   Allocator>::propagate_on_container_move_assignment::value)
+      {
+        table_ = std::move(rhs.table_);
+        return *this;
+      }
+
       /// Capacity
       ///
 

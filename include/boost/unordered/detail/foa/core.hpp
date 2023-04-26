@@ -1381,8 +1381,8 @@ public:
         reserve(0);
         move_assign_if<pocma>(al(),x.al());
         swap(arrays,x.arrays);
-        swap(ml,x.ml);
-        swap(size_,x.size_);
+        swap_size_impl(ml,x.ml);
+        swap_size_impl(size_,x.size_);
       }
       else{
         /* noshrink: favor memory reuse over tightness */
