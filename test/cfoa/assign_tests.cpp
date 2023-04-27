@@ -677,7 +677,7 @@ namespace {
           test_matches_reference(x, reference_map);
         });
 
-      BOOST_TEST_EQ(raii::destructor, 0);
+      BOOST_TEST_EQ(raii::destructor, 0u);
       BOOST_TEST_EQ(raii::copy_assignment, 0u);
       BOOST_TEST_EQ(raii::move_assignment, 0u);
       BOOST_TEST_EQ(raii::move_constructor, old_mc);
@@ -738,6 +738,67 @@ namespace {
     }
     check_raii_counts();
   }
+
+  template <class G> void insert_and_assign(G gen, test::random_generator rg)
+  {
+
+    std::thread t1, t2, t3;
+
+    boost::latch start_latch(2), end_latch(2);
+
+    auto v1 = make_random_values(1024 * 16, [&] { return gen(rg); });
+    auto v2 = v1;
+    shuffle_values(v2);
+
+    auto reference_map =
+      boost::unordered_flat_map<raii, raii>(v1.begin(), v1.end());
+
+    raii::reset_counts();
+    {
+      map_type map1(v1.size(), hasher(1), key_equal(2), allocator_type(3));
+      map_type map2(v2.size(), hasher(1), key_equal(2), allocator_type(3));
+
+      t1 = std::thread([&v1, &map1, &start_latch, &end_latch] {
+        start_latch.arrive_and_wait();
+        for (auto const& v : v1) {
+          map1.insert(v);
+        }
+        end_latch.arrive_and_wait();
+      });
+
+      t2 = std::thread([&v2, &map2, &end_latch, &start_latch] {
+        start_latch.arrive_and_wait();
+        for (auto const& v : v2) {
+          map2.insert(v);
+        }
+        end_latch.arrive_and_wait();
+      });
+
+      std::atomic<unsigned> num_assignments{0};
+      t3 = std::thread([&map1, &map2, &end_latch, &num_assignments] {
+        while (map1.empty() && map2.empty()) {
+        }
+
+        while (!end_latch.try_wait()) {
+          map1 = map2;
+          std::this_thread::sleep_for(std::chrono::milliseconds(100));
+          map2 = map1;
+          std::this_thread::sleep_for(std::chrono::milliseconds(100));
+          ++num_assignments;
+        }
+      });
+
+      t1.join();
+      t2.join();
+      t3.join();
+
+      BOOST_TEST_GT(num_assignments, 0u);
+
+      test_fuzzy_matches_reference(map1, reference_map, rg);
+      test_fuzzy_matches_reference(map2, reference_map, rg);
+    }
+    check_raii_counts();
+  }
 } // namespace
 
 // clang-format off
@@ -749,6 +810,11 @@ UNORDERED_TEST(
 UNORDERED_TEST(
   move_assign,
   ((value_type_generator))
+  ((default_generator)(sequential)(limited_range)))
+
+UNORDERED_TEST(
+  insert_and_assign,
+  ((init_type_generator))
   ((default_generator)(sequential)(limited_range)))
 // clang-format on
 

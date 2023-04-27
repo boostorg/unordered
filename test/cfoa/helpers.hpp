@@ -14,14 +14,16 @@
 #include <boost/core/span.hpp>
 #include <boost/unordered/unordered_flat_map.hpp>
 
+#include <algorithm>
 #include <atomic>
 #include <condition_variable>
 #include <cstddef>
 #include <iostream>
 #include <mutex>
+#include <random>
 #include <thread>
-#include <vector>
 #include <type_traits>
+#include <vector>
 
 static std::size_t const num_threads =
   std::max(2u, std::thread::hardware_concurrency());
@@ -239,6 +241,8 @@ struct raii
     copy_assignment = 0;
     move_assignment = 0;
   }
+
+  friend void swap(raii& lhs, raii& rhs) { std::swap(lhs.x_, rhs.x_); }
 };
 
 std::atomic<std::uint32_t> raii::default_constructor{0};
@@ -382,6 +386,14 @@ void check_raii_counts()
   BOOST_TEST_EQ(
     raii::default_constructor + raii::copy_constructor + raii::move_constructor,
     raii::destructor);
+}
+
+template <class T> void shuffle_values(std::vector<T> v)
+{
+  std::random_device rd;
+  std::mt19937 g(rd());
+
+  std::shuffle(v.begin(), v.end(), g);
 }
 
 #endif // BOOST_UNORDERED_TEST_CFOA_HELPERS_HPP
