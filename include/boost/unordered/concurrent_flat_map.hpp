@@ -267,6 +267,12 @@ namespace boost {
         return *this;
       }
 
+      concurrent_flat_map& operator=(std::initializer_list<value_type> ilist)
+      {
+        table_ = ilist;
+        return *this;
+      }
+
       /// Capacity
       ///
 

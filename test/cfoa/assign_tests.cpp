@@ -317,6 +317,26 @@ namespace {
 
   template <class G> void move_assign(G gen, test::random_generator rg)
   {
+    using pocma_allocator_type = pocma_allocator<std::pair<const raii, raii> >;
+
+    using pocma_map_type = boost::unordered::concurrent_flat_map<raii, raii,
+      hasher, key_equal, pocma_allocator_type>;
+
+    BOOST_STATIC_ASSERT(
+      std::is_nothrow_move_assignable<boost::unordered::concurrent_flat_map<int,
+        int, std::hash<int>, std::equal_to<int>,
+        std::allocator<std::pair<int const, int> > > >::value);
+
+    BOOST_STATIC_ASSERT(
+      std::is_nothrow_move_assignable<boost::unordered::concurrent_flat_map<int,
+        int, std::hash<int>, std::equal_to<int>,
+        pocma_allocator<std::pair<int const, int> > > >::value);
+
+    BOOST_STATIC_ASSERT(
+      !std::is_nothrow_move_assignable<boost::unordered::concurrent_flat_map<
+        int, int, std::hash<int>, std::equal_to<int>,
+        stateful_allocator<std::pair<int const, int> > > >::value);
+
     auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
     auto reference_map =
       boost::unordered_flat_map<raii, raii>(values.begin(), values.end());
@@ -583,12 +603,6 @@ namespace {
     {
       raii::reset_counts();
 
-      using pocma_allocator_type =
-        pocma_allocator<std::pair<const raii, raii> >;
-
-      using pocma_map_type = boost::unordered::concurrent_flat_map<raii, raii,
-        hasher, key_equal, pocma_allocator_type>;
-
       pocma_map_type x(values.begin(), values.end(), values.size(), hasher(1),
         key_equal(2), pocma_allocator_type(3));
 
@@ -668,6 +682,59 @@ namespace {
       BOOST_TEST_EQ(raii::move_assignment, 0u);
       BOOST_TEST_EQ(raii::move_constructor, old_mc);
       BOOST_TEST_EQ(raii::copy_constructor, old_cc);
+    }
+    check_raii_counts();
+  }
+
+  UNORDERED_AUTO_TEST (initializer_list_assignment) {
+    std::initializer_list<map_value_type> values{
+      map_value_type{raii{0}, raii{0}},
+      map_value_type{raii{1}, raii{1}},
+      map_value_type{raii{2}, raii{2}},
+      map_value_type{raii{3}, raii{3}},
+      map_value_type{raii{4}, raii{4}},
+      map_value_type{raii{5}, raii{5}},
+      map_value_type{raii{6}, raii{6}},
+      map_value_type{raii{6}, raii{6}},
+      map_value_type{raii{7}, raii{7}},
+      map_value_type{raii{8}, raii{8}},
+      map_value_type{raii{9}, raii{9}},
+      map_value_type{raii{10}, raii{10}},
+      map_value_type{raii{9}, raii{9}},
+      map_value_type{raii{8}, raii{8}},
+      map_value_type{raii{7}, raii{7}},
+      map_value_type{raii{6}, raii{6}},
+      map_value_type{raii{5}, raii{5}},
+      map_value_type{raii{4}, raii{4}},
+      map_value_type{raii{3}, raii{3}},
+      map_value_type{raii{2}, raii{2}},
+      map_value_type{raii{1}, raii{1}},
+      map_value_type{raii{0}, raii{0}},
+    };
+
+    auto reference_map =
+      boost::unordered_flat_map<raii, raii>(values.begin(), values.end());
+    auto v = std::vector<map_value_type>(values.begin(), values.end());
+
+    {
+      raii::reset_counts();
+      map_type x(0, hasher(1), key_equal(2), allocator_type(3));
+
+      thread_runner(v, [&x, &values](boost::span<map_value_type> s) {
+        (void)s;
+        x = values;
+      });
+
+      test_matches_reference(x, reference_map);
+      BOOST_TEST_EQ(x.hash_function(), hasher(1));
+      BOOST_TEST_EQ(x.key_eq(), key_equal(2));
+      BOOST_TEST(x.get_allocator() == allocator_type(3));
+
+      BOOST_TEST_EQ(raii::copy_constructor, num_threads * 2 * x.size());
+      BOOST_TEST_EQ(raii::destructor, (num_threads - 1) * 2 * x.size());
+      BOOST_TEST_EQ(raii::move_constructor, 0u);
+      BOOST_TEST_EQ(raii::copy_assignment, 0u);
+      BOOST_TEST_EQ(raii::move_assignment, 0u);
     }
     check_raii_counts();
   }
