@@ -777,15 +777,16 @@ namespace {
       std::atomic<unsigned> num_assignments{0};
       t3 = std::thread([&map1, &map2, &end_latch, &num_assignments] {
         while (map1.empty() && map2.empty()) {
+          std::this_thread::sleep_for(std::chrono::microseconds(10));
         }
 
-        while (!end_latch.try_wait()) {
+        do {
           map1 = map2;
           std::this_thread::sleep_for(std::chrono::milliseconds(100));
           map2 = map1;
           std::this_thread::sleep_for(std::chrono::milliseconds(100));
           ++num_assignments;
-        }
+        } while (!end_latch.try_wait());
       });
 
       t1.join();
