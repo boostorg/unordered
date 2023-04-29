@@ -1158,11 +1158,6 @@ private:
   void rehash_if_full()
   {
     auto lck=exclusive_access();
-    unprotected_rehash_if_full();
-  }
-
-  void unprotected_rehash_if_full()
-  {
     if(this->size_==this->ml)this->unchecked_rehash_for_growth();
   }
 
