@@ -37,6 +37,14 @@
     boost::unordered::detail::is_invocable<F, value_type const&>::value,       \
     "The provided Callable must be invocable with `value_type const&`");
 
+#define BOOST_UNORDERED_STATIC_ASSERT_EXEC_POLICY(P)                           \
+  static_assert(!std::is_base_of<std::execution::parallel_unsequenced_policy,  \
+                  ExecPolicy>::value,                                          \
+    "ExecPolicy must be sequenced.");                                          \
+  static_assert(                                                               \
+    !std::is_base_of<std::execution::unsequenced_policy, ExecPolicy>::value,   \
+    "ExecPolicy must be sequenced.");
+
 #define BOOST_UNORDERED_COMMA ,
 
 #define BOOST_UNORDERED_LAST_ARG(Arg, Args)                                    \
@@ -357,6 +365,7 @@ namespace boost {
         visit_all(ExecPolicy p, F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
+        BOOST_UNORDERED_STATIC_ASSERT_EXEC_POLICY(ExecPolicy)
         table_.visit_all(p, f);
       }
 
@@ -367,6 +376,7 @@ namespace boost {
         visit_all(ExecPolicy p, F f) const
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        BOOST_UNORDERED_STATIC_ASSERT_EXEC_POLICY(ExecPolicy)
         table_.visit_all(p, f);
       }
 
@@ -377,6 +387,7 @@ namespace boost {
         cvisit_all(ExecPolicy p, F f) const
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        BOOST_UNORDERED_STATIC_ASSERT_EXEC_POLICY(ExecPolicy)
         table_.cvisit_all(p, f);
       }
 #endif
@@ -663,6 +674,8 @@ namespace boost {
           void>::type
         erase_if(ExecPolicy p, F f)
       {
+        BOOST_UNORDERED_STATIC_ASSERT_EXEC_POLICY(ExecPolicy)
+        BOOST_UNORDERED_STATIC_ASSERT_EXEC_POLICY(ExecPolicy)
         table_.erase_if(p, f);
       }
 #endif

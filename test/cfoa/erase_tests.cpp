@@ -281,7 +281,7 @@ namespace {
       thread_runner(values, [&num_invokes, &x, threshold](boost::span<T> s) {
         (void)s;
         x.erase_if(
-          std::execution::par_unseq, [&num_invokes, threshold](value_type& v) {
+          std::execution::par, [&num_invokes, threshold](value_type& v) {
             ++num_invokes;
             return v.second.x_ > threshold;
           });

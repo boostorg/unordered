@@ -299,7 +299,7 @@ namespace {
         thread_runner(values, [&x, &mut_visitor](boost::span<T>) {
           std::atomic<std::uint64_t> num_visits{0};
 
-          x.visit_all(std::execution::par_unseq, mut_visitor(num_visits));
+          x.visit_all(std::execution::par, mut_visitor(num_visits));
           BOOST_TEST_EQ(x.size(), num_visits);
         });
       }
@@ -309,7 +309,7 @@ namespace {
           std::atomic<std::uint64_t> num_visits{0};
           auto const& y = x;
 
-          y.visit_all(std::execution::par_unseq, const_visitor(num_visits));
+          y.visit_all(std::execution::par, const_visitor(num_visits));
           BOOST_TEST_EQ(x.size(), num_visits);
         });
       }
@@ -317,7 +317,7 @@ namespace {
       {
         thread_runner(values, [&x, &const_visitor](boost::span<T>) {
           std::atomic<std::uint64_t> num_visits{0};
-          x.cvisit_all(std::execution::par_unseq, const_visitor(num_visits));
+          x.cvisit_all(std::execution::par, const_visitor(num_visits));
           BOOST_TEST_EQ(x.size(), num_visits);
         });
       }
