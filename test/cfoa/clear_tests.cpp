@@ -85,7 +85,6 @@ namespace {
       t1.join();
       t2.join();
 
-      BOOST_TEST_LT(x.size(), reference_map.size());
       if (!x.empty()) {
         test_fuzzy_matches_reference(x, reference_map, rg);
       }

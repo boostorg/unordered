@@ -37,6 +37,8 @@
     boost::unordered::detail::is_invocable<F, value_type const&>::value,       \
     "The provided Callable must be invocable with `value_type const&`");
 
+#if BOOST_CXX_VERSION >= 202002L
+
 #define BOOST_UNORDERED_STATIC_ASSERT_EXEC_POLICY(P)                           \
   static_assert(!std::is_base_of<std::execution::parallel_unsequenced_policy,  \
                   ExecPolicy>::value,                                          \
@@ -44,6 +46,14 @@
   static_assert(                                                               \
     !std::is_base_of<std::execution::unsequenced_policy, ExecPolicy>::value,   \
     "ExecPolicy must be sequenced.");
+
+#else
+
+#define BOOST_UNORDERED_STATIC_ASSERT_EXEC_POLICY(P)                           \
+  static_assert(!std::is_base_of<std::execution::parallel_unsequenced_policy,  \
+                  ExecPolicy>::value,                                          \
+    "ExecPolicy must be sequenced.");
+#endif
 
 #define BOOST_UNORDERED_COMMA ,
 
@@ -675,7 +685,6 @@ namespace boost {
         erase_if(ExecPolicy p, F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_EXEC_POLICY(ExecPolicy)
-        BOOST_UNORDERED_STATIC_ASSERT_EXEC_POLICY(ExecPolicy)
         table_.erase_if(p, f);
       }
 #endif
@@ -707,6 +716,7 @@ namespace boost {
 
 #undef BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE
 #undef BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE
+#undef BOOST_UNORDERED_STATIC_ASSERT_EXEC_POLICY
 #undef BOOST_UNORDERED_COMMA
 #undef BOOST_UNORDERED_LAST_ARG
 #undef BOOST_UNORDERED_STATIC_ASSERT_LAST_ARG_INVOCABLE
