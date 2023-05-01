@@ -184,6 +184,7 @@ local CFOA_TESTS =
   visit_tests
   constructor_tests
   assign_tests
+  clear_tests
 ;
 
 for local test in $(CFOA_TESTS)

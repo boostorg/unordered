@@ -685,6 +685,8 @@ namespace boost {
         return table_.erase_if(f);
       }
 
+      void clear() noexcept { table_.clear(); }
+
       /// Hash Policy
       ///
       void rehash(size_type n) { table_.rehash(n); }
