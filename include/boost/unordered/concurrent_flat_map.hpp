@@ -694,6 +694,13 @@ namespace boost {
         return table_.erase_if(f);
       }
 
+      void swap(concurrent_flat_map& other) noexcept(
+        boost::allocator_is_always_equal<Allocator>::type::value ||
+        boost::allocator_propagate_on_container_swap<Allocator>::type::value)
+      {
+        return table_.swap(other.table_);
+      }
+
       void clear() noexcept { table_.clear(); }
 
       /// Hash Policy

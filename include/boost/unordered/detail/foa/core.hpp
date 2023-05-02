@@ -1447,8 +1447,8 @@ public:
     swap(h(),x.h());
     swap(pred(),x.pred());
     swap(arrays,x.arrays);
-    swap(ml,x.ml);
-    swap(size_,x.size_);
+    swap_size_impl(ml,x.ml);
+    swap_size_impl(size_,x.size_);
   }
 
   void clear()noexcept
