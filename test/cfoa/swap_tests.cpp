@@ -191,6 +191,7 @@ namespace {
           if (idx % 100 == 0) {
             cv.notify_all();
           }
+          std::this_thread::yield();
         }
 
         done1 = true;
@@ -201,6 +202,7 @@ namespace {
 
         for (auto const& val : vals2) {
           x2.insert(val);
+          std::this_thread::yield();
         }
 
         done2 = true;
@@ -214,6 +216,7 @@ namespace {
           }
           x1.swap(x2);
           ++num_swaps;
+          std::this_thread::yield();
         } while (!done1 && !done2);
       });
 
