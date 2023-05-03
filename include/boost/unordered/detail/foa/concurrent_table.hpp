@@ -22,6 +22,7 @@
 #include <boost/unordered/detail/foa/tuple_rotate_right.hpp>
 #include <cstddef>
 #include <functional>
+#include <initializer_list>
 #include <memory>
 #include <new>
 #include <type_traits>
