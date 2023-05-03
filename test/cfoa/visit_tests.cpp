@@ -423,6 +423,58 @@ namespace {
     BOOST_TEST_EQ(raii::destructor, 0u);
   }
 
+  template <class X, class G>
+  void insert_and_visit(X*, G gen, test::random_generator rg)
+  {
+    // here we attempt to ensure happens-before and synchronizes-with
+    // the visitation thread essentially chases the insertion one
+    // we double-check unreloated loads/stores to ensure that a store is visible
+    // in the visitation thread
+
+    BOOST_TEST(rg == test::sequential);
+
+    auto const values = make_random_values(1024 * 16, [&] { return gen(rg); });
+
+    {
+      raii::reset_counts();
+
+      X x;
+
+      std::thread t1, t2;
+      boost::latch l(2);
+      std::vector<std::string> strs(values.size());
+
+      t1 = std::thread([&l, &values, &x, &strs] {
+        l.arrive_and_wait();
+        for (std::size_t idx = 0; idx < values.size(); ++idx) {
+          strs[idx] = "rawr";
+          auto const& val = values[idx];
+          x.insert(val);
+        }
+      });
+
+      t2 = std::thread([&l, &values, &x, &strs] {
+        l.arrive_and_wait();
+
+        for (std::size_t idx = 0; idx < values.size(); ++idx) {
+          std::atomic_bool b{false};
+          while (!b) {
+            x.cvisit(values[idx].first,
+              [&b, &strs, idx, &values](typename X::value_type const& v) {
+                BOOST_TEST_EQ(v.second, values[idx].second);
+                BOOST_TEST_EQ(strs[idx], "rawr");
+                b = true;
+              });
+          }
+        }
+      });
+
+      t1.join();
+      t2.join();
+    }
+    check_raii_counts();
+  }
+
   boost::unordered::concurrent_flat_map<raii, raii>* map;
   boost::unordered::concurrent_flat_map<raii, raii, transp_hash,
     transp_key_equal>* transp_map;
@@ -454,6 +506,13 @@ UNORDERED_TEST(
   ((map)(transp_map))
   ((value_type_generator)(init_type_generator))
   ((default_generator)(sequential)(limited_range))
+)
+
+UNORDERED_TEST(
+  insert_and_visit,
+  ((map))
+  ((value_type_generator))
+  ((sequential))
 )
 
 // clang-format on
