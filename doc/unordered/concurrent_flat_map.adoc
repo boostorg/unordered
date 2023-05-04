@@ -214,39 +214,39 @@ namespace boost {
            class Pred = std::equal_to<xref:#concurrent_flat_map_iter_key_type[__iter-key-type__]<InputIterator>>,
            class Allocator = std::allocator<xref:#concurrent_flat_map_iter_to_alloc_type[__iter-to-alloc-type__]<InputIterator>>>
     concurrent_flat_map(InputIterator, InputIterator, typename xref:#concurrent_flat_map_deduction_guides[__see below__]::size_type = xref:#concurrent_flat_map_deduction_guides[__see below__],
-                       Hash = Hash(), Pred = Pred(), Allocator = Allocator())
+                        Hash = Hash(), Pred = Pred(), Allocator = Allocator())
       -> concurrent_flat_map<xref:#concurrent_flat_map_iter_key_type[__iter-key-type__]<InputIterator>, xref:#concurrent_flat_map_iter_mapped_type[__iter-mapped-type__]<InputIterator>, Hash,
-                            Pred, Allocator>;
+                             Pred, Allocator>;
 
   template<class Key, class T, class Hash = boost::hash<Key>,
            class Pred = std::equal_to<Key>,
            class Allocator = std::allocator<std::pair<const Key, T>>>
     concurrent_flat_map(std::initializer_list<std::pair<Key, T>>,
-                       typename xref:#concurrent_flat_map_deduction_guides[__see below__]::size_type = xref:#concurrent_flat_map_deduction_guides[__see below__], Hash = Hash(),
-                       Pred = Pred(), Allocator = Allocator())
+                        typename xref:#concurrent_flat_map_deduction_guides[__see below__]::size_type = xref:#concurrent_flat_map_deduction_guides[__see below__], Hash = Hash(),
+                        Pred = Pred(), Allocator = Allocator())
       -> concurrent_flat_map<Key, T, Hash, Pred, Allocator>;
 
   template<class InputIterator, class Allocator>
     concurrent_flat_map(InputIterator, InputIterator, typename xref:#concurrent_flat_map_deduction_guides[__see below__]::size_type, Allocator)
       -> concurrent_flat_map<xref:#concurrent_flat_map_iter_key_type[__iter-key-type__]<InputIterator>, xref:#concurrent_flat_map_iter_mapped_type[__iter-mapped-type__]<InputIterator>,
-                            boost::hash<xref:#concurrent_flat_map_iter_key_type[__iter-key-type__]<InputIterator>>,
-                            std::equal_to<xref:#concurrent_flat_map_iter_key_type[__iter-key-type__]<InputIterator>>, Allocator>;
+                             boost::hash<xref:#concurrent_flat_map_iter_key_type[__iter-key-type__]<InputIterator>>,
+                             std::equal_to<xref:#concurrent_flat_map_iter_key_type[__iter-key-type__]<InputIterator>>, Allocator>;
 
   template<class InputIterator, class Allocator>
     concurrent_flat_map(InputIterator, InputIterator, Allocator)
       -> concurrent_flat_map<xref:#concurrent_flat_map_iter_key_type[__iter-key-type__]<InputIterator>, xref:#concurrent_flat_map_iter_mapped_type[__iter-mapped-type__]<InputIterator>,
-                            boost::hash<xref:#concurrent_flat_map_iter_key_type[__iter-key-type__]<InputIterator>>,
-                            std::equal_to<xref:#concurrent_flat_map_iter_key_type[__iter-key-type__]<InputIterator>>, Allocator>;
+                             boost::hash<xref:#concurrent_flat_map_iter_key_type[__iter-key-type__]<InputIterator>>,
+                             std::equal_to<xref:#concurrent_flat_map_iter_key_type[__iter-key-type__]<InputIterator>>, Allocator>;
 
   template<class InputIterator, class Hash, class Allocator>
     concurrent_flat_map(InputIterator, InputIterator, typename xref:#concurrent_flat_map_deduction_guides[__see below__]::size_type, Hash,
-                       Allocator)
+                        Allocator)
       -> concurrent_flat_map<xref:#concurrent_flat_map_iter_key_type[__iter-key-type__]<InputIterator>, xref:#concurrent_flat_map_iter_mapped_type[__iter-mapped-type__]<InputIterator>, Hash,
-                            std::equal_to<xref:#concurrent_flat_map_iter_key_type[__iter-key-type__]<InputIterator>>, Allocator>;
+                             std::equal_to<xref:#concurrent_flat_map_iter_key_type[__iter-key-type__]<InputIterator>>, Allocator>;
 
   template<class Key, class T, class Allocator>
     concurrent_flat_map(std::initializer_list<std::pair<Key, T>>, typename xref:#concurrent_flat_map_deduction_guides[__see below__]::size_type,
-                       Allocator)
+                        Allocator)
       -> concurrent_flat_map<Key, T, boost::hash<Key>, std::equal_to<Key>, Allocator>;
 
   template<class Key, class T, class Allocator>
@@ -255,8 +255,17 @@ namespace boost {
 
   template<class Key, class T, class Hash, class Allocator>
     concurrent_flat_map(std::initializer_list<std::pair<Key, T>>, typename xref:#concurrent_flat_map_deduction_guides[__see below__]::size_type,
-                       Hash, Allocator)
+                        Hash, Allocator)
       -> concurrent_flat_map<Key, T, Hash, std::equal_to<Key>, Allocator>;
+
+  // Equality Comparisons
+  template<class Key, class T, class Hash, class Pred, class Alloc>
+    bool xref:#concurrent_flat_map_operator[operator==](const concurrent_flat_map<Key, T, Hash, Pred, Alloc>& x,
+                    const concurrent_flat_map<Key, T, Hash, Pred, Alloc>& y);
+
+  template<class Key, class T, class Hash, class Pred, class Alloc>
+    bool xref:#concurrent_flat_map_operator_2[operator!=](const concurrent_flat_map<Key, T, Hash, Pred, Alloc>& x,
+                    const concurrent_flat_map<Key, T, Hash, Pred, Alloc>& y);
 
   // swap
   template<class Key, class T, class Hash, class Pred, class Alloc>
@@ -1338,6 +1347,38 @@ template<class InputIterator>
     std::add_const_t<std::tuple_element_t<0, xref:#concurrent_map_iter_value_type[__iter-value-type__]<InputIterator>>>,
     std::tuple_element_t<1, xref:#concurrent_map_iter_value_type[__iter-value-type__]<InputIterator>>>; // exposition only
 -----
+
+=== Equality Comparisons
+
+==== operator==
+```c++
+template<class Key, class T, class Hash, class Pred, class Alloc>
+  bool operator==(const concurrent_flat_map<Key, T, Hash, Pred, Alloc>& x,
+                  const concurrent_flat_map<Key, T, Hash, Pred, Alloc>& y);
+```
+
+Returns `true` if `x.size() == y.size()` and for every element in `x`, there is an element in `y` with the same key, with an equal value (using `operator==` to compare the value types).
+
+[horizontal]
+Concurrency:;; Blocking on `x` and `y`.
+Notes:;; Behavior is undefined if the two tables don't have equivalent equality predicates.
+
+---
+
+==== operator!=
+```c++
+template<class Key, class T, class Hash, class Pred, class Alloc>
+  bool operator!=(const concurrent_flat_map<Key, T, Hash, Pred, Alloc>& x,
+                  const concurrent_flat_map<Key, T, Hash, Pred, Alloc>& y);
+```
+
+Returns `false` if `x.size() == y.size()` and for every element in `x`, there is an element in `y` with the same key, with an equal value (using `operator==` to compare the value types).
+
+[horizontal]
+Concurrency:;; Blocking on `x` and `y`.
+Notes:;; Behavior is undefined if the two tables don't have equivalent equality predicates.
+
+---
 
 === Swap
 ```c++
