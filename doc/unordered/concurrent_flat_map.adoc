@@ -903,7 +903,7 @@ template<class InputIterator,class F>
 Equivalent to
 [listing,subs="+macros,+quotes"]
 -----
-  while(first != last) this->xref:#concurrent_flat_map_emplace_or_cvisit[emplace_or_(c)visit](*first++, f);
+  while(first != last) this->xref:#concurrent_flat_map_emplace_or_cvisit[emplace_or_[c\]visit](*first++, f);
 -----
 
 [horizontal]
@@ -920,7 +920,7 @@ template<class F> size_type insert_or_cvisit(std::initializer_list<value_type> i
 Equivalent to
 [listing,subs="+macros,+quotes"]
 -----
-  this->xref:#concurrent_flat_map_insert_iterator_range_or_visit[insert_or(c)visit](il.begin(), il.end(), f);
+  this->xref:#concurrent_flat_map_insert_iterator_range_or_visit[insert_or[c\]visit](il.begin(), il.end(), f);
 -----
 
 [horizontal]
