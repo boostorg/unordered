@@ -97,18 +97,18 @@ namespace boost {
 
 
     // visitation
-    template<class F> std::size_t xref:#concurrent_flat_map_cvisit[visit](const key_type& k, F f);
-    template<class F> std::size_t xref:#concurrent_flat_map_cvisit[visit](const key_type& k, F f) const;
-    template<class F> std::size_t xref:#concurrent_flat_map_cvisit[cvisit](const key_type& k, F f) const;
-    template<class K, class F> std::size_t xref:#concurrent_flat_map_cvisit[visit](const K& k, F f);
-    template<class K, class F> std::size_t xref:#concurrent_flat_map_cvisit[visit](const K& k, F f) const;
-    template<class K, class F> std::size_t xref:#concurrent_flat_map_cvisit[cvisit](const K& k, F f) const;
+    template<class F> size_t xref:#concurrent_flat_map_cvisit[visit](const key_type& k, F f);
+    template<class F> size_t xref:#concurrent_flat_map_cvisit[visit](const key_type& k, F f) const;
+    template<class F> size_t xref:#concurrent_flat_map_cvisit[cvisit](const key_type& k, F f) const;
+    template<class K, class F> size_t xref:#concurrent_flat_map_cvisit[visit](const K& k, F f);
+    template<class K, class F> size_t xref:#concurrent_flat_map_cvisit[visit](const K& k, F f) const;
+    template<class K, class F> size_t xref:#concurrent_flat_map_cvisit[cvisit](const K& k, F f) const;
 
-    template<class F> std::size_t xref:#concurrent_flat_map_cvisit_all[visit_all](F f);
-    template<class F> std::size_t xref:#concurrent_flat_map_cvisit_all[visit_all](F f) const;
-    template<class F> std::size_t xref:#concurrent_flat_map_cvisit_all[cvisit_all](F f) const;
+    template<class F> size_t xref:#concurrent_flat_map_cvisit_all[visit_all](F f);
+    template<class F> size_t xref:#concurrent_flat_map_cvisit_all[visit_all](F f) const;
+    template<class F> size_t xref:#concurrent_flat_map_cvisit_all[cvisit_all](F f) const;
     template<class ExecutionPolicy, class F>
-      void std::size_t xref:#concurrent_flat_map_parallel_cvisit_all[visit_all](ExecutionPolicy&& policy, F f);
+      void xref:#concurrent_flat_map_parallel_cvisit_all[visit_all](ExecutionPolicy&& policy, F f);
     template<class ExecutionPolicy, class F>
       void xref:#concurrent_flat_map_parallel_cvisit_all[visit_all](ExecutionPolicy&& policy, F f) const;
     template<class ExecutionPolicy, class F>
@@ -125,8 +125,8 @@ namespace boost {
     bool xref:#concurrent_flat_map_copy_insert[insert](const init_type& obj);
     bool xref:#concurrent_flat_map_move_insert[insert](value_type&& obj);
     bool xref:#concurrent_flat_map_move_insert[insert](init_type&& obj);
-    template<class InputIterator> void xref:#concurrent_flat_map_insert_iterator_range[insert](InputIterator first, InputIterator last);
-    void xref:#concurrent_flat_map_insert_initializer_list[insert](std::initializer_list<value_type> il);
+    template<class InputIterator> size_type xref:#concurrent_flat_map_insert_iterator_range[insert](InputIterator first, InputIterator last);
+    size_type xref:#concurrent_flat_map_insert_initializer_list[insert](std::initializer_list<value_type> il);
 
     template<class... Args, class F> bool xref:#concurrent_flat_map_emplace_or_cvisit[emplace_or_visit](Args&&... args, F&& f);
     template<class... Args, class F> bool xref:#concurrent_flat_map_emplace_or_cvisit[emplace_or_cvisit](Args&&... args, F&& f);
@@ -139,11 +139,11 @@ namespace boost {
     template<class F> bool xref:#concurrent_flat_map_move_insert_or_cvisit[insert_or_visit](init_type&& obj, F f);
     template<class F> bool xref:#concurrent_flat_map_move_insert_or_cvisit[insert_or_cvisit](init_type&& obj, F f);
     template<class InputIterator,class F>
-      void xref:#concurrent_flat_map_insert_iterator_range_or_visit[insert_or_visit](InputIterator first, InputIterator last, F f);
+      size_type xref:#concurrent_flat_map_insert_iterator_range_or_visit[insert_or_visit](InputIterator first, InputIterator last, F f);
     template<class InputIterator,class F>
-      void xref:#concurrent_flat_map_insert_iterator_range_or_visit[insert_or_cvisit](InputIterator first, InputIterator last, F f);
-    template<class F> void xref:#concurrent_flat_map_insert_initializer_list_or_visit[insert_or_visit](std::initializer_list<value_type> il, F f);
-    template<class F> void xref:#concurrent_flat_map_insert_initializer_list_or_visit[insert_or_cvisit](std::initializer_list<value_type> il, F f);
+      size_type xref:#concurrent_flat_map_insert_iterator_range_or_visit[insert_or_cvisit](InputIterator first, InputIterator last, F f);
+    template<class F> size_type xref:#concurrent_flat_map_insert_initializer_list_or_visit[insert_or_visit](std::initializer_list<value_type> il, F f);
+    template<class F> size_type xref:#concurrent_flat_map_insert_initializer_list_or_visit[insert_or_cvisit](std::initializer_list<value_type> il, F f);
 
     template<class... Args> bool xref:#concurrent_flat_map_try_emplace[try_emplace](const key_type& k, Args&&... args);
     template<class... Args> bool xref:#concurrent_flat_map_try_emplace[try_emplace](key_type&& k, Args&&... args);
@@ -180,9 +180,9 @@ namespace boost {
     void      xref:#concurrent_flat_map_clear[clear]() noexcept;
 
     template<class H2, class P2>
-      void xref:#concurrent_flat_map_merge[merge](concurrent_flat_map<Key, T, H2, P2, Allocator>& source);
+      size_type xref:#concurrent_flat_map_merge[merge](concurrent_flat_map<Key, T, H2, P2, Allocator>& source);
     template<class H2, class P2>
-      void xref:#concurrent_flat_map_merge[merge](concurrent_flat_map<Key, T, H2, P2, Allocator>&& source);
+      size_type xref:#concurrent_flat_map_merge[merge](concurrent_flat_map<Key, T, H2, P2, Allocator>&& source);
 
     // observers
     hasher xref:#concurrent_flat_map_hash_function[hash_function]() const;
@@ -651,12 +651,12 @@ Concurrency:;; Blocking on `*this`.
 ==== [c]visit
 
 ```c++
-template<class F> std::size_t visit(const key_type& k, F f);
-template<class F> std::size_t visit(const key_type& k, F f) const;
-template<class F> std::size_t cvisit(const key_type& k, F f) const;
-template<class K, class F> std::size_t visit(const K& k, F f);
-template<class K, class F> std::size_t visit(const K& k, F f) const;
-template<class K, class F> std::size_t cvisit(const K& k, F f) const;
+template<class F> size_t visit(const key_type& k, F f);
+template<class F> size_t visit(const key_type& k, F f) const;
+template<class F> size_t cvisit(const key_type& k, F f) const;
+template<class K, class F> size_t visit(const K& k, F f);
+template<class K, class F> size_t visit(const K& k, F f) const;
+template<class K, class F> size_t cvisit(const K& k, F f) const;
 ```
 
 If an element `x` exists with key equivalent to `k`, invokes `f` with a reference to `x`.
@@ -671,9 +671,9 @@ Notes:;; The `template <class K, class F>` overloads only participate in overloa
 ==== [c]visit_all
 
 ```c++
-template<class F> std::size_t visit_all(F f);
-template<class F> std::size_t visit_all(F f) const;
-template<class F> std::size_t cvisit_all(F f) const;
+template<class F> size_t visit_all(F f);
+template<class F> size_t visit_all(F f) const;
+template<class F> size_t cvisit_all(F f) const;
 ```
 
 Successively invokes `f` with references to each of the elements in the table.
@@ -799,7 +799,7 @@ A call of the form `insert(x)`, where `x` is equally convertible to both `value_
 
 ==== Insert Iterator Range
 ```c++
-template<class InputIterator> void insert(InputIterator first, InputIterator last);
+template<class InputIterator> size_type insert(InputIterator first, InputIterator last);
 ```
 
 Equivalent to
@@ -808,11 +808,14 @@ Equivalent to
   while(first != last) this->xref:#concurrent_flat_map_emplace[emplace](*first++);
 -----
 
+[horizontal]
+Returns:;; The number of elements inserted. 
+
 ---
 
 ==== Insert Initializer List
 ```c++
-void insert(std::initializer_list<value_type> il);
+size_type insert(std::initializer_list<value_type> il);
 ```
 
 Equivalent to
@@ -820,6 +823,9 @@ Equivalent to
 -----
   this->xref:#concurrent_flat_map_insert_iterator_range[insert](il.begin(), il.end());
 -----
+
+[horizontal]
+Returns:;; The number of elements inserted. 
 
 ---
 
@@ -889,9 +895,9 @@ only if `std::remove_reference<decltype(obj)>::type` is `value_type`.
 ==== Insert Iterator Range or Visit
 ```c++
 template<class InputIterator,class F>
-    void insert_or_visit(InputIterator first, InputIterator last, F f);
+    size_type insert_or_visit(InputIterator first, InputIterator last, F f);
 template<class InputIterator,class F>
-    void insert_or_cvisit(InputIterator first, InputIterator last, F f);
+    size_type insert_or_cvisit(InputIterator first, InputIterator last, F f);
 ```
 
 Equivalent to
@@ -900,12 +906,15 @@ Equivalent to
   while(first != last) this->xref:#concurrent_flat_map_emplace_or_cvisit[emplace_or_(c)visit](*first++, f);
 -----
 
+[horizontal]
+Returns:;; The number of elements inserted. 
+
 ---
 
 ==== Insert Initializer List or Visit
 ```c++
-template<class F> void insert_or_visit(std::initializer_list<value_type> il, F f);
-template<class F> void insert_or_cvisit(std::initializer_list<value_type> il, F f);
+template<class F> size_type insert_or_visit(std::initializer_list<value_type> il, F f);
+template<class F> size_type insert_or_cvisit(std::initializer_list<value_type> il, F f);
 ```
 
 Equivalent to
@@ -913,6 +922,9 @@ Equivalent to
 -----
   this->xref:#concurrent_flat_map_insert_iterator_range_or_visit[insert_or(c)visit](il.begin(), il.end(), f);
 -----
+
+[horizontal]
+Returns:;; The number of elements inserted. 
 
 ---
 
@@ -1131,14 +1143,15 @@ Concurrency:;; Blocking on `*this`.
 ==== merge
 ```c++
 template<class H2, class P2>
-  void merge(concurrent_flat_map<Key, T, H2, P2, Allocator>& source);
+  size_type merge(concurrent_flat_map<Key, T, H2, P2, Allocator>& source);
 template<class H2, class P2>
-  void merge(concurrent_flat_map<Key, T, H2, P2, Allocator>&& source);
+  size_type merge(concurrent_flat_map<Key, T, H2, P2, Allocator>&& source);
 ```
 
 Move-inserts all the elements from `source` whose key is not already present in `*this`, and erases them from `source`.
 
 [horizontal]
+Returns:;; The number of elements inserted.
 Concurrency:;; Blocking on `*this` and `source`.
 
 ---
