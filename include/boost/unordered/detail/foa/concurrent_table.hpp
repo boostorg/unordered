@@ -414,9 +414,7 @@ public:
   concurrent_table& operator=(std::initializer_list<value_type> il) {
     auto lck=exclusive_access();
     super::clear();
-    if (super::capacity()<il.size()) {
-      super::reserve(il.size());
-    }
+    super::noshrink_reserve(il.size());
     for (auto const& v : il) {
       this->unprotected_emplace(v);
     }

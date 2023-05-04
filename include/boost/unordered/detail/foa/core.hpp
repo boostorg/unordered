@@ -1642,6 +1642,24 @@ public:
     return it;
   }
 
+  void noshrink_reserve(std::size_t n)
+  {
+    /* used only on assignment after element clearance */
+    BOOST_ASSERT(empty());
+
+    if(n){
+      n=std::size_t(std::ceil(float(n)/mlf)); /* elements -> slots */
+      n=capacity_for(n); /* exact resulting capacity */
+
+      if(n>capacity()){
+        auto new_arrays_=new_arrays(n);
+        delete_arrays(arrays);
+        arrays=new_arrays_;
+        ml=initial_max_load();
+      }
+    }
+  }
+
   template<typename F>
   void for_all_elements(F f)const
   {
@@ -1945,24 +1963,6 @@ private:
     delete_arrays(arrays);
     arrays=new_arrays_;
     ml=initial_max_load();
-  }
-
-  void noshrink_reserve(std::size_t n)
-  {
-    /* used only on assignment after element clearance */
-    BOOST_ASSERT(empty());
-
-    if(n){
-      n=std::size_t(std::ceil(float(n)/mlf)); /* elements -> slots */
-      n=capacity_for(n); /* exact resulting capacity */
-
-      if(n>capacity()){
-        auto new_arrays_=new_arrays(n);
-        delete_arrays(arrays);
-        arrays=new_arrays_;
-        ml=initial_max_load();
-      }
-    }
   }
 
   template<typename Value>
