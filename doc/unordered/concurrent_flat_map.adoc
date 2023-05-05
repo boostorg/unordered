@@ -336,7 +336,7 @@ are required to not introduce data races:
 * `std::allocator_traits<Alloc>::allocate`
 * `std::allocator_traits<Alloc>::deallocate`
 * `std::allocator_traits<Alloc>::construct`
-* `std::allocator_traits<Alloc>::destruct`
+* `std::allocator_traits<Alloc>::destroy`
 
 In general, these requirements on `Hash`, `Pred` and `Allocator` are met if these types
 are not stateful or if the operations only involve constant access to internal data members.
