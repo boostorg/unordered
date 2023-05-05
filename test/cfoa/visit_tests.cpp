@@ -107,6 +107,45 @@ namespace {
         num_visits = 0;
         total_count = 0;
       }
+
+      {
+        thread_runner(values, [&x, &total_count](boost::span<T> s) {
+          for (auto const& val : s) {
+            auto r = val.first.x_;
+            BOOST_TEST(r >= 0);
+
+            auto count = x.count(val.first);
+            BOOST_TEST_EQ(count, 1u);
+            total_count += count;
+
+            count = x.count(val.second);
+            BOOST_TEST_EQ(count, 0u);
+          }
+        });
+
+        BOOST_TEST_EQ(total_count, values.size());
+
+        num_visits = 0;
+        total_count = 0;
+      }
+
+      {
+        thread_runner(values, [&x](boost::span<T> s) {
+          for (auto const& val : s) {
+            auto r = val.first.x_;
+            BOOST_TEST(r >= 0);
+
+            auto contains = x.contains(val.first);
+            BOOST_TEST(contains);
+
+            contains = x.contains(val.second);
+            BOOST_TEST(!contains);
+          }
+        });
+
+        num_visits = 0;
+        total_count = 0;
+      }
     }
   } lvalue_visitor;
 
@@ -200,6 +239,45 @@ namespace {
 
         BOOST_TEST_EQ(num_visits, values.size());
         BOOST_TEST_EQ(total_count, values.size());
+
+        num_visits = 0;
+        total_count = 0;
+      }
+
+      {
+        thread_runner(values, [&x, &total_count](boost::span<T> s) {
+          for (auto const& val : s) {
+            auto r = val.first.x_;
+            BOOST_TEST(r >= 0);
+
+            auto count = x.count(val.first.x_);
+            BOOST_TEST_EQ(count, 1u);
+            total_count += count;
+
+            count = x.count(val.second.x_);
+            BOOST_TEST_EQ(count, 0u);
+          }
+        });
+
+        BOOST_TEST_EQ(total_count, values.size());
+
+        num_visits = 0;
+        total_count = 0;
+      }
+
+      {
+        thread_runner(values, [&x](boost::span<T> s) {
+          for (auto const& val : s) {
+            auto r = val.first.x_;
+            BOOST_TEST(r >= 0);
+
+            auto contains = x.contains(val.first.x_);
+            BOOST_TEST(contains);
+
+            contains = x.contains(val.second.x_);
+            BOOST_TEST(!contains);
+          }
+        });
 
         num_visits = 0;
         total_count = 0;
@@ -342,6 +420,7 @@ namespace {
 
     auto reference_map =
       boost::unordered_flat_map<raii, raii>(values.begin(), values.end());
+
     raii::reset_counts();
 
     {

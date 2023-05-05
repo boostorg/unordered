@@ -720,6 +720,26 @@ namespace boost {
         return merge(x);
       }
 
+      size_type count(key_type const& k) const { return table_.count(k); }
+
+      template <class K>
+      typename std::enable_if<
+        detail::are_transparent<K, hasher, key_equal>::value, size_type>::type
+      count(K const& k)
+      {
+        return table_.count(k);
+      }
+
+      bool contains(key_type const& k) const { return table_.contains(k); }
+
+      template <class K>
+      typename std::enable_if<
+        detail::are_transparent<K, hasher, key_equal>::value, bool>::type
+      contains(K const& k) const
+      {
+        return table_.contains(k);
+      }
+
       /// Hash Policy
       ///
       void rehash(size_type n) { table_.rehash(n); }
