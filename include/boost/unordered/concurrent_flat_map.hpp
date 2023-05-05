@@ -306,21 +306,21 @@ namespace boost {
       }
 
       template <class F>
-      BOOST_FORCEINLINE std::size_t visit(key_type const& k, F f)
+      BOOST_FORCEINLINE size_type visit(key_type const& k, F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
         return table_.visit(k, f);
       }
 
       template <class F>
-      BOOST_FORCEINLINE std::size_t visit(key_type const& k, F f) const
+      BOOST_FORCEINLINE size_type visit(key_type const& k, F f) const
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         return table_.visit(k, f);
       }
 
       template <class F>
-      BOOST_FORCEINLINE std::size_t cvisit(key_type const& k, F f) const
+      BOOST_FORCEINLINE size_type cvisit(key_type const& k, F f) const
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         return table_.visit(k, f);
@@ -328,7 +328,7 @@ namespace boost {
 
       template <class K, class F>
       BOOST_FORCEINLINE typename std::enable_if<
-        detail::are_transparent<K, hasher, key_equal>::value, std::size_t>::type
+        detail::are_transparent<K, hasher, key_equal>::value, size_type>::type
       visit(K&& k, F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
@@ -337,7 +337,7 @@ namespace boost {
 
       template <class K, class F>
       BOOST_FORCEINLINE typename std::enable_if<
-        detail::are_transparent<K, hasher, key_equal>::value, std::size_t>::type
+        detail::are_transparent<K, hasher, key_equal>::value, size_type>::type
       visit(K&& k, F f) const
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
@@ -346,26 +346,26 @@ namespace boost {
 
       template <class K, class F>
       BOOST_FORCEINLINE typename std::enable_if<
-        detail::are_transparent<K, hasher, key_equal>::value, std::size_t>::type
+        detail::are_transparent<K, hasher, key_equal>::value, size_type>::type
       cvisit(K&& k, F f) const
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         return table_.visit(std::forward<K>(k), f);
       }
 
-      template <class F> BOOST_FORCEINLINE std::size_t visit_all(F f)
+      template <class F> BOOST_FORCEINLINE size_type visit_all(F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
         return table_.visit_all(f);
       }
 
-      template <class F> BOOST_FORCEINLINE std::size_t visit_all(F f) const
+      template <class F> BOOST_FORCEINLINE size_type visit_all(F f) const
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         return table_.visit_all(f);
       }
 
-      template <class F> BOOST_FORCEINLINE std::size_t cvisit_all(F f) const
+      template <class F> BOOST_FORCEINLINE size_type cvisit_all(F f) const
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         return table_.cvisit_all(f);
