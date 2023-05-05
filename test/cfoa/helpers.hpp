@@ -258,6 +258,16 @@ std::size_t hash_value(raii const& r) noexcept
   return hasher(r.x_);
 }
 
+namespace std {
+  template <> struct hash<raii>
+  {
+    std::size_t operator()(raii const& r) const noexcept
+    {
+      return hash_value(r);
+    }
+  };
+} // namespace std
+
 template <class F>
 auto make_random_values(std::size_t count, F f) -> std::vector<decltype(f())>
 {

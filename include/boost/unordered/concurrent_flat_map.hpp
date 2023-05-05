@@ -140,6 +140,10 @@ namespace boost {
     class concurrent_flat_map
     {
     private:
+      template <class Key2, class T2, class Hash2, class Pred2,
+        class Allocator2>
+      friend class concurrent_flat_map;
+
       using type_policy = detail::concurrent_map_types<Key, T>;
 
       detail::foa::concurrent_table<type_policy, Hash, Pred, Allocator> table_;
@@ -702,6 +706,19 @@ namespace boost {
       }
 
       void clear() noexcept { table_.clear(); }
+
+      template <typename H2, typename P2>
+      size_type merge(concurrent_flat_map<Key, T, H2, P2, Allocator>& x)
+      {
+        BOOST_ASSERT(get_allocator() == x.get_allocator());
+        return table_.merge(x.table_);
+      }
+
+      template <typename H2, typename P2>
+      size_type merge(concurrent_flat_map<Key, T, H2, P2, Allocator>&& x)
+      {
+        return merge(x);
+      }
 
       /// Hash Policy
       ///

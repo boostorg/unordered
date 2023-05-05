@@ -362,6 +362,10 @@ class concurrent_table:
   using super::N;
   using prober=typename super::prober;
 
+  template<
+    typename TypePolicy2,typename Hash2,typename Pred2,typename Allocator2>
+  friend class concurrent_table;
+
 public:
   using key_type=typename super::key_type;
   using init_type=typename super::init_type;
@@ -683,14 +687,19 @@ public:
 
   // TODO: should we accept different allocator too?
   template<typename Hash2,typename Pred2>
-  void merge(concurrent_table<TypePolicy,Hash2,Pred2,Allocator>& x)
+  size_type merge(concurrent_table<TypePolicy,Hash2,Pred2,Allocator>& x)
   {
-    auto lck=exclusive_access(*this,x);
-    x.super::for_all_elements( /* super::for_all_elements -> unprotected */
+    using merge_table_type=concurrent_table<TypePolicy,Hash2,Pred2,Allocator>;
+    using super2=typename merge_table_type::super;
+
+    auto      lck=exclusive_access(*this,x);
+    size_type s=unprotected_size();
+    static_cast<super2&>(x).for_all_elements( /* super::for_all_elements -> unprotected */
       [&,this](group_type* pg,unsigned int n,element_type* p){
-        erase_on_exit e{x,pg,n,p};
+        erase_on_exit<merge_table_type> e{x,pg,n,p};
         if(!unprotected_emplace(type_policy::move(*p)))e.rollback();
       });
+    return size_type{unprotected_size()-s};
   }
 
   template<typename Hash2,typename Pred2>
@@ -799,6 +808,14 @@ private:
     return {x.mutexes,y.mutexes};
   }
 
+  template<typename Hash2,typename Pred2>
+  inline exclusive_bilock_guard exclusive_access(
+    const concurrent_table& x,
+    const concurrent_table<TypePolicy,Hash2,Pred2,Allocator>& y)
+  {
+    return {x.mutexes,y.mutexes};
+  }
+
   /* Tag-dispatched shared/exclusive group access */
 
   using group_shared=std::false_type;
@@ -835,21 +852,29 @@ private:
   >::type
   cast_for(group_exclusive,value_type& x){return x;}
 
+  template<typename Table>
   struct erase_on_exit
   {
+    using table_group_type=typename Table::group_type;
+    using table_element_type=typename Table::element_type;
+    using table_super_type=typename Table::super;
+
     erase_on_exit(
-      concurrent_table& x_,
-      group_type* pg_,unsigned int pos_,element_type* p_):
+      Table& x_,table_group_type* pg_,unsigned int pos_,table_element_type* p_):
       x{x_},pg{pg_},pos{pos_},p{p_}{}
-    ~erase_on_exit(){if(!rollback_)x.super::erase(pg,pos,p);}
+    ~erase_on_exit()
+    {
+      if(!rollback_)
+        static_cast<table_super_type&>(x).erase(pg,pos,p);
+    }
 
     void rollback(){rollback_=true;}
 
-    concurrent_table &x;
-    group_type       *pg;
-    unsigned  int     pos;
-    element_type     *p;
-    bool              rollback_=false;
+    Table              &x;
+    table_group_type   *pg;
+    unsigned  int       pos;
+    table_element_type *p;
+    bool                rollback_=false;
   };
 
   template<typename GroupAccessMode,typename Key,typename F>
