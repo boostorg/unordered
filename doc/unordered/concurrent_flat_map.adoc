@@ -325,7 +325,7 @@ at the expense of extra computational cost.
 
 ---
 
-=== Concurrency requirements and guarantees
+=== Concurrency Requirements and Guarantees
 
 Concurrent invocations of `operator()` on the same const instance of `Hash` or `Pred` are required
 to not introduce data races. For `Alloc` being either `Allocator` or any allocator type rebound
@@ -1203,7 +1203,7 @@ Returns:;; The table's key equality predicate.
 
 ---
 
-=== Map operations
+=== Map Operations
 
 ==== count
 ```c++
