@@ -354,8 +354,10 @@ only when an internal rehashing is issued.
 Access or modification of an element of a `boost::concurrent_flat_map` passed by reference to a
 user-provided visitation function do not introduce data races when the visitation function
 is executed internally by the `boost::concurrent_flat_map`.
+
 Any `boost::concurrent_flat_map operation` that inserts or modifies an element `e`
 synchronizes with the internal invocation of a visitation function on `e`.
+
 Visitation functions executed by a `boost::concurrent_flat_map` `x` are not allowed to invoke any operation
 on `x`; invoking operations on a different `boost::concurrent_flat_map` instance `y` is allowed only
 if concurrent outstanding operations on `y` do not access `x` directly or indirectly.
