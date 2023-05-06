@@ -730,7 +730,7 @@ public:
   template<typename Key>
   BOOST_FORCEINLINE bool contains(Key&& x)const
   {
-    return visit(std::forward<Key>(x),[](const value_type&){});
+    return visit(std::forward<Key>(x),[](const value_type&){})!=0;
   }
 
   std::size_t capacity()const noexcept
