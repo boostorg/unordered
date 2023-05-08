@@ -216,3 +216,13 @@ for more details.
 
 There are other differences, which are listed in the
 <<comparison,Comparison with Associative Containers>> section.
+
+== A concurrent hashmap
+
+Starting in Boost 1.83, Boost.Unordered provides `boost::concurrent_flat_map`,
+a thread-safe hash table for high performance multithreaded scenarios. Although
+it shares the internal data structure and most of the algorithms with Boost.Unordered
+open-addressing `boost::unordered_flat_map`, ``boost::concurrent_flat_map``'s API departs significantly
+from that of C++ unordered associative containers to make this table suitable for
+concurrent usage. Consult the xref:#concurrent_flat_map_intro[dedicated tutorial]
+for more information.
