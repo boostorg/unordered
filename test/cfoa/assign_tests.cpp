@@ -18,6 +18,11 @@
 
 #endif /* defined(__clang__) && defined(__has_warning) */
 
+#if defined(BOOST_GCC) && BOOST_GCC >= 130000
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wself-move"
+#endif
+
 test::seed_t initialize_seed{2762556623};
 
 using test::default_generator;
