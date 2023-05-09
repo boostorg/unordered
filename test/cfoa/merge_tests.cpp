@@ -106,26 +106,38 @@ namespace {
       std::condition_variable cv;
       std::atomic_bool done1{false}, done2{false};
       std::atomic<unsigned long long> num_merges{0};
+      std::atomic<unsigned long long> call_count{0};
+      bool ready = false;
 
       auto const old_mc = +raii::move_constructor;
       BOOST_TEST_EQ(old_mc, 0u);
 
-      t1 = std::thread([&x1, &vals1, &l, &done1, &cv] {
+      t1 = std::thread([&x1, &vals1, &l, &done1, &cv, &ready, &m] {
         l.arrive_and_wait();
 
         for (std::size_t idx = 0; idx < vals1.size(); ++idx) {
           auto const& val = vals1[idx];
           x1.insert(val);
-          if (idx % 100 == 0) {
+
+          if (idx % (vals1.size() / 128) == 0) {
+            {
+              std::unique_lock<std::mutex> lk(m);
+              ready = true;
+            }
             cv.notify_all();
             std::this_thread::yield();
           }
         }
 
         done1 = true;
+        {
+          std::unique_lock<std::mutex> lk(m);
+          ready = true;
+        }
+        cv.notify_all();
       });
 
-      t2 = std::thread([&x2, &vals2, &l, &done2] {
+      t2 = std::thread([&x2, &vals2, &l, &done2, &cv, &m, &ready] {
         l.arrive_and_wait();
 
         for (std::size_t idx = 0; idx < vals2.size(); ++idx) {
@@ -137,26 +149,36 @@ namespace {
         }
 
         done2 = true;
-      });
-
-      t3 = std::thread([&x1, &x2, &m, &cv, &done1, &done2, &num_merges] {
-        while (x1.empty() && x2.empty()) {
+        {
+          std::unique_lock<std::mutex> lk(m);
+          ready = true;
         }
-
-        do {
-          {
-            std::unique_lock<std::mutex> lk(m);
-            cv.wait(lk, [] { return true; });
-          }
-          num_merges += x1.merge(x2);
-          std::this_thread::yield();
-          num_merges += x2.merge(x1);
-
-        } while (!done1 || !done2);
-
-        BOOST_TEST(done1);
-        BOOST_TEST(done2);
+        cv.notify_all();
       });
+
+      t3 = std::thread(
+        [&x1, &x2, &m, &cv, &done1, &done2, &num_merges, &call_count, &ready] {
+          while (x1.empty() && x2.empty()) {
+          }
+
+          do {
+            {
+              std::unique_lock<std::mutex> lk(m);
+              cv.wait(lk, [&ready] { return ready; });
+              ready = false;
+            }
+
+            num_merges += x1.merge(x2);
+            std::this_thread::yield();
+            num_merges += x2.merge(x1);
+
+            call_count += 1;
+
+          } while (!done1 || !done2);
+
+          BOOST_TEST(done1);
+          BOOST_TEST(done2);
+        });
 
       t1.join();
       t2.join();
@@ -166,6 +188,7 @@ namespace {
         // num merges is 0 most commonly in the cast of the limited_range
         // generator as both maps will contains keys from 0 to 99
         BOOST_TEST_EQ(+raii::move_constructor, 2 * num_merges);
+        BOOST_TEST_GE(call_count, 1u);
       }
 
       x1.merge(x2);
