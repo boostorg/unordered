@@ -73,9 +73,10 @@ m.visit(k, [](const auto& x) { // x is the element with key k (if it exists)
 
 The visitation function passed by the user (in this case, a lambda function)
 is executed internally by `boost::concurrent_flat_map` in
-a thread-safe manner, so it can access the element without worries about other
-threads interfering in the process. On the other hand, a
-visitation function can _not_ access the container itself:
+a thread-safe manner, so it can access the element without worrying about other
+threads interfering in the process.
+
+On the other hand, a visitation function can _not_ access the container itself:
 
 [source,c++]
 ----
@@ -110,7 +111,7 @@ if (found) {
 }
 ----
 
-Visitation is pervasive in the API provided by `boost::concurrent_flat_map`, and
+Visitation is prominent in the API provided by `boost::concurrent_flat_map`, and
 many classical operations have visitation-enabled variations:
 
 [source,c++]
