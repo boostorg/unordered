@@ -742,6 +742,18 @@ namespace boost {
 
       /// Hash Policy
       ///
+      size_type bucket_count() const noexcept { 
+        return table_.capacity();
+      }
+
+      float load_factor() const noexcept { return table_.load_factor(); }
+      float max_load_factor() const noexcept
+      {
+        return table_.max_load_factor();
+      };
+      void max_load_factor(float) {}
+      size_type max_load() const noexcept { return table_.max_load(); }
+
       void rehash(size_type n) { table_.rehash(n); }
       void reserve(size_type n) { table_.reserve(n); }
 

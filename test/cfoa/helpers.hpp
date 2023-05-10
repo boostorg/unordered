@@ -16,6 +16,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cmath>
 #include <condition_variable>
 #include <cstddef>
 #include <iostream>
@@ -398,7 +399,7 @@ void check_raii_counts()
     raii::destructor);
 }
 
-template <class T> void shuffle_values(std::vector<T> v)
+template <class T> void shuffle_values(std::vector<T>& v)
 {
   std::random_device rd;
   std::mt19937 g(rd());
