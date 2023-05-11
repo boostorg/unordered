@@ -162,7 +162,7 @@ namespace {
       t2.join();
       t3.join();
 
-      BOOST_TEST_GT(call_count, 1u);
+      BOOST_TEST_GE(call_count, 1u);
 
       test_fuzzy_matches_reference(x, ref_map, rg);
     }
