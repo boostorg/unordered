@@ -149,8 +149,7 @@ namespace boost {
       detail::foa::concurrent_table<type_policy, Hash, Pred, Allocator> table_;
 
       template <class K, class V, class H, class KE, class A>
-      bool friend operator==(
-        concurrent_flat_map<K, V, H, KE, A> const& lhs,
+      bool friend operator==(concurrent_flat_map<K, V, H, KE, A> const& lhs,
         concurrent_flat_map<K, V, H, KE, A> const& rhs);
 
     public:
@@ -747,9 +746,7 @@ namespace boost {
 
       /// Hash Policy
       ///
-      size_type bucket_count() const noexcept { 
-        return table_.capacity();
-      }
+      size_type bucket_count() const noexcept { return table_.capacity(); }
 
       float load_factor() const noexcept { return table_.load_factor(); }
       float max_load_factor() const noexcept
@@ -788,7 +785,16 @@ namespace boost {
     {
       return !(lhs == rhs);
     }
+
+    template <class Key, class T, class Hash, class Pred, class Alloc>
+    void swap(concurrent_flat_map<Key, T, Hash, Pred, Alloc>& x,
+      concurrent_flat_map<Key, T, Hash, Pred, Alloc>& y)
+      noexcept(noexcept(x.swap(y)))
+    {
+      x.swap(y);
+    }
   } // namespace unordered
+
 } // namespace boost
 
 #undef BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE

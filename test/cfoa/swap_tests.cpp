@@ -83,8 +83,22 @@ BOOST_STATIC_ASSERT(is_nothrow_member_swappable<pocs_map_type>::value);
 BOOST_STATIC_ASSERT(!is_nothrow_member_swappable<map_type>::value);
 
 namespace {
-  template <class X, class G>
-  void swap_tests(X*, G gen, test::random_generator rg)
+  struct
+  {
+    template <class T> void operator()(T& x1, T& x2) const { x1.swap(x2); }
+  } member_fn_swap;
+
+  struct
+  {
+    template <class T> void operator()(T& x1, T& x2) const
+    {
+      using boost::unordered::swap;
+      swap(x1, x2);
+    }
+  } free_fn_swap;
+
+  template <class X, class F, class G>
+  void swap_tests(X*, F swapper, G gen, test::random_generator rg)
   {
     using allocator = typename X::allocator_type;
 
@@ -118,11 +132,11 @@ namespace {
       auto const old_cc = +raii::copy_constructor;
       auto const old_mc = +raii::move_constructor;
 
-      thread_runner(vals1, [&x1, &x2](boost::span<map_value_type> s) {
+      thread_runner(vals1, [&x1, &x2, swapper](boost::span<map_value_type> s) {
         (void)s;
 
-        x1.swap(x2);
-        x2.swap(x1);
+        swapper(x1, x2);
+        swapper(x2, x1);
       });
 
       BOOST_TEST_EQ(raii::copy_constructor, old_cc);
@@ -163,7 +177,8 @@ namespace {
     check_raii_counts();
   }
 
-  template <class G> void insert_and_swap(G gen, test::random_generator rg)
+  template <class F, class G>
+  void insert_and_swap(F swapper, G gen, test::random_generator rg)
   {
     auto vals1 = make_random_values(1024 * 8, [&] { return gen(rg); });
     auto vals2 = make_random_values(1024 * 4, [&] { return gen(rg); });
@@ -208,20 +223,21 @@ namespace {
         done2 = true;
       });
 
-      t3 = std::thread([&x1, &x2, &m, &cv, &done1, &done2, &num_swaps] {
-        do {
-          {
-            std::unique_lock<std::mutex> lk(m);
-            cv.wait(lk, [] { return true; });
-          }
-          x1.swap(x2);
-          ++num_swaps;
-          std::this_thread::yield();
-        } while (!done1 || !done2);
+      t3 =
+        std::thread([&x1, &x2, &m, &cv, &done1, &done2, &num_swaps, swapper] {
+          do {
+            {
+              std::unique_lock<std::mutex> lk(m);
+              cv.wait(lk, [] { return true; });
+            }
+            swapper(x1, x2);
+            ++num_swaps;
+            std::this_thread::yield();
+          } while (!done1 || !done2);
 
-        BOOST_TEST(done1);
-        BOOST_TEST(done2);
-      });
+          BOOST_TEST(done1);
+          BOOST_TEST(done2);
+        });
 
       t1.join();
       t2.join();
@@ -258,10 +274,12 @@ namespace {
 UNORDERED_TEST(
   swap_tests,
   ((map)(pocs_map))
+  ((member_fn_swap)(free_fn_swap))
   ((value_type_generator))
   ((default_generator)(sequential)(limited_range)))
 
 UNORDERED_TEST(insert_and_swap,
+  ((member_fn_swap)(free_fn_swap))
   ((value_type_generator))
   ((default_generator)(sequential)(limited_range)))
 // clang-format on
