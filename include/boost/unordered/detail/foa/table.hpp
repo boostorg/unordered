@@ -404,8 +404,7 @@ public:
   template<typename Key>
   BOOST_FORCEINLINE iterator find(const Key& x)
   {
-    auto hash=this->hash_for(x);
-    return find_impl(x,this->position_for(hash),hash);
+    return make_iterator(super::find(x));
   }
 
   template<typename Key>
@@ -440,6 +439,13 @@ public:
     return std::size_t(s-x.size());
   }
 
+  friend bool operator==(const table& x,const table& y)
+  {
+    return static_cast<const super&>(x)==static_cast<const super&>(y);
+  }
+
+  friend bool operator!=(const table& x,const table& y){return !(x==y);}
+
 private:
   struct erase_on_exit
   {
@@ -458,55 +464,16 @@ private:
     return {l.pg,l.n,l.p};
   }
 
-#if defined(BOOST_MSVC)
-/* warning: forcing value to bool 'true' or 'false' in bool(pred()...) */
-#pragma warning(push)
-#pragma warning(disable:4800)
-#endif
-
-  template<typename Key>
-  BOOST_FORCEINLINE iterator find_impl(
-    const Key& x,std::size_t pos0,std::size_t hash)const
-  {    
-    prober pb(pos0);
-    do{
-      auto pos=pb.get();
-      auto pg=this->arrays.groups+pos;
-      auto mask=pg->match(hash);
-      if(mask){
-        BOOST_UNORDERED_ASSUME(this->arrays.elements!=nullptr);
-        auto p=this->arrays.elements+pos*N;
-        this->prefetch_elements(p);
-        do{
-          auto n=unchecked_countr_zero(mask);
-          if(BOOST_LIKELY(bool(this->pred()(x,this->key_from(p[n]))))){
-            return {pg,n,p+n};
-          }
-          mask&=mask-1;
-        }while(mask);
-      }
-      if(BOOST_LIKELY(pg->is_not_overflowed(hash))){
-        return {}; /* end() */
-      }
-    }
-    while(BOOST_LIKELY(pb.next(this->arrays.groups_size_mask)));
-    return {}; /* end() */
-  }
-
-#if defined(BOOST_MSVC)
-#pragma warning(pop) /* C4800 */
-#endif
-
   template<typename... Args>
   BOOST_FORCEINLINE std::pair<iterator,bool> emplace_impl(Args&&... args)
   {
     const auto &k=this->key_from(std::forward<Args>(args)...);
     auto        hash=this->hash_for(k);
     auto        pos0=this->position_for(hash);
-    auto        it=find_impl(k,pos0,hash);
+    auto        loc=super::find(k,pos0,hash);
 
-    if(it!=end()){
-      return {it,false};
+    if(loc){
+      return {make_iterator(loc),false};
     }
     if(BOOST_LIKELY(this->size_<this->ml)){
       return {

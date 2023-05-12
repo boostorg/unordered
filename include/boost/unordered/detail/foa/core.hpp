@@ -1097,9 +1097,14 @@ static constexpr float mlf=0.875f;
 template<typename Group,typename Element>
 struct table_locator
 {
-  Group        *pg;
-  unsigned int  n;
-  Element      *p;
+  table_locator()=default;
+  table_locator(Group* pg_,unsigned int n_,Element* p_):pg{pg_},n{n_},p{p_}{}
+
+  explicit operator bool()const noexcept{return p!=nullptr;}
+
+  Group        *pg=nullptr;
+  unsigned int  n=0;
+  Element      *p=nullptr;
 };
 
 struct try_emplace_args_t{};
@@ -1425,6 +1430,52 @@ public:
     recover_slot(pc);
   }
 
+  template<typename Key>
+  BOOST_FORCEINLINE locator find(const Key& x)const
+  {
+    auto hash=hash_for(x);
+    return find(x,position_for(hash),hash);
+  }
+
+#if defined(BOOST_MSVC)
+/* warning: forcing value to bool 'true' or 'false' in bool(pred()...) */
+#pragma warning(push)
+#pragma warning(disable:4800)
+#endif
+
+  template<typename Key>
+  BOOST_FORCEINLINE locator find(
+    const Key& x,std::size_t pos0,std::size_t hash)const
+  {    
+    prober pb(pos0);
+    do{
+      auto pos=pb.get();
+      auto pg=arrays.groups+pos;
+      auto mask=pg->match(hash);
+      if(mask){
+        BOOST_UNORDERED_ASSUME(arrays.elements!=nullptr);
+        auto p=arrays.elements+pos*N;
+        prefetch_elements(p);
+        do{
+          auto n=unchecked_countr_zero(mask);
+          if(BOOST_LIKELY(bool(pred()(x,key_from(p[n]))))){
+            return {pg,n,p+n};
+          }
+          mask&=mask-1;
+        }while(mask);
+      }
+      if(BOOST_LIKELY(pg->is_not_overflowed(hash))){
+        return {};
+      }
+    }
+    while(BOOST_LIKELY(pb.next(arrays.groups_size_mask)));
+    return {};
+  }
+
+#if defined(BOOST_MSVC)
+#pragma warning(pop) /* C4800 */
+#endif
+
   void swap(table_core& x)
     noexcept(
       alloc_traits::propagate_on_container_swap::value||
@@ -1501,6 +1552,23 @@ public:
   void reserve(std::size_t n)
   {
     rehash(std::size_t(std::ceil(float(n)/mlf)));
+  }
+
+  friend bool operator==(const table_core& x,const table_core& y)
+  {
+    return
+      x.size()==y.size()&&
+      x.for_all_elements_while([&](element_type* p){
+        auto loc=y.find(key_from(*p));
+        return loc&&
+          const_cast<const value_type&>(type_policy::value_from(*p))==
+          const_cast<const value_type&>(type_policy::value_from(*loc.p));
+      });
+  }
+
+  friend bool operator!=(const table_core& x,const table_core& y)
+  {
+    return !(x==y);
   }
 
   struct clear_on_exit
@@ -1683,34 +1751,36 @@ public:
   }
 
   template<typename F>
-  void for_all_elements_while(F f)const
+  bool for_all_elements_while(F f)const
   {
-    for_all_elements_while(arrays,f);
+    return for_all_elements_while(arrays,f);
   }
 
   template<typename F>
   static auto for_all_elements_while(const arrays_type& arrays_,F f)
-    ->decltype(f(nullptr),void())
+    ->decltype(f(nullptr),bool())
   {
-    for_all_elements_while(
+    return for_all_elements_while(
       arrays_,[&](group_type*,unsigned int,element_type* p){return f(p);});
   }
 
   template<typename F>
   static auto for_all_elements_while(const arrays_type& arrays_,F f)
-    ->decltype(f(nullptr,0,nullptr),void())
+    ->decltype(f(nullptr,0,nullptr),bool())
   {
     auto p=arrays_.elements;
-    if(!p){return;}
-    for(auto pg=arrays_.groups,last=pg+arrays_.groups_size_mask+1;
-        pg!=last;++pg,p+=N){
-      auto mask=match_really_occupied(pg,last);
-      while(mask){
-        auto n=unchecked_countr_zero(mask);
-        if(!f(pg,n,p+n))return;
-        mask&=mask-1;
+    if(p){
+      for(auto pg=arrays_.groups,last=pg+arrays_.groups_size_mask+1;
+          pg!=last;++pg,p+=N){
+        auto mask=match_really_occupied(pg,last);
+        while(mask){
+          auto n=unchecked_countr_zero(mask);
+          if(!f(pg,n,p+n))return false;
+          mask&=mask-1;
+        }
       }
     }
+    return true;
   }
 
   arrays_type    arrays;

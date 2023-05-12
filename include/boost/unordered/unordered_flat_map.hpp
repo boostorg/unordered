@@ -695,35 +695,26 @@ namespace boost {
       hasher hash_function() const { return table_.hash_function(); }
 
       key_equal key_eq() const { return table_.key_eq(); }
-    };
 
-    template <class Key, class T, class Hash, class KeyEqual, class Allocator>
-    bool operator==(
-      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator> const& lhs,
-      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator> const& rhs)
-    {
-      if (&lhs == &rhs) {
-        return true;
+      /// Equality
+      ///
+      
+      template <class Key, class T, class Hash, class KeyEqual, class Allocator>
+      friend bool operator==(
+        unordered_flat_map<Key, T, Hash, KeyEqual, Allocator> const& lhs,
+        unordered_flat_map<Key, T, Hash, KeyEqual, Allocator> const& rhs)
+      {
+        return lhs.table_ == rhs.table_;
       }
 
-      return (lhs.size() == rhs.size()) && ([&] {
-        for (auto const& kvp : lhs) {
-          auto pos = rhs.find(kvp.first);
-          if ((pos == rhs.end()) || (*pos != kvp)) {
-            return false;
-          }
-        }
-        return true;
-      })();
-    }
-
-    template <class Key, class T, class Hash, class KeyEqual, class Allocator>
-    bool operator!=(
-      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator> const& lhs,
-      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator> const& rhs)
-    {
-      return !(lhs == rhs);
-    }
+      template <class Key, class T, class Hash, class KeyEqual, class Allocator>
+      friend bool operator!=(
+        unordered_flat_map<Key, T, Hash, KeyEqual, Allocator> const& lhs,
+        unordered_flat_map<Key, T, Hash, KeyEqual, Allocator> const& rhs)
+      {
+        return !(lhs == rhs);
+      }
+    };
 
     template <class Key, class T, class Hash, class KeyEqual, class Allocator>
     void swap(unordered_flat_map<Key, T, Hash, KeyEqual, Allocator>& lhs,

@@ -697,13 +697,13 @@ public:
     boost::ignore_unused<super2>();
 
     auto      lck=exclusive_access(*this,x);
-    size_type s=unprotected_size();
+    size_type s=super::size();
     x.super2::for_all_elements( /* super2::for_all_elements -> unprotected */
       [&,this](group_type* pg,unsigned int n,element_type* p){
         typename merge_table_type::erase_on_exit e{x,pg,n,p};
         if(!unprotected_emplace(type_policy::move(*p)))e.rollback();
       });
-    return size_type{unprotected_size()-s};
+    return size_type{super::size()-s};
   }
 
   template<typename Hash2,typename Pred2>
@@ -773,6 +773,17 @@ public:
     return x.erase_if(std::forward<Predicate>(pr));
   }
 
+  friend bool operator==(const concurrent_table& x,const concurrent_table& y)
+  {
+    auto lck=exclusive_access(x,y);
+    return static_cast<const super&>(x)==static_cast<const super&>(y);
+  }
+
+  friend bool operator!=(const concurrent_table& x,const concurrent_table& y)
+  {
+    return !(x==y);
+  }
+
 private:
   using mutex_type=cacheline_protected<rw_spinlock>;
   using multimutex_type=multimutex<mutex_type,128>; // TODO: adapt 128 to the machine
@@ -806,14 +817,14 @@ private:
     return exclusive_lock_guard{mutexes};
   }
 
-  inline exclusive_bilock_guard exclusive_access(
+  static inline exclusive_bilock_guard exclusive_access(
     const concurrent_table& x,const concurrent_table& y)
   {
     return {x.mutexes,y.mutexes};
   }
 
   template<typename Hash2,typename Pred2>
-  inline exclusive_bilock_guard exclusive_access(
+  static inline exclusive_bilock_guard exclusive_access(
     const concurrent_table& x,
     const concurrent_table<TypePolicy,Hash2,Pred2,Allocator>& y)
   {
@@ -1079,9 +1090,7 @@ private:
     auto        hash=this->hash_for(k);
     auto        pos0=this->position_for(hash);
 
-    // TODO: could be made more efficient (nonconcurrent scenario)
-    if(unprotected_visit(
-      group_shared{},k,pos0,hash,[](const value_type&){}))return false;
+    if(!this->find(k,pos0,hash))return false;
 
     if(BOOST_LIKELY(this->size_<this->ml)){
       this->unchecked_emplace_at(pos0,hash,std::forward<Args>(args)...);

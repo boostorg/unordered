@@ -766,6 +766,25 @@ namespace boost {
 
       hasher hash_function() const { return table_.hash_function(); }
       key_equal key_eq() const { return table_.key_eq(); }
+
+      /// Equality
+      ///
+      
+      template <class Key, class Hash, class KeyEqual, class Allocator>
+      friend bool operator==(
+        concurrent_flat_map<Key, Hash, KeyEqual, Allocator> const& lhs,
+        concurrent_flat_map<Key, Hash, KeyEqual, Allocator> const& rhs)
+      {
+        return lhs.table_ == rhs.table_;
+      }
+
+      template <class Key, class Hash, class KeyEqual, class Allocator>
+      friend bool operator!=(
+        concurrent_flat_map<Key, Hash, KeyEqual, Allocator> const& lhs,
+        concurrent_flat_map<Key, Hash, KeyEqual, Allocator> const& rhs)
+      {
+        return !(lhs == rhs);
+      }
     };
   } // namespace unordered
 } // namespace boost
