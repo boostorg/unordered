@@ -1090,7 +1090,7 @@ private:
     auto        hash=this->hash_for(k);
     auto        pos0=this->position_for(hash);
 
-    if(!this->find(k,pos0,hash))return false;
+    if(this->find(k,pos0,hash))return false;
 
     if(BOOST_LIKELY(this->size_<this->ml)){
       this->unchecked_emplace_at(pos0,hash,std::forward<Args>(args)...);
