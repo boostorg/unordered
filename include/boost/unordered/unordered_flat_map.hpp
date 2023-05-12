@@ -100,6 +100,11 @@ namespace boost {
 
       table_type table_;
 
+      template <class K, class V, class H, class KE, class A>
+      bool friend operator==(
+        unordered_flat_map<K, V, H, KE, A> const& lhs,
+        unordered_flat_map<K, V, H, KE, A> const& rhs);
+
       template <class K, class V, class H, class KE, class A, class Pred>
       typename unordered_flat_map<K, V, H, KE, A>::size_type friend erase_if(
         unordered_flat_map<K, V, H, KE, A>& set, Pred pred);
@@ -695,22 +700,23 @@ namespace boost {
       hasher hash_function() const { return table_.hash_function(); }
 
       key_equal key_eq() const { return table_.key_eq(); }
-
-      /// Equality
-      ///
-      
-      friend bool operator==(
-        unordered_flat_map const& lhs, unordered_flat_map const& rhs)
-      {
-        return lhs.table_ == rhs.table_;
-      }
-
-      friend bool operator!=(
-        unordered_flat_map const& lhs, unordered_flat_map const& rhs)
-      {
-        return !(lhs == rhs);
-      }
     };
+
+    template <class Key, class T, class Hash, class KeyEqual, class Allocator>
+    bool operator==(
+      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator> const& lhs,
+      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator> const& rhs)
+    {
+      return lhs.table_ == rhs.table_;
+    }
+
+    template <class Key, class T, class Hash, class KeyEqual, class Allocator>
+    bool operator!=(
+      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator> const& lhs,
+      unordered_flat_map<Key, T, Hash, KeyEqual, Allocator> const& rhs)
+    {
+      return !(lhs == rhs);
+    }
 
     template <class Key, class T, class Hash, class KeyEqual, class Allocator>
     void swap(unordered_flat_map<Key, T, Hash, KeyEqual, Allocator>& lhs,

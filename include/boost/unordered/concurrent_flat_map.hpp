@@ -148,6 +148,11 @@ namespace boost {
 
       detail::foa::concurrent_table<type_policy, Hash, Pred, Allocator> table_;
 
+      template <class K, class V, class H, class KE, class A>
+      bool friend operator==(
+        concurrent_flat_map<K, V, H, KE, A> const& lhs,
+        concurrent_flat_map<K, V, H, KE, A> const& rhs);
+
     public:
       using key_type = Key;
       using mapped_type = T;
@@ -766,22 +771,23 @@ namespace boost {
 
       hasher hash_function() const { return table_.hash_function(); }
       key_equal key_eq() const { return table_.key_eq(); }
-
-      /// Equality
-      ///
-      
-      friend bool operator==(
-        concurrent_flat_map const& lhs, concurrent_flat_map const& rhs)
-      {
-        return lhs.table_ == rhs.table_;
-      }
-
-      friend bool operator!=(
-        concurrent_flat_map const& lhs, concurrent_flat_map const& rhs)
-      {
-        return !(lhs == rhs);
-      }
     };
+
+    template <class Key, class T, class Hash, class KeyEqual, class Allocator>
+    bool operator==(
+      concurrent_flat_map<Key, T, Hash, KeyEqual, Allocator> const& lhs,
+      concurrent_flat_map<Key, T, Hash, KeyEqual, Allocator> const& rhs)
+    {
+      return lhs.table_ == rhs.table_;
+    }
+
+    template <class Key, class T, class Hash, class KeyEqual, class Allocator>
+    bool operator!=(
+      concurrent_flat_map<Key, T, Hash, KeyEqual, Allocator> const& lhs,
+      concurrent_flat_map<Key, T, Hash, KeyEqual, Allocator> const& rhs)
+    {
+      return !(lhs == rhs);
+    }
   } // namespace unordered
 } // namespace boost
 
