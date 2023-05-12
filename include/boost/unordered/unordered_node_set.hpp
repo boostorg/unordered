@@ -635,18 +635,14 @@ namespace boost {
       /// Equality
       ///
 
-      template <class Key, class Hash, class KeyEqual, class Allocator>
       friend bool operator==(
-        unordered_node_set<Key, Hash, KeyEqual, Allocator> const& lhs,
-        unordered_node_set<Key, Hash, KeyEqual, Allocator> const& rhs)
+        unordered_node_set const& lhs, unordered_node_set const& rhs)
       {
         return lhs.table_ == rhs.table_;
       }
 
-      template <class Key, class Hash, class KeyEqual, class Allocator>
       friend bool operator!=(
-        unordered_node_set<Key, Hash, KeyEqual, Allocator> const& lhs,
-        unordered_node_set<Key, Hash, KeyEqual, Allocator> const& rhs)
+        unordered_node_set const& lhs, unordered_node_set const& rhs)
       {
         return !(lhs == rhs);
       }

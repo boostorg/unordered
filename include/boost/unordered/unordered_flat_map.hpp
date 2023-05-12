@@ -699,18 +699,14 @@ namespace boost {
       /// Equality
       ///
       
-      template <class Key, class T, class Hash, class KeyEqual, class Allocator>
       friend bool operator==(
-        unordered_flat_map<Key, T, Hash, KeyEqual, Allocator> const& lhs,
-        unordered_flat_map<Key, T, Hash, KeyEqual, Allocator> const& rhs)
+        unordered_flat_map const& lhs, unordered_flat_map const& rhs)
       {
         return lhs.table_ == rhs.table_;
       }
 
-      template <class Key, class T, class Hash, class KeyEqual, class Allocator>
       friend bool operator!=(
-        unordered_flat_map<Key, T, Hash, KeyEqual, Allocator> const& lhs,
-        unordered_flat_map<Key, T, Hash, KeyEqual, Allocator> const& rhs)
+        unordered_flat_map const& lhs, unordered_flat_map const& rhs)
       {
         return !(lhs == rhs);
       }

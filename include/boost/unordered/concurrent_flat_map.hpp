@@ -770,18 +770,14 @@ namespace boost {
       /// Equality
       ///
       
-      template <class Key, class Hash, class KeyEqual, class Allocator>
       friend bool operator==(
-        concurrent_flat_map<Key, Hash, KeyEqual, Allocator> const& lhs,
-        concurrent_flat_map<Key, Hash, KeyEqual, Allocator> const& rhs)
+        concurrent_flat_map const& lhs, concurrent_flat_map const& rhs)
       {
         return lhs.table_ == rhs.table_;
       }
 
-      template <class Key, class Hash, class KeyEqual, class Allocator>
       friend bool operator!=(
-        concurrent_flat_map<Key, Hash, KeyEqual, Allocator> const& lhs,
-        concurrent_flat_map<Key, Hash, KeyEqual, Allocator> const& rhs)
+        concurrent_flat_map const& lhs, concurrent_flat_map const& rhs)
       {
         return !(lhs == rhs);
       }
