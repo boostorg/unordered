@@ -144,4 +144,61 @@ The main differences with C++ unordered associative containers are:
   ** Pointer stability is not kept under rehashing.
   ** There is no API for node extraction/insertion.
 
+== Concurrent Hashmap
+
+There is currently no specification in the C++ standard for this or any other concurrent
+data structure. `boost::concurrent_flat_map` takes the same template parameters as `std::unordered_map`
+and all the maps provided by Boost.Unordered, and its API is modelled after that of
+`boost::unordered_flat_map` with the crucial difference that iterators are not provided
+due to their inherent problems in concurrent scenarios (high contention, prone to deadlocking):
+so, `boost::concurrent_flat_map` is technically not a
+https://en.cppreference.com/w/cpp/named_req/Container[Container^], although
+it meets all the requirements of https://en.cppreference.com/w/cpp/named_req/AllocatorAwareContainer[AllocatorAware^]
+containers except those implying iterators.
+
+In a non-concurrent unordered container, iterators serve two main purposes:
+
+* Access to an element previously located via lookup. 
+* Container traversal.
+
+In place of iterators, `boost::unordered_flat_map` uses _internal visitation_
+facilities as a thread-safe substitute. Classical operations returning an iterator to an
+element already existing in the container, like for instance:
+
+[source,c++]
+----
+iterator find(const key_type& k);
+std::pair<iterator, bool> insert(const value_type& obj);
+----
+
+are transformed to accept a _visitation function_ that is passed such element:
+
+[source,c++]
+----
+template<class F> size_t visit(const key_type& k, F f);
+template<class F> bool insert_or_visit(const value_type& obj, F f);
+----
+
+(In the second case `f` is only invoked if there's an equivalent element
+to `obj` in the table, not if insertion is successful). Container traversal
+is served by:
+
+[source,c++]
+----
+template<class F> size_t visit_all(F f);
+----
+
+of which there are parallelized version in C++17 compilers with parallel
+algorithm support. In general, the interface of `boost::concurrent_flat_map`
+is derived from that of `boost::unordered_flat_map` by a fairly straightforward
+process of replacing iterators with visitation where applicable. If
+`iterator` and `const_iterator` provide mutable and const access to elements,
+respectively, here visitation is granted mutable or const access depending on
+the constness of the member function used (there are also `*cvisit` overloads for
+explicit const visitation).
+
+The one notable operation not provided is `operator[]`/`at`, which can be
+replaced, if in a more convoluted manner, by
+xref:#concurrent_flat_map_try_emplace_or_cvisit[`try_emplace_or_visit`].
+
 //-
