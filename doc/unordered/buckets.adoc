@@ -313,3 +313,51 @@ given in an
 https://bannalia.blogspot.com/2022/11/inside-boostunorderedflatmap.html[external article].
 For more information on implementation rationale, read the
 xref:#rationale_open_addresing_containers[corresponding section].
+
+== Concurrent Open Addressing Implementation
+
+`boost::concurrent_flat_map` uses the basic
+xref::#buckets_open_addressing_implementation[open-addressing layout] described above
+augmented with synchronization mechanisms.
+
+
+[#img-cfoa-layout]
+.Concurrent open-addressing layout used by Boost.Unordered.
+image::cfoa.png[align=center]
+
+Two levels of synchronization are used:
+
+* Container level: A read-write mutex is used to control access from any operation
+to the container. Typically, such access is in read mode (that is, concurrent) even
+for modifying operations, so for most practical purposes there is no thread
+contention at this level. Access is only in write mode (blocking) when rehashing or
+performing container-wide operations such as swapping or assignment.
+* Group level: Each 15-slot group is equipped with an 8-byte word containing:
+  ** A read-write spinlock for synchronized access to any element in the group.
+  ** An atomic _insertion counter_ used for optimistic insertion as described
+  below.
+
+By using atomic operations to access the group metadata, lookup is (group-level)
+lock-free up to the point where an actual comparison needs to be done with an element
+that has been previously SIMD-matched: only then it's the group's spinlock used.
+
+Insertion uses the following _optimistic algorithm_:
+
+* The value of the insertion counter for the initial group in the probe
+sequence is locally recorded (let's call this value `c0`).
+* Lookup is as described above. If lookup finds no equivalent element,
+search for an available slot for insertion successively locks/unlocks
+each group in the probing sequence.
+* When an available slot is located, it is preemptively occupied (its
+reduced hash value is set) and the insertion counter is atomically
+incremented: if no other thread has incremented the counter during the
+whole operation (which is checked by comparing with `c0`), then we're
+good to go and complete the insertion, otherwise we roll back and start
+over.
+
+This algorithm has very low contention both at the lookup and actual
+insertion phases in exchange for the possibility that computations have
+to be started over if some other thread interferes in the process by
+performing a succesful insertion beginning at the same group. In
+practice, the start-over frequency is extremely small, measured in the range
+of parts per million for some of our benchmarks.
