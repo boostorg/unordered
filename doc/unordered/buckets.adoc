@@ -250,7 +250,7 @@ A more detailed description of Boost.Unordered's closed-addressing implementatio
 given in an
 https://bannalia.blogspot.com/2022/06/advancing-state-of-art-for.html[external article].
 For more information on implementation rationale, read the
-xref:#rationale_boostunordered_multiset_and_boostunordered_multimap[corresponding section].
+xref:#rationale_closed_addressing_containers[corresponding section].
 
 == Open Addressing Implementation
 
@@ -312,4 +312,4 @@ A more detailed description of Boost.Unordered's open-addressing implementation 
 given in an
 https://bannalia.blogspot.com/2022/11/inside-boostunorderedflatmap.html[external article].
 For more information on implementation rationale, read the
-xref:#rationale_boostunordered_flat_set_and_boostunordered_flat_map[corresponding section].
+xref:#rationale_open_addresing_containers[corresponding section].
