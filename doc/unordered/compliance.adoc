@@ -188,7 +188,7 @@ is served by:
 template<class F> size_t visit_all(F f);
 ----
 
-of which there are parallelized version in C++17 compilers with parallel
+of which there are parallelized versions in C++17 compilers with parallel
 algorithm support. In general, the interface of `boost::concurrent_flat_map`
 is derived from that of `boost::unordered_flat_map` by a fairly straightforward
 process of replacing iterators with visitation where applicable. If

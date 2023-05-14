@@ -361,3 +361,6 @@ to be started over if some other thread interferes in the process by
 performing a succesful insertion beginning at the same group. In
 practice, the start-over frequency is extremely small, measured in the range
 of parts per million for some of our benchmarks.
+
+For more information on implementation rationale, read the
+xref:#rationale_concurrent_hashmap[corresponding section].
