@@ -793,6 +793,14 @@ namespace boost {
     {
       x.swap(y);
     }
+
+    template <class K, class T, class H, class P, class A, class Predicate>
+    typename concurrent_flat_map<K, T, H, P, A>::size_type erase_if(
+      concurrent_flat_map<K, T, H, P, A>& c, Predicate pred)
+    {
+      return c.erase_if(pred);
+    }
+
   } // namespace unordered
 
 } // namespace boost

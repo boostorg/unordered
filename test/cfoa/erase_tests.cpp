@@ -245,6 +245,58 @@ namespace {
     }
   } erase_if;
 
+  struct free_fn_erase_if_type
+  {
+    template <class T, class X> void operator()(std::vector<T>& values, X& x)
+    {
+      using value_type = typename X::value_type;
+
+      std::atomic<std::uint64_t> num_erased{0};
+
+      auto const old_size = x.size();
+
+      auto const old_dc = +raii::default_constructor;
+      auto const old_cc = +raii::copy_constructor;
+      auto const old_mc = +raii::move_constructor;
+
+      auto const old_d = +raii::destructor;
+
+      auto max = 0;
+      x.visit_all([&max](value_type const& v) {
+        if (v.second.x_ > max) {
+          max = v.second.x_;
+        }
+      });
+
+      auto threshold = max / 2;
+
+      auto expected_erasures = 0u;
+      x.visit_all([&expected_erasures, threshold](value_type const& v) {
+        if (v.second.x_ > threshold) {
+          ++expected_erasures;
+        }
+      });
+
+      thread_runner(values, [&num_erased, &x, threshold](boost::span<T> s) {
+        for (auto const& k : s) {
+          (void)k;
+          auto count = boost::unordered::erase_if(
+            x, [threshold](value_type& v) { return v.second.x_ > threshold; });
+          num_erased += count;
+        }
+      });
+
+      BOOST_TEST_EQ(num_erased, expected_erasures);
+      BOOST_TEST_EQ(x.size(), old_size - num_erased);
+
+      BOOST_TEST_EQ(raii::default_constructor, old_dc);
+      BOOST_TEST_EQ(raii::copy_constructor, old_cc);
+      BOOST_TEST_EQ(raii::move_constructor, old_mc);
+
+      BOOST_TEST_EQ(raii::destructor, old_d + 2 * num_erased);
+    }
+  } free_fn_erase_if;
+
   struct erase_if_exec_policy_type
   {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
@@ -353,7 +405,7 @@ UNORDERED_TEST(
   erase,
   ((map))
   ((value_type_generator)(init_type_generator))
-  ((lvalue_eraser)(lvalue_eraser_if)(erase_if)(erase_if_exec_policy))
+  ((lvalue_eraser)(lvalue_eraser_if)(erase_if)(free_fn_erase_if)(erase_if_exec_policy))
   ((default_generator)(sequential)(limited_range)))
 
 UNORDERED_TEST(
