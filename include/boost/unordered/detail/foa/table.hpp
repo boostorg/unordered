@@ -194,7 +194,7 @@ private:
 
 /* foa::table interface departs in a number of ways from that of C++ unordered
  * associative containers because it's not for end-user consumption
- * (boost::unordered_[flat|node]_[map|set] wrappers complete it as
+ * (boost::unordered_(flat|node)_(map|set) wrappers complete it as
  * appropriate).
  *
  * The table supports two main modes of operation: flat and node-based. In the
@@ -215,7 +215,7 @@ private:
  *
  * try_emplace, erase and find support heterogeneous lookup by default,
  * that is, without checking for any ::is_transparent typedefs --the
- * checking is done by boost::unordered_[flat|node]_[map|set].
+ * checking is done by boost::unordered_(flat|node)_(map|set).
  */
 
 template <typename TypePolicy,typename Hash,typename Pred,typename Allocator>

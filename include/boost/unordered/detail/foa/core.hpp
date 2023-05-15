@@ -111,7 +111,7 @@ static constexpr std::size_t default_bucket_count=0;
 
 /* foa::table_core is the common base of foa::table and foa::concurrent_table,
  * which in their turn serve as the foundational core of
- * boost::unordered_flat_[map|set] and boost::concurrent_flat_map,
+ * boost::unordered_(flat|node)_(map|set) and boost::concurrent_flat_map,
  * respectively. Its main internal design aspects are:
  * 
  *   - Element slots are logically split into groups of size N=15. The number
