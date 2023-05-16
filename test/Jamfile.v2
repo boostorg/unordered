@@ -188,12 +188,13 @@ local CFOA_TESTS =
   swap_tests
   merge_tests
   rehash_tests
+  equality_tests
 ;
 
 for local test in $(CFOA_TESTS)
 {
   run cfoa/$(test).cpp
-  : requirements $(CPP11)
+  : requirements $(CPP11) <threading>multi
   : target-name cfoa_$(test)
   ;
 }
