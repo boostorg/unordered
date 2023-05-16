@@ -356,19 +356,19 @@ namespace boost {
         return table_.visit(std::forward<K>(k), f);
       }
 
-      template <class F> BOOST_FORCEINLINE size_type visit_all(F f)
+      template <class F> size_type visit_all(F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
         return table_.visit_all(f);
       }
 
-      template <class F> BOOST_FORCEINLINE size_type visit_all(F f) const
+      template <class F> size_type visit_all(F f) const
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         return table_.visit_all(f);
       }
 
-      template <class F> BOOST_FORCEINLINE size_type cvisit_all(F f) const
+      template <class F> size_type cvisit_all(F f) const
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         return table_.cvisit_all(f);
@@ -376,10 +376,9 @@ namespace boost {
 
 #if defined(BOOST_UNORDERED_PARALLEL_ALGORITHMS)
       template <class ExecPolicy, class F>
-      BOOST_FORCEINLINE
-        typename std::enable_if<detail::is_execution_policy<ExecPolicy>::value,
-          void>::type
-        visit_all(ExecPolicy&& p, F f)
+      typename std::enable_if<detail::is_execution_policy<ExecPolicy>::value,
+        void>::type
+      visit_all(ExecPolicy&& p, F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
         BOOST_UNORDERED_STATIC_ASSERT_EXEC_POLICY(ExecPolicy)
@@ -387,10 +386,9 @@ namespace boost {
       }
 
       template <class ExecPolicy, class F>
-      BOOST_FORCEINLINE
-        typename std::enable_if<detail::is_execution_policy<ExecPolicy>::value,
-          void>::type
-        visit_all(ExecPolicy&& p, F f) const
+      typename std::enable_if<detail::is_execution_policy<ExecPolicy>::value,
+        void>::type
+      visit_all(ExecPolicy&& p, F f) const
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         BOOST_UNORDERED_STATIC_ASSERT_EXEC_POLICY(ExecPolicy)
@@ -398,10 +396,9 @@ namespace boost {
       }
 
       template <class ExecPolicy, class F>
-      BOOST_FORCEINLINE
-        typename std::enable_if<detail::is_execution_policy<ExecPolicy>::value,
-          void>::type
-        cvisit_all(ExecPolicy&& p, F f) const
+      typename std::enable_if<detail::is_execution_policy<ExecPolicy>::value,
+        void>::type
+      cvisit_all(ExecPolicy&& p, F f) const
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         BOOST_UNORDERED_STATIC_ASSERT_EXEC_POLICY(ExecPolicy)
@@ -431,14 +428,14 @@ namespace boost {
       }
 
       template <class InputIterator>
-      BOOST_FORCEINLINE void insert(InputIterator begin, InputIterator end)
+      void insert(InputIterator begin, InputIterator end)
       {
         for (auto pos = begin; pos != end; ++pos) {
           table_.insert(*pos);
         }
       }
 
-      BOOST_FORCEINLINE void insert(std::initializer_list<value_type> ilist)
+      void insert(std::initializer_list<value_type> ilist)
       {
         this->insert(ilist.begin(), ilist.end());
       }
@@ -496,8 +493,7 @@ namespace boost {
       }
 
       template <class InputIterator, class F>
-      BOOST_FORCEINLINE void insert_or_visit(
-        InputIterator first, InputIterator last, F f)
+      void insert_or_visit(InputIterator first, InputIterator last, F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
         for (; first != last; ++first) {
@@ -506,8 +502,7 @@ namespace boost {
       }
 
       template <class F>
-      BOOST_FORCEINLINE void insert_or_visit(
-        std::initializer_list<value_type> ilist, F f)
+      void insert_or_visit(std::initializer_list<value_type> ilist, F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
         this->insert_or_visit(ilist.begin(), ilist.end(), f);
@@ -542,8 +537,7 @@ namespace boost {
       }
 
       template <class InputIterator, class F>
-      BOOST_FORCEINLINE void insert_or_cvisit(
-        InputIterator first, InputIterator last, F f)
+      void insert_or_cvisit(InputIterator first, InputIterator last, F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         for (; first != last; ++first) {
@@ -552,8 +546,7 @@ namespace boost {
       }
 
       template <class F>
-      BOOST_FORCEINLINE void insert_or_cvisit(
-        std::initializer_list<value_type> ilist, F f)
+      void insert_or_cvisit(std::initializer_list<value_type> ilist, F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         this->insert_or_visit(ilist.begin(), ilist.end(), f);
@@ -686,20 +679,16 @@ namespace boost {
 
 #if defined(BOOST_UNORDERED_PARALLEL_ALGORITHMS)
       template <class ExecPolicy, class F>
-      BOOST_FORCEINLINE
-        typename std::enable_if<detail::is_execution_policy<ExecPolicy>::value,
-          void>::type
-        erase_if(ExecPolicy&& p, F f)
+      typename std::enable_if<detail::is_execution_policy<ExecPolicy>::value,
+        void>::type
+      erase_if(ExecPolicy&& p, F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_EXEC_POLICY(ExecPolicy)
         table_.erase_if(p, f);
       }
 #endif
 
-      template <class F> BOOST_FORCEINLINE size_type erase_if(F f)
-      {
-        return table_.erase_if(f);
-      }
+      template <class F> size_type erase_if(F f) { return table_.erase_if(f); }
 
       void swap(concurrent_flat_map& other) noexcept(
         boost::allocator_is_always_equal<Allocator>::type::value ||
@@ -723,20 +712,26 @@ namespace boost {
         return merge(x);
       }
 
-      size_type count(key_type const& k) const { return table_.count(k); }
+      BOOST_FORCEINLINE size_type count(key_type const& k) const
+      {
+        return table_.count(k);
+      }
 
       template <class K>
-      typename std::enable_if<
+      BOOST_FORCEINLINE typename std::enable_if<
         detail::are_transparent<K, hasher, key_equal>::value, size_type>::type
       count(K const& k)
       {
         return table_.count(k);
       }
 
-      bool contains(key_type const& k) const { return table_.contains(k); }
+      BOOST_FORCEINLINE bool contains(key_type const& k) const
+      {
+        return table_.contains(k);
+      }
 
       template <class K>
-      typename std::enable_if<
+      BOOST_FORCEINLINE typename std::enable_if<
         detail::are_transparent<K, hasher, key_equal>::value, bool>::type
       contains(K const& k) const
       {
