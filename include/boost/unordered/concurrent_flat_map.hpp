@@ -379,7 +379,7 @@ namespace boost {
       BOOST_FORCEINLINE
         typename std::enable_if<detail::is_execution_policy<ExecPolicy>::value,
           void>::type
-        visit_all(ExecPolicy p, F f)
+        visit_all(ExecPolicy&& p, F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
         BOOST_UNORDERED_STATIC_ASSERT_EXEC_POLICY(ExecPolicy)
@@ -390,7 +390,7 @@ namespace boost {
       BOOST_FORCEINLINE
         typename std::enable_if<detail::is_execution_policy<ExecPolicy>::value,
           void>::type
-        visit_all(ExecPolicy p, F f) const
+        visit_all(ExecPolicy&& p, F f) const
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         BOOST_UNORDERED_STATIC_ASSERT_EXEC_POLICY(ExecPolicy)
@@ -401,7 +401,7 @@ namespace boost {
       BOOST_FORCEINLINE
         typename std::enable_if<detail::is_execution_policy<ExecPolicy>::value,
           void>::type
-        cvisit_all(ExecPolicy p, F f) const
+        cvisit_all(ExecPolicy&& p, F f) const
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         BOOST_UNORDERED_STATIC_ASSERT_EXEC_POLICY(ExecPolicy)
@@ -689,7 +689,7 @@ namespace boost {
       BOOST_FORCEINLINE
         typename std::enable_if<detail::is_execution_policy<ExecPolicy>::value,
           void>::type
-        erase_if(ExecPolicy p, F f)
+        erase_if(ExecPolicy&& p, F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_EXEC_POLICY(ExecPolicy)
         table_.erase_if(p, f);
