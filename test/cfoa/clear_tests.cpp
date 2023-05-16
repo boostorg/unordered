@@ -59,31 +59,47 @@ namespace {
 
       std::mutex m;
       std::condition_variable cv;
-
       std::atomic<bool> done{false};
+      std::atomic<unsigned> num_clears{0};
 
-      t1 = std::thread([&x, &values, &cv, &done] {
+      bool ready = false;
+
+      t1 = std::thread([&x, &values, &cv, &done, &m, &ready] {
         for (auto i = 0u; i < values.size(); ++i) {
           x.insert(values[i]);
-          if (i % 100 == 0) {
+          if (i % (values.size() / 128) == 0) {
+            {
+              std::unique_lock<std::mutex> lk(m);
+              ready = true;
+            }
             cv.notify_all();
           }
         }
+
         done = true;
+        {
+          std::unique_lock<std::mutex> lk(m);
+          ready = true;
+        }
+        cv.notify_all();
       });
 
-      t2 = std::thread([&x, &m, &cv, &done] {
-        while (!done) {
+      t2 = std::thread([&x, &m, &cv, &done, &ready, &num_clears] {
+        do {
           {
             std::unique_lock<std::mutex> lk(m);
-            cv.wait(lk, [] { return true; });
+            cv.wait(lk, [&ready] { return ready; });
+            ready = false;
           }
           x.clear();
-        }
+          ++num_clears;
+        } while (!done);
       });
 
       t1.join();
       t2.join();
+
+      BOOST_TEST_GE(num_clears, 1u);
 
       if (!x.empty()) {
         test_fuzzy_matches_reference(x, reference_map, rg);

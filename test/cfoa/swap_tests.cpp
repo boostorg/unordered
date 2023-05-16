@@ -196,39 +196,58 @@ namespace {
       std::condition_variable cv;
       std::atomic_bool done1{false}, done2{false};
       std::atomic<unsigned> num_swaps{0};
+      bool ready = false;
 
-      t1 = std::thread([&x1, &vals1, &l, &done1, &cv] {
+      t1 = std::thread([&x1, &vals1, &l, &done1, &cv, &ready, &m] {
         l.arrive_and_wait();
 
         for (std::size_t idx = 0; idx < vals1.size(); ++idx) {
           auto const& val = vals1[idx];
           x1.insert(val);
-          if (idx % 100 == 0) {
+          if (idx % (vals1.size() / 128) == 0) {
+            {
+              std::unique_lock<std::mutex> lk(m);
+              ready = true;
+            }
             cv.notify_all();
           }
           std::this_thread::yield();
         }
 
         done1 = true;
+        {
+          std::unique_lock<std::mutex> lk(m);
+          ready = true;
+        }
+        cv.notify_all();
       });
 
-      t2 = std::thread([&x2, &vals2, &l, &done2] {
+      t2 = std::thread([&x2, &vals2, &l, &done2, &ready, &cv, &m] {
         l.arrive_and_wait();
 
-        for (auto const& val : vals2) {
+        for (std::size_t idx = 0; idx < vals2.size(); ++idx) {
+          auto const& val = vals2[idx];
           x2.insert(val);
-          std::this_thread::yield();
+          if (idx % 100 == 0) {
+            std::this_thread::yield();
+          }
         }
 
         done2 = true;
+        {
+          std::unique_lock<std::mutex> lk(m);
+          ready = true;
+        }
+        cv.notify_all();
       });
 
-      t3 =
-        std::thread([&x1, &x2, &m, &cv, &done1, &done2, &num_swaps, swapper] {
+      t3 = std::thread(
+        [&x1, &x2, &m, &cv, &done1, &done2, &num_swaps, swapper, &ready] {
           do {
             {
               std::unique_lock<std::mutex> lk(m);
-              cv.wait(lk, [] { return true; });
+              cv.wait(lk, [&ready] { return ready; });
+              ready = false;
             }
             swapper(x1, x2);
             ++num_swaps;
