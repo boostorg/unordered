@@ -189,6 +189,7 @@ local CFOA_TESTS =
   merge_tests
   rehash_tests
   equality_tests
+  fwd_tests
 ;
 
 for local test in $(CFOA_TESTS)

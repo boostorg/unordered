@@ -15,6 +15,7 @@
 #ifndef BOOST_UNORDERED_CONCURRENT_FLAT_MAP_HPP
 #define BOOST_UNORDERED_CONCURRENT_FLAT_MAP_HPP
 
+#include <boost/unordered/concurrent_flat_map_fwd.hpp>
 #include <boost/unordered/detail/foa/concurrent_table.hpp>
 #include <boost/unordered/detail/type_traits.hpp>
 
@@ -134,9 +135,7 @@ namespace boost {
       };
     } // namespace detail
 
-    template <class Key, class T, class Hash = boost::hash<Key>,
-      class Pred = std::equal_to<Key>,
-      class Allocator = std::allocator<std::pair<Key const, T> > >
+    template <class Key, class T, class Hash, class Pred, class Allocator>
     class concurrent_flat_map
     {
     private:
@@ -803,6 +802,7 @@ namespace boost {
 
   } // namespace unordered
 
+  using unordered::concurrent_flat_map;
 } // namespace boost
 
 #undef BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE
