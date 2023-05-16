@@ -137,9 +137,6 @@ namespace {
 
       t3 =
         std::thread([&x, &vals1, &m, &cv, &done1, &done2, &call_count, &ready] {
-          while (x.empty()) {
-          }
-
           do {
             {
               std::unique_lock<std::mutex> lk(m);
