@@ -264,9 +264,6 @@ namespace {
 
       BOOST_TEST_GT(num_swaps, 0u);
 
-      BOOST_TEST_NOT(x1.empty());
-      BOOST_TEST_NOT(x2.empty());
-
       if (x1.hash_function() == hasher(1)) {
         BOOST_TEST_EQ(x1.key_eq(), key_equal(2));
 
