@@ -795,7 +795,7 @@ namespace boost {
       return c.erase_if(pred);
     }
 
-#ifdef BOOST_UNORDERED_TEMPLATE_DEDUCTION_GUIDES
+#if BOOST_UNORDERED_TEMPLATE_DEDUCTION_GUIDES
 
     template <class InputIterator,
       class Hash =
