@@ -1,8 +1,9 @@
-﻿[#concurrent_flat_map_intro]
-= An introduction to boost::concurrent_flat_map
+﻿[#concurrent]
+= Concurrent Containers
 
-:idprefix: concurrent_flat_map_intro_
+:idprefix: concurrent_
 
+Boost.Unordered currently provides just one concurrent container named `boost::concurrent_flat_map`.
 `boost::concurrent_flat_map` is a hash table that allows concurrent write/read access from
 different threads without having to implement any synchronzation mechanism on the user's side.
 
@@ -131,7 +132,7 @@ by using `cvisit` overloads (for instance, `insert_or_cvisit`) and may result
 in higher parallelization. Consult the xref:#concurrent_flat_map[reference]
 for a complete list of available operations.
 
-== Whole-table visitation
+== Whole-table Visitation
 
 In the absence of iterators, `boost::concurrent_flat_map` provides `visit_all`
 as an alternative way to process all the elements in the map:
@@ -168,7 +169,7 @@ may be inserted, modified or erased by other threads during visitation. It is
 advisable not to assume too much about the exact global state of a `boost::concurrent_flat_map`
 at any point in your program.
 
-== Blocking operations
+== Blocking Operations
 
 ``boost::concurrent_flat_map``s can be copied, assigned, cleared and merged just like any
 Boost.Unordered container. Unlike most other operations, these are _blocking_,
@@ -177,5 +178,5 @@ clear or merge operation is in progress. Blocking is taken care of automatically
 and the user need not take any special precaution, but overall performance may be affected.
 
 Another blocking operation is _rehashing_, which happens explicitly via `rehash`/`reserve`
-or during insertion when the table's load hits `max_load()`. As with non-concurrent hashmaps,
+or during insertion when the table's load hits `max_load()`. As with non-concurrent containers,
 reserving space in advance of bulk insertions will generally speed up the process.

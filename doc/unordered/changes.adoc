@@ -6,8 +6,9 @@
 :github-pr-url: https://github.com/boostorg/unordered/pull
 :cpp: C++
 
-== Release 1.83.0
+== Release 1.83.0 - Major update
 
+* Added `boost::concurrent_flat_map`, a fast, thread-safe hashmap based on open addressing.
 * Sped up iteration of open-addressing containers.
 
 == Release 1.82.0 - Major update
