@@ -1436,5 +1436,3 @@ Equivalent to
 -----
 c.xref:#concurrent_flat_map_erase_if[erase_if](pred);
 -----
-
----
