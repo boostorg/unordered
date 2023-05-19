@@ -1,5 +1,5 @@
 ﻿[#concurrent_flat_map]
-== Class template concurrent_flat_map
+== Class Template concurrent_flat_map
 
 :idprefix: concurrent_flat_map_
 

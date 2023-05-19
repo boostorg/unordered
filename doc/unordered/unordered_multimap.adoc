@@ -1,5 +1,5 @@
 [#unordered_multimap]
-== Class template unordered_multimap
+== Class Template unordered_multimap
 
 :idprefix: unordered_multimap_
 

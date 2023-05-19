@@ -1,5 +1,5 @@
 [#unordered_node_set]
-== Class template unordered_node_set
+== Class Template unordered_node_set
 
 :idprefix: unordered_node_set_
 

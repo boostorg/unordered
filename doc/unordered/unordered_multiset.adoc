@@ -1,5 +1,5 @@
 [#unordered_multiset]
-== Class template unordered_multiset
+== Class Template unordered_multiset
 
 :idprefix: unordered_multiset_
 

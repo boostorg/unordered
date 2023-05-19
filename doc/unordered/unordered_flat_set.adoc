@@ -1,5 +1,5 @@
 [#unordered_flat_set]
-== Class template unordered_flat_set
+== Class Template unordered_flat_set
 
 :idprefix: unordered_flat_set_
 

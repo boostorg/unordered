@@ -1,5 +1,5 @@
 [#unordered_flat_map]
-== Class template unordered_flat_map
+== Class Template unordered_flat_map
 
 :idprefix: unordered_flat_map_
 
