@@ -52,8 +52,7 @@ h|*Method* h|*Description*
 |`size_type bucket_count() const` 
 |The number of buckets.
 
-2+^h| *Closed-addressing containers only* +
-`boost::unordered_[multi]set`, `boost::unordered_[multi]map` 
+2+^h| *Closed-addressing containers only*
 h|*Method* h|*Description*
 
 |`size_type max_bucket_count() const` 
@@ -132,10 +131,7 @@ h|*Method* h|*Description*
 |`void rehash(size_type n)`
 |Changes the number of buckets so that there at least `n` buckets, and so that the load factor is less than the maximum load factor.
 
-2+^h| *Open-addressing and concurrent containers only* +
-`boost::unordered_flat_set`, `boost::unordered_flat_map` +
-`boost::unordered_node_set`, `boost::unordered_node_map` +
-`boost::concurrent_flat_map`
+2+^h| *Open-addressing and concurrent containers only*
 h|*Method* h|*Description*
 
 |`size_type max_load() const`

@@ -161,7 +161,7 @@ In a non-concurrent unordered container, iterators serve two main purposes:
 * Access to an element previously located via lookup. 
 * Container traversal.
 
-In place of iterators, `boost::unordered_flat_map` uses _internal visitation_
+In place of iterators, `boost::concurrent_flat_map` uses _internal visitation_
 facilities as a thread-safe substitute. Classical operations returning an iterator to an
 element already existing in the container, like for instance:
 

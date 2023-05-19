@@ -20,14 +20,14 @@ class unordered_map;
 
 The hash function comes first as you might want to change the hash function
 but not the equality predicate. For example, if you wanted to use the
-http://www.isthe.com/chongo/tech/comp/fnv/[FNV-1 hash^] you could write:
+https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function#FNV-1a_hash[FNV-1a hash^] you could write:
 
 ```
-boost::unordered_map<std::string, int, hash::fnv_1>
+boost::unordered_map<std::string, int, hash::fnv_1a>
     dictionary;
 ```
 
-There is an link:../../examples/fnv1.hpp[implementation of FNV-1^] in the examples directory.
+There is an link:../../examples/fnv1.hpp[implementation of FNV-1a^] in the examples directory.
 
 If you wish to use a different equality function, you will also need to use a matching hash function. For example, to implement a case insensitive dictionary you need to define a case insensitive equality predicate and hash function:
 

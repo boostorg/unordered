@@ -43,7 +43,7 @@ boost::unordered_node_map
 boost::unordered_flat_map
 
 ^.^h|*Concurrent*
-^| N/A
+^|
 ^| `boost::concurrent_flat_map`
 
 |===

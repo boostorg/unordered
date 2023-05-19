@@ -6,7 +6,7 @@
 Boost.Unordered closed-addressing containers (`boost::unordered_set`, `boost::unordered_map`,
 `boost::unordered_multiset` and `boost::unordered_multimap`) are fully conformant with the
 C++ specification for unordered associative containers, so for those who know how to use 
-`std::unordered_set`, `std::unordered_map`, etc., their homonyms in Boost:Unordered are
+`std::unordered_set`, `std::unordered_map`, etc., their homonyms in Boost.Unordered are
 drop-in replacements. The interface of open-addressing containers (`boost::unordered_node_set`, 
 `boost::unordered_node_map`, `boost::unordered_flat_set` and `boost::unordered_flat_map`)
 is very similar, but they present some minor differences listed in the dedicated
@@ -62,7 +62,7 @@ invalidated by calls to `insert`, `rehash` and `reserve`.
 As for pointers and references,
 they are never invalidated for node-based containers 
 (`boost::unordered_[multi]set`, `boost::unordered_[multi]map`, `boost::unordered_node_set`, `boost::unordered_node_map`),
-but they will when rehashing occurs for
+but they will be when rehashing occurs for
 `boost::unordered_flat_set` and `boost::unordered_flat_map`: this is because
 these containers store elements directly into their holding buckets, so
 when allocating a new bucket array the elements must be transferred by means of move construction.
