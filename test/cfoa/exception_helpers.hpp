@@ -174,7 +174,7 @@ template <class T> struct stateful_allocator
   bool operator!=(stateful_allocator const& rhs) const { return x_ != rhs.x_; }
 };
 
-template <class T> std::atomic<std::uint32_t> stateful_allocator<T>::c{0};
+template <class T> std::atomic<std::uint32_t> stateful_allocator<T>::c = {};
 
 struct raii
 {
