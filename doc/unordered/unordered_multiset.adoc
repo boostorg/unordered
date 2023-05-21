@@ -244,6 +244,7 @@ namespace boost {
               unordered_multiset<Key, Hash, Pred, Alloc>& y)
       noexcept(noexcept(x.swap(y)));
 
+  // Erasure
   template<class K, class H, class P, class A, class Predicate>
     typename unordered_multiset<K, H, P, A>::size_type
       xref:#unordered_multiset_erase_if[erase_if](unordered_multiset<K, H, P, A>& c, Predicate pred);
