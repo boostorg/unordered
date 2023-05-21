@@ -995,7 +995,7 @@ void insert(std::initializer_list<value_type>);
 Inserts a range of elements into the container. Elements are inserted if and only if there is no element in the container with an equivalent key.
 
 [horizontal]
-Requires:;; `value_type` is https://en.cppreference.com/w/cpp/named_req/EmplaceConstructible[EmplaceConstructible^] into `X` from `*first`.
+Requires:;; `value_type` is https://en.cppreference.com/w/cpp/named_req/CopyInsertable[CopyInsertable^] into the container.
 Throws:;; When inserting a single element, if an exception is thrown by an operation other than a call to `hasher` the function has no effect.
 Notes:;; Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor. +
 +
