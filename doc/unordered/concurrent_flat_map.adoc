@@ -679,7 +679,7 @@ Such reference is const iff `*this` is const.
 
 [horizontal]
 Returns:;; The number of elements visited (0 or 1).
-Notes:;; The `template <class K, class F>` overloads only participate in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
+Notes:;; The `template<class K, class F>` overloads only participate in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
 
 ---
 
@@ -975,7 +975,7 @@ unlike xref:#concurrent_flat_map_emplace[emplace], which simply forwards all arg
 
 Invalidates pointers and references to elements if a rehashing is issued.
 
-The `template <class K, class\... Args>` overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
+The `template<class K, class\... Args>` overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
 
 --
 
@@ -1023,7 +1023,7 @@ Invalidates pointers and references to elements if a rehashing is issued.
 
 The interface is exposition only, as C++ does not allow to declare a parameter `f` after a variadic parameter pack.
 
-The `template <class K, class\... Args, class F>` overloads only participate in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
+The `template<class K, class\... Args, class F>` overloads only participate in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
 
 --
 
@@ -1214,7 +1214,7 @@ template<class K>
 
 [horizontal]
 Returns:;; The number of elements with key equivalent to `k` (0 or 1).
-Notes:;; The `template <class K>` overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type. +
+Notes:;; The `template<class K>` overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type. +
 +
 In the presence of concurrent insertion operations, the value returned may not accurately reflect
 the true state of the table right after execution.
@@ -1230,7 +1230,7 @@ template<class K>
 
 [horizontal]
 Returns:;; A boolean indicating whether or not there is an element with key equal to `k` in the table.
-Notes:;; The `template <class K>` overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.  +
+Notes:;; The `template<class K>` overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.  +
 +
 In the presence of concurrent insertion operations, the value returned may not accurately reflect
 the true state of the table right after execution.
