@@ -875,7 +875,7 @@ template<class K, class... Args>
   std::pair<iterator, bool> try_emplace(K&& k, Args&&... args);
 ```
 
-Inserts a new node into the container if there is no existing element with key `k` contained within it.
+Inserts a new element into the container if there is no existing element with key `k` contained within it.
 
 If there is an existing element with key `k` this function does nothing.
 
@@ -920,7 +920,7 @@ template<class K, class... Args>
   iterator try_emplace(const_iterator hint, K&& k, Args&&... args);
 ```
 
-Inserts a new node into the container if there is no existing element with key `k` contained within it.
+Inserts a new element into the container if there is no existing element with key `k` contained within it.
 
 If there is an existing element with key `k` this function does nothing.
 
