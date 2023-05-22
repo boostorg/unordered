@@ -147,7 +147,7 @@ namespace {
       enable_exceptions();
       thread_runner(
         values, [&num_erased, &x, threshold](boost::span<T> /* s */) {
-          for (std::size_t i = 0; i < 128; ++i) {
+          for (std::size_t i = 0; i < 256; ++i) {
             try {
               auto count = x.erase_if([threshold](value_type& v) {
                 static std::atomic<std::uint32_t> c{0};
@@ -211,7 +211,7 @@ namespace {
       enable_exceptions();
       thread_runner(
         values, [&num_erased, &x, threshold](boost::span<T> /* s */) {
-          for (std::size_t i = 0; i < 128; ++i) {
+          for (std::size_t i = 0; i < 256; ++i) {
             try {
               auto count =
                 boost::unordered::erase_if(x, [threshold](value_type& v) {
