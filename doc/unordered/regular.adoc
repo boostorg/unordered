@@ -14,7 +14,7 @@ xref:#compliance_open_addressing_containers[standard compliance section].
 
 
 For readers without previous experience with hash containers but familiar
-with normal associatve containers (`std::set`, `std::map`,
+with normal associative containers (`std::set`, `std::map`,
 `std::multiset` and `std::multimap`), Boost.Unordered containers are used in a similar manner:
 
 [source,cpp]
