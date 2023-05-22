@@ -46,7 +46,7 @@ struct stateful_hash
   void throw_helper() const
   {
     auto n = ++c;
-    if (should_throw && (n % throw_threshold == 0)) {
+    if (should_throw && ((n + 1) % throw_threshold == 0)) {
       throw exception_tag{};
     }
   }
@@ -96,7 +96,7 @@ struct stateful_key_equal
   void throw_helper() const
   {
     auto n = ++c;
-    if (should_throw && (n % throw_threshold == 0)) {
+    if (should_throw && ((n + 1) % throw_threshold == 0)) {
       throw exception_tag{};
     }
   }
@@ -144,7 +144,7 @@ template <class T> struct stateful_allocator
   void throw_helper() const
   {
     auto n = ++c;
-    if (should_throw && (n % 10 == 0)) {
+    if (should_throw && ((n + 1) % 10 == 0)) {
       throw exception_tag{};
     }
   }
@@ -190,7 +190,7 @@ struct raii
   void throw_helper() const
   {
     auto n = ++c;
-    if (should_throw && (n % throw_threshold == 0)) {
+    if (should_throw && ((n + 1) % throw_threshold == 0)) {
       throw exception_tag{};
     }
   }

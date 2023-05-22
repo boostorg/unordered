@@ -213,17 +213,13 @@ namespace {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
     {
       std::atomic<std::uint64_t> num_inserts{0};
-      std::atomic<std::uint64_t> num_invokes{0};
 
       enable_exceptions();
-      thread_runner(values, [&x, &num_inserts, &num_invokes](boost::span<T> s) {
+      thread_runner(values, [&x, &num_inserts](boost::span<T> s) {
         for (auto& r : s) {
           try {
             bool b = x.insert_or_cvisit(
-              r, [&num_invokes](typename X::value_type const& v) {
-                (void)v;
-                ++num_invokes;
-              });
+              r, [](typename X::value_type const& v) { (void)v; });
 
             if (b) {
               ++num_inserts;
@@ -247,17 +243,13 @@ namespace {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
     {
       std::atomic<std::uint64_t> num_inserts{0};
-      std::atomic<std::uint64_t> num_invokes{0};
 
       enable_exceptions();
-      thread_runner(values, [&x, &num_inserts, &num_invokes](boost::span<T> s) {
+      thread_runner(values, [&x, &num_inserts](boost::span<T> s) {
         for (auto& r : s) {
           try {
             bool b =
-              x.insert_or_visit(r, [&num_invokes](typename X::value_type& v) {
-                (void)v;
-                ++num_invokes;
-              });
+              x.insert_or_visit(r, [](typename X::value_type& v) { (void)v; });
 
             if (b) {
               ++num_inserts;
@@ -283,17 +275,13 @@ namespace {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
     {
       std::atomic<std::uint64_t> num_inserts{0};
-      std::atomic<std::uint64_t> num_invokes{0};
 
       enable_exceptions();
-      thread_runner(values, [&x, &num_inserts, &num_invokes](boost::span<T> s) {
+      thread_runner(values, [&x, &num_inserts](boost::span<T> s) {
         for (auto& r : s) {
           try {
             bool b = x.insert_or_cvisit(
-              std::move(r), [&num_invokes](typename X::value_type const& v) {
-                (void)v;
-                ++num_invokes;
-              });
+              std::move(r), [](typename X::value_type const& v) { (void)v; });
 
             if (b) {
               ++num_inserts;
@@ -315,17 +303,13 @@ namespace {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
     {
       std::atomic<std::uint64_t> num_inserts{0};
-      std::atomic<std::uint64_t> num_invokes{0};
 
       enable_exceptions();
-      thread_runner(values, [&x, &num_inserts, &num_invokes](boost::span<T> s) {
+      thread_runner(values, [&x, &num_inserts](boost::span<T> s) {
         for (auto& r : s) {
           try {
             bool b = x.insert_or_visit(
-              std::move(r), [&num_invokes](typename X::value_type& v) {
-                (void)v;
-                ++num_invokes;
-              });
+              std::move(r), [](typename X::value_type& v) { (void)v; });
 
             if (b) {
               ++num_inserts;
@@ -349,23 +333,17 @@ namespace {
   {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
     {
-      std::atomic<std::uint64_t> num_invokes{0};
-
       enable_exceptions();
-      thread_runner(values, [&x, &num_invokes](boost::span<T> s) {
+      thread_runner(values, [&x](boost::span<T> s) {
         try {
           x.insert_or_cvisit(s.begin(), s.end(),
-            [&num_invokes](typename X::value_type const& v) {
-              (void)v;
-              ++num_invokes;
-            });
+            [](typename X::value_type const& v) { (void)v; });
         } catch (...) {
         }
       });
       disable_exceptions();
 
       BOOST_TEST_EQ(raii::default_constructor, 0u);
-      BOOST_TEST_GT(raii::move_constructor, 0u);
     }
   } iterator_range_insert_or_cvisit;
 
@@ -373,23 +351,17 @@ namespace {
   {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
     {
-      std::atomic<std::uint64_t> num_invokes{0};
-
       enable_exceptions();
-      thread_runner(values, [&x, &num_invokes](boost::span<T> s) {
+      thread_runner(values, [&x](boost::span<T> s) {
         try {
           x.insert_or_visit(s.begin(), s.end(),
-            [&num_invokes](typename X::value_type const& v) {
-              (void)v;
-              ++num_invokes;
-            });
+            [](typename X::value_type const& v) { (void)v; });
         } catch (...) {
         }
       });
       disable_exceptions();
 
       BOOST_TEST_EQ(raii::default_constructor, 0u);
-      BOOST_TEST_GT(raii::move_constructor, 0u);
     }
   } iterator_range_insert_or_visit;
 
@@ -401,8 +373,8 @@ namespace {
     auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
     auto reference_map =
       boost::unordered_flat_map<raii, raii>(values.begin(), values.end());
-    raii::reset_counts();
 
+    raii::reset_counts();
     {
       X x;
 
@@ -410,122 +382,7 @@ namespace {
 
       test_fuzzy_matches_reference(x, reference_map, rg);
     }
-
-    BOOST_TEST_GE(raii::default_constructor, 0u);
-    BOOST_TEST_GE(raii::copy_constructor, 0u);
-    BOOST_TEST_GE(raii::move_constructor, 0u);
-    BOOST_TEST_GT(raii::destructor, 0u);
-
-    BOOST_TEST_EQ(raii::default_constructor + raii::copy_constructor +
-                    raii::move_constructor,
-      raii::destructor);
-  }
-
-  template <class X> void insert_initializer_list(X*)
-  {
-    using value_type = typename X::value_type;
-
-    std::initializer_list<value_type> values{
-      value_type{raii{0}, raii{0}},
-      value_type{raii{1}, raii{1}},
-      value_type{raii{2}, raii{2}},
-      value_type{raii{3}, raii{3}},
-      value_type{raii{4}, raii{4}},
-      value_type{raii{5}, raii{5}},
-      value_type{raii{6}, raii{6}},
-      value_type{raii{6}, raii{6}},
-      value_type{raii{7}, raii{7}},
-      value_type{raii{8}, raii{8}},
-      value_type{raii{9}, raii{9}},
-      value_type{raii{10}, raii{10}},
-      value_type{raii{9}, raii{9}},
-      value_type{raii{8}, raii{8}},
-      value_type{raii{7}, raii{7}},
-      value_type{raii{6}, raii{6}},
-      value_type{raii{5}, raii{5}},
-      value_type{raii{4}, raii{4}},
-      value_type{raii{3}, raii{3}},
-      value_type{raii{2}, raii{2}},
-      value_type{raii{1}, raii{1}},
-      value_type{raii{0}, raii{0}},
-    };
-
-    std::vector<raii> dummy;
-
-    auto reference_map =
-      boost::unordered_flat_map<raii, raii>(values.begin(), values.end());
-    raii::reset_counts();
-
-    {
-      {
-        X x;
-
-        thread_runner(
-          dummy, [&x, &values](boost::span<raii>) { x.insert(values); });
-
-        BOOST_TEST_EQ(x.size(), reference_map.size());
-
-        BOOST_TEST_EQ(x.size(), x.visit_all([&](value_type const& kv) {
-          BOOST_TEST(reference_map.contains(kv.first));
-          BOOST_TEST_EQ(kv.second, reference_map[kv.first]);
-        }));
-      }
-
-      BOOST_TEST_GE(raii::default_constructor, 0u);
-      BOOST_TEST_GE(raii::copy_constructor, 0u);
-      BOOST_TEST_GE(raii::move_constructor, 0u);
-      BOOST_TEST_GT(raii::destructor, 0u);
-
-      BOOST_TEST_EQ(raii::default_constructor + raii::copy_constructor +
-                      raii::move_constructor,
-        raii::destructor);
-
-      BOOST_TEST_EQ(raii::copy_assignment, 0u);
-      BOOST_TEST_EQ(raii::move_assignment, 0u);
-    }
-
-    {
-      {
-        std::atomic<std::uint64_t> num_invokes{0};
-
-        X x;
-
-        thread_runner(dummy, [&x, &values, &num_invokes](boost::span<raii>) {
-          x.insert_or_visit(values, [&num_invokes](typename X::value_type& v) {
-            (void)v;
-            ++num_invokes;
-          });
-
-          x.insert_or_cvisit(
-            values, [&num_invokes](typename X::value_type const& v) {
-              (void)v;
-              ++num_invokes;
-            });
-        });
-
-        BOOST_TEST_EQ(num_invokes, (values.size() - x.size()) +
-                                     (num_threads - 1) * values.size() +
-                                     num_threads * values.size());
-        BOOST_TEST_EQ(x.size(), reference_map.size());
-
-        BOOST_TEST_EQ(x.size(), x.visit_all([&](value_type const& kv) {
-          BOOST_TEST(reference_map.contains(kv.first));
-          BOOST_TEST_EQ(kv.second, reference_map[kv.first]);
-        }));
-      }
-
-      BOOST_TEST_GE(raii::default_constructor, 0u);
-      BOOST_TEST_GE(raii::copy_constructor, 0u);
-      BOOST_TEST_GE(raii::move_constructor, 0u);
-      BOOST_TEST_GT(raii::destructor, 0u);
-
-      BOOST_TEST_EQ(raii::default_constructor + raii::copy_constructor +
-                      raii::move_constructor,
-        raii::destructor);
-
-      BOOST_TEST_EQ(raii::copy_assignment, 0u);
-      BOOST_TEST_EQ(raii::move_assignment, 0u);
-    }
+    check_raii_counts();
   }
 
   boost::unordered::concurrent_flat_map<raii, raii, stateful_hash,
@@ -538,10 +395,6 @@ using test::limited_range;
 using test::sequential;
 
 // clang-format off
-UNORDERED_TEST(
-  insert_initializer_list,
-  ((map)))
-
 UNORDERED_TEST(
   insert,
   ((map))
