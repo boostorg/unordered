@@ -225,14 +225,14 @@ namespace {
         }
       });
 
-      thread_runner(values, [&num_erased, &x, threshold](boost::span<T> s) {
-        for (auto const& k : s) {
-          (void)k;
-          auto count = x.erase_if(
-            [threshold](value_type& v) { return v.second.x_ > threshold; });
-          num_erased += count;
-        }
-      });
+      thread_runner(
+        values, [&num_erased, &x, threshold](boost::span<T> /* s */) {
+          for (std::size_t i = 0; i < 128; ++i) {
+            auto count = x.erase_if(
+              [threshold](value_type& v) { return v.second.x_ > threshold; });
+            num_erased += count;
+          }
+        });
 
       BOOST_TEST_EQ(num_erased, expected_erasures);
       BOOST_TEST_EQ(x.size(), old_size - num_erased);
@@ -277,14 +277,14 @@ namespace {
         }
       });
 
-      thread_runner(values, [&num_erased, &x, threshold](boost::span<T> s) {
-        for (auto const& k : s) {
-          (void)k;
-          auto count = boost::unordered::erase_if(
-            x, [threshold](value_type& v) { return v.second.x_ > threshold; });
-          num_erased += count;
-        }
-      });
+      thread_runner(
+        values, [&num_erased, &x, threshold](boost::span<T> /* s */) {
+          for (std::size_t i = 0; i < 128; ++i) {
+            auto count = boost::unordered::erase_if(x,
+              [threshold](value_type& v) { return v.second.x_ > threshold; });
+            num_erased += count;
+          }
+        });
 
       BOOST_TEST_EQ(num_erased, expected_erasures);
       BOOST_TEST_EQ(x.size(), old_size - num_erased);
@@ -378,16 +378,10 @@ namespace {
       }));
 
       eraser(values, x);
+      test_fuzzy_matches_reference(x, reference_map, rg);
     }
 
-    BOOST_TEST_GE(raii::default_constructor, 0u);
-    BOOST_TEST_GE(raii::copy_constructor, 0u);
-    BOOST_TEST_GE(raii::move_constructor, 0u);
-    BOOST_TEST_GT(raii::destructor, 0u);
-
-    BOOST_TEST_EQ(raii::default_constructor + raii::copy_constructor +
-                    raii::move_constructor,
-      raii::destructor);
+    check_raii_counts();
   }
 
   boost::unordered::concurrent_flat_map<raii, raii>* map;
