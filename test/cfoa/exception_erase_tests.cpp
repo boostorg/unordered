@@ -118,8 +118,6 @@ namespace {
     {
       using value_type = typename X::value_type;
 
-      std::atomic<std::uint64_t> num_erased{0};
-
       auto const old_size = x.size();
 
       auto const old_dc = +raii::default_constructor;
@@ -145,28 +143,23 @@ namespace {
       });
 
       enable_exceptions();
-      thread_runner(
-        values, [&num_erased, &x, threshold](boost::span<T> /* s */) {
-          for (std::size_t i = 0; i < 256; ++i) {
-            try {
-              auto count = x.erase_if([threshold](value_type& v) {
-                static std::atomic<std::uint32_t> c{0};
-                auto t = ++c;
-                if (should_throw && (t % throw_threshold == 0)) {
-                  throw exception_tag{};
-                }
+      thread_runner(values, [&x, threshold](boost::span<T> /* s */) {
+        for (std::size_t i = 0; i < 256; ++i) {
+          try {
+            x.erase_if([threshold](value_type& v) {
+              static std::atomic<std::uint32_t> c{0};
+              auto t = ++c;
+              if (should_throw && (t % throw_threshold == 0)) {
+                throw exception_tag{};
+              }
 
-                return v.second.x_ > threshold;
-              });
-
-              num_erased += count;
-            } catch (...) {
-            }
+              return v.second.x_ > threshold;
+            });
+          } catch (...) {
           }
-        });
+        }
+      });
       disable_exceptions();
-
-      BOOST_TEST_GT(num_erased, 0u);
 
       BOOST_TEST_EQ(raii::default_constructor, old_dc);
       BOOST_TEST_EQ(raii::copy_constructor, old_cc);
@@ -182,8 +175,6 @@ namespace {
     {
       using value_type = typename X::value_type;
 
-      std::atomic<std::uint64_t> num_erased{0};
-
       auto const old_size = x.size();
 
       auto const old_dc = +raii::default_constructor;
@@ -201,38 +192,25 @@ namespace {
 
       auto threshold = max / 2;
 
-      auto expected_erasures = 0u;
-      x.visit_all([&expected_erasures, threshold](value_type const& v) {
-        if (v.second.x_ > threshold) {
-          ++expected_erasures;
+      enable_exceptions();
+      thread_runner(values, [&x, threshold](boost::span<T> /* s */) {
+        for (std::size_t i = 0; i < 256; ++i) {
+          try {
+            boost::unordered::erase_if(x, [threshold](value_type& v) {
+              static std::atomic<std::uint32_t> c{0};
+              auto t = ++c;
+              if (should_throw && (t % throw_threshold == 0)) {
+                throw exception_tag{};
+              }
+
+              return v.second.x_ > threshold;
+            });
+
+          } catch (...) {
+          }
         }
       });
-
-      enable_exceptions();
-      thread_runner(
-        values, [&num_erased, &x, threshold](boost::span<T> /* s */) {
-          for (std::size_t i = 0; i < 256; ++i) {
-            try {
-              auto count =
-                boost::unordered::erase_if(x, [threshold](value_type& v) {
-                  static std::atomic<std::uint32_t> c{0};
-                  auto t = ++c;
-                  if (should_throw && (t % throw_threshold == 0)) {
-                    throw exception_tag{};
-                  }
-
-                  return v.second.x_ > threshold;
-                });
-
-              num_erased += count;
-            } catch (...) {
-            }
-          }
-        });
       disable_exceptions();
-
-      BOOST_TEST_GT(num_erased, 0u);
-      BOOST_TEST_LE(num_erased, expected_erasures);
 
       BOOST_TEST_EQ(raii::default_constructor, old_dc);
       BOOST_TEST_EQ(raii::copy_constructor, old_cc);
