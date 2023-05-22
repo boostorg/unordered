@@ -191,6 +191,7 @@ local CFOA_TESTS =
   equality_tests
   fwd_tests
   exception_insert_tests
+  exception_erase_tests
 ;
 
 for local test in $(CFOA_TESTS)

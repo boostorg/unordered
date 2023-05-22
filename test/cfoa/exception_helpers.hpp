@@ -28,7 +28,7 @@ static std::size_t const num_threads =
 
 std::atomic_bool should_throw{false};
 
-constexpr std::uint32_t threshold = 2500;
+constexpr std::uint32_t throw_threshold = 2500;
 
 void enable_exceptions() { should_throw = true; }
 void disable_exceptions() { should_throw = false; }
@@ -45,8 +45,8 @@ struct stateful_hash
 
   void throw_helper() const
   {
-    ++c;
-    if (should_throw && (c % threshold == 0)) {
+    auto n = ++c;
+    if (should_throw && (n % throw_threshold == 0)) {
       throw exception_tag{};
     }
   }
@@ -95,8 +95,8 @@ struct stateful_key_equal
 
   void throw_helper() const
   {
-    ++c;
-    if (should_throw && (c % threshold == 0)) {
+    auto n = ++c;
+    if (should_throw && (n % throw_threshold == 0)) {
       throw exception_tag{};
     }
   }
@@ -143,8 +143,8 @@ template <class T> struct stateful_allocator
 
   void throw_helper() const
   {
-    ++c;
-    if (should_throw && (c % threshold == 0)) {
+    auto n = ++c;
+    if (should_throw && (n % 10 == 0)) {
       throw exception_tag{};
     }
   }
@@ -189,8 +189,8 @@ struct raii
   static std::atomic<std::uint32_t> c;
   void throw_helper() const
   {
-    ++c;
-    if (should_throw && (c % threshold == 0)) {
+    auto n = ++c;
+    if (should_throw && (n % throw_threshold == 0)) {
       throw exception_tag{};
     }
   }
