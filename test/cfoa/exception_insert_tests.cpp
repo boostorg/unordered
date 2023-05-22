@@ -105,6 +105,10 @@ namespace {
   {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
     {
+      for (std::size_t i = 0; i < 10; ++i) {
+        x.insert(values[i]);
+      }
+
       enable_exceptions();
       thread_runner(values, [&x](boost::span<T> s) {
         try {
@@ -333,6 +337,10 @@ namespace {
   {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
     {
+      for (std::size_t i = 0; i < 10; ++i) {
+        x.insert(values[i]);
+      }
+
       enable_exceptions();
       thread_runner(values, [&x](boost::span<T> s) {
         try {
@@ -351,6 +359,10 @@ namespace {
   {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
     {
+      for (std::size_t i = 0; i < 10; ++i) {
+        x.insert(values[i]);
+      }
+
       enable_exceptions();
       thread_runner(values, [&x](boost::span<T> s) {
         try {
