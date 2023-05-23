@@ -29,6 +29,7 @@ static std::size_t const num_threads =
 std::atomic_bool should_throw{false};
 
 constexpr std::uint32_t throw_threshold = 2500;
+constexpr std::uint32_t alloc_throw_threshold = 10;
 
 void enable_exceptions() { should_throw = true; }
 void disable_exceptions() { should_throw = false; }
@@ -136,15 +137,16 @@ struct stateful_key_equal
 };
 std::atomic<std::uint32_t> stateful_key_equal::c{0};
 
+static std::atomic<std::uint32_t> allocator_c = {};
+
 template <class T> struct stateful_allocator
 {
   int x_ = -1;
-  static std::atomic<std::uint32_t> c;
 
   void throw_helper() const
   {
-    auto n = ++c;
-    if (should_throw && ((n + 1) % 10 == 0)) {
+    auto n = ++allocator_c;
+    if (should_throw && ((n + 1) % alloc_throw_threshold == 0)) {
       throw exception_tag{};
     }
   }
@@ -173,8 +175,6 @@ template <class T> struct stateful_allocator
   bool operator==(stateful_allocator const& rhs) const { return x_ == rhs.x_; }
   bool operator!=(stateful_allocator const& rhs) const { return x_ != rhs.x_; }
 };
-
-template <class T> std::atomic<std::uint32_t> stateful_allocator<T>::c = {};
 
 struct raii
 {
@@ -289,7 +289,7 @@ struct raii
 
     stateful_hash::c = 0;
     stateful_key_equal::c = 0;
-    stateful_allocator<void>::c = 0;
+    allocator_c = 0;
   }
 
   friend void swap(raii& lhs, raii& rhs) { std::swap(lhs.x_, rhs.x_); }
