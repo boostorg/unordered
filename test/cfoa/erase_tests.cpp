@@ -369,13 +369,7 @@ namespace {
 
       BOOST_TEST_EQ(x.size(), reference_map.size());
 
-      using value_type = typename X::value_type;
-      BOOST_TEST_EQ(x.size(), x.visit_all([&](value_type const& kv) {
-        BOOST_TEST(reference_map.contains(kv.first));
-        if (rg == test::sequential) {
-          BOOST_TEST_EQ(kv.second, reference_map[kv.first]);
-        }
-      }));
+      test_fuzzy_matches_reference(x, reference_map, rg);
 
       eraser(values, x);
       test_fuzzy_matches_reference(x, reference_map, rg);

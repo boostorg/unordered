@@ -16,6 +16,7 @@ namespace {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
     {
       std::atomic<std::uint64_t> num_erased{0};
+
       auto const old_size = x.size();
 
       auto const old_dc = +raii::default_constructor;
@@ -24,33 +25,28 @@ namespace {
 
       auto const old_d = +raii::destructor;
 
-      BOOST_TEST_EQ(raii::default_constructor + raii::copy_constructor +
-                      raii::move_constructor,
-        raii::destructor + 2 * x.size());
-
       enable_exceptions();
       thread_runner(values, [&values, &num_erased, &x](boost::span<T>) {
         for (auto const& k : values) {
           try {
             auto count = x.erase(k.first);
-            num_erased += count;
             BOOST_TEST_LE(count, 1u);
             BOOST_TEST_GE(count, 0u);
+
+            num_erased += count;
           } catch (...) {
           }
         }
       });
       disable_exceptions();
 
+      BOOST_TEST_EQ(x.size(), old_size - num_erased);
+
       BOOST_TEST_EQ(raii::default_constructor, old_dc);
       BOOST_TEST_EQ(raii::copy_constructor, old_cc);
       BOOST_TEST_EQ(raii::move_constructor, old_mc);
 
-      BOOST_TEST_EQ(raii::destructor, old_d + 2 * old_size);
-
-      BOOST_TEST_EQ(x.size(), 0u);
-      BOOST_TEST(x.empty());
-      BOOST_TEST_EQ(num_erased, old_size);
+      BOOST_TEST_EQ(raii::destructor, old_d + 2 * num_erased);
     }
   } lvalue_eraser;
 
@@ -226,22 +222,17 @@ namespace {
     auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
     auto reference_map =
       boost::unordered_flat_map<raii, raii>(values.begin(), values.end());
+
     raii::reset_counts();
 
     {
-      X x;
-
+      X x(values.size());
       x.insert(values.begin(), values.end());
 
       BOOST_TEST_EQ(x.size(), reference_map.size());
+      BOOST_TEST_EQ(raii::destructor, 0u);
 
-      using value_type = typename X::value_type;
-      BOOST_TEST_EQ(x.size(), x.visit_all([&](value_type const& kv) {
-        BOOST_TEST(reference_map.contains(kv.first));
-        if (rg == test::sequential) {
-          BOOST_TEST_EQ(kv.second, reference_map[kv.first]);
-        }
-      }));
+      test_fuzzy_matches_reference(x, reference_map, rg);
 
       eraser(values, x);
       test_fuzzy_matches_reference(x, reference_map, rg);
