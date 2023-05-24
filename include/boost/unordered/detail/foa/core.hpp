@@ -1280,10 +1280,7 @@ public:
   }
 
   table_core(table_core&& x,const Allocator& al_):
-    hash_base{empty_init,std::move(x.h())},
-    pred_base{empty_init,std::move(x.pred())},
-    allocator_base{empty_init,al_},arrays(new_arrays(0)),
-    ml{initial_max_load()},size_{0}
+    table_core{std::move(x.h()),std::move(x.pred()),al_}
   {
     if(al()==x.al()){
       std::swap(arrays,x.arrays);
@@ -1797,6 +1794,15 @@ private:
   using hash_base=empty_value<Hash,0>;
   using pred_base=empty_value<Pred,1>;
   using allocator_base=empty_value<Allocator,2>;
+
+  /* used by allocator-extended move ctor */
+
+  table_core(Hash&& h_,Pred&& pred_,const Allocator& al_):
+    hash_base{empty_init,std::move(h_)},
+    pred_base{empty_init,std::move(pred_)},
+    allocator_base{empty_init,al_},arrays(new_arrays(0)),
+    ml{initial_max_load()},size_{0}
+    {}
 
   arrays_type new_arrays(std::size_t n)
   {
