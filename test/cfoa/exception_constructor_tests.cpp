@@ -154,27 +154,6 @@ namespace {
     }
   }
 
-  template <class G>
-  void iterator_range_allocator_constructor(G gen, test::random_generator rg)
-  {
-    auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
-
-    raii::reset_counts();
-
-    bool was_thrown = false;
-
-    enable_exceptions();
-    try {
-      map_type x(values.begin(), values.end(), allocator_type(3));
-    } catch (...) {
-      was_thrown = true;
-    }
-    disable_exceptions();
-
-    BOOST_TEST(was_thrown);
-    check_raii_counts();
-  }
-
   template <class G> void move_constructor(G gen, test::random_generator rg)
   {
     auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
