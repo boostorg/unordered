@@ -1040,7 +1040,12 @@ void swap_if(T&,T&){}
 inline void prefetch(const void* p)
 {
   (void) p;
-#if defined(BOOST_GCC)||defined(BOOST_CLANG)
+#if BOOST_WORKAROUND(BOOST_GCC, >= 120000) && defined(BOOST_UNORDERED_SSE2)
+  // gcc-12 and above seem to remove the `__bulitin_prefetch` call below so we
+  // manually insert the instruction via an asm declaration.
+  // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=109985
+  asm("prefetcht0 %[ptr]"::[ptr]"m"(*(char const*)p):);
+#elif defined(BOOST_GCC)||defined(BOOST_CLANG)
   __builtin_prefetch((const char*)p);
 #elif defined(BOOST_UNORDERED_SSE2)
   _mm_prefetch((const char*)p,_MM_HINT_T0);
