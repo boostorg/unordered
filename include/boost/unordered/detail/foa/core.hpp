@@ -85,6 +85,35 @@
   }while(0)
 #endif
 
+#if defined(BOOST_GCC)||defined(BOOST_CLANG)
+#define BOOST_UNORDERED_PREFETCH(p) __builtin_prefetch((const char*)p)
+#elif defined(BOOST_UNORDERED_SSE2)
+#define BOOST_UNORDERED_PREFETCH(p) _mm_prefetch((const char*)p,_MM_HINT_T0)
+#else
+#define BOOST_UNORDERED_PREFETCH(p)
+#endif
+
+/* We have experimentally confirmed that ARM architectures get a higher
+  * speedup when around the first half of the element slots in a group are
+  * prefetched, whereas for Intel just the first cache line is best.
+  * Please report back if you find better tunings for some particular
+  * architectures.
+  */
+#if BOOST_ARCH_ARM
+/* Cache line size can't be known at compile time, so we settle on
+  * the very frequent value of 64B.
+  */
+#define BOOST_UNORDERED_PREFETCH_ELEMENTS(p)                \
+  do{                                                       \
+    constexpr int  cache_line=64;                           \
+    const char    *p0=reinterpret_cast<const char*>(p),     \
+                  *p1=p0+sizeof(value_type)*N/2;            \
+    for(;p0<p1;p0+=cache_line)BOOST_UNORDERED_PREFETCH(p0); \
+  }while(0)
+#else
+#define BOOST_UNORDERED_PREFETCH_ELEMENTS(p) BOOST_UNORDERED_PREFETCH(p)
+#endif
+
 #ifdef __has_feature
 #define BOOST_UNORDERED_HAS_FEATURE(x) __has_feature(x)
 #else
@@ -1037,21 +1066,6 @@ void swap_if(T& x,T& y){using std::swap; swap(x,y);}
 template<bool B,typename T,typename std::enable_if<!B>::type* =nullptr>
 void swap_if(T&,T&){}
 
-inline void prefetch(const void* p)
-{
-  (void) p;
-#if BOOST_WORKAROUND(BOOST_GCC, >= 120000) && defined(BOOST_UNORDERED_SSE2)
-  // gcc-12 and above seem to remove the `__bulitin_prefetch` call below so we
-  // manually insert the instruction via an asm declaration.
-  // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=109985
-  asm("prefetcht0 %[ptr]"::[ptr]"m"(*(char const*)p):);
-#elif defined(BOOST_GCC)||defined(BOOST_CLANG)
-  __builtin_prefetch((const char*)p);
-#elif defined(BOOST_UNORDERED_SSE2)
-  _mm_prefetch((const char*)p,_MM_HINT_T0);
-#endif    
-}
-
 template<typename Allocator>
 struct is_std_allocator:std::false_type{};
 
@@ -1457,7 +1471,7 @@ public:
       if(mask){
         BOOST_UNORDERED_ASSUME(arrays.elements!=nullptr);
         auto p=arrays.elements+pos*N;
-        prefetch_elements(p);
+        BOOST_UNORDERED_PREFETCH_ELEMENTS(p);
         do{
           auto n=unchecked_countr_zero(mask);
           if(BOOST_LIKELY(bool(pred()(x,key_from(p[n]))))){
@@ -1648,28 +1662,6 @@ public:
   {
     /* excluding the sentinel */
     return pg->match_occupied()&~(int(pg==last-1)<<(N-1));
-  }
-
-  static inline void prefetch_elements(const element_type* p)
-  {
-    /* We have experimentally confirmed that ARM architectures get a higher
-     * speedup when around the first half of the element slots in a group are
-     * prefetched, whereas for Intel just the first cache line is best.
-     * Please report back if you find better tunings for some particular
-     * architectures.
-     */
-
-#if BOOST_ARCH_ARM
-    /* Cache line size can't be known at compile time, so we settle on
-     * the very frequent value of 64B.
-     */
-    constexpr int  cache_line=64;
-    const char    *p0=reinterpret_cast<const char*>(p),
-                  *p1=p0+sizeof(value_type)*N/2;
-    for(;p0<p1;p0+=cache_line)prefetch(p0);
-#else
-    prefetch(p);
-#endif
   }
 
   template<typename... Args>
