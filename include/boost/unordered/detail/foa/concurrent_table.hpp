@@ -949,7 +949,7 @@ private:
       auto mask=pg->match(hash);
       if(mask){
         auto p=this->arrays.elements+pos*N;
-        this->prefetch_elements(p);
+        BOOST_UNORDERED_PREFETCH_ELEMENTS(p);
         auto lck=access(access_mode,pos);
         do{
           auto n=unchecked_countr_zero(mask);
