@@ -85,33 +85,40 @@
   }while(0)
 #endif
 
+/* We use BOOST_UNORDERED_PREFETCH[_ELEMENTS] macros rather than proper
+ * functions because of https://gcc.gnu.org/bugzilla/show_bug.cgi?id=109985
+ */
+
 #if defined(BOOST_GCC)||defined(BOOST_CLANG)
-#define BOOST_UNORDERED_PREFETCH(p) __builtin_prefetch((const char*)p)
+#define BOOST_UNORDERED_PREFETCH(p) __builtin_prefetch((const char*)(p))
 #elif defined(BOOST_UNORDERED_SSE2)
-#define BOOST_UNORDERED_PREFETCH(p) _mm_prefetch((const char*)p,_MM_HINT_T0)
+#define BOOST_UNORDERED_PREFETCH(p) _mm_prefetch((const char*)(p),_MM_HINT_T0)
 #else
-#define BOOST_UNORDERED_PREFETCH(p)
+#define BOOST_UNORDERED_PREFETCH(p) ((void)0)
 #endif
 
 /* We have experimentally confirmed that ARM architectures get a higher
-  * speedup when around the first half of the element slots in a group are
-  * prefetched, whereas for Intel just the first cache line is best.
-  * Please report back if you find better tunings for some particular
-  * architectures.
-  */
+ * speedup when around the first half of the element slots in a group are
+ * prefetched, whereas for Intel just the first cache line is best.
+ * Please report back if you find better tunings for some particular
+ * architectures.
+ */
+
 #if BOOST_ARCH_ARM
 /* Cache line size can't be known at compile time, so we settle on
-  * the very frequent value of 64B.
-  */
-#define BOOST_UNORDERED_PREFETCH_ELEMENTS(p)                \
-  do{                                                       \
-    constexpr int  cache_line=64;                           \
-    const char    *p0=reinterpret_cast<const char*>(p),     \
-                  *p1=p0+sizeof(value_type)*N/2;            \
-    for(;p0<p1;p0+=cache_line)BOOST_UNORDERED_PREFETCH(p0); \
+ * the very frequent value of 64B.
+ */
+
+#define BOOST_UNORDERED_PREFETCH_ELEMENTS(p,N)                          \
+  do{                                                                   \
+    auto           BOOST_UNORDERED_P=(p);                               \
+    constexpr int  cache_line=64;                                       \
+    const char    *p0=reinterpret_cast<const char*>(BOOST_UNORDERED_P), \
+                  *p1=p0+sizeof(*BOOST_UNORDERED_P)*(N)/2;              \
+    for(;p0<p1;p0+=cache_line)BOOST_UNORDERED_PREFETCH(p0);             \
   }while(0)
 #else
-#define BOOST_UNORDERED_PREFETCH_ELEMENTS(p) BOOST_UNORDERED_PREFETCH(p)
+#define BOOST_UNORDERED_PREFETCH_ELEMENTS(p,N) BOOST_UNORDERED_PREFETCH(p)
 #endif
 
 #ifdef __has_feature
@@ -1471,7 +1478,7 @@ public:
       if(mask){
         BOOST_UNORDERED_ASSUME(arrays.elements!=nullptr);
         auto p=arrays.elements+pos*N;
-        BOOST_UNORDERED_PREFETCH_ELEMENTS(p);
+        BOOST_UNORDERED_PREFETCH_ELEMENTS(p,N);
         do{
           auto n=unchecked_countr_zero(mask);
           if(BOOST_LIKELY(bool(pred()(x,key_from(p[n]))))){
