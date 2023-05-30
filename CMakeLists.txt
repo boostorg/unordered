@@ -22,6 +22,8 @@ target_link_libraries(boost_unordered
     Boost::mp11
     Boost::predef
     Boost::preprocessor
+    Boost::smart_ptr
+    Boost::static_assert
     Boost::throw_exception
     Boost::tuple
     Boost::type_traits
