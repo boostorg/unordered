@@ -194,6 +194,7 @@ local CFOA_TESTS =
   exception_erase_tests
   exception_constructor_tests
   exception_assign_tests
+  exception_merge_tests
 ;
 
 for local test in $(CFOA_TESTS)
