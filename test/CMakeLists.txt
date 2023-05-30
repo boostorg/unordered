@@ -6,6 +6,9 @@ include(BoostTestJamfile OPTIONAL RESULT_VARIABLE HAVE_BOOST_TEST)
 
 if(HAVE_BOOST_TEST)
 
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+
 set(BOOST_TEST_LINK_LIBRARIES Boost::unordered Boost::core Boost::concept_check)
 
 function(fca_tests)
@@ -17,7 +20,7 @@ function(foa_tests)
 endfunction()
 
 function(cfoa_tests)
-  boost_test(PREFIX boost_unordered_cfoa ${ARGN})
+  boost_test(PREFIX boost_unordered_cfoa LINK_LIBRARIES Threads::Threads ${ARGN})
 endfunction()
 
 # FCA tests
