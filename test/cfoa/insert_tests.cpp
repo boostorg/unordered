@@ -543,6 +543,9 @@ namespace {
   boost::unordered::concurrent_flat_map<raii, raii>* map;
   boost::unordered::concurrent_flat_map<raii, raii, transp_hash,
     transp_key_equal>* trans_map;
+  boost::unordered::concurrent_flat_map<raii, raii, boost::hash<raii>,
+    std::equal_to<raii>, fancy_allocator<std::pair<raii const, raii> > >*
+    fancy_map;
 
 } // namespace
 
@@ -557,7 +560,7 @@ UNORDERED_TEST(
 
 UNORDERED_TEST(
   insert,
-  ((map))
+  ((map)(fancy_map))
   ((value_type_generator)(init_type_generator))
   ((lvalue_inserter)(rvalue_inserter)(iterator_range_inserter)
    (norehash_lvalue_inserter)(norehash_rvalue_inserter)

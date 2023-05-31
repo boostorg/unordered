@@ -403,4 +403,196 @@ template <class T> void shuffle_values(std::vector<T>& v)
   std::shuffle(v.begin(), v.end(), g);
 }
 
+template <class T> class ptr;
+template <class T> class const_ptr;
+template <class T> class fancy_allocator;
+
+struct void_ptr
+{
+  template <typename T> friend class ptr;
+
+private:
+  void* ptr_;
+
+public:
+  void_ptr() : ptr_(0) {}
+
+  template <typename T> explicit void_ptr(ptr<T> const& x) : ptr_(x.ptr_) {}
+
+  // I'm not using the safe bool idiom because the containers should be
+  // able to cope with bool conversions.
+  operator bool() const { return !!ptr_; }
+
+  bool operator==(void_ptr const& x) const { return ptr_ == x.ptr_; }
+  bool operator!=(void_ptr const& x) const { return ptr_ != x.ptr_; }
+};
+
+class void_const_ptr
+{
+  template <typename T> friend class const_ptr;
+
+private:
+  void* ptr_;
+
+public:
+  void_const_ptr() : ptr_(0) {}
+
+  template <typename T>
+  explicit void_const_ptr(const_ptr<T> const& x) : ptr_(x.ptr_)
+  {
+  }
+
+  // I'm not using the safe bool idiom because the containers should be
+  // able to cope with bool conversions.
+  operator bool() const { return !!ptr_; }
+
+  bool operator==(void_const_ptr const& x) const { return ptr_ == x.ptr_; }
+  bool operator!=(void_const_ptr const& x) const { return ptr_ != x.ptr_; }
+};
+
+template <class T> class ptr
+{
+  friend class fancy_allocator<T>;
+  friend class const_ptr<T>;
+  friend struct void_ptr;
+
+  T* ptr_;
+
+  ptr(T* x) : ptr_(x) {}
+
+public:
+  ptr() : ptr_(0) {}
+  explicit ptr(void_ptr const& x) : ptr_((T*)x.ptr_) {}
+
+  T& operator*() const { return *ptr_; }
+  T* operator->() const { return ptr_; }
+  ptr& operator++()
+  {
+    ++ptr_;
+    return *this;
+  }
+  ptr operator++(int)
+  {
+    ptr tmp(*this);
+    ++ptr_;
+    return tmp;
+  }
+  ptr operator+(std::ptrdiff_t s) const { return ptr<T>(ptr_ + s); }
+  friend ptr operator+(std::ptrdiff_t s, ptr p) { return ptr<T>(s + p.ptr_); }
+
+  std::ptrdiff_t operator-(ptr p) const { return ptr_ - p.ptr_; }
+  ptr operator-(std::ptrdiff_t s) const { return ptr(ptr_ - s); }
+  T& operator[](std::ptrdiff_t s) const { return ptr_[s]; }
+  bool operator!() const { return !ptr_; }
+
+  static ptr pointer_to(T& p) { return ptr(boost::addressof(p)); }
+
+  // I'm not using the safe bool idiom because the containers should be
+  // able to cope with bool conversions.
+  operator bool() const { return !!ptr_; }
+
+  bool operator==(ptr const& x) const { return ptr_ == x.ptr_; }
+  bool operator!=(ptr const& x) const { return ptr_ != x.ptr_; }
+  bool operator<(ptr const& x) const { return ptr_ < x.ptr_; }
+  bool operator>(ptr const& x) const { return ptr_ > x.ptr_; }
+  bool operator<=(ptr const& x) const { return ptr_ <= x.ptr_; }
+  bool operator>=(ptr const& x) const { return ptr_ >= x.ptr_; }
+};
+
+template <class T> class const_ptr
+{
+  friend class fancy_allocator<T>;
+  friend struct const_void_ptr;
+
+  T const* ptr_;
+
+  const_ptr(T const* ptr) : ptr_(ptr) {}
+
+public:
+  const_ptr() : ptr_(0) {}
+  const_ptr(ptr<T> const& x) : ptr_(x.ptr_) {}
+  explicit const_ptr(void_const_ptr const& x) : ptr_((T const*)x.ptr_) {}
+
+  T const& operator*() const { return *ptr_; }
+  T const* operator->() const { return ptr_; }
+  const_ptr& operator++()
+  {
+    ++ptr_;
+    return *this;
+  }
+  const_ptr operator++(int)
+  {
+    const_ptr tmp(*this);
+    ++ptr_;
+    return tmp;
+  }
+  const_ptr operator+(std::ptrdiff_t s) const { return const_ptr(ptr_ + s); }
+  friend const_ptr operator+(std::ptrdiff_t s, const_ptr p)
+  {
+    return ptr<T>(s + p.ptr_);
+  }
+  T const& operator[](int s) const { return ptr_[s]; }
+  bool operator!() const { return !ptr_; }
+  operator bool() const { return !!ptr_; }
+
+  bool operator==(const_ptr const& x) const { return ptr_ == x.ptr_; }
+  bool operator!=(const_ptr const& x) const { return ptr_ != x.ptr_; }
+  bool operator<(const_ptr const& x) const { return ptr_ < x.ptr_; }
+  bool operator>(const_ptr const& x) const { return ptr_ > x.ptr_; }
+  bool operator<=(const_ptr const& x) const { return ptr_ <= x.ptr_; }
+  bool operator>=(const_ptr const& x) const { return ptr_ >= x.ptr_; }
+};
+
+template <class T> class fancy_allocator
+{
+public:
+  typedef std::size_t size_type;
+  typedef std::ptrdiff_t difference_type;
+  typedef void_ptr void_pointer;
+  typedef void_const_ptr const_void_pointer;
+  typedef ptr<T> pointer;
+  typedef const_ptr<T> const_pointer;
+  typedef T& reference;
+  typedef T const& const_reference;
+  typedef T value_type;
+
+  template <class U> struct rebind
+  {
+    typedef fancy_allocator<U> other;
+  };
+
+  fancy_allocator() {}
+  template <class Y> fancy_allocator(fancy_allocator<Y> const&) {}
+  fancy_allocator(fancy_allocator const&) {}
+  ~fancy_allocator() {}
+
+  pointer address(reference r) { return pointer(&r); }
+  const_pointer address(const_reference r) { return const_pointer(&r); }
+
+  pointer allocate(size_type n)
+  {
+    return pointer(static_cast<T*>(::operator new(n * sizeof(T))));
+  }
+
+  template <class Y> pointer allocate(size_type n, const_ptr<Y>)
+  {
+    return pointer(static_cast<T*>(::operator new(n * sizeof(T))));
+  }
+
+  void deallocate(pointer p, size_type) { ::operator delete((void*)p.ptr_); }
+
+  template <class U, class... Args>
+  void construct(U* p, Args&&... args)
+  {
+    new ((void*)p) U(std::forward<Args>(args)...);
+  }
+
+  template <class U> void destroy(U* p) { p->~U(); }
+
+  size_type max_size() const { return 1000; }
+
+public:
+  fancy_allocator& operator=(fancy_allocator const&) { return *this; }
+};
+
 #endif // BOOST_UNORDERED_TEST_CFOA_HELPERS_HPP
