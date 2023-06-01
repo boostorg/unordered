@@ -416,9 +416,6 @@ template <class T> using span_value_type = typename T::value_type;
 
 void check_raii_counts()
 {
-  BOOST_TEST_GE(raii::default_constructor, 0u);
-  BOOST_TEST_GE(raii::copy_constructor, 0u);
-  BOOST_TEST_GE(raii::move_constructor, 0u);
   BOOST_TEST_GT(raii::destructor, 0u);
 
   BOOST_TEST_EQ(
