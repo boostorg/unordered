@@ -409,19 +409,13 @@ namespace boost {
       /// Modifiers
       ///
 
-      BOOST_FORCEINLINE bool insert(value_type const& obj)
+      template <class Ty>
+      BOOST_FORCEINLINE auto insert(Ty&& value)
+        -> decltype(table_.insert(std::forward<Ty>(value)))
       {
-        return table_.insert(obj);
-      }
-      BOOST_FORCEINLINE bool insert(value_type&& obj)
-      {
-        return table_.insert(std::move(obj));
+        return table_.insert(std::forward<Ty>(value));
       }
 
-      BOOST_FORCEINLINE bool insert(init_type const& obj)
-      {
-        return table_.insert(obj);
-      }
       BOOST_FORCEINLINE bool insert(init_type&& obj)
       {
         return table_.insert(std::move(obj));
@@ -464,25 +458,11 @@ namespace boost {
           [&](value_type& m) { m.second = std::forward<M>(obj); });
       }
 
-      template <class F>
-      BOOST_FORCEINLINE bool insert_or_visit(value_type const& obj, F f)
+      template <class Ty, class F>
+      BOOST_FORCEINLINE auto insert_or_visit(Ty&& value, F f)
+        -> decltype(table_.insert_or_visit(std::forward<Ty>(value), f))
       {
-        BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
-        return table_.insert_or_visit(obj, f);
-      }
-
-      template <class F>
-      BOOST_FORCEINLINE bool insert_or_visit(value_type&& obj, F f)
-      {
-        BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
-        return table_.insert_or_visit(std::move(obj), f);
-      }
-
-      template <class F>
-      BOOST_FORCEINLINE bool insert_or_visit(init_type const& obj, F f)
-      {
-        BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
-        return table_.insert_or_visit(obj, f);
+        return table_.insert_or_visit(std::forward<Ty>(value), f);
       }
 
       template <class F>
@@ -508,25 +488,12 @@ namespace boost {
         this->insert_or_visit(ilist.begin(), ilist.end(), f);
       }
 
-      template <class F>
-      BOOST_FORCEINLINE bool insert_or_cvisit(value_type const& obj, F f)
+      template <class Ty, class F>
+      BOOST_FORCEINLINE auto insert_or_cvisit(Ty&& value, F f)
+        -> decltype(table_.insert_or_cvisit(std::forward<Ty>(value), f))
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
-        return table_.insert_or_cvisit(obj, f);
-      }
-
-      template <class F>
-      BOOST_FORCEINLINE bool insert_or_cvisit(value_type&& obj, F f)
-      {
-        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
-        return table_.insert_or_cvisit(std::move(obj), f);
-      }
-
-      template <class F>
-      BOOST_FORCEINLINE bool insert_or_cvisit(init_type const& obj, F f)
-      {
-        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
-        return table_.insert_or_cvisit(obj, f);
+        return table_.insert_or_cvisit(std::forward<Ty>(value), f);
       }
 
       template <class F>

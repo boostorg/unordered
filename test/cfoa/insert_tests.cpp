@@ -540,6 +540,18 @@ namespace {
     }
   }
 
+  UNORDERED_AUTO_TEST (insert_sfinae_test) {
+    // mostly a compile-time tests to ensure that there's no ambiguity when a
+    // user does this
+    using value_type =
+      typename boost::unordered::concurrent_flat_map<raii, raii>::value_type;
+    boost::unordered::concurrent_flat_map<raii, raii> x;
+    x.insert({1, 2});
+
+    x.insert_or_visit({2, 3}, [](value_type&) {});
+    x.insert_or_cvisit({3, 4}, [](value_type const&) {});
+  }
+
   boost::unordered::concurrent_flat_map<raii, raii>* map;
   boost::unordered::concurrent_flat_map<raii, raii, transp_hash,
     transp_key_equal>* trans_map;
