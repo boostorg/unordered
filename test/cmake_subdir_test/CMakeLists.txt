@@ -22,7 +22,6 @@ move
 mp11
 predef
 preprocessor
-smart_ptr
 static_assert
 throw_exception
 tuple
