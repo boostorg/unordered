@@ -7,9 +7,13 @@
 #include "../helpers/unordered.hpp"
 
 #ifdef BOOST_UNORDERED_FOA_TESTS
+
+#include <boost/unordered/concurrent_flat_map.hpp>
+
 void foo(boost::unordered_flat_set<int>& x1,
   boost::unordered_flat_map<int, int>& x2, boost::unordered_node_set<int>& x3,
-  boost::unordered_node_map<int, int>& x4)
+  boost::unordered_node_map<int, int>& x4,
+  boost::concurrent_flat_map<int, int>& x5)
 {
 #if BOOST_WORKAROUND(BOOST_CODEGEARC, BOOST_TESTED_AT(0x0613))
   struct dummy
@@ -23,6 +27,7 @@ void foo(boost::unordered_flat_set<int>& x1,
   x2[2] = 2;
   x3.insert(3);
   x4.insert(std::make_pair(4, 5));
+  x5.insert(std::make_pair(5, 6));
 }
 #else
 void foo(boost::unordered_set<int>& x1, boost::unordered_map<int, int>& x2,
