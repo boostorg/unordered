@@ -3,7 +3,7 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include "helpers.hpp"
-
+#include <boost/config/workaround.hpp>
 #include <boost/unordered/concurrent_flat_map_fwd.hpp>
 
 test::seed_t initialize_seed{32304628};
@@ -37,10 +37,14 @@ bool unequal_call(boost::unordered::concurrent_flat_map<T, T>& x1,
 
 using map_type = boost::unordered::concurrent_flat_map<int, int>;
 
+#if BOOST_WORKAROUND(BOOST_CLANG_VERSION, != 30700)
+
 UNORDERED_AUTO_TEST (fwd_swap_call) {
   map_type x1, x2;
   swap_call(x1, x2);
 }
+
+#endif
 
 UNORDERED_AUTO_TEST (fwd_equal_call) {
   map_type x1, x2;
