@@ -47,9 +47,9 @@ jobs:
           - { compiler: gcc-10,    cxxstd: '03,11,14,17,20', os: ubuntu-22.04, install: 'g++-10' }
           - { compiler: gcc-11,    cxxstd: '03,11,14,17,20', os: ubuntu-22.04, install: 'g++-11' }
           - { name: "gcc-12 w/ sanitizers (03,11,14)", sanitize: yes,
-              compiler: gcc-12,    cxxstd: '03,11,14',       os: ubuntu-22.04, ccache_key: "san1" }
+              compiler: gcc-12,    cxxstd: '03,11,14',       os: ubuntu-22.04 }
           - { name: "gcc-12 w/ sanitizers (17,20,2b)", sanitize: yes,
-              compiler: gcc-12,    cxxstd: '17,20,2b',       os: ubuntu-22.04, ccache_key: "san2" }
+              compiler: gcc-12,    cxxstd: '17,20,2b',       os: ubuntu-22.04 }
           - { name: Collect coverage, coverage: yes,
               compiler: gcc-12,     cxxstd: '03,20',          os: ubuntu-22.04, install: 'g++-12-multilib', address-model: '32,64', ccache_key: "cov" }
 
