@@ -36,6 +36,7 @@
 #include <cstring>
 #include <limits>
 #include <memory>
+#include <new>
 #include <tuple>
 #include <type_traits>
 #include <utility>
