@@ -64,20 +64,33 @@ using is_execution_policy=std::false_type;
 
 namespace foa{
 
-#if defined(BOOST_MSVC)
-#pragma warning(push)
-#pragma warning(disable:4324) /* padded structure due to alignas */
-#endif
-
-template<typename T>
-struct alignas(64) cacheline_protected:T
+template<typename T,std::size_t N>
+class cache_aligned_array
 {
-  using T::T;
-};
+public:
+  cache_aligned_array(){for(std::size_t n=0;n<N;)::new (data(n++)) T();}
+  ~cache_aligned_array(){for(auto n=N;n>0;)data(n--)->~T();}
+  cache_aligned_array(const cache_aligned_array&)=delete;
+  cache_aligned_array& operator=(const cache_aligned_array&)=delete;
 
-#if defined(BOOST_MSVC)
-#pragma warning(pop) /* C4324 */
-#endif
+  T& operator[](std::size_t pos)noexcept{return *data(pos);}
+
+private:
+  static constexpr std::size_t cacheline=64;
+  static constexpr std::size_t element_offset=
+    (sizeof(T)+cacheline-1)/cacheline*cacheline;
+
+  BOOST_STATIC_ASSERT(alignof(T)<=cacheline);
+
+  T* data(std::size_t pos)noexcept
+  {
+    return reinterpret_cast<T*>(
+      (reinterpret_cast<uintptr_t>(&buf)+cacheline-1)/cacheline*cacheline+
+      pos*element_offset);
+  }
+
+  unsigned char buf[element_offset*N+cacheline-1];
+};
 
 template<typename Mutex,std::size_t N>
 class multimutex
@@ -95,7 +108,7 @@ public:
   void unlock()noexcept{for(auto n=N;n>0;)mutexes[--n].unlock();}
 
 private:
-  Mutex mutexes[N];
+  cache_aligned_array<Mutex,N> mutexes;
 };
 
 /* std::shared_lock is C++14 */
@@ -785,7 +798,7 @@ public:
   }
 
 private:
-  using mutex_type=cacheline_protected<rw_spinlock>;
+  using mutex_type=rw_spinlock;
   using multimutex_type=multimutex<mutex_type,128>; // TODO: adapt 128 to the machine
   using shared_lock_guard=shared_lock<mutex_type>;
   using exclusive_lock_guard=lock_guard<multimutex_type>;
