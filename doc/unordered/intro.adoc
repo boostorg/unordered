@@ -34,7 +34,7 @@ boost::unordered_set +
 boost::unordered_map +
 boost::unordered_multiset +
 boost::unordered_multimap
-^| N/A
+^|
 
 ^.^h|*Open addressing*
 ^m| boost::unordered_node_set + 
@@ -85,7 +85,7 @@ namespace boost {
 }
 ----
 
-To store an object in an unordered associative container requires both a
+Storing an object in an unordered associative container requires both a
 key equality function and a hash function. The default function objects in
 the standard containers support a few basic types including integer types,
 floating point types, pointer types, and the standard strings. Since
