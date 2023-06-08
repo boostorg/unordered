@@ -1786,8 +1786,11 @@ public:
   }
 
   arrays_type    arrays;
+  unsigned char  pad1[64];
   size_impl_type ml;
+  unsigned char  pad2[64];
   size_impl_type size_;
+  unsigned char  pad3[64];
 
 private:
   template<
