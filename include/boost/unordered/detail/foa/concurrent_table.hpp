@@ -300,15 +300,17 @@ struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy>
   group_access *group_accesses;
 };
 
-struct cache_aligned_size_control
+struct atomic_size_control
 {
   static constexpr auto atomic_size_t_size=sizeof(std::atomic<std::size_t>);
   BOOST_STATIC_ASSERT(atomic_size_t_size<cacheline_size);
 
-  cache_aligned_size_control(std::size_t ml_,std::size_t size_):
+  atomic_size_control(std::size_t ml_,std::size_t size_):
     pad0_{},ml{ml_},pad1_{},size{size_}{}
-  cache_aligned_size_control(cache_aligned_size_control& x):
+  atomic_size_control(atomic_size_control& x):
     pad0_{},ml{x.ml.load()},pad1_{},size{x.size.load()}{}
+
+  /* padding to avoid false sharing internally and with sorrounding data */
 
   unsigned char            pad0_[cacheline_size-atomic_size_t_size];
   std::atomic<std::size_t> ml;
@@ -326,7 +328,7 @@ swap_atomic_size_t(std::atomic<std::size_t>& x,std::atomic<std::size_t>& y)
   y=tmp;
 }
 
-inline void swap(cache_aligned_size_control& x,cache_aligned_size_control& y)
+inline void swap(atomic_size_control& x,atomic_size_control& y)
 {
   swap_atomic_size_t(x.ml,y.ml);
   swap_atomic_size_t(x.size,y.size);
@@ -392,7 +394,7 @@ inline void swap(cache_aligned_size_control& x,cache_aligned_size_control& y)
 template <typename TypePolicy,typename Hash,typename Pred,typename Allocator>
 using concurrent_table_core_impl=table_core<
   TypePolicy,group15<atomic_integral>,concurrent_table_arrays,
-  cache_aligned_size_control,Hash,Pred,Allocator>;
+  atomic_size_control,Hash,Pred,Allocator>;
 
 #include <boost/unordered/detail/foa/ignore_wshadow.hpp>
 
