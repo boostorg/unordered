@@ -132,7 +132,7 @@ by using `cvisit` overloads (for instance, `insert_or_cvisit`) and may result
 in higher parallelization. Consult the xref:#concurrent_flat_map[reference]
 for a complete list of available operations.
 
-== Whole-table Visitation
+== Whole-Table Visitation
 
 In the absence of iterators, `boost::concurrent_flat_map` provides `visit_all`
 as an alternative way to process all the elements in the map:

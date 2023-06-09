@@ -1234,7 +1234,7 @@ alloc_make_insert_type(const Allocator& al,Args&&... args)
 
 template<
   typename TypePolicy,typename Group,template<typename...> class Arrays,
-  typename SizeImpl,typename Hash,typename Pred,typename Allocator
+  typename SizeControl,typename Hash,typename Pred,typename Allocator
 >
 class 
 
@@ -1258,7 +1258,7 @@ public:
   using alloc_traits=boost::allocator_traits<Allocator>;
   using element_type=typename type_policy::element_type;
   using arrays_type=Arrays<element_type,group_type,size_policy>;
-  using size_impl_type=SizeImpl;
+  using size_ctrl_type=SizeControl;
 
   using key_type=typename type_policy::key_type;
   using init_type=typename type_policy::init_type;
@@ -1279,7 +1279,7 @@ public:
     const Pred& pred_=Pred(),const Allocator& al_=Allocator()):
     hash_base{empty_init,h_},pred_base{empty_init,pred_},
     allocator_base{empty_init,al_},arrays(new_arrays(n)),
-    ml{initial_max_load()},size_{0}
+    size_ctrl{initial_max_load(),0}
     {}
 
   table_core(const table_core& x):
@@ -1293,11 +1293,11 @@ public:
     hash_base{empty_init,std::move(x.h())},
     pred_base{empty_init,std::move(x.pred())},
     allocator_base{empty_init,std::move(x.al())},
-    arrays(x.arrays),ml{std::size_t(x.ml)},size_{std::size_t(x.size_)}
+    arrays(x.arrays),size_ctrl{x.size_ctrl}
   {
     x.arrays=x.new_arrays(0);
-    x.ml=x.initial_max_load();
-    x.size_=0;
+    x.size_ctrl.ml=x.initial_max_load();
+    x.size_ctrl.size=0;
   }
 
   table_core(const table_core& x,const Allocator& al_):
@@ -1310,9 +1310,9 @@ public:
     table_core{std::move(x.h()),std::move(x.pred()),al_}
   {
     if(al()==x.al()){
-      std::swap(arrays,x.arrays);
-      swap_size_impl(size_,x.size_);
-      swap_size_impl(ml,x.ml);
+      using std::swap;
+      swap(arrays,x.arrays);
+      swap(size_ctrl,x.size_ctrl);
     }
     else{
       reserve(x.size());
@@ -1410,8 +1410,7 @@ public:
         reserve(0);
         move_assign_if<pocma>(al(),x.al());
         swap(arrays,x.arrays);
-        swap_size_impl(ml,x.ml);
-        swap_size_impl(size_,x.size_);
+        swap(size_ctrl,x.size_ctrl);
       }
       else{
         /* noshrink: favor memory reuse over tightness */
@@ -1437,7 +1436,7 @@ public:
   allocator_type get_allocator()const noexcept{return al();}
 
   bool        empty()const noexcept{return size()==0;}
-  std::size_t size()const noexcept{return size_;}
+  std::size_t size()const noexcept{return size_ctrl.size;}
   std::size_t max_size()const noexcept{return SIZE_MAX;}
 
   BOOST_FORCEINLINE
@@ -1522,8 +1521,7 @@ public:
     swap(h(),x.h());
     swap(pred(),x.pred());
     swap(arrays,x.arrays);
-    swap_size_impl(ml,x.ml);
-    swap_size_impl(size_,x.size_);
+    swap(size_ctrl,x.size_ctrl);
   }
 
   void clear()noexcept
@@ -1541,8 +1539,8 @@ public:
         pg->initialize();
       }
       arrays.groups[arrays.groups_size_mask].set_sentinel();
-      ml=initial_max_load();
-      size_=0;
+      size_ctrl.ml=initial_max_load();
+      size_ctrl.size=0;
     }
   }
 
@@ -1562,7 +1560,7 @@ public:
 
   float max_load_factor()const noexcept{return mlf;}
 
-  std::size_t max_load()const noexcept{return ml;}
+  std::size_t max_load()const noexcept{return size_ctrl.ml;}
 
   void rehash(std::size_t n)
   {
@@ -1678,7 +1676,7 @@ public:
   {
     auto res=nosize_unchecked_emplace_at(
       arrays,pos0,hash,std::forward<Args>(args)...);
-    ++size_;
+    ++size_ctrl.size;
     return res;
   }
 
@@ -1708,7 +1706,7 @@ public:
 
     /* new_arrays_ lifetime taken care of by unchecked_rehash */
     unchecked_rehash(new_arrays_);
-    ++size_;
+    ++size_ctrl.size;
     return it;
   }
 
@@ -1725,7 +1723,7 @@ public:
         auto new_arrays_=new_arrays(n);
         delete_arrays(arrays);
         arrays=new_arrays_;
-        ml=initial_max_load();
+        size_ctrl.ml=initial_max_load();
       }
     }
   }
@@ -1786,8 +1784,7 @@ public:
   }
 
   arrays_type    arrays;
-  size_impl_type ml;
-  size_impl_type size_;
+  size_ctrl_type size_ctrl;
 
 private:
   template<
@@ -1806,7 +1803,7 @@ private:
     hash_base{empty_init,std::move(h_)},
     pred_base{empty_init,std::move(pred_)},
     allocator_base{empty_init,al_},arrays(new_arrays(0)),
-    ml{initial_max_load()},size_{0}
+    size_ctrl{initial_max_load(),0}
     {}
 
   arrays_type new_arrays(std::size_t n)
@@ -1876,7 +1873,7 @@ private:
     if(arrays.elements){
       copy_elements_array_from(x);
       copy_groups_array_from(x);
-      size_=std::size_t(x.size_);
+      size_ctrl.size=std::size_t(x.size_ctrl.size);
     }
   }
 
@@ -1961,23 +1958,15 @@ private:
     }
   }
 
-  static inline void swap_size_impl(size_impl_type& x,size_impl_type& y)
-  {
-    /* std::swap can't be used on non-assignable atomics */
-    std::size_t tmp=x;
-    x=static_cast<std::size_t>(y);
-    y=tmp;
-  }
-
   void recover_slot(unsigned char* pc)
   {
     /* If this slot potentially caused overflow, we decrease the maximum load so
      * that average probe length won't increase unboundedly in repeated
      * insert/erase cycles (drift).
      */
-    ml-=group_type::maybe_caused_overflow(pc);
+    size_ctrl.ml-=group_type::maybe_caused_overflow(pc);
     group_type::reset(pc);
-    --size_;
+    --size_ctrl.size;
   }
 
   void recover_slot(group_type* pg,std::size_t pos)
@@ -2043,7 +2032,7 @@ private:
     }
     delete_arrays(arrays);
     arrays=new_arrays_;
-    ml=initial_max_load();
+    size_ctrl.ml=initial_max_load();
   }
 
   template<typename Value>

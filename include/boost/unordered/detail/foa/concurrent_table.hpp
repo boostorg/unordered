@@ -18,6 +18,7 @@
 #include <boost/core/no_exceptions_support.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/mp11/tuple.hpp>
+#include <boost/static_assert.hpp>
 #include <boost/unordered/detail/foa/core.hpp>
 #include <boost/unordered/detail/foa/rw_spinlock.hpp>
 #include <boost/unordered/detail/foa/tuple_rotate_right.hpp>
@@ -64,6 +65,8 @@ using is_execution_policy=std::false_type;
 
 namespace foa{
 
+static constexpr std::size_t cacheline_size=64;
+
 template<typename T,std::size_t N>
 class cache_aligned_array
 {
@@ -76,20 +79,20 @@ public:
   T& operator[](std::size_t pos)noexcept{return *data(pos);}
 
 private:
-  static constexpr std::size_t cacheline=64;
   static constexpr std::size_t element_offset=
-    (sizeof(T)+cacheline-1)/cacheline*cacheline;
+    (sizeof(T)+cacheline_size-1)/cacheline_size*cacheline_size;
 
-  BOOST_STATIC_ASSERT(alignof(T)<=cacheline);
+  BOOST_STATIC_ASSERT(alignof(T)<=cacheline_size);
 
   T* data(std::size_t pos)noexcept
   {
     return reinterpret_cast<T*>(
-      (reinterpret_cast<uintptr_t>(&buf)+cacheline-1)/cacheline*cacheline+
-      pos*element_offset);
+      (reinterpret_cast<uintptr_t>(&buf)+cacheline_size-1)/
+        cacheline_size*cacheline_size
+      +pos*element_offset);
   }
 
-  unsigned char buf[element_offset*N+cacheline-1];
+  unsigned char buf[element_offset*N+cacheline_size-1];
 };
 
 template<typename Mutex,std::size_t N>
@@ -297,6 +300,40 @@ struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy>
   group_access *group_accesses;
 };
 
+struct atomic_size_control
+{
+  static constexpr auto atomic_size_t_size=sizeof(std::atomic<std::size_t>);
+  BOOST_STATIC_ASSERT(atomic_size_t_size<cacheline_size);
+
+  atomic_size_control(std::size_t ml_,std::size_t size_):
+    pad0_{},ml{ml_},pad1_{},size{size_}{}
+  atomic_size_control(atomic_size_control& x):
+    pad0_{},ml{x.ml.load()},pad1_{},size{x.size.load()}{}
+
+  /* padding to avoid false sharing internally and with sorrounding data */
+
+  unsigned char            pad0_[cacheline_size-atomic_size_t_size];
+  std::atomic<std::size_t> ml;
+  unsigned char            pad1_[cacheline_size-atomic_size_t_size];
+  std::atomic<std::size_t> size;
+};
+
+/* std::swap can't be used on non-assignable atomics */
+
+inline void
+swap_atomic_size_t(std::atomic<std::size_t>& x,std::atomic<std::size_t>& y)
+{
+  std::size_t tmp=x;
+  x=static_cast<std::size_t>(y);
+  y=tmp;
+}
+
+inline void swap(atomic_size_control& x,atomic_size_control& y)
+{
+  swap_atomic_size_t(x.ml,y.ml);
+  swap_atomic_size_t(x.size,y.size);
+}
+
 /* foa::concurrent_table serves as the foundation for end-user concurrent
  * hash containers. The TypePolicy parameter can specify flat/node-based
  * map-like and set-like containers, though currently we're only providing
@@ -357,7 +394,7 @@ struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy>
 template <typename TypePolicy,typename Hash,typename Pred,typename Allocator>
 using concurrent_table_core_impl=table_core<
   TypePolicy,group15<atomic_integral>,concurrent_table_arrays,
-  std::atomic<std::size_t>,Hash,Pred,Allocator>;
+  atomic_size_control,Hash,Pred,Allocator>;
 
 #include <boost/unordered/detail/foa/ignore_wshadow.hpp>
 
@@ -988,8 +1025,8 @@ private:
 
   std::size_t unprotected_size()const
   {
-    std::size_t m=this->ml;
-    std::size_t s=this->size_;
+    std::size_t m=this->size_ctrl.ml;
+    std::size_t s=this->size_ctrl.size;
     return s<=m?s:m;
   }
 
@@ -1105,7 +1142,7 @@ private:
 
     if(this->find(k,pos0,hash))return false;
 
-    if(BOOST_LIKELY(this->size_<this->ml)){
+    if(BOOST_LIKELY(this->size_ctrl.size<this->size_ctrl.ml)){
       this->unchecked_emplace_at(pos0,hash,std::forward<Args>(args)...);
     }
     else{
@@ -1118,15 +1155,15 @@ private:
   {
     reserve_size(concurrent_table& x_):x{x_}
     {
-      size_=++x.size_;
+      size_=++x.size_ctrl.size;
     }
 
     ~reserve_size()
     {
-      if(!commit_)--x.size_;
+      if(!commit_)--x.size_ctrl.size;
     }
 
-    bool succeeded()const{return size_<=x.ml;}
+    bool succeeded()const{return size_<=x.size_ctrl.ml;}
 
     void commit(){commit_=true;}
 
@@ -1200,7 +1237,9 @@ private:
   void rehash_if_full()
   {
     auto lck=exclusive_access();
-    if(this->size_==this->ml)this->unchecked_rehash_for_growth();
+    if(this->size_ctrl.size==this->size_ctrl.ml){
+      this->unchecked_rehash_for_growth();
+    }
   }
 
   template<typename GroupAccessMode,typename F>
