@@ -46,6 +46,12 @@ struct plain_integral
   Integral n;
 };
 
+struct plain_size_control
+{
+  std::size_t ml;
+  std::size_t size;
+};
+
 template<typename,typename,typename,typename>
 class table;
 
@@ -221,7 +227,7 @@ private:
 template <typename TypePolicy,typename Hash,typename Pred,typename Allocator>
 using table_core_impl=
   table_core<TypePolicy,group15<plain_integral>,table_arrays,
-  std::size_t,Hash,Pred,Allocator>;
+  plain_size_control,Hash,Pred,Allocator>;
 
 #include <boost/unordered/detail/foa/ignore_wshadow.hpp>
 
@@ -475,7 +481,7 @@ private:
     if(loc){
       return {make_iterator(loc),false};
     }
-    if(BOOST_LIKELY(this->size_<this->ml)){
+    if(BOOST_LIKELY(this->size_ctrl.size<this->size_ctrl.ml)){
       return {
         make_iterator(
           this->unchecked_emplace_at(pos0,hash,std::forward<Args>(args)...)),
