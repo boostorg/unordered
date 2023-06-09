@@ -18,6 +18,7 @@
 #include <boost/core/no_exceptions_support.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/mp11/tuple.hpp>
+#include <boost/static_assert.hpp>
 #include <boost/unordered/detail/foa/core.hpp>
 #include <boost/unordered/detail/foa/rw_spinlock.hpp>
 #include <boost/unordered/detail/foa/tuple_rotate_right.hpp>
