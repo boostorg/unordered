@@ -17,6 +17,7 @@ on:
       - bugfix/**
       - fix/**
       - pr/**
+      - feature/cfoa-size-padding
 
 concurrency:
   group: ${{format('{0}:{1}', github.repository, github.ref)}}
