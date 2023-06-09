@@ -1310,7 +1310,8 @@ public:
     table_core{std::move(x.h()),std::move(x.pred()),al_}
   {
     if(al()==x.al()){
-      std::swap(arrays,x.arrays);
+      using std::swap;
+      swap(arrays,x.arrays);
       swap(size_ctrl,x.size_ctrl);
     }
     else{
