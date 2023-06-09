@@ -307,6 +307,8 @@ struct cache_aligned_size_control
 
   cache_aligned_size_control(std::size_t ml_,std::size_t size_):
     pad0_{},ml{ml_},pad1_{},size{size_}{}
+  cache_aligned_size_control(cache_aligned_size_control& x):
+    pad0_{},ml{x.ml.load()},pad1_{},size{x.size.load()}{}
 
   unsigned char            pad0_[cacheline_size-atomic_size_t_size];
   std::atomic<std::size_t> ml;
