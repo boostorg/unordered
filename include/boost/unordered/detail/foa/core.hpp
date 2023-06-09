@@ -1293,7 +1293,7 @@ public:
     hash_base{empty_init,std::move(x.h())},
     pred_base{empty_init,std::move(x.pred())},
     allocator_base{empty_init,std::move(x.al())},
-    arrays(x.arrays),size_ctrl{x.size_ctrl}
+    arrays(x.arrays),size_ctrl(x.size_ctrl)
   {
     x.arrays=x.new_arrays(0);
     x.size_ctrl.ml=x.initial_max_load();
