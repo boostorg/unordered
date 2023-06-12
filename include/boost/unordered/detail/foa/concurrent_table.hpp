@@ -30,6 +30,7 @@
 #include <type_traits>
 #include <tuple>
 #include <utility>
+#include "oneapi/tbb/spin_rw_mutex.h"
 
 #if !defined(BOOST_UNORDERED_DISABLE_PARALLEL_ALGORITHMS)
 #if defined(BOOST_UNORDERED_ENABLE_PARALLEL_ALGORITHMS)|| \
@@ -211,7 +212,7 @@ struct atomic_integral
 
 struct group_access
 {    
-  using mutex_type=rw_spinlock;
+  using mutex_type=tbb::spin_rw_mutex;
   using shared_lock_guard=shared_lock<mutex_type>;
   using exclusive_lock_guard=lock_guard<mutex_type>;
   using insert_counter_type=std::atomic<boost::uint32_t>;
