@@ -369,7 +369,7 @@ namespace boost {
       void insert(InputIterator begin, InputIterator end)
       {
         for (auto pos = begin; pos != end; ++pos) {
-          table_.insert(*pos);
+          table_.emplace(*pos);
         }
       }
 
@@ -421,7 +421,7 @@ namespace boost {
       {
         BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
         for (; first != last; ++first) {
-          table_.insert_or_visit(*first, f);
+          table_.emplace_or_visit(*first, f);
         }
       }
 
@@ -452,7 +452,7 @@ namespace boost {
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         for (; first != last; ++first) {
-          table_.insert_or_cvisit(*first, f);
+          table_.emplace_or_cvisit(*first, f);
         }
       }
 

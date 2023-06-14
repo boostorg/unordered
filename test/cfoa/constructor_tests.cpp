@@ -605,6 +605,7 @@ namespace {
   }
 
   UNORDERED_AUTO_TEST (initializer_list_with_all_params) {
+    // hard-code 11 unique values
     std::initializer_list<map_value_type> ilist{
       map_value_type{raii{0}, raii{0}},
       map_value_type{raii{1}, raii{1}},
@@ -640,7 +641,9 @@ namespace {
       BOOST_TEST_EQ(x.key_eq(), key_equal(2));
       BOOST_TEST(x.get_allocator() == allocator_type(3));
 
-      BOOST_TEST_EQ(raii::move_constructor, 0u);
+      BOOST_TEST_EQ(raii::default_constructor, 0u);
+      BOOST_TEST_EQ(raii::copy_constructor, 2 * ilist.size());
+      BOOST_TEST_EQ(raii::move_constructor, 2 * 11u);
     }
     check_raii_counts();
 
@@ -654,7 +657,9 @@ namespace {
       BOOST_TEST_EQ(x.key_eq(), key_equal());
       BOOST_TEST(x.get_allocator() == allocator_type(3));
 
-      BOOST_TEST_EQ(raii::move_constructor, 0u);
+      BOOST_TEST_EQ(raii::default_constructor, 0u);
+      BOOST_TEST_EQ(raii::copy_constructor, 2 * ilist.size());
+      BOOST_TEST_EQ(raii::move_constructor, 2 * 11u);
     }
     check_raii_counts();
 
@@ -668,7 +673,9 @@ namespace {
       BOOST_TEST_EQ(x.key_eq(), key_equal());
       BOOST_TEST(x.get_allocator() == allocator_type(3));
 
-      BOOST_TEST_EQ(raii::move_constructor, 0u);
+      BOOST_TEST_EQ(raii::default_constructor, 0u);
+      BOOST_TEST_EQ(raii::copy_constructor, 2 * ilist.size());
+      BOOST_TEST_EQ(raii::move_constructor, 2 * 11u);
     }
     check_raii_counts();
 
@@ -682,7 +689,9 @@ namespace {
       BOOST_TEST_EQ(x.key_eq(), key_equal());
       BOOST_TEST(x.get_allocator() == allocator_type(3));
 
-      BOOST_TEST_EQ(raii::move_constructor, 0u);
+      BOOST_TEST_EQ(raii::default_constructor, 0u);
+      BOOST_TEST_EQ(raii::copy_constructor, 2 * ilist.size());
+      BOOST_TEST_EQ(raii::move_constructor, 2 * 11u);
     }
     check_raii_counts();
   }

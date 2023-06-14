@@ -227,7 +227,9 @@ namespace {
 
     {
       X x(values.size());
-      x.insert(values.begin(), values.end());
+      for (auto const& v : values) {
+        x.insert(v);
+      }
 
       BOOST_TEST_EQ(x.size(), reference_map.size());
       BOOST_TEST_EQ(raii::destructor, 0u);

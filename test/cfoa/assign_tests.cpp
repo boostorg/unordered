@@ -157,7 +157,10 @@ namespace {
       thread_runner(values, [&x, &values](boost::span<map_value_type> s) {
         (void)s;
 
-        map_type y(values.begin(), values.end(), values.size());
+        map_type y(values.size());
+        for (auto const& v : values) {
+          y.insert(v);
+        }
 
         BOOST_TEST(x.empty());
         BOOST_TEST(!y.empty());
@@ -183,8 +186,10 @@ namespace {
     {
       raii::reset_counts();
 
-      map_type x(values.begin(), values.end(), values.size(), hasher(1),
-        key_equal(2), allocator_type(3));
+      map_type x(values.size(), hasher(1), key_equal(2), allocator_type(3));
+      for (auto const& v : values) {
+        x.insert(v);
+      }
 
       auto const old_cc = +raii::copy_constructor;
 
@@ -218,8 +223,10 @@ namespace {
     {
       raii::reset_counts();
 
-      map_type x(values.begin(), values.end(), values.size(), hasher(1),
-        key_equal(2), allocator_type(3));
+      map_type x(values.size(), hasher(1), key_equal(2), allocator_type(3));
+      for (auto const& v : values) {
+        x.insert(v);
+      }
 
       auto const old_size = x.size();
       auto const old_cc = +raii::copy_constructor;
@@ -227,7 +234,10 @@ namespace {
       thread_runner(values, [&x, &values](boost::span<map_value_type> s) {
         (void)s;
 
-        map_type y(values.begin(), values.end(), values.size());
+        map_type y(values.size());
+        for (auto const& v : values) {
+          y.insert(v);
+        }
 
         BOOST_TEST(!x.empty());
         BOOST_TEST(!y.empty());
@@ -251,8 +261,10 @@ namespace {
     {
       raii::reset_counts();
 
-      map_type x(values.begin(), values.end(), values.size(), hasher(1),
-        key_equal(2), allocator_type(3));
+      map_type x(values.size(), hasher(1), key_equal(2), allocator_type(3));
+      for (auto const& v : values) {
+        x.insert(v);
+      }
 
       auto const old_cc = +raii::copy_constructor;
 
@@ -288,8 +300,11 @@ namespace {
 
       raii::reset_counts();
 
-      pocca_map_type x(values.begin(), values.end(), values.size(), hasher(1),
-        key_equal(2), pocca_allocator_type(3));
+      pocca_map_type x(
+        values.size(), hasher(1), key_equal(2), pocca_allocator_type(3));
+      for (auto const& v : values) {
+        x.insert(v);
+      }
 
       auto const old_size = x.size();
       auto const old_cc = +raii::copy_constructor;
@@ -297,7 +312,10 @@ namespace {
       thread_runner(values, [&x, &values](boost::span<map_value_type> s) {
         (void)s;
 
-        pocca_map_type y(values.begin(), values.end(), values.size());
+        pocca_map_type y(values.size());
+        for (auto const& v : values) {
+          y.insert(v);
+        }
 
         BOOST_TEST(!x.empty());
         BOOST_TEST(!y.empty());
@@ -410,8 +428,10 @@ namespace {
         values, [&x, &values, &num_transfers](boost::span<map_value_type> s) {
           (void)s;
 
-          map_type y(values.begin(), values.end(), values.size(), hasher(2),
-            key_equal(1), allocator_type(3));
+          map_type y(values.size(), hasher(2), key_equal(1), allocator_type(3));
+          for (auto const& v : values) {
+            y.insert(v);
+          }
 
           BOOST_TEST(x.empty());
           BOOST_TEST(!y.empty());
@@ -447,8 +467,10 @@ namespace {
     {
       raii::reset_counts();
 
-      map_type x(values.begin(), values.end(), values.size(), hasher(1),
-        key_equal(2), allocator_type(3));
+      map_type x(values.size(), hasher(1), key_equal(2), allocator_type(3));
+      for (auto const& v : values) {
+        x.insert(v);
+      }
 
       auto const old_cc = +raii::copy_constructor;
       auto const old_mc = +raii::move_constructor;
@@ -496,8 +518,10 @@ namespace {
     {
       raii::reset_counts();
 
-      map_type x(values.begin(), values.end(), values.size(), hasher(1),
-        key_equal(2), allocator_type(3));
+      map_type x(values.size(), hasher(1), key_equal(2), allocator_type(3));
+      for (auto const& v : values) {
+        x.insert(v);
+      }
 
       auto const old_size = x.size();
       auto const old_cc = +raii::copy_constructor;
@@ -509,8 +533,10 @@ namespace {
                               boost::span<map_value_type> s) {
         (void)s;
 
-        map_type y(values.begin(), values.end(), values.size(), hasher(2),
-          key_equal(1), allocator_type(3));
+        map_type y(values.size(), hasher(2), key_equal(1), allocator_type(3));
+        for (auto const& v : values) {
+          y.insert(v);
+        }
 
         BOOST_TEST(!y.empty());
         BOOST_TEST(x.get_allocator() == y.get_allocator());
@@ -549,8 +575,10 @@ namespace {
     {
       raii::reset_counts();
 
-      map_type x(values.begin(), values.end(), values.size(), hasher(1),
-        key_equal(2), allocator_type(3));
+      map_type x(values.size(), hasher(1), key_equal(2), allocator_type(3));
+      for (auto const& v : values) {
+        x.insert(v);
+      }
 
       auto const old_size = x.size();
       auto const old_cc = +raii::copy_constructor;
@@ -562,8 +590,10 @@ namespace {
                               boost::span<map_value_type> s) {
         (void)s;
 
-        map_type y(values.begin(), values.end(), values.size(), hasher(2),
-          key_equal(1), allocator_type(13));
+        map_type y(values.size(), hasher(2), key_equal(1), allocator_type(13));
+        for (auto const& v : values) {
+          y.insert(v);
+        }
 
         BOOST_TEST(
           !boost::allocator_is_always_equal<allocator_type>::type::value);
@@ -608,8 +638,11 @@ namespace {
     {
       raii::reset_counts();
 
-      pocma_map_type x(values.begin(), values.end(), values.size(), hasher(1),
-        key_equal(2), pocma_allocator_type(3));
+      pocma_map_type x(
+        values.size(), hasher(1), key_equal(2), pocma_allocator_type(3));
+      for (auto const& v : values) {
+        x.insert(v);
+      }
 
       auto const old_size = x.size();
       auto const old_cc = +raii::copy_constructor;
@@ -621,8 +654,11 @@ namespace {
                               boost::span<map_value_type> s) {
         (void)s;
 
-        pocma_map_type y(values.begin(), values.end(), values.size(), hasher(2),
-          key_equal(1), pocma_allocator_type(13));
+        pocma_map_type y(
+          values.size(), hasher(2), key_equal(1), pocma_allocator_type(13));
+        for (auto const& v : values) {
+          y.insert(v);
+        }
 
         BOOST_TEST(!y.empty());
         BOOST_TEST(x.get_allocator() != y.get_allocator());
@@ -661,8 +697,10 @@ namespace {
     {
       raii::reset_counts();
 
-      map_type x(values.begin(), values.end(), values.size(), hasher(1),
-        key_equal(2), allocator_type(3));
+      map_type x(values.size(), hasher(1), key_equal(2), allocator_type(3));
+      for (auto const& v : values) {
+        x.insert(v);
+      }
 
       auto const old_cc = +raii::copy_constructor;
       auto const old_mc = +raii::move_constructor;

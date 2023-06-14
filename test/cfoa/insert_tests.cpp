@@ -8,6 +8,14 @@
 
 #include <boost/core/ignore_unused.hpp>
 
+struct raii_convertible
+{
+  int x, y;
+  raii_convertible(int x_, int y_) : x{x_}, y{y_} {}
+
+  operator std::pair<raii const, raii>() { return {x, y}; }
+};
+
 namespace {
   test::seed_t initialize_seed(78937);
 
@@ -95,9 +103,18 @@ namespace {
   {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
     {
-      thread_runner(
-        values, [&x](boost::span<T> s) { x.insert(s.begin(), s.end()); });
+      std::vector<raii_convertible> values2;
+      values2.reserve(values.size());
+      for (auto const& p : values) {
+        values2.push_back(raii_convertible(p.first.x_, p.second.x_));
+      }
 
+      thread_runner(values2, [&x](boost::span<raii_convertible> s) {
+        x.insert(s.begin(), s.end());
+      });
+
+      BOOST_TEST_EQ(raii::default_constructor, 2 * values2.size());
+      BOOST_TEST_EQ(raii::copy_constructor, 0u);
       BOOST_TEST_EQ(raii::copy_assignment, 0u);
       BOOST_TEST_EQ(raii::move_assignment, 0u);
     }
@@ -361,19 +378,26 @@ namespace {
   {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
     {
+      std::vector<raii_convertible> values2;
+      values2.reserve(values.size());
+      for (auto const& p : values) {
+        values2.push_back(raii_convertible(p.first.x_, p.second.x_));
+      }
+
       std::atomic<std::uint64_t> num_invokes{0};
-      thread_runner(values, [&x, &num_invokes](boost::span<T> s) {
-        x.insert_or_cvisit(
-          s.begin(), s.end(), [&num_invokes](typename X::value_type const& v) {
-            (void)v;
-            ++num_invokes;
-          });
-      });
+      thread_runner(
+        values2, [&x, &num_invokes](boost::span<raii_convertible> s) {
+          x.insert_or_cvisit(s.begin(), s.end(),
+            [&num_invokes](typename X::value_type const& v) {
+              (void)v;
+              ++num_invokes;
+            });
+        });
 
       BOOST_TEST_EQ(num_invokes, values.size() - x.size());
 
-      BOOST_TEST_EQ(raii::default_constructor, 0u);
-      BOOST_TEST_EQ(raii::copy_constructor, 2 * x.size());
+      BOOST_TEST_EQ(raii::default_constructor, 2 * values2.size());
+      BOOST_TEST_EQ(raii::copy_constructor, 0u);
       BOOST_TEST_GT(raii::move_constructor, 0u);
     }
   } iterator_range_insert_or_cvisit;
@@ -382,19 +406,26 @@ namespace {
   {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
     {
+      std::vector<raii_convertible> values2;
+      values2.reserve(values.size());
+      for (auto const& p : values) {
+        values2.push_back(raii_convertible(p.first.x_, p.second.x_));
+      }
+
       std::atomic<std::uint64_t> num_invokes{0};
-      thread_runner(values, [&x, &num_invokes](boost::span<T> s) {
-        x.insert_or_visit(
-          s.begin(), s.end(), [&num_invokes](typename X::value_type const& v) {
-            (void)v;
-            ++num_invokes;
-          });
-      });
+      thread_runner(
+        values2, [&x, &num_invokes](boost::span<raii_convertible> s) {
+          x.insert_or_visit(s.begin(), s.end(),
+            [&num_invokes](typename X::value_type const& v) {
+              (void)v;
+              ++num_invokes;
+            });
+        });
 
       BOOST_TEST_EQ(num_invokes, values.size() - x.size());
 
-      BOOST_TEST_EQ(raii::default_constructor, 0u);
-      BOOST_TEST_EQ(raii::copy_constructor, 2 * x.size());
+      BOOST_TEST_EQ(raii::default_constructor, 2 * values2.size());
+      BOOST_TEST_EQ(raii::copy_constructor, 0u);
       BOOST_TEST_GT(raii::move_constructor, 0u);
     }
   } iterator_range_insert_or_visit;

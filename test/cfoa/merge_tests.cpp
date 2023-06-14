@@ -63,7 +63,10 @@ namespace {
         using map2_type = boost::unordered::concurrent_flat_map<raii, raii,
           std::hash<raii>, std::equal_to<raii>, allocator_type>;
 
-        map2_type y(s.begin(), s.end(), s.size(), allocator_type(3));
+        map2_type y(s.size(), allocator_type(3));
+        for (auto const& v : s) {
+          y.insert(v);
+        }
         expected_copies += 2 * y.size();
 
         BOOST_TEST(x.get_allocator() == y.get_allocator());

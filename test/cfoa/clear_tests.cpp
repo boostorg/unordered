@@ -31,8 +31,8 @@ namespace {
     map_type x(values.begin(), values.end(), values.size(), hasher(1),
       key_equal(2), allocator_type(3));
 
-    BOOST_TEST_EQ(raii::copy_constructor, 2 * x.size());
-    BOOST_TEST_EQ(raii::destructor, 0u);
+    auto const old_size = x.size();
+    auto const old_d = +raii::destructor;
 
     thread_runner(values, [&x](boost::span<map_value_type> s) {
       (void)s;
@@ -40,6 +40,7 @@ namespace {
     });
 
     BOOST_TEST(x.empty());
+    BOOST_TEST_EQ(raii::destructor, old_d + 2 * old_size);
 
     check_raii_counts();
   }
