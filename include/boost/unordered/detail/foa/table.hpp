@@ -348,17 +348,40 @@ public:
   >::type
   insert(element_type&& x){return emplace_impl(std::move(x));}
 
+  struct proxy_erase {
+    const_iterator pos;
+    operator iterator()const noexcept
+    {
+      auto it=pos;
+      it.increment();
+      return iterator(const_iterator_cast_tag{},it);
+    }
+
+    template<
+      bool dependent_value=false,
+      typename std::enable_if<
+        has_mutable_iterator||dependent_value>::type* =nullptr
+    >
+    operator const_iterator()const noexcept
+    {
+      auto it=pos;
+      it.increment();
+      return it;
+    }
+  };
+
   template<
     bool dependent_value=false,
     typename std::enable_if<
       has_mutable_iterator||dependent_value>::type* =nullptr
   >
-  void erase(iterator pos)noexcept{return erase(const_iterator(pos));}
+  proxy_erase erase(iterator pos)noexcept{return erase(const_iterator(pos));}
 
   BOOST_FORCEINLINE
-  void erase(const_iterator pos)noexcept
+  proxy_erase erase(const_iterator pos)noexcept
   {
     super::erase(pos.pc,pos.p);
+    return proxy_erase{pos};
   }
 
   template<typename Key>
