@@ -144,22 +144,24 @@ namespace boost {
       }
 
       template <class InputIterator>
-      concurrent_flat_map(InputIterator f, InputIterator l, allocator_type a)
+      concurrent_flat_map(
+        InputIterator f, InputIterator l, allocator_type const& a)
           : concurrent_flat_map(f, l, 0, hasher(), key_equal(), a)
       {
       }
 
-      explicit concurrent_flat_map(allocator_type a)
+      explicit concurrent_flat_map(allocator_type const& a)
           : table_(detail::foa::default_bucket_count, hasher(), key_equal(), a)
       {
       }
 
-      concurrent_flat_map(concurrent_flat_map const& rhs, allocator_type a)
+      concurrent_flat_map(
+        concurrent_flat_map const& rhs, allocator_type const& a)
           : table_(rhs.table_, a)
       {
       }
 
-      concurrent_flat_map(concurrent_flat_map&& rhs, allocator_type a)
+      concurrent_flat_map(concurrent_flat_map&& rhs, allocator_type const& a)
           : table_(std::move(rhs.table_), a)
       {
       }
