@@ -27,12 +27,12 @@
 
 #define BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)                             \
   static_assert(boost::unordered::detail::is_invocable<F, value_type&>::value, \
-    "The provided Callable must be invocable with `value_type&`");
+    "The provided Callable must be invocable with value_type&");
 
 #define BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)                       \
   static_assert(                                                               \
     boost::unordered::detail::is_invocable<F, value_type const&>::value,       \
-    "The provided Callable must be invocable with `value_type const&`");
+    "The provided Callable must be invocable with value_type const&");
 
 #if BOOST_CXX_VERSION >= 202002L
 
