@@ -12,6 +12,7 @@
 
 #include <boost/unordered/detail/foa/element_type.hpp>
 #include <boost/unordered/detail/foa/node_handle.hpp>
+#include <boost/unordered/detail/foa/node_map_types.hpp>
 #include <boost/unordered/detail/foa/table.hpp>
 #include <boost/unordered/detail/type_traits.hpp>
 #include <boost/unordered/unordered_node_map_fwd.hpp>
@@ -35,112 +36,6 @@ namespace boost {
 #endif
 
     namespace detail {
-      template <class Key, class T> struct node_map_types
-      {
-        using key_type = Key;
-        using mapped_type = T;
-        using raw_key_type = typename std::remove_const<Key>::type;
-        using raw_mapped_type = typename std::remove_const<T>::type;
-
-        using init_type = std::pair<raw_key_type, raw_mapped_type>;
-        using value_type = std::pair<Key const, T>;
-        using moved_type = std::pair<raw_key_type&&, raw_mapped_type&&>;
-
-        using element_type=foa::element_type<value_type>;
-
-        static value_type& value_from(element_type const& x) { return *(x.p); }
-
-        template <class K, class V>
-        static raw_key_type const& extract(std::pair<K, V> const& kv)
-        {
-          return kv.first;
-        }
-
-        static raw_key_type const& extract(element_type const& kv)
-        {
-          return kv.p->first;
-        }
-
-        static element_type&& move(element_type& x) { return std::move(x); }
-        static moved_type move(init_type& x)
-        {
-          return {std::move(x.first), std::move(x.second)};
-        }
-
-        static moved_type move(value_type& x)
-        {
-          return {std::move(const_cast<raw_key_type&>(x.first)),
-            std::move(const_cast<raw_mapped_type&>(x.second))};
-        }
-
-        template <class A>
-        static void construct(A&, element_type* p, element_type&& x) noexcept
-        {
-          p->p = x.p;
-          x.p = nullptr;
-        }
-
-        template <class A>
-        static void construct(A& al, element_type* p, element_type const& copy)
-        {
-          construct(al, p, *copy.p);
-        }
-
-        template <class A, class... Args>
-        static void construct(A& al, init_type* p, Args&&... args)
-        {
-          boost::allocator_construct(al, p, std::forward<Args>(args)...);
-        }
-
-        template <class A, class... Args>
-        static void construct(A& al, value_type* p, Args&&... args)
-        {
-          boost::allocator_construct(al, p, std::forward<Args>(args)...);
-        }
-
-        template <class A, class... Args>
-        static void construct(A& al, element_type* p, Args&&... args)
-        {
-          p->p = boost::to_address(boost::allocator_allocate(al, 1));
-          BOOST_TRY
-          {
-            boost::allocator_construct(al, p->p, std::forward<Args>(args)...);
-          }
-          BOOST_CATCH(...)
-          {
-            using pointer_type = typename boost::allocator_pointer<A>::type;
-            using pointer_traits = boost::pointer_traits<pointer_type>;
-
-            boost::allocator_deallocate(
-              al, pointer_traits::pointer_to(*(p->p)), 1);
-            BOOST_RETHROW
-          }
-          BOOST_CATCH_END
-        }
-
-        template <class A> static void destroy(A& al, value_type* p) noexcept
-        {
-          boost::allocator_destroy(al, p);
-        }
-
-        template <class A> static void destroy(A& al, init_type* p) noexcept
-        {
-          boost::allocator_destroy(al, p);
-        }
-
-        template <class A> static void destroy(A& al, element_type* p) noexcept
-        {
-          if (p->p) {
-            using pointer_type = typename boost::allocator_pointer<A>::type;
-            using pointer_traits = boost::pointer_traits<pointer_type>;
-
-            destroy(al, p->p);
-            boost::allocator_deallocate(
-              al, pointer_traits::pointer_to(*(p->p)), 1);
-          }
-        }
-      };
-
       template <class TypePolicy, class Allocator>
       struct node_map_handle
           : public detail::foa::node_handle_base<TypePolicy, Allocator>
@@ -179,7 +74,7 @@ namespace boost {
     template <class Key, class T, class Hash, class KeyEqual, class Allocator>
     class unordered_node_map
     {
-      using map_types = detail::node_map_types<Key, T>;
+      using map_types = detail::foa::node_map_types<Key, T>;
 
       using table_type = detail::foa::table<map_types, Hash, KeyEqual,
         typename boost::allocator_rebind<Allocator,
@@ -188,8 +83,7 @@ namespace boost {
       table_type table_;
 
       template <class K, class V, class H, class KE, class A>
-      bool friend operator==(
-        unordered_node_map<K, V, H, KE, A> const& lhs,
+      bool friend operator==(unordered_node_map<K, V, H, KE, A> const& lhs,
         unordered_node_map<K, V, H, KE, A> const& rhs);
 
       template <class K, class V, class H, class KE, class A, class Pred>

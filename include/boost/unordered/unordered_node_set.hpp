@@ -12,6 +12,7 @@
 
 #include <boost/unordered/detail/foa/element_type.hpp>
 #include <boost/unordered/detail/foa/node_handle.hpp>
+#include <boost/unordered/detail/foa/node_set_types.hpp>
 #include <boost/unordered/detail/foa/table.hpp>
 #include <boost/unordered/detail/type_traits.hpp>
 #include <boost/unordered/unordered_node_set_fwd.hpp>
@@ -34,77 +35,6 @@ namespace boost {
 #endif
 
     namespace detail {
-      template <class Key> struct node_set_types
-      {
-        using key_type = Key;
-        using init_type = Key;
-        using value_type = Key;
-
-        static Key const& extract(value_type const& key) { return key; }
-
-        using element_type=foa::element_type<value_type>;
-
-        static value_type& value_from(element_type const& x) { return *x.p; }
-        static Key const& extract(element_type const& k) { return *k.p; }
-        static element_type&& move(element_type& x) { return std::move(x); }
-        static value_type&& move(value_type& x) { return std::move(x); }
-
-        template <class A>
-        static void construct(A& al, element_type* p, element_type const& copy)
-        {
-          construct(al, p, *copy.p);
-        }
-
-        template <typename Allocator>
-        static void construct(
-          Allocator&, element_type* p, element_type&& x) noexcept
-        {
-          p->p = x.p;
-          x.p = nullptr;
-        }
-
-        template <class A, class... Args>
-        static void construct(A& al, value_type* p, Args&&... args)
-        {
-          boost::allocator_construct(al, p, std::forward<Args>(args)...);
-        }
-
-        template <class A, class... Args>
-        static void construct(A& al, element_type* p, Args&&... args)
-        {
-          p->p = boost::to_address(boost::allocator_allocate(al, 1));
-          BOOST_TRY
-          {
-            boost::allocator_construct(al, p->p, std::forward<Args>(args)...);
-          }
-          BOOST_CATCH(...)
-          {
-            boost::allocator_deallocate(al,
-              boost::pointer_traits<
-                typename boost::allocator_pointer<A>::type>::pointer_to(*p->p),
-              1);
-            BOOST_RETHROW
-          }
-          BOOST_CATCH_END
-        }
-
-        template <class A> static void destroy(A& al, value_type* p) noexcept
-        {
-          boost::allocator_destroy(al, p);
-        }
-
-        template <class A> static void destroy(A& al, element_type* p) noexcept
-        {
-          if (p->p) {
-            destroy(al, p->p);
-            boost::allocator_deallocate(al,
-              boost::pointer_traits<typename boost::allocator_pointer<
-                A>::type>::pointer_to(*(p->p)),
-              1);
-          }
-        }
-      };
-
       template <class TypePolicy, class Allocator>
       struct node_set_handle
           : public detail::foa::node_handle_base<TypePolicy, Allocator>
@@ -135,7 +65,7 @@ namespace boost {
     template <class Key, class Hash, class KeyEqual, class Allocator>
     class unordered_node_set
     {
-      using set_types = detail::node_set_types<Key>;
+      using set_types = detail::foa::node_set_types<Key>;
 
       using table_type = detail::foa::table<set_types, Hash, KeyEqual,
         typename boost::allocator_rebind<Allocator,
@@ -144,8 +74,7 @@ namespace boost {
       table_type table_;
 
       template <class K, class H, class KE, class A>
-      bool friend operator==(
-        unordered_node_set<K, H, KE, A> const& lhs,
+      bool friend operator==(unordered_node_set<K, H, KE, A> const& lhs,
         unordered_node_set<K, H, KE, A> const& rhs);
 
       template <class K, class H, class KE, class A, class Pred>
