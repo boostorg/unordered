@@ -8,10 +8,6 @@
  * See https://www.boost.org/libs/unordered for library home page.
  */
 
-/* Reference:
- * https://github.com/joaquintides/concurrent_hashmap_api#proposed-synopsis
- */
-
 #ifndef BOOST_UNORDERED_CONCURRENT_FLAT_MAP_FWD_HPP
 #define BOOST_UNORDERED_CONCURRENT_FLAT_MAP_FWD_HPP
 
