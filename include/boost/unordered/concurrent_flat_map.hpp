@@ -246,6 +246,7 @@ namespace boost {
       ///
 
       size_type size() const noexcept { return table_.size(); }
+      size_type max_size() const noexcept { return table_.max_size(); }
 
       BOOST_ATTRIBUTE_NODISCARD bool empty() const noexcept
       {

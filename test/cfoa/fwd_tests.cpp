@@ -5,6 +5,7 @@
 #include "helpers.hpp"
 #include <boost/config/workaround.hpp>
 #include <boost/unordered/concurrent_flat_map_fwd.hpp>
+#include <limits>
 
 test::seed_t initialize_seed{32304628};
 
@@ -56,6 +57,14 @@ UNORDERED_AUTO_TEST (fwd_equal_call) {
 UNORDERED_AUTO_TEST (fwd_unequal_call) {
   map_type x1, x2;
   BOOST_TEST_NOT(unequal_call(x1, x2));
+}
+
+// this isn't the best place for this test but it's better than introducing a
+// new file
+UNORDERED_AUTO_TEST (max_size) {
+  map_type x1;
+  BOOST_TEST_EQ(
+    x1.max_size(), std::numeric_limits<typename map_type::size_type>::max());
 }
 
 RUN_TESTS()
