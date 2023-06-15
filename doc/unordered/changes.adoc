@@ -10,6 +10,10 @@
 
 * Added `boost::concurrent_flat_map`, a fast, thread-safe hashmap based on open addressing.
 * Sped up iteration of open-addressing containers.
+* In open-addressing containers, `erase(iterator)`, which previously returned nothing, now
+returns a proxy object convertible to an iterator to the next element.
+This enables the typical `it = c.erase(it)` idiom without incurring any performance penalty
+when the returned proxy is not used.
 
 == Release 1.82.0 - Major update
 
