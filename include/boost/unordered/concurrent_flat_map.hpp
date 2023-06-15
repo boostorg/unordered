@@ -93,6 +93,10 @@ namespace boost {
       bool friend operator==(concurrent_flat_map<K, V, H, KE, A> const& lhs,
         concurrent_flat_map<K, V, H, KE, A> const& rhs);
 
+      template <class K, class V, class H, class KE, class A, class Predicate>
+      friend typename concurrent_flat_map<K, V, H, KE, A>::size_type erase_if(
+        concurrent_flat_map<K, V, H, KE, A>& set, Predicate pred);
+
     public:
       using key_type = Key;
       using mapped_type = T;
@@ -704,7 +708,7 @@ namespace boost {
     typename concurrent_flat_map<K, T, H, P, A>::size_type erase_if(
       concurrent_flat_map<K, T, H, P, A>& c, Predicate pred)
     {
-      return c.erase_if(pred);
+      return c.table_.erase_if(pred);
     }
 
 #if BOOST_UNORDERED_TEMPLATE_DEDUCTION_GUIDES
