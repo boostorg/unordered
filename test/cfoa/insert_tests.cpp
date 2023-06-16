@@ -114,7 +114,11 @@ namespace {
       });
 
       BOOST_TEST_EQ(raii::default_constructor, 2 * values2.size());
+#if BOOST_WORKAROUND(BOOST_GCC_VERSION, != 50400)
+      // some versions of old gcc have trouble eliding copies here
+      // https://godbolt.org/z/Ebo6TbvaG
       BOOST_TEST_EQ(raii::copy_constructor, 0u);
+#endif
       BOOST_TEST_EQ(raii::copy_assignment, 0u);
       BOOST_TEST_EQ(raii::move_assignment, 0u);
     }
@@ -397,7 +401,9 @@ namespace {
       BOOST_TEST_EQ(num_invokes, values.size() - x.size());
 
       BOOST_TEST_EQ(raii::default_constructor, 2 * values2.size());
+#if BOOST_WORKAROUND(BOOST_GCC_VERSION, != 50400)
       BOOST_TEST_EQ(raii::copy_constructor, 0u);
+#endif
       BOOST_TEST_GT(raii::move_constructor, 0u);
     }
   } iterator_range_insert_or_cvisit;
@@ -425,7 +431,9 @@ namespace {
       BOOST_TEST_EQ(num_invokes, values.size() - x.size());
 
       BOOST_TEST_EQ(raii::default_constructor, 2 * values2.size());
+#if BOOST_WORKAROUND(BOOST_GCC_VERSION, != 50400)
       BOOST_TEST_EQ(raii::copy_constructor, 0u);
+#endif
       BOOST_TEST_GT(raii::move_constructor, 0u);
     }
   } iterator_range_insert_or_visit;
