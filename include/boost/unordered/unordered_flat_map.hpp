@@ -381,12 +381,13 @@ namespace boost {
           .first;
       }
 
-      BOOST_FORCEINLINE typename table_type::proxy_erase erase(iterator pos)
+      BOOST_FORCEINLINE typename table_type::erase_return_type erase(
+        iterator pos)
       {
         return table_.erase(pos);
       }
 
-      BOOST_FORCEINLINE typename table_type::proxy_erase erase(
+      BOOST_FORCEINLINE typename table_type::erase_return_type erase(
         const_iterator pos)
       {
         return table_.erase(pos);

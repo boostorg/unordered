@@ -352,7 +352,7 @@ namespace boost {
         return table_.emplace(std::forward<Args>(args)...).first;
       }
 
-      BOOST_FORCEINLINE typename table_type::proxy_erase erase(
+      BOOST_FORCEINLINE typename table_type::erase_return_type erase(
         const_iterator pos)
       {
         return table_.erase(pos);
