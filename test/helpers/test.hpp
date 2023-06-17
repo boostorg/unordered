@@ -6,6 +6,7 @@
 #if !defined(BOOST_UNORDERED_TEST_TEST_HEADER)
 #define BOOST_UNORDERED_TEST_TEST_HEADER
 
+#include <boost/unordered/detail/fwd.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <boost/preprocessor/cat.hpp>
 #include <boost/preprocessor/stringize.hpp>

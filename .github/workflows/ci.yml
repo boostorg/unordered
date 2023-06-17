@@ -52,7 +52,10 @@ jobs:
           - { name: "gcc-12 w/ sanitizers (17,20,2b)", sanitize: yes,
               compiler: gcc-12,    cxxstd: '17,20,2b',       os: ubuntu-22.04, ccache_key: "san2" }
           - { name: Collect coverage, coverage: yes,
-              compiler: gcc-8,     cxxstd: '03,11',          os: ubuntu-20.04, install: 'g++-8-multilib', address-model: '32,64', ccache_key: "cov" }
+              compiler: gcc-12,     cxxstd: '03,20',          os: ubuntu-22.04, install: 'g++-12-multilib', address-model: '32,64', ccache_key: "cov" }
+
+          - { name: "cfoa tsan (gcc)", cxxstd: '11,14,17,20,2b', os: ubuntu-22.04, compiler: gcc-12,
+              targets: 'libs/unordered/test//cfoa_tests', thread-sanitize: yes }
 
           # Linux, clang, libc++
           - { compiler: clang-7,   cxxstd: '03,11,14,17',       os: ubuntu-20.04, stdlib: libc++, install: 'clang-7 libc++-7-dev libc++abi-7-dev' }
@@ -65,15 +68,21 @@ jobs:
               compiler: clang-12,  cxxstd: '17,20,2b',          os: ubuntu-20.04, stdlib: libc++, install: 'clang-12 libc++-12-dev libc++abi-12-dev', ccache_key: "san2" }
           - { compiler: clang-13,  cxxstd: '03,11,14,17,20,2b', os: ubuntu-22.04, stdlib: libc++, install: 'clang-13 libc++-13-dev libc++abi-13-dev' }
           - { compiler: clang-14,  cxxstd: '03,11,14,17,20,2b', os: ubuntu-22.04, stdlib: libc++, install: 'clang-14 libc++-14-dev libc++abi-14-dev' }
+
           # not using libc++ because of https://github.com/llvm/llvm-project/issues/52771
           - { name: "clang-14 w/ sanitizers (03,11,14)", sanitize: yes,
               compiler: clang-14,  cxxstd: '03,11,14',          os: ubuntu-22.04, ccache_key: "san1" }
           - { name: "clang-14 w/ sanitizers (17,20,2b)", sanitize: yes,
               compiler: clang-14,  cxxstd: '17,20,2b',          os: ubuntu-22.04, ccache_key: "san2" }
 
+          - { name: "cfoa tsan (clang)", cxxstd: '11,14,17,20,2b', os: ubuntu-22.04, compiler: clang-14,
+              targets: 'libs/unordered/test//cfoa_tests', thread-sanitize: yes, 
+              stdlib: libc++, install: 'clang-14 libc++-14-dev libc++abi-14-dev' }
+
           # OSX, clang
           - { compiler: clang,     cxxstd: '03,11,14,17,2a',    os: macos-11, }
           - { compiler: clang,     cxxstd: '03,11,14,17,2a',    os: macos-12, sanitize: yes }
+          - { compiler: clang,     cxxstd: '11,14,17,2a',       os: macos-12, thread-sanitize: yes, targets: 'libs/unordered/test//cfoa_tests' }
 
     timeout-minutes: 180
     runs-on: ${{matrix.os}}
@@ -184,6 +193,8 @@ jobs:
           B2_COMPILER: ${{matrix.compiler}}
           B2_CXXSTD: ${{matrix.cxxstd}}
           B2_SANITIZE: ${{matrix.sanitize}}
+          B2_TSAN: ${{matrix.thread-sanitize}}
+          B2_TARGETS: ${{matrix.targets}}
           B2_STDLIB: ${{matrix.stdlib}}
           # More entries can be added in the same way, see the B2_ARGS assignment in ci/enforce.sh for the possible keys.
           # B2_DEFINES: ${{matrix.defines}}
@@ -197,7 +208,7 @@ jobs:
 
       - name: Run tests
         if: '!matrix.coverity'
-        run: ci/build.sh
+        run: B2_TARGETS=${{matrix.targets}} ci/build.sh
 
       - name: Upload coverage
         if: matrix.coverage

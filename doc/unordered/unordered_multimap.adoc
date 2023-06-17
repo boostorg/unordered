@@ -1,5 +1,5 @@
 [#unordered_multimap]
-== Class template unordered_multimap
+== Class Template unordered_multimap
 
 :idprefix: unordered_multimap_
 
@@ -253,6 +253,7 @@ namespace boost {
               unordered_multimap<Key, T, Hash, Pred, Alloc>& y)
       noexcept(noexcept(x.swap(y)));
 
+  // Erasure
   template<class K, class T, class H, class P, class A, class Predicate>
     typename unordered_multimap<K, T, H, P, A>::size_type
       xref:#unordered_multimap_erase_if[erase_if](unordered_multimap<K, T, H, P, A>& c, Predicate pred);
@@ -941,7 +942,7 @@ void insert(std::initializer_list<value_type> il);
 Inserts a range of elements into the container.
 
 [horizontal]
-Requires:;; `value_type` is https://en.cppreference.com/w/cpp/named_req/EmplaceConstructible[EmplaceConstructible^] into `X` from `*first`.
+Requires:;; `value_type` is https://en.cppreference.com/w/cpp/named_req/CopyInsertable[CopyInsertable^] into the container.
 Throws:;; When inserting a single element, if an exception is thrown by an operation other than a call to `hasher` the function has no effect.
 Notes:;; Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor. +
 +
@@ -1223,7 +1224,7 @@ template<typename CompatibleKey, typename CompatibleHash, typename CompatiblePre
 Returns:;; An iterator pointing to an element with key equivalent to `k`, or `b.end()` if no such element exists.
 Notes:;; The templated overloads containing `CompatibleKey`, `CompatibleHash` and `CompatiblePredicate` are non-standard extensions which allow you to use a compatible hash function and equality predicate for a key of a different type in order to avoid an expensive type cast. In general, its use is not encouraged and instead the `K` member function templates should be used. +
 +
-The `template <typename K>` overloads only participate in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
+The `template<class K>` overloads only participate in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
 
 ---
 
@@ -1236,7 +1237,7 @@ template<class K>
 
 [horizontal]
 Returns:;; The number of elements with key equivalent to `k`.
-Notes:;; The `template <typename K>` overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
+Notes:;; The `template<class K>` overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
 
 ---
 
@@ -1249,7 +1250,7 @@ template<class K>
 
 [horizontal]
 Returns:;; A boolean indicating whether or not there is an element with key equal to `key` in the container
-Notes:;; The `template <typename K>` overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
+Notes:;; The `template<class K>` overload only participates in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
 
 ---
 
@@ -1265,7 +1266,7 @@ template<class K>
 
 [horizontal]
 Returns:;; A range containing all elements with key equivalent to `k`. If the container doesn't contain any such elements, returns `std::make_pair(b.end(), b.end())`.
-Notes:;; The `template <typename K>` overloads only participate in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
+Notes:;; The `template<class K>` overloads only participate in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
 
 ---
 

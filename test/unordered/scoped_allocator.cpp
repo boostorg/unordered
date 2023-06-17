@@ -7,7 +7,9 @@
 #include <boost/config/pragma_message.hpp>
 #include <boost/config/workaround.hpp>
 
-#if BOOST_CXX_VERSION <= 199711L || BOOST_WORKAROUND(BOOST_GCC_VERSION, < 40800)
+#if BOOST_CXX_VERSION <= 199711L ||                                            \
+  BOOST_WORKAROUND(BOOST_GCC_VERSION, < 40800) ||                              \
+  BOOST_WORKAROUND(BOOST_MSVC, == 1900)
 
 BOOST_PRAGMA_MESSAGE(
   "scoped allocator adaptor tests only work under C++11 and above")

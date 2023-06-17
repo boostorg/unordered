@@ -431,3 +431,263 @@ h|unsuccessful lookup
 
 |===
 
+== boost::concurrent_flat_map
+
+All benchmarks were created using:
+
+* `https://spec.oneapi.io/versions/latest/elements/oneTBB/source/containers/concurrent_hash_map_cls.html[oneapi::tbb::concurrent_hash_map^]<int, int>`
+* `https://github.com/greg7mdp/gtl/blob/main/docs/phmap.md[gtl::parallel_flat_hash_map^]<int, int>` with 64 submaps
+* `boost::concurrent_flat_map<int, int>`
+
+The source code can be https://github.com/boostorg/boost_unordered_benchmarks/tree/boost_concurrent_flat_map[found here^].
+
+The benchmarks exercise a number of threads _T_ (between 1 and 16) concurrently performing operations
+randomly chosen among **update**, **successful lookup** and **unsuccessful lookup**. The keys used in the
+operations follow a https://en.wikipedia.org/wiki/Zipf%27s_law#Formal_definition[Zipf distribution^]
+with different _skew_ parameters: the higher the skew, the more concentrated are the keys in the lower values
+of the covered range.
+
+=== GCC 12, x64
+
+
+[caption=]
+[cols="3*^.^a", frame=all, grid=all]
+|===
+
+|image::benchmarks-concurrent_map/gcc-x64/Parallel%20workload.xlsx.500k%2C%200.01.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/gcc-x64/Parallel%20workload.xlsx.500k%2C%200.01.png]
+|image::benchmarks-concurrent_map/gcc-x64/Parallel%20workload.xlsx.500k%2C%200.5.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/gcc-x64/Parallel%20workload.xlsx.500k%2C%200.5.png]
+|image::benchmarks-concurrent_map/gcc-x64/Parallel%20workload.xlsx.500k%2C%200.99.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/gcc-x64/Parallel%20workload.xlsx.500k%2C%200.99.png]
+
+h|500k updates, 4.5M lookups +
+skew=0.01
+h|500k updates, 4.5M lookups +
+skew=0.5
+h|500k updates, 4.5M lookups +
+skew=0.99
+|===
+
+[caption=]
+[cols="3*^.^a", frame=all, grid=all]
+|===
+
+|image::benchmarks-concurrent_map/gcc-x64/Parallel%20workload.xlsx.5M%2C%200.01.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/gcc-x64/Parallel%20workload.xlsx.5M%2C%200.01.png]
+|image::benchmarks-concurrent_map/gcc-x64/Parallel%20workload.xlsx.5M%2C%200.5.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/gcc-x64/Parallel%20workload.xlsx.5M%2C%200.5.png]
+|image::benchmarks-concurrent_map/gcc-x64/Parallel%20workload.xlsx.5M%2C%200.99.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/gcc-x64/Parallel%20workload.xlsx.5M%2C%200.99.png]
+
+h|5M updates, 45M lookups +
+skew=0.01
+h|5M updates, 45M lookups +
+skew=0.5
+h|5M updates, 45M lookups +
+skew=0.99
+|===
+
+=== Clang 15, x64
+
+
+[caption=]
+[cols="3*^.^a", frame=all, grid=all]
+|===
+
+|image::benchmarks-concurrent_map/clang-x64/Parallel%20workload.xlsx.500k%2C%200.01.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/clang-x64/Parallel%20workload.xlsx.500k%2C%200.01.png]
+|image::benchmarks-concurrent_map/clang-x64/Parallel%20workload.xlsx.500k%2C%200.5.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/clang-x64/Parallel%20workload.xlsx.500k%2C%200.5.png]
+|image::benchmarks-concurrent_map/clang-x64/Parallel%20workload.xlsx.500k%2C%200.99.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/clang-x64/Parallel%20workload.xlsx.500k%2C%200.99.png]
+
+h|500k updates, 4.5M lookups +
+skew=0.01
+h|500k updates, 4.5M lookups +
+skew=0.5
+h|500k updates, 4.5M lookups +
+skew=0.99
+|===
+
+[caption=]
+[cols="3*^.^a", frame=all, grid=all]
+|===
+
+|image::benchmarks-concurrent_map/clang-x64/Parallel%20workload.xlsx.5M%2C%200.01.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/clang-x64/Parallel%20workload.xlsx.5M%2C%200.01.png]
+|image::benchmarks-concurrent_map/clang-x64/Parallel%20workload.xlsx.5M%2C%200.5.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/clang-x64/Parallel%20workload.xlsx.5M%2C%200.5.png]
+|image::benchmarks-concurrent_map/clang-x64/Parallel%20workload.xlsx.5M%2C%200.99.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/clang-x64/Parallel%20workload.xlsx.5M%2C%200.99.png]
+
+h|5M updates, 45M lookups +
+skew=0.01
+h|5M updates, 45M lookups +
+skew=0.5
+h|5M updates, 45M lookups +
+skew=0.99
+|===
+
+=== Visual Studio 2022, x64
+
+
+[caption=]
+[cols="3*^.^a", frame=all, grid=all]
+|===
+
+|image::benchmarks-concurrent_map/vs-x64/Parallel%20workload.xlsx.500k%2C%200.01.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/vs-x64/Parallel%20workload.xlsx.500k%2C%200.01.png]
+|image::benchmarks-concurrent_map/vs-x64/Parallel%20workload.xlsx.500k%2C%200.5.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/vs-x64/Parallel%20workload.xlsx.500k%2C%200.5.png]
+|image::benchmarks-concurrent_map/vs-x64/Parallel%20workload.xlsx.500k%2C%200.99.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/vs-x64/Parallel%20workload.xlsx.500k%2C%200.99.png]
+
+h|500k updates, 4.5M lookups +
+skew=0.01
+h|500k updates, 4.5M lookups +
+skew=0.5
+h|500k updates, 4.5M lookups +
+skew=0.99
+|===
+
+[caption=]
+[cols="3*^.^a", frame=all, grid=all]
+|===
+
+|image::benchmarks-concurrent_map/vs-x64/Parallel%20workload.xlsx.5M%2C%200.01.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/vs-x64/Parallel%20workload.xlsx.5M%2C%200.01.png]
+|image::benchmarks-concurrent_map/vs-x64/Parallel%20workload.xlsx.5M%2C%200.5.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/vs-x64/Parallel%20workload.xlsx.5M%2C%200.5.png]
+|image::benchmarks-concurrent_map/vs-x64/Parallel%20workload.xlsx.5M%2C%200.99.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/vs-x64/Parallel%20workload.xlsx.5M%2C%200.99.png]
+
+h|5M updates, 45M lookups +
+skew=0.01
+h|5M updates, 45M lookups +
+skew=0.5
+h|5M updates, 45M lookups +
+skew=0.99
+|===
+
+=== Clang 12, ARM64
+
+
+[caption=]
+[cols="3*^.^a", frame=all, grid=all]
+|===
+
+|image::benchmarks-concurrent_map/clang-arm64/Parallel%20workload.xlsx.500k%2C%200.01.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/clang-arm64/Parallel%20workload.xlsx.500k%2C%200.01.png]
+|image::benchmarks-concurrent_map/clang-arm64/Parallel%20workload.xlsx.500k%2C%200.5.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/clang-arm64/Parallel%20workload.xlsx.500k%2C%200.5.png]
+|image::benchmarks-concurrent_map/clang-arm64/Parallel%20workload.xlsx.500k%2C%200.99.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/clang-arm64/Parallel%20workload.xlsx.500k%2C%200.99.png]
+
+h|500k updates, 4.5M lookups +
+skew=0.01
+h|500k updates, 4.5M lookups +
+skew=0.5
+h|500k updates, 4.5M lookups +
+skew=0.99
+|===
+
+[caption=]
+[cols="3*^.^a", frame=all, grid=all]
+|===
+
+|image::benchmarks-concurrent_map/clang-arm64/Parallel%20workload.xlsx.5M%2C%200.01.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/clang-arm64/Parallel%20workload.xlsx.5M%2C%200.01.png]
+|image::benchmarks-concurrent_map/clang-arm64/Parallel%20workload.xlsx.5M%2C%200.5.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/clang-arm64/Parallel%20workload.xlsx.5M%2C%200.5.png]
+|image::benchmarks-concurrent_map/clang-arm64/Parallel%20workload.xlsx.5M%2C%200.99.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/clang-arm64/Parallel%20workload.xlsx.5M%2C%200.99.png]
+
+h|5M updates, 45M lookups +
+skew=0.01
+h|5M updates, 45M lookups +
+skew=0.5
+h|5M updates, 45M lookups +
+skew=0.99
+|===
+
+=== GCC 12, x86
+
+
+[caption=]
+[cols="3*^.^a", frame=all, grid=all]
+|===
+
+|image::benchmarks-concurrent_map/gcc-x86/Parallel%20workload.xlsx.500k%2C%200.01.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/gcc-x86/Parallel%20workload.xlsx.500k%2C%200.01.png]
+|image::benchmarks-concurrent_map/gcc-x86/Parallel%20workload.xlsx.500k%2C%200.5.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/gcc-x86/Parallel%20workload.xlsx.500k%2C%200.5.png]
+|image::benchmarks-concurrent_map/gcc-x86/Parallel%20workload.xlsx.500k%2C%200.99.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/gcc-x86/Parallel%20workload.xlsx.500k%2C%200.99.png]
+
+h|500k updates, 4.5M lookups +
+skew=0.01
+h|500k updates, 4.5M lookups +
+skew=0.5
+h|500k updates, 4.5M lookups +
+skew=0.99
+|===
+
+[caption=]
+[cols="3*^.^a", frame=all, grid=all]
+|===
+
+|image::benchmarks-concurrent_map/gcc-x86/Parallel%20workload.xlsx.5M%2C%200.01.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/gcc-x86/Parallel%20workload.xlsx.5M%2C%200.01.png]
+|image::benchmarks-concurrent_map/gcc-x86/Parallel%20workload.xlsx.5M%2C%200.5.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/gcc-x86/Parallel%20workload.xlsx.5M%2C%200.5.png]
+|image::benchmarks-concurrent_map/gcc-x86/Parallel%20workload.xlsx.5M%2C%200.99.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/gcc-x86/Parallel%20workload.xlsx.5M%2C%200.99.png]
+
+h|5M updates, 45M lookups +
+skew=0.01
+h|5M updates, 45M lookups +
+skew=0.5
+h|5M updates, 45M lookups +
+skew=0.99
+|===
+
+=== Clang 15, x86
+
+
+[caption=]
+[cols="3*^.^a", frame=all, grid=all]
+|===
+
+|image::benchmarks-concurrent_map/clang-x86/Parallel%20workload.xlsx.500k%2C%200.01.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/clang-x86/Parallel%20workload.xlsx.500k%2C%200.01.png]
+|image::benchmarks-concurrent_map/clang-x86/Parallel%20workload.xlsx.500k%2C%200.5.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/clang-x86/Parallel%20workload.xlsx.500k%2C%200.5.png]
+|image::benchmarks-concurrent_map/clang-x86/Parallel%20workload.xlsx.500k%2C%200.99.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/clang-x86/Parallel%20workload.xlsx.500k%2C%200.99.png]
+
+h|500k updates, 4.5M lookups +
+skew=0.01
+h|500k updates, 4.5M lookups +
+skew=0.5
+h|500k updates, 4.5M lookups +
+skew=0.99
+|===
+
+[caption=]
+[cols="3*^.^a", frame=all, grid=all]
+|===
+
+|image::benchmarks-concurrent_map/clang-x86/Parallel%20workload.xlsx.5M%2C%200.01.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/clang-x86/Parallel%20workload.xlsx.5M%2C%200.01.png]
+|image::benchmarks-concurrent_map/clang-x86/Parallel%20workload.xlsx.5M%2C%200.5.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/clang-x86/Parallel%20workload.xlsx.5M%2C%200.5.png]
+|image::benchmarks-concurrent_map/clang-x86/Parallel%20workload.xlsx.5M%2C%200.99.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/clang-x86/Parallel%20workload.xlsx.5M%2C%200.99.png]
+
+h|5M updates, 45M lookups +
+skew=0.01
+h|5M updates, 45M lookups +
+skew=0.5
+h|5M updates, 45M lookups +
+skew=0.99
+|===
+
+=== Visual Studio 2022, x86
+
+
+[caption=]
+[cols="3*^.^a", frame=all, grid=all]
+|===
+
+|image::benchmarks-concurrent_map/vs-x86/Parallel%20workload.xlsx.500k%2C%200.01.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/vs-x86/Parallel%20workload.xlsx.500k%2C%200.01.png]
+|image::benchmarks-concurrent_map/vs-x86/Parallel%20workload.xlsx.500k%2C%200.5.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/vs-x86/Parallel%20workload.xlsx.500k%2C%200.5.png]
+|image::benchmarks-concurrent_map/vs-x86/Parallel%20workload.xlsx.500k%2C%200.99.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/vs-x86/Parallel%20workload.xlsx.500k%2C%200.99.png]
+
+h|500k updates, 4.5M lookups +
+skew=0.01
+h|500k updates, 4.5M lookups +
+skew=0.5
+h|500k updates, 4.5M lookups +
+skew=0.99
+|===
+
+[caption=]
+[cols="3*^.^a", frame=all, grid=all]
+|===
+
+|image::benchmarks-concurrent_map/vs-x86/Parallel%20workload.xlsx.5M%2C%200.01.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/vs-x86/Parallel%20workload.xlsx.5M%2C%200.01.png]
+|image::benchmarks-concurrent_map/vs-x86/Parallel%20workload.xlsx.5M%2C%200.5.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/vs-x86/Parallel%20workload.xlsx.5M%2C%200.5.png]
+|image::benchmarks-concurrent_map/vs-x86/Parallel%20workload.xlsx.5M%2C%200.99.png[width=250,window=_blank,link=../diagrams/benchmarks-concurrent_map/vs-x86/Parallel%20workload.xlsx.5M%2C%200.99.png]
+
+h|5M updates, 45M lookups +
+skew=0.01
+h|5M updates, 45M lookups +
+skew=0.5
+h|5M updates, 45M lookups +
+skew=0.99
+|===

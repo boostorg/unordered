@@ -104,50 +104,51 @@ import ../../config/checks/config : requires ;
 
 CPP11 = [ requires cxx11_constexpr cxx11_noexcept cxx11_decltype cxx11_alignas ] ;
 
-rule build_foa ( name )
+local FOA_TESTS =
+  fwd_set_test
+  fwd_map_test
+  compile_set
+  compile_map
+  noexcept_tests
+  incomplete_test
+  simple_tests
+  equivalent_keys_tests
+  constructor_tests
+  copy_tests
+  move_tests
+  post_move_tests
+  assign_tests
+  insert_tests
+  insert_hint_tests
+  emplace_tests
+  erase_tests
+  merge_tests
+  find_tests
+  at_tests
+  load_factor_tests
+  rehash_tests
+  equality_tests
+  swap_tests
+  transparent_tests
+  reserve_tests
+  contains_tests
+  erase_if
+  scary_tests
+  init_type_insert_tests
+  max_load_tests
+  extract_tests
+  node_handle_tests
+  uses_allocator
+;
+
+for local test in $(FOA_TESTS)
 {
-  run unordered/$(name).cpp : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_$(name) ;
+  run unordered/$(test).cpp : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_$(test) ;
 }
 
-build_foa fwd_set_test ;
-build_foa fwd_map_test ;
-build_foa compile_set ;
-build_foa compile_map ;
-build_foa noexcept_tests ;
 run unordered/link_test_1.cpp unordered/link_test_2.cpp : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_link_test ;
-build_foa incomplete_test ;
-build_foa simple_tests ;
-build_foa equivalent_keys_tests ;
-build_foa constructor_tests ;
-build_foa copy_tests ;
-build_foa move_tests ;
-build_foa post_move_tests ;
-build_foa assign_tests ;
-build_foa insert_tests ;
-build_foa insert_hint_tests ;
-build_foa emplace_tests ;
-build_foa erase_tests ;
-build_foa merge_tests ;
-build_foa find_tests ;
-build_foa at_tests ;
-build_foa load_factor_tests ;
-build_foa rehash_tests ;
-build_foa equality_tests ;
-build_foa swap_tests ;
 run unordered/scoped_allocator.cpp : : : $(CPP11) <toolset>msvc-14.0:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_scoped_allocator ;
-build_foa transparent_tests ;
-build_foa reserve_tests ;
-build_foa contains_tests ;
-build_foa erase_if ;
-build_foa scary_tests ;
-build_foa init_type_insert_tests ;
-build_foa max_load_tests ;
-build_foa extract_tests ;
-build_foa node_handle_tests ;
-build_foa uses_allocator ;
-
 run unordered/hash_is_avalanching_test.cpp ;
-
 run exception/constructor_exception_tests.cpp : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_constructor_exception_tests ;
 run exception/copy_exception_tests.cpp        : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_copy_exception_tests ;
 run exception/assign_exception_tests.cpp      : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_assign_exception_tests ;
@@ -157,3 +158,51 @@ run exception/erase_exception_tests.cpp       : : : $(CPP11) <define>BOOST_UNORD
 run exception/rehash_exception_tests.cpp      : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_rehash_exception_tests ;
 run exception/swap_exception_tests.cpp        : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_swap_exception_tests ;
 run exception/merge_exception_tests.cpp       : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_merge_exception_tests ;
+
+alias foa_tests :
+  foa_$(FOA_TESTS)
+  foa_link_test
+  foa_scoped_allocator
+  hash_is_avalanching_test
+  foa_constructor_exception_tests
+  foa_copy_exception_tests
+  foa_assign_exception_tests
+  foa_move_assign_exception_tests
+  foa_insert_exception_tests
+  foa_erase_exception_tests
+  foa_rehash_exception_tests
+  foa_swap_exception_tests
+  foa_merge_exception_tests
+;
+
+local CFOA_TESTS =
+  latch_tests
+  insert_tests
+  erase_tests
+  try_emplace_tests
+  emplace_tests
+  visit_tests
+  constructor_tests
+  assign_tests
+  clear_tests
+  swap_tests
+  merge_tests
+  rehash_tests
+  equality_tests
+  fwd_tests
+  exception_insert_tests
+  exception_erase_tests
+  exception_constructor_tests
+  exception_assign_tests
+  exception_merge_tests
+;
+
+for local test in $(CFOA_TESTS)
+{
+  run cfoa/$(test).cpp
+  : requirements $(CPP11) <threading>multi
+  : target-name cfoa_$(test)
+  ;
+}
+
+alias cfoa_tests : cfoa_$(CFOA_TESTS) ;
