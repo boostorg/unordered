@@ -30,8 +30,44 @@ private:
 
 private:
 
-    // number of times to spin before sleeping
-    static constexpr int spin_count = 24576;
+    // Effects: Provides a hint to the implementation that the current thread
+    //          has been unable to make progress for k+1 iterations.
+
+    static void yield( unsigned k ) noexcept
+    {
+        unsigned const sleep_every = 1024; // see below
+
+        k %= sleep_every;
+
+        if( k < 5 )
+        {
+            // Intel recommendation from the Optimization Reference Manual
+            // Exponentially increase number of PAUSE instructions each
+            // iteration until reaching a maximum which is approximately
+            // one timeslice long (2^4 == 16 in our case)
+
+            unsigned const pause_count = 1 << k;
+
+            for( unsigned i = 0; i < pause_count; ++i )
+            {
+                boost::core::sp_thread_pause();
+            }
+        }
+        else if( k < sleep_every - 1 )
+        {
+            // Once the maximum number of PAUSE instructions is reached,
+            // we switch to yielding the timeslice immediately
+
+            boost::core::sp_thread_yield();
+        }
+        else
+        {
+            // After `sleep_every` iterations of no progress, we sleep,
+            // to avoid a deadlock if a lower priority thread has the lock
+
+            boost::core::sp_thread_sleep();
+        }
+    }
 
 public:
 
@@ -51,22 +87,17 @@ public:
 
     void lock_shared() noexcept
     {
-        for( ;; )
+        for( unsigned k = 0; ; ++k )
         {
-            for( int k = 0; k < spin_count; ++k )
+            std::uint32_t st = state_.load( std::memory_order_relaxed );
+
+            if( st < reader_lock_count_mask )
             {
-                std::uint32_t st = state_.load( std::memory_order_relaxed );
-
-                if( st < reader_lock_count_mask )
-                {
-                    std::uint32_t newst = st + 1;
-                    if( state_.compare_exchange_weak( st, newst, std::memory_order_acquire, std::memory_order_relaxed ) ) return;
-                }
-
-                boost::core::sp_thread_pause();
+                std::uint32_t newst = st + 1;
+                if( state_.compare_exchange_weak( st, newst, std::memory_order_acquire, std::memory_order_relaxed ) ) return;
             }
 
-            boost::core::sp_thread_sleep();
+            yield( k );
         }
     }
 
@@ -102,73 +133,34 @@ public:
 
     void lock() noexcept
     {
-        for( ;; )
+        for( unsigned k = 0; ; ++k )
         {
-            for( int k = 0; k < spin_count; ++k )
+            std::uint32_t st = state_.load( std::memory_order_relaxed );
+
+            if( st & locked_exclusive_mask )
             {
-                std::uint32_t st = state_.load( std::memory_order_relaxed );
+                // locked exclusive, spin
+            }
+            else if( ( st & reader_lock_count_mask ) == 0 )
+            {
+                // not locked exclusive, not locked shared, try to lock
 
-                if( st & locked_exclusive_mask )
-                {
-                    // locked exclusive, spin
-                }
-                else if( ( st & reader_lock_count_mask ) == 0 )
-                {
-                    // not locked exclusive, not locked shared, try to lock
+                std::uint32_t newst = locked_exclusive_mask;
+                if( state_.compare_exchange_weak( st, newst, std::memory_order_acquire, std::memory_order_relaxed ) ) return;
+            }
+            else if( st & writer_pending_mask )
+            {
+                // writer pending bit already set, nothing to do
+            }
+            else
+            {
+                // locked shared, set writer pending bit
 
-                    std::uint32_t newst = locked_exclusive_mask;
-                    if( state_.compare_exchange_weak( st, newst, std::memory_order_acquire, std::memory_order_relaxed ) ) return;
-                }
-                else if( st & writer_pending_mask )
-                {
-                    // writer pending bit already set, nothing to do
-                }
-                else
-                {
-                    // locked shared, set writer pending bit
-
-                    std::uint32_t newst = st | writer_pending_mask;
-                    state_.compare_exchange_weak( st, newst, std::memory_order_relaxed, std::memory_order_relaxed );
-                }
-
-                boost::core::sp_thread_pause();
+                std::uint32_t newst = st | writer_pending_mask;
+                state_.compare_exchange_weak( st, newst, std::memory_order_relaxed, std::memory_order_relaxed );
             }
 
-            // clear writer pending bit before going to sleep
-
-            {
-                std::uint32_t st = state_.load( std::memory_order_relaxed );
-
-                for( ;; )
-                {
-                    if( st & locked_exclusive_mask )
-                    {
-                        // locked exclusive, nothing to do
-                        break;
-                    }
-                    else if( ( st & reader_lock_count_mask ) == 0 )
-                    {
-                        // lock free, try to take it
-
-                        std::uint32_t newst = locked_exclusive_mask;
-                        if( state_.compare_exchange_weak( st, newst, std::memory_order_acquire, std::memory_order_relaxed ) ) return;
-                    }
-                    else if( ( st & writer_pending_mask ) == 0 )
-                    {
-                        // writer pending bit already clear, nothing to do
-                        break;
-                    }
-                    else
-                    {
-                        // clear writer pending bit
-
-                        std::uint32_t newst = st & ~writer_pending_mask;
-                        if( state_.compare_exchange_weak( st, newst, std::memory_order_relaxed, std::memory_order_relaxed ) ) break;
-                    }
-                }
-            }
-
-            boost::core::sp_thread_sleep();
+            yield( k );
         }
     }
 
