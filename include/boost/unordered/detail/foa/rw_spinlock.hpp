@@ -46,7 +46,7 @@ private:
             // iteration until reaching a maximum which is approximately
             // one timeslice long (2^4 == 16 in our case)
 
-            unsigned const pause_count = 1 << k;
+            unsigned const pause_count = 1u << k;
 
             for( unsigned i = 0; i < pause_count; ++i )
             {
