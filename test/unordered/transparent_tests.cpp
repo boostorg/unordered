@@ -1641,7 +1641,7 @@ template <class UnorderedMap> void test_map_transparent_subscript(UnorderedMap*)
   int key_count = key::count_;
 
   map[0] = 7331;
-  BOOST_ASSERT(BOOST_TEST_EQ(key::count_, key_count));
+  BOOST_TEST_EQ(key::count_, key_count);
 
   map[4] = 7331;
   BOOST_TEST_EQ(key::count_, key_count + 1);
@@ -1664,7 +1664,7 @@ void test_map_non_transparent_subscript(UnorderedMap*)
   int key_count = key::count_;
 
   map[0] = 7331;
-  BOOST_ASSERT(BOOST_TEST_EQ(key::count_, key_count + 1));
+  BOOST_TEST_EQ(key::count_, key_count + 1);
 
   key_count = key::count_;
   map[4] = 7331;

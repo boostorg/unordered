@@ -58,7 +58,7 @@ namespace erase_tests {
         typename Container::key_type key = test::get_key<Container>(*x.begin());
         std::size_t count = x.count(key);
         iterator pos = x.erase(x.begin());
-        BOOST_ASSERT(BOOST_TEST(pos == x.begin()));
+        BOOST_TEST(pos == x.begin());
         --size;
         BOOST_TEST(x.count(key) == count - 1);
         BOOST_TEST(x.size() == size);
