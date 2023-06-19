@@ -122,8 +122,8 @@ namespace boost {
     template<class InputIterator> void xref:#unordered_flat_set_insert_iterator_range[insert](InputIterator first, InputIterator last);
     void xref:#unordered_flat_set_insert_initializer_list[insert](std::initializer_list<value_type>);
 
-    _implementation-defined_      xref:#unordered_flat_set_erase_by_position[erase](iterator position);
-    _implementation-defined_      xref:#unordered_flat_set_erase_by_position[erase](const_iterator position);
+    _convertible-to-iterator_     xref:#unordered_flat_set_erase_by_position[erase](iterator position);
+    _convertible-to-iterator_     xref:#unordered_flat_set_erase_by_position[erase](const_iterator position);
     size_type                   xref:#unordered_flat_set_erase_by_key[erase](const key_type& k);
     template<class K> size_type xref:#unordered_flat_set_erase_by_key[erase](K&& k);
     iterator  xref:#unordered_flat_set_erase_range[erase](const_iterator first, const_iterator last);
@@ -847,8 +847,8 @@ Notes:;; Can invalidate iterators, pointers and references, but only if the inse
 
 [source,c++,subs=+quotes]
 ----
-_implementation-defined_ erase(iterator position);
-_implementation-defined_ erase(const_iterator position);
+_convertible-to-iterator_ erase(iterator position);
+_convertible-to-iterator_ erase(const_iterator position);
 ----
 
 Erase the element pointed to by `position`.

@@ -123,8 +123,8 @@ namespace boost {
     insert_return_type xref:#unordered_node_set_insert_node[insert](node_type&& nh);
     iterator xref:#unordered_node_set_insert_node_with_hint[insert](const_iterator hint, node_type&& nh);
 
-    _implementation-defined_      xref:#unordered_node_set_erase_by_position[erase](iterator position);
-    _implementation-defined_      xref:#unordered_node_set_erase_by_position[erase](const_iterator position);
+    _convertible-to-iterator_     xref:#unordered_node_set_erase_by_position[erase](iterator position);
+    _convertible-to-iterator_     xref:#unordered_node_set_erase_by_position[erase](const_iterator position);
     size_type                   xref:#unordered_node_set_erase_by_key[erase](const key_type& k);
     template<class K> size_type xref:#unordered_node_set_erase_by_key[erase](K&& k);
     iterator  xref:#unordered_node_set_erase_range[erase](const_iterator first, const_iterator last);
@@ -920,8 +920,8 @@ Notes:;; Behavior is undefined if `nh` is not empty and the allocators of `nh` a
 
 [source,c++,subs=+quotes]
 ----
-_implementation-defined_ erase(iterator position);
-_implementation-defined_ erase(const_iterator position);
+_convertible-to-iterator_ erase(iterator position);
+_convertible-to-iterator_ erase(const_iterator position);
 ----
 
 Erase the element pointed to by `position`.

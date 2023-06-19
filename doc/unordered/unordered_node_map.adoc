@@ -155,8 +155,8 @@ namespace boost {
     template<class K, class M>
       iterator xref:#unordered_node_map_insert_or_assign_with_hint[insert_or_assign](const_iterator hint, K&& k, M&& obj);
 
-    _implementation-defined_      xref:#unordered_node_map_erase_by_position[erase](iterator position);
-    _implementation-defined_      xref:#unordered_node_map_erase_by_position[erase](const_iterator position);
+    _convertible-to-iterator_     xref:#unordered_node_map_erase_by_position[erase](iterator position);
+    _convertible-to-iterator_     xref:#unordered_node_map_erase_by_position[erase](const_iterator position);
     size_type                   xref:#unordered_node_map_erase_by_key[erase](const key_type& k);
     template<class K> size_type xref:#unordered_node_map_erase_by_key[erase](K&& k);
     iterator  xref:#unordered_node_map_erase_range[erase](const_iterator first, const_iterator last);
@@ -1106,8 +1106,8 @@ The `template<class K, class M>` only participates in overload resolution if `Ha
 
 [source,c++,subs=+quotes]
 ----
-_implementation-defined_ erase(iterator position);
-_implementation-defined_ erase(const_iterator position);
+_convertible-to-iterator_ erase(iterator position);
+_convertible-to-iterator_ erase(const_iterator position);
 ----
 
 Erase the element pointed to by `position`.
