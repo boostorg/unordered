@@ -16,7 +16,7 @@ The successful lookup benchmarks are done by looking up all `n` values, in their
 
 The unsuccessful lookup benchmarks use `n` randomly generated integers but using a different seed value.
 
-=== GCC 11 + libstdc++-v3, x64
+=== GCC 12 + libstdc++-v3, x64
 
 ==== Insertion
 
@@ -102,7 +102,7 @@ max load factor 5
 
 |===
 
-=== Clang 12 + libc++, x64
+=== Clang 15 + libc++, x64
 
 ==== Insertion
 
@@ -190,7 +190,7 @@ max load factor 5
 
 |===
 
-=== Visual Studio 2019 + Dinkumware, x64
+=== Visual Studio 2022 + Dinkumware, x64
 
 ==== Insertion
 
