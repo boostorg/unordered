@@ -12,6 +12,7 @@
 #define BOOST_UNORDERED_DETAIL_FOA_CONCURRENT_TABLE_HPP
 
 #include <atomic>
+#include <array>
 #include <boost/assert.hpp>
 #include <boost/config.hpp>
 #include <boost/core/ignore_unused.hpp>
@@ -563,6 +564,101 @@ public:
   {
     return visit(x,std::forward<F>(f));
   }
+
+#if 1
+  template<typename Key,std::size_t M,typename F>
+  BOOST_FORCEINLINE
+  std::size_t bulk_visit(const std::array<Key,M>& keys,F&& f)const
+  {
+    auto        lck=shared_access();
+    std::size_t res=0,
+                hashes[M];
+    int         masks[M];
+
+    for(std::size_t i=0;i<M;++i){
+      hashes[i]=this->hash_for(keys[i]);
+      auto pos=this->position_for(hashes[i]);
+      BOOST_UNORDERED_PREFETCH(this->arrays.groups+pos);
+    }
+
+    for(std::size_t i=0;i<M;++i){
+      auto hash=hashes[i];
+      auto pos=this->position_for(hash);
+      masks[i]=(this->arrays.groups+pos)->match(hash);
+      if(masks[i]){
+        BOOST_UNORDERED_PREFETCH(this->arrays.group_accesses+pos);
+        BOOST_UNORDERED_PREFETCH_ELEMENTS(this->arrays.elements+pos*N,N);
+      }
+    }
+
+    for(std::size_t i=0;i<M;++i){
+      prober        pb(this->position_for(hashes[i]));
+      auto          pos=pb.get();
+      auto          pg=this->arrays.groups+pos;
+      auto          mask=masks[i];
+      element_type *p;
+      if(mask){
+        p=this->arrays.elements+pos*N;
+        goto post_prefetch;
+      }
+      else{
+        goto post_mask;
+      }
+      do{
+        pos=pb.get();
+        pg=this->arrays.groups+pos;
+        mask=pg->match(hashes[i]);
+        if(mask){
+          p=this->arrays.elements+pos*N;
+          BOOST_UNORDERED_PREFETCH_ELEMENTS(p,N);
+      post_prefetch:
+          auto lck=access(group_shared{},pos);
+          do{
+            auto n=unchecked_countr_zero(mask);
+            if(BOOST_LIKELY(
+              pg->is_occupied(n)&&
+              bool(this->pred()(keys[i],this->key_from(p[n]))))){
+              f(p+n);
+              ++res;
+              goto next_key;
+            }
+            mask&=mask-1;
+          }while(mask);
+        }
+      post_mask:
+        if(BOOST_LIKELY(pg->is_not_overflowed(hashes[i]))){
+          goto next_key;
+        }
+      }
+      while(BOOST_LIKELY(pb.next(this->arrays.groups_size_mask)));
+      next_key:;
+    }
+    return res;
+  }
+#else
+  template<typename Key,std::size_t M,typename F>
+  BOOST_FORCEINLINE
+  std::size_t bulk_visit(const std::array<Key,M>& keys,F&& f)const
+  {
+    auto        lck=shared_access();
+    std::size_t res=0,
+                hashes[M];
+
+    for(std::size_t i=0;i<M;++i){
+      hashes[i]=this->hash_for(keys[i]);
+      auto pos=this->position_for(hashes[i]);
+      BOOST_UNORDERED_PREFETCH(this->arrays.groups+pos);
+      BOOST_UNORDERED_PREFETCH(this->arrays.group_accesses+pos);
+      BOOST_UNORDERED_PREFETCH_ELEMENTS(this->arrays.elements+pos*N,N);
+    }
+    for(std::size_t i=0;i<M;++i){
+      res+=unprotected_visit(
+        group_shared{},keys[i],this->position_for(hashes[i]),hashes[i],
+        std::forward<F>(f));
+    }
+    return res;
+  }
+#endif
 
   template<typename F> std::size_t visit_all(F&& f)
   {
