@@ -123,6 +123,7 @@ public:
 
 private:
   template<typename,typename,bool> friend class table_iterator;
+  template<typename> friend class table_erase_return_type;
   template<typename,typename,typename,typename> friend class table;
 
   table_iterator(Group* pg,std::size_t n,const table_element_type* p_):
@@ -198,6 +199,45 @@ private:
   table_element_type *p=nullptr;
 };
 
+/* Returned by table::erase([const_]iterator) to avoid iterator increment
+ * if discarded.
+ */
+
+template<typename Iterator>
+class table_erase_return_type; 
+
+template<typename TypePolicy,typename Group,bool Const>
+class table_erase_return_type<table_iterator<TypePolicy,Group,Const>>
+{
+  using iterator=table_iterator<TypePolicy,Group,Const>;
+  using const_iterator=table_iterator<TypePolicy,Group,true>;
+
+public:
+  /* can't delete it because VS in pre-C++17 mode needs to see it for RVO */
+  table_erase_return_type(const table_erase_return_type&);
+
+  operator iterator()const noexcept
+  {
+    auto it=pos;
+    it.increment(); /* valid even if *it was erased */
+    return iterator(const_iterator_cast_tag{},it);
+  }
+
+  template<
+    bool dependent_value=false,
+    typename std::enable_if<!Const||dependent_value>::type* =nullptr
+  >
+  operator const_iterator()const noexcept{return this->operator iterator();}
+
+private:
+  template<typename,typename,typename,typename> friend class table;
+
+  table_erase_return_type(const_iterator pos_):pos{pos_}{}
+  table_erase_return_type& operator=(const table_erase_return_type&)=delete;
+
+  const_iterator pos;
+};
+
 /* foa::table interface departs in a number of ways from that of C++ unordered
  * associative containers because it's not for end-user consumption
  * (boost::unordered_(flat|node)_(map|set) wrappers complete it as
@@ -271,6 +311,7 @@ public:
     has_mutable_iterator,
     table_iterator<type_policy,group_type,false>,
     const_iterator>::type;
+  using erase_return_type=table_erase_return_type<iterator>;
 
   table(
     std::size_t n=default_bucket_count,const Hash& h_=Hash(),
@@ -353,12 +394,14 @@ public:
     typename std::enable_if<
       has_mutable_iterator||dependent_value>::type* =nullptr
   >
-  void erase(iterator pos)noexcept{return erase(const_iterator(pos));}
+  erase_return_type erase(iterator pos)noexcept
+  {return erase(const_iterator(pos));}
 
   BOOST_FORCEINLINE
-  void erase(const_iterator pos)noexcept
+  erase_return_type erase(const_iterator pos)noexcept
   {
     super::erase(pos.pc,pos.p);
+    return {pos};
   }
 
   template<typename Key>

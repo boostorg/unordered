@@ -23,9 +23,7 @@ namespace erase_tests {
   template <class Container>
   void erase_tests1(Container*, test::random_generator generator)
   {
-#ifndef BOOST_UNORDERED_FOA_TESTS
     typedef typename Container::iterator iterator;
-#endif
     typedef typename Container::const_iterator c_iterator;
 
     BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Erase by key.\n";
@@ -59,12 +57,8 @@ namespace erase_tests {
       while (size > 0 && !x.empty()) {
         typename Container::key_type key = test::get_key<Container>(*x.begin());
         std::size_t count = x.count(key);
-#ifdef BOOST_UNORDERED_FOA_TESTS
-        x.erase(x.begin());
-#else
         iterator pos = x.erase(x.begin());
         BOOST_TEST(pos == x.begin());
-#endif
         --size;
         BOOST_TEST(x.count(key) == count - 1);
         BOOST_TEST(x.size() == size);
@@ -95,15 +89,10 @@ namespace erase_tests {
         typename Container::key_type key = test::get_key<Container>(*pos);
         std::size_t count = x.count(key);
         BOOST_TEST(count > 0);
-#ifdef BOOST_UNORDERED_FOA_TESTS
-        x.erase(pos);
-        --size;
-#else
         BOOST_TEST(next == x.erase(pos));
         --size;
         if (size > 0)
           BOOST_TEST(index == 0 ? next == x.begin() : next == test::next(prev));
-#endif
         BOOST_TEST(x.count(key) == count - 1);
         if (x.count(key) != count - 1) {
           BOOST_LIGHTWEIGHT_TEST_OSTREAM << count << " => " << x.count(key)

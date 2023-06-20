@@ -13,7 +13,6 @@ As a result of its using open addressing, the interface of `boost::unordered_nod
 a number of aspects from that of `boost::unordered_set`/`std::unordered_set`: 
 
   - `begin()` is not constant-time.
-  - `erase(iterator)` returns `void`.
   - There is no API for bucket handling (except `bucket_count`).
   - The maximum load factor of the container is managed internally and can't be set by the user.
 
@@ -124,9 +123,9 @@ namespace boost {
     insert_return_type xref:#unordered_node_set_insert_node[insert](node_type&& nh);
     iterator xref:#unordered_node_set_insert_node_with_hint[insert](const_iterator hint, node_type&& nh);
 
-    void      xref:#unordered_node_set_erase_by_position[erase](iterator position);
-    void      xref:#unordered_node_set_erase_by_position[erase](const_iterator position);
-    size_type xref:#unordered_node_set_erase_by_key[erase](const key_type& k);
+    _convertible-to-iterator_     xref:#unordered_node_set_erase_by_position[erase](iterator position);
+    _convertible-to-iterator_     xref:#unordered_node_set_erase_by_position[erase](const_iterator position);
+    size_type                   xref:#unordered_node_set_erase_by_key[erase](const key_type& k);
     template<class K> size_type xref:#unordered_node_set_erase_by_key[erase](K&& k);
     iterator  xref:#unordered_node_set_erase_range[erase](const_iterator first, const_iterator last);
     void      xref:#unordered_node_set_swap[swap](unordered_node_set& other)
@@ -919,15 +918,19 @@ Notes:;; Behavior is undefined if `nh` is not empty and the allocators of `nh` a
 
 ==== Erase by Position
 
-```c++
-void erase(iterator position);
-void erase(const_iterator position);
-```
+[source,c++,subs=+quotes]
+----
+_convertible-to-iterator_ erase(iterator position);
+_convertible-to-iterator_ erase(const_iterator position);
+----
 
 Erase the element pointed to by `position`.
 
 [horizontal]
+Returns:;; An opaque object implicitly convertible to the `iterator` or `const_iterator`
+immediately following `position` prior to the erasure.
 Throws:;; Nothing.
+Notes:;; The opaque object returned must only be discarded or immediately converted to `iterator` or `const_iterator`.
 
 ---
 

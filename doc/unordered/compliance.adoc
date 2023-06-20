@@ -135,7 +135,9 @@ The main differences with C++ unordered associative containers are:
 
 * In general:
   ** `begin()` is not constant-time.
-  ** `erase(iterator)` returns `void` instead of an iterator to the following element.
+  ** `erase(iterator)` does not return an iterator to the following element, but
+     a proxy object that converts to that iterator if requested; this avoids
+     a potentially costly iterator increment operation when not needed.
   ** There is no API for bucket handling (except `bucket_count`).
   ** The maximum load factor of the container is managed internally and can't be set by the user. The maximum load,
      exposed through the public function `max_load`, may decrease on erasure under high-load conditions.

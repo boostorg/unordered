@@ -1065,11 +1065,7 @@ typedef boost::unordered_map<int, int, transparent_hasher,
 // test that in the presence of the member function template `erase()`, we still
 // invoke the correct iterator overloads when the type is implicitly convertible
 //
-#ifdef BOOST_UNORDERED_FOA_TESTS
-void
-#else
 transparent_unordered_map::iterator
-#endif
 map_erase_overload_compile_test()
 {
   convertible_to_iterator<transparent_unordered_map> c;
@@ -1079,11 +1075,7 @@ map_erase_overload_compile_test()
   return map.erase(c);
 }
 
-#ifdef BOOST_UNORDERED_FOA_TESTS
-void
-#else
 transparent_unordered_map::const_iterator
-#endif
 map_erase_const_overload_compile_test()
 {
   convertible_to_const_iterator<transparent_unordered_map> c;
@@ -1226,11 +1218,7 @@ typedef boost::unordered_multiset<int, transparent_hasher,
   transparent_unordered_multiset;
 #endif
 
-#ifdef BOOST_UNORDERED_FOA_TESTS
-void
-#else
 transparent_unordered_set::iterator
-#endif
 set_erase_overload_compile_test()
 {
   convertible_to_iterator<transparent_unordered_set> c;
@@ -1240,11 +1228,7 @@ set_erase_overload_compile_test()
   return set.erase(c);
 }
 
-#ifdef BOOST_UNORDERED_FOA_TESTS
-void
-#else
 transparent_unordered_set::const_iterator
-#endif
 set_erase_const_overload_compile_test()
 {
   convertible_to_const_iterator<transparent_unordered_set> c;
@@ -1657,7 +1641,7 @@ template <class UnorderedMap> void test_map_transparent_subscript(UnorderedMap*)
   int key_count = key::count_;
 
   map[0] = 7331;
-  BOOST_ASSERT(BOOST_TEST_EQ(key::count_, key_count));
+  BOOST_TEST_EQ(key::count_, key_count);
 
   map[4] = 7331;
   BOOST_TEST_EQ(key::count_, key_count + 1);
@@ -1680,7 +1664,7 @@ void test_map_non_transparent_subscript(UnorderedMap*)
   int key_count = key::count_;
 
   map[0] = 7331;
-  BOOST_ASSERT(BOOST_TEST_EQ(key::count_, key_count + 1));
+  BOOST_TEST_EQ(key::count_, key_count + 1);
 
   key_count = key::count_;
   map[4] = 7331;

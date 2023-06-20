@@ -458,11 +458,18 @@ namespace boost {
           .first;
       }
 
-      BOOST_FORCEINLINE void erase(iterator pos) { table_.erase(pos); }
-      BOOST_FORCEINLINE void erase(const_iterator pos)
+      BOOST_FORCEINLINE typename table_type::erase_return_type erase(
+        iterator pos)
       {
         return table_.erase(pos);
       }
+
+      BOOST_FORCEINLINE typename table_type::erase_return_type erase(
+        const_iterator pos)
+      {
+        return table_.erase(pos);
+      }
+
       iterator erase(const_iterator first, const_iterator last)
       {
         while (first != last) {

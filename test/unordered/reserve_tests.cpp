@@ -213,8 +213,8 @@ UNORDERED_AUTO_TEST (allocator_check) {
   typedef boost::allocator_rebind<A<int>, float>::type alloc_rebound;
   alloc_rebound b;
   A<int> a(b);
-  BOOST_ASSERT(alloc_rebound(a) == b);
-  BOOST_ASSERT(A<int>(b) == a);
+  BOOST_TEST(alloc_rebound(a) == b);
+  BOOST_TEST(A<int>(b) == a);
 }
 
 #ifdef BOOST_UNORDERED_FOA_TESTS

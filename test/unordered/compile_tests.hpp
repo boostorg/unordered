@@ -844,7 +844,7 @@ void unordered_copyable_test(X& x, Key& k, T& t, Hash& hf, Pred& eq)
   a10.insert(t);
   q = a10.cbegin();
 #ifdef BOOST_UNORDERED_FOA_TESTS
-  BOOST_STATIC_ASSERT(std::is_same<void, decltype(a10.erase(q))>::value);
+  test::check_return_type<iterator>::convertible(a10.erase(q));
 #else
   test::check_return_type<iterator>::equals(a10.erase(q));
 #endif
@@ -937,7 +937,7 @@ void unordered_movable_test(X& x, Key& k, T& /* t */, Hash& hf, Pred& eq)
   a10.insert(boost::move(v5));
   q = a10.cbegin();
 #ifdef BOOST_UNORDERED_FOA_TESTS
-  BOOST_STATIC_ASSERT(std::is_same<void, decltype(a10.erase(q))>::value);
+  test::check_return_type<iterator>::convertible(a10.erase(q));
 #else
   test::check_return_type<iterator>::equals(a10.erase(q));
 #endif

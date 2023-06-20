@@ -17,7 +17,6 @@ a number of aspects from that of `boost::unordered_flat_map`/`std::unordered_fla
   - `value_type` must be move-constructible. 
   - Pointer stability is not kept under rehashing.
   - `begin()` is not constant-time.
-  - `erase(iterator)` returns `void`.
   - There is no API for bucket handling (except `bucket_count`) or node extraction/insertion.
   - The maximum load factor of the container is managed internally and can't be set by the user.
 
@@ -155,9 +154,9 @@ namespace boost {
     template<class K, class M>
       iterator xref:#unordered_flat_map_insert_or_assign_with_hint[insert_or_assign](const_iterator hint, K&& k, M&& obj);
 
-    void      xref:#unordered_flat_map_erase_by_position[erase](iterator position);
-    void      xref:#unordered_flat_map_erase_by_position[erase](const_iterator position);
-    size_type xref:#unordered_flat_map_erase_by_key[erase](const key_type& k);
+    _convertible-to-iterator_     xref:#unordered_flat_map_erase_by_position[erase](iterator position);
+    _convertible-to-iterator_     xref:#unordered_flat_map_erase_by_position[erase](const_iterator position);
+    size_type                   xref:#unordered_flat_map_erase_by_key[erase](const key_type& k);
     template<class K> size_type xref:#unordered_flat_map_erase_by_key[erase](K&& k);
     iterator  xref:#unordered_flat_map_erase_range[erase](const_iterator first, const_iterator last);
     void      xref:#unordered_flat_map_swap[swap](unordered_flat_map& other)
@@ -1035,15 +1034,19 @@ The `template<class K, class M>` only participates in overload resolution if `Ha
 
 ==== Erase by Position
 
-```c++
-void erase(iterator position);
-void erase(const_iterator position);
-```
+[source,c++,subs=+quotes]
+----
+_convertible-to-iterator_ erase(iterator position);
+_convertible-to-iterator_ erase(const_iterator position);
+----
 
 Erase the element pointed to by `position`.
 
 [horizontal]
+Returns:;; An opaque object implicitly convertible to the `iterator` or `const_iterator`
+immediately following `position` prior to the erasure.
 Throws:;; Nothing.
+Notes:;; The opaque object returned must only be discarded or immediately converted to `iterator` or `const_iterator`.
 
 ---
 
