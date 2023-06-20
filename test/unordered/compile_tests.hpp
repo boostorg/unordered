@@ -700,7 +700,7 @@ void unordered_test(X& x, Key& k, Hash& hf, Pred& eq)
   const_iterator q1 = a.cbegin(), q2 = a.cend();
   test::check_return_type<iterator>::equals(a.erase(q1, q2));
 
-  TEST_NOEXCEPT_EXPR(a.clear());
+  TEST_NOEXCEPT_EXPR(a.clear())
   a.clear();
 
   X const b;

@@ -1624,7 +1624,7 @@ namespace boost {
           typedef std::ptrdiff_t difference_type;
           typedef std::forward_iterator_tag iterator_category;
 
-          iterator() : p(), itb(){};
+          iterator() : p(), itb(){}
 
           reference operator*() const BOOST_NOEXCEPT { return dereference(); }
           pointer operator->() const BOOST_NOEXCEPT
@@ -1715,7 +1715,7 @@ namespace boost {
           typedef std::ptrdiff_t difference_type;
           typedef std::forward_iterator_tag iterator_category;
 
-          c_iterator() : p(), itb(){};
+          c_iterator() : p(), itb(){}
           c_iterator(iterator<Node, Bucket> it) : p(it.p), itb(it.itb) {}
 
           reference operator*() const BOOST_NOEXCEPT { return dereference(); }
@@ -3393,7 +3393,7 @@ namespace boost {
             }
           }
           buckets_.unlink_empty_buckets();
-          BOOST_RETHROW;
+          BOOST_RETHROW
         }
         BOOST_CATCH_END
 

@@ -89,7 +89,7 @@ namespace test {
         }
       }
 #endif
-    };
+    }
 
     // Check that size matches up.
 

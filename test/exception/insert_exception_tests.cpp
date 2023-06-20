@@ -84,7 +84,7 @@ void insert_exception_test(T*, Inserter insert, test::random_generator gen)
     test::random_values<T> v(10, gen);
     T x;
 
-    EXCEPTION_LOOP(insert_exception_test_impl(x, generate(insert, x), v));
+    EXCEPTION_LOOP(insert_exception_test_impl(x, generate(insert, x), v))
   }
 }
 
@@ -100,7 +100,7 @@ void insert_rehash_exception_test(
     rehash_prep(x);
 
     test::random_values<T> v2(5, gen);
-    EXCEPTION_LOOP(insert_exception_test_impl(x, generate(insert, x), v2));
+    EXCEPTION_LOOP(insert_exception_test_impl(x, generate(insert, x), v2))
   }
 }
 
@@ -458,7 +458,7 @@ void insert_range_exception_test(T*, test::random_generator gen)
     test::random_values<T> v(10, gen);
     T x;
 
-    EXCEPTION_LOOP(insert_range_exception_test_impl(x, v));
+    EXCEPTION_LOOP(insert_range_exception_test_impl(x, v))
   }
 }
 
@@ -470,7 +470,7 @@ void insert_range_rehash_exception_test(T*, test::random_generator gen)
     rehash_prep(x);
 
     test::random_values<T> v2(5, gen);
-    EXCEPTION_LOOP(insert_range_exception_test_impl(x, v2));
+    EXCEPTION_LOOP(insert_range_exception_test_impl(x, v2))
   }
 }
 
