@@ -285,7 +285,7 @@ struct group15
     std::size_t pos=reinterpret_cast<uintptr_t>(pc)%sizeof(group15);
     group15    *pg=reinterpret_cast<group15*>(pc-pos);
     return !pg->is_not_overflowed(*pc);
-  };
+  }
 
   inline int match_available()const
   {

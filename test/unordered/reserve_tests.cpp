@@ -39,8 +39,8 @@ template <typename T> struct A
     std::free(p);
   }
 
-  bool operator==(A const& a) const { return i == a.i; };
-  bool operator!=(A const& a) const { return i != a.i; };
+  bool operator==(A const& a) const { return i == a.i; }
+  bool operator!=(A const& a) const { return i != a.i; }
 };
 
 template <class T> int A<T>::count = 0;

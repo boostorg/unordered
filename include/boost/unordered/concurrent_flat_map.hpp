@@ -662,7 +662,7 @@ namespace boost {
       float max_load_factor() const noexcept
       {
         return table_.max_load_factor();
-      };
+      }
       void max_load_factor(float) {}
       size_type max_load() const noexcept { return table_.max_load(); }
 
