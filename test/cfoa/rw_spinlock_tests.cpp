@@ -37,7 +37,7 @@
 
 using boost::unordered::detail::foa::rw_spinlock;
 
-static int count = 0;
+static int lcount = 0;
 
 UNORDERED_AUTO_TEST (rw_spinlock_test) {
   rw_spinlock sp, sp2;
@@ -85,12 +85,12 @@ void f(rw_spinlock& sp, int n)
 {
   for (int i = 0; i < n; ++i) {
     std::lock_guard<rw_spinlock> lock(sp);
-    ++count;
+    ++lcount;
   }
 }
 
 UNORDERED_AUTO_TEST (rw_spinlock_test3) {
-  count = 0;
+  lcount = 0;
 
   rw_spinlock sp;
 
@@ -107,7 +107,7 @@ UNORDERED_AUTO_TEST (rw_spinlock_test3) {
     th[i].join();
   }
 
-  BOOST_TEST_EQ(count, N * M);
+  BOOST_TEST_EQ(lcount, N * M);
 }
 
 UNORDERED_AUTO_TEST (rw_spinlock_test4) {
@@ -158,7 +158,7 @@ UNORDERED_AUTO_TEST (rw_spinlock_test5) {
 }
 
 UNORDERED_AUTO_TEST (rw_spinlock_test6) {
-  count = 0;
+  lcount = 0;
 
   rw_spinlock sp;
 
@@ -173,15 +173,15 @@ UNORDERED_AUTO_TEST (rw_spinlock_test6) {
       for (;;) {
         {
           boost::shared_lock<rw_spinlock> lock(sp);
-          if (count >= n)
+          if (lcount >= n)
             break;
         }
 
         {
           std::lock_guard<rw_spinlock> lock(sp);
-          if (count >= n)
+          if (lcount >= n)
             break;
-          ++count;
+          ++lcount;
         }
       }
     });
@@ -191,7 +191,7 @@ UNORDERED_AUTO_TEST (rw_spinlock_test6) {
     th[i].join();
   }
 
-  BOOST_TEST_EQ(count, N);
+  BOOST_TEST_EQ(lcount, N);
 }
 
 UNORDERED_AUTO_TEST (rw_spinlock_test7) {
@@ -210,15 +210,15 @@ UNORDERED_AUTO_TEST (rw_spinlock_test7) {
 
         {
           boost::shared_lock<rw_spinlock> lock(sp);
-          if (count >= n)
+          if (lcount >= n)
             break;
-          oldc = count;
+          oldc = lcount;
         }
 
         {
           std::lock_guard<rw_spinlock> lock(sp);
-          if (count == oldc)
-            ++count;
+          if (lcount == oldc)
+            ++lcount;
         }
       }
     });
@@ -228,11 +228,11 @@ UNORDERED_AUTO_TEST (rw_spinlock_test7) {
     th[i].join();
   }
 
-  BOOST_TEST_EQ(count, N);
+  BOOST_TEST_EQ(lcount, N);
 }
 
 UNORDERED_AUTO_TEST (rw_spinlock_test8) {
-  count = 0;
+  lcount = 0;
 
   rw_spinlock sp;
 
@@ -253,7 +253,7 @@ UNORDERED_AUTO_TEST (rw_spinlock_test8) {
         for (;;) {
           {
             boost::shared_lock<rw_spinlock> lock(sp);
-            oldc = count;
+            oldc = lcount;
           }
 
           if (oldc % m == k)
@@ -262,8 +262,8 @@ UNORDERED_AUTO_TEST (rw_spinlock_test8) {
 
         {
           std::lock_guard<rw_spinlock> lock(sp);
-          if (count == oldc)
-            ++count;
+          if (lcount == oldc)
+            ++lcount;
         }
       }
     });
@@ -273,7 +273,7 @@ UNORDERED_AUTO_TEST (rw_spinlock_test8) {
     th[i].join();
   }
 
-  BOOST_TEST_EQ(count, N * M);
+  BOOST_TEST_EQ(lcount, N * M);
 }
 
 RUN_TESTS()
