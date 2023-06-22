@@ -20,7 +20,8 @@
 #pragma clang diagnostic ignored "-Wshorten-64-to-32"
 #endif
 
-#include <boost/thread/shared_mutex.hpp>
+#include <boost/thread/locks.hpp>
+#include <boost/thread/lock_types.hpp>
 
 #ifdef BOOST_GCC
 #pragma GCC diagnostic pop
