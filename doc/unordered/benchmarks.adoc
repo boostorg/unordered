@@ -298,7 +298,7 @@ The successful lookup benchmarks are done by looking up all `n` values, in their
 The unsuccessful lookup benchmarks use `n` randomly generated integers but using a different seed value.
 
 
-=== GCC 11, x64
+=== GCC 12, x64
 
 
 [caption=]
@@ -317,7 +317,7 @@ h|unsuccessful lookup
 
 |===
 
-=== Clang 12, x64
+=== Clang 15, x64
 
 
 [caption=]
@@ -336,7 +336,7 @@ h|unsuccessful lookup
 
 |===
 
-=== Visual Studio 2019, x64
+=== Visual Studio 2022, x64
 
 
 [caption=]
@@ -374,7 +374,7 @@ h|unsuccessful lookup
 
 |===
 
-=== GCC 11, x86
+=== GCC 12, x86
 
 
 [caption=]
@@ -393,7 +393,7 @@ h|unsuccessful lookup
 
 |===
 
-=== Clang 12, x86
+=== Clang 15, x86
 
 
 [caption=]
@@ -412,7 +412,7 @@ h|unsuccessful lookup
 
 |===
 
-=== Visual Studio 2019, x86
+=== Visual Studio 2022, x86
 
 
 [caption=]
