@@ -20,7 +20,7 @@ function(foa_tests)
 endfunction()
 
 function(cfoa_tests)
-  boost_test(PREFIX boost_unordered_cfoa LINK_LIBRARIES Threads::Threads ${ARGN})
+  boost_test(PREFIX boost_unordered_cfoa LINK_LIBRARIES Boost::compat Threads::Threads ${ARGN})
 endfunction()
 
 # FCA tests
