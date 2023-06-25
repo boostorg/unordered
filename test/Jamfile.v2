@@ -195,6 +195,14 @@ local CFOA_TESTS =
   exception_constructor_tests
   exception_assign_tests
   exception_merge_tests
+  rw_spinlock_test
+  rw_spinlock_test2
+  rw_spinlock_test3
+  rw_spinlock_test4
+  rw_spinlock_test5
+  rw_spinlock_test6
+  rw_spinlock_test7
+  rw_spinlock_test8
 ;
 
 for local test in $(CFOA_TESTS)

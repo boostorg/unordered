@@ -20,7 +20,7 @@ function(foa_tests)
 endfunction()
 
 function(cfoa_tests)
-  boost_test(PREFIX boost_unordered_cfoa LINK_LIBRARIES Threads::Threads ${ARGN})
+  boost_test(PREFIX boost_unordered_cfoa LINK_LIBRARIES Boost::compat Threads::Threads ${ARGN})
 endfunction()
 
 # FCA tests
@@ -159,5 +159,13 @@ cfoa_tests(SOURCES cfoa/exception_erase_tests.cpp)
 cfoa_tests(SOURCES cfoa/exception_constructor_tests.cpp)
 cfoa_tests(SOURCES cfoa/exception_assign_tests.cpp)
 cfoa_tests(SOURCES cfoa/exception_merge_tests.cpp)
+cfoa_tests(SOURCES cfoa/rw_spinlock_test.cpp)
+cfoa_tests(SOURCES cfoa/rw_spinlock_test2.cpp)
+cfoa_tests(SOURCES cfoa/rw_spinlock_test3.cpp)
+cfoa_tests(SOURCES cfoa/rw_spinlock_test4.cpp)
+cfoa_tests(SOURCES cfoa/rw_spinlock_test5.cpp)
+cfoa_tests(SOURCES cfoa/rw_spinlock_test6.cpp)
+cfoa_tests(SOURCES cfoa/rw_spinlock_test7.cpp)
+cfoa_tests(SOURCES cfoa/rw_spinlock_test8.cpp)
 
 endif()
