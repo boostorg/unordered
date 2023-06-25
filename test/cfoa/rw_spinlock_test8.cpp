@@ -43,7 +43,7 @@ void f( int k, int m, int n )
 
 int main()
 {
-    int const N = 1000;   // total iterations
+    int const N = 100;    // total iterations
     int const M = 4;      // threads
 
     std::thread th[ M ];
