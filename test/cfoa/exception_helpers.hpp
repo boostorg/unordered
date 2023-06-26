@@ -2,11 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#include "latch.hpp"
-
 #include "../helpers/generators.hpp"
 #include "../helpers/test.hpp"
 
+#include <boost/compat/latch.hpp>
 #include <boost/container_hash/hash.hpp>
 #include <boost/core/span.hpp>
 #include <boost/unordered/unordered_flat_map.hpp>
@@ -370,7 +369,7 @@ std::vector<boost::span<T> > split(
 
 template <class T, class F> void thread_runner(std::vector<T>& values, F f)
 {
-  boost::latch latch(static_cast<std::ptrdiff_t>(num_threads));
+  boost::compat::latch latch(static_cast<std::ptrdiff_t>(num_threads));
 
   std::vector<std::thread> threads;
   auto subslices = split<T>(values, num_threads);

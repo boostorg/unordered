@@ -787,7 +787,7 @@ namespace {
 
     std::thread t1, t2, t3;
 
-    boost::latch start_latch(2), end_latch(2);
+    boost::compat::latch start_latch(2), end_latch(2);
 
     auto v1 = make_random_values(1024 * 16, [&] { return gen(rg); });
     auto v2 = v1;

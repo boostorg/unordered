@@ -520,7 +520,7 @@ namespace {
       X x;
 
       std::thread t1, t2;
-      boost::latch l(2);
+      boost::compat::latch l(2);
       std::vector<std::string> strs(values.size());
 
       t1 = std::thread([&l, &values, &x, &strs] {

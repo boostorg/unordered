@@ -4,8 +4,7 @@
 
 #define BOOST_ENABLE_ASSERT_HANDLER
 
-#include "latch.hpp"
-
+#include <boost/compat/latch.hpp>
 #include <boost/core/lightweight_test.hpp>
 
 #include <thread>
@@ -28,13 +27,11 @@ namespace boost {
 } // namespace boost
 
 namespace {
-  void test_max() { BOOST_TEST_EQ(boost::latch::max(), INT_MAX); }
-
   void test_constructor()
   {
     {
       auto const f = [] {
-        boost::latch l(-1);
+        boost::compat::latch l(-1);
         (void)l;
       };
       BOOST_TEST_THROWS(f(), exception);
@@ -43,38 +40,26 @@ namespace {
     {
       std::ptrdiff_t n = 0;
 
-      boost::latch l(n);
+      boost::compat::latch l(n);
       BOOST_TEST(l.try_wait());
     }
 
     {
       std::ptrdiff_t n = 16;
 
-      boost::latch l(n);
+      boost::compat::latch l(n);
       BOOST_TEST_NOT(l.try_wait());
 
       l.count_down(16);
       BOOST_TEST(l.try_wait());
     }
-
-#if PTRDIFF_MAX > INT_MAX
-    {
-      auto const f = [] {
-        std::ptrdiff_t n = INT_MAX;
-        n += 10;
-        boost::latch l(n);
-        (void)l;
-      };
-      BOOST_TEST_THROWS(f(), exception);
-    }
-#endif
   }
 
   void test_count_down_and_wait()
   {
     constexpr std::ptrdiff_t n = 1024;
 
-    boost::latch l(2 * n);
+    boost::compat::latch l(2 * n);
 
     bool bs[] = {false, false};
 
@@ -116,7 +101,7 @@ namespace {
   {
     std::ptrdiff_t const n = 16;
 
-    boost::latch l(2 * n);
+    boost::compat::latch l(2 * n);
 
     int xs[n] = {0};
 
@@ -146,7 +131,6 @@ namespace {
 
 int main()
 {
-  test_max();
   test_constructor();
   test_count_down_and_wait();
   test_arrive_and_wait();

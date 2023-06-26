@@ -79,7 +79,7 @@ namespace {
       map_type x(0, hasher(1), key_equal(2), allocator_type(3));
 
       std::thread t1, t2, t3;
-      boost::latch l(2);
+      boost::compat::latch l(2);
 
       std::mutex m;
       std::condition_variable cv;

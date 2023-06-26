@@ -190,7 +190,7 @@ namespace {
       map_type x2(vals2.size(), hasher(2), key_equal(1), allocator_type(3));
 
       std::thread t1, t2, t3;
-      boost::latch l(2);
+      boost::compat::latch l(2);
 
       std::mutex m;
       std::condition_variable cv;
