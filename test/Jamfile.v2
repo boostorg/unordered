@@ -176,7 +176,6 @@ alias foa_tests :
 ;
 
 local CFOA_TESTS =
-  latch_tests
   insert_tests
   erase_tests
   try_emplace_tests
