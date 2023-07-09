@@ -202,6 +202,7 @@ local CFOA_TESTS =
   rw_spinlock_test6
   rw_spinlock_test7
   rw_spinlock_test8
+  takes_arg_as_cref_tests
 ;
 
 for local test in $(CFOA_TESTS)
