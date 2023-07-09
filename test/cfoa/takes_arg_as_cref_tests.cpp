@@ -67,31 +67,31 @@ struct f51 // expected false negative
     void operator()( const int& );
     void operator()( char* );
 };
-auto  lambda52 = []( const int& ){};
-using f52=decltype(lambda52);
-int   retrieved=0;
-auto  lambda53 = [&]( const int& x ) mutable { retrieved = x; };
-using f53=decltype(lambda53);
-auto  lambda54 = []( int& ){};
-using f54=decltype(lambda54);
-auto  lambda55 = [&]( int& x ) mutable { retrieved = x; };
-using f55=decltype(lambda55);
-
-#if !defined(BOOST_NO_CXX14_GENERIC_LAMBDAS)
-auto  lambda56 = []( const auto& ){};
-using f56=decltype(lambda56);
-auto  lambda57 = [&]( const int& x ) mutable { retrieved = x; };
-using f57=decltype(lambda57);
-auto  lambda58 = []( int& ){};
-using f58=decltype(lambda58);
-auto  lambda59 = [&]( int& x ) mutable { retrieved = x; };
-using f59=decltype(lambda59);
-#endif
-
-using f60=void; // detection doesn't crash even if requirements violated
+using f52=void; // detection doesn't crash even if requirements violated
 
 int main()
 {
+    auto  lambda53 = []( const int& ){};
+    using f53=decltype(lambda53);
+    int   retrieved=0;
+    auto  lambda54 = [&]( const int& x ) mutable { retrieved = x; };
+    using f54=decltype(lambda54);
+    auto  lambda55 = []( int& ){};
+    using f55=decltype(lambda55);
+    auto  lambda56 = [&]( int& x ) mutable { retrieved = x; };
+    using f56=decltype(lambda56);
+
+#if !defined(BOOST_NO_CXX14_GENERIC_LAMBDAS)
+    auto  lambda57 = []( const auto& ){};
+    using f57=decltype(lambda57);
+    auto  lambda58 = [&]( const int& x ) mutable { retrieved = x; };
+    using f58=decltype(lambda58);
+    auto  lambda59 = []( int& ){};
+    using f59=decltype(lambda59);
+    auto  lambda60 = [&]( int& x ) mutable { retrieved = x; };
+    using f60=decltype(lambda60);
+#endif
+
     BOOST_TEST((  takes_arg_as_const_reference<f1,  int>::value ));
     BOOST_TEST((  takes_arg_as_const_reference<f2,  int>::value ));
     BOOST_TEST((  takes_arg_as_const_reference<f3,  int>::value ));
@@ -159,19 +159,18 @@ int main()
     BOOST_TEST(( !takes_arg_as_const_reference<f49, int>::value ));
     BOOST_TEST(( !takes_arg_as_const_reference<f50, int>::value ));
     BOOST_TEST(( !takes_arg_as_const_reference<f51, int>::value ));
-    BOOST_TEST((  takes_arg_as_const_reference<f52, int>::value ));
+    BOOST_TEST(( !takes_arg_as_const_reference<f52, int>::value ));
     BOOST_TEST((  takes_arg_as_const_reference<f53, int>::value ));
-    BOOST_TEST(( !takes_arg_as_const_reference<f54, int>::value ));
+    BOOST_TEST((  takes_arg_as_const_reference<f54, int>::value ));
     BOOST_TEST(( !takes_arg_as_const_reference<f55, int>::value ));
+    BOOST_TEST(( !takes_arg_as_const_reference<f56, int>::value ));
 
 #if !defined(BOOST_NO_CXX14_GENERIC_LAMBDAS)
-    BOOST_TEST((  takes_arg_as_const_reference<f56, int>::value ));
     BOOST_TEST((  takes_arg_as_const_reference<f57, int>::value ));
-    BOOST_TEST(( !takes_arg_as_const_reference<f58, int>::value ));
+    BOOST_TEST((  takes_arg_as_const_reference<f58, int>::value ));
     BOOST_TEST(( !takes_arg_as_const_reference<f59, int>::value ));
-#endif
-
     BOOST_TEST(( !takes_arg_as_const_reference<f60, int>::value ));
+#endif
 
     return boost::report_errors();
 }
