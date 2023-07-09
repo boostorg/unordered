@@ -9,11 +9,13 @@
 using boost::unordered::detail::foa::takes_arg_as_const_reference;
 
 using  f1  = void ( const int& );
-using  f2  = void ( const int& ) noexcept;
+void   function2( const int& ) noexcept;
+using  f2  = decltype(function2);
 using  f3  = void ( const int&, char* );
 using  f4  = void ( const int&, ... );
 using  f5  = void ( int& );
-using  f6  = void ( int& ) noexcept;
+void   function6( int& ) noexcept;
+using  f6  = decltype(function6);
 using  f7  = void ( int&, char* );
 using  f8  = void ( int&, ... );
 struct f9  { void operator()( const int& ); };
