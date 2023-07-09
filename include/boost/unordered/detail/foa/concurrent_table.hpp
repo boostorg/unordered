@@ -17,10 +17,13 @@
 #include <boost/core/ignore_unused.hpp>
 #include <boost/core/no_exceptions_support.hpp>
 #include <boost/cstdint.hpp>
+#include <boost/mp11/algorithm.hpp>
+#include <boost/mp11/list.hpp>
 #include <boost/mp11/tuple.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/unordered/detail/foa/core.hpp>
 #include <boost/unordered/detail/foa/rw_spinlock.hpp>
+#include <boost/unordered/detail/foa/takes_arg_as_const_reference.hpp>
 #include <boost/unordered/detail/foa/tuple_rotate_right.hpp>
 #include <cstddef>
 #include <functional>
@@ -485,7 +488,7 @@ public:
   template<typename Key,typename F>
   BOOST_FORCEINLINE std::size_t visit(const Key& x,F&& f)
   {
-    return visit_impl(group_exclusive{},x,std::forward<F>(f));
+    return visit_impl(group_access_for<F>{},x,std::forward<F>(f));
   }
 
   template<typename Key,typename F>
@@ -502,7 +505,7 @@ public:
 
   template<typename F> std::size_t visit_all(F&& f)
   {
-    return visit_all_impl(group_exclusive{},std::forward<F>(f));
+    return visit_all_impl(group_access_for<F>{},std::forward<F>(f));
   }
 
   template<typename F> std::size_t visit_all(F&& f)const
@@ -520,7 +523,7 @@ public:
   void visit_all(ExecutionPolicy&& policy,F&& f)
   {
     visit_all_impl(
-      group_exclusive{},
+      group_access_for<F>{},
       std::forward<ExecutionPolicy>(policy),std::forward<F>(f));
   }
 
@@ -582,7 +585,7 @@ public:
   BOOST_FORCEINLINE bool try_emplace_or_visit(Key&& x,Args&&... args)
   {
     return emplace_or_visit_flast(
-      group_exclusive{},
+      group_access_for_last_of<Args...>{},
       try_emplace_args_t{},std::forward<Key>(x),std::forward<Args>(args)...);
   }
 
@@ -598,7 +601,7 @@ public:
   BOOST_FORCEINLINE bool emplace_or_visit(Args&&... args)
   {
     return construct_and_emplace_or_visit_flast(
-      group_exclusive{},std::forward<Args>(args)...);
+      group_access_for_last_of<Args...>{},std::forward<Args>(args)...);
   }
 
   template<typename... Args>
@@ -611,7 +614,7 @@ public:
   template<typename F>
   BOOST_FORCEINLINE bool insert_or_visit(const init_type& x,F&& f)
   {
-    return emplace_or_visit_impl(group_exclusive{},std::forward<F>(f),x);
+    return emplace_or_visit_impl(group_access_for<F>{},std::forward<F>(f),x);
   }
 
   template<typename F>
@@ -624,7 +627,7 @@ public:
   BOOST_FORCEINLINE bool insert_or_visit(init_type&& x,F&& f)
   {
     return emplace_or_visit_impl(
-      group_exclusive{},std::forward<F>(f),std::move(x));
+      group_access_for<F>{},std::forward<F>(f),std::move(x));
   }
 
   template<typename F>
@@ -640,7 +643,7 @@ public:
   BOOST_FORCEINLINE auto insert_or_visit(const Value& x,F&& f)
     ->enable_if_is_value_type<Value,bool>
   {
-    return emplace_or_visit_impl(group_exclusive{},std::forward<F>(f),x);
+    return emplace_or_visit_impl(group_access_for<F>{},std::forward<F>(f),x);
   }
 
   template<typename Value,typename F>
@@ -655,7 +658,7 @@ public:
     ->enable_if_is_value_type<Value,bool>
   {
     return emplace_or_visit_impl(
-      group_exclusive{},std::forward<F>(f),std::move(x));
+      group_access_for<F>{},std::forward<F>(f),std::move(x));
   }
 
   template<typename Value,typename F>
@@ -683,7 +686,7 @@ public:
       group_exclusive{},x,this->position_for(hash),hash,
       [&,this](group_type* pg,unsigned int n,element_type* p)
       {
-        if(f(cast_for(group_exclusive{},type_policy::value_from(*p)))){
+        if(f(cast_for(group_access_for<F>{},type_policy::value_from(*p)))){
           super::erase(pg,n,p);
           res=1;
         }
@@ -699,7 +702,7 @@ public:
     for_all_elements(
       group_exclusive{},
       [&,this](group_type* pg,unsigned int n,element_type* p){
-        if(f(cast_for(group_exclusive{},type_policy::value_from(*p)))){
+        if(f(cast_for(group_access_for<F>{},type_policy::value_from(*p)))){
           super::erase(pg,n,p);
           ++res;
         }
@@ -716,7 +719,7 @@ public:
     for_all_elements(
       group_exclusive{},std::forward<ExecutionPolicy>(policy),
       [&,this](group_type* pg,unsigned int n,element_type* p){
-        if(f(cast_for(group_exclusive{},type_policy::value_from(*p)))){
+        if(f(cast_for(group_access_for<F>{},type_policy::value_from(*p)))){
           super::erase(pg,n,p);
         }
       });
@@ -885,6 +888,20 @@ private:
 
   using group_shared=std::false_type;
   using group_exclusive=std::true_type;
+
+  template<typename F>
+  using group_access_for=typename std::conditional<
+    takes_arg_as_const_reference<
+      typename std::remove_cv<typename std::remove_reference<F>::type>::type,
+      value_type
+    >::value,
+    group_shared,
+    group_exclusive
+  >::type;
+
+  template<typename... Args>
+  using group_access_for_last_of=
+    group_access_for<mp11::mp_back<mp11::mp_list<Args...>>>;
 
   inline group_shared_lock_guard access(group_shared,std::size_t pos)const
   {
