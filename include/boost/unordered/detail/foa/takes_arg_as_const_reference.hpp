@@ -138,11 +138,26 @@ BOOST_UNORDERED_HAS_CONST_REFERENCE_ARG_MEMFUN(const volatile&&)
 /* Detects if f(x) takes x as a const reference. From an implementation
  * technique by Kenneth Gorking.
  * Requires: F is invocable with an Arg&.
+ * takes_arg_as_const_reference implemented with an auxiliary
+ * takes_arg_as_const_reference0 base because VS2015 erroneously matches
+ * &F::operator() for templated call operators.
  */
 
 template<typename F,typename /*Arg*/,typename=void>
-struct takes_arg_as_const_reference:
+struct takes_arg_as_const_reference0:
   has_const_reference_arg<remove_noexcept_t<F>>{};
+
+template<typename F,typename Arg>
+struct takes_arg_as_const_reference0<
+  F,Arg,
+  boost::void_t<decltype(&F::operator())>
+>:
+takes_arg_as_const_reference0<
+  decltype(&F::operator()),Arg
+>{};
+
+template<typename F,typename Arg,typename=void>
+struct takes_arg_as_const_reference:takes_arg_as_const_reference0<F,Arg>{};
 
 #if BOOST_WORKAROUND(BOOST_MSVC,<1920)
 /* VS2017 and older issue a C3517 error when trying to obtain the type of
@@ -172,16 +187,6 @@ takes_arg_as_const_reference<
   decltype(&F::template operator()<Arg>),Arg
 >{};
 #endif
-
-template<typename F,typename Arg>
-struct takes_arg_as_const_reference<
-  F,Arg,
-  boost::void_t<decltype(&F::operator())>
->:
-takes_arg_as_const_reference<
-  decltype(&F::operator()),Arg
->{};
-
 
 } /* namespace foa */
 } /* namespace detail */
