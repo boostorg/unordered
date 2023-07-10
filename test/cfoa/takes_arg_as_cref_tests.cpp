@@ -86,11 +86,11 @@ int main()
 #if !defined(BOOST_NO_CXX14_GENERIC_LAMBDAS)
     auto  lambda57 = []( const auto& ){};
     using f57=decltype(lambda57);
-    auto  lambda58 = [&]( const int& x ) mutable { retrieved = x; };
+    auto  lambda58 = [&]( const auto& x ) mutable { retrieved = x; };
     using f58=decltype(lambda58);
-    auto  lambda59 = []( int& ){};
+    auto  lambda59 = []( auto& ){};
     using f59=decltype(lambda59);
-    auto  lambda60 = [&]( int& x ) mutable { retrieved = x; };
+    auto  lambda60 = [&]( auto& x ) mutable { retrieved = x; };
     using f60=decltype(lambda60);
 #endif
 
