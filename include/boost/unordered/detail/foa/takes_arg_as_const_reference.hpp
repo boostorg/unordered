@@ -142,13 +142,20 @@ template<typename F,typename /*Arg*/,typename=void>
 struct takes_arg_as_const_reference:
   has_const_reference_arg<remove_noexcept_t<F>>{};
 
+/* VS2017 and older issue a C3517 error when trying to obtain the type of
+ * an instantiation of a template function with deduced return type if
+ * the instantiation has not been evaluated before. Passing through this
+ * function solves the issue
+ */
+template<typename T> constexpr T force_evaluation(T);
+
 template<typename F,typename Arg>
 struct takes_arg_as_const_reference<
   F,Arg,
-  boost::void_t<decltype(&F::template operator()<Arg>)>
+  boost::void_t<decltype(force_evaluation(&F::template operator()<Arg>))>
 >:
 takes_arg_as_const_reference<
-  decltype(&F::template operator()<Arg>),Arg
+  decltype(force_evaluation(&F::template operator()<Arg>)),Arg
 >{};
 
 template<typename F,typename Arg>
