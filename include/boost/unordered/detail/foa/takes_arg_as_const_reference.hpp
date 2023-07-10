@@ -9,6 +9,8 @@
 #ifndef BOOST_UNORDERED_DETAIL_FOA_TAKES_ARG_AS_CONST_REFERENCE_HPP
 #define BOOST_UNORDERED_DETAIL_FOA_TAKES_ARG_AS_CONST_REFERENCE_HPP
 
+#include <boost/config.hpp>
+#include <boost/config/workaround.hpp>
 #include <boost/type_traits/make_void.hpp>
 #include <type_traits>
 
@@ -142,11 +144,14 @@ template<typename F,typename /*Arg*/,typename=void>
 struct takes_arg_as_const_reference:
   has_const_reference_arg<remove_noexcept_t<F>>{};
 
+#if BOOST_WORKAROUND(BOOST_MSVC,<1920)
 /* VS2017 and older issue a C3517 error when trying to obtain the type of
  * an instantiation of a function template with deduced return type if
  * the instantiation has not been evaluated before. Passing through this
- * function solves the problem.
+ * function solves the problem. Left as a VS-specific workaround because
+ * old GCC versions seem to have problems with it.
  */
+
 template<typename T> T force_evaluation(T);
 
 template<typename F,typename Arg>
@@ -157,6 +162,16 @@ struct takes_arg_as_const_reference<
 takes_arg_as_const_reference<
   decltype(force_evaluation(&F::template operator()<Arg>)),Arg
 >{};
+#else
+template<typename F,typename Arg>
+struct takes_arg_as_const_reference<
+  F,Arg,
+  boost::void_t<decltype(&F::template operator()<Arg>)>
+>:
+takes_arg_as_const_reference<
+  decltype(&F::template operator()<Arg>),Arg
+>{};
+#endif
 
 template<typename F,typename Arg>
 struct takes_arg_as_const_reference<
