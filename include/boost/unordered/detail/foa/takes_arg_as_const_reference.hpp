@@ -143,11 +143,11 @@ struct takes_arg_as_const_reference:
   has_const_reference_arg<remove_noexcept_t<F>>{};
 
 /* VS2017 and older issue a C3517 error when trying to obtain the type of
- * an instantiation of a template function with deduced return type if
+ * an instantiation of a function template with deduced return type if
  * the instantiation has not been evaluated before. Passing through this
- * function solves the issue
+ * function solves the problem.
  */
-template<typename T> constexpr T force_evaluation(T);
+template<typename T> T force_evaluation(T);
 
 template<typename F,typename Arg>
 struct takes_arg_as_const_reference<
