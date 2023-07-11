@@ -22,10 +22,10 @@ static constexpr bool noexcept_is_part_of_signature=
   !std::is_same<void(*)(),void(*)()noexcept>::value;
 
 template<typename Arg,typename Sig>
-std::false_type has_1st_arg(Sig);
+static std::false_type has_1st_arg(Sig);
 
 template<typename Arg,typename R,typename... Args>
-std::true_type has_1st_arg(R(*)(Arg,Args...));
+static std::true_type has_1st_arg(R(*)(Arg,Args...));
 
 template<
   typename Arg,typename R,typename... Args,
@@ -33,10 +33,10 @@ template<
   typename std::enable_if<
     noexcept_is_part_of_signature||dependent_value>::type* =nullptr
 >
-std::true_type has_1st_arg(R(*)(Arg,Args...)noexcept);
+static std::true_type has_1st_arg(R(*)(Arg,Args...)noexcept);
 
 template<typename Arg,typename R,typename... Args>
-std::true_type has_1st_arg(R(*)(Arg,Args...,...));
+static std::true_type has_1st_arg(R(*)(Arg,Args...,...));
 
 template<
   typename Arg,typename R,typename... Args,
@@ -46,28 +46,28 @@ template<
 >
 std::true_type has_1st_arg(R(*)(Arg,Args...,...)noexcept);
 
-#define BOOST_UNORDERED_HAS_CONST_REFERENCE_ARG_MEMFUN(qualifier)       \
-template<typename Arg,typename R,typename C,typename... Args>           \
-std::true_type has_1st_arg(R(C::*)(Arg,Args...)qualifier);              \
-                                                                        \
-template<                                                               \
-  typename Arg,typename R,typename C,typename... Args,                  \
-  bool dependent_value=false,                                           \
-  typename std::enable_if<                                              \
-    noexcept_is_part_of_signature||dependent_value>::type* =nullptr     \
->                                                                       \
-std::true_type has_1st_arg(R(C::*)(Arg,Args...)qualifier noexcept);     \
-                                                                        \
-template<typename Arg,typename R,typename C,typename... Args>           \
-std::true_type has_1st_arg(R(C::*)(Arg,Args...,...)qualifier);          \
-                                                                        \
-template<                                                               \
-  typename Arg,typename R,typename C,typename... Args,                  \
-  bool dependent_value=false,                                           \
-  typename std::enable_if<                                              \
-    noexcept_is_part_of_signature||dependent_value>::type* =nullptr     \
->                                                                       \
-std::true_type has_1st_arg(R(C::*)(Arg,Args...,...)qualifier noexcept);
+#define BOOST_UNORDERED_HAS_CONST_REFERENCE_ARG_MEMFUN(qualifier)             \
+template<typename Arg,typename R,typename C,typename... Args>                 \
+static std::true_type has_1st_arg(R(C::*)(Arg,Args...)qualifier);             \
+                                                                              \
+template<                                                                     \
+  typename Arg,typename R,typename C,typename... Args,                        \
+  bool dependent_value=false,                                                 \
+  typename std::enable_if<                                                    \
+    noexcept_is_part_of_signature||dependent_value>::type* =nullptr           \
+>                                                                             \
+static std::true_type has_1st_arg(R(C::*)(Arg,Args...)qualifier noexcept);    \
+                                                                              \
+template<typename Arg,typename R,typename C,typename... Args>                 \
+static std::true_type has_1st_arg(R(C::*)(Arg,Args...,...)qualifier);         \
+                                                                              \
+template<                                                                     \
+  typename Arg,typename R,typename C,typename... Args,                        \
+  bool dependent_value=false,                                                 \
+  typename std::enable_if<                                                    \
+    noexcept_is_part_of_signature||dependent_value>::type* =nullptr           \
+>                                                                             \
+static std::true_type has_1st_arg(R(C::*)(Arg,Args...,...)qualifier noexcept);
 
 /* VS warns when a pp function is directly called with an empty arg */
 #define BOOST_UNORDERED_EMPTY_PP_ARG()
