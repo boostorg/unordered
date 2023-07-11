@@ -59,17 +59,17 @@ struct f46 { template<typename Arg> void operator()( Arg& ) const noexcept; };
 struct f47 { template<typename Arg> void operator()( Arg ); };
 struct f48 { template<typename Arg> void operator()( Arg ) const; };
 struct f49 { template<typename Arg> void operator()( Arg ) const noexcept; };
-struct f50 // expected false negative
-{
-    void operator()( const int& );
-    template<typename Arg> void operator()( Arg& );
-};
-struct f51 // expected false negative
+struct f50
 {
     void operator()( const int& );
     void operator()( char* );
 };
-using f52=void; // detection doesn't crash even if requirements violated
+struct f51 // expected false negative
+{
+    void operator()( const int& );
+    template<typename Arg> void operator()( Arg& );
+};
+using f52=int; // detection doesn't crash even if requirements violated
 
 int main()
 {
@@ -159,7 +159,7 @@ int main()
     BOOST_TEST(( !takes_arg_as_const_reference<f47, int>::value ));
     BOOST_TEST(( !takes_arg_as_const_reference<f48, int>::value ));
     BOOST_TEST(( !takes_arg_as_const_reference<f49, int>::value ));
-    BOOST_TEST(( !takes_arg_as_const_reference<f50, int>::value ));
+    BOOST_TEST((  takes_arg_as_const_reference<f50, int>::value ));
     BOOST_TEST(( !takes_arg_as_const_reference<f51, int>::value ));
     BOOST_TEST(( !takes_arg_as_const_reference<f52, int>::value ));
     BOOST_TEST((  takes_arg_as_const_reference<f53, int>::value ));

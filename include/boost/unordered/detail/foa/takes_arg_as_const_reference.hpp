@@ -9,116 +9,68 @@
 #ifndef BOOST_UNORDERED_DETAIL_FOA_TAKES_ARG_AS_CONST_REFERENCE_HPP
 #define BOOST_UNORDERED_DETAIL_FOA_TAKES_ARG_AS_CONST_REFERENCE_HPP
 
-#include <boost/config.hpp>
-#include <boost/config/workaround.hpp>
 #include <boost/type_traits/make_void.hpp>
 #include <type_traits>
-
-/* VS warns when a pp function is directly called with an empty arg */
-#define BOOST_UNORDERED_EMPTY_PP_ARG()
+#include <utility>
 
 namespace boost{
 namespace unordered{
 namespace detail{
 namespace foa{
 
-template<typename Sig>
-struct remove_noexcept{using type=Sig;};
+static constexpr bool noexcept_is_part_of_signature=
+  !std::is_same<void(*)(),void(*)()noexcept>::value;
 
-template<typename Sig>
-using remove_noexcept_t=typename remove_noexcept<Sig>::type;
+template<typename Arg,typename Sig>
+std::false_type has_1st_arg(Sig);
 
-template<typename R,typename... Args>
-struct remove_noexcept<R(Args...)noexcept>
-  {using type=R(Args...);};
+template<typename Arg,typename R,typename... Args>
+std::true_type has_1st_arg(R(*)(Arg,Args...));
 
-template<typename R,typename... Args>
-struct remove_noexcept<R(Args...,...)noexcept>
-  {using type=R(Args...,...);};
+template<
+  typename Arg,typename R,typename... Args,
+  bool dependent_value=false,
+  typename std::enable_if<
+    noexcept_is_part_of_signature||dependent_value>::type* =nullptr
+>
+std::true_type has_1st_arg(R(*)(Arg,Args...)noexcept);
 
-template<typename R,typename... Args>
-struct remove_noexcept<R(&)(Args...)noexcept>
-  {using type=R(&)(Args...);};
+template<typename Arg,typename R,typename... Args>
+std::true_type has_1st_arg(R(*)(Arg,Args...,...));
 
-template<typename R,typename... Args>
-struct remove_noexcept<R(&)(Args...,...)noexcept>
-  {using type=R(&)(Args...,...);};
+template<
+  typename Arg,typename R,typename... Args,
+  bool dependent_value=false,
+  typename std::enable_if<
+    noexcept_is_part_of_signature||dependent_value>::type* =nullptr
+>
+std::true_type has_1st_arg(R(*)(Arg,Args...,...)noexcept);
 
-template<typename R,typename... Args>
-struct remove_noexcept<R(*)(Args...)noexcept>
-  {using type=R(Args...);};
+#define BOOST_UNORDERED_HAS_CONST_REFERENCE_ARG_MEMFUN(qualifier)       \
+template<typename Arg,typename R,typename C,typename... Args>           \
+std::true_type has_1st_arg(R(C::*)(Arg,Args...)qualifier);              \
+                                                                        \
+template<                                                               \
+  typename Arg,typename R,typename C,typename... Args,                  \
+  bool dependent_value=false,                                           \
+  typename std::enable_if<                                              \
+    noexcept_is_part_of_signature||dependent_value>::type* =nullptr     \
+>                                                                       \
+std::true_type has_1st_arg(R(C::*)(Arg,Args...)qualifier noexcept);     \
+                                                                        \
+template<typename Arg,typename R,typename C,typename... Args>           \
+std::true_type has_1st_arg(R(C::*)(Arg,Args...,...)qualifier);          \
+                                                                        \
+template<                                                               \
+  typename Arg,typename R,typename C,typename... Args,                  \
+  bool dependent_value=false,                                           \
+  typename std::enable_if<                                              \
+    noexcept_is_part_of_signature||dependent_value>::type* =nullptr     \
+>                                                                       \
+std::true_type has_1st_arg(R(C::*)(Arg,Args...,...)qualifier noexcept);
 
-template<typename R,typename... Args>
-struct remove_noexcept<R(*)(Args...,...)noexcept>
-  {using type=R(Args...,...);};
-
-#define BOOST_UNORDERED_REMOVE_NOEXCEPT_MEMFUN(qualifier)      \
-template<typename R,typename C,typename... Args>               \
-struct remove_noexcept<R(C::*)(Args...)qualifier noexcept>     \
-  {using type=R(C::*)(Args...)qualifier;};                     \
-                                                               \
-template<typename R,typename C,typename... Args>               \
-struct remove_noexcept<R(C::*)(Args...,...)qualifier noexcept> \
-  {using type=R(C::*)(Args...,...)qualifier;};
-
-BOOST_UNORDERED_REMOVE_NOEXCEPT_MEMFUN(BOOST_UNORDERED_EMPTY_PP_ARG())
-BOOST_UNORDERED_REMOVE_NOEXCEPT_MEMFUN(const)
-BOOST_UNORDERED_REMOVE_NOEXCEPT_MEMFUN(volatile)
-BOOST_UNORDERED_REMOVE_NOEXCEPT_MEMFUN(const volatile)
-BOOST_UNORDERED_REMOVE_NOEXCEPT_MEMFUN(&)
-BOOST_UNORDERED_REMOVE_NOEXCEPT_MEMFUN(const&)
-BOOST_UNORDERED_REMOVE_NOEXCEPT_MEMFUN(volatile&)
-BOOST_UNORDERED_REMOVE_NOEXCEPT_MEMFUN(const volatile&)
-BOOST_UNORDERED_REMOVE_NOEXCEPT_MEMFUN(&&)
-BOOST_UNORDERED_REMOVE_NOEXCEPT_MEMFUN(const&&)
-BOOST_UNORDERED_REMOVE_NOEXCEPT_MEMFUN(volatile&&)
-BOOST_UNORDERED_REMOVE_NOEXCEPT_MEMFUN(const volatile&&)
-
-#undef BOOST_UNORDERED_REMOVE_NOEXCEPT_MEMFUN
-
-template<typename Sig>
-struct has_const_reference_arg:std::false_type{};
-
-template<typename R,typename Arg,typename... Args>
-struct has_const_reference_arg<
-  R(const Arg&,Args...)
->:std::true_type{};
-
-template<typename R,typename Arg,typename... Args>
-struct has_const_reference_arg<
-  R(const Arg&,Args...,...)
->:std::true_type{};
-
-template<typename R,typename Arg,typename... Args>
-struct has_const_reference_arg<
-  R(&)(const Arg&,Args...)
->:std::true_type{};
-
-template<typename R,typename Arg,typename... Args>
-struct has_const_reference_arg<
-  R(&)(const Arg&,Args...,...)
->:std::true_type{};
-
-template<typename R,typename Arg,typename... Args>
-struct has_const_reference_arg<
-  R(*)(const Arg&,Args...)  
->:std::true_type{};
-
-template<typename R,typename Arg,typename... Args>
-struct has_const_reference_arg<
-  R(*)(const Arg&,Args...,...)
->:std::true_type{};
-
-#define BOOST_UNORDERED_HAS_CONST_REFERENCE_ARG_MEMFUN(qualifier) \
-template<typename R,typename C,typename Arg,typename... Args>     \
-struct has_const_reference_arg<                                   \
-  R(C::*)(const Arg&,Args...)qualifier                            \
->:std::true_type{};                                               \
-                                                                  \
-template<typename R,typename C,typename Arg,typename... Args>     \
-struct has_const_reference_arg<                                   \
-  R(C::*)(const Arg&,Args...,...)qualifier                        \
->:std::true_type{};
+/* VS warns when a pp function is directly called with an empty arg */
+#define BOOST_UNORDERED_EMPTY_PP_ARG()
 
 BOOST_UNORDERED_HAS_CONST_REFERENCE_ARG_MEMFUN(BOOST_UNORDERED_EMPTY_PP_ARG())
 BOOST_UNORDERED_HAS_CONST_REFERENCE_ARG_MEMFUN(const)
@@ -133,66 +85,42 @@ BOOST_UNORDERED_HAS_CONST_REFERENCE_ARG_MEMFUN(const&&)
 BOOST_UNORDERED_HAS_CONST_REFERENCE_ARG_MEMFUN(volatile&&)
 BOOST_UNORDERED_HAS_CONST_REFERENCE_ARG_MEMFUN(const volatile&&)
 
+#undef BOOST_UNORDERED_EMPTY_PP_ARG
 #undef BOOST_UNORDERED_HAS_CONST_REFERENCE_ARG_MEMFUN
 
 /* Detects if f(x) takes x as a const reference. From an implementation
  * technique by Kenneth Gorking.
  * Requires: F is invocable with an Arg&.
- * takes_arg_as_const_reference implemented with an auxiliary
- * takes_arg_as_const_reference0 base because VS2015 erroneously matches
- * &F::operator() for templated call operators.
  */
 
-template<typename F,typename /*Arg*/,typename=void>
+template<typename F,typename Arg,typename=void>
 struct takes_arg_as_const_reference0:
-  has_const_reference_arg<remove_noexcept_t<F>>{};
+decltype(has_1st_arg<const Arg&>(std::declval<F>())){};
 
 template<typename F,typename Arg>
 struct takes_arg_as_const_reference0<
   F,Arg,
-  boost::void_t<decltype(&F::operator())>
+  boost::void_t<
+    decltype(has_1st_arg<const Arg&>(&F::template operator()<Arg>))
+  >
 >:
-takes_arg_as_const_reference0<
-  decltype(&F::operator()),Arg
->{};
+decltype(has_1st_arg<const Arg&>(&F::template operator()<Arg>)){};
 
 template<typename F,typename Arg,typename=void>
 struct takes_arg_as_const_reference:takes_arg_as_const_reference0<F,Arg>{};
 
-#if BOOST_WORKAROUND(BOOST_MSVC,<1920)
-/* VS2017 and older issue a C3517 error when trying to obtain the type of
- * an instantiation of a function template with deduced return type if
- * the instantiation has not been evaluated before. Passing through this
- * function solves the problem. Left as a VS-specific workaround because
- * old GCC versions seem to have problems with it.
- */
-
-template<typename T> T force_evaluation(T);
-
 template<typename F,typename Arg>
 struct takes_arg_as_const_reference<
   F,Arg,
-  boost::void_t<decltype(force_evaluation(&F::template operator()<Arg>))>
+  boost::void_t<
+    decltype(has_1st_arg<const Arg&>(&F::operator()))
+  >
 >:
-takes_arg_as_const_reference<
-  decltype(force_evaluation(&F::template operator()<Arg>)),Arg
->{};
-#else
-template<typename F,typename Arg>
-struct takes_arg_as_const_reference<
-  F,Arg,
-  boost::void_t<decltype(&F::template operator()<Arg>)>
->:
-takes_arg_as_const_reference<
-  decltype(&F::template operator()<Arg>),Arg
->{};
-#endif
+decltype(has_1st_arg<const Arg&>(&F::operator())){};
 
 } /* namespace foa */
 } /* namespace detail */
 } /* namespace unordered */
 } /* namespace boost */
-
-#undef BOOST_UNORDERED_EMPTY_PP_ARG
 
 #endif
