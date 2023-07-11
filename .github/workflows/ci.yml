@@ -32,6 +32,16 @@ env:
   CODECOV_NAME: Github Actions
 
 jobs:
+  runner-selection:
+    # runs-on: ubuntu-latest
+    runs-on: ${{ github.repository_owner == 'boostorg' && fromJSON('[ "self-hosted", "linux", "x64", "ubuntu-latest-aws" ]') || 'ubuntu-latest' }}
+    outputs:
+      labelmatrix: ${{ steps.aws_hosted_runners.outputs.labelmatrix }}
+    steps:
+      - name: AWS Hosted Runners
+        id: aws_hosted_runners
+        uses: cppalliance/aws-hosted-runners@v1.0.0
+
   posix:
     defaults:
       run:
@@ -42,52 +52,55 @@ jobs:
       matrix:
         include:
           # Linux, gcc
-          - { compiler: gcc-7,     cxxstd: '03,11,14,17',    os: ubuntu-20.04, install: 'g++-7' }
-          - { compiler: gcc-8,     cxxstd: '03,11,14,17',    os: ubuntu-20.04, install: 'g++-8' }
-          - { compiler: gcc-9,     cxxstd: '03,11,14,17',    os: ubuntu-22.04, install: 'g++-9' }
-          - { compiler: gcc-10,    cxxstd: '03,11,14,17,20', os: ubuntu-22.04, install: 'g++-10' }
-          - { compiler: gcc-11,    cxxstd: '03,11,14,17,20', os: ubuntu-22.04, install: 'g++-11' }
+          - { compiler: gcc-7,     cxxstd: '03,11,14,17',    os: 'ubuntu-20.04', install: 'g++-7' }
+          - { compiler: gcc-8,     cxxstd: '03,11,14,17',    os: 'ubuntu-20.04', install: 'g++-8' }
+          - { compiler: gcc-9,     cxxstd: '03,11,14,17',    os: 'ubuntu-22.04', install: 'g++-9' }
+          - { compiler: gcc-10,    cxxstd: '03,11,14,17,20', os: 'ubuntu-22.04', install: 'g++-10' }
+          - { compiler: gcc-11,    cxxstd: '03,11,14,17,20', os: 'ubuntu-22.04', install: 'g++-11' }
           - { name: "gcc-12 w/ sanitizers (03,11,14)", sanitize: yes,
-              compiler: gcc-12,    cxxstd: '03,11,14',       os: ubuntu-22.04, ccache_key: "san1" }
+              compiler: gcc-12,    cxxstd: '03,11,14',       os: 'ubuntu-22.04', ccache_key: "san1" }
           - { name: "gcc-12 w/ sanitizers (17,20,2b)", sanitize: yes,
-              compiler: gcc-12,    cxxstd: '17,20,2b',       os: ubuntu-22.04, ccache_key: "san2" }
+              compiler: gcc-12,    cxxstd: '17,20,2b',       os: 'ubuntu-22.04', ccache_key: "san2" }
           - { name: Collect coverage, coverage: yes,
-              compiler: gcc-12,     cxxstd: '03,20',          os: ubuntu-22.04, install: 'g++-12-multilib', address-model: '32,64', ccache_key: "cov" }
+              compiler: gcc-12,     cxxstd: '03,20',          os: 'ubuntu-22.04', install: 'g++-12-multilib', address-model: '32,64', ccache_key: "cov" }
 
-          - { name: "cfoa tsan (gcc-12)", cxxstd: '11,14,17,20,2b', os: ubuntu-22.04, compiler: gcc-12,
+          - { name: "cfoa tsan (gcc-12)", cxxstd: '11,14,17,20,2b', os: 'ubuntu-22.04', compiler: gcc-12,
               targets: 'libs/unordered/test//cfoa_tests', thread-sanitize: yes, ccache_key: "tsan" }
 
           # Linux, clang, libc++
-          - { compiler: clang-7,   cxxstd: '03,11,14,17',       os: ubuntu-20.04, stdlib: libc++, install: 'clang-7 libc++-7-dev libc++abi-7-dev' }
-          - { compiler: clang-10,  cxxstd: '03,11,14,17,20',    os: ubuntu-20.04, stdlib: libc++, install: 'clang-10 libc++-10-dev libc++abi-10-dev' }
-          - { compiler: clang-11,  cxxstd: '03,11,14,17,20',    os: ubuntu-22.04, stdlib: libc++, install: 'clang-11 libc++-11-dev libc++abi-11-dev' }
-          # clang-12 doesn't work on ubuntu-22.04, the linker can't find -lunwind for some reason
+          - { compiler: clang-7,   cxxstd: '03,11,14,17',       os: 'ubuntu-20.04', stdlib: libc++, install: 'clang-7 libc++-7-dev libc++abi-7-dev' }
+          - { compiler: clang-10,  cxxstd: '03,11,14,17,20',    os: 'ubuntu-20.04', stdlib: libc++, install: 'clang-10 libc++-10-dev libc++abi-10-dev' }
+          - { compiler: clang-11,  cxxstd: '03,11,14,17,20',    os: 'ubuntu-22.04', stdlib: libc++, install: 'clang-11 libc++-11-dev libc++abi-11-dev' }
+          # clang-12 doesn't work on 'ubuntu-22.04', the linker can't find -lunwind for some reason
           - { name: "clang-12 w/ sanitizers (03,11,14)", sanitize: yes,
-              compiler: clang-12,  cxxstd: '03,11,14',          os: ubuntu-20.04, stdlib: libc++, install: 'clang-12 libc++-12-dev libc++abi-12-dev', ccache_key: "san1" }
+              compiler: clang-12,  cxxstd: '03,11,14',          os: 'ubuntu-20.04', stdlib: libc++, install: 'clang-12 libc++-12-dev libc++abi-12-dev', ccache_key: "san1" }
           - { name: "clang-12 w/ sanitizers (17,20,2b)", sanitize: yes,
-              compiler: clang-12,  cxxstd: '17,20,2b',          os: ubuntu-20.04, stdlib: libc++, install: 'clang-12 libc++-12-dev libc++abi-12-dev', ccache_key: "san2" }
-          - { compiler: clang-13,  cxxstd: '03,11,14,17,20,2b', os: ubuntu-22.04, stdlib: libc++, install: 'clang-13 libc++-13-dev libc++abi-13-dev' }
+              compiler: clang-12,  cxxstd: '17,20,2b',          os: 'ubuntu-20.04', stdlib: libc++, install: 'clang-12 libc++-12-dev libc++abi-12-dev', ccache_key: "san2" }
+          - { compiler: clang-13,  cxxstd: '03,11,14,17,20,2b', os: 'ubuntu-22.04', stdlib: libc++, install: 'clang-13 libc++-13-dev libc++abi-13-dev' }
 
           # not using libc++ because of https://github.com/llvm/llvm-project/issues/52771
           - { name: "clang-14 w/ sanitizers (03,11,14)", sanitize: yes,
-              compiler: clang-14,  cxxstd: '03,11,14',          os: ubuntu-22.04, ccache_key: "san1" }
+              compiler: clang-14,  cxxstd: '03,11,14',          os: 'ubuntu-22.04', ccache_key: "san1" }
           - { name: "clang-14 w/ sanitizers (17,20,2b)", sanitize: yes,
-              compiler: clang-14,  cxxstd: '17,20,2b',          os: ubuntu-22.04, ccache_key: "san2" }
+              compiler: clang-14,  cxxstd: '17,20,2b',          os: 'ubuntu-22.04', ccache_key: "san2" }
 
-          - { name: "cfoa tsan (clang-14)", cxxstd: '11,14,17,20,2b', os: ubuntu-22.04, compiler: clang-14,
+          - { name: "cfoa tsan (clang-14)", cxxstd: '11,14,17,20,2b', os: 'ubuntu-22.04', compiler: clang-14,
               targets: 'libs/unordered/test//cfoa_tests', thread-sanitize: yes, 
               stdlib: libc++, install: 'clang-14 libc++-14-dev libc++abi-14-dev', ccache_key: "tsan" }
 
-          - { compiler: clang-15,  cxxstd: '03,11,14,17,20,2b', os: ubuntu-22.04, stdlib: libc++, install: 'clang-15 libc++-15-dev libc++abi-15-dev' }
+          - { compiler: clang-15,  cxxstd: '03,11,14,17,20,2b', os: 'ubuntu-22.04', stdlib: libc++, install: 'clang-15 libc++-15-dev libc++abi-15-dev' }
 
           # OSX, clang
-          - { compiler: clang,     cxxstd: '03,11,14,17,2a',    os: macos-11 }
-          - { compiler: clang,     cxxstd: '03,11,14,17,2a',    os: macos-12, sanitize: yes, ccache_key: "san1" }
-          - { compiler: clang,     cxxstd: '11,14,17,2a',       os: macos-12, thread-sanitize: yes, targets: 'libs/unordered/test//cfoa_tests', ccache_key: "tsan" }
-          - { compiler: clang,     cxxstd: '03,11,14,17,20,2b', os: macos-13 }
+          - { compiler: clang,     cxxstd: '03,11,14,17,2a',    os: 'macos-11' }
+          - { compiler: clang,     cxxstd: '03,11,14,17,2a',    os: 'macos-12', sanitize: yes, ccache_key: "san1" }
+          - { compiler: clang,     cxxstd: '11,14,17,2a',       os: 'macos-12', thread-sanitize: yes, targets: 'libs/unordered/test//cfoa_tests', ccache_key: "tsan" }
+          - { compiler: clang,     cxxstd: '03,11,14,17,20,2b', os: 'macos-13' }
 
-    timeout-minutes: 210
-    runs-on: ${{matrix.os}}
+    timeout-minutes: 360
+    # posix (gcc-12 w/ sanitizers is taking longer than 210 minutes
+    # timeout-minutes: 210
+    needs: [runner-selection]
+    runs-on: ${{ fromJSON(needs.runner-selection.outputs.labelmatrix)[matrix.os] }}
     container: ${{matrix.container}}
     env: {B2_USE_CCACHE: 1}
 
@@ -231,15 +244,16 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { toolset: msvc-14.0, cxxstd: '14,latest',       addrmd: '32,64', os: windows-2019, variant: 'debug,release' }
-          - { toolset: msvc-14.2, cxxstd: '14,17,20,latest', addrmd: '32,64', os: windows-2019, variant: 'debug,release' }
-          - { toolset: msvc-14.3, cxxstd: '14,17,20,latest', addrmd: '32,64', os: windows-2022, variant: 'debug,release' }
-          - { toolset: msvc-14.3, cxxstd: '14',              addrmd: '64',    os: windows-2022, variant: 'debug', defines: '_ALLOW_RTCc_IN_STL', cxxflags: '/RTCc'              }
-          - { toolset: msvc-14.3, cxxstd: '14',              addrmd: '32',    os: windows-2022, variant: 'debug', defines: '_ALLOW_RTCc_IN_STL', cxxflags: '"/RTCc /arch:IA32"' }
-          - { toolset: clang-win, cxxstd: '14,17,latest',    addrmd: '32,64', os: windows-2022, variant: 'debug,release' }
-          - { toolset: gcc,       cxxstd: '03,11,14,17,2a',  addrmd: '64',    os: windows-2019, variant: 'debug,release' }
+          - { toolset: msvc-14.0, cxxstd: '14,latest',       addrmd: '32,64', os: 'windows-2019', variant: 'debug,release' }
+          - { toolset: msvc-14.2, cxxstd: '14,17,20,latest', addrmd: '32,64', os: 'windows-2019', variant: 'debug,release' }
+          - { toolset: msvc-14.3, cxxstd: '14,17,20,latest', addrmd: '32,64', os: 'windows-2022', variant: 'debug,release' }
+          - { toolset: msvc-14.3, cxxstd: '14',              addrmd: '64',    os: 'windows-2022', variant: 'debug', defines: '_ALLOW_RTCc_IN_STL', cxxflags: '/RTCc'              }
+          - { toolset: msvc-14.3, cxxstd: '14',              addrmd: '32',    os: 'windows-2022', variant: 'debug', defines: '_ALLOW_RTCc_IN_STL', cxxflags: '"/RTCc /arch:IA32"' }
+          - { toolset: clang-win, cxxstd: '14,17,latest',    addrmd: '32,64', os: 'windows-2022', variant: 'debug,release' }
+          - { toolset: gcc,       cxxstd: '03,11,14,17,2a',  addrmd: '64',    os: 'windows-2019', variant: 'debug,release' }
 
-    runs-on: ${{matrix.os}}
+    needs: [runner-selection]
+    runs-on: ${{ fromJSON(needs.runner-selection.outputs.labelmatrix)[matrix.os] }}
 
     steps:
       - uses: actions/checkout@v3
@@ -296,7 +310,8 @@ jobs:
           - { sys: MINGW32, compiler: gcc, cxxstd: '03,11,17,20' }
           - { sys: MINGW64, compiler: gcc, cxxstd: '03,11,17,20' }
 
-    runs-on: windows-latest
+    needs: [runner-selection]
+    runs-on: ${{ fromJSON(needs.runner-selection.outputs.labelmatrix)['windows-latest'] }}
 
     steps:
       - uses: actions/checkout@v3
@@ -350,11 +365,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: ubuntu-20.04, build_shared: ON,  build_type: Debug, generator: 'Unix Makefiles' }
-          - { os: windows-2019, build_shared: ON,  build_type: Debug, generator: 'Visual Studio 16 2019' }
+          - { os: 'ubuntu-20.04', build_shared: ON,  build_type: Debug, generator: 'Unix Makefiles' }
+          - { os: 'windows-2019', build_shared: ON,  build_type: Debug, generator: 'Visual Studio 16 2019' }
 
     timeout-minutes: 120
-    runs-on: ${{matrix.os}}
+    needs: [runner-selection]
+    runs-on: ${{ fromJSON(needs.runner-selection.outputs.labelmatrix)[matrix.os] }}
 
     steps:
       - uses: actions/checkout@v3
