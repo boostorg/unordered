@@ -18,75 +18,37 @@ namespace unordered{
 namespace detail{
 namespace foa{
 
-static constexpr bool noexcept_is_part_of_signature=
-  !std::is_same<void(*)(),void(*)()noexcept>::value;
-
-template<typename Arg,typename Sig>
-static std::false_type has_1st_arg(Sig);
+template<typename Arg,typename R,typename... Args>
+void check_function_1st_arg(R(*)(Arg,Args...));
 
 template<typename Arg,typename R,typename... Args>
-static std::true_type has_1st_arg(R(*)(Arg,Args...));
+void check_function_1st_arg(R(*)(Arg,Args...,...));
 
-template<
-  typename Arg,typename R,typename... Args,
-  bool dependent_value=false,
-  typename std::enable_if<
-    noexcept_is_part_of_signature||dependent_value>::type* =nullptr
->
-static std::true_type has_1st_arg(R(*)(Arg,Args...)noexcept);
-
-template<typename Arg,typename R,typename... Args>
-static std::true_type has_1st_arg(R(*)(Arg,Args...,...));
-
-template<
-  typename Arg,typename R,typename... Args,
-  bool dependent_value=false,
-  typename std::enable_if<
-    noexcept_is_part_of_signature||dependent_value>::type* =nullptr
->
-std::true_type has_1st_arg(R(*)(Arg,Args...,...)noexcept);
-
-#define BOOST_UNORDERED_HAS_CONST_REFERENCE_ARG_MEMFUN(qualifier)             \
-template<typename Arg,typename R,typename C,typename... Args>                 \
-static std::true_type has_1st_arg(R(C::*)(Arg,Args...)qualifier);             \
-                                                                              \
-template<                                                                     \
-  typename Arg,typename R,typename C,typename... Args,                        \
-  bool dependent_value=false,                                                 \
-  typename std::enable_if<                                                    \
-    noexcept_is_part_of_signature||dependent_value>::type* =nullptr           \
->                                                                             \
-static std::true_type has_1st_arg(R(C::*)(Arg,Args...)qualifier noexcept);    \
-                                                                              \
-template<typename Arg,typename R,typename C,typename... Args>                 \
-static std::true_type has_1st_arg(R(C::*)(Arg,Args...,...)qualifier);         \
-                                                                              \
-template<                                                                     \
-  typename Arg,typename R,typename C,typename... Args,                        \
-  bool dependent_value=false,                                                 \
-  typename std::enable_if<                                                    \
-    noexcept_is_part_of_signature||dependent_value>::type* =nullptr           \
->                                                                             \
-static std::true_type has_1st_arg(R(C::*)(Arg,Args...,...)qualifier noexcept);
+#define BOOST_UNORDERED_CHECK_MEMFUN_1ST_ARG(qualifier)       \
+template<typename Arg,typename R,typename C,typename... Args> \
+void check_memfun_1st_arg(R(C::*)(Arg,Args...)qualifier);     \
+                                                              \
+template<typename Arg,typename R,typename C,typename... Args> \
+void check_memfun_1st_arg(R(C::*)(Arg,Args...,...)qualifier);
 
 /* VS warns when a pp function is directly called with an empty arg */
 #define BOOST_UNORDERED_EMPTY_PP_ARG()
 
-BOOST_UNORDERED_HAS_CONST_REFERENCE_ARG_MEMFUN(BOOST_UNORDERED_EMPTY_PP_ARG())
-BOOST_UNORDERED_HAS_CONST_REFERENCE_ARG_MEMFUN(const)
-BOOST_UNORDERED_HAS_CONST_REFERENCE_ARG_MEMFUN(volatile)
-BOOST_UNORDERED_HAS_CONST_REFERENCE_ARG_MEMFUN(const volatile)
-BOOST_UNORDERED_HAS_CONST_REFERENCE_ARG_MEMFUN(&)
-BOOST_UNORDERED_HAS_CONST_REFERENCE_ARG_MEMFUN(const&)
-BOOST_UNORDERED_HAS_CONST_REFERENCE_ARG_MEMFUN(volatile&)
-BOOST_UNORDERED_HAS_CONST_REFERENCE_ARG_MEMFUN(const volatile&)
-BOOST_UNORDERED_HAS_CONST_REFERENCE_ARG_MEMFUN(&&)
-BOOST_UNORDERED_HAS_CONST_REFERENCE_ARG_MEMFUN(const&&)
-BOOST_UNORDERED_HAS_CONST_REFERENCE_ARG_MEMFUN(volatile&&)
-BOOST_UNORDERED_HAS_CONST_REFERENCE_ARG_MEMFUN(const volatile&&)
+BOOST_UNORDERED_CHECK_MEMFUN_1ST_ARG(BOOST_UNORDERED_EMPTY_PP_ARG())
+BOOST_UNORDERED_CHECK_MEMFUN_1ST_ARG(const)
+BOOST_UNORDERED_CHECK_MEMFUN_1ST_ARG(volatile)
+BOOST_UNORDERED_CHECK_MEMFUN_1ST_ARG(const volatile)
+BOOST_UNORDERED_CHECK_MEMFUN_1ST_ARG(&)
+BOOST_UNORDERED_CHECK_MEMFUN_1ST_ARG(const&)
+BOOST_UNORDERED_CHECK_MEMFUN_1ST_ARG(volatile&)
+BOOST_UNORDERED_CHECK_MEMFUN_1ST_ARG(const volatile&)
+BOOST_UNORDERED_CHECK_MEMFUN_1ST_ARG(&&)
+BOOST_UNORDERED_CHECK_MEMFUN_1ST_ARG(const&&)
+BOOST_UNORDERED_CHECK_MEMFUN_1ST_ARG(volatile&&)
+BOOST_UNORDERED_CHECK_MEMFUN_1ST_ARG(const volatile&&)
 
 #undef BOOST_UNORDERED_EMPTY_PP_ARG
-#undef BOOST_UNORDERED_HAS_CONST_REFERENCE_ARG_MEMFUN
+#undef BOOST_UNORDERED_CHECK_MEMFUN_1ST_ARG
 
 /* Detects if f(x) takes x as a const reference. From an implementation
  * technique by Kenneth Gorking.
@@ -94,29 +56,41 @@ BOOST_UNORDERED_HAS_CONST_REFERENCE_ARG_MEMFUN(const volatile&&)
  */
 
 template<typename F,typename Arg,typename=void>
-struct takes_arg_as_const_reference0:
-decltype(has_1st_arg<const Arg&>(std::declval<F>())){};
+struct takes_arg_as_const_reference0:std::false_type{};
 
 template<typename F,typename Arg>
 struct takes_arg_as_const_reference0<
   F,Arg,
   boost::void_t<
-    decltype(has_1st_arg<const Arg&>(&F::template operator()<Arg>))
+    decltype(check_function_1st_arg<const Arg&>(std::declval<F>()))
   >
->:
-decltype(has_1st_arg<const Arg&>(&F::template operator()<Arg>)){};
+>:std::true_type{};
+
+template<typename F,typename Arg>
+struct takes_arg_as_const_reference0<
+  F,Arg,
+  boost::void_t<
+    decltype(std::declval<F>().operator()(std::declval<Arg&>()))
+  >
+>:std::true_type{};
 
 template<typename F,typename Arg,typename=void>
 struct takes_arg_as_const_reference:takes_arg_as_const_reference0<F,Arg>{};
 
+template<
+  typename F,typename Arg,
+  typename R=decltype(std::declval<F>()(std::declval<Arg&>())),
+  typename RawF=
+    typename std::remove_cv<typename std::remove_reference<F>::type>::type
+>
+using check_operator_call_takes_arg_as_reference=
+  decltype(check_memfun_1st_arg<Arg&,R,RawF>(&RawF::operator()));
+
 template<typename F,typename Arg>
 struct takes_arg_as_const_reference<
   F,Arg,
-  boost::void_t<
-    decltype(has_1st_arg<const Arg&>(&F::operator()))
-  >
->:
-decltype(has_1st_arg<const Arg&>(&F::operator())){};
+  boost::void_t<check_operator_call_takes_arg_as_reference<F,Arg>>
+>:std::false_type{};
 
 } /* namespace foa */
 } /* namespace detail */
