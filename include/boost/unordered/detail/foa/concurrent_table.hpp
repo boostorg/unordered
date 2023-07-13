@@ -891,10 +891,7 @@ private:
 
   template<typename F>
   using group_access_for=typename std::conditional<
-    takes_arg_as_const_reference<
-      typename std::remove_cv<typename std::remove_reference<F>::type>::type,
-      value_type
-    >::value,
+    takes_arg_as_const_reference<F,value_type>::value,
     group_shared,
     group_exclusive
   >::type;
