@@ -61,9 +61,7 @@ struct takes_arg_as_const_reference0:std::false_type{};
 template<typename F,typename Arg>
 struct takes_arg_as_const_reference0<
   F,Arg,
-  boost::void_t<
-    decltype(check_function_1st_arg<const Arg&>(std::declval<F>()))
-  >
+  decltype(check_function_1st_arg<const Arg&>(std::declval<F>()))
 >:std::true_type{};
 
 template<typename F,typename Arg>
@@ -83,13 +81,13 @@ template<
   typename RawF=
     typename std::remove_cv<typename std::remove_reference<F>::type>::type
 >
-using check_operator_call_takes_arg_as_reference=
-  decltype(check_memfun_1st_arg<Arg&,R,RawF>(&RawF::operator()));
+decltype(check_memfun_1st_arg<Arg&,R,RawF>(&RawF::operator()))
+check_operator_call_takes_arg_as_reference();
 
 template<typename F,typename Arg>
 struct takes_arg_as_const_reference<
   F,Arg,
-  boost::void_t<check_operator_call_takes_arg_as_reference<F,Arg>>
+  decltype(check_operator_call_takes_arg_as_reference<F,Arg>())
 >:std::false_type{};
 
 } /* namespace foa */
