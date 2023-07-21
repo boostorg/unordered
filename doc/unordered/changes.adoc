@@ -6,6 +6,11 @@
 :github-pr-url: https://github.com/boostorg/unordered/pull
 :cpp: C++
 
+== Release 1.84.0
+
+* Added `[c]visit_until` and `[c]visit_while` operations to `boost::concurrent_map`,
+with serial and parallel variants.
+
 == Release 1.83.0 - Major update
 
 * Added `boost::concurrent_flat_map`, a fast, thread-safe hashmap based on open addressing.
