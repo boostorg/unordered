@@ -313,7 +313,7 @@ struct atomic_size_control
 
   atomic_size_control(std::size_t ml_,std::size_t size_):
     pad0_{},ml{ml_},pad1_{},size{size_}{}
-  atomic_size_control(atomic_size_control& x):
+  atomic_size_control(const atomic_size_control& x):
     pad0_{},ml{x.ml.load()},pad1_{},size{x.size.load()}{}
 
   /* padding to avoid false sharing internally and with sorrounding data */
