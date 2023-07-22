@@ -282,6 +282,13 @@ struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy>
   template<typename Allocator>
   static void delete_(Allocator& al,concurrent_table_arrays& arrays)noexcept
   {
+    delete_group_access(al,arrays);
+    super::delete_(al,arrays);
+  }
+
+  template<typename Allocator>
+  static void delete_group_access(Allocator& al,concurrent_table_arrays& arrays)noexcept
+  {
     if(arrays.elements){
       using access_alloc=
         typename boost::allocator_rebind<Allocator,group_access>::type;
@@ -294,7 +301,6 @@ struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy>
         aal,pointer_traits::pointer_to(*arrays.group_accesses),
         arrays.groups_size_mask+1);
     }
-    super::delete_(al,arrays);
   }
 
   group_access *group_accesses;
@@ -391,6 +397,9 @@ inline void swap(atomic_size_control& x,atomic_size_control& y)
  *       over.
  */
 
+template<typename,typename,typename,typename>
+class table; /* concurrent/non-concurrent interop */
+
 template <typename TypePolicy,typename Hash,typename Pred,typename Allocator>
 using concurrent_table_core_impl=table_core<
   TypePolicy,group15<atomic_integral>,concurrent_table_arrays,
@@ -412,10 +421,6 @@ class concurrent_table:
   using group_type=typename super::group_type;
   using super::N;
   using prober=typename super::prober;
-
-  template<
-    typename TypePolicy2,typename Hash2,typename Pred2,typename Allocator2>
-  friend class concurrent_table;
 
 public:
   using key_type=typename super::key_type;
@@ -875,6 +880,9 @@ public:
   }
 
 private:
+  template<typename,typename,typename,typename> friend class concurrent_table;
+  template<typename,typename,typename,typename> friend class table;
+
   using mutex_type=rw_spinlock;
   using multimutex_type=multimutex<mutex_type,128>; // TODO: adapt 128 to the machine
   using shared_lock_guard=shared_lock<mutex_type>;

@@ -10,6 +10,7 @@
 #pragma once
 #endif
 
+#include <boost/unordered/concurrent_flat_map_fwd.hpp>
 #include <boost/unordered/detail/foa/flat_map_types.hpp>
 #include <boost/unordered/detail/foa/table.hpp>
 #include <boost/unordered/detail/type_traits.hpp>
@@ -170,6 +171,12 @@ namespace boost {
       unordered_flat_map(std::initializer_list<value_type> init, size_type n,
         hasher const& h, allocator_type const& a)
           : unordered_flat_map(init, n, h, key_equal(), a)
+      {
+      }
+
+      unordered_flat_map(
+        concurrent_flat_map<Key, T, Hash, KeyEqual, Allocator>&& other)
+          : table_(std::move(other.table_))
       {
       }
 

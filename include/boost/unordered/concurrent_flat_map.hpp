@@ -15,6 +15,7 @@
 #include <boost/unordered/detail/foa/concurrent_table.hpp>
 #include <boost/unordered/detail/foa/flat_map_types.hpp>
 #include <boost/unordered/detail/type_traits.hpp>
+#include <boost/unordered/unordered_flat_map_fwd.hpp>
 
 #include <boost/container_hash/hash.hpp>
 #include <boost/core/allocator_access.hpp>
@@ -84,6 +85,9 @@ namespace boost {
       template <class Key2, class T2, class Hash2, class Pred2,
         class Allocator2>
       friend class concurrent_flat_map;
+      template <class Key2, class T2, class Hash2, class Pred2,
+        class Allocator2>
+      friend class unordered_flat_map;
 
       using type_policy = detail::foa::flat_map_types<Key, T>;
 

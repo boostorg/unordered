@@ -1282,6 +1282,17 @@ public:
     size_ctrl{initial_max_load(),0}
     {}
 
+  /* bare transfer ctor for concurrent/non-concurrent interop */
+
+  table_core(
+    Hash&& h_,Pred&& pred_,Allocator&& al_,
+    const arrays_type& arrays_,const size_ctrl_type& size_ctrl_):
+    hash_base{empty_init,h_},
+    pred_base{empty_init,pred_},
+    allocator_base{empty_init,al_},
+    arrays(arrays_),size_ctrl(size_ctrl_)
+  {}
+
   table_core(const table_core& x):
     table_core{x,alloc_traits::select_on_container_copy_construction(x.al())}{}
 
@@ -1290,14 +1301,11 @@ public:
       std::is_nothrow_move_constructible<Hash>::value&&
       std::is_nothrow_move_constructible<Pred>::value&&
       std::is_nothrow_move_constructible<Allocator>::value):
-    hash_base{empty_init,std::move(x.h())},
-    pred_base{empty_init,std::move(x.pred())},
-    allocator_base{empty_init,std::move(x.al())},
-    arrays(x.arrays),size_ctrl(x.size_ctrl)
+    table_core{
+      std::move(x.h()),std::move(x.pred()),std::move(x.al()),
+      x.arrays,x.size_ctrl}
   {
-    x.arrays=x.new_arrays(0);
-    x.size_ctrl.ml=x.initial_max_load();
-    x.size_ctrl.size=0;
+    x.empty_initialize();
   }
 
   table_core(const table_core& x,const Allocator& al_):
@@ -1334,6 +1342,13 @@ public:
       destroy_element(p);
     });
     delete_arrays(arrays);
+  }
+
+  void empty_initialize()noexcept
+  {
+    arrays=new_arrays(0);
+    size_ctrl.ml=initial_max_load();
+    size_ctrl.size=0;
   }
 
   table_core& operator=(const table_core& x)
@@ -1802,9 +1817,10 @@ private:
   table_core(Hash&& h_,Pred&& pred_,const Allocator& al_):
     hash_base{empty_init,std::move(h_)},
     pred_base{empty_init,std::move(pred_)},
-    allocator_base{empty_init,al_},arrays(new_arrays(0)),
-    size_ctrl{initial_max_load(),0}
-    {}
+    allocator_base{empty_init,al_}
+  {
+    empty_initialize();
+  }
 
   arrays_type new_arrays(std::size_t n)
   {
