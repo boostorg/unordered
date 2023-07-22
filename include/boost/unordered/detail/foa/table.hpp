@@ -507,9 +507,8 @@ private:
   using compatible_concurrent_table=
     concurrent_table<TypePolicy,Hash,Pred,Allocator>;
 
-  table(
-    compatible_concurrent_table&& x,
-    typename compatible_concurrent_table::exclusive_lock_guard):
+  template<typename ExclusiveLockGuard>
+  table(compatible_concurrent_table&& x,ExclusiveLockGuard):
     super{
       std::move(x.h()),std::move(x.pred()),std::move(x.al()),
       arrays_type{
