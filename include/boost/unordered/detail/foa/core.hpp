@@ -1817,9 +1817,9 @@ private:
   table_core(Hash&& h_,Pred&& pred_,const Allocator& al_):
     hash_base{empty_init,std::move(h_)},
     pred_base{empty_init,std::move(pred_)},
-    allocator_base{empty_init,al_}
+    allocator_base{empty_init,al_},arrays(new_arrays(0)),
+    size_ctrl{initial_max_load(),0}
   {
-    empty_initialize();
   }
 
   arrays_type new_arrays(std::size_t n)
