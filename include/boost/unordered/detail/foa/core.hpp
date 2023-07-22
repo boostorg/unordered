@@ -1287,9 +1287,9 @@ public:
   table_core(
     Hash&& h_,Pred&& pred_,Allocator&& al_,
     const arrays_type& arrays_,const size_ctrl_type& size_ctrl_):
-    hash_base{empty_init,h_},
-    pred_base{empty_init,pred_},
-    allocator_base{empty_init,al_},
+    hash_base{empty_init,std::move(h_)},
+    pred_base{empty_init,std::move(pred_)},
+    allocator_base{empty_init,std::move(al_)},
     arrays(arrays_),size_ctrl(size_ctrl_)
   {}
 
