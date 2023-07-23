@@ -290,6 +290,9 @@ class table:table_core_impl<TypePolicy,Hash,Pred,Allocator>
   using arrays_type=typename super::arrays_type;
   using size_ctrl_type=typename super::size_ctrl_type;
   using locator=typename super::locator;
+  using compatible_concurrent_table=
+    concurrent_table<TypePolicy,Hash,Pred,Allocator>;
+  friend class compatible_concurrent_table;
 
 public:
   using key_type=typename super::key_type;
@@ -328,7 +331,7 @@ public:
   table(table&& x)=default;
   table(const table& x,const Allocator& al_):super{x,al_}{}
   table(table&& x,const Allocator& al_):super{std::move(x),al_}{}
-  table(concurrent_table<TypePolicy,Hash,Pred,Allocator>&& x):
+  table(compatible_concurrent_table&& x):
     table(std::move(x),x.exclusive_access()){}
   ~table()=default;
 
@@ -503,10 +506,6 @@ public:
   friend bool operator!=(const table& x,const table& y){return !(x==y);}
 
 private:
-  template<typename,typename,typename,typename> friend class concurrent_table;
-  using compatible_concurrent_table=
-    concurrent_table<TypePolicy,Hash,Pred,Allocator>;
-
   template<typename ExclusiveLockGuard>
   table(compatible_concurrent_table&& x,ExclusiveLockGuard):
     super{

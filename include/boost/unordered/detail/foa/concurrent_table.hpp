@@ -372,7 +372,7 @@ inline void swap(atomic_size_control& x,atomic_size_control& y)
  *   - Parallel versions of [c]visit_all(f) and erase_if(f) are provided based
  *     on C++17 stdlib parallel algorithms.
  * 
- * Consult boost::unordered_flat_map docs for the full API reference.
+ * Consult boost::concurrent_flat_map docs for the full API reference.
  * Heterogeneous lookup is suported by default, that is, without checking for
  * any ::is_transparent typedefs --this checking is done by the wrapping
  * containers.
@@ -430,6 +430,8 @@ class concurrent_table:
   using prober=typename super::prober;
   using arrays_type=typename super::arrays_type;
   using size_ctrl_type=typename super::size_ctrl_type;
+  using compatible_nonconcurrent_table=table<TypePolicy,Hash,Pred,Allocator>;
+  friend class compatible_nonconcurrent_table;
 
 public:
   using key_type=typename super::key_type;
@@ -465,7 +467,7 @@ public:
   concurrent_table(concurrent_table&& x,const Allocator& al_):
     concurrent_table(std::move(x),al_,x.exclusive_access()){}
 
-  concurrent_table(table<TypePolicy,Hash,Pred,Allocator>&& x):
+  concurrent_table(compatible_nonconcurrent_table&& x):
     super{
       std::move(x.h()),std::move(x.pred()),std::move(x.al()),
       arrays_type(arrays_type::new_group_access(
@@ -905,7 +907,6 @@ public:
 
 private:
   template<typename,typename,typename,typename> friend class concurrent_table;
-  template<typename,typename,typename,typename> friend class table;
 
   using mutex_type=rw_spinlock;
   using multimutex_type=multimutex<mutex_type,128>; // TODO: adapt 128 to the machine
