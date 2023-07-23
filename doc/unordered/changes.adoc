@@ -10,6 +10,8 @@
 
 * Added `[c]visit_while` operations to `boost::concurrent_map`,
 with serial and parallel variants.
+* Added efficient move construction of `boost::unordered_flat_map` from
+`boost::concurrent_flat_map` and vice versa.
 
 == Release 1.83.0 - Major update
 

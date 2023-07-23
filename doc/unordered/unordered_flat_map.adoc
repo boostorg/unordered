@@ -77,6 +77,7 @@ namespace boost {
     explicit xref:#unordered_flat_map_allocator_constructor[unordered_flat_map](const Allocator& a);
     xref:#unordered_flat_map_copy_constructor_with_allocator[unordered_flat_map](const unordered_flat_map& other, const Allocator& a);
     xref:#unordered_flat_map_move_constructor_with_allocator[unordered_flat_map](unordered_flat_map&& other, const Allocator& a);
+    xref:#unordered_flat_map_move_constructor_from_concurrent_flat_map[unordered_flat_map](concurrent_flat_map<Key, T, Hash, Pred, Allocator>&& other);
     xref:#unordered_flat_map_initializer_list_constructor[unordered_flat_map](std::initializer_list<value_type> il,
                        size_type n = _implementation-defined_
                        const hasher& hf = hasher(),
@@ -469,6 +470,22 @@ unordered_flat_map(unordered_flat_map&& other, Allocator const& a);
 If `a == other.get_allocator()`, the elements of `other` are transferred directly to the new container;
 otherwise, elements are moved-constructed from those of `other`. The hash function and predicate are moved-constructed
 from `other`, and the allocator is copy-constructed from `a`.
+
+---
+
+==== Move Constructor from concurrent_flat_map
+
+```c++
+unordered_flat_map(concurrent_flat_map<Key, T, Hash, Pred, Allocator>&& other);
+```
+
+Move construction from a xref:#concurrent_flat_map[`concurrent_flat_map`].
+The internal bucket array of `other` is transferred directly to the new container.
+The hash function, predicate and allocator are moved-constructed from `other`.
+
+[horizontal]
+Complexity:;; Constant time.
+Concurrency:;; Blocking on `other`.
 
 ---
 
