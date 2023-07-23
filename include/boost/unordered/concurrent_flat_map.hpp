@@ -227,6 +227,13 @@ namespace boost {
       {
       }
 
+
+      concurrent_flat_map(
+        unordered_flat_map<Key, T, Hash, Pred, Allocator>&& other)
+          : table_(std::move(other.table_))
+      {
+      }
+
       ~concurrent_flat_map() = default;
 
       concurrent_flat_map& operator=(concurrent_flat_map const& rhs)

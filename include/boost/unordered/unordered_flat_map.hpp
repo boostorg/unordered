@@ -37,6 +37,10 @@ namespace boost {
     template <class Key, class T, class Hash, class KeyEqual, class Allocator>
     class unordered_flat_map
     {
+      template <class Key2, class T2, class Hash2, class Pred2,
+        class Allocator2>
+      friend class concurrent_flat_map;
+
       using map_types = detail::foa::flat_map_types<Key, T>;
 
       using table_type = detail::foa::table<map_types, Hash, KeyEqual,

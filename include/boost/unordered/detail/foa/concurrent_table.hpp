@@ -252,7 +252,21 @@ struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy>
   template<typename Allocator>
   static concurrent_table_arrays new_(Allocator& al,std::size_t n)
   {
-    concurrent_table_arrays arrays{super::new_(al,n),nullptr};
+    super x{super::new_(al,n)};
+    BOOST_TRY{
+      return new_group_access(al,x);
+    }
+    BOOST_CATCH(...){
+      super::delete_(al,x);
+      BOOST_RETHROW
+    }
+    BOOST_CATCH_END
+  }
+
+  template<typename Allocator>
+  static concurrent_table_arrays new_group_access(Allocator& al,const super& x)
+  {
+    concurrent_table_arrays arrays{x,nullptr};
     if(!arrays.elements){
       arrays.group_accesses=dummy_group_accesses<SizePolicy::min_size()>();
     }
@@ -261,20 +275,13 @@ struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy>
         typename boost::allocator_rebind<Allocator,group_access>::type;
       using access_traits=boost::allocator_traits<access_alloc>;
 
-      BOOST_TRY{
-        auto aal=access_alloc(al);
-        arrays.group_accesses=boost::to_address(
-          access_traits::allocate(aal,arrays.groups_size_mask+1));
+      auto aal=access_alloc(al);
+      arrays.group_accesses=boost::to_address(
+        access_traits::allocate(aal,arrays.groups_size_mask+1));
 
-        for(std::size_t i=0;i<arrays.groups_size_mask+1;++i){
-          ::new (arrays.group_accesses+i) group_access();
-        }
+      for(std::size_t i=0;i<arrays.groups_size_mask+1;++i){
+        ::new (arrays.group_accesses+i) group_access();
       }
-      BOOST_CATCH(...){
-        super::delete_(al,arrays);
-        BOOST_RETHROW
-      }
-      BOOST_CATCH_END
     }
     return arrays;
   }
@@ -421,6 +428,8 @@ class concurrent_table:
   using group_type=typename super::group_type;
   using super::N;
   using prober=typename super::prober;
+  using arrays_type=typename super::arrays_type;
+  using size_ctrl_type=typename super::size_ctrl_type;
 
 public:
   using key_type=typename super::key_type;
@@ -455,6 +464,21 @@ public:
     concurrent_table(x,al_,x.exclusive_access()){}
   concurrent_table(concurrent_table&& x,const Allocator& al_):
     concurrent_table(std::move(x),al_,x.exclusive_access()){}
+
+  concurrent_table(table<TypePolicy,Hash,Pred,Allocator>&& x):
+    super{
+      std::move(x.h()),std::move(x.pred()),std::move(x.al()),
+      arrays_type(arrays_type::new_group_access(
+        x.al(),
+        typename arrays_type::super{
+          x.arrays.groups_size_index,x.arrays.groups_size_mask,
+          reinterpret_cast<group_type*>(x.arrays.groups),
+          reinterpret_cast<value_type*>(x.arrays.elements)})),
+      size_ctrl_type{x.size_ctrl.ml,x.size_ctrl.size}}
+  {
+    x.empty_initialize();
+  }
+
   ~concurrent_table()=default;
 
   concurrent_table& operator=(const concurrent_table& x)
