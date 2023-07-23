@@ -431,7 +431,7 @@ class concurrent_table:
   using arrays_type=typename super::arrays_type;
   using size_ctrl_type=typename super::size_ctrl_type;
   using compatible_nonconcurrent_table=table<TypePolicy,Hash,Pred,Allocator>;
-  friend class compatible_nonconcurrent_table;
+  friend compatible_nonconcurrent_table;
 
 public:
   using key_type=typename super::key_type;

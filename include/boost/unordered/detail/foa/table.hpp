@@ -292,7 +292,7 @@ class table:table_core_impl<TypePolicy,Hash,Pred,Allocator>
   using locator=typename super::locator;
   using compatible_concurrent_table=
     concurrent_table<TypePolicy,Hash,Pred,Allocator>;
-  friend class compatible_concurrent_table;
+  friend compatible_concurrent_table;
 
 public:
   using key_type=typename super::key_type;
