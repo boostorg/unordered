@@ -158,7 +158,7 @@ Traversal can be interrupted midway:
 
 [source,c++]
 ----
-// finds the key to a given (unique value)
+// finds the key to a given (unique) value
 
 int  key = 0;
 int  value = ...;
