@@ -840,8 +840,7 @@ private:
   using multimutex_type=multimutex<mutex_type,128>; // TODO: adapt 128 to the machine
   using shared_lock_guard=reentrancy_checked<shared_lock<mutex_type>>;
   using exclusive_lock_guard=reentrancy_checked<lock_guard<multimutex_type>>;
-  using exclusive_bilock_guard=
-    reentrancy_checked<reentrancy_checked<scoped_bilock<multimutex_type>>>;
+  using exclusive_bilock_guard=reentrancy_bichecked<scoped_bilock<multimutex_type>>;
   using group_shared_lock_guard=typename group_access::shared_lock_guard;
   using group_exclusive_lock_guard=typename group_access::exclusive_lock_guard;
   using group_insert_counter_type=typename group_access::insert_counter_type;

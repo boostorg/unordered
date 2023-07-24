@@ -56,10 +56,11 @@ class entry_trace
 public:
   entry_trace(const void* px_):px{px_}
   {
-    BOOST_ASSERT(px!=nullptr);
-    BOOST_UNORDERED_REENTRANCY_CHECK_ASSERT_MSG(
-      !find(px),"reentrancy not allowed");
-    header()=this;
+    if(px){
+      BOOST_UNORDERED_REENTRANCY_CHECK_ASSERT_MSG(
+        !find(px),"reentrancy not allowed");
+      header()=this;
+    }
   }
 
   /* not used but VS in pre-C++17 mode needs to see it for RVO */
@@ -111,6 +112,24 @@ struct reentrancy_checked
   LockGuard   lck;
 };
 
+template<typename LockGuard>
+struct reentrancy_bichecked
+{
+  template<typename... Args>
+  reentrancy_bichecked(const void* px,const void* py,Args&&... args):
+    tr1{px},tr2{py!=px?py:nullptr},lck{std::forward<Args>(args)...}{}
+
+  void unlock()
+  {
+    lck.unlock();
+    tr2.clear();
+    tr1.clear();
+  }
+
+  entry_trace tr1,tr2;
+  LockGuard   lck;
+};
+
 #else
 
 template<typename LockGuard>
@@ -118,6 +137,18 @@ struct reentrancy_checked
 {
   template<typename... Args>
   reentrancy_checked(const void*,Args&&... args):
+    lck{std::forward<Args>(args)...}{}
+
+  void unlock(){lck.unlock();}
+
+  LockGuard lck;
+};
+
+template<typename LockGuard>
+struct reentrancy_bichecked
+{
+  template<typename... Args>
+  reentrancy_bichecked(const void*,const void*,Args&&... args):
     lck{std::forward<Args>(args)...}{}
 
   void unlock(){lck.unlock();}
