@@ -62,8 +62,9 @@ public:
     header()=this;
   }
 
-  entry_trace(const entry_trace&)=delete;
-  entry_trace& operator=(const entry_trace&)=delete;
+  /* not used but VS in pre-C++17 mode needs to see it for RVO */
+  entry_trace(const entry_trace&);
+
   ~entry_trace(){clear();}
 
   void clear()
