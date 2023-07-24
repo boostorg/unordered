@@ -6,6 +6,11 @@
 :github-pr-url: https://github.com/boostorg/unordered/pull
 :cpp: C++
 
+== Release 1.84.0
+
+* Added debug mode mechanisms for detecting illegal reentrancies into
+a `boost::concurrent_flat_map` from user code.
+
 == Release 1.83.0 - Major update
 
 * Added `boost::concurrent_flat_map`, a fast, thread-safe hashmap based on open addressing.
