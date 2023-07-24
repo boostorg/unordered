@@ -539,46 +539,6 @@ public:
   }
 #endif
 
-  template<typename F> bool visit_until(F&& f)
-  {
-    return !visit_while([&](value_type& x){return !f(x);});
-  }
-
-  template<typename F> bool visit_until(F&& f)const
-  {
-    return !visit_while([&](const value_type& x){return !f(x);});
-  }
-
-  template<typename F> bool cvisit_until(F&& f)const
-  {
-    return visit_while(std::forward<F>(f));
-  }
-
-#if defined(BOOST_UNORDERED_PARALLEL_ALGORITHMS)
-  template<typename ExecutionPolicy,typename F>
-  bool visit_until(ExecutionPolicy&& policy,F&& f)
-  {
-    return !visit_while(
-      std::forward<ExecutionPolicy>(policy),
-      [&](value_type& x){return !f(x);});
-  }
-
-  template<typename ExecutionPolicy,typename F>
-  bool visit_until(ExecutionPolicy&& policy,F&& f)const
-  {
-    return !visit_while(
-      std::forward<ExecutionPolicy>(policy),
-      [&](const value_type& x){return !f(x);});
-  }
-
-  template<typename ExecutionPolicy,typename F>
-  bool cvisit_until(ExecutionPolicy&& policy,F&& f)const
-  {
-    return visit_until(
-      std::forward<ExecutionPolicy>(policy),std::forward<F>(f));
-  }
-#endif
-
   template<typename F> bool visit_while(F&& f)
   {
     return visit_while_impl(group_exclusive{},std::forward<F>(f));
