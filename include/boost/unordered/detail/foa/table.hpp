@@ -517,7 +517,7 @@ private:
       size_ctrl_type{
         x.size_ctrl.ml,x.size_ctrl.size}}
   {
-    typename compatible_concurrent_table::arrays_type::delete_group_access(
+    compatible_concurrent_table::arrays_type::delete_group_access(
       this->al(),x.arrays);
     x.empty_initialize();
   }
