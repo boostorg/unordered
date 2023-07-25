@@ -2,19 +2,28 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-#define BOOST_UNORDERED_ENABLE_REENTRANCY_CHECK_HANDLER
+#include <cstdlib>
+
+#define BOOST_ENABLE_ASSERT_HANDLER 
 
 static bool reentrancy_detected = false;
 
 namespace boost {
-  // Caveat lector: a proper handler should terminate as it may be executed
+  // Caveat lector: a proper handler shouldn't throw as it may be executed
   // within a noexcept function.
 
-  void boost_unordered_reentrancy_check_failed()
-  {
-    reentrancy_detected = true;
-    throw 0;
-  }
+void assertion_failed_msg(
+  char const*, char const*, char const*, char const*, long)
+{
+  reentrancy_detected = true;
+  throw 0;
+}
+
+void assertion_failed(char const*, char const*, char const*, long)
+{
+  std::abort();
+}
+
 }
 
 #include <boost/unordered/concurrent_flat_map.hpp>

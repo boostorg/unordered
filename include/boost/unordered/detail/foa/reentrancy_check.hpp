@@ -12,36 +12,9 @@
 #include <boost/assert.hpp>
 #include <utility>
 
-#if !defined(BOOST_UNORDERED_DISABLE_REENTRANCY_CHECK)
-#if defined(BOOST_UNORDERED_ENABLE_REENTRANCY_CHECK_HANDLER)||        \
-    (defined(BOOST_UNORDERED_ENABLE_REENTRANCY_CHECK_DEBUG_HANDLER)&& \
-     !defined(NDEBUG))||                                              \
+#if !defined(BOOST_UNORDERED_DISABLE_REENTRANCY_CHECK)&& \
     !defined(BOOST_ASSERT_IS_VOID)
 #define BOOST_UNORDERED_REENTRANCY_CHECK
-#endif
-#endif
-
-#if defined(BOOST_UNORDERED_REENTRANCY_CHECK)
-#if defined(BOOST_UNORDERED_ENABLE_REENTRANCY_CHECK_HANDLER)||     \
-    defined(BOOST_UNORDERED_ENABLE_REENTRANCY_CHECK_DEBUG_HANDLER)
-
-#include <boost/config.hpp> /* BOOST_LIKELY */
-
-namespace boost
-{
-  void boost_unordered_reentrancy_check_failed();
-}
-
-#define BOOST_UNORDERED_REENTRANCY_CHECK_ASSERT_MSG(expr,msg) \
-(BOOST_LIKELY(!!(expr))?((void)0):                            \
-  ::boost::boost_unordered_reentrancy_check_failed())
-
-#else
-
-#define BOOST_UNORDERED_REENTRANCY_CHECK_ASSERT_MSG(expr,msg) \
-BOOST_ASSERT_MSG(expr,msg)
-
-#endif
 #endif
 
 namespace boost{
@@ -57,8 +30,7 @@ public:
   entry_trace(const void* px_):px{px_}
   {
     if(px){
-      BOOST_UNORDERED_REENTRANCY_CHECK_ASSERT_MSG(
-        !find(px),"reentrancy not allowed");
+      BOOST_ASSERT_MSG(!find(px),"reentrancy not allowed");
       header()=this;
     }
   }
