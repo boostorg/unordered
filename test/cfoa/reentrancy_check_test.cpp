@@ -19,10 +19,10 @@ void assertion_failed_msg(
   throw 0;
 }
 
-void assertion_failed(char const*, char const*, char const*, long)
+void assertion_failed(char const*, char const*, char const*, long) // LCOV_EXCL_START
 {
   std::abort();
-}
+}                                                                  // LCOV_EXCL_STOP
 
 }
 
@@ -51,27 +51,27 @@ int main()
 
   detect_reentrancy([&] {
     m1.visit_all([&](value_type&) { (void)m1.contains(0); });
-  });
+  }); // LCOV_EXCL_LINE
 
   detect_reentrancy([&] {
     m1.visit_all([&](value_type&) { m1.rehash(0); });
-  });
+  }); // LCOV_EXCL_LINE
 
   detect_reentrancy([&] {
     m1.visit_all([&](value_type&) { 
       m2.visit_all([&](value_type&) { 
         m1=m2;
-      });
+      }); // LCOV_EXCL_START
     });
-  });
+  });     // LCOV_EXCL_STOP
 
   detect_reentrancy([&] {
     m1.visit_all([&](value_type&) { 
       m2.visit_all([&](value_type&) { 
         m2=m1;
-      });
+      }); // LCOV_EXCL_START
     });
-  });
+  });     // LCOV_EXCL_STOP
 
   return boost::report_errors();
 }
