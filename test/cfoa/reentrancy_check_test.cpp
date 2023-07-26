@@ -63,7 +63,8 @@ int main()
         m1=m2;
       }); // LCOV_EXCL_START
     });
-  });     // LCOV_EXCL_STOP
+  });
+  // LCOV_EXCL_STOP
 
   detect_reentrancy([&] {
     m1.visit_all([&](value_type&) { 
@@ -71,7 +72,8 @@ int main()
         m2=m1;
       }); // LCOV_EXCL_START
     });
-  });     // LCOV_EXCL_STOP
+  });
+  // LCOV_EXCL_STOP
 
   return boost::report_errors();
 }
