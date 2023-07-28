@@ -364,6 +364,18 @@ if concurrent outstanding operations on `y` do not access `x` directly or indire
 
 ---
 
+=== Configuration Macros
+
+==== `BOOST_UNORDERED_DISABLE_REENTRANCY_CHECK`
+
+In debug builds (more precisely, when
+link:../../../assert/doc/html/assert.html#boost_assert_is_void[`BOOST_ASSERT_IS_VOID`^]
+is not defined), __container reentrancies__ (illegaly invoking an operation on `m` from within
+a function visiting elements of `m`) are detected and signalled through `BOOST_ASSERT_MSG`.
+When run-time speed is a concern, the feature can be disabled by globally defining
+this macro.
+
+
 === Constructors
 
 ==== Default Constructor
