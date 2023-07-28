@@ -10,6 +10,7 @@
 #define BOOST_UNORDERED_DETAIL_FOA_REENTRANCY_CHECK_HPP
 
 #include <boost/assert.hpp>
+#include <boost/unordered/detail/foa/annotated_mutex.hpp>
 #include <utility>
 
 #if !defined(BOOST_UNORDERED_DISABLE_REENTRANCY_CHECK)&& \
@@ -67,65 +68,107 @@ private:
   entry_trace *next=header();
 };
 
-template<typename LockGuard>
-struct reentrancy_checked
-{
-  template<typename... Args>
-  reentrancy_checked(const void* px,Args&&... args):
-    tr{px},lck{std::forward<Args>(args)...}{}
+template<typename>
+struct reentrancy_checked;
 
-  void unlock()
+template<template <typename> class LockGuard,typename Mutex>
+struct BOOST_UNORDERED_SCOPED_CAPABILITY reentrancy_checked<LockGuard<Mutex>>
+{
+  reentrancy_checked(const void* px,Mutex& m_)
+    BOOST_UNORDERED_ACQUIRE(m_):
+    tr{px},lck{m_},m{m_}{}
+
+  reentrancy_checked(const reentrancy_checked& x) BOOST_UNORDERED_ACQUIRE(x.m);
+
+  ~reentrancy_checked() BOOST_UNORDERED_RELEASE() = default;
+
+  void unlock() BOOST_UNORDERED_RELEASE()
   {
     lck.unlock();
     tr.clear();
   }
 
-  entry_trace tr;
-  LockGuard   lck;
+  entry_trace      tr;
+  LockGuard<Mutex> lck;
+  Mutex&           m;
 };
 
-template<typename LockGuard>
-struct reentrancy_bichecked
-{
-  template<typename... Args>
-  reentrancy_bichecked(const void* px,const void* py,Args&&... args):
-    tr1{px},tr2{py!=px?py:nullptr},lck{std::forward<Args>(args)...}{}
+template<typename>
+struct reentrancy_bichecked;
 
-  void unlock()
+template<template <typename> class LockGuard,typename Mutex>
+struct BOOST_UNORDERED_SCOPED_CAPABILITY reentrancy_bichecked<LockGuard<Mutex>>
+{
+  template<typename Mutex1, typename Mutex2>
+  reentrancy_bichecked(const void* px,const void* py,Mutex1& m1_,Mutex2& m2_)
+    BOOST_UNORDERED_ACQUIRE(m1_,m2_):
+    tr1{px},tr2{py!=px?py:nullptr},lck{m1_,m2_},m1{m1_},m2{m2_}{}
+
+  reentrancy_bichecked(const reentrancy_bichecked& x)
+    BOOST_UNORDERED_ACQUIRE(x.m1,x.m2);
+
+  ~reentrancy_bichecked() BOOST_UNORDERED_RELEASE() = default;
+
+  void unlock() BOOST_UNORDERED_RELEASE()
   {
     lck.unlock();
     tr2.clear();
     tr1.clear();
   }
 
-  entry_trace tr1,tr2;
-  LockGuard   lck;
+  entry_trace       tr1,tr2;
+  LockGuard<Mutex>  lck;
+  Mutex            &m1,&m2;
 };
 
 #else
 
-template<typename LockGuard>
-struct reentrancy_checked
+template<typename>
+struct reentrancy_checked;
+
+template<template <typename> class LockGuard,typename Mutex>
+struct BOOST_UNORDERED_SCOPED_CAPABILITY reentrancy_checked<LockGuard<Mutex>>
 {
-  template<typename... Args>
-  reentrancy_checked(const void*,Args&&... args):
-    lck{std::forward<Args>(args)...}{}
+  reentrancy_checked(const void*,Mutex& m_)
+    BOOST_UNORDERED_ACQUIRE(m_):
+    lck{m_},m{m_}{}
 
-  void unlock(){lck.unlock();}
+  reentrancy_checked(const reentrancy_checked& x) BOOST_UNORDERED_ACQUIRE(x.m);
 
-  LockGuard lck;
+  ~reentrancy_checked() BOOST_UNORDERED_RELEASE() = default;
+
+  void unlock() BOOST_UNORDERED_RELEASE()
+  {
+    lck.unlock();
+  }
+
+  LockGuard<Mutex> lck;
+  Mutex&           m;
 };
 
-template<typename LockGuard>
-struct reentrancy_bichecked
+template<typename>
+struct reentrancy_bichecked;
+
+template<template <typename> class LockGuard,typename Mutex>
+struct BOOST_UNORDERED_SCOPED_CAPABILITY reentrancy_bichecked<LockGuard<Mutex>>
 {
-  template<typename... Args>
-  reentrancy_bichecked(const void*,const void*,Args&&... args):
-    lck{std::forward<Args>(args)...}{}
+  template<typename Mutex1, typename Mutex2>
+  reentrancy_bichecked(const void*,const void*,Mutex1& m1_,Mutex2& m2_)
+    BOOST_UNORDERED_ACQUIRE(m1_,m2_):
+    lck{m1_,m2_},m1{m1_},m2{m2_}{}
 
-  void unlock(){lck.unlock();}
+  reentrancy_bichecked(const reentrancy_bichecked& x)
+    BOOST_UNORDERED_ACQUIRE(x.m1,x.m2);
 
-  LockGuard lck;
+  ~reentrancy_bichecked() BOOST_UNORDERED_RELEASE() = default;
+
+  void unlock() BOOST_UNORDERED_RELEASE()
+  {
+    lck.unlock();
+  }
+
+  LockGuard<Mutex>  lck;
+  Mutex            &m1,&m2;
 };
 
 #endif

@@ -19,6 +19,7 @@
 #include <boost/cstdint.hpp>
 #include <boost/mp11/tuple.hpp>
 #include <boost/static_assert.hpp>
+#include <boost/unordered/detail/foa/annotated_mutex.hpp>
 #include <boost/unordered/detail/foa/core.hpp>
 #include <boost/unordered/detail/foa/reentrancy_check.hpp>
 #include <boost/unordered/detail/foa/rw_spinlock.hpp>
@@ -108,8 +109,10 @@ public:
     return mutexes[pos];
   }
 
-  void lock()noexcept{for(std::size_t n=0;n<N;)mutexes[n++].lock();}
-  void unlock()noexcept{for(auto n=N;n>0;)mutexes[--n].unlock();}
+  void lock()noexcept BOOST_UNORDERED_NO_THREAD_SAFETY_ANALYSIS
+    {for(std::size_t n=0;n<N;)mutexes[n++].lock();}
+  void unlock()noexcept BOOST_UNORDERED_NO_THREAD_SAFETY_ANALYSIS
+    {for(auto n=N;n>0;)mutexes[--n].unlock();}
 
 private:
   cache_aligned_array<Mutex,N> mutexes;
@@ -127,8 +130,10 @@ public:
   /* not used but VS in pre-C++17 mode needs to see it for RVO */
   shared_lock(const shared_lock&);
 
-  void lock(){BOOST_ASSERT(!owns);m.lock_shared();owns=true;}
-  void unlock(){BOOST_ASSERT(owns);m.unlock_shared();owns=false;}
+  void lock() BOOST_UNORDERED_NO_THREAD_SAFETY_ANALYSIS
+    {BOOST_ASSERT(!owns);m.lock_shared();owns=true;}
+  void unlock() BOOST_UNORDERED_NO_THREAD_SAFETY_ANALYSIS
+    {BOOST_ASSERT(owns);m.unlock_shared();owns=false;}
 
 private:
   Mutex &m;
@@ -212,7 +217,7 @@ struct atomic_integral
 
 struct group_access
 {    
-  using mutex_type=rw_spinlock;
+  using mutex_type=annotated_mutex<rw_spinlock>;
   using shared_lock_guard=shared_lock<mutex_type>;
   using exclusive_lock_guard=lock_guard<mutex_type>;
   using insert_counter_type=std::atomic<boost::uint32_t>;
@@ -836,8 +841,8 @@ public:
   }
 
 private:
-  using mutex_type=rw_spinlock;
-  using multimutex_type=multimutex<mutex_type,128>; // TODO: adapt 128 to the machine
+  using mutex_type=annotated_mutex<rw_spinlock>;
+  using multimutex_type=annotated_mutex<multimutex<mutex_type,128>>; // TODO: adapt 128 to the machine
   using shared_lock_guard=reentrancy_checked<shared_lock<mutex_type>>;
   using exclusive_lock_guard=reentrancy_checked<lock_guard<multimutex_type>>;
   using exclusive_bilock_guard=reentrancy_bichecked<scoped_bilock<multimutex_type>>;
