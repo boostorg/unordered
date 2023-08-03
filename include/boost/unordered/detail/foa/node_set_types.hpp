@@ -6,6 +6,7 @@
 #define BOOST_UNORDERED_DETAIL_FOA_NODE_SET_TYPES_HPP
 
 #include <boost/core/allocator_access.hpp>
+#include <boost/core/no_exceptions_support.hpp>
 #include <boost/core/pointer_traits.hpp>
 
 namespace boost {
