@@ -54,7 +54,7 @@ template<typename Set,bool IsSaving> struct load_or_save_unordered_set;
 template<typename Set> struct load_or_save_unordered_set<Set,true> /* save */
 {
   template<typename Archive>
-  void operator()(Archive& ar,const Set& x,unsigned int version)const
+  void operator()(Archive& ar,const Set& x,unsigned int)const
   {
     typedef typename Set::value_type     value_type;
     typedef typename Set::const_iterator const_iterator;
@@ -76,7 +76,7 @@ template<typename Set> struct load_or_save_unordered_set<Set,true> /* save */
 template<typename Set> struct load_or_save_unordered_set<Set,false> /* load */
 {
   template<typename Archive>
-  void operator()(Archive& ar,Set& x,unsigned int version)const
+  void operator()(Archive& ar,Set& x,unsigned int)const
   {
     typedef typename Set::value_type value_type;
     typedef typename Set::iterator   iterator;
@@ -108,7 +108,7 @@ template<typename Map,bool IsSaving> struct load_or_save_unordered_map;
 template<typename Map> struct load_or_save_unordered_map<Map,true> /* save */
 {
   template<typename Archive>
-  void operator()(Archive& ar,const Map& x,unsigned int version)const
+  void operator()(Archive& ar,const Map& x,unsigned int)const
   {
     typedef typename boost::remove_const<
       typename Map::key_type>::type       key_type;
@@ -145,7 +145,7 @@ template<typename Map> struct load_or_save_unordered_map<Map,true> /* save */
 template<typename Map> struct load_or_save_unordered_map<Map,false> /* load */
 {
   template<typename Archive>
-  void operator()(Archive& ar,Map& x,unsigned int version)const
+  void operator()(Archive& ar,Map& x,unsigned int)const
   {
     typedef typename boost::remove_const<
       typename Map::key_type>::type       key_type;
