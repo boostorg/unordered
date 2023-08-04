@@ -15,7 +15,9 @@
 #include <boost/assert.hpp>
 #include <boost/config.hpp>
 #include <boost/config/workaround.hpp>
+#include <boost/core/serialization.hpp>
 #include <boost/unordered/detail/foa/core.hpp>
+#include <boost/unordered/detail/serialize_node_pointer.hpp>
 #include <cstddef>
 #include <iterator>
 #include <memory>
@@ -193,6 +195,25 @@ private:
       p-=n0;
       p+=n;
     }
+  }
+
+  template<typename Archive>
+  friend void serialization_track(Archive& ar,const table_iterator& x)
+  {
+    if(x.p){
+      track_node_pointer(ar,x.pc);
+      track_node_pointer(ar,x.p);
+    }
+  }
+
+  friend class boost::serialization::access;
+
+  template<typename Archive>
+  void serialize(Archive& ar,unsigned int)
+  {
+    if(!p)pc=nullptr;
+    serialize_node_pointer(ar,pc);
+    serialize_node_pointer(ar,p);
   }
 
   unsigned char      *pc=nullptr;

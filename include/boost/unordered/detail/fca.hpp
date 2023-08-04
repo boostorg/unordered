@@ -1,4 +1,4 @@
-// Copyright (C) 2022 Joaquin M Lopez Munoz.
+// Copyright (C) 2022-2023 Joaquin M Lopez Munoz.
 // Copyright (C) 2022 Christian Mazakas
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -114,12 +114,14 @@ to normal separate chaining implementations.
 */
 
 #include <boost/unordered/detail/prime_fmod.hpp>
+#include <boost/unordered/detail/serialize_node_pointer.hpp>
 
 #include <boost/core/addressof.hpp>
 #include <boost/core/allocator_access.hpp>
 #include <boost/core/bit.hpp>
 #include <boost/core/empty_value.hpp>
 #include <boost/core/no_exceptions_support.hpp>
+#include <boost/core/serialization.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/move/core.hpp>
 #include <boost/move/utility_core.hpp>
@@ -286,6 +288,25 @@ namespace boost {
             std::ptrdiff_t x = boost::core::countr_zero(pbg->bitmask);
             p = pbg->buckets + x;
           }
+        }
+
+        template<typename Archive>
+        friend void serialization_track(
+          Archive& ar, grouped_bucket_iterator const& x)
+        {
+          // requires: not at end() position
+          track_node_pointer(ar, x.p);
+          track_node_pointer(ar, x.pbg);
+        }
+
+        friend class boost::serialization::access;
+
+        template<typename Archive>
+        void serialize(Archive& ar,unsigned int)
+        {
+          // requires: not at end() position
+          serialize_node_pointer(ar, p);
+          serialize_node_pointer(ar, pbg);
         }
       };
 

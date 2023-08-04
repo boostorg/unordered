@@ -1,6 +1,6 @@
 // Copyright (C) 2003-2004 Jeremy B. Maitin-Shepard.
 // Copyright (C) 2005-2016 Daniel James
-// Copyright (C) 2022 Joaquin M Lopez Munoz.
+// Copyright (C) 2022-2023 Joaquin M Lopez Munoz.
 // Copyright (C) 2022 Christian Mazakas
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -19,6 +19,7 @@
 #include <boost/core/bit.hpp>
 #include <boost/core/no_exceptions_support.hpp>
 #include <boost/core/pointer_traits.hpp>
+#include <boost/core/serialization.hpp>
 #include <boost/limits.hpp>
 #include <boost/move/move.hpp>
 #include <boost/preprocessor/arithmetic/inc.hpp>
@@ -47,6 +48,7 @@
 #include <boost/type_traits/make_void.hpp>
 #include <boost/type_traits/remove_const.hpp>
 #include <boost/unordered/detail/fca.hpp>
+#include <boost/unordered/detail/serialize_node_pointer.hpp>
 #include <boost/unordered/detail/type_traits.hpp>
 #include <boost/unordered/detail/fwd.hpp>
 #include <boost/utility/addressof.hpp>
@@ -1703,6 +1705,25 @@ namespace boost {
               p = (++itb)->next;
             }
           }
+
+          template<typename Archive>
+          friend void serialization_track(Archive& ar, const iterator& x)
+          {
+            if(x.p){
+              track_node_pointer(ar, x.p);
+              serialization_track(ar, x.itb);
+            }
+          }
+
+          friend class boost::serialization::access;
+
+          template<typename Archive>
+          void serialize(Archive& ar,unsigned int)
+          {
+            if(!p) itb = bucket_iterator();
+            serialize_node_pointer(ar, p);
+            ar & core::make_nvp("bucket_iterator", itb);
+          }
         };
 
         template <class Node, class Bucket> class c_iterator
@@ -1792,6 +1813,25 @@ namespace boost {
             if (!p) {
               p = (++itb)->next;
             }
+          }
+
+          template<typename Archive>
+          friend void serialization_track(Archive& ar, const c_iterator& x)
+          {
+            if(x.p){
+              track_node_pointer(ar, x.p);
+              serialization_track(ar, x.itb);
+            }
+          }
+
+          friend class boost::serialization::access;
+
+          template<typename Archive>
+          void serialize(Archive& ar,unsigned int)
+          {
+            if(!p) itb = bucket_iterator();
+            serialize_node_pointer(ar, p);
+            ar & core::make_nvp("bucket_iterator", itb);
           }
         };
       } // namespace iterator_detail

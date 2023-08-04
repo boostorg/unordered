@@ -1,7 +1,6 @@
-
 // Copyright (C) 2003-2004 Jeremy B. Maitin-Shepard.
 // Copyright (C) 2005-2011 Daniel James.
-// Copyright (C) 2022 Christian Mazakas
+// Copyright (C) 2022-2023 Christian Mazakas
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -16,11 +15,13 @@
 #endif
 
 #include <boost/unordered/detail/requires_cxx11.hpp>
+#include <boost/config.hpp>
 #include <boost/core/explicit_operator_bool.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/move/move.hpp>
 #include <boost/type_traits/is_constructible.hpp>
 #include <boost/unordered/detail/map.hpp>
+#include <boost/unordered/detail/serialize_fca_container.hpp>
 #include <boost/unordered/detail/type_traits.hpp>
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
@@ -1059,6 +1060,13 @@ namespace boost {
 #endif
     }; // class template unordered_map
 
+    template <class Archive, class K, class T, class H, class P, class A>
+    void serialize(
+      Archive & ar,unordered_map<K, T, H, P, A>& m,unsigned int version)
+    {
+      detail::serialize_fca_container(ar, m, version);
+    }
+
 #if BOOST_UNORDERED_TEMPLATE_DEDUCTION_GUIDES
 
     template <class InputIterator,
@@ -1761,6 +1769,13 @@ namespace boost {
         <K, T, H, P, A>(unordered_multimap const&, unordered_multimap const&);
 #endif
     }; // class template unordered_multimap
+
+    template <class Archive, class K, class T, class H, class P, class A>
+    void serialize(
+      Archive & ar,unordered_multimap<K, T, H, P, A>& m,unsigned int version)
+    {
+      detail::serialize_fca_container(ar, m, version);
+    }
 
 #if BOOST_UNORDERED_TEMPLATE_DEDUCTION_GUIDES
 
@@ -3019,6 +3034,21 @@ namespace boost {
       boost::swap(x.position, y.position);
     }
   } // namespace unordered
+
+  namespace serialization {
+    template <class K, class T, class H, class P, class A>
+    struct version<boost::unordered_map<K, T, H, P, A> >
+    {
+      BOOST_STATIC_CONSTANT(int, value = 1);
+    };
+
+    template <class K, class T, class H, class P, class A>
+    struct version<boost::unordered_multimap<K, T, H, P, A> >
+    {
+      BOOST_STATIC_CONSTANT(int, value = 1);
+    };
+  } // namespace serialization
+
 } // namespace boost
 
 #if defined(BOOST_MSVC)
