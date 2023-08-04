@@ -780,8 +780,7 @@ namespace boost {
 
     template<class Archive, class K, class V, class H, class KE, class A>
     void serialize(
-      Archive& ar, concurrent_flat_map<K, V, H, KE, A>& c,
-      unsigned int version)
+      Archive& ar, concurrent_flat_map<K, V, H, KE, A>& c, unsigned int)
     {
       ar & core::make_nvp("table",c.table_);
     }
