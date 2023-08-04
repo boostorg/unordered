@@ -1483,14 +1483,14 @@ private:
   template<typename Archive>
   void save(Archive& ar,unsigned int,std::false_type /* map */)const
   {
-    using key_type=typename std::remove_const<key_type>::type;
-    using mapped_type=typename std::remove_const<
+    using raw_key_type=typename std::remove_const<key_type>::type;
+    using raw_mapped_type=typename std::remove_const<
       typename TypePolicy::mapped_type>::type;
 
-    auto                                     lck=exclusive_access();
-    const std::size_t                        s=super::size();
-    const serialization_version<key_type>    key_version;
-    const serialization_version<mapped_type> mapped_version;
+    auto                                         lck=exclusive_access();
+    const std::size_t                            s=super::size();
+    const serialization_version<raw_key_type>    key_version;
+    const serialization_version<raw_mapped_type> mapped_version;
 
     ar<<core::make_nvp("count",s);
     ar<<core::make_nvp("key_version",key_version);
@@ -1549,14 +1549,14 @@ private:
   template<typename Archive>
   void load(Archive& ar,unsigned int,std::false_type /* map */)
   {
-    using key_type=typename std::remove_const<key_type>::type;
-    using mapped_type=typename std::remove_const<
+    using raw_key_type=typename std::remove_const<key_type>::type;
+    using raw_mapped_type=typename std::remove_const<
       typename TypePolicy::mapped_type>::type;
 
-    auto                               lck=exclusive_access();
-    std::size_t                        s;
-    serialization_version<key_type>    key_version;
-    serialization_version<mapped_type> mapped_version;
+    auto                                   lck=exclusive_access();
+    std::size_t                            s;
+    serialization_version<raw_key_type>    key_version;
+    serialization_version<raw_mapped_type> mapped_version;
 
     ar>>core::make_nvp("count",s);
     ar>>core::make_nvp("key_version",key_version);
@@ -1566,12 +1566,12 @@ private:
     super::reserve(s);
 
     for(std::size_t n=0;n<s;++n){
-      archive_constructed<key_type>    key("key",ar,key_version);
-      archive_constructed<mapped_type> mapped("mapped",ar,mapped_version);
-      auto&                            k=key.get();
-      auto&                            m=mapped.get();
-      auto                             hash=this->hash_for(k);
-      auto                             pos0=this->position_for(hash);
+      archive_constructed<raw_key_type>    key("key",ar,key_version);
+      archive_constructed<raw_mapped_type> mapped("mapped",ar,mapped_version);
+      auto&                                k=key.get();
+      auto&                                m=mapped.get();
+      auto                                 hash=this->hash_for(k);
+      auto                                 pos0=this->position_for(hash);
 
       if(this->find(k,pos0,hash))throw_exception(bad_archive_exception());
       auto loc=this->unchecked_emplace_at(pos0,hash,std::move(k),std::move(m));
