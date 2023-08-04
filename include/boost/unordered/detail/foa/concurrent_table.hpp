@@ -1464,7 +1464,7 @@ private:
   }
 
   template<typename Archive>
-  void save(Archive& ar,unsigned int version,std::true_type /* set */)const
+  void save(Archive& ar,unsigned int,std::true_type /* set */)const
   {
     auto                                    lck=exclusive_access();
     const std::size_t                       s=super::size();
@@ -1481,7 +1481,7 @@ private:
   }
 
   template<typename Archive>
-  void save(Archive& ar,unsigned int version,std::false_type /* map */)const
+  void save(Archive& ar,unsigned int,std::false_type /* map */)const
   {
     using key_type=typename std::remove_const<key_type>::type;
     using mapped_type=typename std::remove_const<
@@ -1522,7 +1522,7 @@ private:
   }
 
   template<typename Archive>
-  void load(Archive& ar,unsigned int version,std::true_type /* set */)
+  void load(Archive& ar,unsigned int,std::true_type /* set */)
   {
     auto                              lck=exclusive_access();
     std::size_t                       s;
@@ -1547,7 +1547,7 @@ private:
   }
 
   template<typename Archive>
-  void load(Archive& ar,unsigned int version,std::false_type /* map */)
+  void load(Archive& ar,unsigned int,std::false_type /* map */)
   {
     using key_type=typename std::remove_const<key_type>::type;
     using mapped_type=typename std::remove_const<
