@@ -162,7 +162,7 @@ template<typename Map> struct load_or_save_unordered_map<Map,false> /* load */
     ar>>core::make_nvp("mapped_version",mapped_version);
 
     x.clear();
-    x.reserve(s);
+    x.reserve(s); /* critical so that iterator tracking is stable */
 
     for(std::size_t n=0;n<s;++n){
       archive_constructed<key_type>    key("key",ar,key_version);
