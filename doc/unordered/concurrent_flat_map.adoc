@@ -114,6 +114,16 @@ namespace boost {
     template<class ExecutionPolicy, class F>
       void xref:#concurrent_flat_map_parallel_cvisit_all[cvisit_all](ExecutionPolicy&& policy, F f) const;
 
+    template<class F> bool xref:#concurrent_flat_map_cvisit_while[visit_while](F f);
+    template<class F> bool xref:#concurrent_flat_map_cvisit_while[visit_while](F f) const;
+    template<class F> bool xref:#concurrent_flat_map_cvisit_while[cvisit_while](F f) const;
+    template<class ExecutionPolicy, class F>
+      bool xref:#concurrent_flat_map_parallel_cvisit_while[visit_while](ExecutionPolicy&& policy, F f);
+    template<class ExecutionPolicy, class F>
+      bool xref:#concurrent_flat_map_parallel_cvisit_while[visit_while](ExecutionPolicy&& policy, F f) const;
+    template<class ExecutionPolicy, class F>
+      bool xref:#concurrent_flat_map_parallel_cvisit_while[cvisit_while](ExecutionPolicy&& policy, F f) const;
+
     // capacity
     ++[[nodiscard]]++ bool xref:#concurrent_flat_map_empty[empty]() const noexcept;
     size_type xref:#concurrent_flat_map_size[size]() const noexcept;
@@ -717,6 +727,50 @@ Notes:;; Only available in compilers supporting C++17 parallel algorithms. +
 These overloads only participate in overload resolution if `std::is_execution_policy_v<std::remove_cvref_t<ExecutionPolicy>>` is `true`. +
 +
 Unsequenced execution policies are not allowed.
+
+---
+
+==== [c]visit_while
+
+```c++
+template<class F> bool visit_while(F f);
+template<class F> bool visit_while(F f) const;
+template<class F> bool cvisit_while(F f) const;
+```
+
+Successively invokes `f` with references to each of the elements in the table until `f` returns `false`
+or all the elements are visited.
+Such references to the elements are const iff `*this` is const.
+
+[horizontal]
+Returns:;; `false` iff `f` ever returns `false`.
+
+---
+
+==== Parallel [c]visit_while
+
+```c++
+template<class ExecutionPolicy, class F> bool visit_while(ExecutionPolicy&& policy, F f);
+template<class ExecutionPolicy, class F> bool visit_while(ExecutionPolicy&& policy, F f) const;
+template<class ExecutionPolicy, class F> bool cvisit_while(ExecutionPolicy&& policy, F f) const;
+```
+
+Invokes `f` with references to each of the elements in the table until `f` returns `false`
+or all the elements are visited.
+Such references to the elements are const iff `*this` is const.
+Execution is parallelized according to the semantics of the execution policy specified.
+
+[horizontal]
+Returns:;; `false` iff `f` ever returns `false`.
+Throws:;; Depending on the exception handling mechanism of the execution policy used, may call `std::terminate` if an exception is thrown within `f`.
+Notes:;; Only available in compilers supporting C++17 parallel algorithms. +
++
+These overloads only participate in overload resolution if `std::is_execution_policy_v<std::remove_cvref_t<ExecutionPolicy>>` is `true`. +
++
+Unsequenced execution policies are not allowed. +
++
+Parallelization implies that execution does not necessary finish as soon as `f` returns `false`, and as a result
+`f` may be invoked with further elements for which the return value is also `false`.
 
 ---
 

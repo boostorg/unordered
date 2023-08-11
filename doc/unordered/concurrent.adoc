@@ -154,7 +154,28 @@ m.visit_all(std::execution::par, [](auto& x) { // run in parallel
 });
 ----
 
-There is another whole-table visitation operation, `erase_if`:
+Traversal can be interrupted midway:
+
+[source,c++]
+----
+// finds the key to a given (unique) value
+
+int  key = 0;
+int  value = ...;
+bool found = !m.visit_while([&](const auto& x) {
+  if(x.second == value) {
+    key = x.first;
+    return false; // finish
+  }
+  else {
+    return true;  // keep on visiting
+  }
+});
+
+if(found) { ... }
+----
+
+There is one last whole-table visitation operation, `erase_if`:
 
 [source,c++]
 ----
@@ -163,8 +184,8 @@ m.erase_if([](auto& x) {
 });
 ----
 
-`erase_if` can also be parallelized. Note that, in order to increase efficiency,
-these operations do not block the table during execution: this implies that elements
+`visit_while` and `erase_if` can also be parallelized. Note that, in order to increase efficiency,
+whole-table visitation operations do not block the table during execution: this implies that elements
 may be inserted, modified or erased by other threads during visitation. It is
 advisable not to assume too much about the exact global state of a `boost::concurrent_flat_map`
 at any point in your program.

@@ -355,6 +355,56 @@ namespace boost {
       }
 #endif
 
+      template <class F> bool visit_while(F f)
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
+        return table_.visit_while(f);
+      }
+
+      template <class F> bool visit_while(F f) const
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        return table_.visit_while(f);
+      }
+
+      template <class F> bool cvisit_while(F f) const
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        return table_.cvisit_while(f);
+      }
+
+#if defined(BOOST_UNORDERED_PARALLEL_ALGORITHMS)
+      template <class ExecPolicy, class F>
+      typename std::enable_if<detail::is_execution_policy<ExecPolicy>::value,
+        bool>::type
+      visit_while(ExecPolicy&& p, F f)
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
+        BOOST_UNORDERED_STATIC_ASSERT_EXEC_POLICY(ExecPolicy)
+        return table_.visit_while(p, f);
+      }
+
+      template <class ExecPolicy, class F>
+      typename std::enable_if<detail::is_execution_policy<ExecPolicy>::value,
+        bool>::type
+      visit_while(ExecPolicy&& p, F f) const
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        BOOST_UNORDERED_STATIC_ASSERT_EXEC_POLICY(ExecPolicy)
+        return table_.visit_while(p, f);
+      }
+
+      template <class ExecPolicy, class F>
+      typename std::enable_if<detail::is_execution_policy<ExecPolicy>::value,
+        bool>::type
+      cvisit_while(ExecPolicy&& p, F f) const
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        BOOST_UNORDERED_STATIC_ASSERT_EXEC_POLICY(ExecPolicy)
+        return table_.cvisit_while(p, f);
+      }
+#endif
+
       /// Modifiers
       ///
 

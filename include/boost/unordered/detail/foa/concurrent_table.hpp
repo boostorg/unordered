@@ -539,6 +539,46 @@ public:
   }
 #endif
 
+  template<typename F> bool visit_while(F&& f)
+  {
+    return visit_while_impl(group_exclusive{},std::forward<F>(f));
+  }
+
+  template<typename F> bool visit_while(F&& f)const
+  {
+    return visit_while_impl(group_shared{},std::forward<F>(f));
+  }
+
+  template<typename F> bool cvisit_while(F&& f)const
+  {
+    return visit_while(std::forward<F>(f));
+  }
+
+#if defined(BOOST_UNORDERED_PARALLEL_ALGORITHMS)
+  template<typename ExecutionPolicy,typename F>
+  bool visit_while(ExecutionPolicy&& policy,F&& f)
+  {
+    return visit_while_impl(
+      group_exclusive{},
+      std::forward<ExecutionPolicy>(policy),std::forward<F>(f));
+  }
+
+  template<typename ExecutionPolicy,typename F>
+  bool visit_while(ExecutionPolicy&& policy,F&& f)const
+  {
+    return visit_while_impl(
+      group_shared{},
+      std::forward<ExecutionPolicy>(policy),std::forward<F>(f));
+  }
+
+  template<typename ExecutionPolicy,typename F>
+  bool cvisit_while(ExecutionPolicy&& policy,F&& f)const
+  {
+    return visit_while(
+      std::forward<ExecutionPolicy>(policy),std::forward<F>(f));
+  }
+#endif
+
   bool empty()const noexcept{return size()==0;}
   
   std::size_t size()const noexcept
@@ -970,6 +1010,29 @@ private:
   }
 #endif
 
+  template<typename GroupAccessMode,typename F>
+  bool visit_while_impl(GroupAccessMode access_mode,F&& f)const
+  {
+    auto lck=shared_access();
+    return for_all_elements_while(access_mode,[&](element_type* p){
+      return f(cast_for(access_mode,type_policy::value_from(*p)));
+    });
+  }
+
+#if defined(BOOST_UNORDERED_PARALLEL_ALGORITHMS)
+  template<typename GroupAccessMode,typename ExecutionPolicy,typename F>
+  bool visit_while_impl(
+    GroupAccessMode access_mode,ExecutionPolicy&& policy,F&& f)const
+  {
+    auto lck=shared_access();
+    return for_all_elements_while(
+      access_mode,std::forward<ExecutionPolicy>(policy),
+      [&](element_type* p){
+        return f(cast_for(access_mode,type_policy::value_from(*p)));
+      });
+  }
+#endif
+
   template<typename GroupAccessMode,typename Key,typename F>
   BOOST_FORCEINLINE std::size_t unprotected_visit(
     GroupAccessMode access_mode,
@@ -1254,18 +1317,37 @@ private:
   auto for_all_elements(GroupAccessMode access_mode,F f)const
     ->decltype(f(nullptr,0,nullptr),void())
   {
+    for_all_elements_while(
+      access_mode,[&](group_type* pg,unsigned int n,element_type* p)
+        {f(pg,n,p);return true;});
+  }
+
+  template<typename GroupAccessMode,typename F>
+  auto for_all_elements_while(GroupAccessMode access_mode,F f)const
+    ->decltype(f(nullptr),bool())
+  {
+    return for_all_elements_while(
+      access_mode,[&](group_type*,unsigned int,element_type* p){return f(p);});
+  }
+
+  template<typename GroupAccessMode,typename F>
+  auto for_all_elements_while(GroupAccessMode access_mode,F f)const
+    ->decltype(f(nullptr,0,nullptr),bool())
+  {
     auto p=this->arrays.elements;
-    if(!p)return;
-    for(auto pg=this->arrays.groups,last=pg+this->arrays.groups_size_mask+1;
-        pg!=last;++pg,p+=N){
-      auto lck=access(access_mode,(std::size_t)(pg-this->arrays.groups));
-      auto mask=this->match_really_occupied(pg,last);
-      while(mask){
-        auto n=unchecked_countr_zero(mask);
-        f(pg,n,p+n);
-        mask&=mask-1;
+    if(p){
+      for(auto pg=this->arrays.groups,last=pg+this->arrays.groups_size_mask+1;
+          pg!=last;++pg,p+=N){
+        auto lck=access(access_mode,(std::size_t)(pg-this->arrays.groups));
+        auto mask=this->match_really_occupied(pg,last);
+        while(mask){
+          auto n=unchecked_countr_zero(mask);
+          if(!f(pg,n,p+n))return false;
+          mask&=mask-1;
+        }
       }
     }
+    return true;
   }
 
 #if defined(BOOST_UNORDERED_PARALLEL_ALGORITHMS)
@@ -1289,15 +1371,38 @@ private:
          last=first+this->arrays.groups_size_mask+1;
     std::for_each(std::forward<ExecutionPolicy>(policy),first,last,
       [&,this](group_type& g){
-        std::size_t pos=static_cast<std::size_t>(&g-first);
-        auto        p=this->arrays.elements+pos*N;
-        auto        lck=access(access_mode,pos);
-        auto        mask=this->match_really_occupied(&g,last);
+        auto pos=static_cast<std::size_t>(&g-first);
+        auto p=this->arrays.elements+pos*N;
+        auto lck=access(access_mode,pos);
+        auto mask=this->match_really_occupied(&g,last);
         while(mask){
           auto n=unchecked_countr_zero(mask);
           f(&g,n,p+n);
           mask&=mask-1;
         }
+      }
+    );
+  }
+
+  template<typename GroupAccessMode,typename ExecutionPolicy,typename F>
+  bool for_all_elements_while(
+    GroupAccessMode access_mode,ExecutionPolicy&& policy,F f)const
+  {
+    if(!this->arrays.elements)return true;
+    auto first=this->arrays.groups,
+         last=first+this->arrays.groups_size_mask+1;
+    return std::all_of(std::forward<ExecutionPolicy>(policy),first,last,
+      [&,this](group_type& g){
+        auto pos=static_cast<std::size_t>(&g-first);
+        auto p=this->arrays.elements+pos*N;
+        auto lck=access(access_mode,pos);
+        auto mask=this->match_really_occupied(&g,last);
+        while(mask){
+          auto n=unchecked_countr_zero(mask);
+          if(!f(p+n))return false;
+          mask&=mask-1;
+        }
+        return true;
       }
     );
   }
