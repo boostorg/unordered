@@ -33,6 +33,9 @@ using hasher = stateful_hash;
 using key_equal = stateful_key_equal;
 using allocator_type = stateful_allocator<std::pair<raii const, raii> >;
 
+using flat_map_type = boost::unordered::unordered_flat_map<raii, raii, hasher,
+  key_equal, allocator_type>;
+
 using map_type = boost::unordered::concurrent_flat_map<raii, raii, hasher,
   key_equal, allocator_type>;
 
@@ -843,6 +846,136 @@ namespace {
     }
     check_raii_counts();
   }
+
+  template <class G> void flat_map_move_assign(G gen, test::random_generator rg)
+  {
+    auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
+    auto reference_map =
+      boost::unordered_flat_map<raii, raii>(values.begin(), values.end());
+
+    /*
+     * basically test that a temporary container is materialized and we
+     * move-assign from that
+     *
+     * we don't need to be super rigorous here because we already have tests for
+     * container assignment, we're just testing that a temporary is materialized
+     */
+
+    {
+      raii::reset_counts();
+
+      flat_map_type flat_map(values.begin(), values.end(), values.size(),
+        hasher(1), key_equal(2), allocator_type(3));
+
+      map_type map(0, hasher(2), key_equal(1), allocator_type(3));
+
+      BOOST_TEST(flat_map.get_allocator() == map.get_allocator());
+
+      map = std::move(flat_map);
+
+      BOOST_TEST(flat_map.empty());
+      BOOST_TEST_EQ(map.size(), reference_map.size());
+
+      test_fuzzy_matches_reference(map, reference_map, rg);
+
+      BOOST_TEST_EQ(map.hash_function(), hasher(1));
+      BOOST_TEST_EQ(map.key_eq(), key_equal(2));
+
+      BOOST_TEST_EQ(raii::copy_constructor, 2 * values.size());
+      BOOST_TEST_EQ(raii::destructor, 2 * values.size());
+      BOOST_TEST_EQ(raii::move_constructor, 2 * reference_map.size());
+      BOOST_TEST_EQ(raii::copy_assignment, 0u);
+      BOOST_TEST_EQ(raii::move_assignment, 0u);
+    }
+
+    check_raii_counts();
+
+    {
+      raii::reset_counts();
+
+      map_type map(values.begin(), values.end(), values.size(), hasher(1),
+        key_equal(2), allocator_type(3));
+
+      flat_map_type flat_map(0, hasher(2), key_equal(1), allocator_type(3));
+
+      BOOST_TEST(flat_map.get_allocator() == map.get_allocator());
+
+      flat_map = std::move(map);
+
+      BOOST_TEST(map.empty());
+      BOOST_TEST_EQ(flat_map.size(), reference_map.size());
+
+      BOOST_TEST_EQ(flat_map.hash_function(), hasher(1));
+      BOOST_TEST_EQ(flat_map.key_eq(), key_equal(2));
+
+      BOOST_TEST_EQ(raii::copy_constructor, 2 * values.size());
+      BOOST_TEST_EQ(raii::destructor, 2 * values.size());
+      BOOST_TEST_EQ(raii::move_constructor, 2 * reference_map.size());
+      BOOST_TEST_EQ(raii::copy_assignment, 0u);
+      BOOST_TEST_EQ(raii::move_assignment, 0u);
+    }
+
+    check_raii_counts();
+
+    {
+      raii::reset_counts();
+
+      flat_map_type flat_map(values.begin(), values.end(), values.size(),
+        hasher(1), key_equal(2), allocator_type(3));
+
+      map_type map(0, hasher(2), key_equal(1), allocator_type(4));
+
+      BOOST_TEST(flat_map.get_allocator() != map.get_allocator());
+
+      map = std::move(flat_map);
+
+      BOOST_TEST(flat_map.empty());
+      BOOST_TEST_EQ(map.size(), reference_map.size());
+
+      test_fuzzy_matches_reference(map, reference_map, rg);
+
+      BOOST_TEST_EQ(map.hash_function(), hasher(1));
+      BOOST_TEST_EQ(map.key_eq(), key_equal(2));
+
+      BOOST_TEST_EQ(raii::copy_constructor, 2 * values.size());
+      BOOST_TEST_EQ(
+        raii::destructor, 2 * values.size() + 2 * reference_map.size());
+      BOOST_TEST_EQ(raii::move_constructor, 4 * reference_map.size());
+      BOOST_TEST_EQ(raii::copy_assignment, 0u);
+      BOOST_TEST_EQ(raii::move_assignment, 0u);
+    }
+
+    check_raii_counts();
+
+    {
+      raii::reset_counts();
+
+      map_type map(values.begin(), values.end(), values.size(), hasher(1),
+        key_equal(2), allocator_type(3));
+
+      flat_map_type flat_map(0, hasher(2), key_equal(1), allocator_type(4));
+
+      BOOST_TEST(flat_map.get_allocator() != map.get_allocator());
+
+      flat_map = std::move(map);
+
+      BOOST_TEST(map.empty());
+      BOOST_TEST_EQ(flat_map.size(), reference_map.size());
+
+      BOOST_TEST_EQ(flat_map.hash_function(), hasher(1));
+      BOOST_TEST_EQ(flat_map.key_eq(), key_equal(2));
+
+      BOOST_TEST_EQ(raii::copy_constructor, 2 * values.size());
+      BOOST_TEST_EQ(
+        raii::destructor, 2 * values.size() + 2 * reference_map.size());
+      BOOST_TEST_EQ(raii::move_constructor, 4 * reference_map.size());
+      BOOST_TEST_EQ(raii::copy_assignment, 0u);
+      BOOST_TEST_EQ(raii::move_assignment, 0u);
+    }
+
+    check_raii_counts();
+  }
+
 } // namespace
 
 // clang-format off
@@ -858,6 +991,11 @@ UNORDERED_TEST(
 
 UNORDERED_TEST(
   insert_and_assign,
+  ((init_type_generator))
+  ((default_generator)(sequential)(limited_range)))
+
+UNORDERED_TEST(
+  flat_map_move_assign,
   ((init_type_generator))
   ((default_generator)(sequential)(limited_range)))
 // clang-format on

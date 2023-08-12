@@ -69,6 +69,7 @@ namespace boost {
     explicit xref:#concurrent_flat_map_allocator_constructor[concurrent_flat_map](const Allocator& a);
     xref:#concurrent_flat_map_copy_constructor_with_allocator[concurrent_flat_map](const concurrent_flat_map& other, const Allocator& a);
     xref:#concurrent_flat_map_move_constructor_with_allocator[concurrent_flat_map](concurrent_flat_map&& other, const Allocator& a);
+    xref:#concurrent_flat_map_move_constructor_from_unordered_flat_map[concurrent_flat_map](unordered_flat_map<Key, T, Hash, Pred, Allocator>&& other);
     xref:#concurrent_flat_map_initializer_list_constructor[concurrent_flat_map](std::initializer_list<value_type> il,
                         size_type n = _implementation-defined_
                         const hasher& hf = hasher(),
@@ -498,6 +499,21 @@ from `other`, and the allocator is copy-constructed from `a`.
 
 [horizontal]
 Concurrency:;; Blocking on `other`.
+
+---
+
+==== Move Constructor from unordered_flat_map
+
+```c++
+concurrent_flat_map(unordered_flat_map<Key, T, Hash, Pred, Allocator>&& other);
+```
+
+Move construction from a xref:#unordered_flat_map[`unordered_flat_map`].
+The internal bucket array of `other` is transferred directly to the new container.
+The hash function, predicate and allocator are moved-constructed from `other`.
+
+[horizontal]
+Complexity:;; O(`bucket_count()`) 
 
 ---
 

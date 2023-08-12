@@ -264,6 +264,9 @@ private:
  * checking is done by boost::unordered_(flat|node)_(map|set).
  */
 
+template<typename,typename,typename,typename>
+class concurrent_table; /* concurrent/non-concurrent interop */
+
 template <typename TypePolicy,typename Hash,typename Pred,typename Allocator>
 using table_core_impl=
   table_core<TypePolicy,group15<plain_integral>,table_arrays,
@@ -284,7 +287,12 @@ class table:table_core_impl<TypePolicy,Hash,Pred,Allocator>
   using group_type=typename super::group_type;
   using super::N;
   using prober=typename super::prober;
+  using arrays_type=typename super::arrays_type;
+  using size_ctrl_type=typename super::size_ctrl_type;
   using locator=typename super::locator;
+  using compatible_concurrent_table=
+    concurrent_table<TypePolicy,Hash,Pred,Allocator>;
+  friend compatible_concurrent_table;
 
 public:
   using key_type=typename super::key_type;
@@ -323,6 +331,8 @@ public:
   table(table&& x)=default;
   table(const table& x,const Allocator& al_):super{x,al_}{}
   table(table&& x,const Allocator& al_):super{std::move(x),al_}{}
+  table(compatible_concurrent_table&& x):
+    table(std::move(x),x.exclusive_access()){}
   ~table()=default;
 
   table& operator=(const table& x)=default;
@@ -496,6 +506,22 @@ public:
   friend bool operator!=(const table& x,const table& y){return !(x==y);}
 
 private:
+  template<typename ExclusiveLockGuard>
+  table(compatible_concurrent_table&& x,ExclusiveLockGuard):
+    super{
+      std::move(x.h()),std::move(x.pred()),std::move(x.al()),
+      arrays_type{
+        x.arrays.groups_size_index,x.arrays.groups_size_mask,
+        reinterpret_cast<group_type*>(x.arrays.groups),
+        reinterpret_cast<value_type*>(x.arrays.elements)},
+      size_ctrl_type{
+        x.size_ctrl.ml,x.size_ctrl.size}}
+  {
+    compatible_concurrent_table::arrays_type::delete_group_access(
+      this->al(),x.arrays);
+    x.empty_initialize();
+  }
+
   struct erase_on_exit
   {
     erase_on_exit(table& x_,const_iterator it_):x{x_},it{it_}{}
