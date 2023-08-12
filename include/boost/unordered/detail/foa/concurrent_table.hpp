@@ -20,6 +20,7 @@
 #include <boost/mp11/tuple.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/unordered/detail/foa/core.hpp>
+#include <boost/unordered/detail/foa/reentrancy_check.hpp>
 #include <boost/unordered/detail/foa/rw_spinlock.hpp>
 #include <boost/unordered/detail/foa/tuple_rotate_right.hpp>
 #include <cstddef>
@@ -910,9 +911,9 @@ private:
 
   using mutex_type=rw_spinlock;
   using multimutex_type=multimutex<mutex_type,128>; // TODO: adapt 128 to the machine
-  using shared_lock_guard=shared_lock<mutex_type>;
-  using exclusive_lock_guard=lock_guard<multimutex_type>;
-  using exclusive_bilock_guard=scoped_bilock<multimutex_type>;
+  using shared_lock_guard=reentrancy_checked<shared_lock<mutex_type>>;
+  using exclusive_lock_guard=reentrancy_checked<lock_guard<multimutex_type>>;
+  using exclusive_bilock_guard=reentrancy_bichecked<scoped_bilock<multimutex_type>>;
   using group_shared_lock_guard=typename group_access::shared_lock_guard;
   using group_exclusive_lock_guard=typename group_access::exclusive_lock_guard;
   using group_insert_counter_type=typename group_access::insert_counter_type;
@@ -932,18 +933,18 @@ private:
   {
     thread_local auto id=(++thread_counter)%mutexes.size();
 
-    return shared_lock_guard{mutexes[id]};
+    return shared_lock_guard{this,mutexes[id]};
   }
 
   inline exclusive_lock_guard exclusive_access()const
   {
-    return exclusive_lock_guard{mutexes};
+    return exclusive_lock_guard{this,mutexes};
   }
 
   static inline exclusive_bilock_guard exclusive_access(
     const concurrent_table& x,const concurrent_table& y)
   {
-    return {x.mutexes,y.mutexes};
+    return {&x,&y,x.mutexes,y.mutexes};
   }
 
   template<typename Hash2,typename Pred2>
@@ -951,7 +952,7 @@ private:
     const concurrent_table& x,
     const concurrent_table<TypePolicy,Hash2,Pred2,Allocator>& y)
   {
-    return {x.mutexes,y.mutexes};
+    return {&x,&y,x.mutexes,y.mutexes};
   }
 
   /* Tag-dispatched shared/exclusive group access */
