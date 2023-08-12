@@ -128,9 +128,10 @@ concurrent scenarios.
 * Open-addressing layouts are eminently suitable for concurrent access and modification
 with minimal locking. In particular, the metadata array can be used for implementations of
 lookup that are lock-free up to the last step of actual element comparison.
-* Layout compatibility with Boost.Unordered flat containers allows for fast transfer
-of all elements between `boost::concurrent_flat_map` and `boost::unordered_flat_map`.
-(This feature has not been implemented yet.)
+* Layout compatibility with Boost.Unordered flat containers allows for 
+xref:#concurrent_interoperability_with_non_concurrent_containers[fast transfer]
+of all elements between `boost::concurrent_flat_map` and `boost::unordered_flat_map`,
+and vice versa.
 
 === Hash Function and Platform Interoperability
 
