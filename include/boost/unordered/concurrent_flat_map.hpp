@@ -15,6 +15,7 @@
 #include <boost/unordered/detail/foa/concurrent_table.hpp>
 #include <boost/unordered/detail/foa/flat_map_types.hpp>
 #include <boost/unordered/detail/type_traits.hpp>
+#include <boost/unordered/unordered_flat_map_fwd.hpp>
 
 #include <boost/container_hash/hash.hpp>
 #include <boost/core/allocator_access.hpp>
@@ -84,6 +85,9 @@ namespace boost {
       template <class Key2, class T2, class Hash2, class Pred2,
         class Allocator2>
       friend class concurrent_flat_map;
+      template <class Key2, class T2, class Hash2, class Pred2,
+        class Allocator2>
+      friend class unordered_flat_map;
 
       using type_policy = detail::foa::flat_map_types<Key, T>;
 
@@ -223,6 +227,13 @@ namespace boost {
       {
       }
 
+
+      concurrent_flat_map(
+        unordered_flat_map<Key, T, Hash, Pred, Allocator>&& other)
+          : table_(std::move(other.table_))
+      {
+      }
+
       ~concurrent_flat_map() = default;
 
       concurrent_flat_map& operator=(concurrent_flat_map const& rhs)
@@ -352,6 +363,56 @@ namespace boost {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         BOOST_UNORDERED_STATIC_ASSERT_EXEC_POLICY(ExecPolicy)
         table_.cvisit_all(p, f);
+      }
+#endif
+
+      template <class F> bool visit_while(F f)
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
+        return table_.visit_while(f);
+      }
+
+      template <class F> bool visit_while(F f) const
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        return table_.visit_while(f);
+      }
+
+      template <class F> bool cvisit_while(F f) const
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        return table_.cvisit_while(f);
+      }
+
+#if defined(BOOST_UNORDERED_PARALLEL_ALGORITHMS)
+      template <class ExecPolicy, class F>
+      typename std::enable_if<detail::is_execution_policy<ExecPolicy>::value,
+        bool>::type
+      visit_while(ExecPolicy&& p, F f)
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
+        BOOST_UNORDERED_STATIC_ASSERT_EXEC_POLICY(ExecPolicy)
+        return table_.visit_while(p, f);
+      }
+
+      template <class ExecPolicy, class F>
+      typename std::enable_if<detail::is_execution_policy<ExecPolicy>::value,
+        bool>::type
+      visit_while(ExecPolicy&& p, F f) const
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        BOOST_UNORDERED_STATIC_ASSERT_EXEC_POLICY(ExecPolicy)
+        return table_.visit_while(p, f);
+      }
+
+      template <class ExecPolicy, class F>
+      typename std::enable_if<detail::is_execution_policy<ExecPolicy>::value,
+        bool>::type
+      cvisit_while(ExecPolicy&& p, F f) const
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        BOOST_UNORDERED_STATIC_ASSERT_EXEC_POLICY(ExecPolicy)
+        return table_.cvisit_while(p, f);
       }
 #endif
 

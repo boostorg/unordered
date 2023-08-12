@@ -349,6 +349,106 @@ namespace {
 
   } visit_all;
 
+  struct visit_while_type
+  {
+    template <class T, class X, class M>
+    void operator()(std::vector<T>& values, X& x, M const& reference_map)
+    {
+      using value_type = typename X::value_type;
+
+      auto mut_truthy_visitor = [&reference_map](
+                                  std::atomic<uint64_t>& num_visits) {
+        return [&reference_map, &num_visits](value_type& kv) {
+          BOOST_TEST(reference_map.contains(kv.first));
+          BOOST_TEST_EQ(kv.second, reference_map.find(kv.first)->second);
+          ++num_visits;
+          return true;
+        };
+      };
+
+      auto const_truthy_visitor = [&reference_map](
+                                    std::atomic<uint64_t>& num_visits) {
+        return [&reference_map, &num_visits](value_type const& kv) {
+          BOOST_TEST(reference_map.contains(kv.first));
+          BOOST_TEST_EQ(kv.second, reference_map.find(kv.first)->second);
+          ++num_visits;
+          return true;
+        };
+      };
+
+      auto mut_falsey_visitor = [&reference_map](
+                                  std::atomic<uint64_t>& num_visits) {
+        return [&reference_map, &num_visits](value_type& kv) {
+          BOOST_TEST(reference_map.contains(kv.first));
+          ++num_visits;
+          return (kv.second.x_ % 100) == 0;
+        };
+      };
+
+      auto const_falsey_visitor = [&reference_map](
+                                    std::atomic<uint64_t>& num_visits) {
+        return [&reference_map, &num_visits](value_type const& kv) {
+          BOOST_TEST(reference_map.contains(kv.first));
+          ++num_visits;
+          return (kv.second.x_ % 100) == 0;
+        };
+      };
+
+      {
+        thread_runner(values, [&x, &mut_truthy_visitor](boost::span<T>) {
+          std::atomic<std::uint64_t> num_visits{0};
+          BOOST_TEST(x.visit_while(mut_truthy_visitor(num_visits)));
+          BOOST_TEST_EQ(x.size(), num_visits);
+        });
+      }
+
+      {
+        thread_runner(values, [&x, &const_truthy_visitor](boost::span<T>) {
+          std::atomic<std::uint64_t> num_visits{0};
+          auto const& y = x;
+          BOOST_TEST(y.visit_while(const_truthy_visitor(num_visits)));
+          BOOST_TEST_EQ(x.size(), num_visits);
+        });
+      }
+
+      {
+        thread_runner(values, [&x, &const_truthy_visitor](boost::span<T>) {
+          std::atomic<std::uint64_t> num_visits{0};
+          BOOST_TEST(x.cvisit_while(const_truthy_visitor(num_visits)));
+          BOOST_TEST_EQ(x.size(), num_visits);
+        });
+      }
+
+      {
+        thread_runner(values, [&x, &mut_falsey_visitor](boost::span<T>) {
+          std::atomic<std::uint64_t> num_visits{0};
+          BOOST_TEST_NOT(x.visit_while(mut_falsey_visitor(num_visits)));
+          BOOST_TEST_LT(num_visits, x.size());
+          BOOST_TEST_GT(num_visits, 0u);
+        });
+      }
+
+      {
+        thread_runner(values, [&x, &const_falsey_visitor](boost::span<T>) {
+          std::atomic<std::uint64_t> num_visits{0};
+          auto const& y = x;
+          BOOST_TEST_NOT(y.visit_while(const_falsey_visitor(num_visits)));
+          BOOST_TEST_LT(num_visits, x.size());
+          BOOST_TEST_GT(num_visits, 0u);
+        });
+      }
+
+      {
+        thread_runner(values, [&x, &const_falsey_visitor](boost::span<T>) {
+          std::atomic<std::uint64_t> num_visits{0};
+          BOOST_TEST_NOT(x.cvisit_while(const_falsey_visitor(num_visits)));
+          BOOST_TEST_LT(num_visits, x.size());
+          BOOST_TEST_GT(num_visits, 0u);
+        });
+      }
+    }
+  } visit_while;
+
   struct exec_policy_visit_all_type
   {
     template <class T, class X, class M>
@@ -406,6 +506,120 @@ namespace {
 #endif
     }
   } exec_policy_visit_all;
+
+  struct exec_policy_visit_while_type
+  {
+    template <class T, class X, class M>
+    void operator()(std::vector<T>& values, X& x, M const& reference_map)
+    {
+#if defined(BOOST_UNORDERED_PARALLEL_ALGORITHMS)
+      using value_type = typename X::value_type;
+
+      auto mut_truthy_visitor = [&reference_map](
+                                  std::atomic<uint64_t>& num_visits) {
+        return [&reference_map, &num_visits](value_type& kv) {
+          BOOST_TEST(reference_map.contains(kv.first));
+          BOOST_TEST_EQ(kv.second, reference_map.find(kv.first)->second);
+          ++num_visits;
+          return true;
+        };
+      };
+
+      auto const_truthy_visitor = [&reference_map](
+                                    std::atomic<uint64_t>& num_visits) {
+        return [&reference_map, &num_visits](value_type const& kv) {
+          BOOST_TEST(reference_map.contains(kv.first));
+          BOOST_TEST_EQ(kv.second, reference_map.find(kv.first)->second);
+          ++num_visits;
+          return true;
+        };
+      };
+
+      auto mut_falsey_visitor = [&reference_map](
+                                  std::atomic<uint64_t>& num_visits) {
+        return [&reference_map, &num_visits](value_type& kv) {
+          BOOST_TEST(reference_map.contains(kv.first));
+          BOOST_TEST_EQ(kv.second, reference_map.find(kv.first)->second);
+          ++num_visits;
+          return (kv.second.x_ % 100) == 0;
+        };
+      };
+
+      auto const_falsey_visitor = [&reference_map](
+                                    std::atomic<uint64_t>& num_visits) {
+        return [&reference_map, &num_visits](value_type const& kv) {
+          BOOST_TEST(reference_map.contains(kv.first));
+          BOOST_TEST_EQ(kv.second, reference_map.find(kv.first)->second);
+          ++num_visits;
+          return (kv.second.x_ % 100) == 0;
+        };
+      };
+
+      {
+        thread_runner(values, [&x, &mut_truthy_visitor](boost::span<T>) {
+          std::atomic<std::uint64_t> num_visits{0};
+          BOOST_TEST(
+            x.visit_while(std::execution::par, mut_truthy_visitor(num_visits)));
+          BOOST_TEST_EQ(x.size(), num_visits);
+        });
+      }
+
+      {
+        thread_runner(values, [&x, &const_truthy_visitor](boost::span<T>) {
+          std::atomic<std::uint64_t> num_visits{0};
+          auto const& y = x;
+          BOOST_TEST(y.visit_while(
+            std::execution::par, const_truthy_visitor(num_visits)));
+          BOOST_TEST_EQ(x.size(), num_visits);
+        });
+      }
+
+      {
+        thread_runner(values, [&x, &const_truthy_visitor](boost::span<T>) {
+          std::atomic<std::uint64_t> num_visits{0};
+          BOOST_TEST(x.cvisit_while(
+            std::execution::par, const_truthy_visitor(num_visits)));
+          BOOST_TEST_EQ(x.size(), num_visits);
+        });
+      }
+
+      {
+        thread_runner(values, [&x, &mut_falsey_visitor](boost::span<T>) {
+          std::atomic<std::uint64_t> num_visits{0};
+          BOOST_TEST_NOT(
+            x.visit_while(std::execution::par, mut_falsey_visitor(num_visits)));
+          BOOST_TEST_LT(num_visits, x.size());
+          BOOST_TEST_GT(num_visits, 0u);
+        });
+      }
+
+      {
+        thread_runner(values, [&x, &const_falsey_visitor](boost::span<T>) {
+          std::atomic<std::uint64_t> num_visits{0};
+          auto const& y = x;
+          BOOST_TEST_NOT(y.visit_while(
+            std::execution::par, const_falsey_visitor(num_visits)));
+          BOOST_TEST_LT(num_visits, x.size());
+          BOOST_TEST_GT(num_visits, 0u);
+        });
+      }
+
+      {
+        thread_runner(values, [&x, &const_falsey_visitor](boost::span<T>) {
+          std::atomic<std::uint64_t> num_visits{0};
+          BOOST_TEST_NOT(x.cvisit_while(
+            std::execution::par, const_falsey_visitor(num_visits)));
+          BOOST_TEST_LT(num_visits, x.size());
+          BOOST_TEST_GT(num_visits, 0u);
+        });
+      }
+#else
+      (void)values;
+      (void)x;
+      (void)reference_map;
+#endif
+    }
+  } exec_policy_visit_while;
 
   template <class X, class G, class F>
   void visit(X*, G gen, F visitor, test::random_generator rg)
@@ -570,7 +784,7 @@ UNORDERED_TEST(
   visit,
   ((map))
   ((value_type_generator)(init_type_generator))
-  ((lvalue_visitor)(visit_all)(exec_policy_visit_all))
+  ((lvalue_visitor)(visit_all)(visit_while)(exec_policy_visit_all)(exec_policy_visit_while))
   ((default_generator)(sequential)(limited_range)))
 
 UNORDERED_TEST(
