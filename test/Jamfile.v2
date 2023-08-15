@@ -33,6 +33,18 @@ project
         <toolset>msvc:<warnings-as-errors>on
     ;
 
+alias serialization
+    : usage-requirements
+        <library>/boost//serialization
+    ;
+ 
+alias serialization
+    : usage-requirements
+        <library>/boost//serialization/<cxxflags>"/wd4127"
+    : requirements
+        <toolset>msvc
+    ;
+
 run unordered/prime_fmod_tests.cpp ;
 run unordered/fwd_set_test.cpp ;
 run unordered/fwd_map_test.cpp ;
@@ -85,6 +97,7 @@ run unordered/copy_tests.cpp : : : <define>BOOST_UNORDERED_USE_MOVE : bmove_copy
 run unordered/move_tests.cpp : : : <define>BOOST_UNORDERED_USE_MOVE : bmove_move ;
 run unordered/assign_tests.cpp : : : <define>BOOST_UNORDERED_USE_MOVE : bmove_assign ;
 
+run unordered/serialization_tests.cpp serialization ;
 
 run exception/constructor_exception_tests.cpp ;
 run exception/copy_exception_tests.cpp ;
