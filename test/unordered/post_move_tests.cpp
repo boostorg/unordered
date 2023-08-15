@@ -3,14 +3,14 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or move at http://www.boost.org/LICENSE_1_0.txt)
 
-#include "../helpers/unordered.hpp"
-#include "../helpers/test.hpp"
-#include "../objects/test.hpp"
-#include "../objects/cxx11_allocator.hpp"
-#include "../helpers/random_values.hpp"
-#include "../helpers/tracker.hpp"
 #include "../helpers/equivalent.hpp"
 #include "../helpers/invariants.hpp"
+#include "../helpers/random_values.hpp"
+#include "../helpers/test.hpp"
+#include "../helpers/tracker.hpp"
+#include "../helpers/unordered.hpp"
+#include "../objects/cxx11_allocator.hpp"
+#include "../objects/test.hpp"
 
 #include <boost/core/ignore_unused.hpp>
 #include <iterator>
@@ -59,7 +59,8 @@ namespace move_tests {
 
   template <class T> T const& get_value(T const& t) { return t; }
 
-  template <class K, class V> K const& get_value(std::pair<K const, V> const& kv)
+  template <class K, class V>
+  K const& get_value(std::pair<K const, V> const& kv)
   {
     return kv.second;
   }
@@ -466,8 +467,23 @@ namespace move_tests {
   !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
       BOOST_TEST(y.empty());
       BOOST_TEST(y.begin() == y.end());
+
+#ifdef BOOST_UNORDERED_FOA_TESTS
+      {
+        using allocator_type = typename T::allocator_type;
+        using value_type =
+          typename boost::allocator_value_type<allocator_type>::type;
+        using pointer = typename boost::allocator_pointer<allocator_type>::type;
+        if (std::is_same<pointer, value_type*>::value) {
+          BOOST_TEST_EQ(y.bucket_count(), 0u);
+          BOOST_TEST_EQ(test::detail::tracker.count_allocations, num_allocs);
+        }
+      }
+#else
       BOOST_TEST_EQ(y.bucket_count(), 0u);
       BOOST_TEST_EQ(test::detail::tracker.count_allocations, num_allocs);
+#endif
+
 #endif
 
       fps[i](y, v);
@@ -520,8 +536,23 @@ namespace move_tests {
   !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
       BOOST_TEST(y.empty());
       BOOST_TEST(y.begin() == y.end());
+
+#ifdef BOOST_UNORDERED_FOA_TESTS
+      {
+        using allocator_type = typename T::allocator_type;
+        using value_type =
+          typename boost::allocator_value_type<allocator_type>::type;
+        using pointer = typename boost::allocator_pointer<allocator_type>::type;
+        if (std::is_same<pointer, value_type*>::value) {
+          BOOST_TEST_EQ(y.bucket_count(), 0u);
+          BOOST_TEST_EQ(test::detail::tracker.count_allocations, num_allocs);
+        }
+      }
+#else
       BOOST_TEST_EQ(y.bucket_count(), 0u);
       BOOST_TEST_EQ(test::detail::tracker.count_allocations, num_allocs);
+#endif
+
 #endif
 
       fps[i](y, v);
@@ -687,7 +718,7 @@ namespace move_tests {
     test::cxx11_allocator<std::pair<test::object const, test::object>,
       test::no_propagate_move> >* test_multimap_no_prop_move;
 
-// clang-format off
+  // clang-format off
   UNORDERED_TEST(post_move_tests,
     ((test_set)(test_multiset)(test_map)(test_multimap)(test_set_prop_move)(
       test_multiset_prop_move)(test_map_prop_move)(test_multimap_prop_move)(
@@ -696,6 +727,6 @@ namespace move_tests {
       (default_generator)(generate_collisions)(limited_range)))
 // clang-format on
 #endif
-}
+} // namespace move_tests
 
 RUN_TESTS()

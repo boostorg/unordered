@@ -22,12 +22,11 @@ template <class X> void max_load_tests(X*, test::random_generator generator)
   test::reset_sequence();
 
   X x;
-  size_type max_load = x.max_load();
-
-  BOOST_TEST_EQ(max_load, 0u);
 
   x.reserve(1000);
-  max_load = x.max_load();
+  size_type max_load = x.max_load();
+
+  BOOST_TEST_GT(max_load, 0u);
 
   size_type bucket_count = x.bucket_count();
   BOOST_TEST_GE(bucket_count, 1000u);
