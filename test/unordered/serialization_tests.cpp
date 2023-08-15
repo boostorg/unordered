@@ -105,9 +105,6 @@ namespace {
     }
   }
 
-  // used by legacy_serialization_test, passed as argv[1]
-  const char* test_dir=".";
-
   using test::default_generator;
 
   std::pair<
@@ -148,8 +145,8 @@ namespace {
   void legacy_serialization_test(
     std::pair<Container*,const char*> lc, std::pair<Archive*,const char*> la)
   {
-    typedef typename Container::value_type        value_type;
-    typedef std::vector<value_type>               value_vector;
+    typedef typename Container::value_type value_type;
+    typedef std::vector<value_type>        value_vector;
 
     static const std::size_t sizes[] = {0, 10, 100};
 
@@ -158,8 +155,8 @@ namespace {
     for(int i = 0; i < sizeof(sizes)/sizeof(sizes[0]); ++i) {
       char filename[1024];
       std::sprintf(
-        filename, "%s/legacy_archives/%s_%d.%s",
-        test_dir, lc.second, (int)sizes[i], la.second);
+        filename, "./legacy_archives/%s_%d.%s",
+        lc.second, (int)sizes[i], la.second);
       std::ifstream ifs(filename);
       Archive ia(ifs);
       Container c;
@@ -198,11 +195,4 @@ namespace {
 #endif
 }
 
-int main(int argc, char* argv[])
-{
-  if (argc > 1) test_dir = argv[1];
-
-  BOOST_UNORDERED_TEST_COMPILER_INFO()
-  ::test::get_state().run_tests();
-  return boost::report_errors();
-}
+RUN_TESTS()

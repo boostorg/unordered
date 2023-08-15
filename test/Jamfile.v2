@@ -85,10 +85,8 @@ run unordered/copy_tests.cpp : : : <define>BOOST_UNORDERED_USE_MOVE : bmove_copy
 run unordered/move_tests.cpp : : : <define>BOOST_UNORDERED_USE_MOVE : bmove_move ;
 run unordered/assign_tests.cpp : : : <define>BOOST_UNORDERED_USE_MOVE : bmove_assign ;
 
-path-constant BOOST_UNORDERED_TEST_DIR : . ;
-
 run unordered/serialization_tests.cpp 
-    : $(BOOST_UNORDERED_TEST_DIR)
+    :
     : 
     : <define>BOOST_UNORDERED_ENABLE_SERIALIZATION_COMPATIBILITY_V0
       <warnings>off # Boost.Serialization headers are not warning-free
@@ -162,8 +160,7 @@ run unordered/hash_is_avalanching_test.cpp ;
 run unordered/serialization_tests.cpp
     :
     : 
-    : $(CPP11)
-      <define>BOOST_UNORDERED_FOA_TESTS
+    : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS
       <warnings>off # Boost.Serialization headers are not warning-free
       <library>/boost//serialization/<warnings>off
     : foa_serialization_tests ;
