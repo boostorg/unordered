@@ -9,6 +9,7 @@
 #ifndef BOOST_UNORDERED_DETAIL_SERIALIZE_NODE_POINTER_HPP
 #define BOOST_UNORDERED_DETAIL_SERIALIZE_NODE_POINTER_HPP
 
+#include <boost/core/pointer_traits.hpp>
 #include <boost/core/serialization.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/type_traits/remove_const.hpp>
@@ -39,44 +40,58 @@ struct serialization_tracker
   void serialize(Archive&,unsigned int){} /* no data emitted */
 };
 
-template<typename Archive,typename Node>
-void track_node_pointer(Archive& ar,const Node* p)
+template<typename Archive,typename NodePtr>
+void track_node_pointer(Archive& ar,NodePtr p)
 {
+  typedef typename boost::pointer_traits<NodePtr> ptr_traits;
+  typedef typename boost::remove_const<
+    typename ptr_traits::element_type>::type      node_type;
+
   if(p){
     ar&core::make_nvp(
       "node",
-      *reinterpret_cast<serialization_tracker<Node>*>(const_cast<Node*>(p)));
+      *reinterpret_cast<serialization_tracker<node_type>*>(
+        const_cast<node_type*>(
+          boost::to_address(p))));
   }
 }
 
-template<typename Archive,typename Node>
-void serialize_node_pointer(Archive& ar,Node*& p,boost::true_type /* save */)
+template<typename Archive,typename NodePtr>
+void serialize_node_pointer(
+  Archive& ar,NodePtr& p,boost::true_type /* save */)
 {
-  typedef typename boost::remove_const<Node>::type node_type;
-  typedef serialization_tracker<node_type>         tracker;
+  typedef typename boost::pointer_traits<NodePtr> ptr_traits;
+  typedef typename boost::remove_const<
+    typename ptr_traits::element_type>::type      node_type;
+  typedef serialization_tracker<node_type>        tracker;
 
-  tracker* pn=
+  tracker* pt=
     const_cast<tracker*>(
       reinterpret_cast<const tracker*>(
-        const_cast<const Node*>(p)));
-  ar<<core::make_nvp("pointer",pn);
+        const_cast<const node_type*>(
+          boost::to_address(p))));
+  ar<<core::make_nvp("pointer",pt);
 }
 
-template<typename Archive,typename Node>
-void serialize_node_pointer(Archive& ar,Node*& p,boost::false_type /* load */)
+template<typename Archive,typename NodePtr>
+void serialize_node_pointer(
+  Archive& ar,NodePtr& p,boost::false_type /* load */)
 {
-  typedef typename boost::remove_const<Node>::type node_type;
-  typedef serialization_tracker<node_type>         tracker;
+  typedef typename boost::pointer_traits<NodePtr> ptr_traits;
+  typedef typename boost::remove_const<
+    typename ptr_traits::element_type>::type      node_type;
+  typedef serialization_tracker<node_type>        tracker;
 
-  tracker* pn;
-  ar>>core::make_nvp("pointer",pn);
-  p=const_cast<Node*>(
-    reinterpret_cast<const Node*>(
-      const_cast<const tracker*>(pn)));
+  tracker* pt;
+  ar>>core::make_nvp("pointer",pt);
+  node_type* pn=const_cast<node_type*>(
+    reinterpret_cast<const node_type*>(
+      const_cast<const tracker*>(pt)));
+  p=pn?ptr_traits::pointer_to(*pn):0;
 }
 
-template<typename Archive,typename Node>
-void serialize_node_pointer(Archive& ar,Node*& p)
+template<typename Archive,typename NodePtr>
+void serialize_node_pointer(Archive& ar,NodePtr& p)
 {
   serialize_node_pointer(
     ar,p,
