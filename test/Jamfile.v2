@@ -150,6 +150,7 @@ for local test in $(FOA_TESTS)
 run unordered/link_test_1.cpp unordered/link_test_2.cpp : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_link_test ;
 run unordered/scoped_allocator.cpp : : : $(CPP11) <toolset>msvc-14.0:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_scoped_allocator ;
 run unordered/hash_is_avalanching_test.cpp ;
+run unordered/serialization_tests.cpp         : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS <library>/boost//serialization/<warnings>off : foa_serialization_tests ;
 run exception/constructor_exception_tests.cpp : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_constructor_exception_tests ;
 run exception/copy_exception_tests.cpp        : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_copy_exception_tests ;
 run exception/assign_exception_tests.cpp      : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_assign_exception_tests ;
@@ -165,6 +166,7 @@ alias foa_tests :
   foa_link_test
   foa_scoped_allocator
   hash_is_avalanching_test
+  foa_serialization_tests
   foa_constructor_exception_tests
   foa_copy_exception_tests
   foa_assign_exception_tests
