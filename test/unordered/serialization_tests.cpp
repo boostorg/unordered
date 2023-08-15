@@ -15,6 +15,7 @@
 #include <boost/config.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/vector.hpp>
+#include <cstddef>
 
 #ifndef BOOST_NO_CXX11_HDR_RANDOM
 #include <random>
@@ -86,7 +87,7 @@ namespace {
       ia >> boost::serialization::make_nvp("iterators", v2);
       BOOST_TEST_EQ(v.size(), v2.size());
 
-      for (int i=0; i < v.size(); ++i) {
+      for (std::size_t i=0; i < v.size(); ++i) {
         iterator it = v[i];
         iterator it2 = v2[i];
         if (it == c.end()) {
