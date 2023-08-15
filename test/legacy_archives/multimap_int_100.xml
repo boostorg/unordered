@@ -617,7 +617,7 @@
 <values class_id="2" tracking_level="0" version="0">
 	<count>152</count>
 	<item_version>0</item_version>
-	<item>
+	<item class_id="3" tracking_level="0" version="0">
 		<first>-938475945</first>
 		<second>-938475945</second>
 	</item>

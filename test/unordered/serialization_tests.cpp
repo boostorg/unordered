@@ -141,12 +141,32 @@ namespace {
     ((text_archive)(xml_archive))
     ((default_generator)))
 
+  template<typename T>
+  struct non_const
+  {
+    typedef T type;
+  };
+
+  template<typename T>
+  struct non_const<const T>
+  {
+    typedef typename non_const<T>::type type;
+  };
+
+  template<typename T, typename Q>
+  struct non_const<std::pair<T, Q> >
+  {
+    typedef std::pair<
+      typename non_const<T>::type,
+      typename non_const<Q>::type> type;
+  };
+
   template <class Container, typename Archive>
   void legacy_serialization_test(
     std::pair<Container*,const char*> lc, std::pair<Archive*,const char*> la)
   {
-    typedef typename Container::value_type value_type;
-    typedef std::vector<value_type>        value_vector;
+    typedef typename Container::value_type                    value_type;
+    typedef std::vector<typename non_const<value_type>::type> value_vector;
 
     static const std::size_t sizes[] = {0, 10, 100};
 
