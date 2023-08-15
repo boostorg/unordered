@@ -66,7 +66,8 @@ namespace boost {
     template <class Key, class Hash, class KeyEqual, class Allocator>
     class unordered_node_set
     {
-      using set_types = detail::foa::node_set_types<Key>;
+      using set_types = detail::foa::node_set_types<Key,
+        typename boost::allocator_void_pointer<Allocator>::type>;
 
       using table_type = detail::foa::table<set_types, Hash, KeyEqual,
         typename boost::allocator_rebind<Allocator,

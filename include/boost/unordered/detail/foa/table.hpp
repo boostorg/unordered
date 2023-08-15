@@ -363,9 +363,9 @@ public:
 
   iterator begin()noexcept
   {
-    iterator it{this->arrays.groups,0,this->arrays.elements};
-    if(this->arrays.elements&&
-       !(this->arrays.groups[0].match_occupied()&0x1))++it;
+    iterator it{this->arrays.groups(),0,this->arrays.elements()};
+    if(this->arrays.elements_&&
+       !(this->arrays.groups()[0].match_occupied()&0x1))++it;
     return it;
   }
 
@@ -533,8 +533,9 @@ private:
       std::move(x.h()),std::move(x.pred()),std::move(x.al()),
       arrays_type{
         x.arrays.groups_size_index,x.arrays.groups_size_mask,
-        reinterpret_cast<group_type*>(x.arrays.groups),
-        reinterpret_cast<value_type*>(x.arrays.elements)},
+        boost::pointer_traits<typename arrays_type::group_type_pointer>::pointer_to(
+            *reinterpret_cast<group_type*>(boost::to_address(x.arrays.groups_))),
+        x.arrays.elements_},
       size_ctrl_type{
         x.size_ctrl.ml,x.size_ctrl.size}}
   {

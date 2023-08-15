@@ -75,7 +75,8 @@ namespace boost {
     template <class Key, class T, class Hash, class KeyEqual, class Allocator>
     class unordered_node_map
     {
-      using map_types = detail::foa::node_map_types<Key, T>;
+      using map_types = detail::foa::node_map_types<Key, T,
+        typename boost::allocator_void_pointer<Allocator>::type>;
 
       using table_type = detail::foa::table<map_types, Hash, KeyEqual,
         typename boost::allocator_rebind<Allocator,
