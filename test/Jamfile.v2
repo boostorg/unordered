@@ -85,7 +85,15 @@ run unordered/copy_tests.cpp : : : <define>BOOST_UNORDERED_USE_MOVE : bmove_copy
 run unordered/move_tests.cpp : : : <define>BOOST_UNORDERED_USE_MOVE : bmove_move ;
 run unordered/assign_tests.cpp : : : <define>BOOST_UNORDERED_USE_MOVE : bmove_assign ;
 
-run unordered/serialization_tests.cpp : : : <library>/boost//serialization/<warnings>off ;
+path-constant BOOST_UNORDERED_TEST_DIR : . ;
+
+run unordered/serialization_tests.cpp 
+    : $(BOOST_UNORDERED_TEST_DIR)
+    : 
+    : <define>BOOST_UNORDERED_ENABLE_SERIALIZATION_COMPATIBILITY_V0
+      <warnings>off # Boost.Serialization headers are not warning-free
+      <toolset>msvc:<define>_CRT_SECURE_NO_WARNINGS
+      <library>/boost//serialization/<warnings>off ;
 
 run exception/constructor_exception_tests.cpp ;
 run exception/copy_exception_tests.cpp ;
@@ -150,7 +158,16 @@ for local test in $(FOA_TESTS)
 run unordered/link_test_1.cpp unordered/link_test_2.cpp : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_link_test ;
 run unordered/scoped_allocator.cpp : : : $(CPP11) <toolset>msvc-14.0:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_scoped_allocator ;
 run unordered/hash_is_avalanching_test.cpp ;
-run unordered/serialization_tests.cpp         : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS <library>/boost//serialization/<warnings>off : foa_serialization_tests ;
+
+run unordered/serialization_tests.cpp
+    :
+    : 
+    : $(CPP11)
+      <define>BOOST_UNORDERED_FOA_TESTS
+      <warnings>off # Boost.Serialization headers are not warning-free
+      <library>/boost//serialization/<warnings>off
+    : foa_serialization_tests ;
+
 run exception/constructor_exception_tests.cpp : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_constructor_exception_tests ;
 run exception/copy_exception_tests.cpp        : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_copy_exception_tests ;
 run exception/assign_exception_tests.cpp      : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_assign_exception_tests ;

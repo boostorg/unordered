@@ -14,8 +14,12 @@
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/config.hpp>
 #include <boost/serialization/nvp.hpp>
+#include <boost/serialization/string.hpp>
+#include <boost/serialization/utility.hpp>
 #include <boost/serialization/vector.hpp>
 #include <cstddef>
+#include <cstdio>
+#include <fstream>
 
 #ifndef BOOST_NO_CXX11_HDR_RANDOM
 #include <random>
@@ -101,6 +105,9 @@ namespace {
     }
   }
 
+  // used by legacy_serialization_test, passed as argv[1]
+  const char* test_dir=".";
+
   using test::default_generator;
 
   std::pair<
@@ -136,7 +143,66 @@ namespace {
     ((test_map)(test_multimap)(test_set)(test_multiset))
     ((text_archive)(xml_archive))
     ((default_generator)))
+
+  template <class Container, typename Archive>
+  void legacy_serialization_test(
+    std::pair<Container*,const char*> lc, std::pair<Archive*,const char*> la)
+  {
+    typedef typename Container::value_type        value_type;
+    typedef std::vector<value_type>               value_vector;
+
+    static const std::size_t sizes[] = {0, 10, 100};
+
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "legacy_serialization_test\n";
+
+    for(int i = 0; i < sizeof(sizes)/sizeof(sizes[0]); ++i) {
+      char filename[1024];
+      std::sprintf(
+        filename, "%s/legacy_archives/%s_%d.%s",
+        test_dir, lc.second, (int)sizes[i], la.second);
+      std::ifstream ifs(filename);
+      Archive ia(ifs);
+      Container c;
+      value_vector v;
+      ia >> boost::serialization::make_nvp("container", c);
+      ia >> boost::serialization::make_nvp("values", v);
+      BOOST_TEST(v.size() >= sizes[i]); // values generated with some degree of repetition
+      BOOST_TEST((c==Container(v.begin(),v.end())));
+    }
+  }
+
+  std::pair<boost::unordered_map<int, int>*, const char*>
+    labeled_map_int(0, "map_int");
+  std::pair<boost::unordered_map<std::string, std::string>*, const char*>
+    labeled_map_string(0, "map_string");
+  std::pair<boost::unordered_multimap<int, int>*, const char*>
+    labeled_multimap_int(0, "multimap_int");
+  std::pair<boost::unordered_multimap<std::string, std::string>*, const char*>
+    labeled_multimap_string(0, "multimap_string");
+  std::pair<boost::unordered_set<int>*, const char*>
+    labeled_set_int(0, "set_int");
+  std::pair<boost::unordered_set<std::string>*, const char*>
+    labeled_set_string(0, "set_string");
+  std::pair<boost::unordered_multiset<int>*, const char*>
+    labeled_multiset_int(0, "multiset_int");
+  std::pair<boost::unordered_multiset<std::string>*, const char*>
+    labeled_multiset_string(0, "multiset_string");
+
+  std::pair<boost::archive::text_iarchive*, const char*> labeled_text_iarchive(0, "txt");
+  std::pair<boost::archive::xml_iarchive*, const char*> labeled_xml_iarchive(0, "xml");
+
+  UNORDERED_TEST(legacy_serialization_test,
+    ((labeled_map_int)(labeled_map_string)(labeled_multimap_int)(labeled_multimap_string)
+     (labeled_set_int)(labeled_set_string)(labeled_multiset_int)(labeled_multiset_string))
+    ((labeled_text_iarchive)(labeled_xml_iarchive)))
 #endif
 }
 
-RUN_TESTS()
+int main(int argc, char* argv[])
+{
+  if (argc > 1) test_dir = argv[1];
+
+  BOOST_UNORDERED_TEST_COMPILER_INFO()
+  ::test::get_state().run_tests();
+  return boost::report_errors();
+}
