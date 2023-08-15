@@ -458,6 +458,7 @@ template <class T> class ptr
 
 public:
   ptr() : ptr_(0) {}
+  ptr(std::nullptr_t) : ptr_(nullptr) {}
   explicit ptr(void_ptr const& x) : ptr_((T*)x.ptr_) {}
 
   T& operator*() const { return *ptr_; }

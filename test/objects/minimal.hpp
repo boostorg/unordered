@@ -307,6 +307,7 @@ namespace test {
 
     public:
       ptr() : ptr_(0) {}
+      ptr(std::nullptr_t) : ptr_(0) {}
       explicit ptr(void_ptr const& x) : ptr_((T*)x.ptr_) {}
 
       T& operator*() const { return *ptr_; }
@@ -325,6 +326,18 @@ namespace test {
       ptr operator+(std::ptrdiff_t s) const { return ptr<T>(ptr_ + s); }
       friend ptr operator+(std::ptrdiff_t s, ptr p) { return ptr<T>(s + p.ptr_); }
 
+      ptr& operator+=(std::ptrdiff_t s)
+      {
+        ptr_ += s;
+        return *this;
+      }
+
+      ptr& operator-=(std::ptrdiff_t s)
+      {
+        ptr_ -= s;
+        return *this;
+      }
+
       std::ptrdiff_t operator-(ptr p) const { return ptr_ - p.ptr_; }
       ptr operator-(std::ptrdiff_t s) const { return ptr(ptr_ - s); }
       T& operator[](std::ptrdiff_t s) const { return ptr_[s]; }
@@ -340,6 +353,8 @@ namespace test {
 
       bool operator==(ptr const& x) const { return ptr_ == x.ptr_; }
       bool operator!=(ptr const& x) const { return ptr_ != x.ptr_; }
+      bool operator==(std::nullptr_t) const { return ptr_ == nullptr; }
+      bool operator!=(std::nullptr_t) const { return ptr_ != nullptr; }
       bool operator<(ptr const& x) const { return ptr_ < x.ptr_; }
       bool operator>(ptr const& x) const { return ptr_ > x.ptr_; }
       bool operator<=(ptr const& x) const { return ptr_ <= x.ptr_; }
@@ -660,6 +675,9 @@ namespace boost {
     {
       typedef ::test::minimal::ptr<U> type;
     };
+
+    template<class U>
+    using rebind=typename rebind_to<U>::type;
   };
 }
 

@@ -16,6 +16,9 @@
 #include <boost/limits.hpp>
 #include <cstddef>
 
+template <class T> struct allocator1;
+template <class T> struct allocator2;
+
 namespace test {
   // Note that the default hash function will work for any equal_to (but not
   // very well).
@@ -506,14 +509,18 @@ namespace test {
 
   template <class T> class ptr
   {
+    friend struct ::allocator1<T>;
+    friend struct ::allocator2<T>;
     friend class allocator2<T>;
     friend class const_ptr<T>;
     friend struct void_ptr;
 
-  public:
     T* ptr_;
     ptr(T* x) : ptr_(x) {}
+
+  public:
     ptr() : ptr_(0) {}
+    ptr(std::nullptr_t) : ptr_(nullptr) {}
     explicit ptr(void_ptr const& x) : ptr_((T*)x.ptr_) {}
 
     T& operator*() const { return *ptr_; }
@@ -537,6 +544,7 @@ namespace test {
     ptr operator-(std::ptrdiff_t s) const { return ptr(ptr_ - s); }
 
     ptr& operator+=(std::ptrdiff_t s) { ptr_ += s; return *this; }
+    ptr& operator-=(std::ptrdiff_t s) { ptr_ -= s; return *this; }
 
     T& operator[](std::ptrdiff_t s) const { return ptr_[s]; }
     bool operator!() const { return !ptr_; }
@@ -727,6 +735,9 @@ namespace boost {
     {
       typedef ::test::ptr<U> type;
     };
+
+    template<class U>
+    using rebind=typename rebind_to<U>::type;
   };
 } // namespace boost
 
