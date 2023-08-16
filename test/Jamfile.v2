@@ -242,4 +242,19 @@ for local test in $(CFOA_TESTS)
   ;
 }
 
-alias cfoa_tests : cfoa_$(CFOA_TESTS) ;
+run cfoa/serialization_tests.cpp
+    :
+    : 
+    : $(CPP11) <threading>multi
+      <warnings>off # Boost.Serialization headers are not warning-free
+      <toolset>msvc:<cxxflags>/bigobj
+      <toolset>gcc:<inlining>on
+      <toolset>gcc:<optimization>space
+      <toolset>clang:<inlining>on
+      <toolset>clang:<optimization>space
+      <library>/boost//serialization/<warnings>off
+    : cfoa_serialization_tests ;
+
+alias cfoa_tests : 
+  cfoa_$(CFOA_TESTS)
+  cfoa_serialization_tests ;
