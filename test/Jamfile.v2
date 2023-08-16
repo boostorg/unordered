@@ -5,6 +5,7 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 import testing ;
+import ../../config/checks/config : requires ;
 
 # Adding -Wundef is blocked on (at least)
 # https://github.com/boostorg/type_traits/issues/165
@@ -15,6 +16,7 @@ local msvc-flags = /wd4494 ;
 
 project
     : requirements
+        [ requires cxx11_constexpr cxx11_noexcept cxx11_decltype cxx11_alignas ]
 
         <warnings>pedantic
         <toolset>intel:<warnings>on
@@ -33,63 +35,76 @@ project
         <toolset>msvc:<warnings-as-errors>on
     ;
 
-run unordered/prime_fmod_tests.cpp ;
-run unordered/fwd_set_test.cpp ;
-run unordered/fwd_map_test.cpp ;
-run unordered/allocator_traits.cpp ;
-run unordered/minimal_allocator.cpp ;
-run unordered/compile_set.cpp ;
-run unordered/compile_map.cpp ;
-run unordered/noexcept_tests.cpp ;
-run unordered/link_test_1.cpp unordered/link_test_2.cpp ;
-run unordered/incomplete_test.cpp ;
-run unordered/simple_tests.cpp ;
-run unordered/equivalent_keys_tests.cpp ;
-run unordered/constructor_tests.cpp ;
-run unordered/copy_tests.cpp ;
-run unordered/move_tests.cpp ;
-run unordered/post_move_tests.cpp ;
-run unordered/assign_tests.cpp ;
-run unordered/insert_tests.cpp ;
-run unordered/insert_stable_tests.cpp ;
-run unordered/insert_hint_tests.cpp ;
-run unordered/emplace_tests.cpp ;
-run unordered/unnecessary_copy_tests.cpp ;
-run unordered/erase_tests.cpp : : : <define>BOOST_UNORDERED_SUPPRESS_DEPRECATED ;
-run unordered/erase_equiv_tests.cpp ;
-run unordered/extract_tests.cpp ;
-run unordered/node_handle_tests.cpp ;
-run unordered/merge_tests.cpp ;
-compile-fail unordered/insert_node_type_fail.cpp : <define>UNORDERED_TEST_MAP : insert_node_type_fail_map ;
-compile-fail unordered/insert_node_type_fail.cpp : <define>UNORDERED_TEST_MULTIMAP : insert_node_type_fail_multimap ;
-compile-fail unordered/insert_node_type_fail.cpp : <define>UNORDERED_TEST_SET : insert_node_type_fail_set ;
-compile-fail unordered/insert_node_type_fail.cpp : <define>UNORDERED_TEST_MULTISET : insert_node_type_fail_multiset ;
-run unordered/find_tests.cpp ;
-run unordered/at_tests.cpp ;
-run unordered/bucket_tests.cpp ;
-run unordered/load_factor_tests.cpp ;
-run unordered/rehash_tests.cpp ;
-run unordered/equality_tests.cpp ;
-run unordered/swap_tests.cpp ;
-run unordered/deduction_tests.cpp ;
-run unordered/scoped_allocator.cpp : : : <toolset>msvc-14.0:<build>no ;
-run unordered/transparent_tests.cpp ;
-run unordered/reserve_tests.cpp ;
-run unordered/contains_tests.cpp ;
-run unordered/erase_if.cpp ;
-run unordered/scary_tests.cpp ;
-
-run unordered/compile_set.cpp : : : <define>BOOST_UNORDERED_USE_MOVE : bmove_compile_set ;
-run unordered/compile_map.cpp : : : <define>BOOST_UNORDERED_USE_MOVE : bmove_compile_map ;
-run unordered/copy_tests.cpp : : : <define>BOOST_UNORDERED_USE_MOVE : bmove_copy ;
-run unordered/move_tests.cpp : : : <define>BOOST_UNORDERED_USE_MOVE : bmove_move ;
-run unordered/assign_tests.cpp : : : <define>BOOST_UNORDERED_USE_MOVE : bmove_assign ;
-
 path-constant BOOST_UNORDERED_TEST_DIR : . ;
 
-run unordered/serialization_tests.cpp 
+run quick.cpp ;
+
+local FCA_TESTS =
+  allocator_traits
+  assign_tests
+  at_tests
+  bucket_tests
+  compile_map
+  compile_set
+  constructor_tests
+  contains_tests
+  copy_tests
+  deduction_tests
+  emplace_tests
+  equality_tests
+  equivalent_keys_tests
+  erase_equiv_tests
+  erase_if
+  erase_tests
+  extract_tests
+  find_tests
+  fwd_map_test
+  fwd_set_test
+  incomplete_test
+  insert_hint_tests
+  insert_stable_tests
+  insert_tests
+  load_factor_tests
+  merge_tests
+  minimal_allocator
+  move_tests
+  narrow_cast_tests
+  node_handle_tests
+  noexcept_tests
+  post_move_tests
+  prime_fmod_tests
+  rehash_tests
+  reserve_tests
+  scary_tests
+  scoped_allocator
+  simple_tests
+  swap_tests
+  transparent_tests
+  unnecessary_copy_tests
+;
+
+for local test in $(FCA_TESTS)
+{
+  if $(test) = "erase_tests" {
+    run unordered/$(test).cpp : : : <define>BOOST_UNORDERED_SUPPRESS_DEPRECATED ;
+  } else if $(test) = "scoped_allocator" {
+    run unordered/$(test).cpp : : : <toolset>msvc-14.0:<build>no ;
+  } else {
+    run unordered/$(test).cpp ;
+  }
+}
+
+run unordered/link_test_1.cpp unordered/link_test_2.cpp : : : : link_test ;
+
+run unordered/compile_set.cpp  : : : <define>BOOST_UNORDERED_USE_MOVE : bmove_compile_set ;
+run unordered/compile_map.cpp  : : : <define>BOOST_UNORDERED_USE_MOVE : bmove_compile_map ;
+run unordered/copy_tests.cpp   : : : <define>BOOST_UNORDERED_USE_MOVE : bmove_copy ;
+run unordered/move_tests.cpp   : : : <define>BOOST_UNORDERED_USE_MOVE : bmove_move ;
+run unordered/assign_tests.cpp : : : <define>BOOST_UNORDERED_USE_MOVE : bmove_assign ;
+
+run unordered/serialization_tests.cpp
     : $(BOOST_UNORDERED_TEST_DIR)
-    : 
+    :
     : <define>BOOST_UNORDERED_ENABLE_SERIALIZATION_COMPATIBILITY_V0
       <warnings>off # Boost.Serialization headers are not warning-free
       <undefined-sanitizer>norecover:<build>no # boost::archive::xml_oarchive does not pass UBSAN
@@ -101,23 +116,49 @@ run unordered/serialization_tests.cpp
       <toolset>clang:<optimization>space
       <library>/boost//serialization/<warnings>off ;
 
-run exception/constructor_exception_tests.cpp ;
-run exception/copy_exception_tests.cpp ;
-run exception/assign_exception_tests.cpp ;
-run exception/move_assign_exception_tests.cpp ;
-run exception/insert_exception_tests.cpp ;
-run exception/erase_exception_tests.cpp ;
-run exception/rehash_exception_tests.cpp ;
-run exception/swap_exception_tests.cpp : : : <define>BOOST_UNORDERED_SWAP_METHOD=2 ;
-run exception/merge_exception_tests.cpp ;
-run exception/less_tests.cpp ;
+compile-fail unordered/insert_node_type_fail.cpp : <define>UNORDERED_TEST_MAP      : insert_node_type_fail_map ;
+compile-fail unordered/insert_node_type_fail.cpp : <define>UNORDERED_TEST_MULTIMAP : insert_node_type_fail_multimap ;
+compile-fail unordered/insert_node_type_fail.cpp : <define>UNORDERED_TEST_SET      : insert_node_type_fail_set ;
+compile-fail unordered/insert_node_type_fail.cpp : <define>UNORDERED_TEST_MULTISET : insert_node_type_fail_multiset ;
 
-run unordered/narrow_cast_tests.cpp ;
-run quick.cpp ;
+local FCA_EXCEPTION_TESTS =
+  constructor_exception_tests
+  copy_exception_tests
+  assign_exception_tests
+  move_assign_exception_tests
+  insert_exception_tests
+  erase_exception_tests
+  rehash_exception_tests
+  merge_exception_tests
+  less_tests
+  swap_exception_tests
+;
 
-import ../../config/checks/config : requires ;
+for local test in $(FCA_EXCEPTION_TESTS)
+{
+  if $(test) = "swap_exception_tests" {
+    run exception/$(test).cpp : : : <define>BOOST_UNORDERED_SWAP_METHOD=2 ;
+  } else {
+    run exception/$(test).cpp ;
+  }
+}
 
-CPP11 = [ requires cxx11_constexpr cxx11_noexcept cxx11_decltype cxx11_alignas ] ;
+alias fca_exception_tests : $(FCA_EXCEPTION_TESTS) ;
+alias fca_tests :
+  $(FCA_TESTS)
+  $(FCA_EXCEPTION_TESTS)
+  link_test
+  bmove_compile_set
+  bmove_compile_map
+  bmove_copy
+  bmove_move
+  bmove_assign
+  insert_node_type_fail_map
+  insert_node_type_fail_multimap
+  insert_node_type_fail_set
+  insert_node_type_fail_multiset
+  serialization_tests
+;
 
 local FOA_TESTS =
   fwd_set_test
@@ -154,21 +195,21 @@ local FOA_TESTS =
   extract_tests
   node_handle_tests
   uses_allocator
+  hash_is_avalanching_test
 ;
 
 for local test in $(FOA_TESTS)
 {
-  run unordered/$(test).cpp : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_$(test) ;
+  run unordered/$(test).cpp : : : <define>BOOST_UNORDERED_FOA_TESTS : foa_$(test) ;
 }
 
-run unordered/link_test_1.cpp unordered/link_test_2.cpp : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_link_test ;
-run unordered/scoped_allocator.cpp : : : $(CPP11) <toolset>msvc-14.0:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_scoped_allocator ;
-run unordered/hash_is_avalanching_test.cpp ;
+run unordered/link_test_1.cpp unordered/link_test_2.cpp : : : <define>BOOST_UNORDERED_FOA_TESTS : foa_link_test ;
+run unordered/scoped_allocator.cpp : : : <toolset>msvc-14.0:<build>no <define>BOOST_UNORDERED_FOA_TESTS : foa_scoped_allocator ;
 
 run unordered/serialization_tests.cpp
     :
-    : 
-    : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS
+    :
+    : <define>BOOST_UNORDERED_FOA_TESTS
       <warnings>off # Boost.Serialization headers are not warning-free
       <undefined-sanitizer>norecover:<build>no # boost::archive::xml_oarchive does not pass UBSAN
       <toolset>msvc:<cxxflags>/bigobj
@@ -179,31 +220,29 @@ run unordered/serialization_tests.cpp
       <library>/boost//serialization/<warnings>off
     : foa_serialization_tests ;
 
-run exception/constructor_exception_tests.cpp : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_constructor_exception_tests ;
-run exception/copy_exception_tests.cpp        : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_copy_exception_tests ;
-run exception/assign_exception_tests.cpp      : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_assign_exception_tests ;
-run exception/move_assign_exception_tests.cpp : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_move_assign_exception_tests ;
-run exception/insert_exception_tests.cpp      : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_insert_exception_tests ;
-run exception/erase_exception_tests.cpp       : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_erase_exception_tests ;
-run exception/rehash_exception_tests.cpp      : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_rehash_exception_tests ;
-run exception/swap_exception_tests.cpp        : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_swap_exception_tests ;
-run exception/merge_exception_tests.cpp       : : : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS : foa_merge_exception_tests ;
+local FOA_EXCEPTION_TESTS =
+  constructor_exception_tests
+  copy_exception_tests
+  assign_exception_tests
+  move_assign_exception_tests
+  insert_exception_tests
+  erase_exception_tests
+  rehash_exception_tests
+  swap_exception_tests
+  merge_exception_tests
+;
+
+for local test in $(FOA_EXCEPTION_TESTS)
+{
+  run exception/$(test).cpp : : : <define>BOOST_UNORDERED_FOA_TESTS : foa_$(test) ;
+}
 
 alias foa_tests :
   foa_$(FOA_TESTS)
+  foa_$(FOA_EXCEPTION_TESTS)
   foa_link_test
   foa_scoped_allocator
-  hash_is_avalanching_test
   foa_serialization_tests
-  foa_constructor_exception_tests
-  foa_copy_exception_tests
-  foa_assign_exception_tests
-  foa_move_assign_exception_tests
-  foa_insert_exception_tests
-  foa_erase_exception_tests
-  foa_rehash_exception_tests
-  foa_swap_exception_tests
-  foa_merge_exception_tests
 ;
 
 local CFOA_TESTS =
@@ -239,14 +278,14 @@ local CFOA_TESTS =
 for local test in $(CFOA_TESTS)
 {
   run cfoa/$(test).cpp
-  : requirements $(CPP11) <threading>multi
+  : requirements <threading>multi
   : target-name cfoa_$(test)
   ;
 }
 
 run cfoa/serialization_tests.cpp
     :
-    : 
+    :
     : $(CPP11) <threading>multi
       <warnings>off # Boost.Serialization headers are not warning-free
       <undefined-sanitizer>norecover:<build>no # boost::archive::xml_oarchive does not pass UBSAN
@@ -258,6 +297,6 @@ run cfoa/serialization_tests.cpp
       <library>/boost//serialization/<warnings>off
     : cfoa_serialization_tests ;
 
-alias cfoa_tests : 
+alias cfoa_tests :
   cfoa_$(CFOA_TESTS)
   cfoa_serialization_tests ;
