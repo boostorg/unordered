@@ -1870,9 +1870,10 @@ private:
 
   void fast_copy_elements_from(const table_core& x)
   {
-    if(arrays.elements){
+    if(arrays.elements&&x.arrays.elements){
       copy_elements_array_from(x);
       copy_groups_array_from(x);
+      size_ctrl.ml=std::size_t(x.size_ctrl.ml);
       size_ctrl.size=std::size_t(x.size_ctrl.size);
     }
   }
