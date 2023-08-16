@@ -237,12 +237,35 @@ for local test in $(FOA_EXCEPTION_TESTS)
   run exception/$(test).cpp : : : <define>BOOST_UNORDERED_FOA_TESTS : foa_$(test) ;
 }
 
+local MMAP_CONTAINERS =
+  unordered_flat_map
+  unordered_flat_set
+  unordered_node_map
+  unordered_node_set
+  unordered_map
+  unordered_set
+  unordered_multimap
+  unordered_multiset
+  concurrent_flat_map
+;
+
+for local container in $(MMAP_CONTAINERS)
+{
+  run unordered/mmap_tests.cpp /boost/filesystem//boost_filesystem : :
+  : <define>BOOST_UNORDERED_FOA_MMAP_MAP_TYPE="boost::$(container)"
+    <warnings>off
+    <link>static
+  : foa_mmap_$(container)_tests ;
+}
+
+alias foa_mmap_tests : foa_mmap_$(MMAP_CONTAINERS)_tests ;
 alias foa_tests :
   foa_$(FOA_TESTS)
   foa_$(FOA_EXCEPTION_TESTS)
   foa_link_test
   foa_scoped_allocator
   foa_serialization_tests
+  foa_mmap_tests
 ;
 
 local CFOA_TESTS =
