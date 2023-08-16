@@ -28,7 +28,8 @@
 namespace {
 
   template <class Container, typename ArchivePair>
-  void serialization_tests(Container*, ArchivePair*, test::random_generator generator)
+  void serialization_tests(
+    Container*, ArchivePair*, test::random_generator generator)
   {
     typedef typename Container::iterator      iterator;
     typedef std::vector<iterator>             iterator_vector;
@@ -111,9 +112,11 @@ namespace {
   using test::default_generator;
 
   std::pair<
-    boost::archive::text_oarchive, boost::archive::text_iarchive>* text_archive;
+    boost::archive::text_oarchive, boost::archive::text_iarchive>*
+    text_archive;
   std::pair<
-    boost::archive::xml_oarchive, boost::archive::xml_iarchive>* xml_archive;
+    boost::archive::xml_oarchive, boost::archive::xml_iarchive>*
+    xml_archive;
 
 #ifdef BOOST_UNORDERED_FOA_TESTS
   boost::unordered_flat_map<
@@ -164,9 +167,16 @@ namespace {
       typename non_const<Q>::type> type;
   };
 
+  template<typename T>
+  struct labeled
+  {
+    labeled(const char* label_): label(label_) {}
+
+    const char* label;
+  };
+
   template <class Container, typename Archive>
-  void legacy_serialization_test(
-    std::pair<Container*,const char*> lc, std::pair<Archive*,const char*> la)
+  void legacy_serialization_test(labeled<Container> lc, labeled<Archive> la)
   {
     typedef typename Container::value_type                    value_type;
     typedef std::vector<typename non_const<value_type>::type> value_vector;
@@ -179,41 +189,43 @@ namespace {
       char filename[1024];
       std::sprintf(
         filename, "%s/legacy_archives/%s_%d.%s",
-        test_dir, lc.second, (int)sizes[i], la.second);
+        test_dir, lc.label, (int)sizes[i], la.label);
       std::ifstream ifs(filename);
       Archive ia(ifs);
       Container c;
       value_vector v;
       ia >> boost::serialization::make_nvp("container", c);
       ia >> boost::serialization::make_nvp("values", v);
-      BOOST_TEST(v.size() >= sizes[i]); // values generated with some degree of repetition
+      BOOST_TEST(v.size() >= sizes[i]); // values generated with repetition
       BOOST_TEST((c==Container(v.begin(),v.end())));
     }
   }
 
-  std::pair<boost::unordered_map<int, int>*, const char*>
-    labeled_map_int(0, "map_int");
-  std::pair<boost::unordered_map<std::string, std::string>*, const char*>
-    labeled_map_string(0, "map_string");
-  std::pair<boost::unordered_multimap<int, int>*, const char*>
-    labeled_multimap_int(0, "multimap_int");
-  std::pair<boost::unordered_multimap<std::string, std::string>*, const char*>
-    labeled_multimap_string(0, "multimap_string");
-  std::pair<boost::unordered_set<int>*, const char*>
-    labeled_set_int(0, "set_int");
-  std::pair<boost::unordered_set<std::string>*, const char*>
-    labeled_set_string(0, "set_string");
-  std::pair<boost::unordered_multiset<int>*, const char*>
-    labeled_multiset_int(0, "multiset_int");
-  std::pair<boost::unordered_multiset<std::string>*, const char*>
-    labeled_multiset_string(0, "multiset_string");
+  labeled<boost::unordered_map<int, int> >
+    labeled_map_int("map_int");
+  labeled<boost::unordered_map<std::string, std::string> >
+    labeled_map_string("map_string");
+  labeled<boost::unordered_multimap<int, int> >
+    labeled_multimap_int("multimap_int");
+  labeled<boost::unordered_multimap<std::string, std::string> >
+    labeled_multimap_string("multimap_string");
+  labeled<boost::unordered_set<int> >
+    labeled_set_int("set_int");
+  labeled<boost::unordered_set<std::string> >
+    labeled_set_string("set_string");
+  labeled<boost::unordered_multiset<int> >
+    labeled_multiset_int("multiset_int");
+  labeled<boost::unordered_multiset<std::string> >
+    labeled_multiset_string("multiset_string");
 
-  std::pair<boost::archive::text_iarchive*, const char*> labeled_text_iarchive(0, "txt");
-  std::pair<boost::archive::xml_iarchive*, const char*> labeled_xml_iarchive(0, "xml");
+  labeled<boost::archive::text_iarchive> labeled_text_iarchive("txt");
+  labeled<boost::archive::xml_iarchive> labeled_xml_iarchive("xml");
 
   UNORDERED_TEST(legacy_serialization_test,
-    ((labeled_map_int)(labeled_map_string)(labeled_multimap_int)(labeled_multimap_string)
-     (labeled_set_int)(labeled_set_string)(labeled_multiset_int)(labeled_multiset_string))
+    ((labeled_map_int)(labeled_map_string)
+     (labeled_multimap_int)(labeled_multimap_string)
+     (labeled_set_int)(labeled_set_string)
+     (labeled_multiset_int)(labeled_multiset_string))
     ((labeled_text_iarchive)(labeled_xml_iarchive)))
 #endif
 }
@@ -226,4 +238,3 @@ int main(int argc, char* argv[])
   ::test::get_state().run_tests();
   return boost::report_errors();
 }
-
