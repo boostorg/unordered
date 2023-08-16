@@ -90,6 +90,7 @@ namespace {
       input_archive ia(iss);
       ia >> boost::serialization::make_nvp("container", c2);
       ia >> boost::serialization::make_nvp("iterators", v2);
+      BOOST_TEST(c == c2);
       BOOST_TEST_EQ(v.size(), v2.size());
 
       for (std::size_t i=0; i < v.size(); ++i) {
