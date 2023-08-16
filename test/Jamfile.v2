@@ -92,6 +92,7 @@ run unordered/serialization_tests.cpp
     : 
     : <define>BOOST_UNORDERED_ENABLE_SERIALIZATION_COMPATIBILITY_V0
       <warnings>off # Boost.Serialization headers are not warning-free
+      <undefined-sanitizer>norecover:<build>no # boost::archive::xml_oarchive does not pass UBSAN
       <toolset>msvc:<define>_CRT_SECURE_NO_WARNINGS
       <toolset>msvc:<cxxflags>/bigobj
       <toolset>gcc:<inlining>on
@@ -169,6 +170,7 @@ run unordered/serialization_tests.cpp
     : 
     : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS
       <warnings>off # Boost.Serialization headers are not warning-free
+      <undefined-sanitizer>norecover:<build>no # boost::archive::xml_oarchive does not pass UBSAN
       <toolset>msvc:<cxxflags>/bigobj
       <toolset>gcc:<inlining>on
       <toolset>gcc:<optimization>space
@@ -247,6 +249,7 @@ run cfoa/serialization_tests.cpp
     : 
     : $(CPP11) <threading>multi
       <warnings>off # Boost.Serialization headers are not warning-free
+      <undefined-sanitizer>norecover:<build>no # boost::archive::xml_oarchive does not pass UBSAN
       <toolset>msvc:<cxxflags>/bigobj
       <toolset>gcc:<inlining>on
       <toolset>gcc:<optimization>space
