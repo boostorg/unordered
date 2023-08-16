@@ -93,6 +93,11 @@ run unordered/serialization_tests.cpp
     : <define>BOOST_UNORDERED_ENABLE_SERIALIZATION_COMPATIBILITY_V0
       <warnings>off # Boost.Serialization headers are not warning-free
       <toolset>msvc:<define>_CRT_SECURE_NO_WARNINGS
+      <toolset>msvc:<cxxflags>/bigobj
+      <toolset>gcc:<inlining>on
+      <toolset>gcc:<optimization>space
+      <toolset>clang:<inlining>on
+      <toolset>clang:<optimization>space
       <library>/boost//serialization/<warnings>off ;
 
 run exception/constructor_exception_tests.cpp ;
@@ -164,6 +169,11 @@ run unordered/serialization_tests.cpp
     : 
     : $(CPP11) <define>BOOST_UNORDERED_FOA_TESTS
       <warnings>off # Boost.Serialization headers are not warning-free
+      <toolset>msvc:<cxxflags>/bigobj
+      <toolset>gcc:<inlining>on
+      <toolset>gcc:<optimization>space
+      <toolset>clang:<inlining>on
+      <toolset>clang:<optimization>space
       <library>/boost//serialization/<warnings>off
     : foa_serialization_tests ;
 
