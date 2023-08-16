@@ -111,11 +111,39 @@ namespace {
 
   using test::default_generator;
 
+#if (defined(BOOST_GCC) && BOOST_GCC_VERSION >= 80100) ||\
+    (defined(BOOST_CLANG) && BOOST_CLANG_VERSION >= 30700)
+#define BOOST_UNORDERED_TEST_NO_SANITIZE_UNDEFINED \
+__attribute__((no_sanitize("undefined")))
+#else
+#define BOOST_UNORDERED_TEST_NO_SANITIZE_UNDEFINED
+#endif
+
+  template<typename Class>
+  struct unsanitized_ctor_dtor: Class
+  {
+    template<typename Arg>
+    BOOST_UNORDERED_TEST_NO_SANITIZE_UNDEFINED
+    unsanitized_ctor_dtor(const Arg& x): Class(x) {}
+
+    template<typename Arg>
+    BOOST_UNORDERED_TEST_NO_SANITIZE_UNDEFINED
+    unsanitized_ctor_dtor(Arg& x): Class(x) {}
+
+    BOOST_UNORDERED_TEST_NO_SANITIZE_UNDEFINED
+    ~unsanitized_ctor_dtor()
+    {
+    }
+  };
+
+#undef BOOST_UNORDERED_TEST_NO_SANITIZE_UNDEFINED
+
   std::pair<
     boost::archive::text_oarchive, boost::archive::text_iarchive>*
     text_archive;
   std::pair<
-    boost::archive::xml_oarchive, boost::archive::xml_iarchive>*
+    unsanitized_ctor_dtor<boost::archive::xml_oarchive>,
+    boost::archive::xml_iarchive>*
     xml_archive;
 
 #ifdef BOOST_UNORDERED_FOA_TESTS
