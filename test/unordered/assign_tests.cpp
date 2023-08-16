@@ -195,6 +195,101 @@ namespace assign_tests {
       test::check_container(x2, v1);
       BOOST_TEST(x2.load_factor() <= x2.max_load_factor());
     }
+
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "gh205\n";
+    {
+      // https://github.com/boostorg/unordered/issues/205
+      {
+        // A=B
+        // assign no-allocated to empty-but-allocated
+        test::check_instances check_;
+
+        test::random_values<T> v1(1, generator);
+        T x1(v1.begin(), v1.end(), 0, hf1, eq1, al1);
+        T x2(0, hf2, eq2, al2);
+        x1.clear();
+        x1 = x2;
+        BOOST_TEST(x1.empty());
+        BOOST_TEST(x1.begin() == x1.end());
+        BOOST_TEST(x2.empty());
+        BOOST_TEST(x2.begin() == x2.end());
+      }
+
+      {
+        // B=A
+        // assign empty-but-allocated to no-allocated
+        test::check_instances check_;
+
+        test::random_values<T> v1(1, generator);
+        T x1(v1.begin(), v1.end(), 0, hf1, eq1, al1);
+        T x2(0, hf2, eq2, al2);
+        x1.clear();
+        x2 = x1;
+        BOOST_TEST(x2.empty());
+        BOOST_TEST(x2.begin() == x2.end());
+        BOOST_TEST(x1.empty());
+        BOOST_TEST(x1.begin() == x1.end());
+      }
+
+      {
+        // A=A
+        // assign empty-but-allocated to empty-but-allocated
+        test::check_instances check_;
+
+        test::random_values<T> v1(1, generator);
+        test::random_values<T> v2(1, generator);
+        T x1(v1.begin(), v1.end(), 0, hf1, eq1, al1);
+        T x2(v2.begin(), v2.end(), 0, hf2, eq2, al2);
+        x1.clear();
+        x2.clear();
+        x1 = x2;
+        BOOST_TEST(x1.empty());
+        BOOST_TEST(x1.begin() == x1.end());
+        BOOST_TEST(x2.empty());
+        BOOST_TEST(x2.begin() == x2.end());
+      }
+
+      {
+        // B=B
+        // assign no-allocated to no-allocated
+        test::check_instances check_;
+
+        T x1(0, hf1, eq1, al1);
+        T x2(0, hf2, eq2, al2);
+        x1 = x2;
+        BOOST_TEST(x2.empty());
+        BOOST_TEST(x2.begin() == x2.end());
+        BOOST_TEST(x1.empty());
+        BOOST_TEST(x1.begin() == x1.end());
+      }
+
+#ifdef BOOST_UNORDERED_FOA_TESTS
+      {
+        // check that optimized copying preserves the anti-drift mechanism
+        test::check_instances check_;
+
+        test::random_values<T> v1(2000, generator);
+        test::random_values<T> v2(2000, generator);
+        T x1(v1.begin(), v1.end(), 0, hf1, eq1, al1);
+        T x2(v2.begin(), v2.end(), 0, hf2, eq2, al2);
+
+        auto ml = x1.max_load();
+
+        while (ml == x1.max_load() && x1.size()) {
+          x1.erase(x1.begin());
+        };
+
+        BOOST_TEST_EQ(x1.bucket_count(), x2.bucket_count());
+
+        x2 = x1;
+
+        if (x1.max_load() != x2.max_load()) {
+          BOOST_TEST(boost::allocator_propagate_on_container_copy_assignment<
+            typename T::allocator_type>::type::value);
+        }
+      }
+#endif
+    }
   }
 
   using test::default_generator;
@@ -340,7 +435,7 @@ namespace assign_tests {
                      test_map_prop_assign)(test_multimap_prop_assign)(
                      test_set_no_prop_assign)(test_multiset_no_prop_assign)(
                      test_map_no_prop_assign)(test_multimap_no_prop_assign))(
-                     (default_generator)(generate_collisions)(limited_range)))
+      (default_generator)(generate_collisions)(limited_range)))
 #endif
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
