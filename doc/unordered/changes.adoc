@@ -15,6 +15,7 @@ with serial and parallel variants.
 * Added debug mode mechanisms for detecting illegal reentrancies into
 a `boost::concurrent_flat_map` from user code.
 * Added Boost.Serialization support to all containers and their (non-local) iterator types.
+
 == Release 1.83.0 - Major update
 
 * Added `boost::concurrent_flat_map`, a fast, thread-safe hashmap based on open addressing.
