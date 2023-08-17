@@ -16,7 +16,20 @@ local msvc-flags = /wd4494 ;
 
 project
     : requirements
-        [ requires cxx11_constexpr cxx11_noexcept cxx11_decltype cxx11_alignas ]
+        [ requires cxx11_rvalue_references
+                   cxx11_auto_declarations
+                   cxx11_nullptr
+                   cxx11_defaulted_functions
+                   cxx11_final
+                   cxx11_hdr_type_traits
+                   cxx11_hdr_initializer_list
+                   cxx11_static_assert
+                   cxx11_smart_ptr
+                   cxx11_constexpr
+                   cxx11_noexcept
+                   cxx11_decltype
+                   cxx11_alignas
+        ]
 
         <warnings>pedantic
         <toolset>intel:<warnings>on
