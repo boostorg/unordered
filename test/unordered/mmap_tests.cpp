@@ -76,12 +76,13 @@ get_container_type()
   return {};
 }
 
-using container_type = decltype(
-  get_container_type<BOOST_UNORDERED_FOA_MMAP_MAP_TYPE>());
+using concurrent_map = decltype(
+  get_container_type<boost::concurrent_flat_map>());
 
 static char const* shm_map_name = "shared_map";
 
-void parent(std::string const& shm_name_, char const* exe_name)
+template <class C>
+void parent(std::string const& shm_name_, char const* exe_name, C*)
 {
   struct shm_remove
   {
@@ -96,6 +97,107 @@ void parent(std::string const& shm_name_, char const* exe_name)
       boost::interprocess::shared_memory_object::remove(shm_name);
     }
   } remover{shm_name_.c_str()};
+
+  using container_type = C;
+
+  std::size_t const shm_size = 64 * 1024;
+
+  auto shm_name = remover.shm_name;
+  boost::interprocess::managed_shared_memory segment(
+    boost::interprocess::create_only, shm_name, shm_size);
+
+  auto segment_mngr = segment.get_segment_manager();
+  char_allocator char_alloc(segment_mngr);
+  pair_allocator pair_alloc(segment_mngr);
+
+  using iterator_type = typename C::iterator;
+
+  container_type* c =
+    segment.construct<container_type>(shm_map_name)(pair_alloc);
+
+  iterator_type* it = segment.construct<iterator_type>("shared_iterator")();
+
+  auto const old_bc = c->bucket_count();
+
+  BOOST_TEST(c->empty());
+
+  boost::process::child child(exe_name, "1234");
+  child.wait();
+  int ret = child.exit_code();
+
+  BOOST_TEST(*it == c->begin());
+  BOOST_TEST((**it) == *(c->begin()));
+
+  c->erase(*it);
+
+  auto inputs =
+    std::vector<std::pair<std::string, std::string> >{{"hello", "world"}};
+
+  for (const auto& kvp : inputs) {
+    auto const& key = kvp.first;
+    auto const& value = kvp.second;
+    c->emplace(string_type(key.data(), char_alloc),
+      string_type(value.data(), char_alloc));
+  }
+
+  BOOST_TEST_EQ(ret, 0);
+  BOOST_TEST_GT(c->size(), inputs.size());
+  BOOST_TEST_GT(c->bucket_count(), old_bc);
+
+  segment.destroy<iterator_type>("shared_iterator");
+  segment.destroy<container_type>(shm_map_name);
+}
+
+template <class C> void child(std::string const& shm_name, C*)
+{
+  using container_type = C;
+  using iterator = typename container_type::iterator;
+
+  boost::interprocess::managed_shared_memory segment(
+    boost::interprocess::open_only, shm_name.c_str());
+
+  container_type* c = segment.find<container_type>(shm_map_name).first;
+
+  iterator* it = segment.find<iterator>("shared_iterator").first;
+
+  BOOST_TEST(c->empty());
+
+  std::vector<std::pair<std::string, std::string> > inputs = {
+    {"aaa", "AAA"}, {"bbb", "BBB"}, {"ccc", "CCCC"}};
+
+  if (BOOST_TEST_NE(c, nullptr)) {
+    auto a = segment.get_segment_manager();
+
+    for (const auto& input : inputs) {
+      c->emplace(string_type(input.first.c_str(), a),
+        string_type(input.second.c_str(), a));
+    }
+
+    c->rehash(c->bucket_count() + 1);
+
+    if (BOOST_TEST_NE(it, nullptr)) {
+      *it = c->begin();
+    }
+  }
+}
+
+void parent(std::string const& shm_name_, char const* exe_name, concurrent_map*)
+{
+  struct shm_remove
+  {
+    char const* shm_name;
+
+    shm_remove(char const* shm_name_) : shm_name(shm_name_)
+    {
+      boost::interprocess::shared_memory_object::remove(shm_name);
+    }
+    ~shm_remove()
+    {
+      boost::interprocess::shared_memory_object::remove(shm_name);
+    }
+  } remover{shm_name_.c_str()};
+
+  using container_type = concurrent_map;
 
   std::size_t const shm_size = 64 * 1024;
 
@@ -134,8 +236,10 @@ void parent(std::string const& shm_name_, char const* exe_name)
   segment.destroy<container_type>(shm_map_name);
 }
 
-void child(std::string const& shm_name)
+void child(std::string const& shm_name, concurrent_map*)
 {
+  using container_type = concurrent_map;
+
   boost::interprocess::managed_shared_memory segment(
     boost::interprocess::open_only, shm_name.c_str());
 
@@ -178,12 +282,18 @@ std::string shm_name_sanitize(std::string const& exe_name)
 
 void mmap_test(int argc, char const** argv)
 {
+  using container_type =
+    decltype(get_container_type<BOOST_UNORDERED_FOA_MMAP_MAP_TYPE>());
+
   auto exe_name = argv[0];
   auto shm_name = shm_name_sanitize(exe_name);
+
   if (argc == 1) {
-    parent(shm_name, exe_name);
+    container_type* p = nullptr;
+    parent(shm_name, exe_name, p);
   } else {
-    child(shm_name);
+    container_type* p = nullptr;
+    child(shm_name, p);
   }
 }
 
