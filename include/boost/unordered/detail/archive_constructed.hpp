@@ -10,6 +10,7 @@
 #define BOOST_UNORDERED_DETAIL_ARCHIVE_CONSTRUCTED_HPP
 
 #include <boost/config.hpp>
+#include <boost/core/addressof.hpp>
 #include <boost/core/no_exceptions_support.hpp>
 #include <boost/core/noncopyable.hpp>
 #include <boost/core/serialization.hpp>
@@ -28,12 +29,12 @@ struct archive_constructed:private noncopyable
   template<class Archive>
   archive_constructed(const char* name,Archive& ar,unsigned int version)
   {
-    core::load_construct_data_adl(ar,&get(),version);
+    core::load_construct_data_adl(ar,boost::addressof(get()),version);
     BOOST_TRY{
       ar>>core::make_nvp(name,get());
     }
     BOOST_CATCH(...){
-      (&get())->~T();
+      get().~T();
       BOOST_RETHROW;
     }
     BOOST_CATCH_END
@@ -41,7 +42,7 @@ struct archive_constructed:private noncopyable
 
   ~archive_constructed()
   {
-    (&get())->~T();
+    get().~T();
   }
 
 #if defined(BOOST_GCC)&&(BOOST_GCC>=4*10000+6*100)
