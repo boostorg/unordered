@@ -13,6 +13,7 @@
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/config.hpp>
+#include <boost/config/workaround.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/utility.hpp>
@@ -21,7 +22,11 @@
 #include <cstdio>
 #include <fstream>
 
-#ifndef BOOST_NO_CXX11_HDR_RANDOM
+#if defined(BOOST_NO_CXX11_HDR_RANDOM) || BOOST_WORKAROUND(BOOST_MSVC, < 1700)
+#define BOOST_UNORDERED_TEST_USE_STD_RANDOM_SHUFFLE
+#endif
+
+#ifndef BOOST_UNORDERED_TEST_USE_STD_RANDOM_SHUFFLE
 #include <random>
 #endif
 
@@ -71,10 +76,10 @@ namespace {
         ++first;
       }
 
-#ifndef BOOST_NO_CXX11_HDR_RANDOM
-      std::shuffle(v.begin(), v.end(), std::mt19937(4213));
-#else
+#ifdef BOOST_UNORDERED_TEST_USE_STD_RANDOM_SHUFFLE
       std::random_shuffle(v.begin(), v.end());
+#else
+      std::shuffle(v.begin(), v.end(), std::mt19937(4213));
 #endif
 
       std::ostringstream oss;
