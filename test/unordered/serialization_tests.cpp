@@ -2,6 +2,11 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+// temporary #define till all transitive includes comply with
+// https://github.com/boostorg/core/commit/5f6fe65
+
+#define BOOST_ALLOW_DEPRECATED_HEADERS
+
 #include "../helpers/unordered.hpp"
 
 #include "../objects/test.hpp"

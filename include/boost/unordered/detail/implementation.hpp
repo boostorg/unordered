@@ -17,6 +17,7 @@
 #include <boost/assert.hpp>
 #include <boost/core/allocator_traits.hpp>
 #include <boost/core/bit.hpp>
+#include <boost/core/invoke_swap.hpp>
 #include <boost/core/no_exceptions_support.hpp>
 #include <boost/core/pointer_traits.hpp>
 #include <boost/core/serialization.hpp>
@@ -30,7 +31,6 @@
 #include <boost/preprocessor/repetition/repeat_from_to.hpp>
 #include <boost/preprocessor/seq/enum.hpp>
 #include <boost/preprocessor/seq/size.hpp>
-#include <boost/swap.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/type_traits/add_lvalue_reference.hpp>
@@ -260,8 +260,8 @@ namespace boost {
 
         void swap(compressed& x)
         {
-          boost::swap(first(), x.first());
-          boost::swap(second(), x.second());
+          boost::core::invoke_swap(first(), x.first());
+          boost::core::invoke_swap(second(), x.second());
         }
 
       private:
@@ -644,7 +644,7 @@ namespace boost {
               move(x);
             }
           } else if (has_value_) {
-            boost::swap(value_.value(), x.value_.value());
+            boost::core::invoke_swap(value_.value(), x.value_.value());
           }
         }
 
@@ -2089,7 +2089,7 @@ namespace boost {
           x.switch_functions();
 
           buckets_.swap(x.buckets_);
-          boost::swap(size_, x.size_);
+          boost::core::invoke_swap(size_, x.size_);
           std::swap(mlf_, x.mlf_);
           std::swap(max_load_, x.max_load_);
         }
@@ -2098,7 +2098,7 @@ namespace boost {
         void swap(table& x, true_type)
         {
           buckets_.swap(x.buckets_);
-          boost::swap(size_, x.size_);
+          boost::core::invoke_swap(size_, x.size_);
           std::swap(mlf_, x.mlf_);
           std::swap(max_load_, x.max_load_);
           this->current_functions().swap(x.current_functions());

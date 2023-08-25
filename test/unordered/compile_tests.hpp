@@ -18,6 +18,7 @@
 #endif
 
 #include "../helpers/check_return_type.hpp"
+#include <boost/core/invoke_swap.hpp>
 #include <boost/core/pointer_traits.hpp>
 #include <boost/limits.hpp>
 #include <boost/predef.h>
@@ -26,7 +27,6 @@
 #include <boost/type_traits/is_const.hpp>
 #include <boost/type_traits/is_convertible.hpp>
 #include <boost/type_traits/is_same.hpp>
-#include <boost/utility/swap.hpp>
 
 typedef long double comparison_type;
 
@@ -165,7 +165,7 @@ template <class X, class T> void container_test(X& r, T const&)
   X u5 = rvalue(a_const);
 
   a.swap(b);
-  boost::swap(a, b);
+  boost::core::invoke_swap(a, b);
   test::check_return_type<X>::equals_ref(r = a);
 
   // Allocator
@@ -254,7 +254,7 @@ template <class X> void unordered_destructible_test(X&)
   test::check_return_type<const_iterator>::equals(a_const.cend());
 
   a.swap(b);
-  boost::swap(a, b);
+  boost::core::invoke_swap(a, b);
 
   test::check_return_type<size_type>::equals(a.size());
   test::check_return_type<size_type>::equals(a.max_size());
@@ -546,7 +546,7 @@ template <class X, class T> void unordered_unique_test(X& r, T const& t)
   test::check_return_type<bool>::equals(insert_return.inserted);
   test::check_return_type<iterator>::equals(insert_return.position);
   test::check_return_type<node_type>::equals_ref(insert_return.node);
-  boost::swap(insert_return, insert_return2);
+  boost::core::invoke_swap(insert_return, insert_return2);
 #endif
 }
 

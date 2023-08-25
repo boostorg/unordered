@@ -120,12 +120,12 @@ to normal separate chaining implementations.
 #include <boost/core/allocator_access.hpp>
 #include <boost/core/bit.hpp>
 #include <boost/core/empty_value.hpp>
+#include <boost/core/invoke_swap.hpp>
 #include <boost/core/no_exceptions_support.hpp>
 #include <boost/core/serialization.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/move/core.hpp>
 #include <boost/move/utility_core.hpp>
-#include <boost/swap.hpp>
 #include <boost/type_traits/aligned_storage.hpp>
 #include <boost/type_traits/alignment_of.hpp>
 
@@ -651,7 +651,7 @@ namespace boost {
           bool b = boost::allocator_propagate_on_container_swap<
             allocator_type>::type::value;
           if (b) {
-            boost::swap(get_node_allocator(), other.get_node_allocator());
+            boost::core::invoke_swap(get_node_allocator(), other.get_node_allocator());
           }
         }
 

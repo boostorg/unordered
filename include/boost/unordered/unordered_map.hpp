@@ -2980,9 +2980,9 @@ namespace boost {
         if (boost::allocator_propagate_on_container_swap<
               value_allocator>::type::value ||
             !alloc_.has_value() || !n.alloc_.has_value()) {
-          boost::swap(alloc_, n.alloc_);
+          boost::core::invoke_swap(alloc_, n.alloc_);
         }
-        boost::swap(ptr_, n.ptr_);
+        boost::core::invoke_swap(ptr_, n.ptr_);
       }
     };
 
@@ -3029,9 +3029,9 @@ namespace boost {
     void swap(insert_return_type_map<Iter, NodeType>& x,
       insert_return_type_map<Iter, NodeType>& y)
     {
-      boost::swap(x.node, y.node);
-      boost::swap(x.inserted, y.inserted);
-      boost::swap(x.position, y.position);
+      boost::core::invoke_swap(x.node, y.node);
+      boost::core::invoke_swap(x.inserted, y.inserted);
+      boost::core::invoke_swap(x.position, y.position);
     }
   } // namespace unordered
 
