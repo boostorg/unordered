@@ -17,7 +17,7 @@
 #include <boost/config/workaround.hpp>
 #include <boost/core/serialization.hpp>
 #include <boost/unordered/detail/foa/core.hpp>
-#include <boost/unordered/detail/serialize_node_pointer.hpp>
+#include <boost/unordered/detail/serialize_tracked_address.hpp>
 #include <cstddef>
 #include <iterator>
 #include <memory>
@@ -201,8 +201,8 @@ private:
   friend void serialization_track(Archive& ar,const table_iterator& x)
   {
     if(x.p){
-      track_node_pointer(ar,x.pc);
-      track_node_pointer(ar,x.p);
+      track_address(ar,x.pc);
+      track_address(ar,x.p);
     }
   }
 
@@ -212,8 +212,8 @@ private:
   void serialize(Archive& ar,unsigned int)
   {
     if(!p)pc=nullptr;
-    serialize_node_pointer(ar,pc);
-    serialize_node_pointer(ar,p);
+    serialize_tracked_address(ar,pc);
+    serialize_tracked_address(ar,p);
   }
 
   unsigned char      *pc=nullptr;

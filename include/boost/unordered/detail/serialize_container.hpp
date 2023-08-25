@@ -29,12 +29,12 @@ namespace detail{
  * through the following protocol: 
  *  - At saving time, for each iterator it in [x.begin(),x.end()),
  *    serialization_track(ar,it) is ADL-called to instruct the archive to
- *    track the addresses of the iterator's associated node(s) via
- *    track_node_pointer().
+ *    track the positions internally pointed to by the iterator via
+ *    track_address().
  *  - At loading time, these addresses are mapped to those of the equivalent
- *    reconstructed nodes using again serialization_track(ar,it).
+ *    reconstructed positions using again serialization_track(ar,it).
  *  - Serializing an iterator reduces to serializing pointers to previously
- *    tracked nodes via serialize_node_pointer().
+ *    tracked addresses via serialize_address().
  */
 
 template<typename Iterator>

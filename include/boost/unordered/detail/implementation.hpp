@@ -48,7 +48,7 @@
 #include <boost/type_traits/make_void.hpp>
 #include <boost/type_traits/remove_const.hpp>
 #include <boost/unordered/detail/fca.hpp>
-#include <boost/unordered/detail/serialize_node_pointer.hpp>
+#include <boost/unordered/detail/serialize_tracked_address.hpp>
 #include <boost/unordered/detail/type_traits.hpp>
 #include <boost/unordered/detail/fwd.hpp>
 #include <boost/utility/addressof.hpp>
@@ -1710,7 +1710,7 @@ namespace boost {
           friend void serialization_track(Archive& ar, const iterator& x)
           {
             if(x.p){
-              track_node_pointer(ar, x.p);
+              track_address(ar, x.p);
               serialization_track(ar, x.itb);
             }
           }
@@ -1721,7 +1721,7 @@ namespace boost {
           void serialize(Archive& ar,unsigned int)
           {
             if(!p) itb = bucket_iterator();
-            serialize_node_pointer(ar, p);
+            serialize_tracked_address(ar, p);
             ar & core::make_nvp("bucket_iterator", itb);
           }
         };
@@ -1819,7 +1819,7 @@ namespace boost {
           friend void serialization_track(Archive& ar, const c_iterator& x)
           {
             if(x.p){
-              track_node_pointer(ar, x.p);
+              track_address(ar, x.p);
               serialization_track(ar, x.itb);
             }
           }
@@ -1830,7 +1830,7 @@ namespace boost {
           void serialize(Archive& ar,unsigned int)
           {
             if(!p) itb = bucket_iterator();
-            serialize_node_pointer(ar, p);
+            serialize_tracked_address(ar, p);
             ar & core::make_nvp("bucket_iterator", itb);
           }
         };

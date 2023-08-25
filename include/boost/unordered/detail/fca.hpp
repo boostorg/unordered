@@ -114,7 +114,7 @@ to normal separate chaining implementations.
 */
 
 #include <boost/unordered/detail/prime_fmod.hpp>
-#include <boost/unordered/detail/serialize_node_pointer.hpp>
+#include <boost/unordered/detail/serialize_tracked_address.hpp>
 
 #include <boost/core/addressof.hpp>
 #include <boost/core/allocator_access.hpp>
@@ -295,8 +295,8 @@ namespace boost {
           Archive& ar, grouped_bucket_iterator const& x)
         {
           // requires: not at end() position
-          track_node_pointer(ar, x.p);
-          track_node_pointer(ar, x.pbg);
+          track_address(ar, x.p);
+          track_address(ar, x.pbg);
         }
 
         friend class boost::serialization::access;
@@ -305,8 +305,8 @@ namespace boost {
         void serialize(Archive& ar,unsigned int)
         {
           // requires: not at end() position
-          serialize_node_pointer(ar, p);
-          serialize_node_pointer(ar, pbg);
+          serialize_tracked_address(ar, p);
+          serialize_tracked_address(ar, pbg);
         }
       };
 
