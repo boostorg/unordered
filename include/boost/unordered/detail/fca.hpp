@@ -116,6 +116,7 @@ to normal separate chaining implementations.
 #include <boost/unordered/detail/prime_fmod.hpp>
 #include <boost/unordered/detail/serialize_tracked_address.hpp>
 
+#include <boost/assert.hpp>
 #include <boost/core/addressof.hpp>
 #include <boost/core/allocator_access.hpp>
 #include <boost/core/bit.hpp>
