@@ -360,136 +360,6 @@ namespace boost {
   } // namespace unordered
 } // namespace boost
 
-////////////////////////////////////////////////////////////////////////////
-// emplace_args
-//
-// Either forwarding variadic arguments, or storing the arguments in
-// emplace_args##n
-
-#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-
-#define BOOST_UNORDERED_EMPLACE_TEMPLATE typename... Args
-#define BOOST_UNORDERED_EMPLACE_ARGS BOOST_FWD_REF(Args)... args
-#define BOOST_UNORDERED_EMPLACE_FORWARD boost::forward<Args>(args)...
-
-#else
-
-#define BOOST_UNORDERED_EMPLACE_TEMPLATE typename Args
-#define BOOST_UNORDERED_EMPLACE_ARGS Args const& args
-#define BOOST_UNORDERED_EMPLACE_FORWARD args
-
-#if defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-
-#define BOOST_UNORDERED_EARGS_MEMBER(z, n, _)                                  \
-  typedef BOOST_FWD_REF(BOOST_PP_CAT(A, n)) BOOST_PP_CAT(Arg, n);              \
-  BOOST_PP_CAT(Arg, n) BOOST_PP_CAT(a, n);
-
-#else
-
-#define BOOST_UNORDERED_EARGS_MEMBER(z, n, _)                                  \
-  typedef typename boost::add_lvalue_reference<BOOST_PP_CAT(A, n)>::type       \
-    BOOST_PP_CAT(Arg, n);                                                      \
-  BOOST_PP_CAT(Arg, n) BOOST_PP_CAT(a, n);
-
-#endif
-
-#define BOOST_UNORDERED_FWD_PARAM(z, n, a)                                     \
-  BOOST_FWD_REF(BOOST_PP_CAT(A, n)) BOOST_PP_CAT(a, n)
-
-#define BOOST_UNORDERED_CALL_FORWARD(z, i, a)                                  \
-  boost::forward<BOOST_PP_CAT(A, i)>(BOOST_PP_CAT(a, i))
-
-#define BOOST_UNORDERED_EARGS_INIT(z, n, _)                                    \
-  BOOST_PP_CAT(a, n)(BOOST_PP_CAT(b, n))
-
-#define BOOST_UNORDERED_EARGS(z, n, _)                                         \
-  template <BOOST_PP_ENUM_PARAMS_Z(z, n, typename A)>                          \
-  struct BOOST_PP_CAT(emplace_args, n)                                         \
-  {                                                                            \
-    BOOST_PP_REPEAT_##z(n, BOOST_UNORDERED_EARGS_MEMBER, _) BOOST_PP_CAT(      \
-      emplace_args, n)(BOOST_PP_ENUM_BINARY_PARAMS_Z(z, n, Arg, b))            \
-        : BOOST_PP_ENUM_##z(n, BOOST_UNORDERED_EARGS_INIT, _)                  \
-    {                                                                          \
-    }                                                                          \
-  };                                                                           \
-                                                                               \
-  template <BOOST_PP_ENUM_PARAMS_Z(z, n, typename A)>                          \
-  inline BOOST_PP_CAT(emplace_args, n)<BOOST_PP_ENUM_PARAMS_Z(z, n, A)>        \
-  create_emplace_args(BOOST_PP_ENUM_##z(n, BOOST_UNORDERED_FWD_PARAM, b))      \
-  {                                                                            \
-    BOOST_PP_CAT(emplace_args, n)<BOOST_PP_ENUM_PARAMS_Z(z, n, A)> e(          \
-      BOOST_PP_ENUM_PARAMS_Z(z, n, b));                                        \
-    return e;                                                                  \
-  }
-
-namespace boost {
-  namespace unordered {
-    namespace detail {
-      template <typename A0> struct emplace_args1
-      {
-        BOOST_UNORDERED_EARGS_MEMBER(1, 0, _)
-
-        explicit emplace_args1(Arg0 b0) : a0(b0) {}
-      };
-
-      template <typename A0>
-      inline emplace_args1<A0> create_emplace_args(BOOST_FWD_REF(A0) b0)
-      {
-        emplace_args1<A0> e(b0);
-        return e;
-      }
-
-      template <typename A0, typename A1> struct emplace_args2
-      {
-        BOOST_UNORDERED_EARGS_MEMBER(1, 0, _)
-        BOOST_UNORDERED_EARGS_MEMBER(1, 1, _)
-
-        emplace_args2(Arg0 b0, Arg1 b1) : a0(b0), a1(b1) {}
-      };
-
-      template <typename A0, typename A1>
-      inline emplace_args2<A0, A1> create_emplace_args(
-        BOOST_FWD_REF(A0) b0, BOOST_FWD_REF(A1) b1)
-      {
-        emplace_args2<A0, A1> e(b0, b1);
-        return e;
-      }
-
-      template <typename A0, typename A1, typename A2> struct emplace_args3
-      {
-        BOOST_UNORDERED_EARGS_MEMBER(1, 0, _)
-        BOOST_UNORDERED_EARGS_MEMBER(1, 1, _)
-        BOOST_UNORDERED_EARGS_MEMBER(1, 2, _)
-
-        emplace_args3(Arg0 b0, Arg1 b1, Arg2 b2) : a0(b0), a1(b1), a2(b2) {}
-      };
-
-      template <typename A0, typename A1, typename A2>
-      inline emplace_args3<A0, A1, A2> create_emplace_args(
-        BOOST_FWD_REF(A0) b0, BOOST_FWD_REF(A1) b1, BOOST_FWD_REF(A2) b2)
-      {
-        emplace_args3<A0, A1, A2> e(b0, b1, b2);
-        return e;
-      }
-
-      BOOST_UNORDERED_EARGS(1, 4, _)
-      BOOST_UNORDERED_EARGS(1, 5, _)
-      BOOST_UNORDERED_EARGS(1, 6, _)
-      BOOST_UNORDERED_EARGS(1, 7, _)
-      BOOST_UNORDERED_EARGS(1, 8, _)
-      BOOST_UNORDERED_EARGS(1, 9, _)
-      BOOST_PP_REPEAT_FROM_TO(10, BOOST_PP_INC(BOOST_UNORDERED_EMPLACE_LIMIT),
-        BOOST_UNORDERED_EARGS, _)
-    } // namespace detail
-  } // namespace unordered
-} // namespace boost
-
-#undef BOOST_UNORDERED_DEFINE_EMPLACE_ARGS
-#undef BOOST_UNORDERED_EARGS_MEMBER
-#undef BOOST_UNORDERED_EARGS_INIT
-
-#endif
-
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Some utilities for implementing allocator_traits, but useful elsewhere so
@@ -1197,9 +1067,9 @@ namespace boost {
         // Some nicer construct_node functions, might try to
         // improve implementation later.
 
-        template <typename Alloc, BOOST_UNORDERED_EMPLACE_TEMPLATE>
+        template <typename Alloc, typename... Args>
         inline typename boost::allocator_pointer<Alloc>::type
-        construct_node_from_args(Alloc& alloc, BOOST_UNORDERED_EMPLACE_ARGS)
+        construct_node_from_args(Alloc& alloc, Args&&... args)
         {
           typedef typename boost::allocator_value_type<Alloc>::type node;
           typedef typename node::value_type value_type;
@@ -1211,7 +1081,7 @@ namespace boost {
           node_constructor<Alloc> a(alloc);
           a.create_node();
           construct_from_args(
-            val_alloc, a.node_->value_ptr(), BOOST_UNORDERED_EMPLACE_FORWARD);
+            val_alloc, a.node_->value_ptr(), std::forward<Args>(args)...);
           return a.release();
         }
 
@@ -1367,12 +1237,11 @@ namespace boost {
           return a.release();
         }
 
-        template <typename Alloc, typename Key,
-          BOOST_UNORDERED_EMPLACE_TEMPLATE>
+        template <typename Alloc, typename Key, typename... Args>
         inline
           typename boost::unordered::detail::allocator_traits<Alloc>::pointer
           construct_node_pair_from_args(
-            Alloc& alloc, BOOST_FWD_REF(Key) k, BOOST_UNORDERED_EMPLACE_ARGS)
+            Alloc& alloc, BOOST_FWD_REF(Key) k, Args&&... args)
         {
           node_constructor<Alloc> a(alloc);
           a.create_node();
@@ -1383,7 +1252,7 @@ namespace boost {
           {
             boost::unordered::detail::func::construct_from_args(alloc,
               boost::addressof(a.node_->value_ptr()->second),
-              BOOST_UNORDERED_EMPLACE_FORWARD);
+              std::forward<Args>(args)...);
           }
           BOOST_CATCH(...)
           {
@@ -2477,20 +2346,19 @@ namespace boost {
 
         // Emplace/Insert
 
-        template <BOOST_UNORDERED_EMPLACE_TEMPLATE>
+        template <typename... Args>
         iterator emplace_hint_unique(
-          c_iterator hint, const_key_type& k, BOOST_UNORDERED_EMPLACE_ARGS)
+          c_iterator hint, const_key_type& k, Args&&... args)
         {
           if (hint.p && this->key_eq()(k, this->get_key(hint.p))) {
             return iterator(hint.p, hint.itb);
           } else {
-            return emplace_unique(k, BOOST_UNORDERED_EMPLACE_FORWARD).first;
+            return emplace_unique(k, std::forward<Args>(args)...).first;
           }
         }
 
-        template <BOOST_UNORDERED_EMPLACE_TEMPLATE>
-        emplace_return emplace_unique(
-          const_key_type& k, BOOST_UNORDERED_EMPLACE_ARGS)
+        template <typename... Args>
+        emplace_return emplace_unique(const_key_type& k, Args&&... args)
         {
           std::size_t key_hash = this->hash(k);
           bucket_iterator itb = buckets_.at(buckets_.position(key_hash));
@@ -2500,7 +2368,7 @@ namespace boost {
             return emplace_return(iterator(pos, itb), false);
           } else {
             node_tmp b(boost::unordered::detail::func::construct_node_from_args(
-                         this->node_alloc(), BOOST_UNORDERED_EMPLACE_FORWARD),
+                         this->node_alloc(), std::forward<Args>(args)...),
               this->node_alloc());
 
             if (size_ + 1 > max_load_) {
@@ -2516,12 +2384,11 @@ namespace boost {
           }
         }
 
-        template <BOOST_UNORDERED_EMPLACE_TEMPLATE>
-        iterator emplace_hint_unique(
-          c_iterator hint, no_key, BOOST_UNORDERED_EMPLACE_ARGS)
+        template <typename... Args>
+        iterator emplace_hint_unique(c_iterator hint, no_key, Args&&... args)
         {
           node_tmp b(boost::unordered::detail::func::construct_node_from_args(
-                       this->node_alloc(), BOOST_UNORDERED_EMPLACE_FORWARD),
+                       this->node_alloc(), std::forward<Args>(args)...),
             this->node_alloc());
 
           const_key_type& k = this->get_key(b.node_);
@@ -2548,11 +2415,11 @@ namespace boost {
           return iterator(p, itb);
         }
 
-        template <BOOST_UNORDERED_EMPLACE_TEMPLATE>
-        emplace_return emplace_unique(no_key, BOOST_UNORDERED_EMPLACE_ARGS)
+        template <typename... Args>
+        emplace_return emplace_unique(no_key, Args&&... args)
         {
           node_tmp b(boost::unordered::detail::func::construct_node_from_args(
-                       this->node_alloc(), BOOST_UNORDERED_EMPLACE_FORWARD),
+                       this->node_alloc(), std::forward<Args>(args)...),
             this->node_alloc());
 
           const_key_type& k = this->get_key(b.node_);
@@ -2619,9 +2486,8 @@ namespace boost {
           }
         }
 
-        template <typename Key, BOOST_UNORDERED_EMPLACE_TEMPLATE>
-        emplace_return try_emplace_unique(
-          BOOST_FWD_REF(Key) k, BOOST_UNORDERED_EMPLACE_ARGS)
+        template <typename Key, typename... Args>
+        emplace_return try_emplace_unique(BOOST_FWD_REF(Key) k, Args&&... args)
         {
           std::size_t key_hash = this->hash(k);
           bucket_iterator itb = buckets_.at(buckets_.position(key_hash));
@@ -2634,7 +2500,7 @@ namespace boost {
 
           node_tmp b(
             boost::unordered::detail::func::construct_node_pair_from_args(
-              this->node_alloc(), k, BOOST_UNORDERED_EMPLACE_FORWARD),
+              this->node_alloc(), k, std::forward<Args>(args)...),
             this->node_alloc());
 
           if (size_ + 1 > max_load_) {
@@ -2649,14 +2515,14 @@ namespace boost {
           return emplace_return(iterator(pos, itb), true);
         }
 
-        template <typename Key, BOOST_UNORDERED_EMPLACE_TEMPLATE>
+        template <typename Key, typename... Args>
         iterator try_emplace_hint_unique(
-          c_iterator hint, BOOST_FWD_REF(Key) k, BOOST_UNORDERED_EMPLACE_ARGS)
+          c_iterator hint, BOOST_FWD_REF(Key) k, Args&&... args)
         {
           if (hint.p && this->key_eq()(hint->first, k)) {
             return iterator(hint.p, hint.itb);
           } else {
-            return try_emplace_unique(k, BOOST_UNORDERED_EMPLACE_FORWARD).first;
+            return try_emplace_unique(k, std::forward<Args>(args)...).first;
           }
         }
 
@@ -3610,9 +3476,5 @@ namespace boost {
     } // namespace detail
   } // namespace unordered
 } // namespace boost
-
-#undef BOOST_UNORDERED_EMPLACE_TEMPLATE
-#undef BOOST_UNORDERED_EMPLACE_ARGS
-#undef BOOST_UNORDERED_EMPLACE_FORWARD
 
 #endif
