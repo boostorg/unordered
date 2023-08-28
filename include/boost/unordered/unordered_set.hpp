@@ -249,7 +249,7 @@ namespace boost {
           boost::unordered::detail::empty_emplace(),
         value_type v = value_type())
       {
-        return this->emplace(boost::move(v));
+        return this->emplace(std::move(v));
       }
 
 #endif
@@ -306,7 +306,7 @@ namespace boost {
           boost::unordered::detail::empty_emplace(),
         value_type v = value_type())
       {
-        return this->emplace_hint(hint, boost::move(v));
+        return this->emplace_hint(hint, std::move(v));
       }
 
 #endif
@@ -389,7 +389,7 @@ namespace boost {
 
       std::pair<iterator, bool> insert(BOOST_UNORDERED_RV_REF(value_type) x)
       {
-        return this->emplace(boost::move(x));
+        return this->emplace(std::move(x));
       }
 
       template <class Key>
@@ -408,7 +408,7 @@ namespace boost {
 
       iterator insert(const_iterator hint, BOOST_UNORDERED_RV_REF(value_type) x)
       {
-        return this->emplace_hint(hint, boost::move(x));
+        return this->emplace_hint(hint, std::move(x));
       }
 
       template <class Key>
@@ -452,7 +452,7 @@ namespace boost {
       {
         insert_return_type result;
         table_.move_insert_node_type_unique(np, result);
-        return boost::move(result);
+        return result;
       }
 
       iterator insert(const_iterator hint, BOOST_RV_REF(node_type) np)
@@ -930,7 +930,7 @@ namespace boost {
                          boost::unordered::detail::empty_emplace(),
         value_type v = value_type())
       {
-        return this->emplace(boost::move(v));
+        return this->emplace(std::move(v));
       }
 
 #endif
@@ -986,7 +986,7 @@ namespace boost {
           boost::unordered::detail::empty_emplace(),
         value_type v = value_type())
       {
-        return this->emplace_hint(hint, boost::move(v));
+        return this->emplace_hint(hint, std::move(v));
       }
 
 #endif
@@ -1066,7 +1066,7 @@ namespace boost {
 
       iterator insert(BOOST_UNORDERED_RV_REF(value_type) x)
       {
-        return this->emplace(boost::move(x));
+        return this->emplace(std::move(x));
       }
 
       iterator insert(const_iterator hint, value_type const& x)
@@ -1076,7 +1076,7 @@ namespace boost {
 
       iterator insert(const_iterator hint, BOOST_UNORDERED_RV_REF(value_type) x)
       {
-        return this->emplace_hint(hint, boost::move(x));
+        return this->emplace_hint(hint, std::move(x));
       }
 
       template <class InputIt> void insert(InputIt, InputIt);
@@ -2264,7 +2264,7 @@ namespace boost {
 
       node_handle_set(BOOST_RV_REF(node_handle_set) n) noexcept
           : ptr_(n.ptr_),
-            alloc_(boost::move(n.alloc_))
+            alloc_(std::move(n.alloc_))
       {
         n.ptr_ = node_pointer();
       }
@@ -2286,7 +2286,7 @@ namespace boost {
         if (!alloc_.has_value() ||
             value_allocator_traits::propagate_on_container_move_assignment::
               value) {
-          alloc_ = boost::move(n.alloc_);
+          alloc_ = std::move(n.alloc_);
         }
         ptr_ = n.ptr_;
         n.ptr_ = node_pointer();
@@ -2349,7 +2349,7 @@ namespace boost {
       insert_return_type_set(BOOST_RV_REF(insert_return_type_set) x) noexcept
           : position(x.position),
             inserted(x.inserted),
-            node(boost::move(x.node))
+            node(std::move(x.node))
       {
       }
 
@@ -2357,7 +2357,7 @@ namespace boost {
       {
         inserted = x.inserted;
         position = x.position;
-        node = boost::move(x.node);
+        node = std::move(x.node);
         return *this;
       }
     };

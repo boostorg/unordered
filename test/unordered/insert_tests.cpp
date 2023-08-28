@@ -75,7 +75,7 @@ namespace insert_tests {
         float b = x.max_load_factor();
 
         typename X::value_type value = *it;
-        std::pair<iterator, bool> r1 = x.insert(boost::move(value));
+        std::pair<iterator, bool> r1 = x.insert(std::move(value));
         std::pair<typename ordered::iterator, bool> r2 = tracker.insert(*it);
 
         BOOST_TEST(r1.second == r2.second);
@@ -137,7 +137,7 @@ namespace insert_tests {
         float b = x.max_load_factor();
 
         typename X::value_type value = *it;
-        typename X::iterator r1 = x.insert(boost::move(value));
+        typename X::iterator r1 = x.insert(std::move(value));
         typename test::ordered<X>::iterator r2 = tracker.insert(*it);
 
         BOOST_TEST(*r1 == *r2);
@@ -258,7 +258,7 @@ namespace insert_tests {
         float b = x.max_load_factor();
 
         typename X::value_type value = *it;
-        pos = x.insert(pos, boost::move(value));
+        pos = x.insert(pos, std::move(value));
         tracker_iterator r2 = tracker.insert(tracker.begin(), *it);
         BOOST_TEST(*pos == *r2);
         tracker.compare_key(x, *it);
@@ -484,7 +484,7 @@ namespace insert_tests {
       float b = x.max_load_factor();
 
       typename X::value_type value = *it;
-      x.emplace(boost::move(value));
+      x.emplace(std::move(value));
       tracker.insert(*it);
       tracker.compare_key(x, *it);
 

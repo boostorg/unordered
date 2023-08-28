@@ -255,7 +255,7 @@ namespace noexcept_tests {
     try {
       throwing_test_exception = true;
 
-      X x2 = boost::move(x1);
+      X x2 = std::move(x1);
       BOOST_TEST(x2.size() == 2);
       BOOST_TEST(*x2.begin() == 10 || *x2.begin() == 50);
       BOOST_TEST(have_is_nothrow_move);
@@ -287,7 +287,7 @@ namespace noexcept_tests {
       try {
         throwing_test_exception = true;
 
-        x2 = boost::move(x1);
+        x2 = std::move(x1);
         BOOST_TEST(x2.size() == 2);
         BOOST_TEST(*x2.begin() == 10 || *x2.begin() == 50);
         BOOST_TEST(have_is_nothrow_move_assign);
@@ -316,7 +316,7 @@ namespace noexcept_tests {
       try {
         throwing_test_exception = true;
 
-        x1 = boost::move(x2);
+        x1 = std::move(x2);
         BOOST_TEST(x1.size() == 100);
         BOOST_TEST(have_is_nothrow_move_assign);
       } catch (test_exception) {

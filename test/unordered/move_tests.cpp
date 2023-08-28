@@ -313,7 +313,7 @@ namespace move_tests {
       BOOST_TEST_EQ(test::detail::tracker.count_allocations, 0u);
 #endif
 
-      y = boost::move(x);
+      y = std::move(x);
 #if defined(BOOST_UNORDERED_USE_MOVE) ||                                       \
   !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
 #ifdef BOOST_UNORDERED_FOA_TESTS
@@ -357,7 +357,7 @@ namespace move_tests {
       x.insert(v.begin(), v.end());
 
       test::object_count count = test::global_object_count;
-      y = boost::move(x);
+      y = std::move(x);
       if (BOOST_UNORDERED_TEST_MOVING && allocator_type::is_propagate_on_move) {
         BOOST_TEST(count == test::global_object_count);
       }
@@ -391,7 +391,7 @@ namespace move_tests {
       test::object_count count1 = test::global_object_count;
 
       T y(v1.begin(), v1.end(), 0, hf, eq, al1);
-      y = boost::move(x);
+      y = std::move(x);
 
       test::object_count count2 = test::global_object_count;
 

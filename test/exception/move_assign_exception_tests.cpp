@@ -44,7 +44,7 @@ template <class T> struct move_assign_base : public test::exception_base
     test::exceptions_enable disable_exceptions(false);
     T y1 = y;
     disable_exceptions.release();
-    x1 = boost::move(y1);
+    x1 = std::move(y1);
 
     DISABLE_EXCEPTIONS;
     test::check_container(x1, y_values);
