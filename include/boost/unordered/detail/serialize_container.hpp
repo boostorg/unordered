@@ -94,7 +94,7 @@ template<typename Set> struct load_or_save_unordered_set<Set,false> /* load */
       archive_constructed<value_type> value("item",ar,value_version);
 
       std::pair<iterator,bool> p=adapt_insert_return_type(
-        x.insert(boost::move(value.get())));
+        x.insert(std::move(value.get())));
       if(!p.second)throw_exception(bad_archive_exception());
       ar.reset_object_address(
         boost::addressof(*p.first),boost::addressof(value.get()));
@@ -169,7 +169,7 @@ template<typename Map> struct load_or_save_unordered_map<Map,false> /* load */
       archive_constructed<mapped_type> mapped("mapped",ar,mapped_version);
 
       std::pair<iterator,bool> p=adapt_insert_return_type(
-        x.emplace(boost::move(key.get()),boost::move(mapped.get())));
+        x.emplace(std::move(key.get()),std::move(mapped.get())));
       if(!p.second)throw_exception(bad_archive_exception());
       ar.reset_object_address(
         boost::addressof(p.first->first),boost::addressof(key.get()));

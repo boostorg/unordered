@@ -251,7 +251,7 @@ namespace boost {
           boost::unordered::detail::empty_emplace(),
         value_type v = value_type())
       {
-        return this->emplace(boost::move(v));
+        return this->emplace(std::move(v));
       }
 
 #endif
@@ -308,7 +308,7 @@ namespace boost {
           boost::unordered::detail::empty_emplace(),
         value_type v = value_type())
       {
-        return this->emplace_hint(hint, boost::move(v));
+        return this->emplace_hint(hint, std::move(v));
       }
 
 #endif
@@ -391,7 +391,7 @@ namespace boost {
 
       std::pair<iterator, bool> insert(BOOST_RV_REF(value_type) x)
       {
-        return this->emplace(boost::move(x));
+        return this->emplace(std::move(x));
       }
 
       template <class P2>
@@ -410,7 +410,7 @@ namespace boost {
 
       iterator insert(const_iterator hint, BOOST_RV_REF(value_type) x)
       {
-        return this->emplace_hint(hint, boost::move(x));
+        return this->emplace_hint(hint, std::move(x));
       }
 
       template <class P2>
@@ -454,7 +454,7 @@ namespace boost {
       {
         insert_return_type result;
         table_.move_insert_node_type_unique((node_type&)np, result);
-        return boost::move(result);
+        return result;
       }
 
       iterator insert(const_iterator hint, BOOST_RV_REF(node_type) np)
@@ -486,7 +486,7 @@ namespace boost {
         BOOST_RV_REF(key_type) k, BOOST_FWD_REF(Args)... args)
       {
         return table_.try_emplace_unique(
-          boost::move(k), boost::forward<Args>(args)...);
+          std::move(k), boost::forward<Args>(args)...);
       }
 
       template <class Key, class... Args>
@@ -512,7 +512,7 @@ namespace boost {
         BOOST_FWD_REF(Args)... args)
       {
         return table_.try_emplace_hint_unique(
-          hint, boost::move(k), boost::forward<Args>(args)...);
+          hint, std::move(k), boost::forward<Args>(args)...);
       }
 
       template <class Key, class... Args>
@@ -583,7 +583,7 @@ namespace boost {
         BOOST_RV_REF(key_type) k, BOOST_FWD_REF(A0) a0)
       {
         return table_.try_emplace_unique(
-          boost::move(k), boost::unordered::detail::create_emplace_args(
+          std::move(k), boost::unordered::detail::create_emplace_args(
                             boost::forward<A0>(a0)));
       }
 
@@ -592,7 +592,7 @@ namespace boost {
         BOOST_RV_REF(key_type) k, BOOST_FWD_REF(A0) a0, BOOST_FWD_REF(A1) a1)
       {
         return table_.try_emplace_unique(
-          boost::move(k), boost::unordered::detail::create_emplace_args(
+          std::move(k), boost::unordered::detail::create_emplace_args(
                             boost::forward<A0>(a0), boost::forward<A1>(a1)));
       }
 
@@ -600,7 +600,7 @@ namespace boost {
       std::pair<iterator, bool> try_emplace(BOOST_RV_REF(key_type) k,
         BOOST_FWD_REF(A0) a0, BOOST_FWD_REF(A1) a1, BOOST_FWD_REF(A2) a2)
       {
-        return table_.try_emplace_unique(boost::move(k),
+        return table_.try_emplace_unique(std::move(k),
           boost::unordered::detail::create_emplace_args(boost::forward<A0>(a0),
             boost::forward<A1>(a1), boost::forward<A2>(a2)));
       }
@@ -677,7 +677,7 @@ namespace boost {
       iterator try_emplace(
         const_iterator hint, BOOST_RV_REF(key_type) k, BOOST_FWD_REF(A0) a0)
       {
-        return table_.try_emplace_hint_unique(hint, boost::move(k),
+        return table_.try_emplace_hint_unique(hint, std::move(k),
           boost::unordered::detail::create_emplace_args(
             boost::forward<A0>(a0)));
       }
@@ -686,7 +686,7 @@ namespace boost {
       iterator try_emplace(const_iterator hint, BOOST_RV_REF(key_type) k,
         BOOST_FWD_REF(A0) a0, BOOST_FWD_REF(A1) a1)
       {
-        return table_.try_emplace_hint_unique(hint, boost::move(k),
+        return table_.try_emplace_hint_unique(hint, std::move(k),
           boost::unordered::detail::create_emplace_args(
             boost::forward<A0>(a0), boost::forward<A1>(a1)));
       }
@@ -695,7 +695,7 @@ namespace boost {
       iterator try_emplace(const_iterator hint, BOOST_RV_REF(key_type) k,
         BOOST_FWD_REF(A0) a0, BOOST_FWD_REF(A1) a1, BOOST_FWD_REF(A2) a2)
       {
-        return table_.try_emplace_hint_unique(hint, boost::move(k),
+        return table_.try_emplace_hint_unique(hint, std::move(k),
           boost::unordered::detail::create_emplace_args(boost::forward<A0>(a0),
             boost::forward<A1>(a1), boost::forward<A2>(a2)));
       }
@@ -753,7 +753,7 @@ namespace boost {
   std::pair<iterator, bool> try_emplace(BOOST_RV_REF(key_type) k,              \
     BOOST_PP_ENUM_##z(n, BOOST_UNORDERED_FWD_PARAM, a))                        \
   {                                                                            \
-    return table_.try_emplace_unique(boost::move(k),                           \
+    return table_.try_emplace_unique(std::move(k),                           \
       boost::unordered::detail::create_emplace_args(                           \
         BOOST_PP_ENUM_##z(n, BOOST_UNORDERED_CALL_FORWARD, a)));               \
   }                                                                            \
@@ -771,7 +771,7 @@ namespace boost {
   iterator try_emplace(const_iterator hint, BOOST_RV_REF(key_type) k,          \
     BOOST_PP_ENUM_##z(n, BOOST_UNORDERED_FWD_PARAM, a))                        \
   {                                                                            \
-    return table_.try_emplace_hint_unique(hint, boost::move(k),                \
+    return table_.try_emplace_hint_unique(hint, std::move(k),                \
       boost::unordered::detail::create_emplace_args(                           \
         BOOST_PP_ENUM_##z(n, BOOST_UNORDERED_CALL_FORWARD, a)));               \
   }
@@ -801,7 +801,7 @@ namespace boost {
         BOOST_RV_REF(key_type) k, BOOST_FWD_REF(M) obj)
       {
         return table_.insert_or_assign_unique(
-          boost::move(k), boost::forward<M>(obj));
+          std::move(k), boost::forward<M>(obj));
       }
 
       template <class Key, class M>
@@ -825,7 +825,7 @@ namespace boost {
         const_iterator, BOOST_RV_REF(key_type) k, BOOST_FWD_REF(M) obj)
       {
         return table_
-          .insert_or_assign_unique(boost::move(k), boost::forward<M>(obj))
+          .insert_or_assign_unique(std::move(k), boost::forward<M>(obj))
           .first;
       }
 
@@ -1358,7 +1358,7 @@ namespace boost {
                          boost::unordered::detail::empty_emplace(),
         value_type v = value_type())
       {
-        return this->emplace(boost::move(v));
+        return this->emplace(std::move(v));
       }
 
 #endif
@@ -1414,7 +1414,7 @@ namespace boost {
           boost::unordered::detail::empty_emplace(),
         value_type v = value_type())
       {
-        return this->emplace_hint(hint, boost::move(v));
+        return this->emplace_hint(hint, std::move(v));
       }
 
 #endif
@@ -1494,7 +1494,7 @@ namespace boost {
 
       iterator insert(BOOST_RV_REF(value_type) x)
       {
-        return this->emplace(boost::move(x));
+        return this->emplace(std::move(x));
       }
 
       template <class P2>
@@ -1512,7 +1512,7 @@ namespace boost {
 
       iterator insert(const_iterator hint, BOOST_RV_REF(value_type) x)
       {
-        return this->emplace_hint(hint, boost::move(x));
+        return this->emplace_hint(hint, std::move(x));
       }
 
       template <class P2>
@@ -2236,7 +2236,7 @@ namespace boost {
     typename unordered_map<K, T, H, P, A>::mapped_type&
     unordered_map<K, T, H, P, A>::operator[](BOOST_RV_REF(key_type) k)
     {
-      return table_.try_emplace_unique(boost::move(k)).first->second;
+      return table_.try_emplace_unique(std::move(k)).first->second;
     }
 
     template <class K, class T, class H, class P, class A>
@@ -2907,7 +2907,7 @@ namespace boost {
 
       node_handle_map(BOOST_RV_REF(node_handle_map) n) noexcept
           : ptr_(n.ptr_),
-            alloc_(boost::move(n.alloc_))
+            alloc_(std::move(n.alloc_))
       {
         n.ptr_ = node_pointer();
       }
@@ -2929,7 +2929,7 @@ namespace boost {
         if (!alloc_.has_value() ||
             boost::allocator_propagate_on_container_move_assignment<
               value_allocator>::type::value) {
-          alloc_ = boost::move(n.alloc_);
+          alloc_ = std::move(n.alloc_);
         }
         ptr_ = n.ptr_;
         n.ptr_ = node_pointer();
@@ -3000,7 +3000,7 @@ namespace boost {
       insert_return_type_map(BOOST_RV_REF(insert_return_type_map) x) noexcept
           : position(x.position),
             inserted(x.inserted),
-            node(boost::move(x.node))
+            node(std::move(x.node))
       {
       }
 
@@ -3008,7 +3008,7 @@ namespace boost {
       {
         inserted = x.inserted;
         position = x.position;
-        node = boost::move(x.node);
+        node = std::move(x.node);
         return *this;
       }
     };

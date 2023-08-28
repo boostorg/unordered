@@ -196,7 +196,7 @@ namespace boost {
         {
         }
         compressed_base(T& x, move_tag)
-            : empty_value<T>(boost::empty_init_t(), boost::move(x))
+            : empty_value<T>(boost::empty_init_t(), std::move(x))
         {
         }
 
@@ -257,8 +257,8 @@ namespace boost {
 
         void move_assign(compressed& x)
         {
-          first() = boost::move(x.first());
-          second() = boost::move(x.second());
+          first() = std::move(x.first());
+          second() = std::move(x.second());
         }
 
         void swap(compressed& x)
@@ -592,7 +592,7 @@ namespace boost {
         void move(optional<T>& x)
         {
           BOOST_ASSERT(!has_value_ && x.has_value_);
-          new (value_.value_ptr()) T(boost::move(x.value_.value()));
+          new (value_.value_ptr()) T(std::move(x.value_.value()));
           boost::unordered::detail::func::destroy(x.value_.value_ptr());
           has_value_ = true;
           x.has_value_ = false;
@@ -2036,7 +2036,7 @@ namespace boost {
 
         table(table& x, boost::unordered::detail::move_tag m)
             : functions(x, m), size_(x.size_), mlf_(x.mlf_),
-              max_load_(x.max_load_), buckets_(boost::move(x.buckets_))
+              max_load_(x.max_load_), buckets_(std::move(x.buckets_))
         {
           x.size_ = 0;
           x.max_load_ = 0;
@@ -2114,7 +2114,7 @@ namespace boost {
         // allocators might have already been moved).
         void move_buckets_from(table& other)
         {
-          buckets_ = boost::move(other.buckets_);
+          buckets_ = std::move(other.buckets_);
 
           size_ = other.size_;
           max_load_ = other.max_load_;
@@ -2140,7 +2140,7 @@ namespace boost {
           this->reserve(src.size_);
           for (iterator pos = src.begin(); pos != src.end(); ++pos) {
             node_tmp b(detail::func::construct_node(
-                         this->node_alloc(), boost::move(pos.p->value())),
+                         this->node_alloc(), std::move(pos.p->value())),
               this->node_alloc());
 
             const_key_type& k = this->get_key(b.node_);
@@ -2241,7 +2241,7 @@ namespace boost {
             // the new ones.
             delete_buckets();
             buckets_.reset_allocator(x.node_alloc());
-            buckets_ = boost::move(new_buckets);
+            buckets_ = std::move(new_buckets);
 
             // Copy over other data, all no throw.
             mlf_ = x.mlf_;
@@ -2707,7 +2707,7 @@ namespace boost {
 
           if (p) {
             iterator pos(p, itb);
-            result.node = boost::move(np);
+            result.node = std::move(np);
             result.position = pos;
             result.inserted = false;
             return;
@@ -2953,14 +2953,14 @@ namespace boost {
           node_allocator_type alloc = this->node_alloc();
 
           for (iterator pos = src.begin(); pos != last; ++pos) {
-            value_type value = boost::move(*pos);
+            value_type value = std::move(*pos);
             const_key_type& key = extractor::extract(value);
             std::size_t const key_hash = this->hash(key);
 
             bucket_iterator itb = buckets_.at(buckets_.position(key_hash));
 
             node_tmp tmp(
-              detail::func::construct_node(alloc, boost::move(value)), alloc);
+              detail::func::construct_node(alloc, std::move(value)), alloc);
 
             buckets_.insert_node(itb, tmp.release());
             ++size_;
@@ -3299,7 +3299,7 @@ namespace boost {
           node_allocator_type alloc = this->node_alloc();
 
           for (iterator pos = src.begin(); pos != last; ++pos) {
-            value_type value = boost::move(*pos);
+            value_type value = std::move(*pos);
             const_key_type& key = extractor::extract(value);
             std::size_t const key_hash = this->hash(key);
 
@@ -3307,7 +3307,7 @@ namespace boost {
 
             node_pointer hint = this->find_node_impl(key, itb);
             node_tmp tmp(
-              detail::func::construct_node(alloc, boost::move(value)), alloc);
+              detail::func::construct_node(alloc, std::move(value)), alloc);
 
             buckets_.insert_node_hint(itb, tmp.release(), hint);
             ++size_;
@@ -3410,7 +3410,7 @@ namespace boost {
         }
         BOOST_CATCH_END
 
-        buckets_ = boost::move(new_buckets);
+        buckets_ = std::move(new_buckets);
         recalculate_max_load();
       }
 
