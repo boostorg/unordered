@@ -2251,7 +2251,7 @@ namespace boost {
       }
 
     public:
-      BOOST_CONSTEXPR node_handle_set() noexcept : ptr_(), has_alloc_(false) {}
+      constexpr node_handle_set() noexcept : ptr_(), has_alloc_(false) {}
 
       ~node_handle_set()
       {
