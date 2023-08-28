@@ -19,7 +19,7 @@ namespace unordered{
 namespace detail{
 
 template<typename To,typename From>
-BOOST_CONSTEXPR To narrow_cast(From x) BOOST_NOEXCEPT
+BOOST_CONSTEXPR To narrow_cast(From x) noexcept
 {
   BOOST_STATIC_ASSERT(boost::is_integral<From>::value);
   BOOST_STATIC_ASSERT(boost::is_integral<To>::value);

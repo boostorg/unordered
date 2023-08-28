@@ -46,7 +46,7 @@ template <class T> int implicit_construct()
 #endif
 
 #if !defined(BOOST_NO_CXX11_NOEXCEPT)
-#define TEST_NOEXCEPT_EXPR(x) BOOST_STATIC_ASSERT((BOOST_NOEXCEPT_EXPR(x)));
+#define TEST_NOEXCEPT_EXPR(x) BOOST_STATIC_ASSERT((noexcept(x)));
 #else
 #define TEST_NOEXCEPT_EXPR(x)
 #endif

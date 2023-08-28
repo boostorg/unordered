@@ -14,15 +14,15 @@
 #pragma once
 #endif
 
+#include <boost/unordered/detail/map.hpp>
 #include <boost/unordered/detail/requires_cxx11.hpp>
-#include <boost/config.hpp>
+#include <boost/unordered/detail/serialize_fca_container.hpp>
+#include <boost/unordered/detail/type_traits.hpp>
+
 #include <boost/core/explicit_operator_bool.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/move/move.hpp>
 #include <boost/type_traits/is_constructible.hpp>
-#include <boost/unordered/detail/map.hpp>
-#include <boost/unordered/detail/serialize_fca_container.hpp>
-#include <boost/unordered/detail/type_traits.hpp>
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
 #include <initializer_list>
@@ -99,10 +99,10 @@ namespace boost {
 
       unordered_map(unordered_map const&);
 
-#if defined(BOOST_UNORDERED_USE_MOVE) ||                                        \
+#if defined(BOOST_UNORDERED_USE_MOVE) ||                                       \
   !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
       unordered_map(BOOST_RV_REF(unordered_map) other)
-        BOOST_NOEXCEPT_IF(table::nothrow_move_constructible)
+        noexcept(table::nothrow_move_constructible)
           : table_(other.table_, boost::unordered::detail::move_tag())
       {
         // The move is done in table_
@@ -148,9 +148,9 @@ namespace boost {
 
       // Destructor
 
-      ~unordered_map() BOOST_NOEXCEPT;
+      ~unordered_map() noexcept;
 
-// Assign
+      // Assign
 
 #if defined(BOOST_UNORDERED_USE_MOVE)
       unordered_map& operator=(BOOST_COPY_ASSIGN_REF(unordered_map) x)
@@ -160,7 +160,7 @@ namespace boost {
       }
 
       unordered_map& operator=(BOOST_RV_REF(unordered_map) x)
-        BOOST_NOEXCEPT_IF(value_allocator_traits::is_always_equal::value&&
+        noexcept(value_allocator_traits::is_always_equal::value&&
             boost::is_nothrow_move_assignable<H>::value&&
               boost::is_nothrow_move_assignable<P>::value)
       {
@@ -176,7 +176,7 @@ namespace boost {
 
 #if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
       unordered_map& operator=(unordered_map&& x)
-        BOOST_NOEXCEPT_IF(value_allocator_traits::is_always_equal::value&&
+        noexcept(value_allocator_traits::is_always_equal::value&&
             boost::is_nothrow_move_assignable<H>::value&&
               boost::is_nothrow_move_assignable<P>::value)
       {
@@ -190,43 +190,43 @@ namespace boost {
       unordered_map& operator=(std::initializer_list<value_type>);
 #endif
 
-      allocator_type get_allocator() const BOOST_NOEXCEPT
+      allocator_type get_allocator() const noexcept
       {
         return table_.node_alloc();
       }
 
-//       // iterators
+      //       // iterators
 
-      iterator begin() BOOST_NOEXCEPT { return table_.begin(); }
+      iterator begin() noexcept { return table_.begin(); }
 
-      const_iterator begin() const BOOST_NOEXCEPT
+      const_iterator begin() const noexcept
       {
         return const_iterator(table_.begin());
       }
 
-      iterator end() BOOST_NOEXCEPT { return iterator(); }
+      iterator end() noexcept { return iterator(); }
 
-      const_iterator end() const BOOST_NOEXCEPT { return const_iterator(); }
+      const_iterator end() const noexcept { return const_iterator(); }
 
-      const_iterator cbegin() const BOOST_NOEXCEPT
+      const_iterator cbegin() const noexcept
       {
         return const_iterator(table_.begin());
       }
 
-      const_iterator cend() const BOOST_NOEXCEPT { return const_iterator(); }
+      const_iterator cend() const noexcept { return const_iterator(); }
 
       // size and capacity
 
-      BOOST_ATTRIBUTE_NODISCARD bool empty() const BOOST_NOEXCEPT
+      BOOST_ATTRIBUTE_NODISCARD bool empty() const noexcept
       {
         return table_.size_ == 0;
       }
 
-      size_type size() const BOOST_NOEXCEPT { return table_.size_; }
+      size_type size() const noexcept { return table_.size_; }
 
-      size_type max_size() const BOOST_NOEXCEPT;
+      size_type max_size() const noexcept;
 
-// emplace
+      // emplace
 
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
@@ -397,7 +397,8 @@ namespace boost {
       template <class P2>
       typename boost::enable_if<
         boost::is_constructible<value_type, BOOST_RV_REF(P2)>,
-        std::pair<iterator, bool> >::type insert(BOOST_RV_REF(P2) obj)
+        std::pair<iterator, bool> >::type
+      insert(BOOST_RV_REF(P2) obj)
       {
         return this->emplace(boost::forward<P2>(obj));
       }
@@ -647,18 +648,18 @@ namespace boost {
       iterator try_emplace(
         const_iterator hint, key_type const& k, BOOST_FWD_REF(A0) a0)
       {
-        return table_.try_emplace_hint_unique(
-          hint, k, boost::unordered::detail::create_emplace_args(
-                     boost::forward<A0>(a0)));
+        return table_.try_emplace_hint_unique(hint, k,
+          boost::unordered::detail::create_emplace_args(
+            boost::forward<A0>(a0)));
       }
 
       template <typename A0, typename A1>
       iterator try_emplace(const_iterator hint, key_type const& k,
         BOOST_FWD_REF(A0) a0, BOOST_FWD_REF(A1) a1)
       {
-        return table_.try_emplace_hint_unique(
-          hint, k, boost::unordered::detail::create_emplace_args(
-                     boost::forward<A0>(a0), boost::forward<A1>(a1)));
+        return table_.try_emplace_hint_unique(hint, k,
+          boost::unordered::detail::create_emplace_args(
+            boost::forward<A0>(a0), boost::forward<A1>(a1)));
       }
 
       template <typename A0, typename A1, typename A2>
@@ -676,9 +677,9 @@ namespace boost {
       iterator try_emplace(
         const_iterator hint, BOOST_RV_REF(key_type) k, BOOST_FWD_REF(A0) a0)
       {
-        return table_.try_emplace_hint_unique(
-          hint, boost::move(k), boost::unordered::detail::create_emplace_args(
-                                  boost::forward<A0>(a0)));
+        return table_.try_emplace_hint_unique(hint, boost::move(k),
+          boost::unordered::detail::create_emplace_args(
+            boost::forward<A0>(a0)));
       }
 
       template <typename A0, typename A1>
@@ -761,9 +762,9 @@ namespace boost {
   iterator try_emplace(const_iterator hint, key_type const& k,                 \
     BOOST_PP_ENUM_##z(n, BOOST_UNORDERED_FWD_PARAM, a))                        \
   {                                                                            \
-    return table_.try_emplace_hint_unique(                                     \
-      hint, k, boost::unordered::detail::create_emplace_args(                  \
-                 BOOST_PP_ENUM_##z(n, BOOST_UNORDERED_CALL_FORWARD, a)));      \
+    return table_.try_emplace_hint_unique(hint, k,                             \
+      boost::unordered::detail::create_emplace_args(                           \
+        BOOST_PP_ENUM_##z(n, BOOST_UNORDERED_CALL_FORWARD, a)));               \
   }                                                                            \
                                                                                \
   template <BOOST_PP_ENUM_PARAMS_Z(z, n, typename A)>                          \
@@ -860,10 +861,10 @@ namespace boost {
       void erase_return_void(const_iterator it) { erase(it); }
 
       void swap(unordered_map&)
-        BOOST_NOEXCEPT_IF(value_allocator_traits::is_always_equal::value&&
+        noexcept(value_allocator_traits::is_always_equal::value&&
             boost::is_nothrow_swappable<H>::value&&
               boost::is_nothrow_swappable<P>::value);
-      void clear() BOOST_NOEXCEPT { table_.clear_impl(); }
+      void clear() noexcept { table_.clear_impl(); }
 
       template <typename H2, typename P2>
       void merge(boost::unordered_map<K, T, H2, P2, A>& source);
@@ -993,12 +994,9 @@ namespace boost {
 
       // bucket interface
 
-      size_type bucket_count() const BOOST_NOEXCEPT
-      {
-        return table_.bucket_count();
-      }
+      size_type bucket_count() const noexcept { return table_.bucket_count(); }
 
-      size_type max_bucket_count() const BOOST_NOEXCEPT
+      size_type max_bucket_count() const noexcept
       {
         return table_.max_bucket_count();
       }
@@ -1018,10 +1016,7 @@ namespace boost {
         return table_.hash_to_bucket(table_.hash(boost::forward<Key>(k)));
       }
 
-      local_iterator begin(size_type n)
-      {
-        return table_.begin(n);
-      }
+      local_iterator begin(size_type n) { return table_.begin(n); }
 
       const_local_iterator begin(size_type n) const
       {
@@ -1046,9 +1041,9 @@ namespace boost {
 
       // hash policy
 
-      float load_factor() const BOOST_NOEXCEPT;
-      float max_load_factor() const BOOST_NOEXCEPT { return table_.mlf_; }
-      void max_load_factor(float) BOOST_NOEXCEPT;
+      float load_factor() const noexcept;
+      float max_load_factor() const noexcept { return table_.mlf_; }
+      void max_load_factor(float) noexcept;
       void rehash(size_type);
       void reserve(size_type);
 
@@ -1062,7 +1057,7 @@ namespace boost {
 
     template <class Archive, class K, class T, class H, class P, class A>
     void serialize(
-      Archive & ar,unordered_map<K, T, H, P, A>& m,unsigned int version)
+      Archive& ar, unordered_map<K, T, H, P, A>& m, unsigned int version)
     {
       detail::serialize_fca_container(ar, m, version);
     }
@@ -1213,7 +1208,7 @@ namespace boost {
 #if defined(BOOST_UNORDERED_USE_MOVE) ||                                       \
   !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
       unordered_multimap(BOOST_RV_REF(unordered_multimap) other)
-        BOOST_NOEXCEPT_IF(table::nothrow_move_constructible)
+        noexcept(table::nothrow_move_constructible)
           : table_(other.table_, boost::unordered::detail::move_tag())
       {
         // The move is done in table_
@@ -1262,9 +1257,9 @@ namespace boost {
 
       // Destructor
 
-      ~unordered_multimap() BOOST_NOEXCEPT;
+      ~unordered_multimap() noexcept;
 
-// Assign
+      // Assign
 
 #if defined(BOOST_UNORDERED_USE_MOVE)
       unordered_multimap& operator=(BOOST_COPY_ASSIGN_REF(unordered_multimap) x)
@@ -1274,7 +1269,7 @@ namespace boost {
       }
 
       unordered_multimap& operator=(BOOST_RV_REF(unordered_multimap) x)
-        BOOST_NOEXCEPT_IF(value_allocator_traits::is_always_equal::value&&
+        noexcept(value_allocator_traits::is_always_equal::value&&
             boost::is_nothrow_move_assignable<H>::value&&
               boost::is_nothrow_move_assignable<P>::value)
       {
@@ -1290,7 +1285,7 @@ namespace boost {
 
 #if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
       unordered_multimap& operator=(unordered_multimap&& x)
-        BOOST_NOEXCEPT_IF(value_allocator_traits::is_always_equal::value&&
+        noexcept(value_allocator_traits::is_always_equal::value&&
             boost::is_nothrow_move_assignable<H>::value&&
               boost::is_nothrow_move_assignable<P>::value)
       {
@@ -1304,43 +1299,43 @@ namespace boost {
       unordered_multimap& operator=(std::initializer_list<value_type>);
 #endif
 
-      allocator_type get_allocator() const BOOST_NOEXCEPT
+      allocator_type get_allocator() const noexcept
       {
         return table_.node_alloc();
       }
 
       // iterators
 
-      iterator begin() BOOST_NOEXCEPT { return iterator(table_.begin()); }
+      iterator begin() noexcept { return iterator(table_.begin()); }
 
-      const_iterator begin() const BOOST_NOEXCEPT
+      const_iterator begin() const noexcept
       {
         return const_iterator(table_.begin());
       }
 
-      iterator end() BOOST_NOEXCEPT { return iterator(); }
+      iterator end() noexcept { return iterator(); }
 
-      const_iterator end() const BOOST_NOEXCEPT { return const_iterator(); }
+      const_iterator end() const noexcept { return const_iterator(); }
 
-      const_iterator cbegin() const BOOST_NOEXCEPT
+      const_iterator cbegin() const noexcept
       {
         return const_iterator(table_.begin());
       }
 
-      const_iterator cend() const BOOST_NOEXCEPT { return const_iterator(); }
+      const_iterator cend() const noexcept { return const_iterator(); }
 
       // size and capacity
 
-      BOOST_ATTRIBUTE_NODISCARD bool empty() const BOOST_NOEXCEPT
+      BOOST_ATTRIBUTE_NODISCARD bool empty() const noexcept
       {
         return table_.size_ == 0;
       }
 
-      size_type size() const BOOST_NOEXCEPT { return table_.size_; }
+      size_type size() const noexcept { return table_.size_; }
 
-      size_type max_size() const BOOST_NOEXCEPT;
+      size_type max_size() const noexcept;
 
-// emplace
+      // emplace
 
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
@@ -1504,8 +1499,8 @@ namespace boost {
 
       template <class P2>
       typename boost::enable_if<
-        boost::is_constructible<value_type, BOOST_RV_REF(P2)>,
-        iterator>::type insert(BOOST_RV_REF(P2) obj)
+        boost::is_constructible<value_type, BOOST_RV_REF(P2)>, iterator>::type
+      insert(BOOST_RV_REF(P2) obj)
       {
         return this->emplace(boost::forward<P2>(obj));
       }
@@ -1522,8 +1517,7 @@ namespace boost {
 
       template <class P2>
       typename boost::enable_if<
-        boost::is_constructible<value_type, BOOST_RV_REF(P2)>,
-        iterator>::type
+        boost::is_constructible<value_type, BOOST_RV_REF(P2)>, iterator>::type
       insert(const_iterator hint, BOOST_RV_REF(P2) obj)
       {
         return this->emplace_hint(hint, boost::forward<P2>(obj));
@@ -1597,10 +1591,10 @@ namespace boost {
       void erase_return_void(const_iterator it) { erase(it); }
 
       void swap(unordered_multimap&)
-        BOOST_NOEXCEPT_IF(value_allocator_traits::is_always_equal::value&&
+        noexcept(value_allocator_traits::is_always_equal::value&&
             boost::is_nothrow_swappable<H>::value&&
               boost::is_nothrow_swappable<P>::value);
-      void clear() BOOST_NOEXCEPT { table_.clear_impl(); }
+      void clear() noexcept { table_.clear_impl(); }
 
       template <typename H2, typename P2>
       void merge(boost::unordered_multimap<K, T, H2, P2, A>& source);
@@ -1702,12 +1696,9 @@ namespace boost {
 
       // bucket interface
 
-      size_type bucket_count() const BOOST_NOEXCEPT
-      {
-        return table_.bucket_count();
-      }
+      size_type bucket_count() const noexcept { return table_.bucket_count(); }
 
-      size_type max_bucket_count() const BOOST_NOEXCEPT
+      size_type max_bucket_count() const noexcept
       {
         return table_.max_bucket_count();
       }
@@ -1756,9 +1747,9 @@ namespace boost {
 
       // hash policy
 
-      float load_factor() const BOOST_NOEXCEPT;
-      float max_load_factor() const BOOST_NOEXCEPT { return table_.mlf_; }
-      void max_load_factor(float) BOOST_NOEXCEPT;
+      float load_factor() const noexcept;
+      float max_load_factor() const noexcept { return table_.mlf_; }
+      void max_load_factor(float) noexcept;
       void rehash(size_type);
       void reserve(size_type);
 
@@ -1772,7 +1763,7 @@ namespace boost {
 
     template <class Archive, class K, class T, class H, class P, class A>
     void serialize(
-      Archive & ar,unordered_multimap<K, T, H, P, A>& m,unsigned int version)
+      Archive& ar, unordered_multimap<K, T, H, P, A>& m, unsigned int version)
     {
       detail::serialize_fca_container(ar, m, version);
     }
@@ -2023,7 +2014,7 @@ namespace boost {
 #endif
 
     template <class K, class T, class H, class P, class A>
-    unordered_map<K, T, H, P, A>::~unordered_map() BOOST_NOEXCEPT
+    unordered_map<K, T, H, P, A>::~unordered_map() noexcept
     {
     }
 
@@ -2043,7 +2034,7 @@ namespace boost {
     // size and capacity
 
     template <class K, class T, class H, class P, class A>
-    std::size_t unordered_map<K, T, H, P, A>::max_size() const BOOST_NOEXCEPT
+    std::size_t unordered_map<K, T, H, P, A>::max_size() const noexcept
     {
       using namespace std;
 
@@ -2106,7 +2097,7 @@ namespace boost {
 
     template <class K, class T, class H, class P, class A>
     void unordered_map<K, T, H, P, A>::swap(unordered_map& other)
-      BOOST_NOEXCEPT_IF(value_allocator_traits::is_always_equal::value&&
+      noexcept(value_allocator_traits::is_always_equal::value&&
           boost::is_nothrow_swappable<H>::value&&
             boost::is_nothrow_swappable<P>::value)
     {
@@ -2236,14 +2227,14 @@ namespace boost {
 
     template <class K, class T, class H, class P, class A>
     typename unordered_map<K, T, H, P, A>::mapped_type&
-      unordered_map<K, T, H, P, A>::operator[](const key_type& k)
+    unordered_map<K, T, H, P, A>::operator[](const key_type& k)
     {
       return table_.try_emplace_unique(k).first->second;
     }
 
     template <class K, class T, class H, class P, class A>
     typename unordered_map<K, T, H, P, A>::mapped_type&
-      unordered_map<K, T, H, P, A>::operator[](BOOST_RV_REF(key_type) k)
+    unordered_map<K, T, H, P, A>::operator[](BOOST_RV_REF(key_type) k)
     {
       return table_.try_emplace_unique(boost::move(k)).first->second;
     }
@@ -2335,7 +2326,7 @@ namespace boost {
     // hash policy
 
     template <class K, class T, class H, class P, class A>
-    float unordered_map<K, T, H, P, A>::load_factor() const BOOST_NOEXCEPT
+    float unordered_map<K, T, H, P, A>::load_factor() const noexcept
     {
       if (table_.size_ == 0) {
         return 0.0f;
@@ -2347,7 +2338,7 @@ namespace boost {
     }
 
     template <class K, class T, class H, class P, class A>
-    void unordered_map<K, T, H, P, A>::max_load_factor(float m) BOOST_NOEXCEPT
+    void unordered_map<K, T, H, P, A>::max_load_factor(float m) noexcept
     {
       table_.max_load_factor(m);
     }
@@ -2391,9 +2382,8 @@ namespace boost {
     }
 
     template <class K, class T, class H, class P, class A>
-    inline void swap(
-      unordered_map<K, T, H, P, A>& m1, unordered_map<K, T, H, P, A>& m2)
-      BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(m1.swap(m2)))
+    inline void swap(unordered_map<K, T, H, P, A>& m1,
+      unordered_map<K, T, H, P, A>& m2) noexcept(noexcept(m1.swap(m2)))
     {
 #if BOOST_WORKAROUND(BOOST_CODEGEARC, BOOST_TESTED_AT(0x0613))
       struct dummy
@@ -2572,15 +2562,16 @@ namespace boost {
 #endif
 
     template <class K, class T, class H, class P, class A>
-    unordered_multimap<K, T, H, P, A>::~unordered_multimap() BOOST_NOEXCEPT
+    unordered_multimap<K, T, H, P, A>::~unordered_multimap() noexcept
     {
     }
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
 
     template <class K, class T, class H, class P, class A>
-    unordered_multimap<K, T, H, P, A>& unordered_multimap<K, T, H, P, A>::
-    operator=(std::initializer_list<value_type> list)
+    unordered_multimap<K, T, H, P, A>&
+    unordered_multimap<K, T, H, P, A>::operator=(
+      std::initializer_list<value_type> list)
     {
       this->clear();
       this->insert(list.begin(), list.end());
@@ -2592,8 +2583,7 @@ namespace boost {
     // size and capacity
 
     template <class K, class T, class H, class P, class A>
-    std::size_t
-    unordered_multimap<K, T, H, P, A>::max_size() const BOOST_NOEXCEPT
+    std::size_t unordered_multimap<K, T, H, P, A>::max_size() const noexcept
     {
       using namespace std;
 
@@ -2655,7 +2645,7 @@ namespace boost {
 
     template <class K, class T, class H, class P, class A>
     void unordered_multimap<K, T, H, P, A>::swap(unordered_multimap& other)
-      BOOST_NOEXCEPT_IF(value_allocator_traits::is_always_equal::value&&
+      noexcept(value_allocator_traits::is_always_equal::value&&
           boost::is_nothrow_swappable<H>::value&&
             boost::is_nothrow_swappable<P>::value)
     {
@@ -2795,7 +2785,7 @@ namespace boost {
     // hash policy
 
     template <class K, class T, class H, class P, class A>
-    float unordered_multimap<K, T, H, P, A>::load_factor() const BOOST_NOEXCEPT
+    float unordered_multimap<K, T, H, P, A>::load_factor() const noexcept
     {
       if (table_.size_ == 0) {
         return 0.0f;
@@ -2807,8 +2797,7 @@ namespace boost {
     }
 
     template <class K, class T, class H, class P, class A>
-    void unordered_multimap<K, T, H, P, A>::max_load_factor(
-      float m) BOOST_NOEXCEPT
+    void unordered_multimap<K, T, H, P, A>::max_load_factor(float m) noexcept
     {
       table_.max_load_factor(m);
     }
@@ -2853,8 +2842,7 @@ namespace boost {
 
     template <class K, class T, class H, class P, class A>
     inline void swap(unordered_multimap<K, T, H, P, A>& m1,
-      unordered_multimap<K, T, H, P, A>& m2)
-      BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(m1.swap(m2)))
+      unordered_multimap<K, T, H, P, A>& m2) noexcept(noexcept(m1.swap(m2)))
     {
 #if BOOST_WORKAROUND(BOOST_CODEGEARC, BOOST_TESTED_AT(0x0613))
       struct dummy
@@ -2906,7 +2894,7 @@ namespace boost {
       }
 
     public:
-      BOOST_CONSTEXPR node_handle_map() BOOST_NOEXCEPT : ptr_(), alloc_() {}
+      BOOST_CONSTEXPR node_handle_map() noexcept : ptr_(), alloc_() {}
 
       ~node_handle_map()
       {
@@ -2917,7 +2905,7 @@ namespace boost {
         }
       }
 
-      node_handle_map(BOOST_RV_REF(node_handle_map) n) BOOST_NOEXCEPT
+      node_handle_map(BOOST_RV_REF(node_handle_map) n) noexcept
           : ptr_(n.ptr_),
             alloc_(boost::move(n.alloc_))
       {
@@ -2960,17 +2948,17 @@ namespace boost {
 
       BOOST_EXPLICIT_OPERATOR_BOOL_NOEXCEPT()
 
-      bool operator!() const BOOST_NOEXCEPT { return ptr_ ? 0 : 1; }
+      bool operator!() const noexcept { return ptr_ ? 0 : 1; }
 
-      BOOST_ATTRIBUTE_NODISCARD bool empty() const BOOST_NOEXCEPT
+      BOOST_ATTRIBUTE_NODISCARD bool empty() const noexcept
       {
         return ptr_ ? 0 : 1;
       }
 
-      void swap(node_handle_map& n) BOOST_NOEXCEPT_IF(
-        boost::allocator_propagate_on_container_swap<
-          value_allocator>::type::value ||
-        boost::allocator_is_always_equal<value_allocator>::type::value)
+      void swap(node_handle_map& n)
+        noexcept(boost::allocator_propagate_on_container_swap<
+                   value_allocator>::type::value ||
+                 boost::allocator_is_always_equal<value_allocator>::type::value)
       {
 
         BOOST_ASSERT(!alloc_.has_value() || !n.alloc_.has_value() ||
@@ -2988,7 +2976,7 @@ namespace boost {
 
     template <class N, class K, class T, class A>
     void swap(node_handle_map<N, K, T, A>& x, node_handle_map<N, K, T, A>& y)
-      BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(x.swap(y)))
+      noexcept(noexcept(x.swap(y)))
     {
       x.swap(y);
     }
@@ -3009,10 +2997,10 @@ namespace boost {
 
       insert_return_type_map() : position(), inserted(false), node() {}
 
-      insert_return_type_map(BOOST_RV_REF(insert_return_type_map)
-          x) BOOST_NOEXCEPT : position(x.position),
-                              inserted(x.inserted),
-                              node(boost::move(x.node))
+      insert_return_type_map(BOOST_RV_REF(insert_return_type_map) x) noexcept
+          : position(x.position),
+            inserted(x.inserted),
+            node(boost::move(x.node))
       {
       }
 

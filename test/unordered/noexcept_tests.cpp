@@ -62,8 +62,7 @@ namespace noexcept_tests {
     typedef boost::hash<int> base;
 
   public:
-    hash_nothrow(BOOST_RV_REF(hash_nothrow))
-      BOOST_NOEXCEPT_IF(nothrow_move_construct)
+    hash_nothrow(BOOST_RV_REF(hash_nothrow)) noexcept(nothrow_move_construct)
     {
       if (!nothrow_move_construct) {
         test_throw("Move Constructor");
@@ -78,7 +77,7 @@ namespace noexcept_tests {
       return *this;
     }
     hash_nothrow& operator=(BOOST_RV_REF(hash_nothrow))
-      BOOST_NOEXCEPT_IF(nothrow_move_assign)
+      noexcept(nothrow_move_assign)
     {
       if (!nothrow_move_assign) {
         test_throw("Move Assign");
@@ -90,8 +89,7 @@ namespace noexcept_tests {
       test_throw("Operator");
       return static_cast<base const&>(*this)(x);
     }
-    friend void swap(hash_nothrow&, hash_nothrow&)
-      BOOST_NOEXCEPT_IF(nothrow_swap)
+    friend void swap(hash_nothrow&, hash_nothrow&) noexcept(nothrow_swap)
     {
       if (!nothrow_swap) {
         test_throw("Swap");
@@ -113,7 +111,7 @@ namespace noexcept_tests {
 
   public:
     equal_to_nothrow(BOOST_RV_REF(equal_to_nothrow))
-      BOOST_NOEXCEPT_IF(nothrow_move_construct)
+      noexcept(nothrow_move_construct)
     {
       if (!nothrow_move_construct) {
         test_throw("Move Constructor");
@@ -128,7 +126,7 @@ namespace noexcept_tests {
       return *this;
     }
     equal_to_nothrow& operator=(BOOST_RV_REF(equal_to_nothrow))
-      BOOST_NOEXCEPT_IF(nothrow_move_assign)
+      noexcept(nothrow_move_assign)
     {
       if (!nothrow_move_assign) {
         test_throw("Move Assign");
@@ -141,7 +139,7 @@ namespace noexcept_tests {
       return x == y;
     }
     friend void swap(equal_to_nothrow&, equal_to_nothrow&)
-      BOOST_NOEXCEPT_IF(nothrow_swap)
+      noexcept(nothrow_swap)
     {
       if (!nothrow_swap) {
         test_throw("Swap");
