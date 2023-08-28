@@ -1079,8 +1079,6 @@ namespace insert_tests {
   UNORDERED_TEST(set_tests2, ((test_pc_set)))
 #endif
 
-#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
-
   struct initialize_from_two_ints
   {
     int a, b;
@@ -1201,8 +1199,6 @@ namespace insert_tests {
     BOOST_TEST_EQ(multimap.size(), 3u);
     BOOST_TEST_EQ(multimap.count("a"), 2u);
   }
-#endif
-
 #endif
 
   struct overloaded_constructor

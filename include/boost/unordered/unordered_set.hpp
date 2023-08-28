@@ -23,9 +23,7 @@
 #include <boost/functional/hash.hpp>
 #include <boost/move/move.hpp>
 
-#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
 #include <initializer_list>
-#endif
 
 #if defined(BOOST_MSVC)
 #pragma warning(push)
@@ -113,12 +111,10 @@ namespace boost {
 
       unordered_set(BOOST_RV_REF(unordered_set), allocator_type const&);
 
-#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
       unordered_set(std::initializer_list<value_type>,
         size_type = boost::unordered::detail::default_bucket_count,
         const hasher& = hasher(), const key_equal& l = key_equal(),
         const allocator_type& = allocator_type());
-#endif
 
       explicit unordered_set(size_type, const allocator_type&);
 
@@ -134,7 +130,6 @@ namespace boost {
       unordered_set(
         InputIt, InputIt, size_type, const hasher&, const allocator_type&);
 
-#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
       unordered_set(std::initializer_list<value_type>, const allocator_type&);
 
       unordered_set(
@@ -142,7 +137,6 @@ namespace boost {
 
       unordered_set(std::initializer_list<value_type>, size_type, const hasher&,
         const allocator_type&);
-#endif
 
       // Destructor
 
@@ -184,9 +178,7 @@ namespace boost {
 #endif
 #endif
 
-#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
       unordered_set& operator=(std::initializer_list<value_type>);
-#endif
 
       allocator_type get_allocator() const noexcept
       {
@@ -422,9 +414,7 @@ namespace boost {
 
       template <class InputIt> void insert(InputIt, InputIt);
 
-#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
       void insert(std::initializer_list<value_type>);
-#endif
 
       // extract
 
@@ -794,12 +784,10 @@ namespace boost {
       unordered_multiset(
         BOOST_RV_REF(unordered_multiset), allocator_type const&);
 
-#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
       unordered_multiset(std::initializer_list<value_type>,
         size_type = boost::unordered::detail::default_bucket_count,
         const hasher& = hasher(), const key_equal& l = key_equal(),
         const allocator_type& = allocator_type());
-#endif
 
       explicit unordered_multiset(size_type, const allocator_type&);
 
@@ -816,7 +804,6 @@ namespace boost {
       unordered_multiset(
         InputIt, InputIt, size_type, const hasher&, const allocator_type&);
 
-#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
       unordered_multiset(
         std::initializer_list<value_type>, const allocator_type&);
 
@@ -825,7 +812,6 @@ namespace boost {
 
       unordered_multiset(std::initializer_list<value_type>, size_type,
         const hasher&, const allocator_type&);
-#endif
 
       // Destructor
 
@@ -867,9 +853,7 @@ namespace boost {
 #endif
 #endif
 
-#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
       unordered_multiset& operator=(std::initializer_list<value_type>);
-#endif
 
       allocator_type get_allocator() const noexcept
       {
@@ -1081,9 +1065,7 @@ namespace boost {
 
       template <class InputIt> void insert(InputIt, InputIt);
 
-#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
       void insert(std::initializer_list<value_type>);
-#endif
 
       // extract
 
@@ -1438,8 +1420,6 @@ namespace boost {
       table_.move_construct_buckets(other.table_);
     }
 
-#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
-
     template <class T, class H, class P, class A>
     unordered_set<T, H, P, A>::unordered_set(
       std::initializer_list<value_type> list, size_type n, const hasher& hf,
@@ -1450,8 +1430,6 @@ namespace boost {
     {
       this->insert(list.begin(), list.end());
     }
-
-#endif
 
     template <class T, class H, class P, class A>
     unordered_set<T, H, P, A>::unordered_set(
@@ -1498,8 +1476,6 @@ namespace boost {
       this->insert(f, l);
     }
 
-#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
-
     template <class T, class H, class P, class A>
     unordered_set<T, H, P, A>::unordered_set(
       std::initializer_list<value_type> list, const allocator_type& a)
@@ -1532,14 +1508,10 @@ namespace boost {
       this->insert(list.begin(), list.end());
     }
 
-#endif
-
     template <class T, class H, class P, class A>
     unordered_set<T, H, P, A>::~unordered_set() noexcept
     {
     }
-
-#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
 
     template <class T, class H, class P, class A>
     unordered_set<T, H, P, A>& unordered_set<T, H, P, A>::operator=(
@@ -1549,8 +1521,6 @@ namespace boost {
       this->insert(list.begin(), list.end());
       return *this;
     }
-
-#endif
 
     // size and capacity
 
@@ -1578,14 +1548,12 @@ namespace boost {
       }
     }
 
-#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
     template <class T, class H, class P, class A>
     void unordered_set<T, H, P, A>::insert(
       std::initializer_list<value_type> list)
     {
       this->insert(list.begin(), list.end());
     }
-#endif
 
     template <class T, class H, class P, class A>
     typename unordered_set<T, H, P, A>::iterator
@@ -1856,8 +1824,6 @@ namespace boost {
       table_.move_construct_buckets(other.table_);
     }
 
-#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
-
     template <class T, class H, class P, class A>
     unordered_multiset<T, H, P, A>::unordered_multiset(
       std::initializer_list<value_type> list, size_type n, const hasher& hf,
@@ -1868,8 +1834,6 @@ namespace boost {
     {
       this->insert(list.begin(), list.end());
     }
-
-#endif
 
     template <class T, class H, class P, class A>
     unordered_multiset<T, H, P, A>::unordered_multiset(
@@ -1916,8 +1880,6 @@ namespace boost {
       this->insert(f, l);
     }
 
-#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
-
     template <class T, class H, class P, class A>
     unordered_multiset<T, H, P, A>::unordered_multiset(
       std::initializer_list<value_type> list, const allocator_type& a)
@@ -1950,14 +1912,10 @@ namespace boost {
       this->insert(list.begin(), list.end());
     }
 
-#endif
-
     template <class T, class H, class P, class A>
     unordered_multiset<T, H, P, A>::~unordered_multiset() noexcept
     {
     }
-
-#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
 
     template <class T, class H, class P, class A>
     unordered_multiset<T, H, P, A>& unordered_multiset<T, H, P, A>::operator=(
@@ -1967,8 +1925,6 @@ namespace boost {
       this->insert(list.begin(), list.end());
       return *this;
     }
-
-#endif
 
     // size and capacity
 
@@ -1993,14 +1949,12 @@ namespace boost {
       table_.insert_range_equiv(first, last);
     }
 
-#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
     template <class T, class H, class P, class A>
     void unordered_multiset<T, H, P, A>::insert(
       std::initializer_list<value_type> list)
     {
       this->insert(list.begin(), list.end());
     }
-#endif
 
     template <class T, class H, class P, class A>
     typename unordered_multiset<T, H, P, A>::iterator
