@@ -436,8 +436,6 @@ namespace assign_tests {
       (default_generator)(generate_collisions)(limited_range)))
 #endif
 
-#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
-
   UNORDERED_AUTO_TEST (assign_default_initializer_list) {
     BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Initializer List Tests\n";
     std::initializer_list<std::pair<int const, int> > init;
@@ -459,9 +457,6 @@ namespace assign_tests {
     BOOST_TEST(x1.empty());
   }
 
-#endif
-
-#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
   UNORDERED_AUTO_TEST (assign_initializer_list) {
     BOOST_LIGHTWEIGHT_TEST_OSTREAM << "Initializer List Tests\n";
 
@@ -482,8 +477,6 @@ namespace assign_tests {
     BOOST_TEST(x.find(10) == x.end());
     BOOST_TEST(x.find(-10) != x.end());
   }
-
-#endif
 }
 
 RUN_TESTS()

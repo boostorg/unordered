@@ -34,16 +34,7 @@ template <class T> void sink(T const&) {}
 template <class T> T rvalue(T const& v) { return v; }
 template <class T> T rvalue_default() { return T(); }
 
-#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
 template <class T> T implicit_construct() { return {}; }
-#else
-template <class T> int implicit_construct()
-{
-  T x;
-  sink(x);
-  return 0;
-}
-#endif
 
 #if !defined(BOOST_NO_CXX11_NOEXCEPT)
 #define TEST_NOEXCEPT_EXPR(x) BOOST_STATIC_ASSERT((noexcept(x)));
@@ -143,13 +134,11 @@ template <class X, class T> void container_test(X& r, T const&)
 
 // I don't test the runtime post-conditions here.
 
-#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
   // It isn't specified in the container requirements that the no argument
   // constructor is implicit, but it is defined that way in the concrete
   // container specification.
   X u_implicit = {};
   sink(u_implicit);
-#endif
 
   X u;
   BOOST_TEST(u.size() == 0);
@@ -793,7 +782,6 @@ void unordered_copyable_test(X& x, Key& k, T& t, Hash& hf, Pred& eq)
 // X a8a(i, j, m);
 // sink(a8a);
 
-#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
   std::size_t min_buckets = 10;
   X({t});
   X({t}, min_buckets);
@@ -803,7 +791,6 @@ void unordered_copyable_test(X& x, Key& k, T& t, Hash& hf, Pred& eq)
   X({t}, min_buckets, m);
   X({t}, min_buckets, hf, m);
   X({t}, min_buckets, hf, eq, m);
-#endif
 
   X const b;
   sink(X(b));
@@ -826,7 +813,6 @@ void unordered_copyable_test(X& x, Key& k, T& t, Hash& hf, Pred& eq)
   test::check_return_type<iterator>::equals(a.emplace_hint(q, t));
 
   a.insert(i, j);
-#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
   std::initializer_list<T> list = {t};
   a.insert(list);
   a.insert({t, t, t});
@@ -837,7 +823,6 @@ void unordered_copyable_test(X& x, Key& k, T& t, Hash& hf, Pred& eq)
   a.insert({});
   a.insert({t});
   a.insert({t, t});
-#endif
 #endif
 
   X a10;
