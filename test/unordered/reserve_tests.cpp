@@ -24,7 +24,7 @@ template <typename T> struct A
 
   A() : i(++count) {}
 
-  template <class U> A(const A<U>& a) BOOST_NOEXCEPT : i(a.i) {}
+  template <class U> A(const A<U>& a) noexcept : i(a.i) {}
 
   T* allocate(std::size_t n)
   {
@@ -33,7 +33,7 @@ template <typename T> struct A
     return (T*)std::calloc(n, sizeof(T));
   }
 
-  void deallocate(T* p, std::size_t n) BOOST_NOEXCEPT
+  void deallocate(T* p, std::size_t n) noexcept
   {
     total_allocation -= n * sizeof(T);
     std::free(p);
