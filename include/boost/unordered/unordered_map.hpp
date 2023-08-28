@@ -2894,7 +2894,7 @@ namespace boost {
       }
 
     public:
-      BOOST_CONSTEXPR node_handle_map() noexcept : ptr_(), alloc_() {}
+      constexpr node_handle_map() noexcept : ptr_(), alloc_() {}
 
       ~node_handle_map()
       {
