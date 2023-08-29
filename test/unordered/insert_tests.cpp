@@ -1331,7 +1331,7 @@ namespace insert_tests {
 #endif
 
   struct derived_from_piecewise_construct_t
-    : boost::unordered::piecewise_construct_t
+    : std::piecewise_construct_t
   {
   };
 
@@ -1342,9 +1342,9 @@ namespace insert_tests {
 
   struct convertible_to_piecewise
   {
-    operator boost::unordered::piecewise_construct_t() const
+    operator std::piecewise_construct_t() const
     {
-      return boost::unordered::piecewise_construct;
+      return std::piecewise_construct;
     }
   };
 
@@ -1362,7 +1362,7 @@ namespace insert_tests {
           std::pair<overloaded_constructor const, overloaded_constructor> > >
         x;
 
-      x.emplace(boost::unordered::piecewise_construct, boost::make_tuple(),
+      x.emplace(std::piecewise_construct, boost::make_tuple(),
         boost::make_tuple());
       BOOST_TEST(
         x.find(overloaded_constructor()) != x.end() &&
@@ -1429,7 +1429,7 @@ namespace insert_tests {
           std::pair<overloaded_constructor const, overloaded_constructor> > >
         x;
 
-      x.emplace(boost::unordered::piecewise_construct, boost::make_tuple(),
+      x.emplace(std::piecewise_construct, boost::make_tuple(),
         boost::make_tuple());
       BOOST_TEST(
         x.find(overloaded_constructor()) != x.end() &&
@@ -1461,12 +1461,12 @@ namespace insert_tests {
       x;
     std::pair<overloaded_constructor, overloaded_constructor> check;
 
-    x.emplace(boost::unordered::piecewise_construct, boost::make_tuple(),
+    x.emplace(std::piecewise_construct, boost::make_tuple(),
       boost::make_tuple());
     BOOST_TEST(x.find(check) != x.end() && *x.find(check) == check);
 
     x.clear();
-    x.emplace(boost::unordered::piecewise_construct, boost::make_tuple(1),
+    x.emplace(std::piecewise_construct, boost::make_tuple(1),
       boost::make_tuple(2, 3));
     check =
       std::make_pair(overloaded_constructor(1), overloaded_constructor(2, 3));
@@ -1487,13 +1487,6 @@ namespace insert_tests {
   static boost::unordered_set<std::pair<overloaded_constructor,
     overloaded_constructor> >* test_pair_oc_set;
 
-#define PIECEWISE_TEST_NAME boost_tuple_piecewise_tests
-#define PIECEWISE_NAMESPACE boost::unordered
-#define TUPLE_NAMESPACE boost
-#define EMULATING_PIECEWISE_CONSTRUCTION 1
-#include "./insert_tests.cpp"
-
-#if BOOST_UNORDERED_HAVE_PIECEWISE_CONSTRUCT
 
 #define PIECEWISE_TEST_NAME boost_tuple_std_piecewise_tests
 #define PIECEWISE_NAMESPACE std
@@ -1502,21 +1495,6 @@ namespace insert_tests {
 #include "./insert_tests.cpp"
 
 #endif
-
-#if !defined(BOOST_NO_CXX11_HDR_TUPLE)
-
-#define PIECEWISE_TEST_NAME std_tuple_boost_piecewise_tests
-#define PIECEWISE_NAMESPACE boost::unordered
-#define TUPLE_NAMESPACE std
-#define EMULATING_PIECEWISE_CONSTRUCTION 0
-#include "./insert_tests.cpp"
-
-#endif
-
-#endif
-
-#if !defined(BOOST_NO_CXX11_HDR_TUPLE) &&                                      \
-  BOOST_UNORDERED_HAVE_PIECEWISE_CONSTRUCT
 
 #ifdef BOOST_UNORDERED_FOA_TESTS
   static boost::unordered_flat_set<std::pair<overloaded_constructor,
@@ -1531,8 +1509,6 @@ namespace insert_tests {
 #define TUPLE_NAMESPACE std
 #define EMULATING_PIECEWISE_CONSTRUCTION 0
 #include "./insert_tests.cpp"
-
-#endif
 }
 
 RUN_TESTS_QUIET()

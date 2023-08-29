@@ -469,7 +469,7 @@ namespace unnecessary_copy_tests {
 #endif
 
     reset();
-    x.emplace(boost::unordered::piecewise_construct, boost::make_tuple(),
+    x.emplace(std::piecewise_construct, boost::make_tuple(),
       boost::make_tuple());
     COPY_COUNT(2);
     MOVE_COUNT(0);
@@ -536,7 +536,7 @@ namespace unnecessary_copy_tests {
     MOVE_COUNT(0);
 
     reset();
-    x.emplace(boost::unordered::piecewise_construct,
+    x.emplace(std::piecewise_construct,
       boost::make_tuple(boost::ref(b.first)),
       boost::make_tuple(boost::ref(b.second)));
     COPY_COUNT(0);
@@ -545,7 +545,7 @@ namespace unnecessary_copy_tests {
 #if BOOST_UNORDERED_TUPLE_ARGS
 
     reset();
-    x.emplace(boost::unordered::piecewise_construct,
+    x.emplace(std::piecewise_construct,
       std::make_tuple(std::ref(b.first)), std::make_tuple(std::ref(b.second)));
     COPY_COUNT(0);
     MOVE_COUNT(0);
@@ -559,7 +559,7 @@ namespace unnecessary_copy_tests {
 
     std::pair<count_copies const, count_copies> move_source;
     reset();
-    x.emplace(boost::unordered::piecewise_construct,
+    x.emplace(std::piecewise_construct,
       std::make_tuple(std::move(move_source.first)),
       std::make_tuple(std::move(move_source.second)));
     COPY_COUNT(tuple_copy_cost);
@@ -569,7 +569,7 @@ namespace unnecessary_copy_tests {
   !(defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ < 6) &&               \
   !(defined(BOOST_MSVC) && BOOST_MSVC < 1700)
     reset();
-    x.emplace(boost::unordered::piecewise_construct,
+    x.emplace(std::piecewise_construct,
       std::forward_as_tuple(b.first), std::forward_as_tuple(b.second));
     COPY_COUNT(0);
     MOVE_COUNT(0);

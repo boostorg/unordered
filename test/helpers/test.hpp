@@ -134,8 +134,6 @@ namespace test {
       << "Compiler: " << BOOST_COMPILER << "\n"                                \
       << "Library: " << BOOST_STDLIB << "\n"                                   \
       << "__cplusplus: " << BOOST_UNORDERED_CPLUSPLUS << "\n\n"                \
-      << "BOOST_UNORDERED_HAVE_PIECEWISE_CONSTRUCT: "                          \
-      << BOOST_UNORDERED_HAVE_PIECEWISE_CONSTRUCT << "\n"                      \
       << "BOOST_UNORDERED_EMPLACE_LIMIT: " << BOOST_UNORDERED_EMPLACE_LIMIT    \
       << "\n"                                                                  \
       << std::flush;                                                           \
