@@ -60,9 +60,7 @@
 #include <stdexcept>
 #include <utility>
 
-#if !defined(BOOST_NO_CXX11_HDR_TYPE_TRAITS)
 #include <type_traits>
-#endif
 
 #if BOOST_UNORDERED_CXX11_CONSTRUCTION
 #include <boost/mp11/algorithm.hpp>
@@ -368,33 +366,6 @@ namespace boost {
 namespace boost {
   namespace unordered {
     namespace detail {
-
-      ////////////////////////////////////////////////////////////////////////////
-      // Integral_constrant, true_type, false_type
-      //
-      // Uses the standard versions if available.
-
-#if !defined(BOOST_NO_CXX11_HDR_TYPE_TRAITS)
-
-      using std::false_type;
-      using std::integral_constant;
-      using std::true_type;
-
-#else
-
-      template <typename T, T Value> struct integral_constant
-      {
-        enum
-        {
-          value = Value
-        };
-      };
-
-      typedef boost::unordered::detail::integral_constant<bool, true> true_type;
-      typedef boost::unordered::detail::integral_constant<bool, false>
-        false_type;
-
-#endif
 
       ////////////////////////////////////////////////////////////////////////////
       // Explicitly call a destructor
@@ -1357,8 +1328,7 @@ namespace boost {
             : current_(0)
         {
           construct_functions(current_, bf.current_functions(),
-            boost::unordered::detail::integral_constant<bool,
-              nothrow_move_constructible>());
+            std::integral_constant<bool, nothrow_move_constructible>());
         }
 
         ~functions()
@@ -1414,16 +1384,15 @@ namespace boost {
           new ((void*)&funcs_[which]) function_pair(hf, eq);
         }
 
-        void construct_functions(unsigned char which, function_pair const& f,
-          boost::unordered::detail::false_type =
-            boost::unordered::detail::false_type())
+        void construct_functions(
+          unsigned char which, function_pair const& f, std::false_type = {})
         {
           BOOST_ASSERT(!(which & 2));
           new ((void*)&funcs_[which]) function_pair(f);
         }
 
-        void construct_functions(unsigned char which, function_pair& f,
-          boost::unordered::detail::true_type)
+        void construct_functions(
+          unsigned char which, function_pair& f, std::true_type)
         {
           BOOST_ASSERT(!(which & 2));
           new ((void*)&funcs_[which])
@@ -1922,7 +1891,7 @@ namespace boost {
         ////////////////////////////////////////////////////////////////////////
         // Swap and Move
 
-        void swap_allocators(table& other, false_type)
+        void swap_allocators(table& other, std::false_type)
         {
           boost::unordered::detail::func::ignore_unused_variable_warning(other);
 
@@ -1933,7 +1902,7 @@ namespace boost {
         }
 
         // Not nothrow swappable
-        void swap(table& x, false_type)
+        void swap(table& x, std::false_type)
         {
           if (this == &x) {
             return;
@@ -1957,7 +1926,7 @@ namespace boost {
         }
 
         // Nothrow swappable
-        void swap(table& x, true_type)
+        void swap(table& x, std::true_type)
         {
           buckets_.swap(x.buckets_);
           boost::core::invoke_swap(size_, x.size_);
@@ -1974,8 +1943,7 @@ namespace boost {
           BOOST_ASSERT(boost::allocator_propagate_on_container_swap<
                          node_allocator_type>::type::value ||
                        node_alloc() == x.node_alloc());
-          swap(x, boost::unordered::detail::integral_constant<bool,
-                    functions::nothrow_swappable>());
+          swap(x, std::integral_constant<bool, functions::nothrow_swappable>());
         }
 
         // Only call with nodes allocated with the currect allocator, or
@@ -2066,14 +2034,12 @@ namespace boost {
               node_allocator_type>::type pocca;
 
           if (this != &x) {
-            assign(x, is_unique,
-              boost::unordered::detail::integral_constant<bool,
-                pocca::value>());
+            assign(x, is_unique, std::integral_constant<bool, pocca::value>());
           }
         }
 
         template <typename UniqueType>
-        void assign(table const& x, UniqueType is_unique, false_type)
+        void assign(table const& x, UniqueType is_unique, std::false_type)
         {
           // Strong exception safety.
           this->construct_spare_functions(x.current_functions());
@@ -2096,11 +2062,11 @@ namespace boost {
         }
 
         template <typename UniqueType>
-        void assign(table const& x, UniqueType is_unique, true_type)
+        void assign(table const& x, UniqueType is_unique, std::true_type)
         {
           if (node_alloc() == x.node_alloc()) {
             buckets_.reset_allocator(x.node_alloc());
-            assign(x, is_unique, false_type());
+            assign(x, is_unique, std::false_type());
           } else {
             bucket_array_type new_buckets(x.size_, x.node_alloc());
             this->construct_spare_functions(x.current_functions());
@@ -2128,7 +2094,7 @@ namespace boost {
         {
           if (this != &x) {
             move_assign(x, is_unique,
-              boost::unordered::detail::integral_constant<bool,
+              std::integral_constant<bool,
                 boost::allocator_propagate_on_container_move_assignment<
                   node_allocator_type>::type::value>());
           }
@@ -2136,7 +2102,7 @@ namespace boost {
 
         // Propagate allocator
         template <typename UniqueType>
-        void move_assign(table& x, UniqueType, true_type)
+        void move_assign(table& x, UniqueType, std::true_type)
         {
           if (!functions::nothrow_move_assignable) {
             this->construct_spare_functions(x.current_functions());
@@ -2153,7 +2119,7 @@ namespace boost {
 
         // Don't propagate allocator
         template <typename UniqueType>
-        void move_assign(table& x, UniqueType is_unique, false_type)
+        void move_assign(table& x, UniqueType is_unique, std::false_type)
         {
           if (node_alloc() == x.node_alloc()) {
             move_assign_equal_alloc(x);
@@ -2789,7 +2755,7 @@ namespace boost {
         ////////////////////////////////////////////////////////////////////////
         // fill_buckets_unique
 
-        void copy_buckets(table const& src, true_type)
+        void copy_buckets(table const& src, std::true_type)
         {
           BOOST_ASSERT(size_ == 0);
 
@@ -2810,7 +2776,7 @@ namespace boost {
           }
         }
 
-        void move_assign_buckets(table& src, true_type)
+        void move_assign_buckets(table& src, std::true_type)
         {
           BOOST_ASSERT(size_ == 0);
           BOOST_ASSERT(max_load_ >= src.size_);
@@ -3135,7 +3101,7 @@ namespace boost {
         ////////////////////////////////////////////////////////////////////////
         // fill_buckets
 
-        void copy_buckets(table const& src, false_type)
+        void copy_buckets(table const& src, std::false_type)
         {
           BOOST_ASSERT(size_ == 0);
 
@@ -3156,7 +3122,7 @@ namespace boost {
           }
         }
 
-        void move_assign_buckets(table& src, false_type)
+        void move_assign_buckets(table& src, std::false_type)
         {
           BOOST_ASSERT(size_ == 0);
           BOOST_ASSERT(max_load_ >= src.size_);

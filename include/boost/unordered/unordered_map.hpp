@@ -149,7 +149,7 @@ namespace boost {
 #if defined(BOOST_UNORDERED_USE_MOVE)
       unordered_map& operator=(BOOST_COPY_ASSIGN_REF(unordered_map) x)
       {
-        table_.assign(x.table_, boost::unordered::detail::true_type());
+        table_.assign(x.table_, std::true_type());
         return *this;
       }
 
@@ -158,13 +158,13 @@ namespace boost {
             boost::is_nothrow_move_assignable<H>::value&&
               boost::is_nothrow_move_assignable<P>::value)
       {
-        table_.move_assign(x.table_, boost::unordered::detail::true_type());
+        table_.move_assign(x.table_, std::true_type());
         return *this;
       }
 #else
       unordered_map& operator=(unordered_map const& x)
       {
-        table_.assign(x.table_, boost::unordered::detail::true_type());
+        table_.assign(x.table_, std::true_type());
         return *this;
       }
 
@@ -174,7 +174,7 @@ namespace boost {
             boost::is_nothrow_move_assignable<H>::value&&
               boost::is_nothrow_move_assignable<P>::value)
       {
-        table_.move_assign(x.table_, boost::unordered::detail::true_type());
+        table_.move_assign(x.table_, std::true_type());
         return *this;
       }
 #endif
@@ -1247,39 +1247,20 @@ namespace boost {
 
       // Assign
 
-#if defined(BOOST_UNORDERED_USE_MOVE)
-      unordered_multimap& operator=(BOOST_COPY_ASSIGN_REF(unordered_multimap) x)
-      {
-        table_.assign(x.table_, boost::unordered::detail::false_type());
-        return *this;
-      }
-
-      unordered_multimap& operator=(BOOST_RV_REF(unordered_multimap) x)
-        noexcept(value_allocator_traits::is_always_equal::value&&
-            boost::is_nothrow_move_assignable<H>::value&&
-              boost::is_nothrow_move_assignable<P>::value)
-      {
-        table_.move_assign(x.table_, boost::unordered::detail::false_type());
-        return *this;
-      }
-#else
       unordered_multimap& operator=(unordered_multimap const& x)
       {
-        table_.assign(x.table_, boost::unordered::detail::false_type());
+        table_.assign(x.table_, std::false_type());
         return *this;
       }
 
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
       unordered_multimap& operator=(unordered_multimap&& x)
         noexcept(value_allocator_traits::is_always_equal::value&&
             boost::is_nothrow_move_assignable<H>::value&&
               boost::is_nothrow_move_assignable<P>::value)
       {
-        table_.move_assign(x.table_, boost::unordered::detail::false_type());
+        table_.move_assign(x.table_, std::false_type());
         return *this;
       }
-#endif
-#endif
 
       unordered_multimap& operator=(std::initializer_list<value_type>);
 
@@ -1869,7 +1850,7 @@ namespace boost {
     {
       if (other.size()) {
         table_.copy_buckets(
-          other.table_, boost::unordered::detail::true_type());
+          other.table_, std::true_type());
       }
     }
 
@@ -1887,7 +1868,7 @@ namespace boost {
     {
       if (other.table_.size_) {
         table_.copy_buckets(
-          other.table_, boost::unordered::detail::true_type());
+          other.table_, std::true_type());
       }
     }
 
@@ -2402,7 +2383,7 @@ namespace boost {
     {
       if (other.table_.size_) {
         table_.copy_buckets(
-          other.table_, boost::unordered::detail::false_type());
+          other.table_, std::false_type());
       }
     }
 
@@ -2421,7 +2402,7 @@ namespace boost {
     {
       if (other.table_.size_) {
         table_.copy_buckets(
-          other.table_, boost::unordered::detail::false_type());
+          other.table_, std::false_type());
       }
     }
 
