@@ -62,10 +62,8 @@
 
 #include <type_traits>
 
-#if BOOST_UNORDERED_CXX11_CONSTRUCTION
 #include <boost/mp11/algorithm.hpp>
 #include <boost/mp11/list.hpp>
-#endif
 
 // BOOST_UNORDERED_SUPPRESS_DEPRECATED
 //
@@ -521,57 +519,6 @@ namespace boost {
 } // namespace boost
 
 ////////////////////////////////////////////////////////////////////////////
-// Functions used to construct nodes. Emulates variadic construction,
-// piecewise construction etc.
-
-////////////////////////////////////////////////////////////////////////////
-// construct_value
-//
-// Only use allocator_traits::construct, allocator_traits::destroy when full
-// C++11 support is available.
-
-#if BOOST_UNORDERED_CXX11_CONSTRUCTION
-
-#elif !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-
-namespace boost {
-  namespace unordered {
-    namespace detail {
-      namespace func {
-        template <typename T, typename... Args>
-        inline void construct_value(T* address, BOOST_FWD_REF(Args)... args)
-        {
-          new ((void*)address) T(boost::forward<Args>(args)...);
-        }
-      } // namespace func
-    } // namespace detail
-  } // namespace unordered
-} // namespace boost
-
-#else
-
-namespace boost {
-  namespace unordered {
-    namespace detail {
-      namespace func {
-        template <typename T> inline void construct_value(T* address)
-        {
-          new ((void*)address) T();
-        }
-
-        template <typename T, typename A0>
-        inline void construct_value(T* address, BOOST_FWD_REF(A0) a0)
-        {
-          new ((void*)address) T(boost::forward<A0>(a0));
-        }
-      } // namespace func
-    } // namespace detail
-  } // namespace unordered
-} // namespace boost
-
-#endif
-
-////////////////////////////////////////////////////////////////////////////
 // Construct from tuple
 //
 // Used to emulate piecewise construction.
@@ -613,37 +560,6 @@ namespace boost {
         BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 8, boost)
         BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 9, boost)
         BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 10, boost)
-      } // namespace func
-    } // namespace detail
-  } // namespace unordered
-} // namespace boost
-
-#endif
-
-// construct_from_tuple for std::tuple
-
-#if !BOOST_UNORDERED_CXX11_CONSTRUCTION && BOOST_UNORDERED_TUPLE_ARGS
-
-namespace boost {
-  namespace unordered {
-    namespace detail {
-      namespace func {
-        template <typename Alloc, typename T>
-        void construct_from_tuple(Alloc&, T* ptr, std::tuple<>)
-        {
-          new ((void*)ptr) T();
-        }
-
-        BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 1, std)
-        BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 2, std)
-        BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 3, std)
-        BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 4, std)
-        BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 5, std)
-
-#if BOOST_UNORDERED_TUPLE_ARGS >= 6
-        BOOST_PP_REPEAT_FROM_TO(6, BOOST_PP_INC(BOOST_UNORDERED_TUPLE_ARGS),
-          BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE, std)
-#endif
       } // namespace func
     } // namespace detail
   } // namespace unordered
@@ -741,8 +657,6 @@ namespace boost {
           };
         };
 
-#if BOOST_UNORDERED_CXX11_CONSTRUCTION
-
         ////////////////////////////////////////////////////////////////////////
         // Construct from variadic parameters
 
@@ -816,124 +730,6 @@ namespace boost {
           boost::allocator_construct(alloc, address, std::piecewise_construct,
             to_std_tuple(a1), to_std_tuple(a2));
         }
-
-#elif !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-
-        ////////////////////////////////////////////////////////////////////////
-        // Construct from variadic parameters
-
-        template <typename Alloc, typename T, typename... Args>
-        inline void construct_from_args(
-          Alloc&, T* address, BOOST_FWD_REF(Args)... args)
-        {
-          new ((void*)address) T(boost::forward<Args>(args)...);
-        }
-
-        // Special case for piecewise_construct
-
-        template <typename Alloc, typename A, typename B, typename A0,
-          typename A1, typename A2>
-        inline typename enable_if<use_piecewise<A0>, void>::type
-        construct_from_args(Alloc& alloc, std::pair<A, B>* address,
-          BOOST_FWD_REF(A0), BOOST_FWD_REF(A1) a1, BOOST_FWD_REF(A2) a2)
-        {
-          boost::unordered::detail::func::construct_from_tuple(
-            alloc, boost::addressof(address->first), boost::forward<A1>(a1));
-          BOOST_TRY
-          {
-            boost::unordered::detail::func::construct_from_tuple(
-              alloc, boost::addressof(address->second), boost::forward<A2>(a2));
-          }
-          BOOST_CATCH(...)
-          {
-            boost::unordered::detail::func::destroy(
-              boost::addressof(address->first));
-            BOOST_RETHROW
-          }
-          BOOST_CATCH_END
-        }
-
-#else // BOOST_NO_CXX11_VARIADIC_TEMPLATES
-
-        ////////////////////////////////////////////////////////////////////////
-        // Construct from emplace_args
-
-        // Explicitly write out first three overloads for the sake of sane
-        // error messages.
-
-        template <typename Alloc, typename T, typename A0>
-        inline void construct_from_args(
-          Alloc&, T* address, emplace_args1<A0> const& args)
-        {
-          new ((void*)address) T(boost::forward<A0>(args.a0));
-        }
-
-        template <typename Alloc, typename T, typename A0, typename A1>
-        inline void construct_from_args(
-          Alloc&, T* address, emplace_args2<A0, A1> const& args)
-        {
-          new ((void*)address)
-            T(boost::forward<A0>(args.a0), boost::forward<A1>(args.a1));
-        }
-
-        template <typename Alloc, typename T, typename A0, typename A1,
-          typename A2>
-        inline void construct_from_args(
-          Alloc&, T* address, emplace_args3<A0, A1, A2> const& args)
-        {
-          new ((void*)address) T(boost::forward<A0>(args.a0),
-            boost::forward<A1>(args.a1), boost::forward<A2>(args.a2));
-        }
-
-        // Use a macro for the rest.
-
-#define BOOST_UNORDERED_CONSTRUCT_IMPL(z, num_params, _)                       \
-  template <typename Alloc, typename T,                                        \
-    BOOST_PP_ENUM_PARAMS_Z(z, num_params, typename A)>                         \
-  inline void construct_from_args(Alloc&, T* address,                          \
-    boost::unordered::detail::BOOST_PP_CAT(emplace_args, num_params) <         \
-      BOOST_PP_ENUM_PARAMS_Z(z, num_params, A) > const& args)                  \
-  {                                                                            \
-    new ((void*)address)                                                       \
-      T(BOOST_PP_ENUM_##z(num_params, BOOST_UNORDERED_CALL_FORWARD, args.a));  \
-  }
-
-        BOOST_UNORDERED_CONSTRUCT_IMPL(1, 4, _)
-        BOOST_UNORDERED_CONSTRUCT_IMPL(1, 5, _)
-        BOOST_UNORDERED_CONSTRUCT_IMPL(1, 6, _)
-        BOOST_UNORDERED_CONSTRUCT_IMPL(1, 7, _)
-        BOOST_UNORDERED_CONSTRUCT_IMPL(1, 8, _)
-        BOOST_UNORDERED_CONSTRUCT_IMPL(1, 9, _)
-        BOOST_PP_REPEAT_FROM_TO(10, BOOST_PP_INC(BOOST_UNORDERED_EMPLACE_LIMIT),
-          BOOST_UNORDERED_CONSTRUCT_IMPL, _)
-
-#undef BOOST_UNORDERED_CONSTRUCT_IMPL
-
-        // Construct with piecewise_construct
-
-        template <typename Alloc, typename A, typename B, typename A0,
-          typename A1, typename A2>
-        inline typename enable_if<use_piecewise<A0>, void>::type
-        construct_from_args(Alloc& alloc, std::pair<A, B>* address,
-          boost::unordered::detail::emplace_args3<A0, A1, A2> const& args)
-        {
-          boost::unordered::detail::func::construct_from_tuple(
-            alloc, boost::addressof(address->first), args.a1);
-          BOOST_TRY
-          {
-            boost::unordered::detail::func::construct_from_tuple(
-              alloc, boost::addressof(address->second), args.a2);
-          }
-          BOOST_CATCH(...)
-          {
-            boost::unordered::detail::func::destroy(
-              boost::addressof(address->first));
-            BOOST_RETHROW
-          }
-          BOOST_CATCH_END
-        }
-
-#endif // BOOST_NO_CXX11_VARIADIC_TEMPLATES
       } // namespace func
     } // namespace detail
   } // namespace unordered
@@ -1075,8 +871,6 @@ namespace boost {
           return a.release();
         }
 
-#if BOOST_UNORDERED_CXX11_CONSTRUCTION
-
         template <typename Alloc, typename Key>
         inline typename boost::allocator_pointer<Alloc>::type
         construct_node_pair(Alloc& alloc, BOOST_FWD_REF(Key) k)
@@ -1135,107 +929,13 @@ namespace boost {
 
           value_allocator val_alloc(alloc);
 
-#if !(BOOST_COMP_CLANG && BOOST_COMP_CLANG < BOOST_VERSION_NUMBER(3, 8, 0) &&  \
-      defined(BOOST_LIBSTDCXX11))
           boost::allocator_construct(val_alloc, a.node_->value_ptr(),
             std::piecewise_construct,
             std::forward_as_tuple(boost::forward<Key>(k)),
             std::forward_as_tuple(boost::forward<Args>(args)...));
-#else
-          // It doesn't seem to be possible to construct a tuple with 3 variadic
-          // rvalue reference members when using older versions of clang with
-          // libstdc++, so just use std::make_tuple instead of
-          // std::forward_as_tuple.
-          boost::allocator_construct(val_alloc, a.node_->value_ptr(),
-            std::piecewise_construct,
-            std::forward_as_tuple(boost::forward<Key>(k)),
-            std::make_tuple(boost::forward<Args>(args)...));
-#endif
+
           return a.release();
         }
-
-#else
-
-        template <typename Alloc, typename Key>
-        inline
-          typename boost::unordered::detail::allocator_traits<Alloc>::pointer
-          construct_node_pair(Alloc& alloc, BOOST_FWD_REF(Key) k)
-        {
-          node_constructor<Alloc> a(alloc);
-          a.create_node();
-          boost::unordered::detail::func::construct_value(
-            boost::addressof(a.node_->value_ptr()->first),
-            boost::forward<Key>(k));
-          BOOST_TRY
-          {
-            boost::unordered::detail::func::construct_value(
-              boost::addressof(a.node_->value_ptr()->second));
-          }
-          BOOST_CATCH(...)
-          {
-            boost::unordered::detail::func::destroy(
-              boost::addressof(a.node_->value_ptr()->first));
-            BOOST_RETHROW
-          }
-          BOOST_CATCH_END
-          return a.release();
-        }
-
-        template <typename Alloc, typename Key, typename Mapped>
-        inline
-          typename boost::unordered::detail::allocator_traits<Alloc>::pointer
-          construct_node_pair(
-            Alloc& alloc, BOOST_FWD_REF(Key) k, BOOST_FWD_REF(Mapped) m)
-        {
-          node_constructor<Alloc> a(alloc);
-          a.create_node();
-          boost::unordered::detail::func::construct_value(
-            boost::addressof(a.node_->value_ptr()->first),
-            boost::forward<Key>(k));
-          BOOST_TRY
-          {
-            boost::unordered::detail::func::construct_value(
-              boost::addressof(a.node_->value_ptr()->second),
-              boost::forward<Mapped>(m));
-          }
-          BOOST_CATCH(...)
-          {
-            boost::unordered::detail::func::destroy(
-              boost::addressof(a.node_->value_ptr()->first));
-            BOOST_RETHROW
-          }
-          BOOST_CATCH_END
-          return a.release();
-        }
-
-        template <typename Alloc, typename Key, typename... Args>
-        inline
-          typename boost::unordered::detail::allocator_traits<Alloc>::pointer
-          construct_node_pair_from_args(
-            Alloc& alloc, BOOST_FWD_REF(Key) k, Args&&... args)
-        {
-          node_constructor<Alloc> a(alloc);
-          a.create_node();
-          boost::unordered::detail::func::construct_value(
-            boost::addressof(a.node_->value_ptr()->first),
-            boost::forward<Key>(k));
-          BOOST_TRY
-          {
-            boost::unordered::detail::func::construct_from_args(alloc,
-              boost::addressof(a.node_->value_ptr()->second),
-              std::forward<Args>(args)...);
-          }
-          BOOST_CATCH(...)
-          {
-            boost::unordered::detail::func::destroy(
-              boost::addressof(a.node_->value_ptr()->first));
-            BOOST_RETHROW
-          }
-          BOOST_CATCH_END
-          return a.release();
-        }
-
-#endif
 
         template <typename T, typename Alloc, typename Key>
         inline typename boost::allocator_pointer<Alloc>::type

@@ -123,28 +123,4 @@ namespace boost {
 #include <tuple>
 #endif
 
-// BOOST_UNORDERED_CXX11_CONSTRUCTION
-//
-// Use C++11 construction, requires variadic arguments, good construct support
-// in allocator_traits and piecewise construction of std::pair
-// Otherwise allocators aren't used for construction/destruction
-
-#if BOOST_UNORDERED_HAVE_PIECEWISE_CONSTRUCT &&                                \
-  !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES) && BOOST_UNORDERED_TUPLE_ARGS
-#if BOOST_COMP_SUNPRO && BOOST_LIB_STD_GNU
-// Sun C++ std::pair piecewise construction doesn't seem to be exception safe.
-// (At least for Sun C++ 12.5 using libstdc++).
-#define BOOST_UNORDERED_CXX11_CONSTRUCTION 0
-#elif BOOST_COMP_GNUC && BOOST_COMP_GNUC < BOOST_VERSION_NUMBER(4, 7, 0)
-// Piecewise construction in GCC 4.6 doesn't work for uncopyable types.
-#define BOOST_UNORDERED_CXX11_CONSTRUCTION 0
-#elif !defined(BOOST_NO_CXX11_ALLOCATOR)
-#define BOOST_UNORDERED_CXX11_CONSTRUCTION 1
-#endif
-#endif
-
-#if !defined(BOOST_UNORDERED_CXX11_CONSTRUCTION)
-#define BOOST_UNORDERED_CXX11_CONSTRUCTION 0
-#endif
-
 #endif
