@@ -147,7 +147,7 @@ namespace boost {
 #if defined(BOOST_UNORDERED_USE_MOVE)
       unordered_set& operator=(BOOST_COPY_ASSIGN_REF(unordered_set) x)
       {
-        table_.assign(x.table_, boost::unordered::detail::true_type());
+        table_.assign(x.table_, std::true_type());
         return *this;
       }
 
@@ -156,13 +156,13 @@ namespace boost {
             boost::is_nothrow_move_assignable<H>::value&&
               boost::is_nothrow_move_assignable<P>::value)
       {
-        table_.move_assign(x.table_, boost::unordered::detail::true_type());
+        table_.move_assign(x.table_, std::true_type());
         return *this;
       }
 #else
       unordered_set& operator=(unordered_set const& x)
       {
-        table_.assign(x.table_, boost::unordered::detail::true_type());
+        table_.assign(x.table_, std::true_type());
         return *this;
       }
 
@@ -172,7 +172,7 @@ namespace boost {
             boost::is_nothrow_move_assignable<H>::value&&
               boost::is_nothrow_move_assignable<P>::value)
       {
-        table_.move_assign(x.table_, boost::unordered::detail::true_type());
+        table_.move_assign(x.table_, std::true_type());
         return *this;
       }
 #endif
@@ -818,40 +818,20 @@ namespace boost {
       ~unordered_multiset() noexcept;
 
       // Assign
-
-#if defined(BOOST_UNORDERED_USE_MOVE)
-      unordered_multiset& operator=(BOOST_COPY_ASSIGN_REF(unordered_multiset) x)
-      {
-        table_.assign(x.table_, boost::unordered::detail::false_type());
-        return *this;
-      }
-
-      unordered_multiset& operator=(BOOST_RV_REF(unordered_multiset) x)
-        noexcept(value_allocator_traits::is_always_equal::value&&
-            boost::is_nothrow_move_assignable<H>::value&&
-              boost::is_nothrow_move_assignable<P>::value)
-      {
-        table_.move_assign(x.table_, boost::unordered::detail::false_type());
-        return *this;
-      }
-#else
       unordered_multiset& operator=(unordered_multiset const& x)
       {
-        table_.assign(x.table_, boost::unordered::detail::false_type());
+        table_.assign(x.table_, std::false_type());
         return *this;
       }
 
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
       unordered_multiset& operator=(unordered_multiset&& x)
         noexcept(value_allocator_traits::is_always_equal::value&&
             boost::is_nothrow_move_assignable<H>::value&&
               boost::is_nothrow_move_assignable<P>::value)
       {
-        table_.move_assign(x.table_, boost::unordered::detail::false_type());
+        table_.move_assign(x.table_, std::false_type());
         return *this;
       }
-#endif
-#endif
 
       unordered_multiset& operator=(std::initializer_list<value_type>);
 
@@ -1389,8 +1369,7 @@ namespace boost {
               select_on_container_copy_construction(other.get_allocator()))
     {
       if (other.size()) {
-        table_.copy_buckets(
-          other.table_, boost::unordered::detail::true_type());
+        table_.copy_buckets(other.table_, std::true_type());
       }
     }
 
@@ -1407,8 +1386,7 @@ namespace boost {
         : table_(other.table_, a)
     {
       if (other.table_.size_) {
-        table_.copy_buckets(
-          other.table_, boost::unordered::detail::true_type());
+        table_.copy_buckets(other.table_, std::true_type());
       }
     }
 
@@ -1793,8 +1771,7 @@ namespace boost {
               select_on_container_copy_construction(other.get_allocator()))
     {
       if (other.table_.size_) {
-        table_.copy_buckets(
-          other.table_, boost::unordered::detail::false_type());
+        table_.copy_buckets(other.table_, std::false_type());
       }
     }
 
@@ -1811,8 +1788,7 @@ namespace boost {
         : table_(other.table_, a)
     {
       if (other.table_.size_) {
-        table_.copy_buckets(
-          other.table_, boost::unordered::detail::false_type());
+        table_.copy_buckets(other.table_, std::false_type());
       }
     }
 
