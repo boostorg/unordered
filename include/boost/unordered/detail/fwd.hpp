@@ -16,14 +16,6 @@
 
 #include <utility>
 
-// BOOST_UNORDERED_EMPLACE_LIMIT = The maximum number of parameters in
-// emplace (not including things like hints). Don't set it to a lower value, as
-// that might break something.
-
-#if !defined BOOST_UNORDERED_EMPLACE_LIMIT
-#define BOOST_UNORDERED_EMPLACE_LIMIT 10
-#endif
-
 ////////////////////////////////////////////////////////////////////////////////
 // Configuration
 //
