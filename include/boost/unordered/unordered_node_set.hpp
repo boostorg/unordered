@@ -1,4 +1,4 @@
-// Copyright (C) 2022 Christian Mazakas
+// Copyright (C) 2022-2023 Christian Mazakas
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -14,6 +14,7 @@
 #include <boost/unordered/detail/foa/node_handle.hpp>
 #include <boost/unordered/detail/foa/node_set_types.hpp>
 #include <boost/unordered/detail/foa/table.hpp>
+#include <boost/unordered/detail/serialize_container.hpp>
 #include <boost/unordered/detail/type_traits.hpp>
 #include <boost/unordered/unordered_node_set_fwd.hpp>
 
@@ -599,6 +600,16 @@ namespace boost {
     erase_if(unordered_node_set<Key, Hash, KeyEqual, Allocator>& set, Pred pred)
     {
       return erase_if(set.table_, pred);
+    }
+
+    template <class Archive,
+      class Key, class Hash, class KeyEqual, class Allocator>
+    void serialize(
+      Archive & ar,
+      unordered_node_set<Key, Hash, KeyEqual, Allocator>& set,
+      unsigned int version)
+    {
+      detail::serialize_container(ar, set, version);
     }
 
 #if defined(BOOST_MSVC)

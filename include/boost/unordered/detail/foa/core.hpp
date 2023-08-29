@@ -1180,7 +1180,8 @@ alloc_make_insert_type(const Allocator& al,Args&&... args)
  * init_type and element_type:
  *
  *   - TypePolicy::key_type and TypePolicy::value_type have the obvious
- *     meaning.
+ *     meaning. TypePolicy::mapped_type is expected to be provided as well
+ *     when key_type and value_type are not the same.
  *
  *   - TypePolicy::init_type is the type implicitly converted to when
  *     writing x.insert({...}). For maps, this is std::pair<Key,T> rather

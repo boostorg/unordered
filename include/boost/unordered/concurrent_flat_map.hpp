@@ -19,6 +19,7 @@
 
 #include <boost/container_hash/hash.hpp>
 #include <boost/core/allocator_access.hpp>
+#include <boost/core/serialization.hpp>
 #include <boost/mp11/algorithm.hpp>
 #include <boost/mp11/list.hpp>
 #include <boost/type_traits/type_identity.hpp>
@@ -100,6 +101,11 @@ namespace boost {
       template <class K, class V, class H, class KE, class A, class Predicate>
       friend typename concurrent_flat_map<K, V, H, KE, A>::size_type erase_if(
         concurrent_flat_map<K, V, H, KE, A>& set, Predicate pred);
+
+      template<class Archive, class K, class V, class H, class KE, class A>
+      friend void serialize(
+        Archive& ar, concurrent_flat_map<K, V, H, KE, A>& c,
+        unsigned int version);
 
     public:
       using key_type = Key;
@@ -770,6 +776,13 @@ namespace boost {
       concurrent_flat_map<K, T, H, P, A>& c, Predicate pred)
     {
       return c.table_.erase_if(pred);
+    }
+
+    template<class Archive, class K, class V, class H, class KE, class A>
+    void serialize(
+      Archive& ar, concurrent_flat_map<K, V, H, KE, A>& c, unsigned int)
+    {
+      ar & core::make_nvp("table",c.table_);
     }
 
 #if BOOST_UNORDERED_TEMPLATE_DEDUCTION_GUIDES

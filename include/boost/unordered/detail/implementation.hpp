@@ -1,6 +1,6 @@
 // Copyright (C) 2003-2004 Jeremy B. Maitin-Shepard.
 // Copyright (C) 2005-2016 Daniel James
-// Copyright (C) 2022 Joaquin M Lopez Munoz.
+// Copyright (C) 2022-2023 Joaquin M Lopez Munoz.
 // Copyright (C) 2022 Christian Mazakas
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -17,8 +17,10 @@
 #include <boost/assert.hpp>
 #include <boost/core/allocator_traits.hpp>
 #include <boost/core/bit.hpp>
+#include <boost/core/invoke_swap.hpp>
 #include <boost/core/no_exceptions_support.hpp>
 #include <boost/core/pointer_traits.hpp>
+#include <boost/core/serialization.hpp>
 #include <boost/limits.hpp>
 #include <boost/move/move.hpp>
 #include <boost/preprocessor/arithmetic/inc.hpp>
@@ -29,7 +31,6 @@
 #include <boost/preprocessor/repetition/repeat_from_to.hpp>
 #include <boost/preprocessor/seq/enum.hpp>
 #include <boost/preprocessor/seq/size.hpp>
-#include <boost/swap.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/type_traits/add_lvalue_reference.hpp>
@@ -47,6 +48,7 @@
 #include <boost/type_traits/make_void.hpp>
 #include <boost/type_traits/remove_const.hpp>
 #include <boost/unordered/detail/fca.hpp>
+#include <boost/unordered/detail/serialize_tracked_address.hpp>
 #include <boost/unordered/detail/type_traits.hpp>
 #include <boost/unordered/detail/fwd.hpp>
 #include <boost/utility/addressof.hpp>
@@ -258,8 +260,8 @@ namespace boost {
 
         void swap(compressed& x)
         {
-          boost::swap(first(), x.first());
-          boost::swap(second(), x.second());
+          boost::core::invoke_swap(first(), x.first());
+          boost::core::invoke_swap(second(), x.second());
         }
 
       private:
@@ -642,7 +644,7 @@ namespace boost {
               move(x);
             }
           } else if (has_value_) {
-            boost::swap(value_.value(), x.value_.value());
+            boost::core::invoke_swap(value_.value(), x.value_.value());
           }
         }
 
@@ -1703,6 +1705,25 @@ namespace boost {
               p = (++itb)->next;
             }
           }
+
+          template<typename Archive>
+          friend void serialization_track(Archive& ar, const iterator& x)
+          {
+            if(x.p){
+              track_address(ar, x.p);
+              serialization_track(ar, x.itb);
+            }
+          }
+
+          friend class boost::serialization::access;
+
+          template<typename Archive>
+          void serialize(Archive& ar,unsigned int)
+          {
+            if(!p) itb = bucket_iterator();
+            serialize_tracked_address(ar, p);
+            ar & core::make_nvp("bucket_iterator", itb);
+          }
         };
 
         template <class Node, class Bucket> class c_iterator
@@ -1792,6 +1813,25 @@ namespace boost {
             if (!p) {
               p = (++itb)->next;
             }
+          }
+
+          template<typename Archive>
+          friend void serialization_track(Archive& ar, const c_iterator& x)
+          {
+            if(x.p){
+              track_address(ar, x.p);
+              serialization_track(ar, x.itb);
+            }
+          }
+
+          friend class boost::serialization::access;
+
+          template<typename Archive>
+          void serialize(Archive& ar,unsigned int)
+          {
+            if(!p) itb = bucket_iterator();
+            serialize_tracked_address(ar, p);
+            ar & core::make_nvp("bucket_iterator", itb);
           }
         };
       } // namespace iterator_detail
@@ -2049,7 +2089,7 @@ namespace boost {
           x.switch_functions();
 
           buckets_.swap(x.buckets_);
-          boost::swap(size_, x.size_);
+          boost::core::invoke_swap(size_, x.size_);
           std::swap(mlf_, x.mlf_);
           std::swap(max_load_, x.max_load_);
         }
@@ -2058,7 +2098,7 @@ namespace boost {
         void swap(table& x, true_type)
         {
           buckets_.swap(x.buckets_);
-          boost::swap(size_, x.size_);
+          boost::core::invoke_swap(size_, x.size_);
           std::swap(mlf_, x.mlf_);
           std::swap(max_load_, x.max_load_);
           this->current_functions().swap(x.current_functions());

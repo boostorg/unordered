@@ -15,7 +15,9 @@
 #include <boost/assert.hpp>
 #include <boost/config.hpp>
 #include <boost/config/workaround.hpp>
+#include <boost/core/serialization.hpp>
 #include <boost/unordered/detail/foa/core.hpp>
+#include <boost/unordered/detail/serialize_tracked_address.hpp>
 #include <cstddef>
 #include <iterator>
 #include <memory>
@@ -193,6 +195,25 @@ private:
       p-=n0;
       p+=n;
     }
+  }
+
+  template<typename Archive>
+  friend void serialization_track(Archive& ar,const table_iterator& x)
+  {
+    if(x.p){
+      track_address(ar,x.pc);
+      track_address(ar,x.p);
+    }
+  }
+
+  friend class boost::serialization::access;
+
+  template<typename Archive>
+  void serialize(Archive& ar,unsigned int)
+  {
+    if(!p)pc=nullptr;
+    serialize_tracked_address(ar,pc);
+    serialize_tracked_address(ar,p);
   }
 
   unsigned char      *pc=nullptr;

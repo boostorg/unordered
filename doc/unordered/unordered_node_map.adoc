@@ -1545,4 +1545,57 @@ for (auto i = c.begin(), last = c.end(); i != last; ) {
 return original_size - c.size();
 ```
 
+=== Serialization
+
+``unordered_node_map``s can be archived/retrieved by means of
+link:../../../serialization/index.html[Boost.Serialization^] using the API provided
+by this library. Both regular and XML archives are supported. 
+
+==== Saving an unordered_node_map to an archive
+
+Saves all the elements of an `unordered_node_map` `x` to an archive (XML archive) `ar`.
+
+[horizontal]
+Requires:;; `std::remove_const<key_type>::type` and `std::remove_const<mapped_type>::type`
+are serializable (XML serializable), and they do support Boost.Serialization
+`save_construct_data`/`load_construct_data` protocol (automatically suported by
+https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[DefaultConstructible^]
+types).  
+
 ---
+
+==== Loading an unordered_node_map from an archive
+
+Deletes all preexisting elements of an `unordered_node_map` `x` and inserts
+from an archive (XML archive) `ar` restored copies of the elements of the
+original `unordered_node_map` `other` saved to the storage read by `ar`.
+
+[horizontal]
+Requires:;; `key_type` and `mapped_type` are constructible from
+`std::remove_const<key_type>::type&&` and `std::remove_const<mapped_type>::type&&`,
+respectively.
+`x.key_equal()` is functionally equivalent to `other.key_equal()`.
+
+---
+
+==== Saving an iterator/const_iterator to an archive
+
+Saves the positional information of an `iterator` (`const_iterator`) `it`
+to an archive (XML archive) `ar`. `it` can be and `end()` iterator.
+
+[horizontal]
+Requires:;; The `unordered_node_map` `x` pointed to by `it` has been previously saved to `ar`,
+and no modifying operations have been issued on `x` between saving of `x` and
+saving of `it`.
+
+---
+
+==== Loading an iterator/const_iterator from an archive
+
+Makes an `iterator` (`const_iterator`) `it` point to the restored position of
+the original `iterator` (`const_iterator`) saved to the storage read by
+an archive (XML archive) `ar`.
+
+[horizontal]
+Requires:;; If `x` is the `unordered_node_map` `it` points to, no modifying operations
+have been issued on `x` between loading of `x` and loading of `it`.

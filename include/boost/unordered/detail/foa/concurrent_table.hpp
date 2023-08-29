@@ -16,13 +16,18 @@
 #include <boost/config.hpp>
 #include <boost/core/ignore_unused.hpp>
 #include <boost/core/no_exceptions_support.hpp>
+#include <boost/core/serialization.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/mp11/tuple.hpp>
 #include <boost/static_assert.hpp>
+#include <boost/throw_exception.hpp>
+#include <boost/unordered/detail/archive_constructed.hpp>
+#include <boost/unordered/detail/bad_archive_exception.hpp>
 #include <boost/unordered/detail/foa/core.hpp>
 #include <boost/unordered/detail/foa/reentrancy_check.hpp>
 #include <boost/unordered/detail/foa/rw_spinlock.hpp>
 #include <boost/unordered/detail/foa/tuple_rotate_right.hpp>
+#include <boost/unordered/detail/serialization_version.hpp>
 #include <cstddef>
 #include <functional>
 #include <initializer_list>
@@ -1441,6 +1446,139 @@ private:
     );
   }
 #endif
+
+  friend class boost::serialization::access;
+
+  template<typename Archive>
+  void serialize(Archive& ar,unsigned int version)
+  {
+    core::split_member(ar,*this,version);
+  }
+
+  template<typename Archive>
+  void save(Archive& ar,unsigned int version)const
+  {
+    save(
+      ar,version,
+      std::integral_constant<bool,std::is_same<key_type,value_type>::value>{});
+  }
+
+  template<typename Archive>
+  void save(Archive& ar,unsigned int,std::true_type /* set */)const
+  {
+    auto                                    lck=exclusive_access();
+    const std::size_t                       s=super::size();
+    const serialization_version<value_type> value_version;
+
+    ar<<core::make_nvp("count",s);
+    ar<<core::make_nvp("value_version",value_version);
+
+    super::for_all_elements([&,this](element_type* p){
+      auto& x=type_policy::value_from(*p);
+      core::save_construct_data_adl(ar,std::addressof(x),value_version);
+      ar<<serialization::make_nvp("item",x);
+    });
+  }
+
+  template<typename Archive>
+  void save(Archive& ar,unsigned int,std::false_type /* map */)const
+  {
+    using raw_key_type=typename std::remove_const<key_type>::type;
+    using raw_mapped_type=typename std::remove_const<
+      typename TypePolicy::mapped_type>::type;
+
+    auto                                         lck=exclusive_access();
+    const std::size_t                            s=super::size();
+    const serialization_version<raw_key_type>    key_version;
+    const serialization_version<raw_mapped_type> mapped_version;
+
+    ar<<core::make_nvp("count",s);
+    ar<<core::make_nvp("key_version",key_version);
+    ar<<core::make_nvp("mapped_version",mapped_version);
+
+    super::for_all_elements([&,this](element_type* p){
+      /* To remain lib-independent from Boost.Serialization and not rely on
+       * the user having included the serialization code for std::pair
+       * (boost/serialization/utility.hpp), we serialize the key and the
+       * mapped value separately.
+       */
+
+      auto& x=type_policy::value_from(*p);
+      core::save_construct_data_adl(
+        ar,std::addressof(x.first),key_version);
+      ar<<serialization::make_nvp("key",x.first);
+      core::save_construct_data_adl(
+        ar,std::addressof(x.second),mapped_version);
+      ar<<serialization::make_nvp("mapped",x.second);
+    });
+  }
+
+  template<typename Archive>
+  void load(Archive& ar,unsigned int version)
+  {
+    load(
+      ar,version,
+      std::integral_constant<bool,std::is_same<key_type,value_type>::value>{});
+  }
+
+  template<typename Archive>
+  void load(Archive& ar,unsigned int,std::true_type /* set */)
+  {
+    auto                              lck=exclusive_access();
+    std::size_t                       s;
+    serialization_version<value_type> value_version;
+
+    ar>>core::make_nvp("count",s);
+    ar>>core::make_nvp("value_version",value_version);
+
+    super::clear();
+    super::reserve(s);
+
+    for(std::size_t n=0;n<s;++n){
+      archive_constructed<value_type> value("item",ar,value_version);
+      auto&                           x=value.get();
+      auto                            hash=this->hash_for(x);
+      auto                            pos0=this->position_for(hash);
+
+      if(this->find(x,pos0,hash))throw_exception(bad_archive_exception());
+      auto loc=this->unchecked_emplace_at(pos0,hash,std::move(x));
+      ar.reset_object_address(std::addressof(*loc.p),std::addressof(x));
+    }
+  }
+
+  template<typename Archive>
+  void load(Archive& ar,unsigned int,std::false_type /* map */)
+  {
+    using raw_key_type=typename std::remove_const<key_type>::type;
+    using raw_mapped_type=typename std::remove_const<
+      typename TypePolicy::mapped_type>::type;
+
+    auto                                   lck=exclusive_access();
+    std::size_t                            s;
+    serialization_version<raw_key_type>    key_version;
+    serialization_version<raw_mapped_type> mapped_version;
+
+    ar>>core::make_nvp("count",s);
+    ar>>core::make_nvp("key_version",key_version);
+    ar>>core::make_nvp("mapped_version",mapped_version);
+
+    super::clear();
+    super::reserve(s);
+
+    for(std::size_t n=0;n<s;++n){
+      archive_constructed<raw_key_type>    key("key",ar,key_version);
+      archive_constructed<raw_mapped_type> mapped("mapped",ar,mapped_version);
+      auto&                                k=key.get();
+      auto&                                m=mapped.get();
+      auto                                 hash=this->hash_for(k);
+      auto                                 pos0=this->position_for(hash);
+
+      if(this->find(k,pos0,hash))throw_exception(bad_archive_exception());
+      auto loc=this->unchecked_emplace_at(pos0,hash,std::move(k),std::move(m));
+      ar.reset_object_address(std::addressof(loc.p->first),std::addressof(k));
+      ar.reset_object_address(std::addressof(loc.p->second),std::addressof(m));
+    }
+  }
 
   static std::atomic<std::size_t> thread_counter;
   mutable multimutex_type         mutexes;

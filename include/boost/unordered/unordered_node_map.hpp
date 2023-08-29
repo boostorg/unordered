@@ -14,6 +14,7 @@
 #include <boost/unordered/detail/foa/node_handle.hpp>
 #include <boost/unordered/detail/foa/node_map_types.hpp>
 #include <boost/unordered/detail/foa/table.hpp>
+#include <boost/unordered/detail/serialize_container.hpp>
 #include <boost/unordered/detail/type_traits.hpp>
 #include <boost/unordered/unordered_node_map_fwd.hpp>
 
@@ -786,6 +787,16 @@ namespace boost {
       unordered_node_map<Key, T, Hash, KeyEqual, Allocator>& map, Pred pred)
     {
       return erase_if(map.table_, pred);
+    }
+
+    template <class Archive,
+      class Key, class T, class Hash, class KeyEqual, class Allocator>
+    void serialize(
+      Archive & ar,
+      unordered_node_map<Key, T, Hash, KeyEqual, Allocator>& map,
+      unsigned int version)
+    {
+      detail::serialize_container(ar, map, version);
     }
 
 #if defined(BOOST_MSVC)

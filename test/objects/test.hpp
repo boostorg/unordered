@@ -1,6 +1,7 @@
 
 // Copyright 2006-2009 Daniel James.
 // Copyright 2022 Christian Mazakas
+// Copyright 2023 Joaquin M Lopez Munoz
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -11,6 +12,7 @@
 #include "../helpers/fwd.hpp"
 #include "../helpers/memory.hpp"
 #include <boost/config.hpp>
+#include <boost/core/serialization.hpp>
 #include <boost/limits.hpp>
 #include <cstddef>
 
@@ -73,6 +75,14 @@ namespace test {
     friend std::ostream& operator<<(std::ostream& out, object const& o)
     {
       return out << "(" << o.tag1_ << "," << o.tag2_ << ")";
+    }
+
+
+    template<typename Archive>
+    void serialize(Archive& ar,unsigned int)
+    {
+      ar & boost::core::make_nvp("tag1", tag1_);
+      ar & boost::core::make_nvp("tag2", tag2_);
     }
   };
 
