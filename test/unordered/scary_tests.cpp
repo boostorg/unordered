@@ -93,7 +93,7 @@ public:
   template <class U, class... Args>
   void construct(U* p, BOOST_FWD_REF(Args)... args)
   {
-    new (p) U(boost::forward<Args>(args)...);
+    new (p) U(std::forward<Args>(args)...);
   }
 #endif
 
@@ -177,7 +177,7 @@ public:
   template <class U, class... Args>
   void construct(U* p, BOOST_FWD_REF(Args)... args)
   {
-    new (p) U(boost::forward<Args>(args)...);
+    new (p) U(std::forward<Args>(args)...);
   }
 #endif
 

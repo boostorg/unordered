@@ -909,13 +909,13 @@ if there is an element with an equivalent key; otherwise, the construction is of
 ```c++
 // first two overloads
 value_type(std::piecewise_construct,
-           std::forward_as_tuple(boost::forward<Key>(k)),
-           std::forward_as_tuple(boost::forward<Args>(args)...))
+           std::forward_as_tuple(std::forward<Key>(k)),
+           std::forward_as_tuple(std::forward<Args>(args)...))
 
 // third overload
 value_type(std::piecewise_construct,
-           std::forward_as_tuple(boost::forward<K>(k)),
-           std::forward_as_tuple(boost::forward<Args>(args)...))
+           std::forward_as_tuple(std::forward<K>(k)),
+           std::forward_as_tuple(std::forward<Args>(args)...))
 ```
 
 unlike xref:#unordered_flat_map_emplace[emplace], which simply forwards all arguments to ``value_type``'s constructor.
@@ -954,13 +954,13 @@ if there is an element with an equivalent key; otherwise, the construction is of
 ```c++
 // first two overloads
 value_type(std::piecewise_construct,
-           std::forward_as_tuple(boost::forward<Key>(k)),
-           std::forward_as_tuple(boost::forward<Args>(args)...))
+           std::forward_as_tuple(std::forward<Key>(k)),
+           std::forward_as_tuple(std::forward<Args>(args)...))
 
 // third overload
 value_type(std::piecewise_construct,
-           std::forward_as_tuple(boost::forward<K>(k)),
-           std::forward_as_tuple(boost::forward<Args>(args)...))
+           std::forward_as_tuple(std::forward<K>(k)),
+           std::forward_as_tuple(std::forward<Args>(args)...))
 ```
 
 unlike xref:#unordered_flat_map_emplace_hint[emplace_hint], which simply forwards all arguments to ``value_type``'s constructor.
@@ -985,19 +985,19 @@ template<class K, class M>
 
 Inserts a new element into the container or updates an existing one by assigning to the contained value.
 
-If there is an element with key `k`, then it is updated by assigning `boost::forward<M>(obj)`.
+If there is an element with key `k`, then it is updated by assigning `std::forward<M>(obj)`.
 
 If there is no such element, it is added to the container as:
 ```c++
 // first two overloads
 value_type(std::piecewise_construct,
-           std::forward_as_tuple(boost::forward<Key>(k)),
-           std::forward_as_tuple(boost::forward<M>(obj)))
+           std::forward_as_tuple(std::forward<Key>(k)),
+           std::forward_as_tuple(std::forward<M>(obj)))
 
 // third overload
 value_type(std::piecewise_construct,
-           std::forward_as_tuple(boost::forward<K>(k)),
-           std::forward_as_tuple(boost::forward<M>(obj)))
+           std::forward_as_tuple(std::forward<K>(k)),
+           std::forward_as_tuple(std::forward<M>(obj)))
 ```
 
 [horizontal]
@@ -1023,19 +1023,19 @@ template<class K, class M>
 
 Inserts a new element into the container or updates an existing one by assigning to the contained value.
 
-If there is an element with key `k`, then it is updated by assigning `boost::forward<M>(obj)`.
+If there is an element with key `k`, then it is updated by assigning `std::forward<M>(obj)`.
 
 If there is no such element, it is added to the container as:
 ```c++
 // first two overloads
 value_type(std::piecewise_construct,
-           std::forward_as_tuple(boost::forward<Key>(k)),
-           std::forward_as_tuple(boost::forward<M>(obj)))
+           std::forward_as_tuple(std::forward<Key>(k)),
+           std::forward_as_tuple(std::forward<M>(obj)))
 
 // third overload
 value_type(std::piecewise_construct,
-           std::forward_as_tuple(boost::forward<K>(k)),
-           std::forward_as_tuple(boost::forward<M>(obj)))
+           std::forward_as_tuple(std::forward<K>(k)),
+           std::forward_as_tuple(std::forward<M>(obj)))
 ```
 
 `hint` is a suggestion to where the element should be inserted. This implementation ignores it.

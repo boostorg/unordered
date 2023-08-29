@@ -665,7 +665,7 @@ namespace boost {
           Alloc& alloc, T* address, BOOST_FWD_REF(Args)... args)
         {
           boost::allocator_construct(
-            alloc, address, boost::forward<Args>(args)...);
+            alloc, address, std::forward<Args>(args)...);
         }
 
         // For backwards compatibility, implement a special case for
@@ -867,7 +867,7 @@ namespace boost {
           value_allocator val_alloc(alloc);
 
           boost::allocator_construct(
-            val_alloc, a.node_->value_ptr(), boost::forward<U>(x));
+            val_alloc, a.node_->value_ptr(), std::forward<U>(x));
           return a.release();
         }
 
@@ -887,7 +887,7 @@ namespace boost {
 
           boost::allocator_construct(val_alloc, a.node_->value_ptr(),
             std::piecewise_construct,
-            std::forward_as_tuple(boost::forward<Key>(k)),
+            std::forward_as_tuple(std::forward<Key>(k)),
             std::forward_as_tuple());
           return a.release();
         }
@@ -909,8 +909,8 @@ namespace boost {
 
           boost::allocator_construct(val_alloc, a.node_->value_ptr(),
             std::piecewise_construct,
-            std::forward_as_tuple(boost::forward<Key>(k)),
-            std::forward_as_tuple(boost::forward<Mapped>(m)));
+            std::forward_as_tuple(std::forward<Key>(k)),
+            std::forward_as_tuple(std::forward<Mapped>(m)));
           return a.release();
         }
 
@@ -931,8 +931,8 @@ namespace boost {
 
           boost::allocator_construct(val_alloc, a.node_->value_ptr(),
             std::piecewise_construct,
-            std::forward_as_tuple(boost::forward<Key>(k)),
-            std::forward_as_tuple(boost::forward<Args>(args)...));
+            std::forward_as_tuple(std::forward<Key>(k)),
+            std::forward_as_tuple(std::forward<Args>(args)...));
 
           return a.release();
         }
@@ -941,7 +941,7 @@ namespace boost {
         inline typename boost::allocator_pointer<Alloc>::type
         construct_node_from_key(T*, Alloc& alloc, BOOST_FWD_REF(Key) k)
         {
-          return construct_node(alloc, boost::forward<Key>(k));
+          return construct_node(alloc, std::forward<Key>(k));
         }
 
         template <typename T, typename V, typename Alloc, typename Key>
@@ -949,7 +949,7 @@ namespace boost {
         construct_node_from_key(
           std::pair<T const, V>*, Alloc& alloc, BOOST_FWD_REF(Key) k)
         {
-          return construct_node_pair(alloc, boost::forward<Key>(k));
+          return construct_node_pair(alloc, std::forward<Key>(k));
         }
       } // namespace func
     } // namespace detail
@@ -2126,7 +2126,7 @@ namespace boost {
             value_type* dispatch = BOOST_NULLPTR;
 
             node_tmp tmp(detail::func::construct_node_from_key(
-                           dispatch, alloc, boost::forward<Key>(k)),
+                           dispatch, alloc, std::forward<Key>(k)),
               alloc);
 
             if (size_ + 1 > max_load_) {
@@ -2201,13 +2201,13 @@ namespace boost {
 
           node_pointer p = this->find_node_impl(k, itb);
           if (p) {
-            p->value().second = boost::forward<M>(obj);
+            p->value().second = std::forward<M>(obj);
             return emplace_return(iterator(p, itb), false);
           }
 
           node_tmp b(boost::unordered::detail::func::construct_node_pair(
-                       this->node_alloc(), boost::forward<Key>(k),
-                       boost::forward<M>(obj)),
+                       this->node_alloc(), std::forward<Key>(k),
+                       std::forward<M>(obj)),
             node_alloc());
 
           if (size_ + 1 > max_load_) {

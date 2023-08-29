@@ -1045,13 +1045,13 @@ if there is an element with an equivalent key; otherwise, the construction is of
 ```c++
 // first two overloads
 value_type(std::piecewise_construct,
-           std::forward_as_tuple(boost::forward<Key>(k)),
-           std::forward_as_tuple(boost::forward<Args>(args)...))
+           std::forward_as_tuple(std::forward<Key>(k)),
+           std::forward_as_tuple(std::forward<Args>(args)...))
 
 // third overload
 value_type(std::piecewise_construct,
-           std::forward_as_tuple(boost::forward<K>(k)),
-           std::forward_as_tuple(boost::forward<Args>(args)...))
+           std::forward_as_tuple(std::forward<K>(k)),
+           std::forward_as_tuple(std::forward<Args>(args)...))
 ```
 
 unlike xref:#concurrent_flat_map_emplace[emplace], which simply forwards all arguments to ``value_type``'s constructor.
@@ -1093,13 +1093,13 @@ if there is an element with an equivalent key; otherwise, the construction is of
 ```c++
 // first four overloads
 value_type(std::piecewise_construct,
-           std::forward_as_tuple(boost::forward<Key>(k)),
-           std::forward_as_tuple(boost::forward<Args>(args)...))
+           std::forward_as_tuple(std::forward<Key>(k)),
+           std::forward_as_tuple(std::forward<Args>(args)...))
 
 // last two overloads
 value_type(std::piecewise_construct,
-           std::forward_as_tuple(boost::forward<K>(k)),
-           std::forward_as_tuple(boost::forward<Args>(args)...))
+           std::forward_as_tuple(std::forward<K>(k)),
+           std::forward_as_tuple(std::forward<Args>(args)...))
 ```
 
 Invalidates pointers and references to elements if a rehashing is issued.
@@ -1121,19 +1121,19 @@ template<class K, class M> bool insert_or_assign(K&& k, M&& obj);
 
 Inserts a new element into the table or updates an existing one by assigning to the contained value.
 
-If there is an element with key `k`, then it is updated by assigning `boost::forward<M>(obj)`.
+If there is an element with key `k`, then it is updated by assigning `std::forward<M>(obj)`.
 
 If there is no such element, it is added to the table as:
 ```c++
 // first two overloads
 value_type(std::piecewise_construct,
-           std::forward_as_tuple(boost::forward<Key>(k)),
-           std::forward_as_tuple(boost::forward<M>(obj)))
+           std::forward_as_tuple(std::forward<Key>(k)),
+           std::forward_as_tuple(std::forward<M>(obj)))
 
 // third overload
 value_type(std::piecewise_construct,
-           std::forward_as_tuple(boost::forward<K>(k)),
-           std::forward_as_tuple(boost::forward<M>(obj)))
+           std::forward_as_tuple(std::forward<K>(k)),
+           std::forward_as_tuple(std::forward<M>(obj)))
 ```
 
 [horizontal]
