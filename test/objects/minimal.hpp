@@ -470,7 +470,7 @@ namespace test {
       template <class U, class... Args>
       void construct(U* p, BOOST_FWD_REF(Args)... args)
       {
-        new ((void*)p) U(boost::forward<Args>(args)...);
+        new ((void*)p) U(std::forward<Args>(args)...);
       }
 #endif
 
@@ -544,7 +544,7 @@ namespace test {
       template <class U, class... Args>
       void construct(U* p, BOOST_FWD_REF(Args)... args)
       {
-        new (p) U(boost::forward<Args>(args)...);
+        new (p) U(std::forward<Args>(args)...);
       }
 #endif
 
@@ -622,7 +622,7 @@ namespace test {
       template <class U, class... Args>
       void construct(U* p, BOOST_FWD_REF(Args)... args)
       {
-        new ((void*)p) U(boost::forward<Args>(args)...);
+        new ((void*)p) U(std::forward<Args>(args)...);
       }
 #endif
 

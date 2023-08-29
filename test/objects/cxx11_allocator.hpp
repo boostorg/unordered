@@ -226,7 +226,7 @@ namespace test
     void construct(U* p, BOOST_FWD_REF(Args)... args)
     {
       detail::tracker.track_construct((void*)p, sizeof(U), tag_);
-      new (p) U(boost::forward<Args>(args)...);
+      new (p) U(std::forward<Args>(args)...);
     }
 #endif
 
