@@ -645,8 +645,7 @@ namespace boost {
 
         template <typename A0> struct use_piecewise
         {
-          static choice1::type test(
-            choice1, std::piecewise_construct_t);
+          static choice1::type test(choice1, std::piecewise_construct_t);
 
           static choice2::type test(choice2, ...);
 
@@ -2205,9 +2204,9 @@ namespace boost {
             return emplace_return(iterator(p, itb), false);
           }
 
-          node_tmp b(boost::unordered::detail::func::construct_node_pair(
-                       this->node_alloc(), std::forward<Key>(k),
-                       std::forward<M>(obj)),
+          node_tmp b(
+            boost::unordered::detail::func::construct_node_pair(
+              this->node_alloc(), std::forward<Key>(k), std::forward<M>(obj)),
             node_alloc());
 
           if (size_ + 1 > max_load_) {
@@ -3076,47 +3075,23 @@ namespace boost {
         }
 #endif
 
-#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-
 #define BOOST_UNORDERED_KEY_FROM_TUPLE(namespace_)                             \
   template <typename T2>                                                       \
-  static no_key extract(std::piecewise_construct_t,               \
-    namespace_ tuple<> const&, T2 const&)                                      \
+  static no_key extract(                                                       \
+    std::piecewise_construct_t, namespace_ tuple<> const&, T2 const&)          \
   {                                                                            \
     return no_key();                                                           \
   }                                                                            \
                                                                                \
   template <typename T, typename T2>                                           \
   static typename is_key<key_type, T>::type extract(                           \
-    std::piecewise_construct_t, namespace_ tuple<T> const& k,     \
-    T2 const&)                                                                 \
+    std::piecewise_construct_t, namespace_ tuple<T> const& k, T2 const&)       \
   {                                                                            \
     return typename is_key<key_type, T>::type(namespace_ get<0>(k));           \
   }
-
-#else
-
-#define BOOST_UNORDERED_KEY_FROM_TUPLE(namespace_)                             \
-  static no_key extract(                                                       \
-    std::piecewise_construct_t, namespace_ tuple<> const&)        \
-  {                                                                            \
-    return no_key();                                                           \
-  }                                                                            \
-                                                                               \
-  template <typename T>                                                        \
-  static typename is_key<key_type, T>::type extract(                           \
-    std::piecewise_construct_t, namespace_ tuple<T> const& k)     \
-  {                                                                            \
-    return typename is_key<key_type, T>::type(namespace_ get<0>(k));           \
-  }
-
-#endif
 
         BOOST_UNORDERED_KEY_FROM_TUPLE(boost::)
-
-#if BOOST_UNORDERED_TUPLE_ARGS
         BOOST_UNORDERED_KEY_FROM_TUPLE(std::)
-#endif
 
 #undef BOOST_UNORDERED_KEY_FROM_TUPLE
       };

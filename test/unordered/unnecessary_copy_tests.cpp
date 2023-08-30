@@ -542,8 +542,6 @@ namespace unnecessary_copy_tests {
     COPY_COUNT(0);
     MOVE_COUNT(0);
 
-#if BOOST_UNORDERED_TUPLE_ARGS
-
     reset();
     x.emplace(std::piecewise_construct,
       std::make_tuple(std::ref(b.first)), std::make_tuple(std::ref(b.second)));
@@ -573,8 +571,6 @@ namespace unnecessary_copy_tests {
       std::forward_as_tuple(b.first), std::forward_as_tuple(b.second));
     COPY_COUNT(0);
     MOVE_COUNT(0);
-#endif
-
 #endif
   }
 }
