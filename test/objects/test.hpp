@@ -106,7 +106,7 @@ namespace test {
       BOOST_TEST(x.tag1_ != -1);
     }
 
-    movable(BOOST_RV_REF(movable) x)
+    movable(movable&& x)
         : counted_object(x), tag1_(x.tag1_), tag2_(x.tag2_)
     {
       BOOST_TEST(x.tag1_ != -1);
@@ -122,7 +122,7 @@ namespace test {
       return *this;
     }
 
-    movable& operator=(BOOST_RV_REF(movable) x) // Move assignment
+    movable& operator=(movable&& x) // Move assignment
     {
       BOOST_TEST(x.tag1_ != -1);
       tag1_ = x.tag1_;

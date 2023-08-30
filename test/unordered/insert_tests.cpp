@@ -701,7 +701,7 @@ namespace insert_tests {
     pointer_constructible(int x_) : x(x_) {}
     pointer_constructible(pointer_constructible const& p) : x(p.x) {}
     pointer_constructible(pointer_constructible* const&) : x(-1) {}
-    pointer_constructible(BOOST_RV_REF(pointer_constructible*)) : x(-1) {}
+    pointer_constructible(pointer_constructible*&&) : x(-1) {}
   };
 
   struct pointer_constructible_hash

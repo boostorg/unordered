@@ -171,8 +171,8 @@ namespace test {
       movable1(constructor_param const&) {}
       movable1() {}
       explicit movable1(movable_init) {}
-      movable1(BOOST_RV_REF(movable1)) {}
-      movable1& operator=(BOOST_RV_REF(movable1)) { return *this; }
+      movable1(movable1&&) {}
+      movable1& operator=(movable1&&) { return *this; }
       ~movable1() {}
       void dummy_member() const {}
     };

@@ -569,7 +569,7 @@ namespace boost {
 
         ~grouped_bucket_array() { this->deallocate(); }
 
-        grouped_bucket_array(BOOST_RV_REF(grouped_bucket_array) other) noexcept
+        grouped_bucket_array(grouped_bucket_array&& other) noexcept
             : empty_value<node_allocator_type>(
                 empty_init_t(), other.get_node_allocator()),
               size_index_(other.size_index_),
@@ -583,8 +583,7 @@ namespace boost {
           other.groups = group_pointer();
         }
 
-        grouped_bucket_array& operator=(
-          BOOST_RV_REF(grouped_bucket_array) other) noexcept
+        grouped_bucket_array& operator=(grouped_bucket_array&& other) noexcept
         {
           BOOST_ASSERT(
             this->get_node_allocator() == other.get_node_allocator());

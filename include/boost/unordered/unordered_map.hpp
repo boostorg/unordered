@@ -97,21 +97,18 @@ namespace boost {
 
       unordered_map(unordered_map const&);
 
-#if defined(BOOST_UNORDERED_USE_MOVE) ||                                       \
-  !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-      unordered_map(BOOST_RV_REF(unordered_map) other)
+      unordered_map(unordered_map&& other)
         noexcept(table::nothrow_move_constructible)
           : table_(other.table_, boost::unordered::detail::move_tag())
       {
         // The move is done in table_
       }
-#endif
 
       explicit unordered_map(allocator_type const&);
 
       unordered_map(unordered_map const&, allocator_type const&);
 
-      unordered_map(BOOST_RV_REF(unordered_map), allocator_type const&);
+      unordered_map(unordered_map&&, allocator_type const&);
 
       unordered_map(std::initializer_list<value_type>,
         size_type = boost::unordered::detail::default_bucket_count,
@@ -146,29 +143,12 @@ namespace boost {
 
       // Assign
 
-#if defined(BOOST_UNORDERED_USE_MOVE)
-      unordered_map& operator=(BOOST_COPY_ASSIGN_REF(unordered_map) x)
-      {
-        table_.assign(x.table_, std::true_type());
-        return *this;
-      }
-
-      unordered_map& operator=(BOOST_RV_REF(unordered_map) x)
-        noexcept(value_allocator_traits::is_always_equal::value&&
-            boost::is_nothrow_move_assignable<H>::value&&
-              boost::is_nothrow_move_assignable<P>::value)
-      {
-        table_.move_assign(x.table_, std::true_type());
-        return *this;
-      }
-#else
       unordered_map& operator=(unordered_map const& x)
       {
         table_.assign(x.table_, std::true_type());
         return *this;
       }
 
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
       unordered_map& operator=(unordered_map&& x)
         noexcept(value_allocator_traits::is_always_equal::value&&
             boost::is_nothrow_move_assignable<H>::value&&
@@ -177,8 +157,6 @@ namespace boost {
         table_.move_assign(x.table_, std::true_type());
         return *this;
       }
-#endif
-#endif
 
       unordered_map& operator=(std::initializer_list<value_type>);
 
@@ -337,16 +315,15 @@ namespace boost {
         return this->emplace(x);
       }
 
-      std::pair<iterator, bool> insert(BOOST_RV_REF(value_type) x)
+      std::pair<iterator, bool> insert(value_type&& x)
       {
         return this->emplace(std::move(x));
       }
 
       template <class P2>
-      typename boost::enable_if<
-        boost::is_constructible<value_type, BOOST_RV_REF(P2)>,
+      typename boost::enable_if<boost::is_constructible<value_type, P2&&>,
         std::pair<iterator, bool> >::type
-      insert(BOOST_RV_REF(P2) obj)
+      insert(P2&& obj)
       {
         return this->emplace(std::forward<P2>(obj));
       }
@@ -356,15 +333,15 @@ namespace boost {
         return this->emplace_hint(hint, x);
       }
 
-      iterator insert(const_iterator hint, BOOST_RV_REF(value_type) x)
+      iterator insert(const_iterator hint, value_type&& x)
       {
         return this->emplace_hint(hint, std::move(x));
       }
 
       template <class P2>
-      typename boost::enable_if<
-        boost::is_constructible<value_type, BOOST_RV_REF(P2)>, iterator>::type
-      insert(const_iterator hint, BOOST_RV_REF(P2) obj)
+      typename boost::enable_if<boost::is_constructible<value_type, P2&&>,
+        iterator>::type
+      insert(const_iterator hint, P2&& obj)
       {
         return this->emplace_hint(hint, std::forward<P2>(obj));
       }
@@ -396,14 +373,14 @@ namespace boost {
           table_.node_alloc());
       }
 
-      insert_return_type insert(BOOST_RV_REF(node_type) np)
+      insert_return_type insert(node_type&& np)
       {
         insert_return_type result;
         table_.move_insert_node_type_unique((node_type&)np, result);
         return result;
       }
 
-      iterator insert(const_iterator hint, BOOST_RV_REF(node_type) np)
+      iterator insert(const_iterator hint, node_type&& np)
       {
         return table_.move_insert_node_type_with_hint_unique(hint, np);
       }
@@ -427,7 +404,7 @@ namespace boost {
 
       template <class... Args>
       std::pair<iterator, bool> try_emplace(
-        BOOST_RV_REF(key_type) k, BOOST_FWD_REF(Args)... args)
+        key_type&& k, BOOST_FWD_REF(Args)... args)
       {
         return table_.try_emplace_unique(
           std::move(k), std::forward<Args>(args)...);
@@ -452,8 +429,8 @@ namespace boost {
       }
 
       template <class... Args>
-      iterator try_emplace(const_iterator hint, BOOST_RV_REF(key_type) k,
-        BOOST_FWD_REF(Args)... args)
+      iterator try_emplace(
+        const_iterator hint, key_type&& k, BOOST_FWD_REF(Args)... args)
       {
         return table_.try_emplace_hint_unique(
           hint, std::move(k), std::forward<Args>(args)...);
@@ -478,7 +455,7 @@ namespace boost {
 
       template <class M>
       std::pair<iterator, bool> insert_or_assign(
-        BOOST_RV_REF(key_type) k, BOOST_FWD_REF(M) obj)
+        key_type&& k, BOOST_FWD_REF(M) obj)
       {
         return table_.insert_or_assign_unique(
           std::move(k), std::forward<M>(obj));
@@ -502,7 +479,7 @@ namespace boost {
 
       template <class M>
       iterator insert_or_assign(
-        const_iterator, BOOST_RV_REF(key_type) k, BOOST_FWD_REF(M) obj)
+        const_iterator, key_type&& k, BOOST_FWD_REF(M) obj)
       {
         return table_
           .insert_or_assign_unique(std::move(k), std::forward<M>(obj))
@@ -653,7 +630,7 @@ namespace boost {
       }
 
       mapped_type& operator[](const key_type&);
-      mapped_type& operator[](BOOST_RV_REF(key_type));
+      mapped_type& operator[](key_type&&);
 
       template <class Key>
       typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
@@ -884,22 +861,18 @@ namespace boost {
 
       unordered_multimap(unordered_multimap const&);
 
-#if defined(BOOST_UNORDERED_USE_MOVE) ||                                       \
-  !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-      unordered_multimap(BOOST_RV_REF(unordered_multimap) other)
+      unordered_multimap(unordered_multimap&& other)
         noexcept(table::nothrow_move_constructible)
           : table_(other.table_, boost::unordered::detail::move_tag())
       {
         // The move is done in table_
       }
-#endif
 
       explicit unordered_multimap(allocator_type const&);
 
       unordered_multimap(unordered_multimap const&, allocator_type const&);
 
-      unordered_multimap(
-        BOOST_RV_REF(unordered_multimap), allocator_type const&);
+      unordered_multimap(unordered_multimap&&, allocator_type const&);
 
       unordered_multimap(std::initializer_list<value_type>,
         size_type = boost::unordered::detail::default_bucket_count,
@@ -1008,15 +981,12 @@ namespace boost {
 
       iterator insert(value_type const& x) { return this->emplace(x); }
 
-      iterator insert(BOOST_RV_REF(value_type) x)
-      {
-        return this->emplace(std::move(x));
-      }
+      iterator insert(value_type&& x) { return this->emplace(std::move(x)); }
 
       template <class P2>
-      typename boost::enable_if<
-        boost::is_constructible<value_type, BOOST_RV_REF(P2)>, iterator>::type
-      insert(BOOST_RV_REF(P2) obj)
+      typename boost::enable_if<boost::is_constructible<value_type, P2&&>,
+        iterator>::type
+      insert(P2&& obj)
       {
         return this->emplace(std::forward<P2>(obj));
       }
@@ -1026,15 +996,15 @@ namespace boost {
         return this->emplace_hint(hint, x);
       }
 
-      iterator insert(const_iterator hint, BOOST_RV_REF(value_type) x)
+      iterator insert(const_iterator hint, value_type&& x)
       {
         return this->emplace_hint(hint, std::move(x));
       }
 
       template <class P2>
-      typename boost::enable_if<
-        boost::is_constructible<value_type, BOOST_RV_REF(P2)>, iterator>::type
-      insert(const_iterator hint, BOOST_RV_REF(P2) obj)
+      typename boost::enable_if<boost::is_constructible<value_type, P2&&>,
+        iterator>::type
+      insert(const_iterator hint, P2&& obj)
       {
         return this->emplace_hint(hint, std::forward<P2>(obj));
       }
@@ -1065,12 +1035,12 @@ namespace boost {
         return node_type(table_.extract_by_key_impl(k), table_.node_alloc());
       }
 
-      iterator insert(BOOST_RV_REF(node_type) np)
+      iterator insert(node_type&& np)
       {
         return table_.move_insert_node_type_equiv(np);
       }
 
-      iterator insert(const_iterator hint, BOOST_RV_REF(node_type) np)
+      iterator insert(const_iterator hint, node_type&& np)
       {
         return table_.move_insert_node_type_with_hint_equiv(hint, np);
       }
@@ -1423,7 +1393,7 @@ namespace boost {
 
     template <class K, class T, class H, class P, class A>
     unordered_map<K, T, H, P, A>::unordered_map(
-      BOOST_RV_REF(unordered_map) other, allocator_type const& a)
+      unordered_map&& other, allocator_type const& a)
         : table_(other.table_, a, boost::unordered::detail::move_tag())
     {
       table_.move_construct_buckets(other.table_);
@@ -1732,7 +1702,7 @@ namespace boost {
 
     template <class K, class T, class H, class P, class A>
     typename unordered_map<K, T, H, P, A>::mapped_type&
-    unordered_map<K, T, H, P, A>::operator[](BOOST_RV_REF(key_type) k)
+    unordered_map<K, T, H, P, A>::operator[](key_type&& k)
     {
       return table_.try_emplace_unique(std::move(k)).first->second;
     }
@@ -1955,7 +1925,7 @@ namespace boost {
 
     template <class K, class T, class H, class P, class A>
     unordered_multimap<K, T, H, P, A>::unordered_multimap(
-      BOOST_RV_REF(unordered_multimap) other, allocator_type const& a)
+      unordered_multimap&& other, allocator_type const& a)
         : table_(other.table_, a, boost::unordered::detail::move_tag())
     {
       table_.move_construct_buckets(other.table_);
@@ -2387,14 +2357,14 @@ namespace boost {
         }
       }
 
-      node_handle_map(BOOST_RV_REF(node_handle_map) n) noexcept
+      node_handle_map(node_handle_map&& n) noexcept
           : ptr_(n.ptr_),
             alloc_(std::move(n.alloc_))
       {
         n.ptr_ = node_pointer();
       }
 
-      node_handle_map& operator=(BOOST_RV_REF(node_handle_map) n)
+      node_handle_map& operator=(node_handle_map&& n)
       {
         BOOST_ASSERT(!alloc_.has_value() ||
                      boost::allocator_propagate_on_container_move_assignment<
@@ -2479,14 +2449,14 @@ namespace boost {
 
       insert_return_type_map() : position(), inserted(false), node() {}
 
-      insert_return_type_map(BOOST_RV_REF(insert_return_type_map) x) noexcept
+      insert_return_type_map(insert_return_type_map&& x) noexcept
           : position(x.position),
             inserted(x.inserted),
             node(std::move(x.node))
       {
       }
 
-      insert_return_type_map& operator=(BOOST_RV_REF(insert_return_type_map) x)
+      insert_return_type_map& operator=(insert_return_type_map&& x)
       {
         inserted = x.inserted;
         position = x.position;
