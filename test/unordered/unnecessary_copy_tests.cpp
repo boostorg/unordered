@@ -56,7 +56,7 @@ namespace unnecessary_copy_tests {
       trace_op("Copy construct");
     }
 
-    count_copies(BOOST_RV_REF(count_copies) x) : tag_(x.tag_), id_(++id_count)
+    count_copies(count_copies&& x) : tag_(x.tag_), id_(++id_count)
     {
       x.tag_ = -1;
       ++moves;
@@ -72,7 +72,7 @@ namespace unnecessary_copy_tests {
       return *this;
     }
 
-    count_copies& operator=(BOOST_RV_REF(count_copies) p) // Move assignment
+    count_copies& operator=(count_copies&& p) // Move assignment
     {
       tag_ = p.tag_;
       ++moves;

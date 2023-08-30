@@ -440,7 +440,7 @@ namespace boost {
       public:
         optional() noexcept : has_value_(false) {}
 
-        optional(BOOST_RV_REF(optional<T>) x) : has_value_(false)
+        optional(optional<T>&& x) : has_value_(false)
         {
           if (x.has_value_) {
             move(x);
@@ -452,7 +452,7 @@ namespace boost {
           new (value_.value_ptr()) T(x);
         }
 
-        optional& operator=(BOOST_RV_REF(optional<T>) x)
+        optional& operator=(optional<T>&& x)
         {
           destroy();
           if (x.has_value_) {
@@ -1105,34 +1105,6 @@ namespace boost {
             (function_pair*)(&funcs_[which]));
         }
       };
-
-      ////////////////////////////////////////////////////////////////////////////
-      // rvalue parameters when type can't be a BOOST_RV_REF(T) parameter
-      // e.g. for int
-
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-#define BOOST_UNORDERED_RV_REF(T) BOOST_RV_REF(T)
-#else
-      struct please_ignore_this_overload
-      {
-        typedef please_ignore_this_overload type;
-      };
-
-      template <typename T> struct rv_ref_impl
-      {
-        typedef BOOST_RV_REF(T) type;
-      };
-
-      template <typename T>
-      struct rv_ref : boost::conditional<boost::is_class<T>::value,
-                        boost::unordered::detail::rv_ref_impl<T>,
-                        please_ignore_this_overload>::type
-      {
-      };
-
-#define BOOST_UNORDERED_RV_REF(T)                                              \
-  typename boost::unordered::detail::rv_ref<T>::type
-#endif
 
 #if defined(BOOST_MSVC)
 #pragma warning(push)
@@ -2983,10 +2955,7 @@ namespace boost {
 
         static key_type const& extract(value_type const& v) { return v; }
 
-        static key_type const& extract(BOOST_UNORDERED_RV_REF(value_type) v)
-        {
-          return v;
-        }
+        static key_type const& extract(value_type&& v) { return v; }
 
         static no_key extract() { return no_key(); }
 

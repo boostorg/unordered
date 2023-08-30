@@ -95,21 +95,18 @@ namespace boost {
 
       unordered_set(unordered_set const&);
 
-#if defined(BOOST_UNORDERED_USE_MOVE) ||                                       \
-  !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-      unordered_set(BOOST_RV_REF(unordered_set) other)
+      unordered_set(unordered_set&& other)
         noexcept(table::nothrow_move_constructible)
           : table_(other.table_, boost::unordered::detail::move_tag())
       {
         // The move is done in table_
       }
-#endif
 
       explicit unordered_set(allocator_type const&);
 
       unordered_set(unordered_set const&, allocator_type const&);
 
-      unordered_set(BOOST_RV_REF(unordered_set), allocator_type const&);
+      unordered_set(unordered_set&&, allocator_type const&);
 
       unordered_set(std::initializer_list<value_type>,
         size_type = boost::unordered::detail::default_bucket_count,
@@ -144,29 +141,12 @@ namespace boost {
 
       // Assign
 
-#if defined(BOOST_UNORDERED_USE_MOVE)
-      unordered_set& operator=(BOOST_COPY_ASSIGN_REF(unordered_set) x)
-      {
-        table_.assign(x.table_, std::true_type());
-        return *this;
-      }
-
-      unordered_set& operator=(BOOST_RV_REF(unordered_set) x)
-        noexcept(value_allocator_traits::is_always_equal::value&&
-            boost::is_nothrow_move_assignable<H>::value&&
-              boost::is_nothrow_move_assignable<P>::value)
-      {
-        table_.move_assign(x.table_, std::true_type());
-        return *this;
-      }
-#else
       unordered_set& operator=(unordered_set const& x)
       {
         table_.assign(x.table_, std::true_type());
         return *this;
       }
 
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
       unordered_set& operator=(unordered_set&& x)
         noexcept(value_allocator_traits::is_always_equal::value&&
             boost::is_nothrow_move_assignable<H>::value&&
@@ -175,8 +155,6 @@ namespace boost {
         table_.move_assign(x.table_, std::true_type());
         return *this;
       }
-#endif
-#endif
 
       unordered_set& operator=(std::initializer_list<value_type>);
 
@@ -289,7 +267,7 @@ namespace boost {
         return this->emplace(x);
       }
 
-      std::pair<iterator, bool> insert(BOOST_UNORDERED_RV_REF(value_type) x)
+      std::pair<iterator, bool> insert(value_type&& x)
       {
         return this->emplace(std::move(x));
       }
@@ -308,7 +286,7 @@ namespace boost {
         return this->emplace_hint(hint, x);
       }
 
-      iterator insert(const_iterator hint, BOOST_UNORDERED_RV_REF(value_type) x)
+      iterator insert(const_iterator hint, value_type&& x)
       {
         return this->emplace_hint(hint, std::move(x));
       }
@@ -348,14 +326,14 @@ namespace boost {
         return node_type(table_.extract_by_key_impl(k), table_.node_alloc());
       }
 
-      insert_return_type insert(BOOST_RV_REF(node_type) np)
+      insert_return_type insert(node_type&& np)
       {
         insert_return_type result;
         table_.move_insert_node_type_unique(np, result);
         return result;
       }
 
-      iterator insert(const_iterator hint, BOOST_RV_REF(node_type) np)
+      iterator insert(const_iterator hint, node_type&& np)
       {
         return table_.move_insert_node_type_with_hint_unique(hint, np);
       }
@@ -677,22 +655,18 @@ namespace boost {
 
       unordered_multiset(unordered_multiset const&);
 
-#if defined(BOOST_UNORDERED_USE_MOVE) ||                                       \
-  !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-      unordered_multiset(BOOST_RV_REF(unordered_multiset) other)
+      unordered_multiset(unordered_multiset&& other)
         noexcept(table::nothrow_move_constructible)
           : table_(other.table_, boost::unordered::detail::move_tag())
       {
         // The move is done in table_
       }
-#endif
 
       explicit unordered_multiset(allocator_type const&);
 
       unordered_multiset(unordered_multiset const&, allocator_type const&);
 
-      unordered_multiset(
-        BOOST_RV_REF(unordered_multiset), allocator_type const&);
+      unordered_multiset(unordered_multiset&&, allocator_type const&);
 
       unordered_multiset(std::initializer_list<value_type>,
         size_type = boost::unordered::detail::default_bucket_count,
@@ -850,17 +824,14 @@ namespace boost {
 
       iterator insert(value_type const& x) { return this->emplace(x); }
 
-      iterator insert(BOOST_UNORDERED_RV_REF(value_type) x)
-      {
-        return this->emplace(std::move(x));
-      }
+      iterator insert(value_type&& x) { return this->emplace(std::move(x)); }
 
       iterator insert(const_iterator hint, value_type const& x)
       {
         return this->emplace_hint(hint, x);
       }
 
-      iterator insert(const_iterator hint, BOOST_UNORDERED_RV_REF(value_type) x)
+      iterator insert(const_iterator hint, value_type&& x)
       {
         return this->emplace_hint(hint, std::move(x));
       }
@@ -891,12 +862,12 @@ namespace boost {
         return node_type(table_.extract_by_key_impl(k), table_.node_alloc());
       }
 
-      iterator insert(BOOST_RV_REF(node_type) np)
+      iterator insert(node_type&& np)
       {
         return table_.move_insert_node_type_equiv(np);
       }
 
-      iterator insert(const_iterator hint, BOOST_RV_REF(node_type) np)
+      iterator insert(const_iterator hint, node_type&& np)
       {
         return table_.move_insert_node_type_with_hint_equiv(hint, np);
       }
@@ -1214,7 +1185,7 @@ namespace boost {
 
     template <class T, class H, class P, class A>
     unordered_set<T, H, P, A>::unordered_set(
-      BOOST_RV_REF(unordered_set) other, allocator_type const& a)
+      unordered_set&& other, allocator_type const& a)
         : table_(other.table_, a, boost::unordered::detail::move_tag())
     {
       table_.move_construct_buckets(other.table_);
@@ -1616,7 +1587,7 @@ namespace boost {
 
     template <class T, class H, class P, class A>
     unordered_multiset<T, H, P, A>::unordered_multiset(
-      BOOST_RV_REF(unordered_multiset) other, allocator_type const& a)
+      unordered_multiset&& other, allocator_type const& a)
         : table_(other.table_, a, boost::unordered::detail::move_tag())
     {
       table_.move_construct_buckets(other.table_);
@@ -2014,14 +1985,14 @@ namespace boost {
         }
       }
 
-      node_handle_set(BOOST_RV_REF(node_handle_set) n) noexcept
+      node_handle_set(node_handle_set&& n) noexcept
           : ptr_(n.ptr_),
             alloc_(std::move(n.alloc_))
       {
         n.ptr_ = node_pointer();
       }
 
-      node_handle_set& operator=(BOOST_RV_REF(node_handle_set) n)
+      node_handle_set& operator=(node_handle_set&& n)
       {
         BOOST_ASSERT(!alloc_.has_value() ||
                      value_allocator_traits::
@@ -2098,14 +2069,14 @@ namespace boost {
 
       insert_return_type_set() : position(), inserted(false), node() {}
 
-      insert_return_type_set(BOOST_RV_REF(insert_return_type_set) x) noexcept
+      insert_return_type_set(insert_return_type_set&& x) noexcept
           : position(x.position),
             inserted(x.inserted),
             node(std::move(x.node))
       {
       }
 
-      insert_return_type_set& operator=(BOOST_RV_REF(insert_return_type_set) x)
+      insert_return_type_set& operator=(insert_return_type_set&& x)
       {
         inserted = x.inserted;
         position = x.position;

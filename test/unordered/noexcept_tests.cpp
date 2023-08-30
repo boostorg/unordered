@@ -62,7 +62,7 @@ namespace noexcept_tests {
     typedef boost::hash<int> base;
 
   public:
-    hash_nothrow(BOOST_RV_REF(hash_nothrow)) noexcept(nothrow_move_construct)
+    hash_nothrow(hash_nothrow&&) noexcept(nothrow_move_construct)
     {
       if (!nothrow_move_construct) {
         test_throw("Move Constructor");
@@ -76,7 +76,7 @@ namespace noexcept_tests {
       test_throw("Assign");
       return *this;
     }
-    hash_nothrow& operator=(BOOST_RV_REF(hash_nothrow))
+    hash_nothrow& operator=(hash_nothrow&&)
       noexcept(nothrow_move_assign)
     {
       if (!nothrow_move_assign) {
@@ -110,7 +110,7 @@ namespace noexcept_tests {
     typedef boost::hash<int> base;
 
   public:
-    equal_to_nothrow(BOOST_RV_REF(equal_to_nothrow))
+    equal_to_nothrow(equal_to_nothrow&&)
       noexcept(nothrow_move_construct)
     {
       if (!nothrow_move_construct) {
@@ -125,7 +125,7 @@ namespace noexcept_tests {
       test_throw("Assign");
       return *this;
     }
-    equal_to_nothrow& operator=(BOOST_RV_REF(equal_to_nothrow))
+    equal_to_nothrow& operator=(equal_to_nothrow&&)
       noexcept(nothrow_move_assign)
     {
       if (!nothrow_move_assign) {
@@ -367,7 +367,7 @@ template <class T> class allocator1
 {
   BOOST_COPYABLE_AND_MOVABLE(allocator1)
   allocator1 operator=(BOOST_COPY_ASSIGN_REF(allocator1));
-  allocator1 operator=(BOOST_RV_REF(allocator1));
+  allocator1 operator=(allocator1&&);
 
 public:
   typedef T value_type;
@@ -403,7 +403,7 @@ public:
 
   template <class U> allocator2(allocator2<U> const&) {}
 
-  allocator2& operator=(BOOST_RV_REF(allocator2)) { return *this; }
+  allocator2& operator=(allocator2&&) { return *this; }
 
   T* allocate(std::size_t n)
   {
