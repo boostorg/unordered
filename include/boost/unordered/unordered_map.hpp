@@ -198,117 +198,20 @@ namespace boost {
 
       // emplace
 
-#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-
-      template <class... Args>
-      std::pair<iterator, bool> emplace(BOOST_FWD_REF(Args)... args)
+      template <class... Args> std::pair<iterator, bool> emplace(Args&&... args)
       {
         return table_.emplace_unique(
           table::extractor::extract(std::forward<Args>(args)...),
           std::forward<Args>(args)...);
       }
 
-#else
-
-#if !BOOST_UNORDERED_SUN_WORKAROUNDS1
-
-      // 0 argument emplace requires special treatment in case
-      // the container is instantiated with a value type that
-      // doesn't have a default constructor.
-
-      std::pair<iterator, bool> emplace(
-        boost::unordered::detail::empty_emplace =
-          boost::unordered::detail::empty_emplace(),
-        value_type v = value_type())
-      {
-        return this->emplace(std::move(v));
-      }
-
-#endif
-
-      template <typename A0>
-      std::pair<iterator, bool> emplace(BOOST_FWD_REF(A0) a0)
-      {
-        return table_.emplace_unique(
-          table::extractor::extract(std::forward<A0>(a0)),
-          boost::unordered::detail::create_emplace_args(std::forward<A0>(a0)));
-      }
-
-      template <typename A0, typename A1>
-      std::pair<iterator, bool> emplace(
-        BOOST_FWD_REF(A0) a0, BOOST_FWD_REF(A1) a1)
-      {
-        return table_.emplace_unique(
-          table::extractor::extract(std::forward<A0>(a0), std::forward<A1>(a1)),
-          boost::unordered::detail::create_emplace_args(
-            std::forward<A0>(a0), std::forward<A1>(a1)));
-      }
-
-      template <typename A0, typename A1, typename A2>
-      std::pair<iterator, bool> emplace(
-        BOOST_FWD_REF(A0) a0, BOOST_FWD_REF(A1) a1, BOOST_FWD_REF(A2) a2)
-      {
-        return table_.emplace_unique(
-          table::extractor::extract(std::forward<A0>(a0), std::forward<A1>(a1)),
-          boost::unordered::detail::create_emplace_args(
-            std::forward<A0>(a0), std::forward<A1>(a1), std::forward<A2>(a2)));
-      }
-
-#endif
-
-#if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-
       template <class... Args>
-      iterator emplace_hint(const_iterator hint, BOOST_FWD_REF(Args)... args)
+      iterator emplace_hint(const_iterator hint, Args&&... args)
       {
         return table_.emplace_hint_unique(hint,
           table::extractor::extract(std::forward<Args>(args)...),
           std::forward<Args>(args)...);
       }
-
-#else
-
-#if !BOOST_UNORDERED_SUN_WORKAROUNDS1
-
-      iterator emplace_hint(const_iterator hint,
-        boost::unordered::detail::empty_emplace =
-          boost::unordered::detail::empty_emplace(),
-        value_type v = value_type())
-      {
-        return this->emplace_hint(hint, std::move(v));
-      }
-
-#endif
-
-      template <typename A0>
-      iterator emplace_hint(const_iterator hint, BOOST_FWD_REF(A0) a0)
-      {
-        return table_.emplace_hint_unique(hint,
-          table::extractor::extract(std::forward<A0>(a0)),
-          boost::unordered::detail::create_emplace_args(std::forward<A0>(a0)));
-      }
-
-      template <typename A0, typename A1>
-      iterator emplace_hint(
-        const_iterator hint, BOOST_FWD_REF(A0) a0, BOOST_FWD_REF(A1) a1)
-      {
-        return table_.emplace_hint_unique(hint,
-          table::extractor::extract(std::forward<A0>(a0), std::forward<A1>(a1)),
-          boost::unordered::detail::create_emplace_args(
-            std::forward<A0>(a0), std::forward<A1>(a1)));
-      }
-
-      template <typename A0, typename A1, typename A2>
-      iterator emplace_hint(const_iterator hint, BOOST_FWD_REF(A0) a0,
-        BOOST_FWD_REF(A1) a1, BOOST_FWD_REF(A2) a2)
-      {
-        return table_.emplace_hint_unique(hint,
-          table::extractor::extract(std::forward<A0>(a0), std::forward<A1>(a1)),
-          boost::unordered::detail::create_emplace_args(
-            std::forward<A0>(a0), std::forward<A1>(a1), std::forward<A2>(a2)));
-      }
-
-#endif
 
       std::pair<iterator, bool> insert(value_type const& x)
       {
@@ -367,7 +270,7 @@ namespace boost {
       typename boost::enable_if_c<
         detail::transparent_non_iterable<Key, unordered_map>::value,
         node_type>::type
-      extract(BOOST_FWD_REF(Key) k)
+      extract(Key&& k)
       {
         return node_type(table_.extract_by_key_impl(std::forward<Key>(k)),
           table_.node_alloc());
@@ -396,15 +299,13 @@ namespace boost {
 #endif
 
       template <class... Args>
-      std::pair<iterator, bool> try_emplace(
-        key_type const& k, BOOST_FWD_REF(Args)... args)
+      std::pair<iterator, bool> try_emplace(key_type const& k, Args&&... args)
       {
         return table_.try_emplace_unique(k, std::forward<Args>(args)...);
       }
 
       template <class... Args>
-      std::pair<iterator, bool> try_emplace(
-        key_type&& k, BOOST_FWD_REF(Args)... args)
+      std::pair<iterator, bool> try_emplace(key_type&& k, Args&&... args)
       {
         return table_.try_emplace_unique(
           std::move(k), std::forward<Args>(args)...);
@@ -422,15 +323,14 @@ namespace boost {
 
       template <class... Args>
       iterator try_emplace(
-        const_iterator hint, key_type const& k, BOOST_FWD_REF(Args)... args)
+        const_iterator hint, key_type const& k, Args&&... args)
       {
         return table_.try_emplace_hint_unique(
           hint, k, std::forward<Args>(args)...);
       }
 
       template <class... Args>
-      iterator try_emplace(
-        const_iterator hint, key_type&& k, BOOST_FWD_REF(Args)... args)
+      iterator try_emplace(const_iterator hint, key_type&& k, Args&&... args)
       {
         return table_.try_emplace_hint_unique(
           hint, std::move(k), std::forward<Args>(args)...);
@@ -447,15 +347,13 @@ namespace boost {
       }
 
       template <class M>
-      std::pair<iterator, bool> insert_or_assign(
-        key_type const& k, BOOST_FWD_REF(M) obj)
+      std::pair<iterator, bool> insert_or_assign(key_type const& k, M&& obj)
       {
         return table_.insert_or_assign_unique(k, std::forward<M>(obj));
       }
 
       template <class M>
-      std::pair<iterator, bool> insert_or_assign(
-        key_type&& k, BOOST_FWD_REF(M) obj)
+      std::pair<iterator, bool> insert_or_assign(key_type&& k, M&& obj)
       {
         return table_.insert_or_assign_unique(
           std::move(k), std::forward<M>(obj));
@@ -464,22 +362,20 @@ namespace boost {
       template <class Key, class M>
       typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
         std::pair<iterator, bool> >::type
-      insert_or_assign(BOOST_FWD_REF(Key) k, BOOST_FWD_REF(M) obj)
+      insert_or_assign(Key&& k, M&& obj)
       {
         return table_.insert_or_assign_unique(
           std::forward<Key>(k), std::forward<M>(obj));
       }
 
       template <class M>
-      iterator insert_or_assign(
-        const_iterator, key_type const& k, BOOST_FWD_REF(M) obj)
+      iterator insert_or_assign(const_iterator, key_type const& k, M&& obj)
       {
         return table_.insert_or_assign_unique(k, std::forward<M>(obj)).first;
       }
 
       template <class M>
-      iterator insert_or_assign(
-        const_iterator, key_type&& k, BOOST_FWD_REF(M) obj)
+      iterator insert_or_assign(const_iterator, key_type&& k, M&& obj)
       {
         return table_
           .insert_or_assign_unique(std::move(k), std::forward<M>(obj))
@@ -489,8 +385,7 @@ namespace boost {
       template <class Key, class M>
       typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
         iterator>::type
-      insert_or_assign(
-        const_iterator, BOOST_FWD_REF(Key) k, BOOST_FWD_REF(M) obj)
+      insert_or_assign(const_iterator, Key&& k, M&& obj)
       {
         return table_
           .insert_or_assign_unique(std::forward<Key>(k), std::forward<M>(obj))
@@ -506,7 +401,7 @@ namespace boost {
       typename boost::enable_if_c<
         detail::transparent_non_iterable<Key, unordered_map>::value,
         size_type>::type
-      erase(BOOST_FWD_REF(Key) k)
+      erase(Key&& k)
       {
         return table_.erase_key_unique_impl(std::forward<Key>(k));
       }
@@ -635,18 +530,20 @@ namespace boost {
       template <class Key>
       typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
         mapped_type&>::type
-      operator[](BOOST_FWD_REF(Key) k);
+      operator[](Key&& k);
 
       mapped_type& at(const key_type&);
       mapped_type const& at(const key_type&) const;
 
       template <class Key>
       typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
-        mapped_type&>::type at(BOOST_FWD_REF(Key) k);
+        mapped_type&>::type
+      at(Key&& k);
 
       template <class Key>
       typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
-        mapped_type const&>::type at(BOOST_FWD_REF(Key) k) const;
+        mapped_type const&>::type
+      at(Key&& k) const;
 
       // bucket interface
 
@@ -667,7 +564,7 @@ namespace boost {
       template <class Key>
       typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
         size_type>::type
-      bucket(BOOST_FWD_REF(Key) k) const
+      bucket(Key&& k) const
       {
         return table_.hash_to_bucket(table_.hash(std::forward<Key>(k)));
       }
@@ -964,7 +861,7 @@ namespace boost {
 
       // emplace
 
-      template <class... Args> iterator emplace(BOOST_FWD_REF(Args)... args)
+      template <class... Args> iterator emplace(Args&&... args)
       {
         return iterator(table_.emplace_equiv(
           boost::unordered::detail::func::construct_node_from_args(
@@ -972,7 +869,7 @@ namespace boost {
       }
 
       template <class... Args>
-      iterator emplace_hint(const_iterator hint, BOOST_FWD_REF(Args)... args)
+      iterator emplace_hint(const_iterator hint, Args&&... args)
       {
         return iterator(table_.emplace_hint_equiv(
           hint, boost::unordered::detail::func::construct_node_from_args(
@@ -1064,7 +961,7 @@ namespace boost {
       typename boost::enable_if_c<
         detail::transparent_non_iterable<Key, unordered_multimap>::value,
         size_type>::type
-      erase(BOOST_FWD_REF(Key) k)
+      erase(Key&& k)
       {
         return table_.erase_key_equiv_impl(std::forward<Key>(k));
       }
@@ -1197,7 +1094,7 @@ namespace boost {
       template <class Key>
       typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
         size_type>::type
-      bucket(BOOST_FWD_REF(Key) k) const
+      bucket(Key&& k) const
       {
         return table_.hash_to_bucket(table_.hash(std::forward<Key>(k)));
       }
@@ -1711,7 +1608,7 @@ namespace boost {
     template <class Key>
     typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
       typename unordered_map<K, T, H, P, A>::mapped_type&>::type
-    unordered_map<K, T, H, P, A>::operator[](BOOST_FWD_REF(Key) k)
+    unordered_map<K, T, H, P, A>::operator[](Key&& k)
     {
       return table_.try_emplace_unique(std::forward<Key>(k)).first->second;
     }
@@ -1752,7 +1649,7 @@ namespace boost {
     template <class Key>
     typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
       typename unordered_map<K, T, H, P, A>::mapped_type&>::type
-    unordered_map<K, T, H, P, A>::at(BOOST_FWD_REF(Key) k)
+    unordered_map<K, T, H, P, A>::at(Key&& k)
     {
       typedef typename table::node_pointer node_pointer;
 
@@ -1770,7 +1667,7 @@ namespace boost {
     template <class Key>
     typename boost::enable_if_c<detail::are_transparent<Key, H, P>::value,
       typename unordered_map<K, T, H, P, A>::mapped_type const&>::type
-    unordered_map<K, T, H, P, A>::at(BOOST_FWD_REF(Key) k) const
+    unordered_map<K, T, H, P, A>::at(Key&& k) const
     {
       typedef typename table::node_pointer node_pointer;
 

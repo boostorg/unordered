@@ -661,7 +661,7 @@ namespace boost {
 
         template <typename Alloc, typename T, typename... Args>
         inline void construct_from_args(
-          Alloc& alloc, T* address, BOOST_FWD_REF(Args)... args)
+          Alloc& alloc, T* address, Args&&... args)
         {
           boost::allocator_construct(
             alloc, address, std::forward<Args>(args)...);
@@ -723,8 +723,8 @@ namespace boost {
                                              detect_boost_tuple<A1>::value &&
                                              detect_boost_tuple<A2>::value,
           void>::type
-        construct_from_args(Alloc& alloc, std::pair<A, B>* address,
-          BOOST_FWD_REF(A0), BOOST_FWD_REF(A1) a1, BOOST_FWD_REF(A2) a2)
+        construct_from_args(
+          Alloc& alloc, std::pair<A, B>* address, A0&&, A1&& a1, A2&& a2)
         {
           boost::allocator_construct(alloc, address, std::piecewise_construct,
             to_std_tuple(a1), to_std_tuple(a2));
@@ -853,7 +853,7 @@ namespace boost {
 
         template <typename Alloc, typename U>
         inline typename boost::allocator_pointer<Alloc>::type construct_node(
-          Alloc& alloc, BOOST_FWD_REF(U) x)
+          Alloc& alloc, U&& x)
         {
           node_constructor<Alloc> a(alloc);
           a.create_node();
@@ -872,7 +872,7 @@ namespace boost {
 
         template <typename Alloc, typename Key>
         inline typename boost::allocator_pointer<Alloc>::type
-        construct_node_pair(Alloc& alloc, BOOST_FWD_REF(Key) k)
+        construct_node_pair(Alloc& alloc, Key&& k)
         {
           node_constructor<Alloc> a(alloc);
           a.create_node();
@@ -893,8 +893,7 @@ namespace boost {
 
         template <typename Alloc, typename Key, typename Mapped>
         inline typename boost::allocator_pointer<Alloc>::type
-        construct_node_pair(
-          Alloc& alloc, BOOST_FWD_REF(Key) k, BOOST_FWD_REF(Mapped) m)
+        construct_node_pair(Alloc& alloc, Key&& k, Mapped&& m)
         {
           node_constructor<Alloc> a(alloc);
           a.create_node();
@@ -915,8 +914,7 @@ namespace boost {
 
         template <typename Alloc, typename Key, typename... Args>
         inline typename boost::allocator_pointer<Alloc>::type
-        construct_node_pair_from_args(
-          Alloc& alloc, BOOST_FWD_REF(Key) k, BOOST_FWD_REF(Args)... args)
+        construct_node_pair_from_args(Alloc& alloc, Key&& k, Args&&... args)
         {
           node_constructor<Alloc> a(alloc);
           a.create_node();
@@ -938,15 +936,14 @@ namespace boost {
 
         template <typename T, typename Alloc, typename Key>
         inline typename boost::allocator_pointer<Alloc>::type
-        construct_node_from_key(T*, Alloc& alloc, BOOST_FWD_REF(Key) k)
+        construct_node_from_key(T*, Alloc& alloc, Key&& k)
         {
           return construct_node(alloc, std::forward<Key>(k));
         }
 
         template <typename T, typename V, typename Alloc, typename Key>
         inline typename boost::allocator_pointer<Alloc>::type
-        construct_node_from_key(
-          std::pair<T const, V>*, Alloc& alloc, BOOST_FWD_REF(Key) k)
+        construct_node_from_key(std::pair<T const, V>*, Alloc& alloc, Key&& k)
         {
           return construct_node_pair(alloc, std::forward<Key>(k));
         }
@@ -2081,8 +2078,7 @@ namespace boost {
           }
         }
 
-        template <typename Key>
-        emplace_return try_emplace_unique(BOOST_FWD_REF(Key) k)
+        template <typename Key> emplace_return try_emplace_unique(Key&& k)
         {
           std::size_t key_hash = this->hash(k);
           bucket_iterator itb = buckets_.at(buckets_.position(key_hash));
@@ -2114,7 +2110,7 @@ namespace boost {
         }
 
         template <typename Key>
-        iterator try_emplace_hint_unique(c_iterator hint, BOOST_FWD_REF(Key) k)
+        iterator try_emplace_hint_unique(c_iterator hint, Key&& k)
         {
           if (hint.p && this->key_eq()(extractor::extract(*hint), k)) {
             return iterator(hint.p, hint.itb);
@@ -2124,7 +2120,7 @@ namespace boost {
         }
 
         template <typename Key, typename... Args>
-        emplace_return try_emplace_unique(BOOST_FWD_REF(Key) k, Args&&... args)
+        emplace_return try_emplace_unique(Key&& k, Args&&... args)
         {
           std::size_t key_hash = this->hash(k);
           bucket_iterator itb = buckets_.at(buckets_.position(key_hash));
@@ -2154,7 +2150,7 @@ namespace boost {
 
         template <typename Key, typename... Args>
         iterator try_emplace_hint_unique(
-          c_iterator hint, BOOST_FWD_REF(Key) k, Args&&... args)
+          c_iterator hint, Key&& k, Args&&... args)
         {
           if (hint.p && this->key_eq()(hint->first, k)) {
             return iterator(hint.p, hint.itb);
@@ -2164,8 +2160,7 @@ namespace boost {
         }
 
         template <typename Key, typename M>
-        emplace_return insert_or_assign_unique(
-          BOOST_FWD_REF(Key) k, BOOST_FWD_REF(M) obj)
+        emplace_return insert_or_assign_unique(Key&& k, M&& obj)
         {
           std::size_t key_hash = this->hash(k);
           bucket_iterator itb = buckets_.at(buckets_.position(key_hash));
