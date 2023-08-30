@@ -657,20 +657,12 @@ namespace test {
       ::operator delete((void*)p.ptr_);
     }
 
-#if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-    template <class U, class V> void construct(U* p, V const& v)
-    {
-      detail::tracker.track_construct((void*)p, sizeof(U), tag_);
-      new (p) U(v);
-    }
-#else
     template <class U, class... Args>
-    void construct(U* p, BOOST_FWD_REF(Args)... args)
+    void construct(U* p, Args&&... args)
     {
       detail::tracker.track_construct((void*)p, sizeof(U), tag_);
       new (p) U(std::forward<Args>(args)...);
     }
-#endif
 
     template <class U> void destroy(U* p)
     {

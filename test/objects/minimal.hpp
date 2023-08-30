@@ -461,18 +461,11 @@ namespace test {
         ::operator delete((void*)p.ptr_);
       }
 
-#if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-      template <class U, class V> void construct(U* p, V const& v)
-      {
-        new ((void*)p) U(v);
-      }
-#else
       template <class U, class... Args>
-      void construct(U* p, BOOST_FWD_REF(Args)... args)
+      void construct(U* p, Args&&... args)
       {
         new ((void*)p) U(std::forward<Args>(args)...);
       }
-#endif
 
       template <class U> void destroy(U* p) { p->~U(); }
 
@@ -535,18 +528,11 @@ namespace test {
         ::operator delete((void*)p.ptr_);
       }
 
-#if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-      template <class U> void construct(U* p, U const& t)
-      {
-        new (p) U(t);
-      }
-#else
       template <class U, class... Args>
-      void construct(U* p, BOOST_FWD_REF(Args)... args)
+      void construct(U* p, Args&&... args)
       {
         new (p) U(std::forward<Args>(args)...);
       }
-#endif
 
       template <class U> void destroy(U* p) { p->~U(); }
 
@@ -613,18 +599,11 @@ namespace test {
 
       void deallocate(T* p, std::size_t) { ::operator delete((void*)p); }
 
-#if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-      template <class U, class V> void construct(U* p, V const& v)
-      {
-        new ((void*)p) U(v);
-      }
-#else
       template <class U, class... Args>
-      void construct(U* p, BOOST_FWD_REF(Args)... args)
+      void construct(U* p, Args&&... args)
       {
         new ((void*)p) U(std::forward<Args>(args)...);
       }
-#endif
 
       template <class U> void destroy(U* p) { p->~U(); }
 
