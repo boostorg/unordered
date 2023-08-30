@@ -261,8 +261,7 @@ and https://en.cppreference.com/w/cpp/named_req/Erasable[Erasable^] from the con
 
 |_Allocator_
 |An allocator whose value type is the same as the container's value type.
-`std::allocator_traits<Allocator>::pointer` and `std::allocator_traits<Allocator>::const_pointer`
-must be convertible to/from `value_type*` and `const value_type*`, respectively.
+Allocators using https://en.cppreference.com/w/cpp/named_req/Allocator#Fancy_pointers[fancy pointers] are supported.
 
 |===
 

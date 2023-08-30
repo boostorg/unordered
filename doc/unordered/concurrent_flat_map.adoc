@@ -1,4 +1,4 @@
-﻿[#concurrent_flat_map]
+[#concurrent_flat_map]
 == Class Template concurrent_flat_map
 
 :idprefix: concurrent_flat_map_
@@ -316,8 +316,7 @@ https://en.cppreference.com/w/cpp/named_req/Erasable[Erasable^] from the table.
 
 |_Allocator_
 |An allocator whose value type is the same as the table's value type.
-`std::allocator_traits<Allocator>::pointer` and `std::allocator_traits<Allocator>::const_pointer`
-must be convertible to/from `value_type*` and `const value_type*`, respectively.
+Allocators using https://en.cppreference.com/w/cpp/named_req/Allocator#Fancy_pointers[fancy pointers] are supported.
 
 |===
 
