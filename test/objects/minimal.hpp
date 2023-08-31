@@ -177,7 +177,6 @@ namespace test {
       void dummy_member() const {}
     };
 
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
     class movable2
     {
     public:
@@ -193,9 +192,6 @@ namespace test {
       movable2(movable2 const&);
       movable2& operator=(movable2 const&);
     };
-#else
-    typedef movable1 movable2;
-#endif
 
     template <class T> class hash
     {
