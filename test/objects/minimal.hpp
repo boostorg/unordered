@@ -165,12 +165,12 @@ namespace test {
 
     class movable1
     {
-      BOOST_MOVABLE_BUT_NOT_COPYABLE(movable1)
-
     public:
       movable1(constructor_param const&) {}
       movable1() {}
       explicit movable1(movable_init) {}
+      movable1(movable1 const&) = delete;
+      movable1& operator=(movable1 const&) = delete;
       movable1(movable1&&) {}
       movable1& operator=(movable1&&) { return *this; }
       ~movable1() {}

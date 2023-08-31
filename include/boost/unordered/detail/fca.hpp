@@ -454,8 +454,6 @@ namespace boost {
                 typename boost::allocator_void_pointer<Allocator>::type> >::
                 type>
       {
-        BOOST_MOVABLE_BUT_NOT_COPYABLE(grouped_bucket_array)
-
         typedef typename boost::allocator_value_type<Allocator>::type
           allocator_value_type;
         typedef
@@ -568,6 +566,9 @@ namespace boost {
         }
 
         ~grouped_bucket_array() { this->deallocate(); }
+
+        grouped_bucket_array(grouped_bucket_array const&) = delete;
+        grouped_bucket_array& operator=(grouped_bucket_array const&) = delete;
 
         grouped_bucket_array(grouped_bucket_array&& other) noexcept
             : empty_value<node_allocator_type>(
