@@ -36,11 +36,7 @@ template <class T> T rvalue_default() { return T(); }
 
 template <class T> T implicit_construct() { return {}; }
 
-#if !defined(BOOST_NO_CXX11_NOEXCEPT)
 #define TEST_NOEXCEPT_EXPR(x) BOOST_STATIC_ASSERT((noexcept(x)));
-#else
-#define TEST_NOEXCEPT_EXPR(x)
-#endif
 
 template <class X, class T> void container_test(X& r, T const&)
 {
