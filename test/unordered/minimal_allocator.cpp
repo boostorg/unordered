@@ -48,13 +48,8 @@ template <typename T> void test_simple_allocator()
   BOOST_STATIC_ASSERT(
     (boost::is_same<typename traits::difference_type, std::ptrdiff_t>::value));
 
-#if !defined(BOOST_NO_CXX11_ALLOCATOR)
   BOOST_STATIC_ASSERT((boost::is_same<typename traits::size_type,
     std::make_unsigned<std::ptrdiff_t>::type>::value));
-#else
-  BOOST_STATIC_ASSERT(
-    (boost::is_same<typename traits::size_type, std::size_t>::value));
-#endif
 
   BOOST_TEST(!traits::propagate_on_container_copy_assignment::value);
   BOOST_TEST(!traits::propagate_on_container_move_assignment::value);
