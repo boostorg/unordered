@@ -27,13 +27,7 @@
 #include <cstdio>
 #include <fstream>
 
-#if defined(BOOST_NO_CXX11_HDR_RANDOM) || BOOST_WORKAROUND(BOOST_MSVC, < 1700)
-#define BOOST_UNORDERED_TEST_USE_STD_RANDOM_SHUFFLE
-#endif
-
-#ifndef BOOST_UNORDERED_TEST_USE_STD_RANDOM_SHUFFLE
 #include <random>
-#endif
 
 namespace {
 
