@@ -57,8 +57,6 @@ namespace noexcept_tests {
     bool nothrow_swap>
   class hash_nothrow : boost::hash<int>
   {
-    BOOST_COPYABLE_AND_MOVABLE(hash_nothrow)
-
     typedef boost::hash<int> base;
 
   public:
@@ -105,8 +103,6 @@ namespace noexcept_tests {
     bool nothrow_swap>
   class equal_to_nothrow
   {
-    BOOST_COPYABLE_AND_MOVABLE(equal_to_nothrow)
-
     typedef boost::hash<int> base;
 
   public:
@@ -356,7 +352,6 @@ namespace noexcept_tests {
 
 template <class T> class allocator1
 {
-  BOOST_COPYABLE_AND_MOVABLE(allocator1)
   allocator1 operator=(allocator1 const&);
   allocator1 operator=(allocator1&&);
 
@@ -382,7 +377,6 @@ public:
 
 template <class T> class allocator2
 {
-  BOOST_COPYABLE_AND_MOVABLE(allocator2)
   allocator2 operator=(allocator2 const&);
 
 public:

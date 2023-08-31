@@ -15,8 +15,6 @@
 namespace unnecessary_copy_tests {
   struct count_copies
   {
-  private:
-    BOOST_COPYABLE_AND_MOVABLE(count_copies)
   public:
     static int copies;
     static int moves;
