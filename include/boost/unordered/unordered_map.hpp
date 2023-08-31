@@ -21,7 +21,6 @@
 
 #include <boost/core/explicit_operator_bool.hpp>
 #include <boost/functional/hash.hpp>
-#include <boost/move/move.hpp>
 #include <boost/type_traits/is_constructible.hpp>
 
 #include <initializer_list>

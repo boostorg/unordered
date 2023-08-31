@@ -27,7 +27,6 @@
 #include <boost/core/pointer_traits.hpp>
 #include <boost/core/serialization.hpp>
 #include <boost/limits.hpp>
-#include <boost/move/move.hpp>
 #include <boost/preprocessor/arithmetic/inc.hpp>
 #include <boost/preprocessor/cat.hpp>
 #include <boost/preprocessor/repetition/enum.hpp>

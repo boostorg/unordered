@@ -17,7 +17,6 @@
 #include "../helpers/input_iterator.hpp"
 #include "../helpers/helpers.hpp"
 
-#include <boost/move/core.hpp>
 #include <vector>
 
 namespace insert_tests {

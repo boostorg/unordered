@@ -11,7 +11,6 @@
 
 #include <boost/core/addressof.hpp>
 #include <boost/core/serialization.hpp>
-#include <boost/move/move.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/type_traits/remove_const.hpp>

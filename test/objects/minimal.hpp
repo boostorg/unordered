@@ -14,7 +14,6 @@
 #include <boost/core/addressof.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <boost/core/pointer_traits.hpp>
-#include <boost/move/move.hpp>
 #include <cstddef>
 #include <utility>
 
