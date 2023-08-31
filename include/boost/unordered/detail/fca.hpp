@@ -125,8 +125,6 @@ to normal separate chaining implementations.
 #include <boost/core/no_exceptions_support.hpp>
 #include <boost/core/serialization.hpp>
 #include <boost/cstdint.hpp>
-#include <boost/move/core.hpp>
-#include <boost/move/utility_core.hpp>
 #include <boost/type_traits/aligned_storage.hpp>
 #include <boost/type_traits/alignment_of.hpp>
 
