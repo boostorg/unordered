@@ -287,16 +287,6 @@ namespace boost {
         return table_.move_insert_node_type_with_hint_unique(hint, np);
       }
 
-#if defined(BOOST_NO_CXX11_RVALUE_REFERENCES) ||                               \
-  (BOOST_COMP_GNUC && BOOST_COMP_GNUC < BOOST_VERSION_NUMBER(4, 6, 0))
-    private:
-      // Note: Use r-value node_type to insert.
-      insert_return_type insert(node_type&);
-      iterator insert(const_iterator, node_type& np);
-
-    public:
-#endif
-
       iterator erase(const_iterator);
       size_type erase(const key_type&);
       iterator erase(const_iterator, const_iterator);
@@ -324,18 +314,14 @@ namespace boost {
       template <typename H2, typename P2>
       void merge(boost::unordered_set<T, H2, P2, A>& source);
 
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
       template <typename H2, typename P2>
       void merge(boost::unordered_set<T, H2, P2, A>&& source);
-#endif
 
       template <typename H2, typename P2>
       void merge(boost::unordered_multiset<T, H2, P2, A>& source);
 
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
       template <typename H2, typename P2>
       void merge(boost::unordered_multiset<T, H2, P2, A>&& source);
-#endif
 
       // observers
 
@@ -771,16 +757,6 @@ namespace boost {
         return table_.move_insert_node_type_with_hint_equiv(hint, np);
       }
 
-#if defined(BOOST_NO_CXX11_RVALUE_REFERENCES) ||                               \
-  (BOOST_COMP_GNUC && BOOST_COMP_GNUC < BOOST_VERSION_NUMBER(4, 6, 0))
-    private:
-      // Note: Use r-value node_type to insert.
-      iterator insert(node_type&);
-      iterator insert(const_iterator, node_type& np);
-
-    public:
-#endif
-
       iterator erase(const_iterator);
       size_type erase(const key_type&);
 
@@ -808,18 +784,14 @@ namespace boost {
       template <typename H2, typename P2>
       void merge(boost::unordered_multiset<T, H2, P2, A>& source);
 
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
       template <typename H2, typename P2>
       void merge(boost::unordered_multiset<T, H2, P2, A>&& source);
-#endif
 
       template <typename H2, typename P2>
       void merge(boost::unordered_set<T, H2, P2, A>& source);
 
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
       template <typename H2, typename P2>
       void merge(boost::unordered_set<T, H2, P2, A>&& source);
-#endif
 
       // observers
 
@@ -1279,7 +1251,6 @@ namespace boost {
       table_.merge_unique(source.table_);
     }
 
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
     template <class T, class H, class P, class A>
     template <typename H2, typename P2>
     void unordered_set<T, H, P, A>::merge(
@@ -1287,7 +1258,6 @@ namespace boost {
     {
       table_.merge_unique(source.table_);
     }
-#endif
 
     template <class T, class H, class P, class A>
     template <typename H2, typename P2>
@@ -1297,7 +1267,6 @@ namespace boost {
       table_.merge_unique(source.table_);
     }
 
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
     template <class T, class H, class P, class A>
     template <typename H2, typename P2>
     void unordered_set<T, H, P, A>::merge(
@@ -1305,7 +1274,6 @@ namespace boost {
     {
       table_.merge_unique(source.table_);
     }
-#endif
 
     // lookup
 
@@ -1682,7 +1650,6 @@ namespace boost {
       }
     }
 
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
     template <class T, class H, class P, class A>
     template <typename H2, typename P2>
     void unordered_multiset<T, H, P, A>::merge(
@@ -1692,7 +1659,6 @@ namespace boost {
         insert(source.extract(source.begin()));
       }
     }
-#endif
 
     template <class T, class H, class P, class A>
     template <typename H2, typename P2>
@@ -1704,7 +1670,6 @@ namespace boost {
       }
     }
 
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
     template <class T, class H, class P, class A>
     template <typename H2, typename P2>
     void unordered_multiset<T, H, P, A>::merge(
@@ -1714,7 +1679,6 @@ namespace boost {
         insert(source.extract(source.begin()));
       }
     }
-#endif
 
     // lookup
 

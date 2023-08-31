@@ -21,12 +21,7 @@
 
 namespace move_tests {
   test::seed_t initialize_seed(98624);
-#if defined(BOOST_UNORDERED_USE_MOVE) ||                                       \
-  !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
 #define BOOST_UNORDERED_TEST_MOVING 1
-#else
-#define BOOST_UNORDERED_TEST_MOVING 0
-#endif
 
   template <class T> T empty(T*) { return T(); }
 
@@ -463,8 +458,6 @@ namespace move_tests {
 
       T x(std::move(y));
 
-#if defined(BOOST_UNORDERED_USE_MOVE) ||                                       \
-  !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
       BOOST_TEST(y.empty());
       BOOST_TEST(y.begin() == y.end());
 
@@ -482,8 +475,6 @@ namespace move_tests {
 #else
       BOOST_TEST_EQ(y.bucket_count(), 0u);
       BOOST_TEST_EQ(test::detail::tracker.count_allocations, num_allocs);
-#endif
-
 #endif
 
       fps[i](y, v);
@@ -532,8 +523,6 @@ namespace move_tests {
       T x(empty(ptr));
       x = std::move(y);
 
-#if defined(BOOST_UNORDERED_USE_MOVE) ||                                       \
-  !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
       BOOST_TEST(y.empty());
       BOOST_TEST(y.begin() == y.end());
 
@@ -551,8 +540,6 @@ namespace move_tests {
 #else
       BOOST_TEST_EQ(y.bucket_count(), 0u);
       BOOST_TEST_EQ(test::detail::tracker.count_allocations, num_allocs);
-#endif
-
 #endif
 
       fps[i](y, v);
@@ -582,17 +569,10 @@ namespace move_tests {
       bool b = boost::allocator_propagate_on_container_move_assignment<
         typename T::allocator_type>::type::value;
       if (b) {
-#if defined(BOOST_UNORDERED_USE_MOVE) ||                                       \
-  !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
         BOOST_TEST(y.empty());
         BOOST_TEST(y.begin() == y.end());
         BOOST_TEST_EQ(y.bucket_count(), 0u);
         BOOST_TEST_EQ(test::detail::tracker.count_allocations, num_allocs);
-#else
-        BOOST_TEST_NOT(y.empty());
-        BOOST_TEST(y.begin() != y.end());
-
-#endif
       } else {
 #ifdef BOOST_UNORDERED_FOA_TESTS
         BOOST_TEST(y.empty());

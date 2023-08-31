@@ -2987,22 +2987,6 @@ namespace boost {
           return v.first;
         }
 
-#if defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-        template <class Second>
-        static key_type const& extract(
-          boost::rv<std::pair<key_type, Second> > const& v)
-        {
-          return v.first;
-        }
-
-        template <class Second>
-        static key_type const& extract(
-          boost::rv<std::pair<key_type const, Second> > const& v)
-        {
-          return v.first;
-        }
-#endif
-
         template <class Arg1>
         static key_type const& extract(key_type const& k, Arg1 const&)
         {

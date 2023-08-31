@@ -23,12 +23,7 @@
 
 namespace move_tests {
   test::seed_t initialize_seed(98624);
-#if defined(BOOST_UNORDERED_USE_MOVE) ||                                       \
-  !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
 #define BOOST_UNORDERED_TEST_MOVING 1
-#else
-#define BOOST_UNORDERED_TEST_MOVING 0
-#endif
 
   template <class T> T empty(T*) { return T(); }
 
@@ -73,8 +68,6 @@ namespace move_tests {
       BOOST_TEST(y.max_load_factor() == 1.0);
 #endif
       test::check_equivalent_keys(y);
-#if defined(BOOST_UNORDERED_USE_MOVE) ||                                       \
-  !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
 
 #ifdef BOOST_UNORDERED_FOA_TESTS
       using allocator_type = typename T::allocator_type;
@@ -86,7 +79,6 @@ namespace move_tests {
       }
 #else
       BOOST_TEST_EQ(test::detail::tracker.count_allocations, 0u);
-#endif
 #endif
     }
 
@@ -126,8 +118,7 @@ namespace move_tests {
 
       T y;
       y = empty(p);
-#if defined(BOOST_UNORDERED_USE_MOVE) ||                                       \
-  !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+
 #ifdef BOOST_UNORDERED_FOA_TESTS
       using allocator_type = typename T::allocator_type;
       using value_type =
@@ -138,7 +129,6 @@ namespace move_tests {
       }
 #else
       BOOST_TEST_EQ(test::detail::tracker.count_allocations, 0u);
-#endif
 #endif
       test::check_container(y, v);
       test::check_equivalent_keys(y);
@@ -200,23 +190,8 @@ namespace move_tests {
 
       test::random_values<T> v(25, generator);
       T y(create(v, count, hf, eq, al, 1.0), al);
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
       BOOST_TEST(count == test::global_object_count);
-#elif defined(BOOST_HAS_NRVO)
-      BOOST_TEST(
-        static_cast<std::size_t>(
-          test::global_object_count.constructions - count.constructions) <=
-        (test::is_set<T>::value ? 1 : 2) *
-          (test::has_unique_keys<T>::value ? 25 : v.size()));
-      BOOST_TEST(count.instances == test::global_object_count.instances);
-#else
-      BOOST_TEST(
-        static_cast<std::size_t>(
-          test::global_object_count.constructions - count.constructions) <=
-        (test::is_set<T>::value ? 2 : 4) *
-          (test::has_unique_keys<T>::value ? 25 : v.size()));
-      BOOST_TEST(count.instances == test::global_object_count.instances);
-#endif
+
       test::check_container(y, v);
       BOOST_TEST(test::equivalent(y.hash_function(), hf));
       BOOST_TEST(test::equivalent(y.key_eq(), eq));
@@ -314,8 +289,7 @@ namespace move_tests {
 #endif
 
       y = std::move(x);
-#if defined(BOOST_UNORDERED_USE_MOVE) ||                                       \
-  !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+
 #ifdef BOOST_UNORDERED_FOA_TESTS
       {
         using value_type =
@@ -327,7 +301,6 @@ namespace move_tests {
       }
 #else
       BOOST_TEST_EQ(test::detail::tracker.count_allocations, 0u);
-#endif
 #endif
       test::check_container(y, v);
       test::check_equivalent_keys(y);

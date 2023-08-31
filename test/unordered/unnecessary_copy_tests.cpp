@@ -210,24 +210,16 @@ namespace unnecessary_copy_tests {
     typename T::value_type a;
     reset();
     x.insert(std::move(a));
-#if defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-    COPY_COUNT(1);
-    MOVE_COUNT(0);
-#else
+
     COPY_COUNT(0);
     MOVE_COUNT(1);
-#endif
 
     typename T::value_type a2;
     reset();
     x.insert(std::move(a));
-#if defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-    COPY_COUNT((x.size() == 2 ? 1 : 0));
-    MOVE_COUNT(0);
-#else
+
     COPY_COUNT(0);
     MOVE_COUNT((x.size() == 2 ? 1 : 0));
-#endif
   }
 
   boost::unordered_set<count_copies>* set;
@@ -254,11 +246,7 @@ namespace unnecessary_copy_tests {
     reset();
     T x;
     x.emplace(source<typename T::value_type>());
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
     COPY_COUNT(1);
-#else
-    COPY_COUNT(2);
-#endif
   }
 
   UNORDERED_TEST(
@@ -266,7 +254,6 @@ namespace unnecessary_copy_tests {
   UNORDERED_TEST(
     unnecessary_copy_emplace_rvalue_test, ((set)(multiset)(map)(multimap)))
 
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
   template <class T> void unnecessary_copy_emplace_std_move_test(T*)
   {
     reset();
@@ -281,7 +268,6 @@ namespace unnecessary_copy_tests {
 
   UNORDERED_TEST(
     unnecessary_copy_emplace_std_move_test, ((set)(multiset)(map)(multimap)))
-#endif
 
   template <class T> void unnecessary_copy_emplace_boost_move_test(T*)
   {
@@ -291,14 +277,8 @@ namespace unnecessary_copy_tests {
     COPY_COUNT(1);
     MOVE_COUNT_EXTRA(0, 1);
     x.emplace(std::move(a));
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
     COPY_COUNT(1);
     MOVE_COUNT(1);
-#else
-    // Since std::pair isn't movable, move only works for sets.
-    COPY_COUNT_RANGE(1, 2);
-    MOVE_COUNT_RANGE(0, 1);
-#endif
   }
 
   UNORDERED_TEST(
@@ -329,13 +309,9 @@ namespace unnecessary_copy_tests {
     COPY_COUNT(1);
     MOVE_COUNT_EXTRA(0, 1);
     x.emplace(std::move(a));
-#if defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-    COPY_COUNT(2);
-    MOVE_COUNT_EXTRA(0, 1);
-#else
+
     COPY_COUNT(1);
     MOVE_COUNT(1);
-#endif
   }
 
   UNORDERED_TEST(

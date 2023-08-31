@@ -218,13 +218,11 @@ template <class X> void unordered_destructible_test(X&)
 
   X x1;
 
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
   X x2(rvalue_default<X>());
   X x3 = rvalue_default<X>();
-// This can only be done if propagate_on_container_move_assignment::value
-// is true.
-// x2 = rvalue_default<X>();
-#endif
+  // This can only be done if propagate_on_container_move_assignment::value
+  // is true.
+  // x2 = rvalue_default<X>();
 
   X* ptr = new X();
   X& a1 = *ptr;
@@ -727,9 +725,7 @@ void unordered_test(X& x, Key& k, Hash& hf, Pred& eq)
   a.rehash(100);
 
   a.merge(a2);
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
   a.merge(rvalue_default<X>());
-#endif
 
   // Avoid unused variable warnings:
 
@@ -864,12 +860,10 @@ void unordered_movable_test(X& x, Key& k, T& /* t */, Hash& hf, Pred& eq)
   typedef typename X::const_iterator const_iterator;
   typedef typename X::allocator_type allocator_type;
 
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
   X x1(rvalue_default<X>());
   X x2(std::move(x1));
   x1 = rvalue_default<X>();
   x2 = std::move(x1);
-#endif
 
   X a;
   allocator_type m = a.get_allocator();
