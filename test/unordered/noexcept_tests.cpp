@@ -71,7 +71,7 @@ namespace noexcept_tests {
 
     hash_nothrow() { test_throw("Constructor"); }
     hash_nothrow(hash_nothrow const&) { test_throw("Copy"); }
-    hash_nothrow& operator=(BOOST_COPY_ASSIGN_REF(hash_nothrow))
+    hash_nothrow& operator=(hash_nothrow const&)
     {
       test_throw("Assign");
       return *this;
@@ -120,7 +120,7 @@ namespace noexcept_tests {
 
     equal_to_nothrow() { test_throw("Constructor"); }
     equal_to_nothrow(equal_to_nothrow const&) { test_throw("Copy"); }
-    equal_to_nothrow& operator=(BOOST_COPY_ASSIGN_REF(equal_to_nothrow))
+    equal_to_nothrow& operator=(equal_to_nothrow const&)
     {
       test_throw("Assign");
       return *this;
@@ -366,7 +366,7 @@ namespace noexcept_tests {
 template <class T> class allocator1
 {
   BOOST_COPYABLE_AND_MOVABLE(allocator1)
-  allocator1 operator=(BOOST_COPY_ASSIGN_REF(allocator1));
+  allocator1 operator=(allocator1 const&);
   allocator1 operator=(allocator1&&);
 
 public:
@@ -392,7 +392,7 @@ public:
 template <class T> class allocator2
 {
   BOOST_COPYABLE_AND_MOVABLE(allocator2)
-  allocator2 operator=(BOOST_COPY_ASSIGN_REF(allocator2));
+  allocator2 operator=(allocator2 const&);
 
 public:
   typedef T value_type;

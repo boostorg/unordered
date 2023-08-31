@@ -114,7 +114,7 @@ namespace test {
       x.tag2_ = -1;
     }
 
-    movable& operator=(BOOST_COPY_ASSIGN_REF(movable) x) // Copy assignment
+    movable& operator=(movable const& x) // Copy assignment
     {
       BOOST_TEST(x.tag1_ != -1);
       tag1_ = x.tag1_;

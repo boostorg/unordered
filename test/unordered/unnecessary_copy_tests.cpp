@@ -64,7 +64,7 @@ namespace unnecessary_copy_tests {
     }
 
     count_copies& operator=(
-      BOOST_COPY_ASSIGN_REF(count_copies) p) // Copy assignment
+      count_copies const& p) // Copy assignment
     {
       tag_ = p.tag_;
       ++copies;
