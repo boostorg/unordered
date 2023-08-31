@@ -539,15 +539,11 @@ namespace unnecessary_copy_tests {
     COPY_COUNT(tuple_copy_cost);
     MOVE_COUNT(tuple_move_cost);
 
-#if !defined(BOOST_NO_CXX11_HDR_TUPLE) &&                                      \
-  !(defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ < 6) &&               \
-  !(defined(BOOST_MSVC) && BOOST_MSVC < 1700)
     reset();
     x.emplace(std::piecewise_construct,
       std::forward_as_tuple(b.first), std::forward_as_tuple(b.second));
     COPY_COUNT(0);
     MOVE_COUNT(0);
-#endif
   }
 }
 

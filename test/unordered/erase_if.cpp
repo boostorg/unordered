@@ -9,11 +9,7 @@
 #include <boost/config.hpp>
 #include <string>
 
-#if !defined(BOOST_NO_CXX11_REF_QUALIFIERS)
 #define UNORDERED_LVALUE_QUAL &
-#else
-#define UNORDERED_LVALUE_QUAL
-#endif
 
 namespace test {
   struct is_even
