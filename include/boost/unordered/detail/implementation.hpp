@@ -415,8 +415,6 @@ namespace boost {
 
       template <typename T> class optional
       {
-        BOOST_MOVABLE_BUT_NOT_COPYABLE(optional)
-
         boost::unordered::detail::value_base<T> value_;
         bool has_value_;
 
@@ -439,6 +437,9 @@ namespace boost {
 
       public:
         optional() noexcept : has_value_(false) {}
+
+        optional(optional const&) = delete;
+        optional& operator=(optional const&) = delete;
 
         optional(optional<T>&& x) : has_value_(false)
         {
