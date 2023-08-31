@@ -27,14 +27,6 @@
 #include <boost/core/pointer_traits.hpp>
 #include <boost/core/serialization.hpp>
 #include <boost/limits.hpp>
-#include <boost/preprocessor/arithmetic/inc.hpp>
-#include <boost/preprocessor/cat.hpp>
-#include <boost/preprocessor/repetition/enum.hpp>
-#include <boost/preprocessor/repetition/enum_binary_params.hpp>
-#include <boost/preprocessor/repetition/enum_params.hpp>
-#include <boost/preprocessor/repetition/repeat_from_to.hpp>
-#include <boost/preprocessor/seq/enum.hpp>
-#include <boost/preprocessor/seq/size.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/type_traits/add_lvalue_reference.hpp>
@@ -517,124 +509,6 @@ namespace boost {
     } // namespace detail
   } // namespace unordered
 } // namespace boost
-
-////////////////////////////////////////////////////////////////////////////
-// Construct from tuple
-//
-// Used to emulate piecewise construction.
-
-#define BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(z, n, namespace_)                 \
-  template <typename Alloc, typename T,                                        \
-    BOOST_PP_ENUM_PARAMS_Z(z, n, typename A)>                                  \
-  void construct_from_tuple(Alloc&, T* ptr,                                    \
-    namespace_::tuple<BOOST_PP_ENUM_PARAMS_Z(z, n, A)> const& x)               \
-  {                                                                            \
-    new ((void*)ptr)                                                           \
-      T(BOOST_PP_ENUM_##z(n, BOOST_UNORDERED_GET_TUPLE_ARG, namespace_));      \
-  }
-
-#define BOOST_UNORDERED_GET_TUPLE_ARG(z, n, namespace_) namespace_::get<n>(x)
-
-// construct_from_tuple for boost::tuple
-// The workaround for old Sun compilers comes later in the file.
-
-#if !BOOST_UNORDERED_SUN_WORKAROUNDS1
-
-namespace boost {
-  namespace unordered {
-    namespace detail {
-      namespace func {
-        template <typename Alloc, typename T>
-        void construct_from_tuple(Alloc&, T* ptr, boost::tuple<>)
-        {
-          new ((void*)ptr) T();
-        }
-
-        BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 1, boost)
-        BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 2, boost)
-        BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 3, boost)
-        BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 4, boost)
-        BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 5, boost)
-        BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 6, boost)
-        BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 7, boost)
-        BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 8, boost)
-        BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 9, boost)
-        BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 10, boost)
-      } // namespace func
-    } // namespace detail
-  } // namespace unordered
-} // namespace boost
-
-#endif
-
-#undef BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE
-#undef BOOST_UNORDERED_GET_TUPLE_ARG
-
-// construct_from_tuple for boost::tuple on old versions of sunpro.
-//
-// Old versions of Sun C++ had problems with template overloads of
-// boost::tuple, so to fix it I added a distinct type for each length to
-// the overloads. That means there's no possible ambiguity between the
-// different overloads, so that the compiler doesn't get confused
-
-#if BOOST_UNORDERED_SUN_WORKAROUNDS1
-
-#define BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(z, n, namespace_)                 \
-  template <typename Alloc, typename T,                                        \
-    BOOST_PP_ENUM_PARAMS_Z(z, n, typename A)>                                  \
-  void construct_from_tuple_impl(boost::unordered::detail::func::length<n>,    \
-    Alloc&, T* ptr,                                                            \
-    namespace_::tuple<BOOST_PP_ENUM_PARAMS_Z(z, n, A)> const& x)               \
-  {                                                                            \
-    new ((void*)ptr)                                                           \
-      T(BOOST_PP_ENUM_##z(n, BOOST_UNORDERED_GET_TUPLE_ARG, namespace_));      \
-  }
-
-#define BOOST_UNORDERED_GET_TUPLE_ARG(z, n, namespace_) namespace_::get<n>(x)
-
-namespace boost {
-  namespace unordered {
-    namespace detail {
-      namespace func {
-        template <int N> struct length
-        {
-        };
-
-        template <typename Alloc, typename T>
-        void construct_from_tuple_impl(
-          boost::unordered::detail::func::length<0>, Alloc&, T* ptr,
-          boost::tuple<>)
-        {
-          new ((void*)ptr) T();
-        }
-
-        BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 1, boost)
-        BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 2, boost)
-        BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 3, boost)
-        BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 4, boost)
-        BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 5, boost)
-        BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 6, boost)
-        BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 7, boost)
-        BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 8, boost)
-        BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 9, boost)
-        BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE(1, 10, boost)
-
-        template <typename Alloc, typename T, typename Tuple>
-        void construct_from_tuple(Alloc& alloc, T* ptr, Tuple const& x)
-        {
-          construct_from_tuple_impl(boost::unordered::detail::func::length<
-                                      boost::tuples::length<Tuple>::value>(),
-            alloc, ptr, x);
-        }
-      } // namespace func
-    } // namespace detail
-  } // namespace unordered
-} // namespace boost
-
-#undef BOOST_UNORDERED_CONSTRUCT_FROM_TUPLE
-#undef BOOST_UNORDERED_GET_TUPLE_ARG
-
-#endif
 
 namespace boost {
   namespace unordered {
