@@ -20,6 +20,7 @@
 #include <boost/unordered/detail/type_traits.hpp>
 
 #include <boost/assert.hpp>
+#include <boost/core/addressof.hpp>
 #include <boost/core/allocator_traits.hpp>
 #include <boost/core/bit.hpp>
 #include <boost/core/invoke_swap.hpp>
@@ -27,6 +28,8 @@
 #include <boost/core/pointer_traits.hpp>
 #include <boost/core/serialization.hpp>
 #include <boost/limits.hpp>
+#include <boost/mp11/algorithm.hpp>
+#include <boost/mp11/list.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/type_traits/add_lvalue_reference.hpp>
@@ -43,18 +46,12 @@
 #include <boost/type_traits/is_same.hpp>
 #include <boost/type_traits/make_void.hpp>
 #include <boost/type_traits/remove_const.hpp>
-#include <boost/utility/addressof.hpp>
-#include <boost/utility/enable_if.hpp>
 
 #include <cmath>
 #include <iterator>
 #include <stdexcept>
-#include <utility>
-
 #include <type_traits>
-
-#include <boost/mp11/algorithm.hpp>
-#include <boost/mp11/list.hpp>
+#include <utility>
 
 // BOOST_UNORDERED_SUPPRESS_DEPRECATED
 //
@@ -127,14 +124,14 @@ namespace boost {
 
       template <typename I, typename ReturnType>
       struct enable_if_forward
-          : boost::enable_if_c<boost::unordered::detail::is_forward<I>::value,
+          : std::enable_if<boost::unordered::detail::is_forward<I>::value,
               ReturnType>
       {
       };
 
       template <typename I, typename ReturnType>
       struct disable_if_forward
-          : boost::disable_if_c<boost::unordered::detail::is_forward<I>::value,
+          : std::enable_if<!boost::unordered::detail::is_forward<I>::value,
               ReturnType>
       {
       };
@@ -593,9 +590,9 @@ namespace boost {
 
         template <typename Alloc, typename A, typename B, typename A0,
           typename A1, typename A2>
-        inline typename boost::enable_if_c<use_piecewise<A0>::value &&
-                                             detect_boost_tuple<A1>::value &&
-                                             detect_boost_tuple<A2>::value,
+        inline typename std::enable_if<use_piecewise<A0>::value &&
+                                         detect_boost_tuple<A1>::value &&
+                                         detect_boost_tuple<A2>::value,
           void>::type
         construct_from_args(
           Alloc& alloc, std::pair<A, B>* address, A0&&, A1&& a1, A2&& a2)
