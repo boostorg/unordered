@@ -41,9 +41,6 @@ namespace boost {
   namespace unordered {
     template <class K, class T, class H, class P, class A> class unordered_map
     {
-#if defined(BOOST_UNORDERED_USE_MOVE)
-      BOOST_COPYABLE_AND_MOVABLE(unordered_map)
-#endif
       template <typename, typename, typename, typename, typename>
       friend class unordered_multimap;
 
@@ -689,9 +686,6 @@ namespace boost {
     template <class K, class T, class H, class P, class A>
     class unordered_multimap
     {
-#if defined(BOOST_UNORDERED_USE_MOVE)
-      BOOST_COPYABLE_AND_MOVABLE(unordered_multimap)
-#endif
       template <typename, typename, typename, typename, typename>
       friend class unordered_map;
 
@@ -2175,8 +2169,6 @@ namespace boost {
 
     template <typename N, class K, class T, class A> class node_handle_map
     {
-      BOOST_MOVABLE_BUT_NOT_COPYABLE(node_handle_map)
-
       template <typename Types> friend struct ::boost::unordered::detail::table;
       template <class K2, class T2, class H2, class P2, class A2>
       friend class boost::unordered::unordered_map;
@@ -2208,6 +2200,8 @@ namespace boost {
 
     public:
       constexpr node_handle_map() noexcept : ptr_(), alloc_() {}
+      node_handle_map(node_handle_map const&) = delete;
+      node_handle_map& operator=(node_handle_map const&) = delete;
 
       ~node_handle_map()
       {
@@ -2296,19 +2290,14 @@ namespace boost {
 
     template <class Iter, class NodeType> struct insert_return_type_map
     {
-    private:
-      BOOST_MOVABLE_BUT_NOT_COPYABLE(insert_return_type_map)
-
-      // typedef typename boost::allocator_rebind<A,
-      //   std::pair<K const, T> >::type value_allocator;
-      // typedef N node_;
-
     public:
       Iter position;
       bool inserted;
       NodeType node;
 
       insert_return_type_map() : position(), inserted(false), node() {}
+      insert_return_type_map(insert_return_type_map const&) = delete;
+      insert_return_type_map& operator=(insert_return_type_map const&) = delete;
 
       insert_return_type_map(insert_return_type_map&& x) noexcept
           : position(x.position),

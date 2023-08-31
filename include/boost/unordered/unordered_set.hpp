@@ -40,9 +40,6 @@ namespace boost {
   namespace unordered {
     template <class T, class H, class P, class A> class unordered_set
     {
-#if defined(BOOST_UNORDERED_USE_MOVE)
-      BOOST_COPYABLE_AND_MOVABLE(unordered_set)
-#endif
       template <typename, typename, typename, typename>
       friend class unordered_multiset;
 
@@ -536,9 +533,6 @@ namespace boost {
 
     template <class T, class H, class P, class A> class unordered_multiset
     {
-#if defined(BOOST_UNORDERED_USE_MOVE)
-      BOOST_COPYABLE_AND_MOVABLE(unordered_multiset)
-#endif
       template <typename, typename, typename, typename>
       friend class unordered_set;
 
@@ -1803,8 +1797,6 @@ namespace boost {
 
     template <typename N, typename T, typename A> class node_handle_set
     {
-      BOOST_MOVABLE_BUT_NOT_COPYABLE(node_handle_set)
-
       template <typename Types> friend struct ::boost::unordered::detail::table;
       template <class T2, class H2, class P2, class A2>
       friend class unordered_set;
@@ -1838,6 +1830,8 @@ namespace boost {
 
     public:
       constexpr node_handle_set() noexcept : ptr_(), has_alloc_(false) {}
+      node_handle_set(node_handle_set const&) = delete;
+      node_handle_set& operator=(node_handle_set const&) = delete;
 
       ~node_handle_set()
       {
@@ -1918,19 +1912,14 @@ namespace boost {
 
     template <class Iter, class NodeType> struct insert_return_type_set
     {
-    private:
-      BOOST_MOVABLE_BUT_NOT_COPYABLE(insert_return_type_set)
-
-      // typedef typename boost::unordered::detail::rebind_wrap<A, T>::type
-      //   value_allocator;
-      // typedef N node_;
-
     public:
       Iter position;
       bool inserted;
       NodeType node;
 
       insert_return_type_set() : position(), inserted(false), node() {}
+      insert_return_type_set(insert_return_type_set const&) = delete;
+      insert_return_type_set& operator=(insert_return_type_set const&) = delete;
 
       insert_return_type_set(insert_return_type_set&& x) noexcept
           : position(x.position),

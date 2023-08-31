@@ -96,7 +96,6 @@ namespace test {
     friend class less;
     int tag1_, tag2_;
 
-    BOOST_COPYABLE_AND_MOVABLE(movable)
   public:
     explicit movable(int t1 = 0, int t2 = 0) : tag1_(t1), tag2_(t2) {}
 
