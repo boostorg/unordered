@@ -77,11 +77,6 @@ fca_tests(SOURCES exception/swap_exception_tests.cpp COMPILE_DEFINITIONS BOOST_U
 fca_tests(SOURCES exception/merge_exception_tests.cpp)
 fca_tests(SOURCES exception/less_tests.cpp)
 fca_tests(SOURCES unordered/narrow_cast_tests.cpp)
-fca_tests(SOURCES unordered/compile_set.cpp COMPILE_DEFINITIONS BOOST_UNORDERED_USE_MOVE NAME bmove_compile_set)
-fca_tests(SOURCES unordered/compile_map.cpp COMPILE_DEFINITIONS BOOST_UNORDERED_USE_MOVE NAME bmove_compile_map)
-fca_tests(SOURCES unordered/copy_tests.cpp COMPILE_DEFINITIONS BOOST_UNORDERED_USE_MOVE NAME bmove_copy)
-fca_tests(SOURCES unordered/move_tests.cpp COMPILE_DEFINITIONS BOOST_UNORDERED_USE_MOVE NAME bmove_move)
-fca_tests(SOURCES unordered/assign_tests.cpp COMPILE_DEFINITIONS BOOST_UNORDERED_USE_MOVE NAME bmove_assign)
 fca_tests(SOURCES quick.cpp)
 
 fca_tests(TYPE compile-fail NAME insert_node_type_fail_map COMPILE_DEFINITIONS UNORDERED_TEST_MAP SOURCES unordered/insert_node_type_fail.cpp)
