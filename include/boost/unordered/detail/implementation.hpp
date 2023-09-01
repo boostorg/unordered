@@ -1235,7 +1235,7 @@ namespace boost {
         typedef node<value_type, void_pointer> node_type;
 
         typedef boost::unordered::detail::grouped_bucket_array<
-          bucket<node_type, void_pointer>, value_allocator, prime_fmod_size<> >
+          bucket<node_type, void_pointer>, value_allocator, prime_fmod_size>
           bucket_array_type;
 
         typedef

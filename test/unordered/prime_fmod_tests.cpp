@@ -64,9 +64,8 @@ void prime_sizes_test()
   BOOST_TEST(!is_prime(100));
   BOOST_TEST(!is_prime(49));
 
-  std::size_t* sizes = boost::unordered::detail::prime_fmod_size<>::sizes;
-  std::size_t sizes_len =
-    boost::unordered::detail::prime_fmod_size<>::sizes_len;
+  std::size_t const* sizes = boost::unordered::detail::prime_fmod_sizes;
+  std::size_t sizes_len = boost::unordered::detail::prime_fmod_size::sizes_len;
 
   // prove every number in our sizes array is prime
   //
@@ -88,11 +87,11 @@ void prime_sizes_test()
   // correct amount of them, i.e. one for every entry in sizes[] that fits in 32
   // bits
   //
-  boost::uint64_t* inv_sizes32 =
-    boost::unordered::detail::prime_fmod_size<>::inv_sizes32;
+  boost::uint64_t const* inv_sizes32 =
+    boost::unordered::detail::prime_fmod_inv_sizes32;
 
   std::size_t inv_sizes32_len =
-    boost::unordered::detail::prime_fmod_size<>::inv_sizes32_len;
+    boost::unordered::detail::prime_fmod_size::inv_sizes32_len;
 
   std::size_t count = 0;
   for (std::size_t i = 0; i < sizes_len; ++i) {
@@ -133,7 +132,7 @@ void get_remainder_test()
 #if defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T)
   struct
   {
-    // boost::unordered::detail::prime_fmod_size<>::get_remainder
+    // boost::unordered::detail::prime_fmod_size::get_remainder
     // uses several internal implementations depending on the availability of
     // certain intrinsics or 128 bit integer support, defaulting to a slow,
     // portable routine. The following is a transcription of the portable
@@ -157,7 +156,7 @@ void get_remainder_test()
     boost::uint32_t d = rng() & 0xffffffffu;
 
     boost::uint64_t r1 =
-      boost::unordered::detail::prime_fmod_size<>::get_remainder(f, d);
+      boost::unordered::detail::prime_fmod_size::get_remainder(f, d);
 
     boost::uint64_t r2 = get_remainder(f, d);
 
@@ -171,10 +170,10 @@ void get_remainder_test()
 
 void modulo_test()
 {
-  std::size_t* sizes = boost::unordered::detail::prime_fmod_size<>::sizes;
+  std::size_t const* sizes = boost::unordered::detail::prime_fmod_sizes;
 
   std::size_t const sizes_len =
-    boost::unordered::detail::prime_fmod_size<>::sizes_len;
+    boost::unordered::detail::prime_fmod_size::sizes_len;
 
   boost::detail::splitmix64 rng;
 
@@ -190,7 +189,7 @@ void modulo_test()
       }
 #endif
       std::size_t p1 =
-        boost::unordered::detail::prime_fmod_size<>::position(hash, j);
+        boost::unordered::detail::prime_fmod_size::position(hash, j);
 
       std::size_t p2 = h % sizes[j];
 
