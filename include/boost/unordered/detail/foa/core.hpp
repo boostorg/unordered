@@ -22,13 +22,13 @@
 #include <boost/core/pointer_traits.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/predef.h>
-#include <boost/static_assert.hpp>
 #include <boost/type_traits/has_trivial_constructor.hpp>
 #include <boost/type_traits/has_trivial_copy.hpp>
 #include <boost/type_traits/has_trivial_assign.hpp>
 #include <boost/type_traits/is_nothrow_swappable.hpp>
 #include <boost/unordered/detail/narrow_cast.hpp>
 #include <boost/unordered/detail/mulx.hpp>
+#include <boost/unordered/detail/static_assert.hpp>
 #include <boost/unordered/hash_traits.hpp>
 #include <climits>
 #include <cmath>
@@ -311,7 +311,7 @@ struct group15
 
 private:
   using slot_type=IntegralWrapper<unsigned char>;
-  BOOST_STATIC_ASSERT(sizeof(slot_type)==1);
+  BOOST_UNORDERED_STATIC_ASSERT(sizeof(slot_type)==1);
 
   static constexpr unsigned char available_=0,
                                  sentinel_=1;
@@ -514,7 +514,7 @@ struct group15
 
 private:
   using slot_type=IntegralWrapper<unsigned char>;
-  BOOST_STATIC_ASSERT(sizeof(slot_type)==1);
+  BOOST_UNORDERED_STATIC_ASSERT(sizeof(slot_type)==1);
 
   static constexpr unsigned char available_=0,
                                  sentinel_=1;
@@ -707,7 +707,7 @@ struct group15
 
 private:
   using word_type=IntegralWrapper<uint64_t>;
-  BOOST_STATIC_ASSERT(sizeof(word_type)==8);
+  BOOST_UNORDERED_STATIC_ASSERT(sizeof(word_type)==8);
 
   static constexpr unsigned char available_=0,
                                  sentinel_=1;

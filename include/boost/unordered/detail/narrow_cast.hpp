@@ -9,8 +9,9 @@
 #ifndef BOOST_UNORDERED_DETAIL_NARROW_CAST_HPP
 #define BOOST_UNORDERED_DETAIL_NARROW_CAST_HPP
 
+#include <boost/unordered/detail/static_assert.hpp>
+
 #include <boost/config.hpp>
-#include <boost/static_assert.hpp>
 #include <boost/type_traits/is_integral.hpp>
 #include <boost/type_traits/make_unsigned.hpp>
 
@@ -21,9 +22,9 @@ namespace detail{
 template<typename To,typename From>
 constexpr To narrow_cast(From x) noexcept
 {
-  BOOST_STATIC_ASSERT(boost::is_integral<From>::value);
-  BOOST_STATIC_ASSERT(boost::is_integral<To>::value);
-  BOOST_STATIC_ASSERT(sizeof(From)>=sizeof(To));
+  BOOST_UNORDERED_STATIC_ASSERT(boost::is_integral<From>::value);
+  BOOST_UNORDERED_STATIC_ASSERT(boost::is_integral<To>::value);
+  BOOST_UNORDERED_STATIC_ASSERT(sizeof(From)>=sizeof(To));
 
   return static_cast<To>(
     x
