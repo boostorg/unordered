@@ -48,6 +48,7 @@
 #include <boost/type_traits/make_void.hpp>
 #include <boost/type_traits/remove_const.hpp>
 
+#include <algorithm>
 #include <cmath>
 #include <iterator>
 #include <stdexcept>
