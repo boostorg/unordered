@@ -146,12 +146,6 @@ for local test in $(FCA_TESTS)
 
 run unordered/link_test_1.cpp unordered/link_test_2.cpp : : : : link_test ;
 
-run unordered/compile_set.cpp  : : : <define>BOOST_UNORDERED_USE_MOVE : bmove_compile_set ;
-run unordered/compile_map.cpp  : : : <define>BOOST_UNORDERED_USE_MOVE : bmove_compile_map ;
-run unordered/copy_tests.cpp   : : : <define>BOOST_UNORDERED_USE_MOVE : bmove_copy ;
-run unordered/move_tests.cpp   : : : <define>BOOST_UNORDERED_USE_MOVE : bmove_move ;
-run unordered/assign_tests.cpp : : : <define>BOOST_UNORDERED_USE_MOVE : bmove_assign ;
-
 run unordered/serialization_tests.cpp
     : $(BOOST_UNORDERED_TEST_DIR)
     :
@@ -198,11 +192,6 @@ alias fca_tests :
   $(FCA_TESTS)
   $(FCA_EXCEPTION_TESTS)
   link_test
-  bmove_compile_set
-  bmove_compile_map
-  bmove_copy
-  bmove_move
-  bmove_assign
   insert_node_type_fail_map
   insert_node_type_fail_multimap
   insert_node_type_fail_set
