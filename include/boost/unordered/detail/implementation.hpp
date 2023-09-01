@@ -17,6 +17,7 @@
 #include <boost/unordered/detail/fca.hpp>
 #include <boost/unordered/detail/fwd.hpp>
 #include <boost/unordered/detail/serialize_tracked_address.hpp>
+#include <boost/unordered/detail/static_assert.hpp>
 #include <boost/unordered/detail/type_traits.hpp>
 
 #include <boost/assert.hpp>
@@ -2132,7 +2133,7 @@ namespace boost {
         void merge_unique(boost::unordered::detail::table<Types2>& other)
         {
           typedef boost::unordered::detail::table<Types2> other_table;
-          BOOST_STATIC_ASSERT((
+          BOOST_UNORDERED_STATIC_ASSERT((
             boost::is_same<node_type, typename other_table::node_type>::value));
           BOOST_ASSERT(this->node_alloc() == other.node_alloc());
 
