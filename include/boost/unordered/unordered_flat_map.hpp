@@ -141,9 +141,7 @@ namespace boost {
       }
 
       unordered_flat_map(unordered_flat_map&& other)
-        noexcept(std::is_nothrow_move_constructible<hasher>::value&&
-            std::is_nothrow_move_constructible<key_equal>::value&&
-              std::is_nothrow_move_constructible<allocator_type>::value)
+        noexcept(std::is_nothrow_move_constructible<table_type>::value)
           : table_(std::move(other.table_))
       {
       }
@@ -697,10 +695,9 @@ namespace boost {
       return erase_if(map.table_, pred);
     }
 
-    template <class Archive,
-      class Key, class T, class Hash, class KeyEqual, class Allocator>
-    void serialize(
-      Archive & ar,
+    template <class Archive, class Key, class T, class Hash, class KeyEqual,
+      class Allocator>
+    void serialize(Archive& ar,
       unordered_flat_map<Key, T, Hash, KeyEqual, Allocator>& map,
       unsigned int version)
     {

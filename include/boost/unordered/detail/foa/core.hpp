@@ -1267,6 +1267,10 @@ public:
   using element_type=typename type_policy::element_type;
   using arrays_type=Arrays<element_type,group_type,size_policy,Allocator>;
   using size_ctrl_type=SizeControl;
+  static constexpr auto uses_fancy_pointers=!std::is_same<
+    typename alloc_traits::pointer,
+    typename alloc_traits::value_type*
+  >::value;
 
   using key_type=typename type_policy::key_type;
   using init_type=typename type_policy::init_type;
@@ -1308,7 +1312,8 @@ public:
     noexcept(
       std::is_nothrow_move_constructible<Hash>::value&&
       std::is_nothrow_move_constructible<Pred>::value&&
-      std::is_nothrow_move_constructible<Allocator>::value):
+      std::is_nothrow_move_constructible<Allocator>::value&&
+      !uses_fancy_pointers):
     table_core{
       std::move(x.h()),std::move(x.pred()),std::move(x.al()),
       x.arrays,x.size_ctrl}
@@ -1352,7 +1357,7 @@ public:
     delete_arrays(arrays);
   }
 
-  void empty_initialize()noexcept
+  void empty_initialize()noexcept(!uses_fancy_pointers)
   {
     arrays=new_arrays(0);
     size_ctrl.ml=initial_max_load();
@@ -1404,8 +1409,8 @@ public:
 
   table_core& operator=(table_core&& x)
     noexcept(
-      alloc_traits::propagate_on_container_move_assignment::value||
-      alloc_traits::is_always_equal::value)
+      (alloc_traits::propagate_on_container_move_assignment::value||
+      alloc_traits::is_always_equal::value)&&!uses_fancy_pointers)
   {
     BOOST_UNORDERED_STATIC_ASSERT_HASH_PRED(Hash, Pred)
 

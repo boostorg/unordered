@@ -493,7 +493,8 @@ public:
     return *this;
   }
 
-  concurrent_table& operator=(concurrent_table&& x)
+  concurrent_table& operator=(concurrent_table&& x)noexcept(
+    noexcept(std::declval<super&>() = std::declval<super&&>()))
   {
     auto lck=exclusive_access(*this,x);
     super::operator=(std::move(x));
