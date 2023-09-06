@@ -920,8 +920,8 @@ inline unsigned int unchecked_countr_zero(int x)
  * allocators.
  */
 
-template<typename GroupPtr,std::size_t Size>
-GroupPtr dummy_groups()
+template<typename Group,std::size_t Size>
+Group* dummy_groups()
 {
   /* Dummy storage initialized as if in an empty container (actually, each
    * of its groups is initialized like a separate empty container).
@@ -931,15 +931,11 @@ GroupPtr dummy_groups()
    * insertion as the container's capacity is precisely zero.
    */
 
-  using pointer_traits=boost::pointer_traits<GroupPtr>;
-  using group_type=typename pointer_traits::element_type;
+  static constexpr typename Group::dummy_group_type
+  storage[Size]={typename Group::dummy_group_type(),};
 
-  static constexpr typename group_type::dummy_group_type
-  storage[Size]={typename group_type::dummy_group_type(),};
-
-  group_type* pg=reinterpret_cast<group_type*>(
-    const_cast<typename group_type::dummy_group_type*>(storage));
-  return pointer_traits::pointer_to(*pg);
+  return reinterpret_cast<Group*>(
+    const_cast<typename Group::dummy_group_type*>(storage));
 }
 
 template<typename Value,typename Group,typename SizePolicy,typename Allocator>
@@ -964,43 +960,63 @@ struct table_arrays
   value_type* elements()const noexcept{return boost::to_address(elements_);}
   group_type* groups()const noexcept{return boost::to_address(groups_);}
 
-  static table_arrays new_(allocator_type al,std::size_t n)
+  static void set_arrays(table_arrays& arrays,allocator_type al,std::size_t n)
+  {
+    return set_arrays(
+      arrays,al,n,std::is_same<group_type*,group_type_pointer>{});
+  }
+
+  static void set_arrays(
+    table_arrays& arrays,allocator_type al,std::size_t,std::false_type /* always allocate */)
   {
     using storage_traits=boost::allocator_traits<allocator_type>;
+    auto groups_size_index=arrays.groups_size_index;
+    auto groups_size=size_policy::size(groups_size_index);
 
+    auto sal=allocator_type(al);
+    arrays.elements_=storage_traits::allocate(sal,buffer_size(groups_size));
+    
+    /* Align arrays.groups to sizeof(group_type). table_iterator critically
+      * depends on such alignment for its increment operation.
+      */
+
+    auto p=reinterpret_cast<unsigned char*>(arrays.elements()+groups_size*N-1);
+    p+=(uintptr_t(sizeof(group_type))-
+        reinterpret_cast<uintptr_t>(p))%sizeof(group_type);
+    arrays.groups_=group_type_pointer_traits::pointer_to(*reinterpret_cast<group_type*>(p));
+
+    initialize_groups(
+      arrays.groups(),groups_size,
+      std::integral_constant<
+        bool,
+#if BOOST_WORKAROUND(BOOST_LIBSTDCXX_VERSION,<50000)
+      /* std::is_trivially_constructible not provided */
+      boost::has_trivial_constructor<group_type>::value
+#else
+      std::is_trivially_constructible<group_type>::value
+#endif  
+      >{});
+    arrays.groups()[groups_size-1].set_sentinel();
+  }
+
+  static void set_arrays(
+    table_arrays& arrays,allocator_type al,std::size_t n,std::true_type /* optimize for n==0*/)
+  {
+    if(!n){
+      arrays.groups_=dummy_groups<group_type,size_policy::min_size()>();
+    }
+    else{
+      set_arrays(arrays,al,n,std::false_type{});
+    }
+  }
+
+  static table_arrays new_(allocator_type al,std::size_t n)
+  {
     auto         groups_size_index=size_index_for<group_type,size_policy>(n);
     auto         groups_size=size_policy::size(groups_size_index);
     table_arrays arrays{groups_size_index,groups_size-1,nullptr,nullptr};
 
-    if(!n&&std::is_same<group_type*,group_type_pointer>::value){
-      arrays.groups_=dummy_groups<group_type_pointer,size_policy::min_size()>();
-    }
-    else{
-      auto sal=allocator_type(al);
-      arrays.elements_=storage_traits::allocate(sal,buffer_size(groups_size));
-      
-      /* Align arrays.groups to sizeof(group_type). table_iterator critically
-       * depends on such alignment for its increment operation.
-       */
-
-      auto p=reinterpret_cast<unsigned char*>(arrays.elements()+groups_size*N-1);
-      p+=(uintptr_t(sizeof(group_type))-
-          reinterpret_cast<uintptr_t>(p))%sizeof(group_type);
-      arrays.groups_=group_type_pointer_traits::pointer_to(*reinterpret_cast<group_type*>(p));
-
-      initialize_groups(
-        arrays.groups(),groups_size,
-        std::integral_constant<
-          bool,
-#if BOOST_WORKAROUND(BOOST_LIBSTDCXX_VERSION,<50000)
-        /* std::is_trivially_constructible not provided */
-        boost::has_trivial_constructor<group_type>::value
-#else
-        std::is_trivially_constructible<group_type>::value
-#endif  
-        >{});
-      arrays.groups()[groups_size-1].set_sentinel();
-    }
+    set_arrays(arrays,al,n);
     return arrays;
   }
 
