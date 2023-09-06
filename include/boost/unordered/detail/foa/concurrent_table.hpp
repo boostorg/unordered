@@ -283,7 +283,7 @@ struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy,Allocator>
   static concurrent_table_arrays new_group_access(group_access_allocator_type al,const super& x)
   {
     concurrent_table_arrays arrays{x,nullptr};
-    if(!arrays.elements_&&std::is_same<group_access*,group_access_pointer>::value){
+    if(!arrays.elements()&&std::is_same<group_access*,group_access_pointer>::value){
       arrays.group_accesses_=
         dummy_group_accesses<group_access_pointer,SizePolicy::min_size()>();
     }
@@ -306,7 +306,7 @@ struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy,Allocator>
 
   static void delete_group_access(group_access_allocator_type al,concurrent_table_arrays& arrays)noexcept
   {
-    if(arrays.elements_){
+    if(arrays.elements()){
       boost::allocator_deallocate(
         al,arrays.group_accesses_,arrays.groups_size_mask+1);
     }
@@ -477,7 +477,7 @@ public:
         typename arrays_type::super{
           x.arrays.groups_size_index,x.arrays.groups_size_mask,
           boost::pointer_traits<typename arrays_type::group_type_pointer>::pointer_to(
-            *reinterpret_cast<group_type*>(boost::to_address(x.arrays.groups_))),
+            *reinterpret_cast<group_type*>(x.arrays.groups())),
           x.arrays.elements_})),
       size_ctrl_type{x.size_ctrl.ml,x.size_ctrl.size}}
   {
@@ -1403,7 +1403,7 @@ private:
     GroupAccessMode access_mode,ExecutionPolicy&& policy,F f)const
     ->decltype(f(nullptr,0,nullptr),void())
   {
-    if(!this->arrays.elements_)return;
+    if(!this->arrays.elements())return;
     auto first=this->arrays.groups(),
          last=first+this->arrays.groups_size_mask+1;
     std::for_each(std::forward<ExecutionPolicy>(policy),first,last,
@@ -1425,7 +1425,7 @@ private:
   bool for_all_elements_while(
     GroupAccessMode access_mode,ExecutionPolicy&& policy,F f)const
   {
-    if(!this->arrays.elements_)return true;
+    if(!this->arrays.elements())return true;
     auto first=this->arrays.groups(),
          last=first+this->arrays.groups_size_mask+1;
     return std::all_of(std::forward<ExecutionPolicy>(policy),first,last,

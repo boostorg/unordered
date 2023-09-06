@@ -999,8 +999,7 @@ struct table_arrays
         std::is_trivially_constructible<group_type>::value
 #endif  
         >{});
-      using difference_type=typename boost::pointer_traits<group_type_pointer>::difference_type;
-      arrays.groups_[static_cast<difference_type>(groups_size-1)].set_sentinel();
+      arrays.groups()[groups_size-1].set_sentinel();
     }
     return arrays;
   }
@@ -1010,7 +1009,7 @@ struct table_arrays
     using storage_traits=boost::allocator_traits<allocator_type>;
 
     auto sal=allocator_type(al);
-    if(arrays.elements_){
+    if(arrays.elements()){
       storage_traits::deallocate(
         sal,arrays.elements_,buffer_size(arrays.groups_size_mask+1));
     }
@@ -1578,7 +1577,7 @@ public:
 
   std::size_t capacity()const noexcept
   {
-    return arrays.elements_?(arrays.groups_size_mask+1)*N-1:0;
+    return arrays.elements()?(arrays.groups_size_mask+1)*N-1:0;
   }
   
   float load_factor()const noexcept
@@ -1900,7 +1899,7 @@ private:
 
   void fast_copy_elements_from(const table_core& x)
   {
-    if(arrays.elements_&&x.arrays.elements_){
+    if(arrays.elements()&&x.arrays.elements()){
       copy_elements_array_from(x);
       copy_groups_array_from(x);
       size_ctrl.ml=std::size_t(x.size_ctrl.ml);

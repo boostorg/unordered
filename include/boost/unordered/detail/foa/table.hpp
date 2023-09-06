@@ -386,7 +386,7 @@ public:
   iterator begin()noexcept
   {
     iterator it{this->arrays.groups(),0,this->arrays.elements()};
-    if(this->arrays.elements_&&
+    if(this->arrays.elements()&&
        !(this->arrays.groups()[0].match_occupied()&0x1))++it;
     return it;
   }
@@ -556,7 +556,7 @@ private:
       arrays_type{
         x.arrays.groups_size_index,x.arrays.groups_size_mask,
         boost::pointer_traits<typename arrays_type::group_type_pointer>::pointer_to(
-            *reinterpret_cast<group_type*>(boost::to_address(x.arrays.groups_))),
+            *reinterpret_cast<group_type*>(x.arrays.groups())),
         x.arrays.elements_},
       size_ctrl_type{
         x.size_ctrl.ml,x.size_ctrl.size}}
