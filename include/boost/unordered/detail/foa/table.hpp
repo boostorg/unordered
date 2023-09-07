@@ -109,21 +109,21 @@ public:
   table_iterator()=default;
   template<bool Const2,typename std::enable_if<!Const2>::type* =nullptr>
   table_iterator(const table_iterator<TypePolicy,GroupPtr,Const2>& x):
-    pc{x.pc},p{x.p}{}
+    pc_{x.pc_},p_{x.p_}{}
   table_iterator(
     const_iterator_cast_tag, const table_iterator<TypePolicy,GroupPtr,true>& x):
-    pc{x.pc},p{x.p}{}
+    pc_{x.pc_},p_{x.p_}{}
 
   inline reference operator*()const noexcept
-    {return type_policy::value_from(*p);}
+    {return type_policy::value_from(*p());}
   inline pointer operator->()const noexcept
-    {return std::addressof(type_policy::value_from(*p));}
+    {return std::addressof(type_policy::value_from(*p()));}
   inline table_iterator& operator++()noexcept{increment();return *this;}
   inline table_iterator operator++(int)noexcept
     {auto x=*this;increment();return x;}
   friend inline bool operator==(
     const table_iterator& x,const table_iterator& y)
-    {return x.p==y.p;}
+    {return x.p()==y.p();}
   friend inline bool operator!=(
     const table_iterator& x,const table_iterator& y)
     {return !(x==y);}
@@ -149,86 +149,91 @@ private:
     return p;
   }
 
-  table_iterator(group_type* pg,std::size_t n,const table_element_type* p_):
-    pc{to_pointer<char_pointer>(
+  table_iterator(group_type* pg,std::size_t n,const table_element_type* p):
+    pc_{to_pointer<char_pointer>(
       reinterpret_cast<unsigned char*>(const_cast<group_type*>(pg))+n)},
-    p{to_pointer<table_element_pointer>(const_cast<table_element_type*>(p_))}
+    p_{to_pointer<table_element_pointer>(const_cast<table_element_type*>(p))}
   {}
+
+  unsigned char* pc()const noexcept{return boost::to_address(pc_);}
+  table_element_type* p()const noexcept{return boost::to_address(p_);}
 
   inline void increment()noexcept
   {
-    BOOST_ASSERT(p!=nullptr);
+    BOOST_ASSERT(p()!=nullptr);
     increment(std::integral_constant<bool,regular_layout>{});
   }
 
   inline void increment(std::true_type /* regular layout */)noexcept
   {
-    using diff_type=decltype(pc - pc);
+    using diff_type=
+      typename boost::pointer_traits<char_pointer>::difference_type;
 
     for(;;){
-      ++p;
-      if(reinterpret_cast<uintptr_t>(boost::to_address(pc))%sizeof(group_type)==N-1){
-        pc+=static_cast<diff_type>(sizeof(group_type)-(N-1));
+      ++p_;
+      if(reinterpret_cast<uintptr_t>(pc())%sizeof(group_type)==N-1){
+        pc_+=static_cast<diff_type>(sizeof(group_type)-(N-1));
         break;
       }
-      ++pc;
-      if(!group_type::is_occupied(boost::to_address(pc)))continue;
-      if(BOOST_UNLIKELY(group_type::is_sentinel(boost::to_address(pc))))p=nullptr;
+      ++pc_;
+      if(!group_type::is_occupied(pc()))continue;
+      if(BOOST_UNLIKELY(group_type::is_sentinel(pc())))p_=nullptr;
       return;
     }
 
     for(;;){
-      int mask=reinterpret_cast<group_type*>(boost::to_address(pc))->match_occupied();
+      int mask=reinterpret_cast<group_type*>(pc())->match_occupied();
       if(mask!=0){
         auto n=unchecked_countr_zero(mask);
-        if(BOOST_UNLIKELY(reinterpret_cast<group_type*>(boost::to_address(pc))->is_sentinel(n))){
-          p=nullptr;
+        if(BOOST_UNLIKELY(reinterpret_cast<group_type*>(pc())->is_sentinel(n))){
+          p_=nullptr;
         }
         else{
-          pc+=static_cast<diff_type>(n);
-          p+=static_cast<diff_type>(n);
+          pc_+=static_cast<diff_type>(n);
+          p_+=static_cast<diff_type>(n);
         }
         return;
       }
-      pc+=static_cast<diff_type>(sizeof(group_type));
-      p+=static_cast<diff_type>(N);
+      pc_+=static_cast<diff_type>(sizeof(group_type));
+      p_+=static_cast<diff_type>(N);
     }
   }
 
   inline void increment(std::false_type /* interleaved */)noexcept
   {
-    using diff_type=decltype(pc - pc);
+    using diff_type=
+      typename boost::pointer_traits<char_pointer>::difference_type;
 
-    std::size_t n0=reinterpret_cast<uintptr_t>(boost::to_address(pc))%sizeof(group_type);
-    pc-=static_cast<diff_type>(n0);
+    std::size_t n0=reinterpret_cast<uintptr_t>(pc())%sizeof(group_type);
+    pc_-=static_cast<diff_type>(n0);
 
     int mask=(
-      reinterpret_cast<group_type*>(boost::to_address(pc))->match_occupied()>>(n0+1))<<(n0+1);
+      reinterpret_cast<group_type*>(pc())->match_occupied()>>(n0+1))<<(n0+1);
     if(!mask){
       do{
-        pc+=sizeof(group_type);
-        p+=N;
+        pc_+=sizeof(group_type);
+        p_+=N;
       }
-      while((mask=reinterpret_cast<group_type*>(boost::to_address(pc))->match_occupied())==0);
+      while((mask=reinterpret_cast<group_type*>(pc())->match_occupied())==0);
     }
 
     auto n=unchecked_countr_zero(mask);
-    if(BOOST_UNLIKELY(reinterpret_cast<group_type*>(boost::to_address(pc))->is_sentinel(n))){
-      p=nullptr;
+    if(BOOST_UNLIKELY(reinterpret_cast<group_type*>(pc())->is_sentinel(n))){
+      p_=nullptr;
     }
     else{
-      pc+=static_cast<diff_type>(n);
-      p-=static_cast<diff_type>(n0);
-      p+=static_cast<diff_type>(n);
+      pc_+=static_cast<diff_type>(n);
+      p_-=static_cast<diff_type>(n0);
+      p_+=static_cast<diff_type>(n);
     }
   }
 
   template<typename Archive>
   friend void serialization_track(Archive& ar,const table_iterator& x)
   {
-    if(x.p){
-      track_address(ar,x.pc);
-      track_address(ar,x.p);
+    if(x.p()){
+      track_address(ar,x.pc_);
+      track_address(ar,x.p_);
     }
   }
 
@@ -237,13 +242,13 @@ private:
   template<typename Archive>
   void serialize(Archive& ar,unsigned int)
   {
-    if(!p)pc=nullptr;
-    serialize_tracked_address(ar,pc);
-    serialize_tracked_address(ar,p);
+    if(!p())pc_=nullptr;
+    serialize_tracked_address(ar,pc_);
+    serialize_tracked_address(ar,p_);
   }
 
-  char_pointer          pc=nullptr;
-  table_element_pointer  p=nullptr;
+  char_pointer          pc_=nullptr;
+  table_element_pointer  p_=nullptr;
 };
 
 /* Returned by table::erase([const_]iterator) to avoid iterator increment
@@ -459,7 +464,7 @@ public:
   BOOST_FORCEINLINE
   erase_return_type erase(const_iterator pos)noexcept
   {
-    super::erase(boost::to_address(pos.pc),boost::to_address(pos.p));
+    super::erase(pos.pc(),pos.p());
     return {pos};
   }
 
@@ -490,7 +495,7 @@ public:
     BOOST_ASSERT(pos!=end());
     erase_on_exit e{*this,pos};
     (void)e;
-    return std::move(*pos.p);
+    return std::move(*pos.p());
   }
 
   // TODO: should we accept different allocator too?
