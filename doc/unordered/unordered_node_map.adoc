@@ -1405,7 +1405,7 @@ void rehash(size_type n);
 
 Changes if necessary the size of the bucket array so that there are at least `n` buckets, and so that the load factor is less than or equal to the maximum load factor. When applicable, this will either grow or shrink the `bucket_count()` associated with the container.
 
-When `size() == 0`, `rehash(0)` will deallocate the underlying buckets array.
+When `size() == 0`, `rehash(0)` will deallocate the underlying buckets array. If the provided Allocator uses fancy pointers, a default allocation is subsequently performed.
 
 Invalidates iterators and changes the order of elements.
 
