@@ -231,8 +231,8 @@ private:
   insert_counter_type cnt{0};
 };
 
-template<typename GroupAccessPtr,std::size_t Size>
-GroupAccessPtr dummy_group_accesses()
+template<std::size_t Size>
+group_access* dummy_group_accesses()
 {
   /* Default group_access array to provide to empty containers without
    * incurring dynamic allocation. Mutexes won't actually ever be used,
@@ -240,12 +240,9 @@ GroupAccessPtr dummy_group_accesses()
    * be incremented (insertions won't succeed as capacity()==0).
    */
 
-  using pointer_traits=boost::pointer_traits<GroupAccessPtr>;
-  using group_access_type=typename pointer_traits::element_type;
+  static group_access accesses[Size];
 
-  static group_access_type accesses[Size];
-
-  return pointer_traits::pointer_to(*accesses);
+  return accesses;
 }
 
 /* subclasses table_arrays to add an additional group_access array */
@@ -280,21 +277,43 @@ struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy,Allocator>
     BOOST_CATCH_END
   }
 
-  static concurrent_table_arrays new_group_access(group_access_allocator_type al,const super& x)
+  static void set_group_access(
+    group_access_allocator_type al,concurrent_table_arrays& arrays)
   {
-    concurrent_table_arrays arrays{x,nullptr};
-    if(!arrays.elements()&&std::is_same<group_access*,group_access_pointer>::value){
-      arrays.group_accesses_=
-        dummy_group_accesses<group_access_pointer,SizePolicy::min_size()>();
-    }
-    else{
-      arrays.group_accesses_=
+    set_group_access(
+      al,arrays,std::is_same<group_access*,group_access_pointer>{});
+  }
+
+  static void set_group_access(
+    group_access_allocator_type al,
+    concurrent_table_arrays& arrays,
+    std::false_type /* fancy pointers */)
+  {
+    arrays.group_accesses_=
         boost::allocator_allocate(al,arrays.groups_size_mask+1);
 
       for(std::size_t i=0;i<arrays.groups_size_mask+1;++i){
         ::new (arrays.group_accesses()+i) group_access();
       }
+  }
+
+  static void set_group_access(
+    group_access_allocator_type al,
+    concurrent_table_arrays& arrays,
+    std::true_type /* optimize when elements() is null */)
+  {
+    if(!arrays.elements()){
+      arrays.group_accesses_=
+        dummy_group_accesses<SizePolicy::min_size()>();
+    } else {
+      set_group_access(al,arrays,std::false_type{});
     }
+  }
+
+  static concurrent_table_arrays new_group_access(group_access_allocator_type al,const super& x)
+  {
+    concurrent_table_arrays arrays{x,nullptr};
+    set_group_access(al,arrays);
     return arrays;
   }
 
