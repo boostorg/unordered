@@ -133,21 +133,27 @@ private:
   template<typename> friend class table_erase_return_type;
   template<typename,typename,typename,typename> friend class table;
 
-  table_iterator(group_type* pg,std::size_t n,const table_element_type* p_)
+  template<
+    typename Ptr,typename Ptr2,
+    typename std::enable_if<!std::is_same<Ptr,Ptr2>::value>::type* = nullptr
+  >
+  static Ptr to_pointer(Ptr2 p)
   {
-    if(pg)
-    {
-      using pointer_traits=boost::pointer_traits<char_pointer>;
-      pc=pointer_traits::pointer_to(
-        reinterpret_cast<unsigned char*>(const_cast<group_type*>(pg))[n]);
-    }
-
-    if(p_)
-    {
-      using pointer_traits=boost::pointer_traits<table_element_pointer>;
-      p=pointer_traits::pointer_to(*const_cast<table_element_type*>(p_));
-    }
+    if(!p){return nullptr;}
+    return boost::pointer_traits<Ptr>::pointer_to(*p);
   }
+
+  template<typename Ptr>
+  static Ptr to_pointer(Ptr p)
+  {
+    return p;
+  }
+
+  table_iterator(group_type* pg,std::size_t n,const table_element_type* p_):
+    pc{to_pointer<char_pointer>(
+      reinterpret_cast<unsigned char*>(const_cast<group_type*>(pg))+n)},
+    p{to_pointer<table_element_pointer>(const_cast<table_element_type*>(p_))}
+  {}
 
   inline void increment()noexcept
   {
