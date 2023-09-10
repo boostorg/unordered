@@ -373,6 +373,9 @@ using test::default_generator;
 using test::limited_range;
 using test::sequential;
 
+value_generator<std::pair<raii const, raii> > value_type_generator;
+value_generator<std::pair<raii, raii> > init_type_generator;
+
 // clang-format off
 UNORDERED_TEST(
   try_emplace,
