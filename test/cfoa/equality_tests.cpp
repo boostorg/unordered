@@ -1,10 +1,12 @@
 // Copyright (C) 2023 Christian Mazakas
+// Copyright (C) 2023 Joaquin M Lopez Munoz
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include "helpers.hpp"
 
 #include <boost/unordered/concurrent_flat_map.hpp>
+#include <boost/unordered/concurrent_flat_set.hpp>
 
 test::seed_t initialize_seed{1634048962};
 
@@ -14,16 +16,21 @@ using test::sequential;
 
 using hasher = stateful_hash;
 using key_equal = stateful_key_equal;
-using allocator_type = stateful_allocator<std::pair<raii const, raii> >;
 
 using map_type = boost::unordered::concurrent_flat_map<raii, raii, hasher,
-  key_equal, allocator_type>;
+  key_equal, stateful_allocator<std::pair<raii const, raii> > >;
 
-using map_value_type = typename map_type::value_type;
+using set_type = boost::unordered::concurrent_flat_set<raii, hasher,
+  key_equal, stateful_allocator<raii> >;
+
+map_type* test_map;
+set_type* test_set;
 
 namespace {
 
-  UNORDERED_AUTO_TEST (simple_equality) {
+  UNORDERED_AUTO_TEST (simple_map_equality) {
+    using allocator_type = map_type::allocator_type;
+
     {
       map_type x1(
         {{1, 11}, {2, 22}}, 0, hasher(1), key_equal(2), allocator_type(3));
@@ -50,17 +57,42 @@ namespace {
     }
   }
 
-  template <class G> void insert_and_compare(G gen, test::random_generator rg)
+  UNORDERED_AUTO_TEST (simple_set_equality) {
+    using allocator_type = set_type::allocator_type;
+
+    {
+      set_type x1(
+        {1, 2}, 0, hasher(1), key_equal(2), allocator_type(3));
+
+      set_type x2(
+        {1, 2}, 0, hasher(2), key_equal(2), allocator_type(3));
+
+      set_type x3({1}, 0, hasher(2), key_equal(2), allocator_type(3));
+
+      BOOST_TEST_EQ(x1.size(), x2.size());
+      BOOST_TEST(x1 == x2);
+      BOOST_TEST(!(x1 != x2));
+
+      BOOST_TEST(x1.size() != x3.size());
+      BOOST_TEST(!(x1 == x3));
+      BOOST_TEST(x1 != x3);
+    }
+  }
+
+  template <class X, class GF>
+  void insert_and_compare(X*, GF gen_factory, test::random_generator rg)
   {
+    using allocator_type = typename X::allocator_type;
+
+    auto gen = gen_factory.template get<X>();
     auto vals1 = make_random_values(1024 * 8, [&] { return gen(rg); });
-    boost::unordered_flat_map<raii, raii> reference_map(
-      vals1.begin(), vals1.end());
+    auto reference_cont = reference_container<X>(vals1.begin(), vals1.end());
 
     {
       raii::reset_counts();
 
-      map_type x1(vals1.size(), hasher(1), key_equal(2), allocator_type(3));
-      map_type x2(vals1.begin(), vals1.end(), vals1.size(), hasher(2),
+      X x1(vals1.size(), hasher(1), key_equal(2), allocator_type(3));
+      X x2(vals1.begin(), vals1.end(), vals1.size(), hasher(2),
         key_equal(2), allocator_type(3));
 
       std::thread t1, t2;
@@ -126,7 +158,7 @@ namespace {
       BOOST_TEST(x1 == x2);
       BOOST_TEST(!(x1 != x2));
 
-      test_matches_reference(x1, reference_map);
+      test_matches_reference(x1, reference_cont);
     }
     check_raii_counts();
   }
@@ -135,7 +167,8 @@ namespace {
 // clang-format off
 UNORDERED_TEST(
   insert_and_compare,
-  ((value_type_generator))
+  ((test_map)(test_set))
+  ((value_type_generator_factory))
   ((default_generator)(sequential)(limited_range)))
 // clang-format on
 

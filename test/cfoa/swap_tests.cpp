@@ -1,10 +1,12 @@
 // Copyright (C) 2023 Christian Mazakas
+// Copyright (C) 2023 Joaquin M Lopez Munoz
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include "helpers.hpp"
 
 #include <boost/unordered/concurrent_flat_map.hpp>
+#include <boost/unordered/concurrent_flat_set.hpp>
 
 test::seed_t initialize_seed{996130204};
 
@@ -56,17 +58,12 @@ template <class T> struct pocs_allocator
 
 using hasher = stateful_hash;
 using key_equal = stateful_key_equal;
-using allocator_type = stateful_allocator<std::pair<raii const, raii> >;
 
 using map_type = boost::unordered::concurrent_flat_map<raii, raii, hasher,
-  key_equal, allocator_type>;
+  key_equal, stateful_allocator<std::pair<raii const, raii> > >;
 
-using map_value_type = typename map_type::value_type;
-
-using pocs_allocator_type = pocs_allocator<std::pair<const raii, raii> >;
-
-using pocs_map_type = boost::unordered::concurrent_flat_map<raii, raii, hasher,
-  key_equal, pocs_allocator_type>;
+using set_type = boost::unordered::concurrent_flat_set<raii, hasher,
+  key_equal, stateful_allocator<raii> >;
 
 template <class T> struct is_nothrow_member_swappable
 {
@@ -75,12 +72,20 @@ template <class T> struct is_nothrow_member_swappable
 };
 
 BOOST_STATIC_ASSERT(is_nothrow_member_swappable<
-  boost::unordered::concurrent_flat_map<int, int, std::hash<int>,
-    std::equal_to<int>, std::allocator<std::pair<int const, int> > > >::value);
+  replace_allocator<map_type, std::allocator> >::value);
 
-BOOST_STATIC_ASSERT(is_nothrow_member_swappable<pocs_map_type>::value);
+BOOST_STATIC_ASSERT(is_nothrow_member_swappable<
+  replace_allocator<map_type, pocs_allocator> >::value);
 
 BOOST_STATIC_ASSERT(!is_nothrow_member_swappable<map_type>::value);
+
+BOOST_STATIC_ASSERT(is_nothrow_member_swappable<
+  replace_allocator<set_type, std::allocator> >::value);
+
+BOOST_STATIC_ASSERT(is_nothrow_member_swappable<
+  replace_allocator<set_type, pocs_allocator> >::value);
+
+BOOST_STATIC_ASSERT(!is_nothrow_member_swappable<set_type>::value);
 
 namespace {
   struct
@@ -97,31 +102,31 @@ namespace {
     }
   } free_fn_swap;
 
-  template <class X, class F, class G>
-  void swap_tests(X*, F swapper, G gen, test::random_generator rg)
+  template <class X, class F, class GF>
+  void swap_tests(X*, F swapper, GF gen_factory, test::random_generator rg)
   {
-    using allocator = typename X::allocator_type;
+    using value_type = typename X::value_type;
+    using allocator_type = typename X::allocator_type;
 
     bool const pocs =
-      boost::allocator_propagate_on_container_swap<allocator>::type::value;
+      boost::allocator_propagate_on_container_swap<
+        allocator_type>::type::value;
 
+    auto gen = gen_factory.template get<X>();
     auto vals1 = make_random_values(1024 * 8, [&] { return gen(rg); });
     auto vals2 = make_random_values(1024 * 4, [&] { return gen(rg); });
 
-    auto ref_map1 =
-      boost::unordered_flat_map<raii, raii>(vals1.begin(), vals1.end());
-
-    auto ref_map2 =
-      boost::unordered_flat_map<raii, raii>(vals2.begin(), vals2.end());
+    auto reference_cont1 = reference_container<X>(vals1.begin(), vals1.end());
+    auto reference_cont2 = reference_container<X>(vals2.begin(), vals2.end());
 
     {
       raii::reset_counts();
 
       X x1(vals1.begin(), vals1.end(), vals1.size(), hasher(1), key_equal(2),
-        allocator(3));
+        allocator_type(3));
 
       X x2(vals2.begin(), vals2.end(), vals2.size(), hasher(2), key_equal(1),
-        pocs ? allocator(4) : allocator(3));
+        pocs ? allocator_type(4) : allocator_type(3));
 
       if (pocs) {
         BOOST_TEST(x1.get_allocator() != x2.get_allocator());
@@ -132,7 +137,7 @@ namespace {
       auto const old_cc = +raii::copy_constructor;
       auto const old_mc = +raii::move_constructor;
 
-      thread_runner(vals1, [&x1, &x2, swapper](boost::span<map_value_type> s) {
+      thread_runner(vals1, [&x1, &x2, swapper](boost::span<value_type> s) {
         (void)s;
 
         swapper(x1, x2);
@@ -143,20 +148,20 @@ namespace {
       BOOST_TEST_EQ(raii::move_constructor, old_mc);
 
       if (pocs) {
-        if (x1.get_allocator() == allocator(3)) {
-          BOOST_TEST(x2.get_allocator() == allocator(4));
+        if (x1.get_allocator() == allocator_type(3)) {
+          BOOST_TEST(x2.get_allocator() == allocator_type(4));
         } else {
-          BOOST_TEST(x1.get_allocator() == allocator(4));
-          BOOST_TEST(x2.get_allocator() == allocator(3));
+          BOOST_TEST(x1.get_allocator() == allocator_type(4));
+          BOOST_TEST(x2.get_allocator() == allocator_type(3));
         }
       } else {
-        BOOST_TEST(x1.get_allocator() == allocator(3));
+        BOOST_TEST(x1.get_allocator() == allocator_type(3));
         BOOST_TEST(x1.get_allocator() == x2.get_allocator());
       }
 
-      if (x1.size() == ref_map1.size()) {
-        test_matches_reference(x1, ref_map1);
-        test_matches_reference(x2, ref_map2);
+      if (x1.size() == reference_cont1.size()) {
+        test_matches_reference(x1, reference_cont1);
+        test_matches_reference(x2, reference_cont2);
 
         BOOST_TEST_EQ(x1.hash_function(), hasher(1));
         BOOST_TEST_EQ(x1.key_eq(), key_equal(2));
@@ -164,8 +169,8 @@ namespace {
         BOOST_TEST_EQ(x2.hash_function(), hasher(2));
         BOOST_TEST_EQ(x2.key_eq(), key_equal(1));
       } else {
-        test_matches_reference(x2, ref_map1);
-        test_matches_reference(x1, ref_map2);
+        test_matches_reference(x2, reference_cont1);
+        test_matches_reference(x1, reference_cont2);
 
         BOOST_TEST_EQ(x1.hash_function(), hasher(2));
         BOOST_TEST_EQ(x1.key_eq(), key_equal(1));
@@ -177,17 +182,21 @@ namespace {
     check_raii_counts();
   }
 
-  template <class F, class G>
-  void insert_and_swap(F swapper, G gen, test::random_generator rg)
+  template <class X, class F, class GF>
+  void insert_and_swap(
+    X*, F swapper, GF gen_factory, test::random_generator rg)
   {
+    using allocator_type = typename X::allocator_type;
+
+    auto gen = gen_factory.template get<X>();
     auto vals1 = make_random_values(1024 * 8, [&] { return gen(rg); });
     auto vals2 = make_random_values(1024 * 4, [&] { return gen(rg); });
 
     {
       raii::reset_counts();
 
-      map_type x1(vals1.size(), hasher(1), key_equal(2), allocator_type(3));
-      map_type x2(vals2.size(), hasher(2), key_equal(1), allocator_type(3));
+      X x1(vals1.size(), hasher(1), key_equal(2), allocator_type(3));
+      X x2(vals2.size(), hasher(2), key_equal(1), allocator_type(3));
 
       std::thread t1, t2, t3;
       boost::compat::latch l(2);
@@ -282,21 +291,25 @@ namespace {
   }
 
   map_type* map;
-  pocs_map_type* pocs_map;
+  replace_allocator<map_type, pocs_allocator>* pocs_map;
+
+  set_type* set;
+  replace_allocator<set_type, pocs_allocator>* pocs_set;
 
 } // namespace
 
 // clang-format off
 UNORDERED_TEST(
   swap_tests,
-  ((map)(pocs_map))
+  ((map)(pocs_map)(set)(pocs_set))
   ((member_fn_swap)(free_fn_swap))
-  ((value_type_generator))
+  ((value_type_generator_factory))
   ((default_generator)(sequential)(limited_range)))
 
 UNORDERED_TEST(insert_and_swap,
+  ((map)(set))
   ((member_fn_swap)(free_fn_swap))
-  ((value_type_generator))
+  ((value_type_generator_factory))
   ((default_generator)(sequential)(limited_range)))
 // clang-format on
 

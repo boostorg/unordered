@@ -12,22 +12,35 @@ namespace boost {
   // Caveat lector: a proper handler shouldn't throw as it may be executed
   // within a noexcept function.
 
-void assertion_failed_msg(
-  char const*, char const*, char const*, char const*, long)
-{
-  reentrancy_detected = true;
-  throw 0;
-}
+  void assertion_failed_msg(
+    char const*, char const*, char const*, char const*, long)
+  {
+    reentrancy_detected = true;
+    throw 0;
+  }
 
-void assertion_failed(char const*, char const*, char const*, long) // LCOV_EXCL_START
-{
-  std::abort();
-}                                                                  // LCOV_EXCL_STOP
+  // LCOV_EXCL_START
+  void assertion_failed(char const*, char const*, char const*, long)
+  {
+    std::abort();
+  }
+  // LCOV_EXCL_STOP
 
-}
+} // namespace boost
+
+#include "helpers.hpp"
 
 #include <boost/unordered/concurrent_flat_map.hpp>
+#include <boost/unordered/concurrent_flat_set.hpp>
 #include <boost/core/lightweight_test.hpp>
+
+using test::default_generator;
+
+using map_type = boost::unordered::concurrent_flat_map<raii, raii>;
+using set_type = boost::unordered::concurrent_flat_set<raii>;
+
+map_type* test_map;
+set_type* test_set;
 
 template<typename F>
 void detect_reentrancy(F f)
@@ -40,40 +53,61 @@ void detect_reentrancy(F f)
   BOOST_TEST(reentrancy_detected);
 }
 
-int main()
-{
-  using map = boost::concurrent_flat_map<int, int>;
-  using value_type = typename map::value_type;
+namespace {
+  template <class X, class GF>
+  void reentrancy_tests(X*, GF gen_factory, test::random_generator rg)
+  {
+    using key_type = typename X::key_type;
 
-  map m1, m2;
-  m1.emplace(0, 0);
-  m2.emplace(1, 0);
+    // concurrent_flat_set visit is always const access
+    using arg_type = typename std::conditional<
+      std::is_same<typename X::key_type, typename X::value_type>::value,
+      typename X::value_type const,
+      typename X::value_type
+    >::type;
 
-  detect_reentrancy([&] {
-    m1.visit_all([&](value_type&) { (void)m1.contains(0); });
-  }); // LCOV_EXCL_LINE
+    auto gen = gen_factory.template get<X>();
+    auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
 
-  detect_reentrancy([&] {
-    m1.visit_all([&](value_type&) { m1.rehash(0); });
-  }); // LCOV_EXCL_LINE
+    X x1, x2;
+    x1.insert(values.begin(), values.end());
+    x2.insert(values.begin(), values.end());
 
-  detect_reentrancy([&] {
-    m1.visit_all([&](value_type&) { 
-      m2.visit_all([&](value_type&) { 
-        m1=m2;
-      }); // LCOV_EXCL_START
+    detect_reentrancy([&] {
+      x1.visit_all([&](arg_type&) { (void)x1.contains(key_type()); });
+    }); // LCOV_EXCL_LINE
+
+    detect_reentrancy([&] {
+      x1.visit_all([&](arg_type&) { x1.rehash(0); });
+    }); // LCOV_EXCL_LINE
+
+    detect_reentrancy([&] {
+      x1.visit_all([&](arg_type&) { 
+        x2.visit_all([&](arg_type&) { 
+          x1=x2;
+        }); // LCOV_EXCL_START
+      });
     });
-  });
-  // LCOV_EXCL_STOP
+    // LCOV_EXCL_STOP
 
-  detect_reentrancy([&] {
-    m1.visit_all([&](value_type&) { 
-      m2.visit_all([&](value_type&) { 
-        m2=m1;
-      }); // LCOV_EXCL_START
+    detect_reentrancy([&] {
+      x1.visit_all([&](arg_type&) { 
+        x2.visit_all([&](arg_type&) { 
+          x2=x1;
+        }); // LCOV_EXCL_START
+      });
     });
-  });
-  // LCOV_EXCL_STOP
+    // LCOV_EXCL_STOP
+  }
 
-  return boost::report_errors();
-}
+} // namespace
+
+// clang-format off
+UNORDERED_TEST(
+  reentrancy_tests,
+  ((test_map)(test_set))
+  ((value_type_generator_factory))
+  ((default_generator)))
+// clang-format on
+
+RUN_TESTS()
