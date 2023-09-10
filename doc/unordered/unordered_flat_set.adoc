@@ -71,7 +71,7 @@ namespace boost {
       xref:#unordered_flat_set_iterator_range_constructor_with_allocator[unordered_flat_set](InputIterator f, InputIterator l, const allocator_type& a);
     explicit xref:#unordered_flat_set_allocator_constructor[unordered_flat_set](const Allocator& a);
     xref:#unordered_flat_set_copy_constructor_with_allocator[unordered_flat_set](const unordered_flat_set& other, const Allocator& a);
-    xref:#unordered_flat_set_move_constructor_with_allocator[unordered_flat_set](unordered_flat_set&& other, const Allocator& a);
+    xref:#unordered_flat_set_move_constructor_from_concurrent_flat_set[unordered_flat_set](concurrent_flat_set<Key, Hash, Pred, Allocator>&& other);
     xref:#unordered_flat_set_initializer_list_constructor[unordered_flat_set](std::initializer_list<value_type> il,
                        size_type n = _implementation-defined_
                        const hasher& hf = hasher(),
@@ -419,6 +419,22 @@ unordered_flat_set(unordered_flat_set&& other, Allocator const& a);
 If `a == other.get_allocator()`, the elements of `other` are transferred directly to the new container;
 otherwise, elements are moved-constructed from those of `other`. The hash function and predicate are moved-constructed
 from `other`, and the allocator is copy-constructed from `a`.
+
+---
+
+==== Move Constructor from concurrent_flat_set
+
+```c++
+unordered_flat_set(concurrent_flat_set<Key, Hash, Pred, Allocator>&& other);
+```
+
+Move construction from a xref:#concurrent_flat_set[`concurrent_flat_set`].
+The internal bucket array of `other` is transferred directly to the new container.
+The hash function, predicate and allocator are moved-constructed from `other`.
+
+[horizontal]
+Complexity:;; Constant time.
+Concurrency:;; Blocking on `other`.
 
 ---
 
