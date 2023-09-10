@@ -10,6 +10,7 @@
 #pragma once
 #endif
 
+#include <boost/unordered/concurrent_flat_set_fwd.hpp>
 #include <boost/unordered/detail/foa/flat_set_types.hpp>
 #include <boost/unordered/detail/foa/table.hpp>
 #include <boost/unordered/detail/serialize_container.hpp>
@@ -35,6 +36,9 @@ namespace boost {
     template <class Key, class Hash, class KeyEqual, class Allocator>
     class unordered_flat_set
     {
+      template <class Key2, class Hash2, class KeyEqual2, class Allocator2>
+      friend class concurrent_flat_set;
+
       using set_types = detail::foa::flat_set_types<Key>;
 
       using table_type = detail::foa::table<set_types, Hash, KeyEqual,
@@ -166,6 +170,12 @@ namespace boost {
       unordered_flat_set(std::initializer_list<value_type> init, size_type n,
         hasher const& h, allocator_type const& a)
           : unordered_flat_set(init, n, h, key_equal(), a)
+      {
+      }
+
+      unordered_flat_set(
+        concurrent_flat_set<Key, Hash, KeyEqual, Allocator>&& other)
+          : table_(std::move(other.table_))
       {
       }
 
