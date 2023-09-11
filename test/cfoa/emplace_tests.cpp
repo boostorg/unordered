@@ -19,28 +19,10 @@ namespace {
     return x.emplace(v.x_);
   }
 
-  template <typename Container, typename Value>
-  bool member_emplace(Container& x, Value& v)
-  {
-    return x.emplace(v.x_);
-  }
-
   template <typename Container, typename Key, typename Value>
   bool member_emplace(Container& x, std::pair<Key, Value> const & v)
   {
     return x.emplace(v.first.x_, v.second.x_);
-  }
-
-  template <typename Container, typename Key, typename Value>
-  bool member_emplace(Container& x, std::pair<Key, Value>& v)
-  {
-    return x.emplace(v.first.x_, v.second.x_);
-  }
-
-  template <typename Container, typename Value, typename F>
-  bool member_emplace_or_visit(Container& x, Value const & v, F f)
-  {
-    return x.emplace_or_visit(v.x_, f);
   }
 
   template <typename Container, typename Value, typename F>
@@ -50,35 +32,15 @@ namespace {
   }
 
   template <typename Container, typename Key, typename Value, typename F>
-  bool member_emplace_or_visit(
-    Container& x, std::pair<Key, Value> const & v, F f)
-  {
-    return x.emplace_or_visit(v.first.x_, v.second.x_, f);
-  }
-
-  template <typename Container, typename Key, typename Value, typename F>
   bool member_emplace_or_visit(Container& x, std::pair<Key, Value>& v, F f)
   {
     return x.emplace_or_visit(v.first.x_, v.second.x_, f);
   }
 
   template <typename Container, typename Value, typename F>
-  bool member_emplace_or_cvisit(Container& x, Value const & v, F f)
-  {
-    return x.emplace_or_cvisit(v.x_, f);
-  }
-
-  template <typename Container, typename Value, typename F>
   bool member_emplace_or_cvisit(Container& x, Value& v, F f)
   {
     return x.emplace_or_cvisit(v.x_, f);
-  }
-
-  template <typename Container, typename Key, typename Value, typename F>
-  bool member_emplace_or_cvisit(
-    Container& x, std::pair<Key, Value> const & v, F f)
-  {
-    return x.emplace_or_cvisit(v.first.x_, v.second.x_, f);
   }
 
   template <typename Container, typename Key, typename Value, typename F>
