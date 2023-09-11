@@ -75,8 +75,8 @@ namespace {
         raii::destructor + value_type_cardinality * x.size());
 
       thread_runner(values, [&num_erased, &x](boost::span<T> s) {
-        for (auto const& k : s) {
-          auto count = x.erase(k.first.x_);
+        for (auto const& v : s) {
+          auto count = x.erase(get_key(v).x_);
           num_erased += count;
           BOOST_TEST_LE(count, 1u);
           BOOST_TEST_GE(count, 0u);
@@ -87,7 +87,8 @@ namespace {
       BOOST_TEST_EQ(raii::copy_constructor, old_cc);
       BOOST_TEST_EQ(raii::move_constructor, old_mc);
 
-      BOOST_TEST_EQ(raii::destructor, old_d + 2 * num_erased);
+      BOOST_TEST_EQ(
+        raii::destructor, old_d + value_type_cardinality * num_erased);
 
       BOOST_TEST_EQ(x.size(), 0u);
       BOOST_TEST(x.empty());
@@ -441,7 +442,7 @@ namespace {
   boost::unordered::concurrent_flat_set<raii>* set;
   boost::unordered::concurrent_flat_map<raii, raii, transp_hash,
     transp_key_equal>* transparent_map;
-  boost::unordered::concurrent_flat_map<raii, transp_hash,
+  boost::unordered::concurrent_flat_set<raii, transp_hash,
     transp_key_equal>* transparent_set;
 
 } // namespace
@@ -460,7 +461,7 @@ UNORDERED_TEST(
 
 UNORDERED_TEST(
   erase,
-  ((transparent_map))
+  ((transparent_map)(transparent_set))
   ((value_type_generator_factory)(init_type_generator_factory))
   ((transp_lvalue_eraser)(transp_lvalue_eraser_if)(erase_if_exec_policy))
   ((default_generator)(sequential)(limited_range)))
