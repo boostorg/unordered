@@ -254,7 +254,6 @@ namespace {
   template <class X, class IL>
   void initializer_list_bucket_count(std::pair<X*, IL> p)
   {
-    using value_type = typename X::value_type;
     using allocator_type = typename X::allocator_type;
 
     auto init_list = p.second;
