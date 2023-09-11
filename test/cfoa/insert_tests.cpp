@@ -5,10 +5,15 @@
 
 #include "helpers.hpp"
 
+#include <boost/config.hpp>
 #include <boost/unordered/concurrent_flat_map.hpp>
 #include <boost/unordered/concurrent_flat_set.hpp>
 
 #include <boost/core/ignore_unused.hpp>
+
+#if defined(BOOST_MSVC)
+#pragma warning(disable : 4127) // conditional expression is constant
+#endif
 
 struct raii_convertible
 {
