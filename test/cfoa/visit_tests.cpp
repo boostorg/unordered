@@ -29,7 +29,8 @@ namespace {
   template<typename T>
   raii const & get_non_present_key(T const & x)
   {
-    return non_present_keys[get_key(x).x_ % non_present_keys.size()];
+    return non_present_keys[
+      (std::size_t)get_key(x).x_ % non_present_keys.size()];
   }
 
   struct lvalue_visitor_type
