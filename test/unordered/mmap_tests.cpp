@@ -29,6 +29,9 @@ int main() {}
 #include <boost/process/child.hpp>
 #include <boost/process/filesystem.hpp>
 
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+
 #include <algorithm>
 #include <iostream>
 #include <type_traits>
@@ -121,7 +124,7 @@ void parent(std::string const& shm_name_, char const* exe_name, C*)
 
   BOOST_TEST(c->empty());
 
-  boost::process::child child(exe_name, "1234");
+  boost::process::child child(exe_name, shm_name);
   child.wait();
   int ret = child.exit_code();
 
@@ -216,7 +219,7 @@ void parent(std::string const& shm_name_, char const* exe_name, concurrent_map*)
 
   BOOST_TEST(c->empty());
 
-  boost::process::child child(exe_name, "1234");
+  boost::process::child child(exe_name, shm_name);
   child.wait();
   int ret = child.exit_code();
 
@@ -270,6 +273,8 @@ std::string shm_name_sanitize(std::string const& exe_name)
     case '/':
     case '.':
     case '\\':
+    case '-':
+    case '_':
       return true;
 
     default:
@@ -277,7 +282,8 @@ std::string shm_name_sanitize(std::string const& exe_name)
     }
   });
   s.erase(pos, s.end());
-  return s;
+  s = "/" + s;
+  return s.substr(0, 255);
 }
 
 void mmap_test(int argc, char const** argv)
@@ -285,13 +291,14 @@ void mmap_test(int argc, char const** argv)
   using container_type =
     decltype(get_container_type<BOOST_UNORDERED_FOA_MMAP_MAP_TYPE>());
 
-  auto exe_name = argv[0];
-  auto shm_name = shm_name_sanitize(exe_name);
-
   if (argc == 1) {
+    auto uuid = to_string(boost::uuids::random_generator()());
+    auto exe_name = argv[0];
+    auto shm_name = shm_name_sanitize(std::string(exe_name) + uuid);
     container_type* p = nullptr;
     parent(shm_name, exe_name, p);
   } else {
+    auto shm_name = std::string(argv[1]);
     container_type* p = nullptr;
     child(shm_name, p);
   }
