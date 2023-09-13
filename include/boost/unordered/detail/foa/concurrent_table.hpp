@@ -488,20 +488,31 @@ public:
   concurrent_table(concurrent_table&& x,const Allocator& al_):
     concurrent_table(std::move(x),al_,x.exclusive_access()){}
 
-  concurrent_table(compatible_nonconcurrent_table&& x):
+  template<typename ArraysType>
+  concurrent_table(
+    compatible_nonconcurrent_table&& x,
+    arrays_holder<ArraysType,Allocator>&& ah):
     super{
       std::move(x.h()),std::move(x.pred()),std::move(x.al()),
-      arrays_type(arrays_type::new_group_access(
-        x.al(),
-        typename arrays_type::super{
+      [&x]{return arrays_type::new_group_access(
+        x.al(),typename arrays_type::super{
           x.arrays.groups_size_index,x.arrays.groups_size_mask,
-          boost::pointer_traits<typename arrays_type::group_type_pointer>::pointer_to(
-            *reinterpret_cast<group_type*>(x.arrays.groups())),
-          x.arrays.elements_})),
+          to_pointer<typename arrays_type::group_type_pointer>(
+            reinterpret_cast<group_type*>(x.arrays.groups())),
+          x.arrays.elements_});},
       size_ctrl_type{x.size_ctrl.ml,x.size_ctrl.size}}
   {
-    x.empty_initialize();
+    ah.release();
+    x.arrays=ah.get();
+    x.size_ctrl.ml=x.initial_max_load();
+    x.size_ctrl.size=0;
   }
+
+  concurrent_table(compatible_nonconcurrent_table&& x):
+    concurrent_table(std::move(x), arrays_holder<
+      typename compatible_nonconcurrent_table::arrays_type,Allocator
+    >{compatible_nonconcurrent_table::arrays_type::new_(x.al(),0),x.al()})
+  {}
 
   ~concurrent_table()=default;
 

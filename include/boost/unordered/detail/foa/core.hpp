@@ -938,6 +938,55 @@ Group* dummy_groups()
     const_cast<typename Group::dummy_group_type*>(storage));
 }
 
+template<
+  typename Ptr,typename Ptr2,
+  typename std::enable_if<!std::is_same<Ptr,Ptr2>::value>::type* = nullptr
+>
+Ptr to_pointer(Ptr2 p)
+{
+  if(!p){return nullptr;}
+  return boost::pointer_traits<Ptr>::pointer_to(*p);
+}
+
+template<typename Ptr>
+Ptr to_pointer(Ptr p)
+{
+  return p;
+}
+
+template<typename Arrays,typename Allocator>
+struct arrays_holder
+{
+  arrays_holder(Arrays const& arrays, Allocator const& al)
+    :arrays_{arrays},al_{al}
+  {}
+  
+  arrays_holder(arrays_holder const&)=delete;
+  arrays_holder& operator=(arrays_holder const&)=delete;
+
+  ~arrays_holder()
+  {
+    if (!released_){
+      arrays_.delete_(al_,arrays_);
+    }
+  }
+
+  Arrays const& get()const
+  {
+    return arrays_;
+  }
+
+  void release()
+  {
+    released_=true;
+  }
+
+private:
+  Arrays arrays_;
+  Allocator al_;
+  bool released_=false;
+};
+
 template<typename Value,typename Group,typename SizePolicy,typename Allocator>
 struct table_arrays
 {
@@ -1309,19 +1358,33 @@ public:
     size_ctrl{initial_max_load(),0}
     {}
 
-  /* bare transfer ctor for concurrent/non-concurrent interop */
-
+  /* genericize on an ArraysFn so that we can do things like delay an
+   * allocation for the group_access data required by cfoa after the move
+   * constructors of Hash, Pred have been invoked
+   */
+  template<typename ArraysFn>
   table_core(
     Hash&& h_,Pred&& pred_,Allocator&& al_,
-    const arrays_type& arrays_,const size_ctrl_type& size_ctrl_):
+    ArraysFn arrays_fn,const size_ctrl_type& size_ctrl_):
     hash_base{empty_init,std::move(h_)},
     pred_base{empty_init,std::move(pred_)},
     allocator_base{empty_init,std::move(al_)},
-    arrays(arrays_),size_ctrl(size_ctrl_)
+    arrays(arrays_fn()),size_ctrl(size_ctrl_)
   {}
 
   table_core(const table_core& x):
     table_core{x,alloc_traits::select_on_container_copy_construction(x.al())}{}
+
+  template<typename ArraysFn>
+  table_core(table_core&& x,arrays_holder<arrays_type,Allocator>&& ah,ArraysFn arrays_fn):
+    table_core(
+      std::move(x.h()),std::move(x.pred()),std::move(x.al()),arrays_fn,x.size_ctrl)
+  {
+    ah.release();
+    x.arrays=ah.get();
+    x.size_ctrl.ml=x.initial_max_load();
+    x.size_ctrl.size=0;
+  }
 
   table_core(table_core&& x)
     noexcept(
@@ -1330,11 +1393,9 @@ public:
       std::is_nothrow_move_constructible<Allocator>::value&&
       !uses_fancy_pointers):
     table_core{
-      std::move(x.h()),std::move(x.pred()),std::move(x.al()),
-      x.arrays,x.size_ctrl}
-  {
-    x.empty_initialize();
-  }
+      std::move(x),arrays_holder<arrays_type,Allocator>{x.new_arrays(0),x.al()},
+      [&x]{return x.arrays;}}
+  {}
 
   table_core(const table_core& x,const Allocator& al_):
     table_core{std::size_t(std::ceil(float(x.size())/mlf)),x.h(),x.pred(),al_}
@@ -1372,11 +1433,17 @@ public:
     delete_arrays(arrays);
   }
 
-  void empty_initialize()noexcept(!uses_fancy_pointers)
+  std::size_t initial_max_load()const
   {
-    arrays=new_arrays(0);
-    size_ctrl.ml=initial_max_load();
-    size_ctrl.size=0;
+    static constexpr std::size_t small_capacity=2*N-1;
+
+    auto capacity_=capacity();
+    if(capacity_<=small_capacity){
+      return capacity_; /* we allow 100% usage */
+    }
+    else{
+      return (std::size_t)(mlf*(float)(capacity_));
+    }
   }
 
   table_core& operator=(const table_core& x)
@@ -2021,19 +2088,6 @@ private:
   {
     recover_slot(reinterpret_cast<unsigned char*>(pg)+pos);
   }
-
-  std::size_t initial_max_load()const
-  {
-    static constexpr std::size_t small_capacity=2*N-1;
-
-    auto capacity_=capacity();
-    if(capacity_<=small_capacity){
-      return capacity_; /* we allow 100% usage */
-    }
-    else{
-      return (std::size_t)(mlf*(float)(capacity_));
-    }
-  }  
 
   static std::size_t capacity_for(std::size_t n)
   {

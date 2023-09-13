@@ -133,22 +133,6 @@ private:
   template<typename> friend class table_erase_return_type;
   template<typename,typename,typename,typename> friend class table;
 
-  template<
-    typename Ptr,typename Ptr2,
-    typename std::enable_if<!std::is_same<Ptr,Ptr2>::value>::type* = nullptr
-  >
-  static Ptr to_pointer(Ptr2 p)
-  {
-    if(!p){return nullptr;}
-    return boost::pointer_traits<Ptr>::pointer_to(*p);
-  }
-
-  template<typename Ptr>
-  static Ptr to_pointer(Ptr p)
-  {
-    return p;
-  }
-
   table_iterator(group_type* pg,std::size_t n,const table_element_type* p):
     pc_{to_pointer<char_pointer>(
       reinterpret_cast<unsigned char*>(const_cast<group_type*>(pg))+n)},
@@ -560,22 +544,31 @@ public:
   friend bool operator!=(const table& x,const table& y){return !(x==y);}
 
 private:
-  template<typename ExclusiveLockGuard>
-  table(compatible_concurrent_table&& x,ExclusiveLockGuard):
+  template<typename ArraysType>
+  table(compatible_concurrent_table&& x,arrays_holder<ArraysType,Allocator>&& ah):
     super{
       std::move(x.h()),std::move(x.pred()),std::move(x.al()),
-      arrays_type{
+      [&x]{return arrays_type{
         x.arrays.groups_size_index,x.arrays.groups_size_mask,
-        boost::pointer_traits<typename arrays_type::group_type_pointer>::pointer_to(
-            *reinterpret_cast<group_type*>(x.arrays.groups())),
-        x.arrays.elements_},
-      size_ctrl_type{
-        x.size_ctrl.ml,x.size_ctrl.size}}
+        to_pointer<group_type_pointer>(
+          reinterpret_cast<group_type*>(x.arrays.groups())),
+        x.arrays.elements_};},
+      size_ctrl_type{x.size_ctrl.ml,x.size_ctrl.size}}
   {
-    compatible_concurrent_table::arrays_type::delete_group_access(
-      this->al(),x.arrays);
-    x.empty_initialize();
+    ah.release();
+
+    compatible_concurrent_table::arrays_type::delete_group_access(x.al(),x.arrays);
+    x.arrays=ah.get();
+    x.size_ctrl.ml=x.initial_max_load();
+    x.size_ctrl.size=0;
   }
+
+  template<typename ExclusiveLockGuard>
+  table(compatible_concurrent_table&& x,ExclusiveLockGuard):
+    table(std::move(x),arrays_holder<
+      typename compatible_concurrent_table::arrays_type,Allocator
+    >{compatible_concurrent_table::arrays_type::new_(x.al(),0),x.al()})
+  {}
 
   struct erase_on_exit
   {
