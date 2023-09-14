@@ -15,6 +15,8 @@ with serial and parallel variants.
 * Added debug mode mechanisms for detecting illegal reentrancies into
 a `boost::concurrent_flat_map` from user code.
 * Added Boost.Serialization support to all containers and their (non-local) iterator types.
+* Added support for fancy pointers to open-addressing and concurrent containers.
+  This enables scenarios like the use of Boost.Interprocess allocators to construct containers in shared memory.
 
 == Release 1.83.0 - Major update
 
