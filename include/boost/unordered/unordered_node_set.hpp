@@ -66,7 +66,8 @@ namespace boost {
     template <class Key, class Hash, class KeyEqual, class Allocator>
     class unordered_node_set
     {
-      using set_types = detail::foa::node_set_types<Key>;
+      using set_types = detail::foa::node_set_types<Key,
+        typename boost::allocator_void_pointer<Allocator>::type>;
 
       using table_type = detail::foa::table<set_types, Hash, KeyEqual,
         typename boost::allocator_rebind<Allocator,
@@ -169,9 +170,7 @@ namespace boost {
       }
 
       unordered_node_set(unordered_node_set&& other)
-        noexcept(std::is_nothrow_move_constructible<hasher>::value&&
-            std::is_nothrow_move_constructible<key_equal>::value&&
-              std::is_nothrow_move_constructible<allocator_type>::value)
+        noexcept(std::is_nothrow_move_constructible<table_type>::value)
           : table_(std::move(other.table_))
       {
       }
@@ -602,10 +601,9 @@ namespace boost {
       return erase_if(set.table_, pred);
     }
 
-    template <class Archive,
-      class Key, class Hash, class KeyEqual, class Allocator>
-    void serialize(
-      Archive & ar,
+    template <class Archive, class Key, class Hash, class KeyEqual,
+      class Allocator>
+    void serialize(Archive& ar,
       unordered_node_set<Key, Hash, KeyEqual, Allocator>& set,
       unsigned int version)
     {

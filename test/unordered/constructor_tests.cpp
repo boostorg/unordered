@@ -6,13 +6,13 @@
 
 #include "../helpers/unordered.hpp"
 
-#include "../helpers/test.hpp"
-#include "../objects/test.hpp"
-#include "../helpers/random_values.hpp"
-#include "../helpers/tracker.hpp"
 #include "../helpers/equivalent.hpp"
 #include "../helpers/input_iterator.hpp"
 #include "../helpers/invariants.hpp"
+#include "../helpers/random_values.hpp"
+#include "../helpers/test.hpp"
+#include "../helpers/tracker.hpp"
+#include "../objects/test.hpp"
 
 #include <vector>
 
@@ -33,7 +33,6 @@ namespace constructor_tests {
 
       T x(0, hf, eq);
       BOOST_TEST(x.empty());
-      BOOST_TEST_EQ(x.bucket_count(), 0u);
       BOOST_TEST(test::equivalent(x.hash_function(), hf));
       BOOST_TEST(test::equivalent(x.key_eq(), eq));
       BOOST_TEST(test::equivalent(x.get_allocator(), al));
@@ -72,7 +71,6 @@ namespace constructor_tests {
 
       T x;
       BOOST_TEST(x.empty());
-      BOOST_TEST_EQ(x.bucket_count(), 0u);
       BOOST_TEST(test::equivalent(x.hash_function(), hf));
       BOOST_TEST(test::equivalent(x.key_eq(), eq));
       BOOST_TEST(test::equivalent(x.get_allocator(), al));
@@ -140,7 +138,6 @@ namespace constructor_tests {
 
       T x(0, hf, eq, al);
       BOOST_TEST(x.empty());
-      BOOST_TEST_EQ(x.bucket_count(), 0u);
       BOOST_TEST(test::equivalent(x.hash_function(), hf));
       BOOST_TEST(test::equivalent(x.key_eq(), eq));
       BOOST_TEST(test::equivalent(x.get_allocator(), al));
@@ -167,7 +164,6 @@ namespace constructor_tests {
 
       T x(al);
       BOOST_TEST(x.empty());
-      BOOST_TEST_EQ(x.bucket_count(), 0u);
       BOOST_TEST(test::equivalent(x.hash_function(), hf));
       BOOST_TEST(test::equivalent(x.key_eq(), eq));
       BOOST_TEST(test::equivalent(x.get_allocator(), al));
@@ -349,7 +345,6 @@ namespace constructor_tests {
       {
         T x(list);
         BOOST_TEST(x.empty());
-        BOOST_TEST_EQ(x.bucket_count(), 0u);
         BOOST_TEST(test::equivalent(x.hash_function(), hf));
         BOOST_TEST(test::equivalent(x.key_eq(), eq));
         BOOST_TEST(test::equivalent(x.get_allocator(), al));
@@ -536,6 +531,16 @@ namespace constructor_tests {
   template <class T>
   void no_alloc_default_construct_test(T*, test::random_generator)
   {
+
+#ifdef BOOST_UNORDERED_FOA_TESTS
+    using allocator_type = typename T::allocator_type;
+    using value_type =
+      typename boost::allocator_value_type<allocator_type>::type;
+    using pointer = typename boost::allocator_pointer<allocator_type>::type;
+    static_assert(std::is_same<pointer, value_type*>::value,
+      "only raw pointers for this test");
+#endif
+
     UNORDERED_SUB_TEST("Construct 1")
     {
       T x;
@@ -654,6 +659,15 @@ namespace constructor_tests {
     test::equal_to, std::allocator<test::object> >* test_map_std_alloc;
 
   boost::unordered_flat_set<test::object, test::hash, test::equal_to,
+    test::allocator1<test::object> >* test_set_raw_ptr;
+  boost::unordered_node_set<test::object, test::hash, test::equal_to,
+    test::allocator1<test::object> >* test_node_set_raw_ptr;
+  boost::unordered_flat_map<test::object, test::object, test::hash,
+    test::equal_to, test::allocator1<test::object> >* test_map_raw_ptr;
+  boost::unordered_node_map<test::object, test::object, test::hash,
+    test::equal_to, test::allocator1<test::object> >* test_node_map_raw_ptr;
+
+  boost::unordered_flat_set<test::object, test::hash, test::equal_to,
     test::allocator1<test::object> >* test_set;
   boost::unordered_node_set<test::object, test::hash, test::equal_to,
     test::allocator1<test::object> >* test_node_set;
@@ -675,7 +689,7 @@ namespace constructor_tests {
       (default_generator)(generate_collisions)(limited_range)))
 
   UNORDERED_TEST(no_alloc_default_construct_test,
-    ((test_set)(test_node_set)(test_map)(test_node_map))(
+    ((test_set_raw_ptr)(test_node_set_raw_ptr)(test_map_raw_ptr)(test_node_map_raw_ptr))(
       (default_generator)(generate_collisions)(limited_range)))
 #else
   boost::unordered_map<test::object, test::object, test::hash, test::equal_to,
@@ -740,6 +754,6 @@ namespace constructor_tests {
   }
 
 #endif
-}
+} // namespace constructor_tests
 
 RUN_TESTS_QUIET()

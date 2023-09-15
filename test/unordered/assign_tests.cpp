@@ -41,7 +41,6 @@ namespace assign_tests {
       BOOST_TEST(x.empty());
       BOOST_TEST(test::equivalent(x.hash_function(), hf));
       BOOST_TEST(test::equivalent(x.key_eq(), eq));
-      BOOST_TEST(test::detail::tracker.count_allocations == 0);
     }
 
     BOOST_LIGHTWEIGHT_TEST_OSTREAM << "assign_tests1.2\n";
@@ -91,7 +90,6 @@ namespace assign_tests {
       BOOST_TEST(test::equivalent(x1.key_eq(), eq1));
       BOOST_TEST(test::equivalent(x2.hash_function(), hf1));
       BOOST_TEST(test::equivalent(x2.key_eq(), eq1));
-      BOOST_TEST(test::detail::tracker.count_allocations == 0);
       test::check_container(x1, x2);
     }
 

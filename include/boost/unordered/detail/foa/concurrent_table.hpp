@@ -247,16 +247,24 @@ group_access* dummy_group_accesses()
 
 /* subclasses table_arrays to add an additional group_access array */
 
-template<typename Value,typename Group,typename SizePolicy>
-struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy>
+template<typename Value,typename Group,typename SizePolicy,typename Allocator>
+struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy,Allocator>
 {
-  using super=table_arrays<Value,Group,SizePolicy>;
+  using group_access_allocator_type=
+    typename boost::allocator_rebind<Allocator,group_access>::type;
+  using group_access_pointer=
+    typename boost::allocator_pointer<group_access_allocator_type>::type;
 
-  concurrent_table_arrays(const super& arrays,group_access *pga):
-    super{arrays},group_accesses{pga}{}
+  using super=table_arrays<Value,Group,SizePolicy,Allocator>;
 
-  template<typename Allocator>
-  static concurrent_table_arrays new_(Allocator& al,std::size_t n)
+  concurrent_table_arrays(const super& arrays,group_access_pointer pga):
+    super{arrays},group_accesses_{pga}{}
+
+  group_access* group_accesses()const noexcept{
+    return boost::to_address(group_accesses_);
+  }
+
+  static concurrent_table_arrays new_(group_access_allocator_type al,std::size_t n)
   {
     super x{super::new_(al,n)};
     BOOST_TRY{
@@ -269,54 +277,61 @@ struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy>
     BOOST_CATCH_END
   }
 
-  template<typename Allocator>
-  static concurrent_table_arrays new_group_access(Allocator& al,const super& x)
+  static void set_group_access(
+    group_access_allocator_type al,concurrent_table_arrays& arrays)
   {
-    concurrent_table_arrays arrays{x,nullptr};
-    if(!arrays.elements){
-      arrays.group_accesses=dummy_group_accesses<SizePolicy::min_size()>();
-    }
-    else{
-      using access_alloc=
-        typename boost::allocator_rebind<Allocator,group_access>::type;
-      using access_traits=boost::allocator_traits<access_alloc>;
+    set_group_access(
+      al,arrays,std::is_same<group_access*,group_access_pointer>{});
+  }
 
-      auto aal=access_alloc(al);
-      arrays.group_accesses=boost::to_address(
-        access_traits::allocate(aal,arrays.groups_size_mask+1));
+  static void set_group_access(
+    group_access_allocator_type al,
+    concurrent_table_arrays& arrays,
+    std::false_type /* fancy pointers */)
+  {
+    arrays.group_accesses_=
+        boost::allocator_allocate(al,arrays.groups_size_mask+1);
 
       for(std::size_t i=0;i<arrays.groups_size_mask+1;++i){
-        ::new (arrays.group_accesses+i) group_access();
+        ::new (arrays.group_accesses()+i) group_access();
       }
+  }
+
+  static void set_group_access(
+    group_access_allocator_type al,
+    concurrent_table_arrays& arrays,
+    std::true_type /* optimize when elements() is null */)
+  {
+    if(!arrays.elements()){
+      arrays.group_accesses_=
+        dummy_group_accesses<SizePolicy::min_size()>();
+    } else {
+      set_group_access(al,arrays,std::false_type{});
     }
+  }
+
+  static concurrent_table_arrays new_group_access(group_access_allocator_type al,const super& x)
+  {
+    concurrent_table_arrays arrays{x,nullptr};
+    set_group_access(al,arrays);
     return arrays;
   }
 
-  template<typename Allocator>
-  static void delete_(Allocator& al,concurrent_table_arrays& arrays)noexcept
+  static void delete_(group_access_allocator_type al,concurrent_table_arrays& arrays)noexcept
   {
     delete_group_access(al,arrays);
     super::delete_(al,arrays);
   }
 
-  template<typename Allocator>
-  static void delete_group_access(Allocator& al,concurrent_table_arrays& arrays)noexcept
+  static void delete_group_access(group_access_allocator_type al,concurrent_table_arrays& arrays)noexcept
   {
-    if(arrays.elements){
-      using access_alloc=
-        typename boost::allocator_rebind<Allocator,group_access>::type;
-      using access_traits=boost::allocator_traits<access_alloc>;
-      using pointer=typename access_traits::pointer;
-      using pointer_traits=boost::pointer_traits<pointer>;
-
-      auto aal=access_alloc(al);
-      access_traits::deallocate(
-        aal,pointer_traits::pointer_to(*arrays.group_accesses),
-        arrays.groups_size_mask+1);
+    if(arrays.elements()){
+      boost::allocator_deallocate(
+        al,arrays.group_accesses_,arrays.groups_size_mask+1);
     }
   }
 
-  group_access *group_accesses;
+  group_access_pointer group_accesses_;
 };
 
 struct atomic_size_control
@@ -473,19 +488,31 @@ public:
   concurrent_table(concurrent_table&& x,const Allocator& al_):
     concurrent_table(std::move(x),al_,x.exclusive_access()){}
 
-  concurrent_table(compatible_nonconcurrent_table&& x):
+  template<typename ArraysType>
+  concurrent_table(
+    compatible_nonconcurrent_table&& x,
+    arrays_holder<ArraysType,Allocator>&& ah):
     super{
       std::move(x.h()),std::move(x.pred()),std::move(x.al()),
-      arrays_type(arrays_type::new_group_access(
-        x.al(),
-        typename arrays_type::super{
+      [&x]{return arrays_type::new_group_access(
+        x.al(),typename arrays_type::super{
           x.arrays.groups_size_index,x.arrays.groups_size_mask,
-          reinterpret_cast<group_type*>(x.arrays.groups),
-          reinterpret_cast<value_type*>(x.arrays.elements)})),
+          to_pointer<typename arrays_type::group_type_pointer>(
+            reinterpret_cast<group_type*>(x.arrays.groups())),
+          x.arrays.elements_});},
       size_ctrl_type{x.size_ctrl.ml,x.size_ctrl.size}}
   {
-    x.empty_initialize();
+    ah.release();
+    x.arrays=ah.get();
+    x.size_ctrl.ml=x.initial_max_load();
+    x.size_ctrl.size=0;
   }
+
+  concurrent_table(compatible_nonconcurrent_table&& x):
+    concurrent_table(std::move(x), arrays_holder<
+      typename compatible_nonconcurrent_table::arrays_type,Allocator
+    >{compatible_nonconcurrent_table::arrays_type::new_(x.al(),0),x.al()})
+  {}
 
   ~concurrent_table()=default;
 
@@ -496,7 +523,8 @@ public:
     return *this;
   }
 
-  concurrent_table& operator=(concurrent_table&& x)
+  concurrent_table& operator=(concurrent_table&& x)noexcept(
+    noexcept(std::declval<super&>() = std::declval<super&&>()))
   {
     auto lck=exclusive_access(*this,x);
     super::operator=(std::move(x));
@@ -967,18 +995,18 @@ private:
 
   inline group_shared_lock_guard access(group_shared,std::size_t pos)const
   {
-    return this->arrays.group_accesses[pos].shared_access();
+    return this->arrays.group_accesses()[pos].shared_access();
   }
 
   inline group_exclusive_lock_guard access(
     group_exclusive,std::size_t pos)const
   {
-    return this->arrays.group_accesses[pos].exclusive_access();
+    return this->arrays.group_accesses()[pos].exclusive_access();
   }
 
   inline group_insert_counter_type& insert_counter(std::size_t pos)const
   {
-    return this->arrays.group_accesses[pos].insert_counter();
+    return this->arrays.group_accesses()[pos].insert_counter();
   }
 
   /* Const casts value_type& according to the level of group access for
@@ -1097,10 +1125,10 @@ private:
     prober pb(pos0);
     do{
       auto pos=pb.get();
-      auto pg=this->arrays.groups+pos;
+      auto pg=this->arrays.groups()+pos;
       auto mask=pg->match(hash);
       if(mask){
-        auto p=this->arrays.elements+pos*N;
+        auto p=this->arrays.elements()+pos*N;
         BOOST_UNORDERED_PREFETCH_ELEMENTS(p,N);
         auto lck=access(access_mode,pos);
         do{
@@ -1313,7 +1341,7 @@ private:
       if(BOOST_LIKELY(rsize.succeeded())){
         for(prober pb(pos0);;pb.next(this->arrays.groups_size_mask)){
           auto pos=pb.get();
-          auto pg=this->arrays.groups+pos;
+          auto pg=this->arrays.groups()+pos;
           auto lck=access(group_exclusive{},pos);
           auto mask=pg->match_available();
           if(BOOST_LIKELY(mask!=0)){
@@ -1323,7 +1351,7 @@ private:
               /* other thread inserted from pos0, need to start over */
               goto startover;
             }
-            auto p=this->arrays.elements+pos*N+n;
+            auto p=this->arrays.elements()+pos*N+n;
             this->construct_element(p,std::forward<Args>(args)...);
             rslot.commit();
             rsize.commit();
@@ -1373,11 +1401,11 @@ private:
   auto for_all_elements_while(GroupAccessMode access_mode,F f)const
     ->decltype(f(nullptr,0,nullptr),bool())
   {
-    auto p=this->arrays.elements;
+    auto p=this->arrays.elements();
     if(p){
-      for(auto pg=this->arrays.groups,last=pg+this->arrays.groups_size_mask+1;
+      for(auto pg=this->arrays.groups(),last=pg+this->arrays.groups_size_mask+1;
           pg!=last;++pg,p+=N){
-        auto lck=access(access_mode,(std::size_t)(pg-this->arrays.groups));
+        auto lck=access(access_mode,(std::size_t)(pg-this->arrays.groups()));
         auto mask=this->match_really_occupied(pg,last);
         while(mask){
           auto n=unchecked_countr_zero(mask);
@@ -1405,13 +1433,13 @@ private:
     GroupAccessMode access_mode,ExecutionPolicy&& policy,F f)const
     ->decltype(f(nullptr,0,nullptr),void())
   {
-    if(!this->arrays.elements)return;
-    auto first=this->arrays.groups,
+    if(!this->arrays.elements())return;
+    auto first=this->arrays.groups(),
          last=first+this->arrays.groups_size_mask+1;
     std::for_each(std::forward<ExecutionPolicy>(policy),first,last,
       [&,this](group_type& g){
         auto pos=static_cast<std::size_t>(&g-first);
-        auto p=this->arrays.elements+pos*N;
+        auto p=this->arrays.elements()+pos*N;
         auto lck=access(access_mode,pos);
         auto mask=this->match_really_occupied(&g,last);
         while(mask){
@@ -1427,13 +1455,13 @@ private:
   bool for_all_elements_while(
     GroupAccessMode access_mode,ExecutionPolicy&& policy,F f)const
   {
-    if(!this->arrays.elements)return true;
-    auto first=this->arrays.groups,
+    if(!this->arrays.elements())return true;
+    auto first=this->arrays.groups(),
          last=first+this->arrays.groups_size_mask+1;
     return std::all_of(std::forward<ExecutionPolicy>(policy),first,last,
       [&,this](group_type& g){
         auto pos=static_cast<std::size_t>(&g-first);
-        auto p=this->arrays.elements+pos*N;
+        auto p=this->arrays.elements()+pos*N;
         auto lck=access(access_mode,pos);
         auto mask=this->match_really_occupied(&g,last);
         while(mask){

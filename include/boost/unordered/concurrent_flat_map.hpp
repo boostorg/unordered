@@ -92,7 +92,10 @@ namespace boost {
 
       using type_policy = detail::foa::flat_map_types<Key, T>;
 
-      detail::foa::concurrent_table<type_policy, Hash, Pred, Allocator> table_;
+      using table_type =
+        detail::foa::concurrent_table<type_policy, Hash, Pred, Allocator>;
+
+      table_type table_;
 
       template <class K, class V, class H, class KE, class A>
       bool friend operator==(concurrent_flat_map<K, V, H, KE, A> const& lhs,
@@ -248,10 +251,8 @@ namespace boost {
         return *this;
       }
 
-      concurrent_flat_map& operator=(concurrent_flat_map&& rhs)
-        noexcept(boost::allocator_is_always_equal<Allocator>::type::value ||
-                 boost::allocator_propagate_on_container_move_assignment<
-                   Allocator>::type::value)
+      concurrent_flat_map& operator=(concurrent_flat_map&& rhs) noexcept(
+        noexcept(std::declval<table_type&>() = std::declval<table_type&&>()))
       {
         table_ = std::move(rhs.table_);
         return *this;

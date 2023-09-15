@@ -123,6 +123,27 @@ struct stateful_key_equal
   }
 };
 
+template <class T> struct cfoa_ptr
+{
+private:
+  template <class> friend struct stateful_allocator2;
+
+  T* p_ = nullptr;
+
+  cfoa_ptr(T* p) : p_(p) {}
+
+public:
+  using element_type = T;
+
+  cfoa_ptr() = default;
+  cfoa_ptr(std::nullptr_t) : p_(nullptr){};
+  template <class U> using rebind = cfoa_ptr<U>;
+
+  T* operator->() const noexcept { return p_; }
+
+  static cfoa_ptr<T> pointer_to(element_type& r) { return {std::addressof(r)}; }
+};
+
 template <class T> struct stateful_allocator
 {
   int x_ = -1;
@@ -149,6 +170,36 @@ template <class T> struct stateful_allocator
 
   bool operator==(stateful_allocator const& rhs) const { return x_ == rhs.x_; }
   bool operator!=(stateful_allocator const& rhs) const { return x_ != rhs.x_; }
+};
+
+template <class T> struct stateful_allocator2
+{
+
+  int x_ = -1;
+
+  using value_type = T;
+  using pointer = cfoa_ptr<T>;
+
+  stateful_allocator2() = default;
+  stateful_allocator2(stateful_allocator2 const&) = default;
+  stateful_allocator2(stateful_allocator2&&) = default;
+
+  stateful_allocator2(int const x) : x_{x} {}
+
+  template <class U>
+  stateful_allocator2(stateful_allocator2<U> const& rhs) : x_{rhs.x_}
+  {
+  }
+
+  pointer allocate(std::size_t n)
+  {
+    return {static_cast<T*>(::operator new(n * sizeof(T)))};
+  }
+
+  void deallocate(pointer p, std::size_t) { ::operator delete(p.p_); }
+
+  bool operator==(stateful_allocator2 const& rhs) const { return x_ == rhs.x_; }
+  bool operator!=(stateful_allocator2 const& rhs) const { return x_ != rhs.x_; }
 };
 
 struct raii
@@ -458,6 +509,7 @@ template <class T> class ptr
 
 public:
   ptr() : ptr_(0) {}
+  ptr(std::nullptr_t) : ptr_(nullptr) {}
   explicit ptr(void_ptr const& x) : ptr_((T*)x.ptr_) {}
 
   T& operator*() const { return *ptr_; }

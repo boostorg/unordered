@@ -31,7 +31,7 @@ using test::sequential;
 
 using hasher = stateful_hash;
 using key_equal = stateful_key_equal;
-using allocator_type = stateful_allocator<std::pair<raii const, raii> >;
+using allocator_type = stateful_allocator2<std::pair<raii const, raii> >;
 
 using flat_map_type = boost::unordered::unordered_flat_map<raii, raii, hasher,
   key_equal, allocator_type>;
@@ -847,8 +847,12 @@ namespace {
     check_raii_counts();
   }
 
-  template <class G> void flat_map_move_assign(G gen, test::random_generator rg)
+  template <class FlatMapType, class MapType, class G>
+  void flat_map_move_assign(
+    FlatMapType*, MapType*, G gen, test::random_generator rg)
   {
+    using alloc_type = typename MapType::allocator_type;
+
     auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
     auto reference_map =
       boost::unordered_flat_map<raii, raii>(values.begin(), values.end());
@@ -864,10 +868,10 @@ namespace {
     {
       raii::reset_counts();
 
-      flat_map_type flat_map(values.begin(), values.end(), values.size(),
-        hasher(1), key_equal(2), allocator_type(3));
+      FlatMapType flat_map(values.begin(), values.end(), values.size(),
+        hasher(1), key_equal(2), alloc_type(3));
 
-      map_type map(0, hasher(2), key_equal(1), allocator_type(3));
+      MapType map(0, hasher(2), key_equal(1), alloc_type(3));
 
       BOOST_TEST(flat_map.get_allocator() == map.get_allocator());
 
@@ -893,10 +897,10 @@ namespace {
     {
       raii::reset_counts();
 
-      map_type map(values.begin(), values.end(), values.size(), hasher(1),
-        key_equal(2), allocator_type(3));
+      MapType map(values.begin(), values.end(), values.size(), hasher(1),
+        key_equal(2), alloc_type(3));
 
-      flat_map_type flat_map(0, hasher(2), key_equal(1), allocator_type(3));
+      FlatMapType flat_map(0, hasher(2), key_equal(1), alloc_type(3));
 
       BOOST_TEST(flat_map.get_allocator() == map.get_allocator());
 
@@ -920,10 +924,10 @@ namespace {
     {
       raii::reset_counts();
 
-      flat_map_type flat_map(values.begin(), values.end(), values.size(),
-        hasher(1), key_equal(2), allocator_type(3));
+      FlatMapType flat_map(values.begin(), values.end(), values.size(),
+        hasher(1), key_equal(2), alloc_type(3));
 
-      map_type map(0, hasher(2), key_equal(1), allocator_type(4));
+      MapType map(0, hasher(2), key_equal(1), alloc_type(4));
 
       BOOST_TEST(flat_map.get_allocator() != map.get_allocator());
 
@@ -950,10 +954,10 @@ namespace {
     {
       raii::reset_counts();
 
-      map_type map(values.begin(), values.end(), values.size(), hasher(1),
-        key_equal(2), allocator_type(3));
+      MapType map(values.begin(), values.end(), values.size(), hasher(1),
+        key_equal(2), alloc_type(3));
 
-      flat_map_type flat_map(0, hasher(2), key_equal(1), allocator_type(4));
+      FlatMapType flat_map(0, hasher(2), key_equal(1), alloc_type(4));
 
       BOOST_TEST(flat_map.get_allocator() != map.get_allocator());
 
@@ -994,8 +998,27 @@ UNORDERED_TEST(
   ((init_type_generator))
   ((default_generator)(sequential)(limited_range)))
 
+boost::unordered::unordered_flat_map<raii, raii, hasher,
+  key_equal, stateful_allocator<std::pair<raii const, raii> > >* flat_map_plain;
+boost::unordered::unordered_flat_map<raii, raii, hasher,
+  key_equal, stateful_allocator2<std::pair<raii const, raii> > >* flat_map_fancy;
+
+boost::unordered::concurrent_flat_map<raii, raii, hasher,
+  key_equal, stateful_allocator<std::pair<raii const, raii> > >* map_plain;
+boost::unordered::concurrent_flat_map<raii, raii, hasher,
+  key_equal, stateful_allocator2<std::pair<raii const, raii> > >* map_fancy;
+
 UNORDERED_TEST(
   flat_map_move_assign,
+  ((flat_map_plain))
+  ((map_plain))
+  ((init_type_generator))
+  ((default_generator)(sequential)(limited_range)))
+
+UNORDERED_TEST(
+  flat_map_move_assign,
+  ((flat_map_fancy))
+  ((map_fancy))
   ((init_type_generator))
   ((default_generator)(sequential)(limited_range)))
 // clang-format on

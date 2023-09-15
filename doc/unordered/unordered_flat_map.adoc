@@ -97,9 +97,10 @@ namespace boost {
                        const allocator_type& a);
     xref:#unordered_flat_map_destructor[~unordered_flat_map]();
     unordered_flat_map& xref:#unordered_flat_map_copy_assignment[operator++=++](const unordered_flat_map& other);
-    unordered_flat_map& xref:#unordered_flat_map_move_assignment[operator++=++](unordered_flat_map&& other)
-      noexcept(boost::allocator_traits<Allocator>::is_always_equal::value ||
-              boost::allocator_traits<Allocator>::propagate_on_container_move_assignment::value);
+    unordered_flat_map& xref:#unordered_flat_map_move_assignment[operator++=++](unordered_flat_map&& other) ++noexcept(
+      (boost::allocator_traits<Allocator>::is_always_equal::value ||
+       boost::allocator_traits<Allocator>::propagate_on_container_move_assignment::value) &&
+       std::is_same<pointer, value_type*>::value);++
     unordered_flat_map& xref:#unordered_flat_map_initializer_list_assignment[operator++=++](std::initializer_list<value_type>);
     allocator_type xref:#unordered_flat_map_get_allocator[get_allocator]() const noexcept;
 
@@ -312,8 +313,7 @@ https://en.cppreference.com/w/cpp/named_req/Erasable[Erasable^] from the contain
 
 |_Allocator_
 |An allocator whose value type is the same as the container's value type.
-`std::allocator_traits<Allocator>::pointer` and `std::allocator_traits<Allocator>::const_pointer`
-must be convertible to/from `value_type*` and `const value_type*`, respectively.
+Allocators using https://en.cppreference.com/w/cpp/named_req/Allocator#Fancy_pointers[fancy pointers] are supported.
 
 |===
 
@@ -632,8 +632,9 @@ Requires:;; `value_type` is https://en.cppreference.com/w/cpp/named_req/CopyInse
 ==== Move Assignment
 ```c++
 unordered_flat_map& operator=(unordered_flat_map&& other)
-  noexcept(boost::allocator_traits<Allocator>::is_always_equal::value ||
-           boost::allocator_traits<Allocator>::propagate_on_container_move_assignment::value);
+  noexcept((boost::allocator_traits<Allocator>::is_always_equal::value ||
+            boost::allocator_traits<Allocator>::propagate_on_container_move_assignment::value) &&
+            std::is_same<pointer, value_type*>::value);
 ```
 The move assignment operator. Destroys previously existing elements, swaps the hash function and predicate from `other`,
 and move-assigns the allocator from `other` if `Alloc::propagate_on_container_move_assignment` exists and `Alloc::propagate_on_container_move_assignment::value` is `true`.
@@ -1325,7 +1326,7 @@ void rehash(size_type n);
 
 Changes if necessary the size of the bucket array so that there are at least `n` buckets, and so that the load factor is less than or equal to the maximum load factor. When applicable, this will either grow or shrink the `bucket_count()` associated with the container.
 
-When `size() == 0`, `rehash(0)` will deallocate the underlying buckets array.
+When `size() == 0`, `rehash(0)` will deallocate the underlying buckets array. If the provided Allocator uses fancy pointers, a default allocation is subsequently performed.
 
 Invalidates iterators, pointers and references, and changes the order of elements.
 

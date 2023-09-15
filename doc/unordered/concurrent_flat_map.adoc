@@ -90,9 +90,10 @@ namespace boost {
                         const allocator_type& a);
     xref:#concurrent_flat_map_destructor[~concurrent_flat_map]();
     concurrent_flat_map& xref:#concurrent_flat_map_copy_assignment[operator++=++](const concurrent_flat_map& other);
-    concurrent_flat_map& xref:#concurrent_flat_map_move_assignment[operator++=++](concurrent_flat_map&& other)
-      noexcept(boost::allocator_traits<Allocator>::is_always_equal::value ||
-              boost::allocator_traits<Allocator>::propagate_on_container_move_assignment::value);
+    concurrent_flat_map& xref:#concurrent_flat_map_move_assignment[operator++=++](concurrent_flat_map&& other) ++noexcept(
+      (boost::allocator_traits<Allocator>::is_always_equal::value ||
+       boost::allocator_traits<Allocator>::propagate_on_container_move_assignment::value) &&
+       std::is_same<pointer, value_type*>::value);++
     concurrent_flat_map& xref:#concurrent_flat_map_initializer_list_assignment[operator++=++](std::initializer_list<value_type>);
     allocator_type xref:#concurrent_flat_map_get_allocator[get_allocator]() const noexcept;
 
@@ -316,8 +317,7 @@ https://en.cppreference.com/w/cpp/named_req/Erasable[Erasable^] from the table.
 
 |_Allocator_
 |An allocator whose value type is the same as the table's value type.
-`std::allocator_traits<Allocator>::pointer` and `std::allocator_traits<Allocator>::const_pointer`
-must be convertible to/from `value_type*` and `const value_type*`, respectively.
+Allocators using https://en.cppreference.com/w/cpp/named_req/Allocator#Fancy_pointers[fancy pointers] are supported.
 
 |===
 
@@ -673,8 +673,9 @@ Concurrency:;; Blocking on `*this` and `other`.
 ==== Move Assignment
 ```c++
 concurrent_flat_map& operator=(concurrent_flat_map&& other)
-  noexcept(boost::allocator_traits<Allocator>::is_always_equal::value ||
-           boost::allocator_traits<Allocator>::propagate_on_container_move_assignment::value);
+  noexcept((boost::allocator_traits<Allocator>::is_always_equal::value ||
+            boost::allocator_traits<Allocator>::propagate_on_container_move_assignment::value) &&
+            std::is_same<pointer, value_type*>::value);
 ```
 The move assignment operator. Destroys previously existing elements, swaps the hash function and predicate from `other`,
 and move-assigns the allocator from `other` if `Alloc::propagate_on_container_move_assignment` exists and `Alloc::propagate_on_container_move_assignment::value` is `true`.

@@ -216,8 +216,6 @@ template <class C1, class C2> void scary_test()
   typename C2::const_iterator cbegin(x.cbegin());
   BOOST_TEST(cbegin == x.cend());
 
-  BOOST_TEST_EQ(x.bucket_count(), 0u);
-
 #ifndef BOOST_UNORDERED_FOA_TESTS
   typename C2::local_iterator lbegin(x.begin(0));
   BOOST_TEST(lbegin == x.end(0));
