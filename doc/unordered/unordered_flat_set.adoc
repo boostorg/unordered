@@ -91,9 +91,10 @@ namespace boost {
                        const allocator_type& a);
     xref:#unordered_flat_set_destructor[~unordered_flat_set]();
     unordered_flat_set& xref:#unordered_flat_set_copy_assignment[operator++=++](const unordered_flat_set& other);
-    unordered_flat_set& xref:#unordered_flat_set_move_assignment[operator++=++](unordered_flat_set&& other)
-      noexcept(boost::allocator_traits<Allocator>::is_always_equal::value ||
-               boost::allocator_traits<Allocator>::propagate_on_container_move_assignment::value);
+    unordered_flat_set& xref:#unordered_flat_set_move_assignment[operator++=++](unordered_flat_set&& other) ++noexcept(
+      (boost::allocator_traits<Allocator>::is_always_equal::value ||
+       boost::allocator_traits<Allocator>::propagate_on_container_move_assignment::value) &&
+       std::is_same<pointer, value_type*>::value);++
     unordered_flat_set& xref:#unordered_flat_set_initializer_list_assignment[operator++=++](std::initializer_list<value_type>);
     allocator_type xref:#unordered_flat_set_get_allocator[get_allocator]() const noexcept;
 
@@ -564,8 +565,9 @@ Requires:;; `value_type` is https://en.cppreference.com/w/cpp/named_req/CopyInse
 ==== Move Assignment
 ```c++
 unordered_flat_set& operator=(unordered_flat_set&& other)
-  noexcept(boost::allocator_traits<Allocator>::is_always_equal::value ||
-           boost::allocator_traits<Allocator>::propagate_on_container_move_assignment::value);
+  noexcept((boost::allocator_traits<Allocator>::is_always_equal::value ||
+            boost::allocator_traits<Allocator>::propagate_on_container_move_assignment::value) &&
+            std::is_same<pointer, value_type*>::value);
 ```
 The move assignment operator. Destroys previously existing elements, swaps the hash function and predicate from `other`,
 and move-assigns the allocator from `other` if `Alloc::propagate_on_container_move_assignment` exists and `Alloc::propagate_on_container_move_assignment::value` is `true`.
