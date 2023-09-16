@@ -1102,16 +1102,6 @@ UNORDERED_TEST(
   ((init_type_generator_factory))
   ((default_generator)(sequential)(limited_range)))
 
-boost::unordered::unordered_flat_map<raii, raii, hasher,
-  key_equal, stateful_allocator<std::pair<raii const, raii> > >* flat_map_plain;
-boost::unordered::unordered_flat_map<raii, raii, hasher,
-  key_equal, stateful_allocator2<std::pair<raii const, raii> > >* flat_map_fancy;
-
-boost::unordered::concurrent_flat_map<raii, raii, hasher,
-  key_equal, stateful_allocator<std::pair<raii const, raii> > >* map_plain;
-boost::unordered::concurrent_flat_map<raii, raii, hasher,
-  key_equal, stateful_allocator2<std::pair<raii const, raii> > >* map_fancy;
-
 UNORDERED_TEST(
   flat_move_assign,
   ((test_map)(test_set)(fancy_test_map)(fancy_test_set))
