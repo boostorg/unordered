@@ -1,23 +1,84 @@
 // Copyright (C) 2023 Christian Mazakas
+// Copyright (C) 2023 Joaquin M Lopez Munoz
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include "exception_helpers.hpp"
 
 #include <boost/unordered/concurrent_flat_map.hpp>
-
-using allocator_type = stateful_allocator<std::pair<raii const, raii> >;
+#include <boost/unordered/concurrent_flat_set.hpp>
 
 using hasher = stateful_hash;
 using key_equal = stateful_key_equal;
 
 using map_type = boost::unordered::concurrent_flat_map<raii, raii, hasher,
-  key_equal, allocator_type>;
+  key_equal, stateful_allocator<std::pair<raii const, raii> > >;
+
+using set_type = boost::unordered::concurrent_flat_set<raii, hasher,
+  key_equal, stateful_allocator<raii> >;
+
+map_type* test_map;
+set_type* test_set;
+
+std::initializer_list<map_type::value_type> map_init_list{
+  {raii{0}, raii{0}},
+  {raii{1}, raii{1}},
+  {raii{2}, raii{2}},
+  {raii{3}, raii{3}},
+  {raii{4}, raii{4}},
+  {raii{5}, raii{5}},
+  {raii{6}, raii{6}},
+  {raii{6}, raii{6}},
+  {raii{7}, raii{7}},
+  {raii{8}, raii{8}},
+  {raii{9}, raii{9}},
+  {raii{10}, raii{10}},
+  {raii{9}, raii{9}},
+  {raii{8}, raii{8}},
+  {raii{7}, raii{7}},
+  {raii{6}, raii{6}},
+  {raii{5}, raii{5}},
+  {raii{4}, raii{4}},
+  {raii{3}, raii{3}},
+  {raii{2}, raii{2}},
+  {raii{1}, raii{1}},
+  {raii{0}, raii{0}},
+};
+
+std::initializer_list<set_type::value_type> set_init_list{
+  raii{0},
+  raii{1},
+  raii{2},
+  raii{3},
+  raii{4},
+  raii{5},
+  raii{6},
+  raii{6},
+  raii{7},
+  raii{8},
+  raii{9},
+  raii{10},
+  raii{9},
+  raii{8},
+  raii{7},
+  raii{6},
+  raii{5},
+  raii{4},
+  raii{3},
+  raii{2},
+  raii{1},
+  raii{0},
+};
+
+auto test_map_and_init_list=std::make_pair(test_map,map_init_list);
+auto test_set_and_init_list=std::make_pair(test_set,set_init_list);
 
 namespace {
   test::seed_t initialize_seed(795610904);
 
-  UNORDERED_AUTO_TEST (bucket_constructor) {
+  template <class X>
+  void bucket_constructor(X*)
+  {
     raii::reset_counts();
 
     bool was_thrown = false;
@@ -25,7 +86,7 @@ namespace {
     enable_exceptions();
     for (std::size_t i = 0; i < alloc_throw_threshold; ++i) {
       try {
-        map_type m(128);
+        X m(128);
       } catch (...) {
         was_thrown = true;
       }
@@ -35,8 +96,12 @@ namespace {
     BOOST_TEST(was_thrown);
   }
 
-  template <class G> void iterator_range(G gen, test::random_generator rg)
+  template <class X, class GF>
+  void iterator_range(X*, GF gen_factory, test::random_generator rg)
   {
+    using allocator_type = typename X::allocator_type;
+
+    auto gen = gen_factory.template get<X>();
     auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
 
     {
@@ -46,7 +111,7 @@ namespace {
 
       enable_exceptions();
       try {
-        map_type x(values.begin(), values.end(), 0, hasher(1), key_equal(2),
+        X x(values.begin(), values.end(), 0, hasher(1), key_equal(2),
           allocator_type(3));
       } catch (...) {
         was_thrown = true;
@@ -64,7 +129,7 @@ namespace {
 
       enable_exceptions();
       try {
-        map_type x(values.begin(), values.end(), allocator_type(3));
+        X x(values.begin(), values.end(), allocator_type(3));
       } catch (...) {
         was_thrown = true;
       }
@@ -81,7 +146,7 @@ namespace {
 
       enable_exceptions();
       try {
-        map_type x(
+        X x(
           values.begin(), values.end(), values.size(), allocator_type(3));
       } catch (...) {
         was_thrown = true;
@@ -99,7 +164,7 @@ namespace {
 
       enable_exceptions();
       try {
-        map_type x(values.begin(), values.end(), values.size(), hasher(1),
+        X x(values.begin(), values.end(), values.size(), hasher(1),
           allocator_type(3));
       } catch (...) {
         was_thrown = true;
@@ -111,8 +176,12 @@ namespace {
     }
   }
 
-  template <class G> void copy_constructor(G gen, test::random_generator rg)
+  template <class X, class GF>
+  void copy_constructor(X*, GF gen_factory, test::random_generator rg)
   {
+    using allocator_type = typename X::allocator_type;
+
+    auto gen = gen_factory.template get<X>();
     auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
 
     {
@@ -121,10 +190,10 @@ namespace {
       bool was_thrown = false;
 
       try {
-        map_type x(values.begin(), values.end(), 0);
+        X x(values.begin(), values.end(), 0);
 
         enable_exceptions();
-        map_type y(x);
+        X y(x);
       } catch (...) {
         was_thrown = true;
       }
@@ -140,10 +209,10 @@ namespace {
       bool was_thrown = false;
 
       try {
-        map_type x(values.begin(), values.end(), 0);
+        X x(values.begin(), values.end(), 0);
 
         enable_exceptions();
-        map_type y(x, allocator_type(4));
+        X y(x, allocator_type(4));
       } catch (...) {
         was_thrown = true;
       }
@@ -154,20 +223,24 @@ namespace {
     }
   }
 
-  template <class G> void move_constructor(G gen, test::random_generator rg)
+  template <class X, class GF>
+  void move_constructor(X*, GF gen_factory, test::random_generator rg)
   {
-    auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
+    using allocator_type = typename X::allocator_type;
 
+    auto gen = gen_factory.template get<X>();
+    auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
+ 
     {
       raii::reset_counts();
 
       bool was_thrown = false;
 
       try {
-        map_type x(values.begin(), values.end(), 0);
+        X x(values.begin(), values.end(), 0);
 
         enable_exceptions();
-        map_type y(std::move(x), allocator_type(4));
+        X y(std::move(x), allocator_type(4));
       } catch (...) {
         was_thrown = true;
       }
@@ -178,33 +251,12 @@ namespace {
     }
   }
 
-  UNORDERED_AUTO_TEST (initializer_list_bucket_count) {
-    using value_type = typename map_type::value_type;
+  template <class X, class IL>
+  void initializer_list_bucket_count(std::pair<X*, IL> p)
+  {
+    using allocator_type = typename X::allocator_type;
 
-    std::initializer_list<value_type> values{
-      value_type{raii{0}, raii{0}},
-      value_type{raii{1}, raii{1}},
-      value_type{raii{2}, raii{2}},
-      value_type{raii{3}, raii{3}},
-      value_type{raii{4}, raii{4}},
-      value_type{raii{5}, raii{5}},
-      value_type{raii{6}, raii{6}},
-      value_type{raii{6}, raii{6}},
-      value_type{raii{7}, raii{7}},
-      value_type{raii{8}, raii{8}},
-      value_type{raii{9}, raii{9}},
-      value_type{raii{10}, raii{10}},
-      value_type{raii{9}, raii{9}},
-      value_type{raii{8}, raii{8}},
-      value_type{raii{7}, raii{7}},
-      value_type{raii{6}, raii{6}},
-      value_type{raii{5}, raii{5}},
-      value_type{raii{4}, raii{4}},
-      value_type{raii{3}, raii{3}},
-      value_type{raii{2}, raii{2}},
-      value_type{raii{1}, raii{1}},
-      value_type{raii{0}, raii{0}},
-    };
+    auto init_list = p.second;
 
     {
       raii::reset_counts();
@@ -213,7 +265,7 @@ namespace {
       enable_exceptions();
       for (std::size_t i = 0; i < throw_threshold; ++i) {
         try {
-          map_type x(values, 0, hasher(1), key_equal(2), allocator_type(3));
+          X x(init_list, 0, hasher(1), key_equal(2), allocator_type(3));
         } catch (...) {
           ++num_throws;
         }
@@ -231,7 +283,7 @@ namespace {
       enable_exceptions();
       for (std::size_t i = 0; i < alloc_throw_threshold * 2; ++i) {
         try {
-          map_type x(values, allocator_type(3));
+          X x(init_list, allocator_type(3));
         } catch (...) {
           ++num_throws;
         }
@@ -249,7 +301,7 @@ namespace {
       enable_exceptions();
       for (std::size_t i = 0; i < alloc_throw_threshold * 2; ++i) {
         try {
-          map_type x(values, values.size() * 2, allocator_type(3));
+          X x(init_list, init_list.size() * 2, allocator_type(3));
         } catch (...) {
           ++num_throws;
         }
@@ -267,7 +319,7 @@ namespace {
       enable_exceptions();
       for (std::size_t i = 0; i < throw_threshold; ++i) {
         try {
-          map_type x(values, values.size() * 2, hasher(1), allocator_type(3));
+          X x(init_list, init_list.size() * 2, hasher(1), allocator_type(3));
         } catch (...) {
           ++num_throws;
         }
@@ -286,19 +338,30 @@ using test::sequential;
 
 // clang-format off
 UNORDERED_TEST(
+  bucket_constructor,
+  ((test_map)(test_set)))
+
+UNORDERED_TEST(
   iterator_range,
-  ((exception_value_type_generator))
+  ((test_map)(test_set))
+  ((exception_value_type_generator_factory))
   ((default_generator)(sequential)(limited_range)))
 
 UNORDERED_TEST(
   copy_constructor,
-  ((exception_value_type_generator))
+  ((test_map)(test_set))
+  ((exception_value_type_generator_factory))
   ((default_generator)(sequential)))
 
 UNORDERED_TEST(
   move_constructor,
-  ((exception_value_type_generator))
+  ((test_map)(test_set))
+  ((exception_value_type_generator_factory))
   ((default_generator)(sequential)))
+
+UNORDERED_TEST(
+  initializer_list_bucket_count,
+  ((test_map_and_init_list)(test_set_and_init_list)))
 // clang-format on
 
 RUN_TESTS()

@@ -121,7 +121,7 @@ for Visual Studio on an x64-mode Intel CPU with SSE2 and for GCC on an IBM s390x
 == Concurrent Containers
 
 The same data structure used by Boost.Unordered open-addressing containers has been chosen
-also as the foundation of `boost::concurrent_flat_map`:
+also as the foundation of `boost::concurrent_flat_set` and `boost::concurrent_flat_map`:
 
 * Open-addressing is faster than closed-addressing alternatives, both in non-concurrent and
 concurrent scenarios.
@@ -135,7 +135,7 @@ and vice versa.
 
 === Hash Function and Platform Interoperability
 
-`boost::concurrent_flat_map` makes the same decisions and provides the same guarantees
+Concurrent containers make the same decisions and provide the same guarantees
 as Boost.Unordered open-addressing containers with regards to 
 xref:#rationale_hash_function[hash function defaults] and
 xref:#rationale_platform_interoperability[platform interoperability].

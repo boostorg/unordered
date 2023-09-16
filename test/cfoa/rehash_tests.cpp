@@ -1,10 +1,12 @@
 // Copyright (C) 2023 Christian Mazakas
+// Copyright (C) 2023 Joaquin M Lopez Munoz
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include "helpers.hpp"
 
 #include <boost/unordered/concurrent_flat_map.hpp>
+#include <boost/unordered/concurrent_flat_set.hpp>
 
 using test::default_generator;
 using test::limited_range;
@@ -12,18 +14,25 @@ using test::sequential;
 
 using hasher = stateful_hash;
 using key_equal = stateful_key_equal;
-using allocator_type = stateful_allocator<std::pair<raii const, raii> >;
 
 using map_type = boost::unordered::concurrent_flat_map<raii, raii, hasher,
-  key_equal, allocator_type>;
+  key_equal, stateful_allocator<std::pair<raii const, raii> > >;
 
-using map_value_type = typename map_type::value_type;
+using set_type = boost::unordered::concurrent_flat_set<raii, hasher,
+  key_equal, stateful_allocator<raii> >;
+
+map_type* test_map;
+set_type* test_set;
 
 namespace {
   test::seed_t initialize_seed{748775921};
 
-  UNORDERED_AUTO_TEST (rehash_no_insert) {
-    map_type x(0, hasher(1), key_equal(2), allocator_type(3));
+  template <typename X>
+  void rehash_no_insert(X*)
+  {
+    using allocator_type = typename X::allocator_type;
+
+    X x(0, hasher(1), key_equal(2), allocator_type(3));
     BOOST_TEST_EQ(x.bucket_count(), 0u);
 
     x.rehash(1024);
@@ -37,10 +46,13 @@ namespace {
     BOOST_TEST_EQ(x.bucket_count(), 0u);
   }
 
-  UNORDERED_AUTO_TEST (reserve_no_insert) {
-    using size_type = map_type::size_type;
+  template <typename X>
+  void reserve_no_insert(X*)
+  {
+    using allocator_type = typename X::allocator_type;
+    using size_type = typename X::size_type;
 
-    map_type x(0, hasher(1), key_equal(2), allocator_type(3));
+    X x(0, hasher(1), key_equal(2), allocator_type(3));
 
     auto f = [&x](double c) {
       return static_cast<size_type>(std::ceil(c / x.max_load_factor()));
@@ -59,9 +71,13 @@ namespace {
     BOOST_TEST_EQ(x.bucket_count(), f(0.0));
   }
 
-  template <class G>
-  void insert_and_erase_with_rehash(G gen, test::random_generator rg)
+  template <class X, class GF>
+  void insert_and_erase_with_rehash(
+    X*, GF gen_factory, test::random_generator rg)
   {
+    using allocator_type = typename X::allocator_type;
+
+    auto gen = gen_factory.template get<X>();
     auto vals1 = make_random_values(1024 * 8, [&] { return gen(rg); });
 
     auto erase_indices = std::vector<std::size_t>(vals1.size());
@@ -70,13 +86,13 @@ namespace {
     }
     shuffle_values(erase_indices);
 
-    auto ref_map = boost::unordered_flat_map<raii, raii>();
-    ref_map.insert(vals1.begin(), vals1.end());
+    auto reference_cont = reference_container<X>();
+    reference_cont.insert(vals1.begin(), vals1.end());
 
     {
       raii::reset_counts();
 
-      map_type x(0, hasher(1), key_equal(2), allocator_type(3));
+      X x(0, hasher(1), key_equal(2), allocator_type(3));
 
       std::thread t1, t2, t3;
       boost::compat::latch l(2);
@@ -121,7 +137,7 @@ namespace {
 
           for (std::size_t idx = 0; idx < erase_indices.size(); ++idx) {
             auto const& val = vals1[erase_indices[idx]];
-            x.erase(val.first);
+            x.erase(get_key(val));
             if (idx % 100 == 0) {
               std::this_thread::yield();
             }
@@ -161,7 +177,7 @@ namespace {
 
       BOOST_TEST_GE(call_count, 1u);
 
-      test_fuzzy_matches_reference(x, ref_map, rg);
+      test_fuzzy_matches_reference(x, reference_cont, rg);
     }
 
     check_raii_counts();
@@ -170,8 +186,17 @@ namespace {
 
 // clang-format off
 UNORDERED_TEST(
+  rehash_no_insert,
+  ((test_map)(test_set)))
+
+UNORDERED_TEST(
+  reserve_no_insert,
+  ((test_map)(test_set)))
+
+UNORDERED_TEST(
   insert_and_erase_with_rehash,
-  ((value_type_generator))
+  ((test_map)(test_set))
+  ((value_type_generator_factory))
   ((default_generator)(sequential)(limited_range)))
 // clang-format on
 

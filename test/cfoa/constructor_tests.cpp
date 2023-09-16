@@ -1,10 +1,12 @@
 // Copyright (C) 2023 Christian Mazakas
+// Copyright (C) 2023 Joaquin M Lopez Munoz
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include "helpers.hpp"
 
 #include <boost/unordered/concurrent_flat_map.hpp>
+#include <boost/unordered/concurrent_flat_set.hpp>
 
 test::seed_t initialize_seed(4122023);
 
@@ -46,87 +48,148 @@ template <class T> struct soccc_allocator
 
 using hasher = stateful_hash;
 using key_equal = stateful_key_equal;
-using allocator_type = stateful_allocator<std::pair<raii const, raii> >;
 
 using map_type = boost::unordered::concurrent_flat_map<raii, raii, hasher,
-  key_equal, allocator_type>;
+  key_equal, stateful_allocator<std::pair<raii const, raii> > >;
 
-using map_value_type = typename map_type::value_type;
+using set_type = boost::unordered::concurrent_flat_set<raii, hasher,
+  key_equal, stateful_allocator<raii> >;
 
-UNORDERED_AUTO_TEST (default_constructor) {
-  boost::unordered::concurrent_flat_map<raii, raii> x;
-  BOOST_TEST(x.empty());
-  BOOST_TEST_EQ(x.size(), 0u);
-}
+map_type* test_map;
+set_type* test_set;
 
-UNORDERED_AUTO_TEST (bucket_count_with_hasher_key_equal_and_allocator) {
-  raii::reset_counts();
-  {
-    map_type x(0);
+std::initializer_list<map_type::value_type> map_init_list{
+  {raii{0}, raii{0}},
+  {raii{1}, raii{1}},
+  {raii{2}, raii{2}},
+  {raii{3}, raii{3}},
+  {raii{4}, raii{4}},
+  {raii{5}, raii{5}},
+  {raii{6}, raii{6}},
+  {raii{6}, raii{6}},
+  {raii{7}, raii{7}},
+  {raii{8}, raii{8}},
+  {raii{9}, raii{9}},
+  {raii{10}, raii{10}},
+  {raii{9}, raii{9}},
+  {raii{8}, raii{8}},
+  {raii{7}, raii{7}},
+  {raii{6}, raii{6}},
+  {raii{5}, raii{5}},
+  {raii{4}, raii{4}},
+  {raii{3}, raii{3}},
+  {raii{2}, raii{2}},
+  {raii{1}, raii{1}},
+  {raii{0}, raii{0}},
+};
 
-    BOOST_TEST(x.empty());
-    BOOST_TEST_EQ(x.size(), 0u);
-    BOOST_TEST_EQ(x.hash_function(), hasher());
-    BOOST_TEST_EQ(x.key_eq(), key_equal());
-  }
+std::initializer_list<set_type::value_type> set_init_list{
+  raii{0},
+  raii{1},
+  raii{2},
+  raii{3},
+  raii{4},
+  raii{5},
+  raii{6},
+  raii{6},
+  raii{7},
+  raii{8},
+  raii{9},
+  raii{10},
+  raii{9},
+  raii{8},
+  raii{7},
+  raii{6},
+  raii{5},
+  raii{4},
+  raii{3},
+  raii{2},
+  raii{1},
+  raii{0},
+};
 
-  {
-    map_type x(0, hasher(1));
-
-    BOOST_TEST(x.empty());
-    BOOST_TEST_EQ(x.size(), 0u);
-    BOOST_TEST_EQ(x.hash_function(), hasher(1));
-    BOOST_TEST_EQ(x.key_eq(), key_equal());
-  }
-
-  {
-    map_type x(0, hasher(1), key_equal(2));
-
-    BOOST_TEST(x.empty());
-    BOOST_TEST_EQ(x.size(), 0u);
-    BOOST_TEST_EQ(x.hash_function(), hasher(1));
-    BOOST_TEST_EQ(x.key_eq(), key_equal(2));
-  }
-
-  {
-    map_type x(0, hasher(1), key_equal(2), allocator_type{});
-
-    BOOST_TEST(x.empty());
-    BOOST_TEST_EQ(x.size(), 0u);
-    BOOST_TEST_EQ(x.hash_function(), hasher(1));
-    BOOST_TEST_EQ(x.key_eq(), key_equal(2));
-    BOOST_TEST(x.get_allocator() == allocator_type{});
-  }
-}
-
-UNORDERED_AUTO_TEST (soccc) {
-  raii::reset_counts();
-
-  boost::unordered::concurrent_flat_map<raii, raii, hasher, key_equal,
-    soccc_allocator<std::pair<raii const, raii> > >
-    x;
-
-  boost::unordered::concurrent_flat_map<raii, raii, hasher, key_equal,
-    soccc_allocator<std::pair<raii const, raii> > >
-    y(x);
-
-  BOOST_TEST_EQ(y.hash_function(), x.hash_function());
-  BOOST_TEST_EQ(y.key_eq(), x.key_eq());
-  BOOST_TEST(y.get_allocator() != x.get_allocator());
-}
+auto test_map_and_init_list=std::make_pair(test_map,map_init_list);
+auto test_set_and_init_list=std::make_pair(test_set,set_init_list);
 
 namespace {
-  template <class G> void from_iterator_range(G gen, test::random_generator rg)
+  template <class X>
+  void default_constructor(X*)
   {
+    X x;
+    BOOST_TEST(x.empty());
+    BOOST_TEST_EQ(x.size(), 0u);
+  }
+
+  template <class X>
+  void bucket_count_with_hasher_key_equal_and_allocator(X*)
+  {
+    using allocator_type = typename X::allocator_type;
+
+    raii::reset_counts();
+    {
+      X x(0);
+
+      BOOST_TEST(x.empty());
+      BOOST_TEST_EQ(x.size(), 0u);
+      BOOST_TEST_EQ(x.hash_function(), hasher());
+      BOOST_TEST_EQ(x.key_eq(), key_equal());
+    }
+
+    {
+      X x(0, hasher(1));
+
+      BOOST_TEST(x.empty());
+      BOOST_TEST_EQ(x.size(), 0u);
+      BOOST_TEST_EQ(x.hash_function(), hasher(1));
+      BOOST_TEST_EQ(x.key_eq(), key_equal());
+    }
+
+    {
+      X x(0, hasher(1), key_equal(2));
+
+      BOOST_TEST(x.empty());
+      BOOST_TEST_EQ(x.size(), 0u);
+      BOOST_TEST_EQ(x.hash_function(), hasher(1));
+      BOOST_TEST_EQ(x.key_eq(), key_equal(2));
+    }
+
+    {
+      X x(0, hasher(1), key_equal(2), allocator_type{});
+
+      BOOST_TEST(x.empty());
+      BOOST_TEST_EQ(x.size(), 0u);
+      BOOST_TEST_EQ(x.hash_function(), hasher(1));
+      BOOST_TEST_EQ(x.key_eq(), key_equal(2));
+      BOOST_TEST(x.get_allocator() == allocator_type{});
+    }
+  }
+
+  template <class X>
+  void soccc(X*)
+  {
+    raii::reset_counts();
+
+    replace_allocator<X, soccc_allocator> x, y(x);
+
+    BOOST_TEST_EQ(y.hash_function(), x.hash_function());
+    BOOST_TEST_EQ(y.key_eq(), x.key_eq());
+    BOOST_TEST(y.get_allocator() != x.get_allocator());
+  }
+
+  template <class X, class GF>
+  void from_iterator_range(X*, GF gen_factory, test::random_generator rg)
+  {
+    using allocator_type = typename X::allocator_type;
+
+    auto gen = gen_factory.template get<X>();
     auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
-    auto reference_map =
-      boost::unordered_flat_map<raii, raii>(values.begin(), values.end());
+    auto reference_cont = reference_container<X>(values.begin(), values.end());
     raii::reset_counts();
 
     {
-      map_type x(values.begin(), values.end());
+      X x(values.begin(), values.end());
 
-      test_matches_reference(x, reference_map);
+      test_matches_reference(x, reference_cont);
       BOOST_TEST_GT(x.size(), 0u);
       BOOST_TEST_LE(x.size(), values.size());
       BOOST_TEST_EQ(x.hash_function(), hasher());
@@ -138,9 +201,9 @@ namespace {
     }
 
     {
-      map_type x(values.begin(), values.end(), 0);
+      X x(values.begin(), values.end(), 0);
 
-      test_matches_reference(x, reference_map);
+      test_matches_reference(x, reference_cont);
       BOOST_TEST_GT(x.size(), 0u);
       BOOST_TEST_LE(x.size(), values.size());
       BOOST_TEST_EQ(x.hash_function(), hasher());
@@ -152,9 +215,9 @@ namespace {
     }
 
     {
-      map_type x(values.begin(), values.end(), 0, hasher(1));
+      X x(values.begin(), values.end(), 0, hasher(1));
 
-      test_matches_reference(x, reference_map);
+      test_matches_reference(x, reference_cont);
       BOOST_TEST_GT(x.size(), 0u);
       BOOST_TEST_LE(x.size(), values.size());
       BOOST_TEST_EQ(x.hash_function(), hasher(1));
@@ -166,9 +229,9 @@ namespace {
     }
 
     {
-      map_type x(values.begin(), values.end(), 0, hasher(1), key_equal(2));
+      X x(values.begin(), values.end(), 0, hasher(1), key_equal(2));
 
-      test_matches_reference(x, reference_map);
+      test_matches_reference(x, reference_cont);
       BOOST_TEST_GT(x.size(), 0u);
       BOOST_TEST_LE(x.size(), values.size());
       BOOST_TEST_EQ(x.hash_function(), hasher(1));
@@ -180,10 +243,10 @@ namespace {
     }
 
     {
-      map_type x(values.begin(), values.end(), 0, hasher(1), key_equal(2),
+      X x(values.begin(), values.end(), 0, hasher(1), key_equal(2),
         allocator_type{});
 
-      test_matches_reference(x, reference_map);
+      test_matches_reference(x, reference_cont);
       BOOST_TEST_GT(x.size(), 0u);
       BOOST_TEST_LE(x.size(), values.size());
       BOOST_TEST_EQ(x.hash_function(), hasher(1));
@@ -197,11 +260,14 @@ namespace {
     check_raii_counts();
   }
 
-  template <class G> void copy_constructor(G gen, test::random_generator rg)
+  template <class X, class GF>
+  void copy_constructor(X*, GF gen_factory, test::random_generator rg)
   {
+    using allocator_type = typename X::allocator_type;
+
     {
-      map_type x(0, hasher(1), key_equal(2), allocator_type{});
-      map_type y(x);
+      X x(0, hasher(1), key_equal(2), allocator_type{});
+      X y(x);
 
       BOOST_TEST_EQ(y.size(), x.size());
       BOOST_TEST_EQ(y.hash_function(), x.hash_function());
@@ -209,24 +275,24 @@ namespace {
       BOOST_TEST(y.get_allocator() == x.get_allocator());
     }
 
+    auto gen = gen_factory.template get<X>();
     auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
-    auto reference_map =
-      boost::unordered_flat_map<raii, raii>(values.begin(), values.end());
+    auto reference_cont = reference_container<X>(values.begin(), values.end());
 
     raii::reset_counts();
 
     {
-      map_type x(values.begin(), values.end(), 0, hasher(1), key_equal(2),
+      X x(values.begin(), values.end(), 0, hasher(1), key_equal(2),
         allocator_type{});
 
       thread_runner(
-        values, [&x, &reference_map](
+        values, [&x, &reference_cont](
                   boost::span<span_value_type<decltype(values)> > s) {
           (void)s;
-          map_type y(x);
+          X y(x);
 
-          test_matches_reference(x, reference_map);
-          test_matches_reference(y, reference_map);
+          test_matches_reference(x, reference_cont);
+          test_matches_reference(y, reference_cont);
           BOOST_TEST_EQ(y.size(), x.size());
           BOOST_TEST_EQ(y.hash_function(), x.hash_function());
           BOOST_TEST_EQ(y.key_eq(), x.key_eq());
@@ -241,16 +307,16 @@ namespace {
     {
       allocator_type a;
 
-      map_type x(values.begin(), values.end(), 0, hasher(1), key_equal(2), a);
+      X x(values.begin(), values.end(), 0, hasher(1), key_equal(2), a);
 
       thread_runner(
-        values, [&x, &reference_map, a](
+        values, [&x, &reference_cont, a](
                   boost::span<span_value_type<decltype(values)> > s) {
           (void)s;
-          map_type y(x, a);
+          X y(x, a);
 
-          test_matches_reference(x, reference_map);
-          test_matches_reference(y, reference_map);
+          test_matches_reference(x, reference_cont);
+          test_matches_reference(y, reference_cont);
           BOOST_TEST_EQ(y.size(), x.size());
           BOOST_TEST_EQ(y.hash_function(), x.hash_function());
           BOOST_TEST_EQ(y.key_eq(), x.key_eq());
@@ -261,12 +327,14 @@ namespace {
     check_raii_counts();
   }
 
-  template <class G>
-  void copy_constructor_with_insertion(G gen, test::random_generator rg)
+  template <class X, class GF>
+  void copy_constructor_with_insertion(X*, GF gen_factory, test::random_generator rg)
   {
+    using allocator_type = typename X::allocator_type;
+
+    auto gen = gen_factory.template get<X>();
     auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
-    auto reference_map =
-      boost::unordered_flat_map<raii, raii>(values.begin(), values.end());
+    auto reference_cont = reference_container<X>(values.begin(), values.end());
     raii::reset_counts();
 
     std::mutex m;
@@ -274,7 +342,7 @@ namespace {
     bool ready = false;
 
     {
-      map_type x(0, hasher(1), key_equal(2), allocator_type{});
+      X x(0, hasher(1), key_equal(2), allocator_type{});
 
       auto f = [&x, &values, &m, &cv, &ready] {
         {
@@ -292,7 +360,7 @@ namespace {
       std::thread t2(f);
 
       thread_runner(
-        values, [&x, &reference_map, &values, rg, &m, &cv, &ready](
+        values, [&x, &reference_cont, &values, rg, &m, &cv, &ready](
                   boost::span<span_value_type<decltype(values)> > s) {
           (void)s;
 
@@ -301,18 +369,18 @@ namespace {
             cv.wait(lk, [&] { return ready; });
           }
 
-          map_type y(x);
+          X y(x);
 
           BOOST_TEST_LE(y.size(), values.size());
           BOOST_TEST_EQ(y.hash_function(), x.hash_function());
           BOOST_TEST_EQ(y.key_eq(), x.key_eq());
           BOOST_TEST(y.get_allocator() == x.get_allocator());
 
-          x.visit_all([&reference_map, rg](
-                        typename map_type::value_type const& val) {
-            BOOST_TEST(reference_map.contains(val.first));
+          x.visit_all([&reference_cont, rg](
+                        typename X::value_type const& val) {
+            BOOST_TEST(reference_cont.contains(get_key(val)));
             if (rg == sequential) {
-              BOOST_TEST_EQ(val.second, reference_map.find(val.first)->second);
+              BOOST_TEST_EQ(val, *reference_cont.find(get_key(val)));
             }
           });
         });
@@ -324,13 +392,19 @@ namespace {
     check_raii_counts();
   }
 
-  template <class G> void move_constructor(G gen, test::random_generator rg)
+  template <class X, class GF>
+  void move_constructor(X*, GF gen_factory, test::random_generator rg)
   {
+    using value_type = typename X::value_type;
+    using allocator_type = typename X::allocator_type;
+    static constexpr auto value_type_cardinality = 
+      value_cardinality<value_type>::value;
+
     {
-      map_type x(0, hasher(1), key_equal(2), allocator_type{});
+      X x(0, hasher(1), key_equal(2), allocator_type{});
       auto const old_size = x.size();
 
-      map_type y(std::move(x));
+      X y(std::move(x));
 
       BOOST_TEST_EQ(y.size(), old_size);
       BOOST_TEST_EQ(y.hash_function(), hasher(1));
@@ -343,14 +417,14 @@ namespace {
       BOOST_TEST(y.get_allocator() == x.get_allocator());
     }
 
+    auto gen = gen_factory.template get<X>();
     auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
-    auto reference_map =
-      boost::unordered_flat_map<raii, raii>(values.begin(), values.end());
+    auto reference_cont = reference_container<X>(values.begin(), values.end());
 
     raii::reset_counts();
 
     {
-      map_type x(values.begin(), values.end(), 0, hasher(1), key_equal(2),
+      X x(values.begin(), values.end(), 0, hasher(1), key_equal(2),
         allocator_type{});
 
       std::atomic_uint num_transfers{0};
@@ -358,17 +432,17 @@ namespace {
       auto const old_mc = +raii::move_constructor;
 
       thread_runner(
-        values, [&x, &reference_map, &num_transfers](
+        values, [&x, &reference_cont, &num_transfers](
                   boost::span<span_value_type<decltype(values)> > s) {
           (void)s;
 
           auto const old_size = x.size();
-          map_type y(std::move(x));
+          X y(std::move(x));
 
           if (!y.empty()) {
             ++num_transfers;
 
-            test_matches_reference(y, reference_map);
+            test_matches_reference(y, reference_cont);
             BOOST_TEST_EQ(y.size(), old_size);
             BOOST_TEST_EQ(y.hash_function(), hasher(1));
             BOOST_TEST_EQ(y.key_eq(), key_equal(2));
@@ -395,7 +469,7 @@ namespace {
     raii::reset_counts();
 
     {
-      map_type x(values.begin(), values.end(), 0, hasher(1), key_equal(2),
+      X x(values.begin(), values.end(), 0, hasher(1), key_equal(2),
         allocator_type{1});
 
       std::atomic_uint num_transfers{0};
@@ -404,19 +478,19 @@ namespace {
       auto const old_size = x.size();
 
       thread_runner(
-        values, [&x, &reference_map, &num_transfers, old_size](
+        values, [&x, &reference_cont, &num_transfers, old_size](
                   boost::span<span_value_type<decltype(values)> > s) {
           (void)s;
 
           auto a = allocator_type{2};
           BOOST_TEST(a != x.get_allocator());
 
-          map_type y(std::move(x), a);
+          X y(std::move(x), a);
 
           if (!y.empty()) {
             ++num_transfers;
 
-            test_matches_reference(y, reference_map);
+            test_matches_reference(y, reference_cont);
             BOOST_TEST_EQ(y.size(), old_size);
             BOOST_TEST_EQ(y.hash_function(), hasher(1));
             BOOST_TEST_EQ(y.key_eq(), key_equal(2));
@@ -435,7 +509,8 @@ namespace {
         });
 
       BOOST_TEST_EQ(num_transfers, 1u);
-      BOOST_TEST_EQ(raii::move_constructor, old_mc + (2 * old_size));
+      BOOST_TEST_EQ(
+        raii::move_constructor, old_mc + (value_type_cardinality * old_size));
     }
 
     check_raii_counts();
@@ -444,7 +519,7 @@ namespace {
     raii::reset_counts();
 
     {
-      map_type x(values.begin(), values.end(), 0, hasher(1), key_equal(2),
+      X x(values.begin(), values.end(), 0, hasher(1), key_equal(2),
         allocator_type{1});
 
       std::atomic_uint num_transfers{0};
@@ -453,19 +528,19 @@ namespace {
       auto const old_size = x.size();
 
       thread_runner(
-        values, [&x, &reference_map, &num_transfers, old_size](
+        values, [&x, &reference_cont, &num_transfers, old_size](
                   boost::span<span_value_type<decltype(values)> > s) {
           (void)s;
 
           auto a = allocator_type{1};
           BOOST_TEST(a == x.get_allocator());
 
-          map_type y(std::move(x), a);
+          X y(std::move(x), a);
 
           if (!y.empty()) {
             ++num_transfers;
 
-            test_matches_reference(y, reference_map);
+            test_matches_reference(y, reference_cont);
             BOOST_TEST_EQ(y.size(), old_size);
             BOOST_TEST_EQ(y.hash_function(), hasher(1));
             BOOST_TEST_EQ(y.key_eq(), key_equal(2));
@@ -490,12 +565,16 @@ namespace {
     check_raii_counts();
   }
 
-  template <class G>
-  void move_constructor_with_insertion(G gen, test::random_generator rg)
+  template <class X, class GF>
+  void move_constructor_with_insertion(
+    X*, GF gen_factory, test::random_generator rg)
   {
+    using value_type = typename X::value_type;
+    using allocator_type = typename X::allocator_type;
+
+    auto gen = gen_factory.template get<X>();
     auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
-    auto reference_map =
-      boost::unordered_flat_map<raii, raii>(values.begin(), values.end());
+    auto reference_cont = reference_container<X>(values.begin(), values.end());
 
     raii::reset_counts();
 
@@ -504,7 +583,7 @@ namespace {
     bool ready = false;
 
     {
-      map_type x(0, hasher(1), key_equal(2), allocator_type{});
+      X x(0, hasher(1), key_equal(2), allocator_type{});
 
       std::atomic_uint num_transfers{0};
 
@@ -527,7 +606,7 @@ namespace {
       });
 
       thread_runner(
-        values, [&x, &reference_map, &num_transfers, rg, &m, &ready, &cv](
+        values, [&x, &reference_cont, &num_transfers, rg, &m, &ready, &cv](
                   boost::span<span_value_type<decltype(values)> > s) {
           (void)s;
 
@@ -536,15 +615,15 @@ namespace {
             cv.wait(lk, [&] { return ready; });
           }
 
-          map_type y(std::move(x));
+          X y(std::move(x));
 
           if (!y.empty()) {
             ++num_transfers;
-            y.cvisit_all([&reference_map, rg](map_value_type const& val) {
-              BOOST_TEST(reference_map.contains(val.first));
+            y.cvisit_all([&reference_cont, rg](value_type const& val) {
+              BOOST_TEST(reference_cont.contains(get_key(val)));
               if (rg == sequential) {
                 BOOST_TEST_EQ(
-                  val.second, reference_map.find(val.first)->second);
+                  val, *reference_cont.find(get_key(val)));
               }
             });
           }
@@ -559,18 +638,21 @@ namespace {
     check_raii_counts();
   }
 
-  template <class G>
-  void iterator_range_with_allocator(G gen, test::random_generator rg)
+  template <class X, class GF>
+  void iterator_range_with_allocator(
+    X*, GF gen_factory, test::random_generator rg)
   {
+    using allocator_type = typename X::allocator_type;
+
+    auto gen = gen_factory.template get<X>();
     auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
-    auto reference_map =
-      boost::unordered_flat_map<raii, raii>(values.begin(), values.end());
+    auto reference_cont = reference_container<X>(values.begin(), values.end());
 
     raii::reset_counts();
 
     {
       allocator_type a;
-      map_type x(values.begin(), values.end(), a);
+      X x(values.begin(), values.end(), a);
 
       BOOST_TEST_GT(x.size(), 0u);
       BOOST_TEST_LE(x.size(), values.size());
@@ -583,18 +665,22 @@ namespace {
 
       BOOST_TEST(x.get_allocator() == a);
 
-      test_fuzzy_matches_reference(x, reference_map, rg);
+      test_fuzzy_matches_reference(x, reference_cont, rg);
     }
 
     check_raii_counts();
   }
 
-  UNORDERED_AUTO_TEST (explicit_allocator) {
+  template <class X>
+  void explicit_allocator(X*)
+  {
+    using allocator_type = typename X::allocator_type;
+
     raii::reset_counts();
 
     {
       allocator_type a;
-      map_type x(a);
+      X x(a);
 
       BOOST_TEST_EQ(x.size(), 0u);
       BOOST_TEST_EQ(x.hash_function(), hasher());
@@ -604,37 +690,20 @@ namespace {
     }
   }
 
-  UNORDERED_AUTO_TEST (initializer_list_with_all_params) {
-    // hard-code 11 unique values
-    std::initializer_list<map_value_type> ilist{
-      map_value_type{raii{0}, raii{0}},
-      map_value_type{raii{1}, raii{1}},
-      map_value_type{raii{2}, raii{2}},
-      map_value_type{raii{3}, raii{3}},
-      map_value_type{raii{4}, raii{4}},
-      map_value_type{raii{5}, raii{5}},
-      map_value_type{raii{6}, raii{6}},
-      map_value_type{raii{6}, raii{6}},
-      map_value_type{raii{7}, raii{7}},
-      map_value_type{raii{8}, raii{8}},
-      map_value_type{raii{9}, raii{9}},
-      map_value_type{raii{10}, raii{10}},
-      map_value_type{raii{9}, raii{9}},
-      map_value_type{raii{8}, raii{8}},
-      map_value_type{raii{7}, raii{7}},
-      map_value_type{raii{6}, raii{6}},
-      map_value_type{raii{5}, raii{5}},
-      map_value_type{raii{4}, raii{4}},
-      map_value_type{raii{3}, raii{3}},
-      map_value_type{raii{2}, raii{2}},
-      map_value_type{raii{1}, raii{1}},
-      map_value_type{raii{0}, raii{0}},
-    };
+  template <class X, class IL>
+  void initializer_list_with_all_params(std::pair<X*, IL> p)
+  {
+    using value_type = typename X::value_type;
+    static constexpr auto value_type_cardinality = 
+      value_cardinality<value_type>::value;
+    using allocator_type = typename X::allocator_type;
+
+    auto init_list = p.second;
 
     {
       raii::reset_counts();
 
-      map_type x(ilist, 0, hasher(1), key_equal(2), allocator_type(3));
+      X x(init_list, 0, hasher(1), key_equal(2), allocator_type(3));
 
       BOOST_TEST_EQ(x.size(), 11u);
       BOOST_TEST_EQ(x.hash_function(), hasher(1));
@@ -642,15 +711,17 @@ namespace {
       BOOST_TEST(x.get_allocator() == allocator_type(3));
 
       BOOST_TEST_EQ(raii::default_constructor, 0u);
-      BOOST_TEST_EQ(raii::copy_constructor, 2 * ilist.size());
-      BOOST_TEST_EQ(raii::move_constructor, 2 * 11u);
+      BOOST_TEST_EQ(
+        raii::copy_constructor, value_type_cardinality * init_list.size());
+      BOOST_TEST_EQ(
+        raii::move_constructor, value_type_cardinality * 11u);
     }
     check_raii_counts();
 
     {
       raii::reset_counts();
 
-      map_type x(ilist, allocator_type(3));
+      X x(init_list, allocator_type(3));
 
       BOOST_TEST_EQ(x.size(), 11u);
       BOOST_TEST_EQ(x.hash_function(), hasher());
@@ -658,15 +729,17 @@ namespace {
       BOOST_TEST(x.get_allocator() == allocator_type(3));
 
       BOOST_TEST_EQ(raii::default_constructor, 0u);
-      BOOST_TEST_EQ(raii::copy_constructor, 2 * ilist.size());
-      BOOST_TEST_EQ(raii::move_constructor, 2 * 11u);
+      BOOST_TEST_EQ(
+        raii::copy_constructor, value_type_cardinality * init_list.size());
+      BOOST_TEST_EQ(
+        raii::move_constructor, value_type_cardinality * 11u);
     }
     check_raii_counts();
 
     {
       raii::reset_counts();
 
-      map_type x(ilist, 0, allocator_type(3));
+      X x(init_list, 0, allocator_type(3));
 
       BOOST_TEST_EQ(x.size(), 11u);
       BOOST_TEST_EQ(x.hash_function(), hasher());
@@ -674,15 +747,17 @@ namespace {
       BOOST_TEST(x.get_allocator() == allocator_type(3));
 
       BOOST_TEST_EQ(raii::default_constructor, 0u);
-      BOOST_TEST_EQ(raii::copy_constructor, 2 * ilist.size());
-      BOOST_TEST_EQ(raii::move_constructor, 2 * 11u);
+      BOOST_TEST_EQ(
+        raii::copy_constructor, value_type_cardinality * init_list.size());
+      BOOST_TEST_EQ(
+        raii::move_constructor, value_type_cardinality * 11u);
     }
     check_raii_counts();
 
     {
       raii::reset_counts();
 
-      map_type x(ilist, 0, hasher(1), allocator_type(3));
+      X x(init_list, 0, hasher(1), allocator_type(3));
 
       BOOST_TEST_EQ(x.size(), 11u);
       BOOST_TEST_EQ(x.hash_function(), hasher(1));
@@ -690,58 +765,70 @@ namespace {
       BOOST_TEST(x.get_allocator() == allocator_type(3));
 
       BOOST_TEST_EQ(raii::default_constructor, 0u);
-      BOOST_TEST_EQ(raii::copy_constructor, 2 * ilist.size());
-      BOOST_TEST_EQ(raii::move_constructor, 2 * 11u);
+      BOOST_TEST_EQ(
+        raii::copy_constructor, value_type_cardinality * init_list.size());
+      BOOST_TEST_EQ(
+        raii::move_constructor, value_type_cardinality * 11u);
     }
     check_raii_counts();
   }
 
-  UNORDERED_AUTO_TEST (bucket_count_and_allocator) {
-    raii::reset_counts();
-
-    {
-      map_type x(0, allocator_type(3));
-      BOOST_TEST_EQ(x.size(), 0u);
-      BOOST_TEST_EQ(x.hash_function(), hasher());
-      BOOST_TEST_EQ(x.key_eq(), key_equal());
-      BOOST_TEST(x.get_allocator() == allocator_type(3));
-    }
-
-    {
-      map_type x(4096, allocator_type(3));
-      BOOST_TEST_EQ(x.size(), 0u);
-      BOOST_TEST_EQ(x.hash_function(), hasher());
-      BOOST_TEST_EQ(x.key_eq(), key_equal());
-      BOOST_TEST(x.get_allocator() == allocator_type(3));
-    }
-  }
-
-  UNORDERED_AUTO_TEST (bucket_count_with_hasher_and_allocator) {
-    raii::reset_counts();
-
-    {
-      map_type x(0, hasher(1), allocator_type(3));
-      BOOST_TEST_EQ(x.size(), 0u);
-      BOOST_TEST_EQ(x.hash_function(), hasher(1));
-      BOOST_TEST_EQ(x.key_eq(), key_equal());
-      BOOST_TEST(x.get_allocator() == allocator_type(3));
-    }
-  }
-
-  template <class G>
-  void iterator_range_with_bucket_count_and_allocator(
-    G gen, test::random_generator rg)
+  template <class X>
+  void bucket_count_and_allocator(X*)
   {
+    using allocator_type = typename X::allocator_type;
+
+    raii::reset_counts();
+
+    {
+      X x(0, allocator_type(3));
+      BOOST_TEST_EQ(x.size(), 0u);
+      BOOST_TEST_EQ(x.hash_function(), hasher());
+      BOOST_TEST_EQ(x.key_eq(), key_equal());
+      BOOST_TEST(x.get_allocator() == allocator_type(3));
+    }
+
+    {
+      X x(4096, allocator_type(3));
+      BOOST_TEST_EQ(x.size(), 0u);
+      BOOST_TEST_EQ(x.hash_function(), hasher());
+      BOOST_TEST_EQ(x.key_eq(), key_equal());
+      BOOST_TEST(x.get_allocator() == allocator_type(3));
+    }
+  }
+
+  template <class X>
+  void bucket_count_with_hasher_and_allocator(X*)
+  {
+    using allocator_type = typename X::allocator_type;
+
+    raii::reset_counts();
+
+    {
+      X x(0, hasher(1), allocator_type(3));
+      BOOST_TEST_EQ(x.size(), 0u);
+      BOOST_TEST_EQ(x.hash_function(), hasher(1));
+      BOOST_TEST_EQ(x.key_eq(), key_equal());
+      BOOST_TEST(x.get_allocator() == allocator_type(3));
+    }
+  }
+
+  template <class X, class GF>
+  void iterator_range_with_bucket_count_and_allocator(
+    X*, GF gen_factory, test::random_generator rg)
+  {
+    using allocator_type = typename X::allocator_type;
+
+    auto gen = gen_factory.template get<X>();
     auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
-    auto reference_map =
-      boost::unordered_flat_map<raii, raii>(values.begin(), values.end());
+    auto reference_cont = reference_container<X>(values.begin(), values.end());
 
     raii::reset_counts();
 
     {
       allocator_type a(3);
-      map_type x(values.begin(), values.end(), 0, a);
-      test_fuzzy_matches_reference(x, reference_map, rg);
+      X x(values.begin(), values.end(), 0, a);
+      test_fuzzy_matches_reference(x, reference_cont, rg);
 
       BOOST_TEST_EQ(x.hash_function(), hasher());
       BOOST_TEST_EQ(x.key_eq(), key_equal());
@@ -751,21 +838,23 @@ namespace {
     check_raii_counts();
   }
 
-  template <class G>
+  template <class X, class GF>
   void iterator_range_with_bucket_count_hasher_and_allocator(
-    G gen, test::random_generator rg)
+    X*, GF gen_factory, test::random_generator rg)
   {
+    using allocator_type = typename X::allocator_type;
+
+    auto gen = gen_factory.template get<X>();
     auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
-    auto reference_map =
-      boost::unordered_flat_map<raii, raii>(values.begin(), values.end());
+    auto reference_cont = reference_container<X>(values.begin(), values.end());
 
     raii::reset_counts();
 
     {
       allocator_type a(3);
       hasher hf(1);
-      map_type x(values.begin(), values.end(), 0, hf, a);
-      test_fuzzy_matches_reference(x, reference_map, rg);
+      X x(values.begin(), values.end(), 0, hf, a);
+      test_fuzzy_matches_reference(x, reference_cont, rg);
 
       BOOST_TEST_EQ(x.hash_function(), hf);
       BOOST_TEST_EQ(x.key_eq(), key_equal());
@@ -775,19 +864,22 @@ namespace {
     check_raii_counts();
   }
 
-  template <class G> void flat_map_constructor(G gen, test::random_generator rg)
+  template <class X, class GF>
+  void flat_constructor(X*, GF gen_factory, test::random_generator rg)
   {
+    using allocator_type = typename X::allocator_type;
+
+    auto gen = gen_factory.template get<X>();
     auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
-    auto reference_map =
-      boost::unordered_flat_map<raii, raii, hasher, key_equal, allocator_type>(
-        values.begin(), values.end(), values.size());
+    auto reference_cont = reference_container<X>(values.begin(), values.end());
+    auto reference_flat= flat_container<X>(values.begin(), values.end());
 
     raii::reset_counts();
 
     {
-      boost::unordered_flat_map<raii, raii, hasher, key_equal, allocator_type>
-        flat_map(values.begin(), values.end(), reference_map.size(), hasher(1),
-          key_equal(2), allocator_type(3));
+      flat_container<X> flat(
+        values.begin(), values.end(), reference_cont.size(), hasher(1),
+        key_equal(2), allocator_type(3));
 
       auto const old_dc = +raii::default_constructor;
       auto const old_mc = +raii::move_constructor;
@@ -797,9 +889,9 @@ namespace {
       BOOST_TEST_GT(old_mc, 0u);
       BOOST_TEST_GT(old_cc, 0u);
 
-      map_type x(std::move(flat_map));
+      X x(std::move(flat));
 
-      test_fuzzy_matches_reference(x, reference_map, rg);
+      test_fuzzy_matches_reference(x, reference_cont, rg);
 
       BOOST_TEST_EQ(+raii::default_constructor, old_dc);
       BOOST_TEST_EQ(+raii::move_constructor, old_mc);
@@ -809,16 +901,15 @@ namespace {
       BOOST_TEST_EQ(x.key_eq(), key_equal(2));
       BOOST_TEST(x.get_allocator() == allocator_type(3));
 
-      BOOST_TEST(flat_map.empty());
+      BOOST_TEST(flat.empty());
     }
 
     check_raii_counts();
 
     {
-      boost::unordered_flat_map<raii, raii, hasher, key_equal, allocator_type>
-        flat_map(0, hasher(1), key_equal(2), allocator_type(3));
+      flat_container<X> flat(0, hasher(1), key_equal(2), allocator_type(3));
 
-      map_type x(std::move(flat_map));
+      X x(std::move(flat));
 
       BOOST_TEST(x.empty());
 
@@ -826,13 +917,13 @@ namespace {
       BOOST_TEST_EQ(x.key_eq(), key_equal(2));
       BOOST_TEST(x.get_allocator() == allocator_type(3));
 
-      BOOST_TEST(flat_map.empty());
+      BOOST_TEST(flat.empty());
     }
 
     check_raii_counts();
 
     {
-      map_type flat_map(values.begin(), values.end(), reference_map.size(),
+      X x(values.begin(), values.end(), reference_cont.size(),
         hasher(1), key_equal(2), allocator_type(3));
 
       auto const old_dc = +raii::default_constructor;
@@ -843,89 +934,124 @@ namespace {
       BOOST_TEST_GT(old_mc, 0u);
       BOOST_TEST_GT(old_cc, 0u);
 
-      boost::unordered_flat_map<raii, raii, hasher, key_equal, allocator_type>
-        x(std::move(flat_map));
+      flat_container<X> flat(std::move(x));
 
-      BOOST_TEST(x == reference_map);
+      BOOST_TEST(flat == reference_flat);
 
       BOOST_TEST_EQ(+raii::default_constructor, old_dc);
       BOOST_TEST_EQ(+raii::move_constructor, old_mc);
       BOOST_TEST_EQ(+raii::copy_constructor, old_cc);
 
-      BOOST_TEST_EQ(x.hash_function(), hasher(1));
-      BOOST_TEST_EQ(x.key_eq(), key_equal(2));
-      BOOST_TEST(x.get_allocator() == allocator_type(3));
+      BOOST_TEST_EQ(flat.hash_function(), hasher(1));
+      BOOST_TEST_EQ(flat.key_eq(), key_equal(2));
+      BOOST_TEST(flat.get_allocator() == allocator_type(3));
 
-      BOOST_TEST(flat_map.empty());
+      BOOST_TEST(x.empty());
     }
 
     check_raii_counts();
 
     {
-      map_type flat_map(0, hasher(1), key_equal(2), allocator_type(3));
+      X x(0, hasher(1), key_equal(2), allocator_type(3));
 
-      boost::unordered_flat_map<raii, raii, hasher, key_equal, allocator_type>
-        x(std::move(flat_map));
+      flat_container<X> flat(std::move(x));
+
+      BOOST_TEST(flat.empty());
+
+      BOOST_TEST_EQ(flat.hash_function(), hasher(1));
+      BOOST_TEST_EQ(flat.key_eq(), key_equal(2));
+      BOOST_TEST(flat.get_allocator() == allocator_type(3));
 
       BOOST_TEST(x.empty());
-
-      BOOST_TEST_EQ(x.hash_function(), hasher(1));
-      BOOST_TEST_EQ(x.key_eq(), key_equal(2));
-      BOOST_TEST(x.get_allocator() == allocator_type(3));
-
-      BOOST_TEST(flat_map.empty());
     }
 
     check_raii_counts();
   }
+
 } // namespace
 
 // clang-format off
 UNORDERED_TEST(
+  default_constructor,
+  ((test_map)(test_set)))
+
+UNORDERED_TEST(
+  bucket_count_with_hasher_key_equal_and_allocator,
+  ((test_map)(test_set)))
+
+UNORDERED_TEST(
+  soccc,
+  ((test_map)(test_set)))
+
+UNORDERED_TEST(
   from_iterator_range,
-  ((value_type_generator))
+  ((test_map)(test_set))
+  ((value_type_generator_factory))
   ((default_generator)(sequential)(limited_range)))
 
 UNORDERED_TEST(
   copy_constructor,
-  ((value_type_generator))
+  ((test_map)(test_set))
+  ((value_type_generator_factory))
   ((default_generator)(sequential)(limited_range)))
 
 UNORDERED_TEST(
   copy_constructor_with_insertion,
-  ((value_type_generator))
+  ((test_map)(test_set))
+  ((value_type_generator_factory))
   ((default_generator)(sequential)(limited_range)))
 
 UNORDERED_TEST(
   move_constructor,
-  ((value_type_generator))
+  ((test_map)(test_set))
+  ((value_type_generator_factory))
   ((default_generator)(sequential)(limited_range)))
 
 UNORDERED_TEST(
   move_constructor_with_insertion,
-  ((value_type_generator))
+  ((test_map)(test_set))
+  ((value_type_generator_factory))
   ((default_generator)(sequential)(limited_range)))
 
 UNORDERED_TEST(
   iterator_range_with_allocator,
-  ((value_type_generator))
+  ((test_map)(test_set))
+  ((value_type_generator_factory))
   ((default_generator)(sequential)(limited_range)))
 
 UNORDERED_TEST(
+  explicit_allocator,
+  ((test_map)(test_set)))
+
+UNORDERED_TEST(
+  initializer_list_with_all_params,
+  ((test_map_and_init_list)(test_set_and_init_list)))
+
+UNORDERED_TEST(
+  bucket_count_and_allocator,
+  ((test_map)(test_set)))
+
+UNORDERED_TEST(
+  bucket_count_with_hasher_and_allocator,
+  ((test_map)(test_set)))
+  
+UNORDERED_TEST(
   iterator_range_with_bucket_count_and_allocator,
-  ((value_type_generator))
+  ((test_map)(test_set))
+  ((value_type_generator_factory))
   ((default_generator)(sequential)(limited_range)))
 
 UNORDERED_TEST(
   iterator_range_with_bucket_count_hasher_and_allocator,
-  ((value_type_generator))
+  ((test_map)(test_set))
+  ((value_type_generator_factory))
   ((default_generator)(sequential)(limited_range)))
 
 UNORDERED_TEST(
-  flat_map_constructor,
-  ((value_type_generator))
+  flat_constructor,
+  ((test_map)(test_set))
+  ((value_type_generator_factory))
   ((default_generator)(sequential)(limited_range)))
-
 // clang-format on
 
 RUN_TESTS()

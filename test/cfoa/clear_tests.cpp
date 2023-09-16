@@ -1,10 +1,12 @@
 // Copyright (C) 2023 Christian Mazakas
+// Copyright (C) 2023 Joaquin M Lopez Munoz
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include "helpers.hpp"
 
 #include <boost/unordered/concurrent_flat_map.hpp>
+#include <boost/unordered/concurrent_flat_set.hpp>
 
 test::seed_t initialize_seed{674140082};
 
@@ -14,49 +16,62 @@ using test::sequential;
 
 using hasher = stateful_hash;
 using key_equal = stateful_key_equal;
-using allocator_type = stateful_allocator<std::pair<raii const, raii> >;
 
 using map_type = boost::unordered::concurrent_flat_map<raii, raii, hasher,
-  key_equal, allocator_type>;
+  key_equal, stateful_allocator<std::pair<raii const, raii> > >;
 
-using map_value_type = typename map_type::value_type;
+using set_type = boost::unordered::concurrent_flat_set<raii, hasher,
+  key_equal, stateful_allocator<raii> >;
+
+map_type* test_map;
+set_type* test_set;
 
 namespace {
-  template <class G> void clear_tests(G gen, test::random_generator rg)
+  template <class X, class GF>
+  void clear_tests(X*, GF gen_factory, test::random_generator rg)
   {
+    using value_type = typename X::value_type;
+    static constexpr auto value_type_cardinality = 
+      value_cardinality<value_type>::value;
+    using allocator_type = typename X::allocator_type;
+
+    auto gen = gen_factory.template get<X>();
     auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
 
     raii::reset_counts();
 
-    map_type x(values.begin(), values.end(), values.size(), hasher(1),
+    X x(values.begin(), values.end(), values.size(), hasher(1),
       key_equal(2), allocator_type(3));
 
     auto const old_size = x.size();
     auto const old_d = +raii::destructor;
 
-    thread_runner(values, [&x](boost::span<map_value_type> s) {
+    thread_runner(values, [&x](boost::span<value_type> s) {
       (void)s;
       x.clear();
     });
 
     BOOST_TEST(x.empty());
-    BOOST_TEST_EQ(raii::destructor, old_d + 2 * old_size);
+    BOOST_TEST_EQ(raii::destructor, old_d + value_type_cardinality * old_size);
 
     check_raii_counts();
   }
 
-  template <class G> void insert_and_clear(G gen, test::random_generator rg)
+  template <class X, class GF>
+  void insert_and_clear(X*, GF gen_factory, test::random_generator rg)
   {
+    using allocator_type = typename X::allocator_type;
+
+    auto gen = gen_factory.template get<X>();
     auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
-    auto reference_map =
-      boost::unordered_flat_map<raii, raii>(values.begin(), values.end());
+    auto reference_cont = reference_container<X>(values.begin(), values.end());
 
     raii::reset_counts();
 
     std::thread t1, t2;
 
     {
-      map_type x(0, hasher(1), key_equal(2), allocator_type(3));
+      X x(0, hasher(1), key_equal(2), allocator_type(3));
 
       std::mutex m;
       std::condition_variable cv;
@@ -103,7 +118,7 @@ namespace {
       BOOST_TEST_GE(num_clears, 1u);
 
       if (!x.empty()) {
-        test_fuzzy_matches_reference(x, reference_map, rg);
+        test_fuzzy_matches_reference(x, reference_cont, rg);
       }
     }
 
@@ -115,11 +130,13 @@ namespace {
 // clang-format off
 UNORDERED_TEST(
   clear_tests,
-  ((value_type_generator))
+  ((test_map)(test_set))
+  ((value_type_generator_factory))
   ((default_generator)(sequential)(limited_range)))
 
 UNORDERED_TEST(insert_and_clear,
-  ((value_type_generator))
+  ((test_map)(test_set))
+  ((value_type_generator_factory))
   ((default_generator)(sequential)(limited_range)))
 // clang-format on
 

@@ -1,10 +1,12 @@
 // Copyright (C) 2023 Christian Mazakas
+// Copyright (C) 2023 Joaquin M Lopez Munoz
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include "exception_helpers.hpp"
 
 #include <boost/unordered/concurrent_flat_map.hpp>
+#include <boost/unordered/concurrent_flat_set.hpp>
 
 #include <boost/core/ignore_unused.hpp>
 
@@ -84,6 +86,9 @@ namespace {
   {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
     {
+      static constexpr auto value_type_cardinality = 
+        value_cardinality<typename X::value_type>::value;
+
       x.reserve(values.size());
 
       BOOST_TEST_EQ(raii::copy_constructor, 0u);
@@ -92,11 +97,19 @@ namespace {
       rvalue_inserter_type::operator()(values, x);
 
       if (std::is_same<T, typename X::value_type>::value) {
-        BOOST_TEST_EQ(raii::copy_constructor, x.size());
-        BOOST_TEST_EQ(raii::move_constructor, x.size());
+        if (std::is_same<typename X::key_type, 
+                         typename X::value_type>::value) {
+          BOOST_TEST_EQ(raii::copy_constructor, 0u);
+          BOOST_TEST_EQ(raii::move_constructor, x.size());
+        }
+        else {
+          BOOST_TEST_EQ(raii::copy_constructor, x.size());
+          BOOST_TEST_EQ(raii::move_constructor, x.size());
+        }
       } else {
         BOOST_TEST_EQ(raii::copy_constructor, 0u);
-        BOOST_TEST_EQ(raii::move_constructor, 2 * x.size());
+        BOOST_TEST_EQ(
+          raii::move_constructor, value_type_cardinality * x.size());
       }
     }
   } norehash_rvalue_inserter;
@@ -246,6 +259,13 @@ namespace {
   {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
     {
+      // concurrent_flat_set visit is always const access
+      using arg_type = typename std::conditional<
+        std::is_same<typename X::key_type, typename X::value_type>::value,
+        typename X::value_type const,
+        typename X::value_type
+      >::type;
+
       std::atomic<std::uint64_t> num_inserts{0};
 
       enable_exceptions();
@@ -253,7 +273,7 @@ namespace {
         for (auto& r : s) {
           try {
             bool b =
-              x.insert_or_visit(r, [](typename X::value_type& v) { (void)v; });
+              x.insert_or_visit(r, [](arg_type& v) { (void)v; });
 
             if (b) {
               ++num_inserts;
@@ -306,6 +326,13 @@ namespace {
   {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
     {
+      // concurrent_flat_set visit is always const access
+      using arg_type = typename std::conditional<
+        std::is_same<typename X::key_type, typename X::value_type>::value,
+        typename X::value_type const,
+        typename X::value_type
+      >::type;
+
       std::atomic<std::uint64_t> num_inserts{0};
 
       enable_exceptions();
@@ -313,7 +340,7 @@ namespace {
         for (auto& r : s) {
           try {
             bool b = x.insert_or_visit(
-              std::move(r), [](typename X::value_type& v) { (void)v; });
+              std::move(r), [](arg_type& v) { (void)v; });
 
             if (b) {
               ++num_inserts;
@@ -377,14 +404,14 @@ namespace {
     }
   } iterator_range_insert_or_visit;
 
-  template <class X, class G, class F>
-  void insert(X*, G gen, F inserter, test::random_generator rg)
+  template <class X, class GF, class F>
+  void insert(X*, GF gen_factory, F inserter, test::random_generator rg)
   {
     disable_exceptions();
 
+    auto gen = gen_factory.template get<X>();
     auto values = make_random_values(1024 * 16, [&] { return gen(rg); });
-    auto reference_map =
-      boost::unordered_flat_map<raii, raii>(values.begin(), values.end());
+    auto reference_cont = reference_container<X>(values.begin(), values.end());
 
     raii::reset_counts();
     {
@@ -392,13 +419,15 @@ namespace {
 
       inserter(values, x);
 
-      test_fuzzy_matches_reference(x, reference_map, rg);
+      test_fuzzy_matches_reference(x, reference_cont, rg);
     }
     check_raii_counts();
   }
 
   boost::unordered::concurrent_flat_map<raii, raii, stateful_hash,
     stateful_key_equal, stateful_allocator<std::pair<raii const, raii> > >* map;
+  boost::unordered::concurrent_flat_set<raii, stateful_hash,
+    stateful_key_equal, stateful_allocator<raii> >* set;
 
 } // namespace
 
@@ -409,8 +438,9 @@ using test::sequential;
 // clang-format off
 UNORDERED_TEST(
   insert,
-  ((map))
-  ((exception_value_type_generator)(exception_init_type_generator))
+  ((map)(set))
+  ((exception_value_type_generator_factory)
+   (exception_init_type_generator_factory))
   ((lvalue_inserter)(rvalue_inserter)(iterator_range_inserter)
    (norehash_lvalue_inserter)(norehash_rvalue_inserter)
    (lvalue_insert_or_cvisit)(lvalue_insert_or_visit)
@@ -421,7 +451,7 @@ UNORDERED_TEST(
 UNORDERED_TEST(
   insert,
   ((map))
-  ((exception_init_type_generator))
+  ((exception_init_type_generator_factory))
   ((lvalue_insert_or_assign_copy_assign)(lvalue_insert_or_assign_move_assign)
    (rvalue_insert_or_assign_copy_assign)(rvalue_insert_or_assign_move_assign))
   ((default_generator)(sequential)(limited_range)))

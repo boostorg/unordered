@@ -133,10 +133,10 @@
 #define BOOST_UNORDERED_THREAD_SANITIZER
 #endif
 
-#define BOOST_UNORDERED_STATIC_ASSERT_HASH_PRED(Hash, Pred)                    \
-  static_assert(boost::is_nothrow_swappable<Hash>::value,                      \
-    "Template parameter Hash is required to be nothrow Swappable.");           \
-  static_assert(boost::is_nothrow_swappable<Pred>::value,                      \
+#define BOOST_UNORDERED_STATIC_ASSERT_HASH_PRED(Hash, Pred)          \
+  static_assert(boost::is_nothrow_swappable<Hash>::value,            \
+    "Template parameter Hash is required to be nothrow Swappable."); \
+  static_assert(boost::is_nothrow_swappable<Pred>::value,            \
     "Template parameter Pred is required to be nothrow Swappable");
 
 namespace boost{
@@ -148,7 +148,7 @@ static constexpr std::size_t default_bucket_count=0;
 
 /* foa::table_core is the common base of foa::table and foa::concurrent_table,
  * which in their turn serve as the foundational core of
- * boost::unordered_(flat|node)_(map|set) and boost::concurrent_flat_map,
+ * boost::unordered_(flat|node)_(map|set) and boost::concurrent_flat_(map|set),
  * respectively. Its main internal design aspects are:
  * 
  *   - Element slots are logically split into groups of size N=15. The number
@@ -337,38 +337,49 @@ private:
   {
     static constexpr boost::uint32_t word[]=
     {
-      0x08080808u,0x09090909u,0x02020202u,0x03030303u,0x04040404u,0x05050505u,0x06060606u,0x07070707u,
-      0x08080808u,0x09090909u,0x0A0A0A0Au,0x0B0B0B0Bu,0x0C0C0C0Cu,0x0D0D0D0Du,0x0E0E0E0Eu,0x0F0F0F0Fu,
-      0x10101010u,0x11111111u,0x12121212u,0x13131313u,0x14141414u,0x15151515u,0x16161616u,0x17171717u,
-      0x18181818u,0x19191919u,0x1A1A1A1Au,0x1B1B1B1Bu,0x1C1C1C1Cu,0x1D1D1D1Du,0x1E1E1E1Eu,0x1F1F1F1Fu,
-      0x20202020u,0x21212121u,0x22222222u,0x23232323u,0x24242424u,0x25252525u,0x26262626u,0x27272727u,
-      0x28282828u,0x29292929u,0x2A2A2A2Au,0x2B2B2B2Bu,0x2C2C2C2Cu,0x2D2D2D2Du,0x2E2E2E2Eu,0x2F2F2F2Fu,
-      0x30303030u,0x31313131u,0x32323232u,0x33333333u,0x34343434u,0x35353535u,0x36363636u,0x37373737u,
-      0x38383838u,0x39393939u,0x3A3A3A3Au,0x3B3B3B3Bu,0x3C3C3C3Cu,0x3D3D3D3Du,0x3E3E3E3Eu,0x3F3F3F3Fu,
-      0x40404040u,0x41414141u,0x42424242u,0x43434343u,0x44444444u,0x45454545u,0x46464646u,0x47474747u,
-      0x48484848u,0x49494949u,0x4A4A4A4Au,0x4B4B4B4Bu,0x4C4C4C4Cu,0x4D4D4D4Du,0x4E4E4E4Eu,0x4F4F4F4Fu,
-      0x50505050u,0x51515151u,0x52525252u,0x53535353u,0x54545454u,0x55555555u,0x56565656u,0x57575757u,
-      0x58585858u,0x59595959u,0x5A5A5A5Au,0x5B5B5B5Bu,0x5C5C5C5Cu,0x5D5D5D5Du,0x5E5E5E5Eu,0x5F5F5F5Fu,
-      0x60606060u,0x61616161u,0x62626262u,0x63636363u,0x64646464u,0x65656565u,0x66666666u,0x67676767u,
-      0x68686868u,0x69696969u,0x6A6A6A6Au,0x6B6B6B6Bu,0x6C6C6C6Cu,0x6D6D6D6Du,0x6E6E6E6Eu,0x6F6F6F6Fu,
-      0x70707070u,0x71717171u,0x72727272u,0x73737373u,0x74747474u,0x75757575u,0x76767676u,0x77777777u,
-      0x78787878u,0x79797979u,0x7A7A7A7Au,0x7B7B7B7Bu,0x7C7C7C7Cu,0x7D7D7D7Du,0x7E7E7E7Eu,0x7F7F7F7Fu,
-      0x80808080u,0x81818181u,0x82828282u,0x83838383u,0x84848484u,0x85858585u,0x86868686u,0x87878787u,
-      0x88888888u,0x89898989u,0x8A8A8A8Au,0x8B8B8B8Bu,0x8C8C8C8Cu,0x8D8D8D8Du,0x8E8E8E8Eu,0x8F8F8F8Fu,
-      0x90909090u,0x91919191u,0x92929292u,0x93939393u,0x94949494u,0x95959595u,0x96969696u,0x97979797u,
-      0x98989898u,0x99999999u,0x9A9A9A9Au,0x9B9B9B9Bu,0x9C9C9C9Cu,0x9D9D9D9Du,0x9E9E9E9Eu,0x9F9F9F9Fu,
-      0xA0A0A0A0u,0xA1A1A1A1u,0xA2A2A2A2u,0xA3A3A3A3u,0xA4A4A4A4u,0xA5A5A5A5u,0xA6A6A6A6u,0xA7A7A7A7u,
-      0xA8A8A8A8u,0xA9A9A9A9u,0xAAAAAAAAu,0xABABABABu,0xACACACACu,0xADADADADu,0xAEAEAEAEu,0xAFAFAFAFu,
-      0xB0B0B0B0u,0xB1B1B1B1u,0xB2B2B2B2u,0xB3B3B3B3u,0xB4B4B4B4u,0xB5B5B5B5u,0xB6B6B6B6u,0xB7B7B7B7u,
-      0xB8B8B8B8u,0xB9B9B9B9u,0xBABABABAu,0xBBBBBBBBu,0xBCBCBCBCu,0xBDBDBDBDu,0xBEBEBEBEu,0xBFBFBFBFu,
-      0xC0C0C0C0u,0xC1C1C1C1u,0xC2C2C2C2u,0xC3C3C3C3u,0xC4C4C4C4u,0xC5C5C5C5u,0xC6C6C6C6u,0xC7C7C7C7u,
-      0xC8C8C8C8u,0xC9C9C9C9u,0xCACACACAu,0xCBCBCBCBu,0xCCCCCCCCu,0xCDCDCDCDu,0xCECECECEu,0xCFCFCFCFu,
-      0xD0D0D0D0u,0xD1D1D1D1u,0xD2D2D2D2u,0xD3D3D3D3u,0xD4D4D4D4u,0xD5D5D5D5u,0xD6D6D6D6u,0xD7D7D7D7u,
-      0xD8D8D8D8u,0xD9D9D9D9u,0xDADADADAu,0xDBDBDBDBu,0xDCDCDCDCu,0xDDDDDDDDu,0xDEDEDEDEu,0xDFDFDFDFu,
-      0xE0E0E0E0u,0xE1E1E1E1u,0xE2E2E2E2u,0xE3E3E3E3u,0xE4E4E4E4u,0xE5E5E5E5u,0xE6E6E6E6u,0xE7E7E7E7u,
-      0xE8E8E8E8u,0xE9E9E9E9u,0xEAEAEAEAu,0xEBEBEBEBu,0xECECECECu,0xEDEDEDEDu,0xEEEEEEEEu,0xEFEFEFEFu,
-      0xF0F0F0F0u,0xF1F1F1F1u,0xF2F2F2F2u,0xF3F3F3F3u,0xF4F4F4F4u,0xF5F5F5F5u,0xF6F6F6F6u,0xF7F7F7F7u,
-      0xF8F8F8F8u,0xF9F9F9F9u,0xFAFAFAFAu,0xFBFBFBFBu,0xFCFCFCFCu,0xFDFDFDFDu,0xFEFEFEFEu,0xFFFFFFFFu,
+      0x08080808u,0x09090909u,0x02020202u,0x03030303u,0x04040404u,0x05050505u,
+      0x06060606u,0x07070707u,0x08080808u,0x09090909u,0x0A0A0A0Au,0x0B0B0B0Bu,
+      0x0C0C0C0Cu,0x0D0D0D0Du,0x0E0E0E0Eu,0x0F0F0F0Fu,0x10101010u,0x11111111u,
+      0x12121212u,0x13131313u,0x14141414u,0x15151515u,0x16161616u,0x17171717u,
+      0x18181818u,0x19191919u,0x1A1A1A1Au,0x1B1B1B1Bu,0x1C1C1C1Cu,0x1D1D1D1Du,
+      0x1E1E1E1Eu,0x1F1F1F1Fu,0x20202020u,0x21212121u,0x22222222u,0x23232323u,
+      0x24242424u,0x25252525u,0x26262626u,0x27272727u,0x28282828u,0x29292929u,
+      0x2A2A2A2Au,0x2B2B2B2Bu,0x2C2C2C2Cu,0x2D2D2D2Du,0x2E2E2E2Eu,0x2F2F2F2Fu,
+      0x30303030u,0x31313131u,0x32323232u,0x33333333u,0x34343434u,0x35353535u,
+      0x36363636u,0x37373737u,0x38383838u,0x39393939u,0x3A3A3A3Au,0x3B3B3B3Bu,
+      0x3C3C3C3Cu,0x3D3D3D3Du,0x3E3E3E3Eu,0x3F3F3F3Fu,0x40404040u,0x41414141u,
+      0x42424242u,0x43434343u,0x44444444u,0x45454545u,0x46464646u,0x47474747u,
+      0x48484848u,0x49494949u,0x4A4A4A4Au,0x4B4B4B4Bu,0x4C4C4C4Cu,0x4D4D4D4Du,
+      0x4E4E4E4Eu,0x4F4F4F4Fu,0x50505050u,0x51515151u,0x52525252u,0x53535353u,
+      0x54545454u,0x55555555u,0x56565656u,0x57575757u,0x58585858u,0x59595959u,
+      0x5A5A5A5Au,0x5B5B5B5Bu,0x5C5C5C5Cu,0x5D5D5D5Du,0x5E5E5E5Eu,0x5F5F5F5Fu,
+      0x60606060u,0x61616161u,0x62626262u,0x63636363u,0x64646464u,0x65656565u,
+      0x66666666u,0x67676767u,0x68686868u,0x69696969u,0x6A6A6A6Au,0x6B6B6B6Bu,
+      0x6C6C6C6Cu,0x6D6D6D6Du,0x6E6E6E6Eu,0x6F6F6F6Fu,0x70707070u,0x71717171u,
+      0x72727272u,0x73737373u,0x74747474u,0x75757575u,0x76767676u,0x77777777u,
+      0x78787878u,0x79797979u,0x7A7A7A7Au,0x7B7B7B7Bu,0x7C7C7C7Cu,0x7D7D7D7Du,
+      0x7E7E7E7Eu,0x7F7F7F7Fu,0x80808080u,0x81818181u,0x82828282u,0x83838383u,
+      0x84848484u,0x85858585u,0x86868686u,0x87878787u,0x88888888u,0x89898989u,
+      0x8A8A8A8Au,0x8B8B8B8Bu,0x8C8C8C8Cu,0x8D8D8D8Du,0x8E8E8E8Eu,0x8F8F8F8Fu,
+      0x90909090u,0x91919191u,0x92929292u,0x93939393u,0x94949494u,0x95959595u,
+      0x96969696u,0x97979797u,0x98989898u,0x99999999u,0x9A9A9A9Au,0x9B9B9B9Bu,
+      0x9C9C9C9Cu,0x9D9D9D9Du,0x9E9E9E9Eu,0x9F9F9F9Fu,0xA0A0A0A0u,0xA1A1A1A1u,
+      0xA2A2A2A2u,0xA3A3A3A3u,0xA4A4A4A4u,0xA5A5A5A5u,0xA6A6A6A6u,0xA7A7A7A7u,
+      0xA8A8A8A8u,0xA9A9A9A9u,0xAAAAAAAAu,0xABABABABu,0xACACACACu,0xADADADADu,
+      0xAEAEAEAEu,0xAFAFAFAFu,0xB0B0B0B0u,0xB1B1B1B1u,0xB2B2B2B2u,0xB3B3B3B3u,
+      0xB4B4B4B4u,0xB5B5B5B5u,0xB6B6B6B6u,0xB7B7B7B7u,0xB8B8B8B8u,0xB9B9B9B9u,
+      0xBABABABAu,0xBBBBBBBBu,0xBCBCBCBCu,0xBDBDBDBDu,0xBEBEBEBEu,0xBFBFBFBFu,
+      0xC0C0C0C0u,0xC1C1C1C1u,0xC2C2C2C2u,0xC3C3C3C3u,0xC4C4C4C4u,0xC5C5C5C5u,
+      0xC6C6C6C6u,0xC7C7C7C7u,0xC8C8C8C8u,0xC9C9C9C9u,0xCACACACAu,0xCBCBCBCBu,
+      0xCCCCCCCCu,0xCDCDCDCDu,0xCECECECEu,0xCFCFCFCFu,0xD0D0D0D0u,0xD1D1D1D1u,
+      0xD2D2D2D2u,0xD3D3D3D3u,0xD4D4D4D4u,0xD5D5D5D5u,0xD6D6D6D6u,0xD7D7D7D7u,
+      0xD8D8D8D8u,0xD9D9D9D9u,0xDADADADAu,0xDBDBDBDBu,0xDCDCDCDCu,0xDDDDDDDDu,
+      0xDEDEDEDEu,0xDFDFDFDFu,0xE0E0E0E0u,0xE1E1E1E1u,0xE2E2E2E2u,0xE3E3E3E3u,
+      0xE4E4E4E4u,0xE5E5E5E5u,0xE6E6E6E6u,0xE7E7E7E7u,0xE8E8E8E8u,0xE9E9E9E9u,
+      0xEAEAEAEAu,0xEBEBEBEBu,0xECECECECu,0xEDEDEDEDu,0xEEEEEEEEu,0xEFEFEFEFu,
+      0xF0F0F0F0u,0xF1F1F1F1u,0xF2F2F2F2u,0xF3F3F3F3u,0xF4F4F4F4u,0xF5F5F5F5u,
+      0xF6F6F6F6u,0xF7F7F7F7u,0xF8F8F8F8u,0xF9F9F9F9u,0xFAFAFAFAu,0xFBFBFBFBu,
+      0xFCFCFCFCu,0xFDFDFDFDu,0xFEFEFEFEu,0xFFFFFFFFu,
     };
 
     return (int)word[narrow_cast<unsigned char>(hash)];
@@ -549,7 +560,8 @@ private:
   }
 
   /* Copied from 
-   * https://github.com/simd-everywhere/simde/blob/master/simde/x86/sse2.h#L3763
+   * https://github.com/simd-everywhere/simde/blob/master/simde/x86/
+   * sse2.h#L3763
    */
 
   static inline int simde_mm_movemask_epi8(uint8x16_t a)
@@ -628,7 +640,8 @@ struct group15
     BOOST_ASSERT(pos<N);
     return 
       pos==N-1&&
-      (m[0] & boost::uint64_t(0x4000400040004000ull))==boost::uint64_t(0x4000ull)&&
+      (m[0] & boost::uint64_t(0x4000400040004000ull))==
+        boost::uint64_t(0x4000ull)&&
       (m[1] & boost::uint64_t(0x4000400040004000ull))==0;
   }
 
@@ -787,8 +800,8 @@ private:
  * 
  *   - size_index(n) returns an unspecified "index" number used in other policy
  *     operations.
- *   - size(size_index_) returns the number of groups for the given index. It is
- *     guaranteed that size(size_index(n)) >= n.
+ *   - size(size_index_) returns the number of groups for the given index. It
+ *     is guaranteed that size(size_index(n)) >= n.
  *   - min_size() is the minimum number of groups permissible, i.e.
  *     size(size_index(0)).
  *   - position(hash,size_index_) maps hash to a position in the range
@@ -1003,7 +1016,9 @@ struct table_arrays
       rebind<group_type>;
   using group_type_pointer_traits=boost::pointer_traits<group_type_pointer>;
 
-  table_arrays(std::size_t gsi,std::size_t gsm,group_type_pointer pg,value_type_pointer pe):
+  table_arrays(
+    std::size_t gsi,std::size_t gsm,
+    group_type_pointer pg,value_type_pointer pe):
     groups_size_index{gsi},groups_size_mask{gsm},groups_{pg},elements_{pe}{}
 
   value_type* elements()const noexcept{return boost::to_address(elements_);}
@@ -1016,7 +1031,8 @@ struct table_arrays
   }
 
   static void set_arrays(
-    table_arrays& arrays,allocator_type al,std::size_t,std::false_type /* always allocate */)
+    table_arrays& arrays,allocator_type al,std::size_t,
+    std::false_type /* always allocate */)
   {
     using storage_traits=boost::allocator_traits<allocator_type>;
     auto groups_size_index=arrays.groups_size_index;
@@ -1032,7 +1048,8 @@ struct table_arrays
     auto p=reinterpret_cast<unsigned char*>(arrays.elements()+groups_size*N-1);
     p+=(uintptr_t(sizeof(group_type))-
         reinterpret_cast<uintptr_t>(p))%sizeof(group_type);
-    arrays.groups_=group_type_pointer_traits::pointer_to(*reinterpret_cast<group_type*>(p));
+    arrays.groups_=
+      group_type_pointer_traits::pointer_to(*reinterpret_cast<group_type*>(p));
 
     initialize_groups(
       arrays.groups(),groups_size,
@@ -1049,7 +1066,8 @@ struct table_arrays
   }
 
   static void set_arrays(
-    table_arrays& arrays,allocator_type al,std::size_t n,std::true_type /* optimize for n==0*/)
+    table_arrays& arrays,allocator_type al,std::size_t n,
+    std::true_type /* optimize for n==0*/)
   {
     if(!n){
       arrays.groups_=dummy_groups<group_type,size_policy::min_size()>();
@@ -1262,8 +1280,8 @@ alloc_make_insert_type(const Allocator& al,Args&&... args)
  *     both init_type and value_type references.
  *
  *   - TypePolicy::construct and TypePolicy::destroy are used for the
- *     construction and destruction of the internal types: value_type, init_type
- *     and element_type.
+ *     construction and destruction of the internal types: value_type,
+ *     init_type and element_type.
  * 
  *   - TypePolicy::move is used to provide move semantics for the internal
  *     types used by the container during rehashing and emplace. These types
@@ -1376,9 +1394,12 @@ public:
     table_core{x,alloc_traits::select_on_container_copy_construction(x.al())}{}
 
   template<typename ArraysFn>
-  table_core(table_core&& x,arrays_holder<arrays_type,Allocator>&& ah,ArraysFn arrays_fn):
+  table_core(
+    table_core&& x,arrays_holder<arrays_type,Allocator>&& ah,
+    ArraysFn arrays_fn):
     table_core(
-      std::move(x.h()),std::move(x.pred()),std::move(x.al()),arrays_fn,x.size_ctrl)
+      std::move(x.h()),std::move(x.pred()),std::move(x.al()),
+      arrays_fn,x.size_ctrl)
   {
     ah.release();
     x.arrays=ah.get();
@@ -1393,7 +1414,8 @@ public:
       std::is_nothrow_move_constructible<Allocator>::value&&
       !uses_fancy_pointers):
     table_core{
-      std::move(x),arrays_holder<arrays_type,Allocator>{x.new_arrays(0),x.al()},
+      std::move(x),arrays_holder<arrays_type,Allocator>{
+        x.new_arrays(0),x.al()},
       [&x]{return x.arrays;}}
   {}
 
@@ -2075,8 +2097,8 @@ private:
 
   void recover_slot(unsigned char* pc)
   {
-    /* If this slot potentially caused overflow, we decrease the maximum load so
-     * that average probe length won't increase unboundedly in repeated
+    /* If this slot potentially caused overflow, we decrease the maximum load
+     * so that average probe length won't increase unboundedly in repeated
      * insert/erase cycles (drift).
      */
     size_ctrl.ml-=group_type::maybe_caused_overflow(pc);

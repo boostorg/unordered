@@ -67,8 +67,8 @@ xref:#rationale_closed_addressing_containers[corresponding section].
 
 == Open-addressing Containers
 
-The diagram shows the basic internal layout of `boost::unordered_flat_map`/`unordered_node_map` and
-`boost:unordered_flat_set`/`unordered_node_set`.
+The diagram shows the basic internal layout of `boost::unordered_flat_set`/`unordered_node_set` and
+`boost:unordered_flat_map`/`unordered_node_map`.
 
 
 [#img-foa-layout]
@@ -76,7 +76,7 @@ The diagram shows the basic internal layout of `boost::unordered_flat_map`/`unor
 image::foa.png[align=center]
 
 As with all open-addressing containers, elements (or pointers to the element nodes in the case of
-`boost::unordered_node_map` and `boost::unordered_node_set`) are stored directly in the bucket array.
+`boost::unordered_node_set` and `boost::unordered_node_map`) are stored directly in the bucket array.
 This array is logically divided into 2^_n_^ _groups_ of 15 elements each.
 In addition to the bucket array, there is an associated _metadata array_ with 2^_n_^
 16-byte words.
@@ -129,7 +129,7 @@ xref:#rationale_open_addresing_containers[corresponding section].
 
 == Concurrent Containers
 
-`boost::concurrent_flat_map` uses the basic
+`boost::concurrent_flat_set` and `boost::concurrent_flat_map` use the basic
 xref:#structures_open_addressing_containers[open-addressing layout] described above
 augmented with synchronization mechanisms.
 
