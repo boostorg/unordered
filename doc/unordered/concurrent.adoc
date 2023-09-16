@@ -44,7 +44,7 @@ logical cores in the CPU).
 == Visitation-based API
 
 The first thing a new user of `boost::concurrent_flat_set` or `boost::concurrent_flat_map`
-will notice is that these classes _do not provide iterators_ (which makes then technically
+will notice is that these classes _do not provide iterators_ (which makes them technically
 not https://en.cppreference.com/w/cpp/named_req/Container[Containers^]
 in the C++ standard sense). The reason for this is that iterators are inherently
 thread-unsafe. Consider this hypothetical code:
@@ -112,7 +112,7 @@ if (found) {
 }
 ----
 
-Visitation is prominent in the API provided by `boost::concurrent_flat_ser` and `boost::concurrent_flat_map`, and
+Visitation is prominent in the API provided by `boost::concurrent_flat_set` and `boost::concurrent_flat_map`, and
 many classical operations have visitation-enabled variations:
 
 [source,c++]
