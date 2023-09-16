@@ -264,7 +264,8 @@ struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy,Allocator>
     return boost::to_address(group_accesses_);
   }
 
-  static concurrent_table_arrays new_(group_access_allocator_type al,std::size_t n)
+  static concurrent_table_arrays new_(
+    group_access_allocator_type al,std::size_t n)
   {
     super x{super::new_(al,n)};
     BOOST_TRY{
@@ -310,20 +311,23 @@ struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy,Allocator>
     }
   }
 
-  static concurrent_table_arrays new_group_access(group_access_allocator_type al,const super& x)
+  static concurrent_table_arrays new_group_access(
+    group_access_allocator_type al,const super& x)
   {
     concurrent_table_arrays arrays{x,nullptr};
     set_group_access(al,arrays);
     return arrays;
   }
 
-  static void delete_(group_access_allocator_type al,concurrent_table_arrays& arrays)noexcept
+  static void delete_(
+    group_access_allocator_type al,concurrent_table_arrays& arrays)noexcept
   {
     delete_group_access(al,arrays);
     super::delete_(al,arrays);
   }
 
-  static void delete_group_access(group_access_allocator_type al,concurrent_table_arrays& arrays)noexcept
+  static void delete_group_access(
+    group_access_allocator_type al,concurrent_table_arrays& arrays)noexcept
   {
     if(arrays.elements()){
       boost::allocator_deallocate(
@@ -369,9 +373,7 @@ inline void swap(atomic_size_control& x,atomic_size_control& y)
 }
 
 /* foa::concurrent_table serves as the foundation for end-user concurrent
- * hash containers. The TypePolicy parameter can specify flat/node-based
- * map-like and set-like containers, though currently we're only providing
- * boost::concurrent_flat_map.
+ * hash containers.
  * 
  * The exposed interface (completed by the wrapping containers) is not that
  * of a regular container (in fact, it does not model Container as understood
@@ -393,7 +395,7 @@ inline void swap(atomic_size_control& x,atomic_size_control& y)
  *   - Parallel versions of [c]visit_all(f) and erase_if(f) are provided based
  *     on C++17 stdlib parallel algorithms.
  * 
- * Consult boost::concurrent_flat_map docs for the full API reference.
+ * Consult boost::concurrent_flat_(map|set) docs for the full API reference.
  * Heterogeneous lookup is suported by default, that is, without checking for
  * any ::is_transparent typedefs --this checking is done by the wrapping
  * containers.
@@ -421,8 +423,8 @@ inline void swap(atomic_size_control& x,atomic_size_control& y)
  *       reduced hash value is set) and the insertion counter is atomically
  *       incremented: if no other thread has incremented the counter during the
  *       whole operation (which is checked by comparing with c0), then we're
- *       good to go and complete the insertion, otherwise we roll back and start
- *       over.
+ *       good to go and complete the insertion, otherwise we roll back and
+ *       start over.
  */
 
 template<typename,typename,typename,typename>
@@ -946,7 +948,8 @@ private:
   using multimutex_type=multimutex<mutex_type,128>; // TODO: adapt 128 to the machine
   using shared_lock_guard=reentrancy_checked<shared_lock<mutex_type>>;
   using exclusive_lock_guard=reentrancy_checked<lock_guard<multimutex_type>>;
-  using exclusive_bilock_guard=reentrancy_bichecked<scoped_bilock<multimutex_type>>;
+  using exclusive_bilock_guard=
+    reentrancy_bichecked<scoped_bilock<multimutex_type>>;
   using group_shared_lock_guard=typename group_access::shared_lock_guard;
   using group_exclusive_lock_guard=typename group_access::exclusive_lock_guard;
   using group_insert_counter_type=typename group_access::insert_counter_type;
