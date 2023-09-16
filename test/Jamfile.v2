@@ -260,6 +260,7 @@ local MMAP_CONTAINERS =
   unordered_multimap
   unordered_multiset
   concurrent_flat_map
+  concurrent_flat_set
 ;
 
 for local container in $(MMAP_CONTAINERS)

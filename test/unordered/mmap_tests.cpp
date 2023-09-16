@@ -1,4 +1,5 @@
 // Copyright 2023 Christian Mazakas.
+// Copyright 2023 Joaquin M Lopez Munoz.
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -21,6 +22,7 @@ int main() {}
 #include <boost/unordered/unordered_set.hpp>
 
 #include <boost/unordered/concurrent_flat_map.hpp>
+#include <boost/unordered/concurrent_flat_set.hpp>
 
 #include <boost/interprocess/allocators/allocator.hpp>
 #include <boost/interprocess/containers/string.hpp>
@@ -82,10 +84,25 @@ get_container_type()
 using concurrent_map = decltype(
   get_container_type<boost::concurrent_flat_map>());
 
+using concurrent_set = decltype(
+  get_container_type<boost::concurrent_flat_set>());
+
+template <class C>
+struct is_concurrent_container: std::false_type {};
+
+template <typename... Args>
+struct is_concurrent_container<boost::concurrent_flat_map<Args...> >:
+  std::true_type {};
+
+template <typename... Args>
+struct is_concurrent_container<boost::concurrent_flat_set<Args...> >:
+  std::true_type {};
+
 static char const* shm_map_name = "shared_map";
 
 template <class C>
-void parent(std::string const& shm_name_, char const* exe_name, C*)
+typename std::enable_if<!is_concurrent_container<C>::value, void>::type
+parent(std::string const& shm_name_, char const* exe_name, C*)
 {
   struct shm_remove
   {
@@ -151,7 +168,9 @@ void parent(std::string const& shm_name_, char const* exe_name, C*)
   segment.destroy<container_type>(shm_map_name);
 }
 
-template <class C> void child(std::string const& shm_name, C*)
+template <class C>
+typename std::enable_if<!is_concurrent_container<C>::value, void>::type
+child(std::string const& shm_name, C*)
 {
   using container_type = C;
   using iterator = typename container_type::iterator;
@@ -184,7 +203,9 @@ template <class C> void child(std::string const& shm_name, C*)
   }
 }
 
-void parent(std::string const& shm_name_, char const* exe_name, concurrent_map*)
+template <class C>
+typename std::enable_if<is_concurrent_container<C>::value, void>::type
+parent(std::string const& shm_name_, char const* exe_name, C*)
 {
   struct shm_remove
   {
@@ -200,7 +221,7 @@ void parent(std::string const& shm_name_, char const* exe_name, concurrent_map*)
     }
   } remover{shm_name_.c_str()};
 
-  using container_type = concurrent_map;
+  using container_type = C;
 
   std::size_t const shm_size = 64 * 1024;
 
@@ -239,9 +260,11 @@ void parent(std::string const& shm_name_, char const* exe_name, concurrent_map*)
   segment.destroy<container_type>(shm_map_name);
 }
 
-void child(std::string const& shm_name, concurrent_map*)
+template <class C>
+typename std::enable_if<is_concurrent_container<C>::value, void>::type
+child(std::string const& shm_name, C*)
 {
-  using container_type = concurrent_map;
+  using container_type = C;
 
   boost::interprocess::managed_shared_memory segment(
     boost::interprocess::open_only, shm_name.c_str());
