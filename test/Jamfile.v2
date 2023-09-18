@@ -4,8 +4,12 @@
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+import path ;
+import regex ;
 import testing ;
 import ../../config/checks/config : requires ;
+
+path-constant TOP : . ;
 
 # Adding -Wundef is blocked on (at least)
 # https://github.com/boostorg/type_traits/issues/165
@@ -274,6 +278,25 @@ for local container in $(MMAP_CONTAINERS)
 }
 
 alias foa_mmap_tests : foa_mmap_$(MMAP_CONTAINERS)_tests ;
+
+local include_root = [ path.make $(TOP)/../include ] ;
+
+local headers = [ path.glob-tree $(include_root)/boost : *.hpp ] ;
+
+local paths ;
+local sanitized_paths ;
+
+for local header in $(headers)
+{
+  local path = [ path.relative-to $(include_root) $(header) ] ;
+  local sanitized = [ regex.replace $(path) "[/.\\]" "_" ] ;
+  paths += $(path) ;
+  sanitized_paths += $(sanitized) ;
+  run unordered/self_include_tests.cpp : : : <define>BOOST_UNORDERED_HEADER="$(path)" : foa_$(sanitized)_self_include_tests ;
+}
+
+alias foa_self_include_tests : foa_$(sanitized_paths)_self_include_tests ;
+
 alias foa_tests :
   foa_$(FOA_TESTS)
   foa_$(FOA_EXCEPTION_TESTS)
@@ -281,6 +304,7 @@ alias foa_tests :
   foa_scoped_allocator
   foa_serialization_tests
   foa_mmap_tests
+  foa_self_include_tests
 ;
 
 local CFOA_TESTS =
