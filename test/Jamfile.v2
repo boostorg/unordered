@@ -58,11 +58,11 @@ run quick.cpp ;
 
 compile unordered/self_include_tests_obj.cpp
   : <define>BOOST_UNORDERED_HEADER="boost/unordered_map.hpp"
-  : tl_unordered_map_include_tests ;
+  : tl_unordered_map_hpp ;
 
 compile unordered/self_include_tests_obj.cpp
   : <define>BOOST_UNORDERED_HEADER="boost/unordered_set.hpp"
-  : tl_unordered_set_include_tests ;
+  : tl_unordered_set_hpp ;
 
 local include_root = [ path.make $(TOP)/../include ] ;
 local headers = [ path.glob-tree $(include_root)/boost/unordered : *.hpp ] ;
@@ -75,20 +75,19 @@ for local header in $(headers)
   local path = [ path.relative-to $(include_root) $(header) ] ;
 
   local sanitized = [ path.relative-to "$(include_root)/boost/unordered" $(header) ] ;
-  sanitized = [ regex.replace $(sanitized) ".hpp" "" ] ;
   sanitized = [ regex.replace $(sanitized) "[/.\\]" "_" ] ;
 
   paths += $(path) ;
   sanitized_paths += $(sanitized) ;
 
   compile unordered/self_include_tests_obj.cpp
-    : <define>BOOST_UNORDERED_HEADER="$(path)" : $(sanitized)_include_tests ;
+    : <define>BOOST_UNORDERED_HEADER="$(path)" : $(sanitized) ;
 }
 
 alias include_tests
-  : tl_unordered_map_include_tests
-    tl_unordered_set_include_tests
-    $(sanitized_paths)_include_tests ;
+  : tl_unordered_map_hpp
+    tl_unordered_set_hpp
+    $(sanitized_paths) ;
 
 local FCA_TESTS =
   allocator_traits
