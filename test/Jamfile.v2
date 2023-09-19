@@ -56,9 +56,16 @@ path-constant BOOST_UNORDERED_TEST_DIR : . ;
 
 run quick.cpp ;
 
-local include_root = [ path.make $(TOP)/../include ] ;
+compile unordered/self_include_tests_obj.cpp
+  : <define>BOOST_UNORDERED_HEADER="boost/unordered_map.hpp"
+  : tl_unordered_map_include_tests ;
 
-local headers = [ path.glob-tree $(include_root)/boost : *.hpp ] ;
+compile unordered/self_include_tests_obj.cpp
+  : <define>BOOST_UNORDERED_HEADER="boost/unordered_set.hpp"
+  : tl_unordered_set_include_tests ;
+
+local include_root = [ path.make $(TOP)/../include ] ;
+local headers = [ path.glob-tree $(include_root)/boost/unordered : *.hpp ] ;
 
 local paths ;
 local sanitized_paths ;
@@ -66,14 +73,22 @@ local sanitized_paths ;
 for local header in $(headers)
 {
   local path = [ path.relative-to $(include_root) $(header) ] ;
-  local sanitized = [ regex.replace $(path) "[/.\\]" "_" ] ;
+
+  local sanitized = [ path.relative-to "$(include_root)/boost/unordered" $(header) ] ;
+  sanitized = [ regex.replace $(sanitized) ".hpp" "" ] ;
+  sanitized = [ regex.replace $(sanitized) "[/.\\]" "_" ] ;
+
   paths += $(path) ;
   sanitized_paths += $(sanitized) ;
+
   compile unordered/self_include_tests_obj.cpp
-    : <define>BOOST_UNORDERED_HEADER="$(path)" : foa_$(sanitized)_self_include_tests ;
+    : <define>BOOST_UNORDERED_HEADER="$(path)" : $(sanitized)_include_tests ;
 }
 
-alias foa_self_include_tests : foa_$(sanitized_paths)_self_include_tests ;
+alias include_tests
+  : tl_unordered_map_include_tests
+    tl_unordered_set_include_tests
+    $(sanitized_paths)_include_tests ;
 
 local FCA_TESTS =
   allocator_traits
@@ -305,7 +320,6 @@ alias foa_tests :
   foa_scoped_allocator
   foa_serialization_tests
   foa_mmap_tests
-  foa_self_include_tests
 ;
 
 local CFOA_TESTS =
