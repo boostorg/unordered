@@ -28,7 +28,6 @@
 #include <boost/core/no_exceptions_support.hpp>
 #include <boost/core/pointer_traits.hpp>
 #include <boost/core/serialization.hpp>
-#include <boost/limits.hpp>
 #include <boost/mp11/algorithm.hpp>
 #include <boost/mp11/list.hpp>
 #include <boost/throw_exception.hpp>
@@ -51,6 +50,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iterator>
+#include <limits>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
