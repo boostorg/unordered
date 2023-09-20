@@ -17,6 +17,7 @@
 #include "../helpers/input_iterator.hpp"
 #include "../helpers/helpers.hpp"
 
+#include <boost/tuple/tuple.hpp>
 #include <vector>
 
 namespace insert_tests {

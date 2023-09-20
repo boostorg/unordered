@@ -31,7 +31,6 @@
 #include <boost/mp11/algorithm.hpp>
 #include <boost/mp11/list.hpp>
 #include <boost/throw_exception.hpp>
-#include <boost/tuple/tuple.hpp>
 #include <boost/type_traits/add_lvalue_reference.hpp>
 #include <boost/type_traits/aligned_storage.hpp>
 #include <boost/type_traits/alignment_of.hpp>
@@ -54,6 +53,12 @@
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
+
+namespace boost {
+  namespace tuples {
+    struct null_type;
+  }
+} // namespace boost
 
 // BOOST_UNORDERED_SUPPRESS_DEPRECATED
 //
@@ -543,13 +548,10 @@ namespace boost {
         // For backwards compatibility, implement a special case for
         // piecewise_construct with boost::tuple
 
-        template <typename A0> struct detect_boost_tuple
+        template <typename A0> struct detect_std_tuple
         {
-          template <typename T0, typename T1, typename T2, typename T3,
-            typename T4, typename T5, typename T6, typename T7, typename T8,
-            typename T9>
-          static choice1::type test(choice1,
-            boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> const&);
+          template <class... Args>
+          static choice1::type test(choice1, std::tuple<Args...> const&);
 
           static choice2::type test(choice2, ...);
 
@@ -562,25 +564,27 @@ namespace boost {
 
         // Special case for piecewise_construct
 
-        template <class... Args, std::size_t... Is, class... TupleArgs>
+        template <template <class...> class Tuple, class... Args,
+          std::size_t... Is, class... TupleArgs>
         std::tuple<typename std::add_lvalue_reference<Args>::type...>
         to_std_tuple_impl(boost::mp11::mp_list<Args...>,
-          boost::tuple<TupleArgs...>& tuple, boost::mp11::index_sequence<Is...>)
+          Tuple<TupleArgs...>& tuple, boost::mp11::index_sequence<Is...>)
         {
           (void)tuple;
+          using std::get;
           return std::tuple<typename std::add_lvalue_reference<Args>::type...>(
-            boost::get<Is>(tuple)...);
+            get<Is>(tuple)...);
         }
 
         template <class T>
         using add_lvalue_reference_t =
           typename std::add_lvalue_reference<T>::type;
 
-        template <class... Args>
+        template <template <class...> class Tuple, class... Args>
         boost::mp11::mp_transform<add_lvalue_reference_t,
           boost::mp11::mp_remove<std::tuple<Args...>,
             boost::tuples::null_type> >
-        to_std_tuple(boost::tuple<Args...>& tuple)
+        to_std_tuple(Tuple<Args...>& tuple)
         {
           using list = boost::mp11::mp_remove<boost::mp11::mp_list<Args...>,
             boost::tuples::null_type>;
@@ -593,8 +597,8 @@ namespace boost {
         template <typename Alloc, typename A, typename B, typename A0,
           typename A1, typename A2>
         inline typename std::enable_if<use_piecewise<A0>::value &&
-                                         detect_boost_tuple<A1>::value &&
-                                         detect_boost_tuple<A2>::value,
+                                         !detect_std_tuple<A1>::value &&
+                                         !detect_std_tuple<A2>::value,
           void>::type
         construct_from_args(
           Alloc& alloc, std::pair<A, B>* address, A0&&, A1&& a1, A2&& a2)
@@ -2886,25 +2890,22 @@ namespace boost {
           return no_key();
         }
 
-#define BOOST_UNORDERED_KEY_FROM_TUPLE(namespace_)                             \
-  template <typename T2>                                                       \
-  static no_key extract(                                                       \
-    std::piecewise_construct_t, namespace_ tuple<> const&, T2 const&)          \
-  {                                                                            \
-    return no_key();                                                           \
-  }                                                                            \
-                                                                               \
-  template <typename T, typename T2>                                           \
-  static typename is_key<key_type, T>::type extract(                           \
-    std::piecewise_construct_t, namespace_ tuple<T> const& k, T2 const&)       \
-  {                                                                            \
-    return typename is_key<key_type, T>::type(namespace_ get<0>(k));           \
-  }
+        template <template <class...> class Tuple, typename T2>
+        static no_key extract(
+          std::piecewise_construct_t, Tuple<> const&, T2 const&)
+        {
+          return no_key();
+        }
 
-        BOOST_UNORDERED_KEY_FROM_TUPLE(boost::)
-        BOOST_UNORDERED_KEY_FROM_TUPLE(std::)
-
-#undef BOOST_UNORDERED_KEY_FROM_TUPLE
+        template <template <class...> class Tuple, typename T, typename T2,
+          typename std::enable_if<
+            !std::is_same<T, boost::tuples::null_type>::value, int>::type = 0>
+        static typename is_key<key_type, T>::type extract(
+          std::piecewise_construct_t, Tuple<T> const& k, T2 const&)
+        {
+          using std::get;
+          return typename is_key<key_type, T>::type(get<0>(k));
+        }
       };
 
       template <class Container, class Predicate>

@@ -12,6 +12,8 @@
 
 #include "../helpers/test.hpp"
 
+#include <boost/tuple/tuple.hpp>
+
 namespace unnecessary_copy_tests {
   struct count_copies
   {
