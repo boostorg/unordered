@@ -35,8 +35,8 @@ template <typename T> struct test_allocator
   typedef T value_type;
   test_allocator() = default;
   template <typename T2> test_allocator(test_allocator<T2> const&) {}
-  T* allocate(std::size_t n) const { return (T*)malloc(sizeof(T) * n); }
-  void deallocate(T* ptr, std::size_t) const { free(ptr); }
+  T* allocate(std::size_t n) const { return (T*)(::operator new(sizeof(T) * n)); }
+  void deallocate(T* ptr, std::size_t) const { ::operator delete(ptr); }
   bool operator==(test_allocator const&) const { return true; }
   bool operator!=(test_allocator const&) const { return false; }
 };
