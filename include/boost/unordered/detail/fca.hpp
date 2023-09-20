@@ -115,6 +115,7 @@ to normal separate chaining implementations.
 
 #include <boost/unordered/detail/prime_fmod.hpp>
 #include <boost/unordered/detail/serialize_tracked_address.hpp>
+#include <boost/unordered/detail/opt_storage.hpp>
 
 #include <boost/assert.hpp>
 #include <boost/core/addressof.hpp>
@@ -125,8 +126,6 @@ to normal separate chaining implementations.
 #include <boost/core/no_exceptions_support.hpp>
 #include <boost/core/serialization.hpp>
 #include <boost/cstdint.hpp>
-#include <boost/type_traits/aligned_storage.hpp>
-#include <boost/type_traits/alignment_of.hpp>
 
 #include <boost/config.hpp>
 
@@ -143,19 +142,18 @@ namespace boost {
           node>::type node_pointer;
 
         node_pointer next;
-        typename boost::aligned_storage<sizeof(value_type),
-          boost::alignment_of<value_type>::value>::type buf;
+        opt_storage<value_type> buf;
 
         node() noexcept : next(), buf() {}
 
         value_type* value_ptr() noexcept
         {
-          return reinterpret_cast<value_type*>(buf.address());
+          return buf.address();
         }
 
         value_type& value() noexcept
         {
-          return *reinterpret_cast<value_type*>(buf.address());
+          return *buf.address();
         }
       };
 

@@ -12,8 +12,6 @@
 #include <boost/core/addressof.hpp>
 #include <boost/core/serialization.hpp>
 #include <boost/throw_exception.hpp>
-#include <boost/type_traits/is_same.hpp>
-#include <boost/type_traits/remove_const.hpp>
 #include <boost/unordered/detail/archive_constructed.hpp>
 #include <boost/unordered/detail/bad_archive_exception.hpp>
 #include <boost/unordered/detail/serialization_version.hpp>
@@ -109,9 +107,9 @@ template<typename Map> struct load_or_save_unordered_map<Map,true> /* save */
   template<typename Archive>
   void operator()(Archive& ar,const Map& x,unsigned int)const
   {
-    typedef typename boost::remove_const<
+    typedef typename std::remove_const<
       typename Map::key_type>::type       key_type;
-    typedef typename boost::remove_const<
+    typedef typename std::remove_const<
       typename Map::mapped_type>::type    mapped_type;
     typedef typename Map::const_iterator  const_iterator;
 
@@ -146,9 +144,9 @@ template<typename Map> struct load_or_save_unordered_map<Map,false> /* load */
   template<typename Archive>
   void operator()(Archive& ar,Map& x,unsigned int)const
   {
-    typedef typename boost::remove_const<
+    typedef typename std::remove_const<
       typename Map::key_type>::type       key_type;
-    typedef typename boost::remove_const<
+    typedef typename std::remove_const<
       typename Map::mapped_type>::type    mapped_type;
     typedef typename Map::iterator        iterator;
 
@@ -195,7 +193,7 @@ void serialize_container(Archive& ar,Container& x,unsigned int version)
 {
   load_or_save_container<
     Container,
-    boost::is_same<
+    std::is_same<
       typename Container::key_type,typename Container::value_type>::value,
     Archive::is_saving::value>()(ar,x,version);
 }

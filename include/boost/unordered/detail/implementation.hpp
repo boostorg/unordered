@@ -16,6 +16,7 @@
 
 #include <boost/unordered/detail/fca.hpp>
 #include <boost/unordered/detail/fwd.hpp>
+#include <boost/unordered/detail/opt_storage.hpp>
 #include <boost/unordered/detail/serialize_tracked_address.hpp>
 #include <boost/unordered/detail/static_assert.hpp>
 #include <boost/unordered/detail/type_traits.hpp>
@@ -31,20 +32,6 @@
 #include <boost/mp11/algorithm.hpp>
 #include <boost/mp11/list.hpp>
 #include <boost/throw_exception.hpp>
-#include <boost/type_traits/add_lvalue_reference.hpp>
-#include <boost/type_traits/aligned_storage.hpp>
-#include <boost/type_traits/alignment_of.hpp>
-#include <boost/type_traits/integral_constant.hpp>
-#include <boost/type_traits/is_base_of.hpp>
-#include <boost/type_traits/is_class.hpp>
-#include <boost/type_traits/is_convertible.hpp>
-#include <boost/type_traits/is_empty.hpp>
-#include <boost/type_traits/is_nothrow_move_assignable.hpp>
-#include <boost/type_traits/is_nothrow_move_constructible.hpp>
-#include <boost/type_traits/is_nothrow_swappable.hpp>
-#include <boost/type_traits/is_same.hpp>
-#include <boost/type_traits/make_void.hpp>
-#include <boost/type_traits/remove_const.hpp>
 
 #include <algorithm>
 #include <cmath>
@@ -124,7 +111,7 @@ namespace boost {
       // iterator SFINAE
 
       template <typename I>
-      struct is_forward : boost::is_base_of<std::forward_iterator_tag,
+      struct is_forward : std::is_base_of<std::forward_iterator_tag,
                             typename std::iterator_traits<I>::iterator_category>
       {
       };
@@ -292,8 +279,7 @@ namespace boost {
       //////////////////////////////////////////////////////////////////////////
       // Bits and pieces for implementing traits
 
-      template <typename T>
-      typename boost::add_lvalue_reference<T>::type make();
+      template <typename T> typename std::add_lvalue_reference<T>::type make();
       struct choice9
       {
         typedef char (&type)[9];
@@ -385,8 +371,7 @@ namespace boost {
       {
         typedef ValueType value_type;
 
-        typename boost::aligned_storage<sizeof(value_type),
-          boost::alignment_of<value_type>::value>::type data_;
+        opt_storage<value_type> data_;
 
         value_base() : data_() {}
 
@@ -865,26 +850,23 @@ namespace boost {
       {
       public:
         static const bool nothrow_move_assignable =
-          boost::is_nothrow_move_assignable<H>::value &&
-          boost::is_nothrow_move_assignable<P>::value;
+          std::is_nothrow_move_assignable<H>::value &&
+          std::is_nothrow_move_assignable<P>::value;
         static const bool nothrow_move_constructible =
-          boost::is_nothrow_move_constructible<H>::value &&
-          boost::is_nothrow_move_constructible<P>::value;
+          std::is_nothrow_move_constructible<H>::value &&
+          std::is_nothrow_move_constructible<P>::value;
         static const bool nothrow_swappable =
-          boost::is_nothrow_swappable<H>::value &&
-          boost::is_nothrow_swappable<P>::value;
+          boost::unordered::detail::is_nothrow_swappable<H>::value &&
+          boost::unordered::detail::is_nothrow_swappable<P>::value;
 
       private:
         functions& operator=(functions const&);
 
         typedef compressed<H, P> function_pair;
 
-        typedef typename boost::aligned_storage<sizeof(function_pair),
-          boost::alignment_of<function_pair>::value>::type aligned_function;
-
         unsigned char current_; // 0/1 - Currently active functions
                                 // +2 - Both constructed
-        aligned_function funcs_[2];
+        opt_storage<function_pair> funcs_[2];
 
       public:
         functions(H const& hf, P const& eq) : current_(0)
@@ -2138,8 +2120,8 @@ namespace boost {
         void merge_unique(boost::unordered::detail::table<Types2>& other)
         {
           typedef boost::unordered::detail::table<Types2> other_table;
-          BOOST_UNORDERED_STATIC_ASSERT((
-            boost::is_same<node_type, typename other_table::node_type>::value));
+          BOOST_UNORDERED_STATIC_ASSERT(
+            (std::is_same<node_type, typename other_table::node_type>::value));
           BOOST_ASSERT(this->node_alloc() == other.node_alloc());
 
           if (other.size_ == 0) {
@@ -2816,8 +2798,7 @@ namespace boost {
                   sizeof(choice2::type)
         };
 
-        typedef
-          typename boost::conditional<value, Key const&, no_key>::type type;
+        typedef typename std::conditional<value, Key const&, no_key>::type type;
       };
 
       template <class ValueType> struct set_extractor
@@ -2846,7 +2827,7 @@ namespace boost {
       template <class ValueType> struct map_extractor
       {
         typedef ValueType value_type;
-        typedef typename boost::remove_const<typename boost::unordered::detail::
+        typedef typename std::remove_const<typename boost::unordered::detail::
             pair_traits<ValueType>::first_type>::type key_type;
 
         static key_type const& extract(value_type const& v) { return v.first; }

@@ -22,13 +22,10 @@
 #include <boost/core/pointer_traits.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/predef.h>
-#include <boost/type_traits/has_trivial_constructor.hpp>
-#include <boost/type_traits/has_trivial_copy.hpp>
-#include <boost/type_traits/has_trivial_assign.hpp>
-#include <boost/type_traits/is_nothrow_swappable.hpp>
 #include <boost/unordered/detail/narrow_cast.hpp>
 #include <boost/unordered/detail/mulx.hpp>
 #include <boost/unordered/detail/static_assert.hpp>
+#include <boost/unordered/detail/type_traits.hpp>
 #include <boost/unordered/hash_traits.hpp>
 #include <climits>
 #include <cmath>
@@ -133,10 +130,10 @@
 #define BOOST_UNORDERED_THREAD_SANITIZER
 #endif
 
-#define BOOST_UNORDERED_STATIC_ASSERT_HASH_PRED(Hash, Pred)          \
-  static_assert(boost::is_nothrow_swappable<Hash>::value,            \
-    "Template parameter Hash is required to be nothrow Swappable."); \
-  static_assert(boost::is_nothrow_swappable<Pred>::value,            \
+#define BOOST_UNORDERED_STATIC_ASSERT_HASH_PRED(Hash, Pred)                    \
+  static_assert(boost::unordered::detail::is_nothrow_swappable<Hash>::value,   \
+    "Template parameter Hash is required to be nothrow Swappable.");           \
+  static_assert(boost::unordered::detail::is_nothrow_swappable<Pred>::value,   \
     "Template parameter Pred is required to be nothrow Swappable");
 
 namespace boost{
@@ -1054,13 +1051,7 @@ struct table_arrays
     initialize_groups(
       arrays.groups(),groups_size,
       std::integral_constant<
-        bool,
-#if BOOST_WORKAROUND(BOOST_LIBSTDCXX_VERSION,<50000)
-      /* std::is_trivially_constructible not provided */
-      boost::has_trivial_constructor<group_type>::value
-#else
-      std::is_trivially_constructible<group_type>::value
-#endif  
+        bool,std::is_trivially_constructible<group_type>::value
       >{});
     arrays.groups()[groups_size-1].set_sentinel();
   }

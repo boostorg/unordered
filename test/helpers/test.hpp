@@ -6,10 +6,15 @@
 #if !defined(BOOST_UNORDERED_TEST_TEST_HEADER)
 #define BOOST_UNORDERED_TEST_TEST_HEADER
 
-#include <boost/unordered/detail/fwd.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <boost/preprocessor/cat.hpp>
 #include <boost/preprocessor/stringize.hpp>
+#include <boost/unordered/detail/fwd.hpp>
+
+#include <boost/type_traits/is_nothrow_move_assignable.hpp>
+#include <boost/type_traits/is_nothrow_move_constructible.hpp>
+#include <boost/type_traits/is_nothrow_swappable.hpp>
+#include <boost/type_traits/make_void.hpp>
 
 #define UNORDERED_AUTO_TEST(x)                                                 \
   struct BOOST_PP_CAT(x, _type) : public ::test::registered_test_base          \
@@ -120,7 +125,7 @@ namespace test {
     static state instance;
     return instance;
   }
-}
+} // namespace test
 
 #if defined(__cplusplus)
 #define BOOST_UNORDERED_CPLUSPLUS __cplusplus
@@ -184,7 +189,7 @@ namespace test {
 #define UNORDERED_MULTI_TEST_OP2(name, n, params)                              \
   {                                                                            \
     UNORDERED_SUB_TEST(BOOST_PP_STRINGIZE(                                     \
-      BOOST_PP_SEQ_FOLD_LEFT(UNORDERED_TEST_OP_JOIN, name, params)))           \
+      BOOST_PP_SEQ_FOLD_LEFT(UNORDERED_TEST_OP_JOIN, name, params)))                                  \
     {                                                                          \
       for (int i = 0; i < n; ++i)                                              \
         name BOOST_PP_SEQ_TO_TUPLE(params);                                    \

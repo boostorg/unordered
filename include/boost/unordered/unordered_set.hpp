@@ -145,8 +145,8 @@ namespace boost {
 
       unordered_set& operator=(unordered_set&& x)
         noexcept(value_allocator_traits::is_always_equal::value&&
-            boost::is_nothrow_move_assignable<H>::value&&
-              boost::is_nothrow_move_assignable<P>::value)
+            std::is_nothrow_move_assignable<H>::value&&
+              std::is_nothrow_move_assignable<P>::value)
       {
         table_.move_assign(x.table_, std::true_type());
         return *this;
@@ -303,8 +303,8 @@ namespace boost {
 
       void swap(unordered_set&)
         noexcept(value_allocator_traits::is_always_equal::value&&
-            boost::is_nothrow_swappable<H>::value&&
-              boost::is_nothrow_swappable<P>::value);
+            boost::unordered::detail::is_nothrow_swappable<H>::value&&
+              boost::unordered::detail::is_nothrow_swappable<P>::value);
       void clear() noexcept { table_.clear_impl(); }
 
       template <typename H2, typename P2>
@@ -638,8 +638,8 @@ namespace boost {
 
       unordered_multiset& operator=(unordered_multiset&& x)
         noexcept(value_allocator_traits::is_always_equal::value&&
-            boost::is_nothrow_move_assignable<H>::value&&
-              boost::is_nothrow_move_assignable<P>::value)
+            std::is_nothrow_move_assignable<H>::value&&
+              std::is_nothrow_move_assignable<P>::value)
       {
         table_.move_assign(x.table_, std::false_type());
         return *this;
@@ -770,8 +770,8 @@ namespace boost {
 
       void swap(unordered_multiset&)
         noexcept(value_allocator_traits::is_always_equal::value&&
-            boost::is_nothrow_swappable<H>::value&&
-              boost::is_nothrow_swappable<P>::value);
+            boost::unordered::detail::is_nothrow_swappable<H>::value&&
+              boost::unordered::detail::is_nothrow_swappable<P>::value);
       void clear() noexcept { table_.clear_impl(); }
 
       template <typename H2, typename P2>
@@ -1214,8 +1214,8 @@ namespace boost {
     template <class T, class H, class P, class A>
     void unordered_set<T, H, P, A>::swap(unordered_set& other)
       noexcept(value_allocator_traits::is_always_equal::value&&
-          boost::is_nothrow_swappable<H>::value&&
-            boost::is_nothrow_swappable<P>::value)
+          boost::unordered::detail::is_nothrow_swappable<H>::value&&
+            boost::unordered::detail::is_nothrow_swappable<P>::value)
     {
       table_.swap(other.table_);
     }
@@ -1611,8 +1611,8 @@ namespace boost {
     template <class T, class H, class P, class A>
     void unordered_multiset<T, H, P, A>::swap(unordered_multiset& other)
       noexcept(value_allocator_traits::is_always_equal::value&&
-          boost::is_nothrow_swappable<H>::value&&
-            boost::is_nothrow_swappable<P>::value)
+          boost::unordered::detail::is_nothrow_swappable<H>::value&&
+            boost::unordered::detail::is_nothrow_swappable<P>::value)
     {
       table_.swap(other.table_);
     }

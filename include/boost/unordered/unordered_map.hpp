@@ -21,7 +21,6 @@
 
 #include <boost/core/explicit_operator_bool.hpp>
 #include <boost/functional/hash.hpp>
-#include <boost/type_traits/is_constructible.hpp>
 
 #include <initializer_list>
 
@@ -47,9 +46,11 @@ namespace boost {
       typedef K key_type;
       typedef T mapped_type;
       typedef std::pair<const K, T> value_type;
-      typedef typename boost::type_identity<H>::type hasher;
-      typedef typename boost::type_identity<P>::type key_equal;
-      typedef typename boost::type_identity<A>::type allocator_type;
+      typedef typename boost::unordered::detail::type_identity<H>::type hasher;
+      typedef
+        typename boost::unordered::detail::type_identity<P>::type key_equal;
+      typedef typename boost::unordered::detail::type_identity<A>::type
+        allocator_type;
 
     private:
       typedef boost::unordered::detail::map<A, K, T, H, P> types;
@@ -147,8 +148,8 @@ namespace boost {
 
       unordered_map& operator=(unordered_map&& x)
         noexcept(value_allocator_traits::is_always_equal::value&&
-            boost::is_nothrow_move_assignable<H>::value&&
-              boost::is_nothrow_move_assignable<P>::value)
+            std::is_nothrow_move_assignable<H>::value&&
+              std::is_nothrow_move_assignable<P>::value)
       {
         table_.move_assign(x.table_, std::true_type());
         return *this;
@@ -220,7 +221,7 @@ namespace boost {
       }
 
       template <class P2>
-      typename boost::enable_if<boost::is_constructible<value_type, P2&&>,
+      typename boost::enable_if<std::is_constructible<value_type, P2&&>,
         std::pair<iterator, bool> >::type
       insert(P2&& obj)
       {
@@ -238,7 +239,7 @@ namespace boost {
       }
 
       template <class P2>
-      typename boost::enable_if<boost::is_constructible<value_type, P2&&>,
+      typename boost::enable_if<std::is_constructible<value_type, P2&&>,
         iterator>::type
       insert(const_iterator hint, P2&& obj)
       {
@@ -399,8 +400,8 @@ namespace boost {
 
       void swap(unordered_map&)
         noexcept(value_allocator_traits::is_always_equal::value&&
-            boost::is_nothrow_swappable<H>::value&&
-              boost::is_nothrow_swappable<P>::value);
+            boost::unordered::detail::is_nothrow_swappable<H>::value&&
+              boost::unordered::detail::is_nothrow_swappable<P>::value);
       void clear() noexcept { table_.clear_impl(); }
 
       template <typename H2, typename P2>
@@ -618,8 +619,8 @@ namespace boost {
         Allocator>;
 
     template <class Key, class T,
-      class Hash = boost::hash<boost::remove_const_t<Key> >,
-      class Pred = std::equal_to<boost::remove_const_t<Key> >,
+      class Hash = boost::hash<std::remove_const_t<Key> >,
+      class Pred = std::equal_to<std::remove_const_t<Key> >,
       class Allocator = std::allocator<std::pair<const Key, T> >,
       class = boost::enable_if_t<detail::is_hash_v<Hash> >,
       class = boost::enable_if_t<detail::is_pred_v<Pred> >,
@@ -627,7 +628,7 @@ namespace boost {
     unordered_map(std::initializer_list<std::pair<Key, T> >,
       std::size_t = boost::unordered::detail::default_bucket_count,
       Hash = Hash(), Pred = Pred(), Allocator = Allocator())
-      -> unordered_map<boost::remove_const_t<Key>, T, Hash, Pred, Allocator>;
+      -> unordered_map<std::remove_const_t<Key>, T, Hash, Pred, Allocator>;
 
     template <class InputIterator, class Allocator,
       class = boost::enable_if_t<detail::is_input_iterator_v<InputIterator> >,
@@ -662,23 +663,23 @@ namespace boost {
     template <class Key, class T, class Allocator,
       class = boost::enable_if_t<detail::is_allocator_v<Allocator> > >
     unordered_map(std::initializer_list<std::pair<Key, T> >, std::size_t,
-      Allocator) -> unordered_map<boost::remove_const_t<Key>, T,
-      boost::hash<boost::remove_const_t<Key> >,
-      std::equal_to<boost::remove_const_t<Key> >, Allocator>;
+      Allocator) -> unordered_map<std::remove_const_t<Key>, T,
+      boost::hash<std::remove_const_t<Key> >,
+      std::equal_to<std::remove_const_t<Key> >, Allocator>;
 
     template <class Key, class T, class Allocator,
       class = boost::enable_if_t<detail::is_allocator_v<Allocator> > >
     unordered_map(std::initializer_list<std::pair<Key, T> >, Allocator)
-      -> unordered_map<boost::remove_const_t<Key>, T,
-        boost::hash<boost::remove_const_t<Key> >,
-        std::equal_to<boost::remove_const_t<Key> >, Allocator>;
+      -> unordered_map<std::remove_const_t<Key>, T,
+        boost::hash<std::remove_const_t<Key> >,
+        std::equal_to<std::remove_const_t<Key> >, Allocator>;
 
     template <class Key, class T, class Hash, class Allocator,
       class = boost::enable_if_t<detail::is_hash_v<Hash> >,
       class = boost::enable_if_t<detail::is_allocator_v<Allocator> > >
     unordered_map(std::initializer_list<std::pair<Key, T> >, std::size_t, Hash,
-      Allocator) -> unordered_map<boost::remove_const_t<Key>, T, Hash,
-      std::equal_to<boost::remove_const_t<Key> >, Allocator>;
+      Allocator) -> unordered_map<std::remove_const_t<Key>, T, Hash,
+      std::equal_to<std::remove_const_t<Key> >, Allocator>;
 
 #endif
 
@@ -692,9 +693,11 @@ namespace boost {
       typedef K key_type;
       typedef T mapped_type;
       typedef std::pair<const K, T> value_type;
-      typedef typename boost::type_identity<H>::type hasher;
-      typedef typename boost::type_identity<P>::type key_equal;
-      typedef typename boost::type_identity<A>::type allocator_type;
+      typedef typename boost::unordered::detail::type_identity<H>::type hasher;
+      typedef
+        typename boost::unordered::detail::type_identity<P>::type key_equal;
+      typedef typename boost::unordered::detail::type_identity<A>::type
+        allocator_type;
 
     private:
       typedef boost::unordered::detail::map<A, K, T, H, P> types;
@@ -793,8 +796,8 @@ namespace boost {
 
       unordered_multimap& operator=(unordered_multimap&& x)
         noexcept(value_allocator_traits::is_always_equal::value&&
-            boost::is_nothrow_move_assignable<H>::value&&
-              boost::is_nothrow_move_assignable<P>::value)
+            std::is_nothrow_move_assignable<H>::value&&
+              std::is_nothrow_move_assignable<P>::value)
       {
         table_.move_assign(x.table_, std::false_type());
         return *this;
@@ -860,7 +863,7 @@ namespace boost {
       iterator insert(value_type&& x) { return this->emplace(std::move(x)); }
 
       template <class P2>
-      typename boost::enable_if<boost::is_constructible<value_type, P2&&>,
+      typename boost::enable_if<std::is_constructible<value_type, P2&&>,
         iterator>::type
       insert(P2&& obj)
       {
@@ -878,7 +881,7 @@ namespace boost {
       }
 
       template <class P2>
-      typename boost::enable_if<boost::is_constructible<value_type, P2&&>,
+      typename boost::enable_if<std::is_constructible<value_type, P2&&>,
         iterator>::type
       insert(const_iterator hint, P2&& obj)
       {
@@ -942,8 +945,8 @@ namespace boost {
 
       void swap(unordered_multimap&)
         noexcept(value_allocator_traits::is_always_equal::value&&
-            boost::is_nothrow_swappable<H>::value&&
-              boost::is_nothrow_swappable<P>::value);
+            boost::unordered::detail::is_nothrow_swappable<H>::value&&
+              boost::unordered::detail::is_nothrow_swappable<P>::value);
       void clear() noexcept { table_.clear_impl(); }
 
       template <typename H2, typename P2>
@@ -1135,8 +1138,8 @@ namespace boost {
         Allocator>;
 
     template <class Key, class T,
-      class Hash = boost::hash<boost::remove_const_t<Key> >,
-      class Pred = std::equal_to<boost::remove_const_t<Key> >,
+      class Hash = boost::hash<std::remove_const_t<Key> >,
+      class Pred = std::equal_to<std::remove_const_t<Key> >,
       class Allocator = std::allocator<std::pair<const Key, T> >,
       class = boost::enable_if_t<detail::is_hash_v<Hash> >,
       class = boost::enable_if_t<detail::is_pred_v<Pred> >,
@@ -1144,8 +1147,7 @@ namespace boost {
     unordered_multimap(std::initializer_list<std::pair<Key, T> >,
       std::size_t = boost::unordered::detail::default_bucket_count,
       Hash = Hash(), Pred = Pred(), Allocator = Allocator())
-      -> unordered_multimap<boost::remove_const_t<Key>, T, Hash, Pred,
-        Allocator>;
+      -> unordered_multimap<std::remove_const_t<Key>, T, Hash, Pred, Allocator>;
 
     template <class InputIterator, class Allocator,
       class = boost::enable_if_t<detail::is_input_iterator_v<InputIterator> >,
@@ -1181,23 +1183,23 @@ namespace boost {
     template <class Key, class T, class Allocator,
       class = boost::enable_if_t<detail::is_allocator_v<Allocator> > >
     unordered_multimap(std::initializer_list<std::pair<Key, T> >, std::size_t,
-      Allocator) -> unordered_multimap<boost::remove_const_t<Key>, T,
-      boost::hash<boost::remove_const_t<Key> >,
-      std::equal_to<boost::remove_const_t<Key> >, Allocator>;
+      Allocator) -> unordered_multimap<std::remove_const_t<Key>, T,
+      boost::hash<std::remove_const_t<Key> >,
+      std::equal_to<std::remove_const_t<Key> >, Allocator>;
 
     template <class Key, class T, class Allocator,
       class = boost::enable_if_t<detail::is_allocator_v<Allocator> > >
     unordered_multimap(std::initializer_list<std::pair<Key, T> >, Allocator)
-      -> unordered_multimap<boost::remove_const_t<Key>, T,
-        boost::hash<boost::remove_const_t<Key> >,
-        std::equal_to<boost::remove_const_t<Key> >, Allocator>;
+      -> unordered_multimap<std::remove_const_t<Key>, T,
+        boost::hash<std::remove_const_t<Key> >,
+        std::equal_to<std::remove_const_t<Key> >, Allocator>;
 
     template <class Key, class T, class Hash, class Allocator,
       class = boost::enable_if_t<detail::is_hash_v<Hash> >,
       class = boost::enable_if_t<detail::is_allocator_v<Allocator> > >
     unordered_multimap(std::initializer_list<std::pair<Key, T> >, std::size_t,
-      Hash, Allocator) -> unordered_multimap<boost::remove_const_t<Key>, T,
-      Hash, std::equal_to<boost::remove_const_t<Key> >, Allocator>;
+      Hash, Allocator) -> unordered_multimap<std::remove_const_t<Key>, T, Hash,
+      std::equal_to<std::remove_const_t<Key> >, Allocator>;
 
 #endif
 
@@ -1428,8 +1430,8 @@ namespace boost {
     template <class K, class T, class H, class P, class A>
     void unordered_map<K, T, H, P, A>::swap(unordered_map& other)
       noexcept(value_allocator_traits::is_always_equal::value&&
-          boost::is_nothrow_swappable<H>::value&&
-            boost::is_nothrow_swappable<P>::value)
+          boost::unordered::detail::is_nothrow_swappable<H>::value&&
+            boost::unordered::detail::is_nothrow_swappable<P>::value)
     {
       table_.swap(other.table_);
     }
@@ -1956,8 +1958,8 @@ namespace boost {
     template <class K, class T, class H, class P, class A>
     void unordered_multimap<K, T, H, P, A>::swap(unordered_multimap& other)
       noexcept(value_allocator_traits::is_always_equal::value&&
-          boost::is_nothrow_swappable<H>::value&&
-            boost::is_nothrow_swappable<P>::value)
+          boost::unordered::detail::is_nothrow_swappable<H>::value&&
+            boost::unordered::detail::is_nothrow_swappable<P>::value)
     {
       table_.swap(other.table_);
     }
