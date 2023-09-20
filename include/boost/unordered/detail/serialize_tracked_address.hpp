@@ -9,12 +9,13 @@
 #ifndef BOOST_UNORDERED_DETAIL_SERIALIZE_TRACKED_ADDRESS_HPP
 #define BOOST_UNORDERED_DETAIL_SERIALIZE_TRACKED_ADDRESS_HPP
 
+#include <boost/unordered/detail/bad_archive_exception.hpp>
+
 #include <boost/core/pointer_traits.hpp>
 #include <boost/core/serialization.hpp>
 #include <boost/throw_exception.hpp>
-#include <boost/type_traits/remove_const.hpp>
-#include <boost/type_traits/integral_constant.hpp>
-#include <boost/unordered/detail/bad_archive_exception.hpp>
+
+#include <type_traits>
 
 namespace boost{
 namespace unordered{
@@ -44,7 +45,7 @@ template<typename Archive,typename Ptr>
 void track_address(Archive& ar,Ptr p)
 {
   typedef typename boost::pointer_traits<Ptr> ptr_traits;
-  typedef typename boost::remove_const<
+  typedef typename std::remove_const<
     typename ptr_traits::element_type>::type  element_type;
 
   if(p){
@@ -57,10 +58,10 @@ void track_address(Archive& ar,Ptr p)
 }
 
 template<typename Archive,typename Ptr>
-void serialize_tracked_address(Archive& ar,Ptr& p,boost::true_type /* save */)
+void serialize_tracked_address(Archive& ar,Ptr& p,std::true_type /* save */)
 {
   typedef typename boost::pointer_traits<Ptr> ptr_traits;
-  typedef typename boost::remove_const<
+  typedef typename std::remove_const<
     typename ptr_traits::element_type>::type  element_type;
   typedef serialization_tracker<element_type> tracker;
 
@@ -73,10 +74,10 @@ void serialize_tracked_address(Archive& ar,Ptr& p,boost::true_type /* save */)
 }
 
 template<typename Archive,typename Ptr>
-void serialize_tracked_address(Archive& ar,Ptr& p,boost::false_type /* load */)
+void serialize_tracked_address(Archive& ar,Ptr& p,std::false_type /* load */)
 {
   typedef typename boost::pointer_traits<Ptr> ptr_traits;
-  typedef typename boost::remove_const<
+  typedef typename std::remove_const<
     typename ptr_traits::element_type>::type  element_type;
   typedef serialization_tracker<element_type> tracker;
 
@@ -93,7 +94,7 @@ void serialize_tracked_address(Archive& ar,Ptr& p)
 {
   serialize_tracked_address(
     ar,p,
-    boost::integral_constant<bool,Archive::is_saving::value>());
+    std::integral_constant<bool,Archive::is_saving::value>());
 }
 
 } /* namespace detail */

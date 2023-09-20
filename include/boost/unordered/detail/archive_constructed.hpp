@@ -9,13 +9,13 @@
 #ifndef BOOST_UNORDERED_DETAIL_ARCHIVE_CONSTRUCTED_HPP
 #define BOOST_UNORDERED_DETAIL_ARCHIVE_CONSTRUCTED_HPP
 
+#include <boost/unordered/detail/opt_storage.hpp>
+
 #include <boost/config.hpp>
 #include <boost/core/addressof.hpp>
 #include <boost/core/no_exceptions_support.hpp>
 #include <boost/core/noncopyable.hpp>
 #include <boost/core/serialization.hpp>
-#include <boost/type_traits/aligned_storage.hpp>
-#include <boost/type_traits/alignment_of.hpp> 
 
 namespace boost{
 namespace unordered{
@@ -54,7 +54,7 @@ struct archive_constructed:private noncopyable
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
 
-  T& get(){return *reinterpret_cast<T*>(&space);}
+  T& get(){return *space.address();}
 
 #if defined(BOOST_UNORDERED_IGNORE_WSTRICT_ALIASING)
 #pragma GCC diagnostic pop
@@ -62,7 +62,7 @@ struct archive_constructed:private noncopyable
 #endif
 
 private:
-  typename aligned_storage<sizeof(T),alignment_of<T>::value>::type space;
+  opt_storage<T> space;
 };
 
 } /* namespace detail */
