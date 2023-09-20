@@ -23,6 +23,7 @@
 #include <boost/limits.hpp>
 #include <boost/predef.h>
 #include <boost/static_assert.hpp>
+#include <boost/tuple/tuple.hpp>
 #include <boost/type_traits/cv_traits.hpp>
 #include <boost/type_traits/is_const.hpp>
 #include <boost/type_traits/is_convertible.hpp>
