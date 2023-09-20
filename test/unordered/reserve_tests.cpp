@@ -30,13 +30,13 @@ template <typename T> struct A
   {
     total_allocation += n * sizeof(T);
     ++num_allocations;
-    return (T*)std::calloc(n, sizeof(T));
+    return (T*)(::operator new(n * sizeof(T)));
   }
 
   void deallocate(T* p, std::size_t n) noexcept
   {
     total_allocation -= n * sizeof(T);
-    std::free(p);
+    ::operator delete(p);
   }
 
   bool operator==(A const& a) const { return i == a.i; }
