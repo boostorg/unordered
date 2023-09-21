@@ -2878,11 +2878,13 @@ namespace boost {
           return no_key();
         }
 
-        template <template <class...> class Tuple, typename T, typename T2,
+        template <template <typename...> class Tuple, typename T, typename T2,
+          typename... Args>
+        static auto extract(
+          std::piecewise_construct_t, Tuple<T, Args...> const& k, T2 const&) ->
           typename std::enable_if<
-            !std::is_same<T, boost::tuples::null_type>::value, int>::type = 0>
-        static typename is_key<key_type, T>::type extract(
-          std::piecewise_construct_t, Tuple<T> const& k, T2 const&)
+            !std::is_same<T, boost::tuples::null_type>::value,
+            typename is_key<key_type, T>::type>::type
         {
           using std::get;
           return typename is_key<key_type, T>::type(get<0>(k));
