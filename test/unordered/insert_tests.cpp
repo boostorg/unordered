@@ -1362,7 +1362,7 @@ namespace insert_tests {
           std::pair<overloaded_constructor const, overloaded_constructor> > >
         x;
 
-      x.emplace(std::piecewise_construct, boost::make_tuple(),
+      x.emplace(boost::unordered::piecewise_construct, boost::make_tuple(),
         boost::make_tuple());
       BOOST_TEST(
         x.find(overloaded_constructor()) != x.end() &&
@@ -1429,7 +1429,7 @@ namespace insert_tests {
           std::pair<overloaded_constructor const, overloaded_constructor> > >
         x;
 
-      x.emplace(std::piecewise_construct, boost::make_tuple(),
+      x.emplace(boost::unordered::piecewise_construct, boost::make_tuple(),
         boost::make_tuple());
       BOOST_TEST(
         x.find(overloaded_constructor()) != x.end() &&
@@ -1461,12 +1461,12 @@ namespace insert_tests {
       x;
     std::pair<overloaded_constructor, overloaded_constructor> check;
 
-    x.emplace(std::piecewise_construct, boost::make_tuple(),
+    x.emplace(boost::unordered::piecewise_construct, boost::make_tuple(),
       boost::make_tuple());
     BOOST_TEST(x.find(check) != x.end() && *x.find(check) == check);
 
     x.clear();
-    x.emplace(std::piecewise_construct, boost::make_tuple(1),
+    x.emplace(boost::unordered::piecewise_construct, boost::make_tuple(1),
       boost::make_tuple(2, 3));
     check =
       std::make_pair(overloaded_constructor(1), overloaded_constructor(2, 3));
@@ -1487,6 +1487,17 @@ namespace insert_tests {
   static boost::unordered_set<std::pair<overloaded_constructor,
     overloaded_constructor> >* test_pair_oc_set;
 
+#define PIECEWISE_TEST_NAME boost_tuple_piecewise_tests
+#define PIECEWISE_NAMESPACE boost::unordered
+#define TUPLE_NAMESPACE boost
+#define EMULATING_PIECEWISE_CONSTRUCTION 1
+#include "./insert_tests.cpp"
+
+#define PIECEWISE_TEST_NAME std_tuple_boost_piecewise_tests
+#define PIECEWISE_NAMESPACE boost::unordered
+#define TUPLE_NAMESPACE std
+#define EMULATING_PIECEWISE_CONSTRUCTION 0
+#include "./insert_tests.cpp"
 
 #define PIECEWISE_TEST_NAME boost_tuple_std_piecewise_tests
 #define PIECEWISE_NAMESPACE std
@@ -1521,10 +1532,6 @@ RUN_TESTS_QUIET()
   template <class X>
   static void MAP_PIECEWISE_TEST(X*)
   {
-#if EMULATING_PIECEWISE_CONSTRUCTION
-  test::detail::disable_construction_tracking _scoped;
-#endif
-
     X x;
 
     x.emplace(PIECEWISE_NAMESPACE::piecewise_construct,
@@ -1573,10 +1580,6 @@ RUN_TESTS_QUIET()
   template <class X>
   static void SET_PIECEWISE_TEST(X*)
   {
-#if EMULATING_PIECEWISE_CONSTRUCTION
-    test::detail::disable_construction_tracking _scoped;
-#endif
-
     X x;
     std::pair<overloaded_constructor, overloaded_constructor> check;
 
@@ -1617,9 +1620,6 @@ RUN_TESTS_QUIET()
 #ifndef BOOST_UNORDERED_FOA_TESTS
   UNORDERED_AUTO_TEST (BOOST_PP_CAT(multimap_, PIECEWISE_TEST_NAME)) {
     {
-#if EMULATING_PIECEWISE_CONSTRUCTION
-      test::detail::disable_construction_tracking _scoped;
-#endif
       boost::unordered_multimap<overloaded_constructor, overloaded_constructor,
         boost::hash<overloaded_constructor>,
         std::equal_to<overloaded_constructor>,
