@@ -2,7 +2,8 @@
 #define BOOST_UNORDERED_DETAIL_OPT_STORAGE_HPP
 
 #include <boost/config.hpp>
-#include <boost/core/addressof.hpp>
+
+#include <memory>
 
 namespace boost {
   namespace unordered {
@@ -14,8 +15,8 @@ namespace boost {
         opt_storage() {}
         ~opt_storage() {}
 
-        T* address() noexcept { return boost::addressof(t_); }
-        T const* address() const noexcept { return boost::addressof(t_); }
+        T* address() noexcept { return std::addressof(t_); }
+        T const* address() const noexcept { return std::addressof(t_); }
       };
     } // namespace detail
   } // namespace unordered
