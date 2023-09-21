@@ -15,6 +15,7 @@
 #include <boost/predef.h>
 
 #include <utility>
+#include <tuple>
 
 ////////////////////////////////////////////////////////////////////////////////
 // Configuration
@@ -35,6 +36,11 @@
 #endif
 #endif
 
-#include <tuple>
+namespace boost {
+  namespace unordered {
+    using std::piecewise_construct;
+    using std::piecewise_construct_t;
+  } // namespace unordered
+} // namespace boost
 
 #endif
