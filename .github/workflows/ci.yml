@@ -80,21 +80,31 @@ jobs:
           # clang-12 doesn't work on 'ubuntu-22.04', the linker can't find -lunwind for some reason
           - { name: "clang-12 w/ sanitizers (03,11,14)", sanitize: yes,
               compiler: clang-12,  cxxstd: '03,11,14',          os: 'ubuntu-20.04', stdlib: libc++, install: 'clang-12 libc++-12-dev libc++abi-12-dev', ccache_key: "san1" }
-          - { name: "clang-12 w/ sanitizers (17,20,2b)", sanitize: yes,
-              compiler: clang-12,  cxxstd: '17,20,2b',          os: 'ubuntu-20.04', stdlib: libc++, install: 'clang-12 libc++-12-dev libc++abi-12-dev', ccache_key: "san2" }
-          - { compiler: clang-13,  cxxstd: '03,11,14,17,20,2b', os: 'ubuntu-22.04', stdlib: libc++, install: 'clang-13 libc++-13-dev libc++abi-13-dev' }
+          - { name: "clang-12 w/ sanitizers (17)", sanitize: yes,
+              compiler: clang-12,  cxxstd: '17',          os: 'ubuntu-20.04', stdlib: libc++, install: 'clang-12 libc++-12-dev libc++abi-12-dev', ccache_key: "san2" }
+          - { name: "clang-12 w/ sanitizers (20)", sanitize: yes,
+              compiler: clang-12,  cxxstd: '20',          os: 'ubuntu-20.04', stdlib: libc++, install: 'clang-12 libc++-12-dev libc++abi-12-dev', ccache_key: "san2" }
+          - { name: "clang-12 w/ sanitizers (2b)", sanitize: yes,
+              compiler: clang-12,  cxxstd: '2b',          os: 'ubuntu-20.04', stdlib: libc++, install: 'clang-12 libc++-12-dev libc++abi-12-dev', ccache_key: "san2" }
+          - { compiler: 'clang-13 (03,11,14)',  cxxstd: '03,11,14', os: 'ubuntu-22.04', stdlib: libc++, install: 'clang-13 libc++-13-dev libc++abi-13-dev' }
+          - { compiler: 'clang-13 (17,20,2b)',  cxxstd: '17,20,2b', os: 'ubuntu-22.04', stdlib: libc++, install: 'clang-13 libc++-13-dev libc++abi-13-dev' }
 
           # not using libc++ because of https://github.com/llvm/llvm-project/issues/52771
           - { name: "clang-14 w/ sanitizers (03,11,14)", sanitize: yes,
               compiler: clang-14,  cxxstd: '03,11,14',          os: 'ubuntu-22.04', ccache_key: "san1" }
-          - { name: "clang-14 w/ sanitizers (17,20,2b)", sanitize: yes,
-              compiler: clang-14,  cxxstd: '17,20,2b',          os: 'ubuntu-22.04', ccache_key: "san2" }
+          - { name: "clang-14 w/ sanitizers (17)", sanitize: yes,
+              compiler: clang-14,  cxxstd: '17',          os: 'ubuntu-22.04', ccache_key: "san2" }
+          - { name: "clang-14 w/ sanitizers (20)", sanitize: yes,
+              compiler: clang-14,  cxxstd: '20',          os: 'ubuntu-22.04', ccache_key: "san2" }
+          - { name: "clang-14 w/ sanitizers (2b)", sanitize: yes,
+              compiler: clang-14,  cxxstd: '2b',          os: 'ubuntu-22.04', ccache_key: "san2" }
 
           - { name: "cfoa tsan (clang-14)", cxxstd: '11,14,17,20,2b', os: 'ubuntu-22.04', compiler: clang-14,
               targets: 'libs/unordered/test//cfoa_tests', thread-sanitize: yes, 
               stdlib: libc++, install: 'clang-14 libc++-14-dev libc++abi-14-dev', ccache_key: "tsan" }
 
-          - { compiler: clang-15,  cxxstd: '03,11,14,17,20,2b', os: 'ubuntu-22.04', stdlib: libc++, install: 'clang-15 libc++-15-dev libc++abi-15-dev' }
+          - { compiler: 'clang-15 (03,11,14)',  cxxstd: '03,11,14', os: 'ubuntu-22.04', stdlib: libc++, install: 'clang-15 libc++-15-dev libc++abi-15-dev' }
+          - { compiler: 'clang-15 (17,20,2b)',  cxxstd: '17,20,2b', os: 'ubuntu-22.04', stdlib: libc++, install: 'clang-15 libc++-15-dev libc++abi-15-dev' }
 
           # OSX, clang
           - { compiler: clang,     cxxstd: '03,11,14,17,2a',    os: 'macos-11' }
