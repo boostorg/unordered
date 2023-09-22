@@ -32,101 +32,97 @@
 namespace boost {
   namespace unordered {
     namespace detail {
-      constexpr static std::size_t const prime_fmod_sizes[] = {13ul, 29ul, 53ul,
-        97ul, 193ul, 389ul, 769ul, 1543ul, 3079ul, 6151ul, 12289ul, 24593ul,
-        49157ul, 98317ul, 196613ul, 393241ul, 786433ul, 1572869ul, 3145739ul,
-        6291469ul, 12582917ul, 25165843ul, 50331653ul, 100663319ul, 201326611ul,
-        402653189ul, 805306457ul, 1610612741ul, 3221225473ul,
-#if !defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T)
-        4294967291ul
-#else
-        6442450939ull, 12884901893ull, 25769803751ull, 51539607551ull,
-        103079215111ull, 206158430209ull, 412316860441ull, 824633720831ull,
-        1649267441651ull
-#endif
-      };
-
-#if defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T)
-      constexpr static boost::uint64_t const prime_fmod_inv_sizes32[] = {
-        1418980313362273202ull, 636094623231363849ull, 348051774975651918ull,
-        190172619316593316ull, 95578984837873325ull, 47420935922132524ull,
-        23987963684927896ull, 11955116055547344ull, 5991147799191151ull,
-        2998982941588287ull, 1501077717772769ull, 750081082979285ull,
-        375261795343686ull, 187625172388393ull, 93822606204624ull,
-        46909513691883ull, 23456218233098ull, 11728086747027ull,
-        5864041509391ull, 2932024948977ull, 1466014921160ull, 733007198436ull,
-        366503839517ull, 183251896093ull, 91625960335ull, 45812983922ull,
-        22906489714ull, 11453246088ull, 5726623060ull};
-
-#endif /* defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T) */
-
-      template <std::size_t SizeIndex,
-        std::size_t Size = prime_fmod_sizes[SizeIndex]>
-      static std::size_t prime_fmod_position(std::size_t hash)
+      template <class = void> struct prime_fmod_size
       {
-        return hash % Size;
-      }
-
-      constexpr static std::size_t (*prime_fmod_positions[])(std::size_t) = {
+        constexpr static std::size_t const sizes[] = {13ul, 29ul, 53ul, 97ul,
+          193ul, 389ul, 769ul, 1543ul, 3079ul, 6151ul, 12289ul, 24593ul,
+          49157ul, 98317ul, 196613ul, 393241ul, 786433ul, 1572869ul, 3145739ul,
+          6291469ul, 12582917ul, 25165843ul, 50331653ul, 100663319ul,
+          201326611ul, 402653189ul, 805306457ul, 1610612741ul, 3221225473ul,
 #if !defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T)
-        prime_fmod_position<0>,
-        prime_fmod_position<1>,
-        prime_fmod_position<2>,
-        prime_fmod_position<3>,
-        prime_fmod_position<4>,
-        prime_fmod_position<5>,
-        prime_fmod_position<6>,
-        prime_fmod_position<7>,
-        prime_fmod_position<8>,
-        prime_fmod_position<9>,
-        prime_fmod_position<10>,
-        prime_fmod_position<11>,
-        prime_fmod_position<12>,
-        prime_fmod_position<13>,
-        prime_fmod_position<14>,
-        prime_fmod_position<15>,
-        prime_fmod_position<16>,
-        prime_fmod_position<17>,
-        prime_fmod_position<18>,
-        prime_fmod_position<19>,
-        prime_fmod_position<20>,
-        prime_fmod_position<21>,
-        prime_fmod_position<22>,
-        prime_fmod_position<23>,
-        prime_fmod_position<24>,
-        prime_fmod_position<25>,
-        prime_fmod_position<26>,
-        prime_fmod_position<27>,
-        prime_fmod_position<28>,
-        prime_fmod_position<29>,
+          4294967291ul
 #else
-        prime_fmod_position<29>,
-        prime_fmod_position<30>,
-        prime_fmod_position<31>,
-        prime_fmod_position<32>,
-        prime_fmod_position<33>,
-        prime_fmod_position<34>,
-        prime_fmod_position<35>,
-        prime_fmod_position<36>,
-        prime_fmod_position<37>,
+          6442450939ull, 12884901893ull, 25769803751ull, 51539607551ull,
+          103079215111ull, 206158430209ull, 412316860441ull, 824633720831ull,
+          1649267441651ull
 #endif
-      };
+        };
 
-      struct prime_fmod_size
-      {
         constexpr static std::size_t const sizes_len =
-          sizeof(prime_fmod_sizes) / sizeof(prime_fmod_sizes[0]);
+          sizeof(sizes) / sizeof(sizes[0]);
 
 #if defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T)
+        constexpr static boost::uint64_t const inv_sizes32[] = {
+          1418980313362273202ull, 636094623231363849ull, 348051774975651918ull,
+          190172619316593316ull, 95578984837873325ull, 47420935922132524ull,
+          23987963684927896ull, 11955116055547344ull, 5991147799191151ull,
+          2998982941588287ull, 1501077717772769ull, 750081082979285ull,
+          375261795343686ull, 187625172388393ull, 93822606204624ull,
+          46909513691883ull, 23456218233098ull, 11728086747027ull,
+          5864041509391ull, 2932024948977ull, 1466014921160ull, 733007198436ull,
+          366503839517ull, 183251896093ull, 91625960335ull, 45812983922ull,
+          22906489714ull, 11453246088ull, 5726623060ull};
+
         constexpr static std::size_t const inv_sizes32_len =
-          sizeof(prime_fmod_inv_sizes32) / sizeof(prime_fmod_inv_sizes32[0]);
+          sizeof(inv_sizes32) / sizeof(inv_sizes32[0]);
 #endif /* defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T) */
+
+        template <std::size_t SizeIndex, std::size_t Size = sizes[SizeIndex]>
+        static std::size_t position(std::size_t hash)
+        {
+          return hash % Size;
+        }
+
+        constexpr static std::size_t (*positions[])(std::size_t) = {
+#if !defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T)
+          position<0, sizes[0]>,
+          position<1, sizes[1]>,
+          position<2, sizes[2]>,
+          position<3, sizes[3]>,
+          position<4, sizes[4]>,
+          position<5, sizes[5]>,
+          position<6, sizes[6]>,
+          position<7, sizes[7]>,
+          position<8, sizes[8]>,
+          position<9, sizes[9]>,
+          position<10, sizes[10]>,
+          position<11, sizes[11]>,
+          position<12, sizes[12]>,
+          position<13, sizes[13]>,
+          position<14, sizes[14]>,
+          position<15, sizes[15]>,
+          position<16, sizes[16]>,
+          position<17, sizes[17]>,
+          position<18, sizes[18]>,
+          position<19, sizes[19]>,
+          position<20, sizes[20]>,
+          position<21, sizes[21]>,
+          position<22, sizes[22]>,
+          position<23, sizes[23]>,
+          position<24, sizes[24]>,
+          position<25, sizes[25]>,
+          position<26, sizes[26]>,
+          position<27, sizes[27]>,
+          position<28, sizes[28]>,
+          position<29, sizes[29]>,
+#else
+          position<29, sizes[29]>,
+          position<30, sizes[30]>,
+          position<31, sizes[31]>,
+          position<32, sizes[32]>,
+          position<33, sizes[33]>,
+          position<34, sizes[34]>,
+          position<35, sizes[35]>,
+          position<36, sizes[36]>,
+          position<37, sizes[37]>,
+#endif
+        };
 
         static inline std::size_t size_index(std::size_t n)
         {
           std::size_t i = 0;
           for (; i < (sizes_len - 1); ++i) {
-            if (prime_fmod_sizes[i] >= n) {
+            if (sizes[i] >= n) {
               break;
             }
           }
@@ -135,7 +131,7 @@ namespace boost {
 
         static inline std::size_t size(std::size_t size_index)
         {
-          return prime_fmod_sizes[size_index];
+          return sizes[size_index];
         }
 
 #if defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T)
@@ -185,16 +181,30 @@ namespace boost {
           if (BOOST_LIKELY(size_index < sizes_under_32bit)) {
             return fast_modulo(narrow_cast<boost::uint32_t>(hash) +
                                  narrow_cast<boost::uint32_t>(hash >> 32),
-              prime_fmod_inv_sizes32[size_index],
-              boost::uint32_t(prime_fmod_sizes[size_index]));
+              inv_sizes32[size_index], boost::uint32_t(sizes[size_index]));
           } else {
-            return prime_fmod_positions[size_index - sizes_under_32bit](hash);
+            return positions[size_index - sizes_under_32bit](hash);
           }
 #else
-          return prime_fmod_positions[size_index](hash);
+          return positions[size_index](hash);
 #endif /* defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T) */
         }
       }; // prime_fmod_size
+
+      // https://en.cppreference.com/w/cpp/language/static#Constant_static_members
+      // If a const non-inline (since C++17) static data member or a constexpr
+      // static data member (since C++11)(until C++17) is odr-used, a definition
+      // at namespace scope is still required, but it cannot have an
+      // initializer.
+      template <class T> constexpr std::size_t prime_fmod_size<T>::sizes[];
+
+#if defined(BOOST_UNORDERED_FCA_HAS_64B_SIZE_T)
+      template <class T>
+      constexpr boost::uint64_t prime_fmod_size<T>::inv_sizes32[];
+#endif
+
+      template <class T>
+      constexpr std::size_t (*prime_fmod_size<T>::positions[])(std::size_t);
     } // namespace detail
   } // namespace unordered
 } // namespace boost
