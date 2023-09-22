@@ -5,6 +5,8 @@
 #ifndef BOOST_UNORDERED_DETAIL_FOA_NODE_MAP_TYPES_HPP
 #define BOOST_UNORDERED_DETAIL_FOA_NODE_MAP_TYPES_HPP
 
+#include <boost/unordered/detail/foa/element_type.hpp>
+
 #include <boost/core/allocator_access.hpp>
 #include <boost/core/no_exceptions_support.hpp>
 #include <boost/core/pointer_traits.hpp>
