@@ -24,12 +24,12 @@ namespace boost {
     using hasher               = Hash;
     using key_equal            = Pred;
     using allocator_type       = Allocator;
-    using pointer              = typename boost::allocator_traits<Allocator>::pointer;
-    using const_pointer        = typename boost::allocator_traits<Allocator>::const_pointer;
+    using pointer              = typename std::allocator_traits<Allocator>::pointer;
+    using const_pointer        = typename std::allocator_traits<Allocator>::const_pointer;
     using reference            = value_type&;
     using const_reference      = const value_type&;
-    using size_type            = _implementation-defined_;
-    using difference_type      = _implementation-defined_;
+    using size_type            = std::size_t;
+    using difference_type      = std::ptrdiff_t;
 
     using iterator             = _implementation-defined_;
     using const_iterator       = _implementation-defined_;
@@ -271,6 +271,7 @@ namespace boost {
 
 |_Allocator_
 |An allocator whose value type is the same as the container's value type.
+Allocators using https://en.cppreference.com/w/cpp/named_req/Allocator#Fancy_pointers[fancy pointers] are supported.
 
 |===
 
@@ -286,46 +287,6 @@ Globally define this macro to support loading of ``unordered_multiset``s saved t
 a Boost.Serialization archive with a version of Boost prior to Boost 1.84.
 
 === Typedefs
-
-[source,c++,subs=+quotes]
-----
-typedef typename allocator_type::pointer pointer;
-----
-
-`value_type*` if `allocator_type::pointer` is not defined.
-
----
-
-[source,c++,subs=+quotes]
-----
-typedef typename allocator_type::const_pointer const_pointer;
-----
-
-`boost::pointer_to_other<pointer, value_type>::type` if `allocator_type::const_pointer` is not defined.
-
----
-
-[source,c++,subs=+quotes]
-----
-typedef _implementation-defined_ size_type;
-----
-
-An unsigned integral type.
-
-`size_type` can represent any non-negative value of `difference_type`.
-
----
-
-[source,c++,subs=+quotes]
-----
-typedef _implementation-defined_ difference_type;
-----
-
-A signed integral type.
-
-Is identical to the difference type of `iterator` and `const_iterator`.
-
----
 
 [source,c++,subs=+quotes]
 ----
@@ -458,10 +419,7 @@ The move constructor.
 
 [horizontal]
 Notes:;; This is implemented using Boost.Move.
-Requires:;; `value_type` is move-constructible. +
-+
-On compilers without rvalue reference support the emulation does not support moving without calling `boost::move` if `value_type` is not copyable.
-So, for example, you can't return the container from a function.
+Requires:;; `value_type` is move-constructible.
 
 ---
 
@@ -661,7 +619,6 @@ The move assignment operator.
 If `Alloc::propagate_on_container_move_assignment` exists and `Alloc::propagate_on_container_move_assignment::value` is `true`, the allocator is overwritten, if not the moved elements are created using the existing allocator.
 
 [horizontal]
-Notes:;; On compilers without rvalue references, this is emulated using Boost.Move. Note that on some compilers the copy assignment operator may be used in some circumstances.
 Requires:;; `value_type` is move constructible.
 
 ---
@@ -772,11 +729,7 @@ Returns:;; An iterator pointing to the inserted element.
 Throws:;; If an exception is thrown by an operation other than a call to `hasher` the function has no effect.
 Notes:;; Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor. +
 +
-Pointers and references to elements are never invalidated. +
-+
-If the compiler doesn't support variadic template arguments or rvalue references, this is emulated for up to `10` arguments, with no support for rvalue references or move semantics. +
-+
-Since existing `std::pair` implementations don't support `std::piecewise_construct` this emulates it, but using `boost::unordered::piecewise_construct`.
+Pointers and references to elements are never invalidated.
 
 ---
 
@@ -797,11 +750,7 @@ Notes:;; The standard is fairly vague on the meaning of the hint. But the only p
 +
 Can invalidate iterators, but only if the insert causes the load factor to be greater to or equal to the maximum load factor. +
 +
-Pointers and references to elements are never invalidated. +
-+
-If the compiler doesn't support variadic template arguments or rvalue references, this is emulated for up to 10 arguments, with no support for rvalue references or move semantics. +
-+
-Since existing `std::pair` implementations don't support `std::piecewise_construct` this emulates it, but using `boost::unordered::piecewise_construct`.
+Pointers and references to elements are never invalidated.
 
 ---
 
@@ -1424,9 +1373,7 @@ template<class Key, class Hash, class Pred, class Alloc>
 Return `true` if `x.size() == y.size()` and for every element in `x`, there is an element in `y` with the same key, with an equal value (using `operator==` to compare the value types).
 
 [horizontal]
-Notes:;; The behavior of this function was changed to match the C++11 standard in Boost 1.48. +
-+
-Behavior is undefined if the two containers don't have equivalent equality predicates.
+Notes:;; Behavior is undefined if the two containers don't have equivalent equality predicates.
 
 ---
 
@@ -1440,9 +1387,7 @@ template<class Key, class Hash, class Pred, class Alloc>
 Return `false` if `x.size() == y.size()` and for every element in `x`, there is an element in `y` with the same key, with an equal value (using `operator==` to compare the value types).
 
 [horizontal]
-Notes:;; The behavior of this function was changed to match the C++11 standard in Boost 1.48. +
-+
-Behavior is undefined if the two containers don't have equivalent equality predicates.
+Notes:;; Behavior is undefined if the two containers don't have equivalent equality predicates.
 
 ---
 

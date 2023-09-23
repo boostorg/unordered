@@ -18,6 +18,8 @@ a concurrent container from user code.
 * Added Boost.Serialization support to all containers and their (non-local) iterator types.
 * Added support for fancy pointers to open-addressing and concurrent containers.
   This enables scenarios like the use of Boost.Interprocess allocators to construct containers in shared memory.
+* Starting with this release, `boost::unordered_[multi]set` and `boost::unordered_[multi]map`
+  only work with C++11 onwards.
 
 == Release 1.83.0 - Major update
 
