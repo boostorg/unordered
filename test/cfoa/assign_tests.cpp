@@ -104,79 +104,67 @@ std::initializer_list<set_type::value_type> set_init_list{
 auto test_map_and_init_list=std::make_pair(test_map,map_init_list);
 auto test_set_and_init_list=std::make_pair(test_set,set_init_list);
 
-template <class T> struct pocca_allocator
+template <class T,bool POCCA, bool POCMA>
+struct poca_allocator: fancy_allocator<T>
 {
-  using propagate_on_container_copy_assignment = std::true_type;
+  using super = fancy_allocator<T>;
+  using pointer = super::pointer;
+  using propagate_on_container_copy_assignment = 
+    std::integral_constant<bool, POCCA>;
+  using propagate_on_container_move_assignment = 
+    std::integral_constant<bool, POCMA>;
 
   int x_ = -1;
 
-  using value_type = T;
+  template <class U> struct rebind
+  {
+    typedef poca_allocator<U, POCCA, POCMA> other;
+  };
 
-  pocca_allocator() = default;
-  pocca_allocator(pocca_allocator const&) = default;
-  pocca_allocator(pocca_allocator&&) = default;
+  poca_allocator() = default;
+  poca_allocator(poca_allocator const&) = default;
+  poca_allocator(poca_allocator &&) = default;
 
-  pocca_allocator(int const x) : x_{x} {}
+  poca_allocator(int const x) : x_{x} {}
 
-  pocca_allocator& operator=(pocca_allocator const& rhs)
+  poca_allocator& operator=(poca_allocator const& rhs)
   {
     if (this != &rhs) {
+      super::operator=(rhs);
       x_ = rhs.x_;
     }
     return *this;
   }
 
-  template <class U> pocca_allocator(pocca_allocator<U> const& rhs) : x_{rhs.x_}
+  template <class U> poca_allocator(
+    poca_allocator<U, POCCA, POCMA> const& rhs) :
+    super{rhs}, x_{rhs.x_}
   {
   }
 
-  T* allocate(std::size_t n)
+  pointer allocate(std::size_t n)
   {
-    return static_cast<T*>(::operator new(n * sizeof(T)));
+    auto p = super::allocate(n + 1);
+    reinterpret_cast<char&>(p[0]) = static_cast<char>(x_);
+    return p + std::ptrdiff_t(1);
   }
 
-  void deallocate(T* p, std::size_t) { ::operator delete(p); }
+  void deallocate(pointer p, std::size_t n)
+  {
+    p = p + std::ptrdiff_t(-1);
+    BOOST_TEST_EQ(reinterpret_cast<char&>(p[0]), static_cast<char>(x_));
+    super::deallocate(p, n + 1); 
+  }
 
-  bool operator==(pocca_allocator const& rhs) const { return x_ == rhs.x_; }
-  bool operator!=(pocca_allocator const& rhs) const { return x_ != rhs.x_; }
+  bool operator==(poca_allocator const& rhs) const { return x_ == rhs.x_; }
+  bool operator!=(poca_allocator const& rhs) const { return x_ != rhs.x_; }
 };
 
-template <class T> struct pocma_allocator
-{
-  using propagate_on_container_move_assignment = std::true_type;
+template <class T> 
+struct pocca_allocator: poca_allocator<T, true, false>{};
 
-  int x_ = -1;
-
-  using value_type = T;
-
-  pocma_allocator() = default;
-  pocma_allocator(pocma_allocator const&) = default;
-  pocma_allocator(pocma_allocator&&) = default;
-
-  pocma_allocator(int const x) : x_{x} {}
-
-  pocma_allocator& operator=(pocma_allocator const& rhs)
-  {
-    if (this != &rhs) {
-      x_ = rhs.x_;
-    }
-    return *this;
-  }
-
-  template <class U> pocma_allocator(pocma_allocator<U> const& rhs) : x_{rhs.x_}
-  {
-  }
-
-  T* allocate(std::size_t n)
-  {
-    return static_cast<T*>(::operator new(n * sizeof(T)));
-  }
-
-  void deallocate(T* p, std::size_t) { ::operator delete(p); }
-
-  bool operator==(pocma_allocator const& rhs) const { return x_ == rhs.x_; }
-  bool operator!=(pocma_allocator const& rhs) const { return x_ != rhs.x_; }
-};
+template <class T> 
+struct pocma_allocator: poca_allocator<T, false, true>{};
 
 namespace {
   template <class X, class GF>
@@ -432,9 +420,6 @@ namespace {
     BOOST_STATIC_ASSERT(
       std::is_nothrow_move_assignable<
         replace_allocator<X, std::allocator> >::value);
-
-    BOOST_STATIC_ASSERT(
-      std::is_nothrow_move_assignable<pocma_container_type>::value);
 
     BOOST_STATIC_ASSERT(
       !std::is_nothrow_move_assignable<
