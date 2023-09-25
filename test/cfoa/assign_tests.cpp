@@ -145,14 +145,14 @@ struct poca_allocator: fancy_allocator<T>
   pointer allocate(std::size_t n)
   {
     auto p = super::allocate(n + 1);
-    reinterpret_cast<char&>(p[0]) = static_cast<char>(x_);
+    reinterpret_cast<char&>(*p) = static_cast<char>(x_);
     return p + std::ptrdiff_t(1);
   }
 
   void deallocate(pointer p, std::size_t n)
   {
     p = p + std::ptrdiff_t(-1);
-    BOOST_TEST_EQ(reinterpret_cast<char&>(p[0]), static_cast<char>(x_));
+    BOOST_TEST_EQ(reinterpret_cast<char&>(*p), static_cast<char>(x_));
     super::deallocate(p, n + 1); 
   }
 
