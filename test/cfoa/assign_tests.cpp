@@ -163,13 +163,23 @@ struct poca_allocator: fancy_allocator<T>
 template <class T> 
 struct pocca_allocator: poca_allocator<T, true, false>
 {
-  using poca_allocator<T, true, false>::super;
+  pocca_allocator() = default;
+  pocca_allocator(pocca_allocator const&) = default;
+  pocca_allocator(pocca_allocator &&) = default;
+  using poca_allocator<T, true, false>::poca_allocator;
+
+  pocca_allocator& operator=(pocca_allocator const&) = default;
 };
 
 template <class T> 
 struct pocma_allocator: poca_allocator<T, false, true>
 {
-  using poca_allocator<T, false, true>::super;
+  pocma_allocator() = default;
+  pocma_allocator(pocma_allocator const&) = default;
+  pocma_allocator(pocma_allocator &&) = default;
+  using poca_allocator<T, false, true>::poca_allocator;
+
+  pocma_allocator& operator=(pocma_allocator const&) = default;
 };
 
 namespace {
