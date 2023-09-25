@@ -161,10 +161,16 @@ struct poca_allocator: fancy_allocator<T>
 };
 
 template <class T> 
-struct pocca_allocator: poca_allocator<T, true, false>{};
+struct pocca_allocator: poca_allocator<T, true, false>
+{
+  using poca_allocator<T, true, false>::super;
+};
 
 template <class T> 
-struct pocma_allocator: poca_allocator<T, false, true>{};
+struct pocma_allocator: poca_allocator<T, false, true>
+{
+  using poca_allocator<T, false, true>::super;
+};
 
 namespace {
   template <class X, class GF>
