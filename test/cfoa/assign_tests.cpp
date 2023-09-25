@@ -108,7 +108,7 @@ template <class T,bool POCCA, bool POCMA>
 struct poca_allocator: fancy_allocator<T>
 {
   using super = fancy_allocator<T>;
-  using pointer = super::pointer;
+  using pointer = typename super::pointer;
   using propagate_on_container_copy_assignment = 
     std::integral_constant<bool, POCCA>;
   using propagate_on_container_move_assignment = 
