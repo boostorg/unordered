@@ -1541,7 +1541,7 @@ public:
         size_ctrl.ml=std::size_t(x.size_ctrl.ml);
         size_ctrl.size=std::size_t(x.size_ctrl.size);
         x.arrays=ah.release();
-        x.size_ctrl.ml=initial_max_load();
+        x.size_ctrl.ml=x.initial_max_load();
         x.size_ctrl.size=0;
       }
       else{
