@@ -555,19 +555,15 @@ private:
         x.arrays.elements_};},
       size_ctrl_type{x.size_ctrl.ml,x.size_ctrl.size}}
   {
-    ah.release();
-
     compatible_concurrent_table::arrays_type::delete_group_access(x.al(),x.arrays);
-    x.arrays=ah.get();
+    x.arrays=ah.release();
     x.size_ctrl.ml=x.initial_max_load();
     x.size_ctrl.size=0;
   }
 
   template<typename ExclusiveLockGuard>
   table(compatible_concurrent_table&& x,ExclusiveLockGuard):
-    table(std::move(x),arrays_holder<
-      typename compatible_concurrent_table::arrays_type,Allocator
-    >{compatible_concurrent_table::arrays_type::new_(x.al(),0),x.al()})
+    table(std::move(x),x.make_empty_arrays())
   {}
 
   struct erase_on_exit

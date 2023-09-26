@@ -970,34 +970,26 @@ Ptr to_pointer(Ptr p)
 template<typename Arrays,typename Allocator>
 struct arrays_holder
 {
-  arrays_holder(Arrays const& arrays, Allocator const& al)
-    :arrays_{arrays},al_{al}
+  arrays_holder(const Arrays& arrays,const Allocator& al):
+    arrays_{arrays},al_{al}
   {}
   
-  arrays_holder(arrays_holder const&)=delete;
+  /* not defined but VS in pre-C++17 mode needs to see it for RVO */
+  arrays_holder(arrays_holder const&);
   arrays_holder& operator=(arrays_holder const&)=delete;
 
-  ~arrays_holder()
-  {
-    if (!released_){
-      arrays_.delete_(al_,arrays_);
-    }
-  }
+  ~arrays_holder(){if(!released_)arrays_.delete_(al_,arrays_);}
 
-  Arrays const& get()const
+  const Arrays& release()
   {
+    released_=true;
     return arrays_;
   }
 
-  void release()
-  {
-    released_=true;
-  }
-
 private:
-  Arrays arrays_;
+  Arrays    arrays_;
   Allocator al_;
-  bool released_=false;
+  bool      released_=false;
 };
 
 template<typename Value,typename Group,typename SizePolicy,typename Allocator>
@@ -1367,6 +1359,7 @@ public:
   using size_type=std::size_t;
   using difference_type=std::ptrdiff_t;
   using locator=table_locator<group_type,element_type>;
+  using arrays_holder_type=arrays_holder<arrays_type,Allocator>;
 
   table_core(
     std::size_t n=default_bucket_count,const Hash& h_=Hash(),
@@ -1394,15 +1387,12 @@ public:
     table_core{x,alloc_traits::select_on_container_copy_construction(x.al())}{}
 
   template<typename ArraysFn>
-  table_core(
-    table_core&& x,arrays_holder<arrays_type,Allocator>&& ah,
-    ArraysFn arrays_fn):
+  table_core(table_core&& x,arrays_holder_type&& ah,ArraysFn arrays_fn):
     table_core(
       std::move(x.h()),std::move(x.pred()),std::move(x.al()),
       arrays_fn,x.size_ctrl)
   {
-    ah.release();
-    x.arrays=ah.get();
+    x.arrays=ah.release();
     x.size_ctrl.ml=x.initial_max_load();
     x.size_ctrl.size=0;
   }
@@ -1414,9 +1404,7 @@ public:
       std::is_nothrow_move_constructible<Allocator>::value&&
       !uses_fancy_pointers):
     table_core{
-      std::move(x),arrays_holder<arrays_type,Allocator>{
-        x.new_arrays(0),x.al()},
-      [&x]{return x.arrays;}}
+      std::move(x),x.make_empty_arrays(),[&x]{return x.arrays;}}
   {}
 
   table_core(const table_core& x,const Allocator& al_):
@@ -1468,6 +1456,11 @@ public:
     }
   }
 
+  arrays_holder_type make_empty_arrays()const
+  {
+    return make_arrays(0);
+  }
+
   table_core& operator=(const table_core& x)
   {
     BOOST_UNORDERED_STATIC_ASSERT_HASH_PRED(Hash, Pred)
@@ -1482,9 +1475,6 @@ public:
       hasher    tmp_h=x.h();
       key_equal tmp_p=x.pred();
 
-      /* already noexcept, clear() before we swap the Hash, Pred just in case
-       * the clear() impl relies on them at some point in the future.
-       */
       clear();
 
       /* Because we've asserted at compile-time that Hash and Pred are nothrow
@@ -1496,7 +1486,12 @@ public:
       swap(pred(),tmp_p);
 
       if_constexpr<pocca>([&,this]{
-        if(al()!=x.al())reserve(0);
+        if(al()!=x.al()){
+          auto ah=x.make_arrays(std::size_t(std::ceil(float(x.size())/mlf)));
+          delete_arrays(arrays);
+          arrays=ah.release();
+          size_ctrl.ml=initial_max_load();
+        }
         copy_assign_if<pocca>(al(),x.al());
       });
       /* noshrink: favor memory reuse over tightness */
@@ -1535,16 +1530,24 @@ public:
       using std::swap;
 
       clear();
-      swap(h(),x.h());
-      swap(pred(),x.pred());
 
       if(pocma||al()==x.al()){
-        reserve(0);
+        auto ah=x.make_empty_arrays();
+        swap(h(),x.h());
+        swap(pred(),x.pred());
+        delete_arrays(arrays);
         move_assign_if<pocma>(al(),x.al());
-        swap(arrays,x.arrays);
-        swap(size_ctrl,x.size_ctrl);
+        arrays=x.arrays;
+        size_ctrl.ml=std::size_t(x.size_ctrl.ml);
+        size_ctrl.size=std::size_t(x.size_ctrl.size);
+        x.arrays=ah.release();
+        x.size_ctrl.ml=x.initial_max_load();
+        x.size_ctrl.size=0;
       }
       else{
+        swap(h(),x.h());
+        swap(pred(),x.pred());
+
         /* noshrink: favor memory reuse over tightness */
         noshrink_reserve(x.size());
         clear_on_exit c{x};
@@ -1940,12 +1943,12 @@ private:
   {
   }
 
-  arrays_type new_arrays(std::size_t n)
+  arrays_type new_arrays(std::size_t n)const
   {
     return arrays_type::new_(al(),n);
   }
 
-  arrays_type new_arrays_for_growth()
+  arrays_type new_arrays_for_growth()const
   {
     /* Due to the anti-drift mechanism (see recover_slot), the new arrays may
      * be of the same size as the old arrays; in the limit, erasing one
@@ -1964,6 +1967,11 @@ private:
   void delete_arrays(arrays_type& arrays_)noexcept
   {
     arrays_type::delete_(al(),arrays_);
+  }
+
+  arrays_holder_type make_arrays(std::size_t n)const
+  {
+    return {new_arrays(n),al()};
   }
 
   template<typename Key,typename... Args>

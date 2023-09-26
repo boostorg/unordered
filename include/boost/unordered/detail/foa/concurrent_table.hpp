@@ -504,16 +504,13 @@ public:
           x.arrays.elements_});},
       size_ctrl_type{x.size_ctrl.ml,x.size_ctrl.size}}
   {
-    ah.release();
-    x.arrays=ah.get();
+    x.arrays=ah.release();
     x.size_ctrl.ml=x.initial_max_load();
     x.size_ctrl.size=0;
   }
 
   concurrent_table(compatible_nonconcurrent_table&& x):
-    concurrent_table(std::move(x), arrays_holder<
-      typename compatible_nonconcurrent_table::arrays_type,Allocator
-    >{compatible_nonconcurrent_table::arrays_type::new_(x.al(),0),x.al()})
+    concurrent_table(std::move(x),x.make_empty_arrays())
   {}
 
   ~concurrent_table()=default;
