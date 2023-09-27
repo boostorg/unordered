@@ -8,7 +8,7 @@
 
 #include "../helpers/count.hpp"
 #include "../helpers/test.hpp"
-#include <boost/functional/hash/hash.hpp>
+#include <boost/container_hash/hash.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <string>
 

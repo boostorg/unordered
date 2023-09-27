@@ -19,7 +19,7 @@
 #include <boost/unordered/unordered_node_map_fwd.hpp>
 
 #include <boost/core/allocator_access.hpp>
-#include <boost/functional/hash.hpp>
+#include <boost/container_hash/hash.hpp>
 #include <boost/throw_exception.hpp>
 
 #include <initializer_list>

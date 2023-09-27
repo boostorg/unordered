@@ -12,7 +12,7 @@
 #pragma once
 #endif
 
-#include <boost/functional/hash_fwd.hpp>
+#include <boost/container_hash/hash_fwd.hpp>
 #include <functional>
 #include <memory>
 

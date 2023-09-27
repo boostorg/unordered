@@ -20,7 +20,7 @@
 #include <boost/unordered/detail/type_traits.hpp>
 
 #include <boost/core/explicit_operator_bool.hpp>
-#include <boost/functional/hash.hpp>
+#include <boost/container_hash/hash.hpp>
 
 #include <initializer_list>
 
