@@ -283,35 +283,7 @@ namespace boost {
       // Bits and pieces for implementing traits
 
       template <typename T> typename std::add_lvalue_reference<T>::type make();
-      struct choice9
-      {
-        typedef char (&type)[9];
-      };
-      struct choice8 : choice9
-      {
-        typedef char (&type)[8];
-      };
-      struct choice7 : choice8
-      {
-        typedef char (&type)[7];
-      };
-      struct choice6 : choice7
-      {
-        typedef char (&type)[6];
-      };
-      struct choice5 : choice6
-      {
-        typedef char (&type)[5];
-      };
-      struct choice4 : choice5
-      {
-        typedef char (&type)[4];
-      };
-      struct choice3 : choice4
-      {
-        typedef char (&type)[3];
-      };
-      struct choice2 : choice3
+      struct choice2
       {
         typedef char (&type)[2];
       };
