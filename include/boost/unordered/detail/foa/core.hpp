@@ -2016,13 +2016,7 @@ private:
     copy_elements_array_from(
       x,
       std::integral_constant<
-        bool,
-#if BOOST_WORKAROUND(BOOST_LIBSTDCXX_VERSION,<50000)
-        /* std::is_trivially_copy_constructible not provided */
-        boost::has_trivial_copy<element_type>::value
-#else
-        std::is_trivially_copy_constructible<element_type>::value
-#endif
+        bool,std::is_trivially_copy_constructible<element_type>::value
         &&(
           is_std_allocator<Allocator>::value||
           !alloc_has_construct<Allocator,value_type*,const value_type&>::value)
@@ -2066,12 +2060,7 @@ private:
 
   void copy_groups_array_from(const table_core& x) {
     copy_groups_array_from(x, std::integral_constant<bool,
-#if BOOST_WORKAROUND(BOOST_LIBSTDCXX_VERSION,<50000)
-      /* std::is_trivially_copy_assignable not provided */
-      boost::has_trivial_assign<group_type>::value
-#else
       std::is_trivially_copy_assignable<group_type>::value
-#endif
       >{}
     );
   }
