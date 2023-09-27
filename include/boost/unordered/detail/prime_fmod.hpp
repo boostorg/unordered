@@ -191,6 +191,7 @@ namespace boost {
         }
       }; // prime_fmod_size
 
+#if defined(BOOST_NO_CXX17_INLINE_VARIABLES)
       // https://en.cppreference.com/w/cpp/language/static#Constant_static_members
       // If a const non-inline (since C++17) static data member or a constexpr
       // static data member (since C++11)(until C++17) is odr-used, a definition
@@ -205,6 +206,7 @@ namespace boost {
 
       template <class T>
       constexpr std::size_t (*prime_fmod_size<T>::positions[])(std::size_t);
+#endif
     } // namespace detail
   } // namespace unordered
 } // namespace boost
