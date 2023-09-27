@@ -585,7 +585,7 @@ namespace boost {
           BOOST_ASSERT(
             this->get_node_allocator() == other.get_node_allocator());
 
-          if (this == boost::addressof(other)) {
+          if (this == std::addressof(other)) {
             return *this;
           }
 
@@ -781,9 +781,9 @@ namespace boost {
 
         void extract_node(iterator itb, node_pointer p) noexcept
         {
-          node_pointer* pp = boost::addressof(itb->next);
+          node_pointer* pp = std::addressof(itb->next);
           while ((*pp) != p)
-            pp = boost::addressof((*pp)->next);
+            pp = std::addressof((*pp)->next);
           *pp = p->next;
           if (!itb->next)
             unlink_bucket(itb);

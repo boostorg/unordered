@@ -29,7 +29,7 @@ struct archive_constructed:private noncopyable
   template<class Archive>
   archive_constructed(const char* name,Archive& ar,unsigned int version)
   {
-    core::load_construct_data_adl(ar,boost::addressof(get()),version);
+    core::load_construct_data_adl(ar,std::addressof(get()),version);
     BOOST_TRY{
       ar>>core::make_nvp(name,get());
     }

@@ -63,7 +63,7 @@ template<typename Set> struct load_or_save_unordered_set<Set,true> /* save */
     ar<<core::make_nvp("value_version",value_version);
 
     for(const_iterator first=x.begin(),last=x.end();first!=last;++first){
-      core::save_construct_data_adl(ar,boost::addressof(*first),value_version);
+      core::save_construct_data_adl(ar,std::addressof(*first),value_version);
       ar<<core::make_nvp("item",*first);
       serialization_track(ar,first);
     }
@@ -94,7 +94,7 @@ template<typename Set> struct load_or_save_unordered_set<Set,false> /* load */
         x.insert(std::move(value.get())));
       if(!p.second)throw_exception(bad_archive_exception());
       ar.reset_object_address(
-        boost::addressof(*p.first),boost::addressof(value.get()));
+        std::addressof(*p.first),std::addressof(value.get()));
       serialization_track(ar,p.first);
     }
   }
@@ -129,10 +129,10 @@ template<typename Map> struct load_or_save_unordered_map<Map,true> /* save */
        */
 
       core::save_construct_data_adl(
-        ar,boost::addressof(first->first),key_version);
+        ar,std::addressof(first->first),key_version);
       ar<<core::make_nvp("key",first->first);
       core::save_construct_data_adl(
-        ar,boost::addressof(first->second),mapped_version);
+        ar,std::addressof(first->second),mapped_version);
       ar<<core::make_nvp("mapped",first->second);
       serialization_track(ar,first);
     }
@@ -169,9 +169,9 @@ template<typename Map> struct load_or_save_unordered_map<Map,false> /* load */
         x.emplace(std::move(key.get()),std::move(mapped.get())));
       if(!p.second)throw_exception(bad_archive_exception());
       ar.reset_object_address(
-        boost::addressof(p.first->first),boost::addressof(key.get()));
+        std::addressof(p.first->first),std::addressof(key.get()));
       ar.reset_object_address(
-        boost::addressof(p.first->second),boost::addressof(mapped.get()));
+        std::addressof(p.first->second),std::addressof(mapped.get()));
       serialization_track(ar,p.first);
     }
   }

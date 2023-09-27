@@ -339,7 +339,7 @@ namespace test {
       bool operator!() const { return !ptr_; }
 
       static ptr pointer_to(T& p) {
-        return ptr(boost::addressof(p));
+        return ptr(std::addressof(p));
       }
 
       // I'm not using the safe bool idiom because the containers should be

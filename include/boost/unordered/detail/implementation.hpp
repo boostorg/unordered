@@ -974,7 +974,7 @@ namespace boost {
           reference operator*() const noexcept { return dereference(); }
           pointer operator->() const noexcept
           {
-            pointer x = boost::addressof(p->value());
+            pointer x = std::addressof(p->value());
             return x;
           }
 
@@ -1082,7 +1082,7 @@ namespace boost {
           reference operator*() const noexcept { return dereference(); }
           pointer operator->() const noexcept
           {
-            pointer x = boost::addressof(p->value());
+            pointer x = std::addressof(p->value());
             return x;
           }
 
@@ -1735,8 +1735,8 @@ namespace boost {
         {
           if (size_ > 0) {
             key_equal pred = this->key_eq();
-            for (node_pointer* pp = boost::addressof(itb->next); *pp;
-                 pp = boost::addressof((*pp)->next)) {
+            for (node_pointer* pp = std::addressof(itb->next); *pp;
+                 pp = std::addressof((*pp)->next)) {
               if (pred(key, extractor::extract((*pp)->value()))) {
                 return pp;
               }
@@ -2201,9 +2201,9 @@ namespace boost {
           ++next;
 
           bucket_iterator itb = pos.itb;
-          node_pointer* pp = boost::addressof(itb->next);
+          node_pointer* pp = std::addressof(itb->next);
           while (*pp != pos.p) {
-            pp = boost::addressof((*pp)->next);
+            pp = std::addressof((*pp)->next);
           }
 
           buckets_.extract_node_after(itb, pp);
@@ -2224,9 +2224,9 @@ namespace boost {
           // each bucket group so we have to retrieve it manually by iterating
           //
           bucket_iterator itb = first.itb;
-          node_pointer* pp = boost::addressof(itb->next);
+          node_pointer* pp = std::addressof(itb->next);
           while (*pp != first.p) {
-            pp = boost::addressof((*pp)->next);
+            pp = std::addressof((*pp)->next);
           }
 
           while (*pp != last.p) {
@@ -2245,7 +2245,7 @@ namespace boost {
               } else {
                 ++itb;
               }
-              pp = boost::addressof(itb->next);
+              pp = std::addressof(itb->next);
             }
           }
 
@@ -2656,7 +2656,7 @@ namespace boost {
         for (; itb != last;) {
           bucket_iterator next_itb = itb;
           ++next_itb;
-          node_pointer* pp = boost::addressof(itb->next);
+          node_pointer* pp = std::addressof(itb->next);
           while (*pp) {
             node_pointer p = *pp;
             buckets_.extract_node_after(itb, pp);
