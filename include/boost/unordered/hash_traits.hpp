@@ -23,7 +23,7 @@ struct hash_is_avalanching_impl: std::false_type{};
 
 template<typename Hash>
 struct hash_is_avalanching_impl<Hash,
-  typename boost::unordered::detail::make_void<typename Hash::is_avalanching>::type>:
+  boost::unordered::detail::void_t<typename Hash::is_avalanching> >:
     std::true_type{};
 
 } /* namespace detail */

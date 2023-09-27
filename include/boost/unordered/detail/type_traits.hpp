@@ -81,7 +81,7 @@ namespace boost {
 
       template <class T>
       struct is_transparent<T,
-        typename boost::unordered::detail::make_void<typename T::is_transparent>::type>
+        boost::unordered::detail::void_t<typename T::is_transparent> >
           : public std::true_type
       {
       };
