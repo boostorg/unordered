@@ -14,7 +14,6 @@
 #include <boost/unordered/unordered_node_map.hpp>
 #include <boost/unordered/unordered_node_set.hpp>
 #include <boost/unordered/detail/implementation.hpp>
-#include <boost/unordered/detail/fwd.hpp>
 #else
 #include <boost/unordered_set.hpp>
 #include <boost/unordered_map.hpp>

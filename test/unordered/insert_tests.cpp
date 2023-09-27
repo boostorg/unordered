@@ -499,7 +499,6 @@ namespace insert_tests {
 
   template <class X> void default_emplace_tests(X*, test::random_generator)
   {
-#if !BOOST_UNORDERED_SUN_WORKAROUNDS1
     bool is_unique = test::has_unique_keys<X>::value;
 
     X x;
@@ -529,7 +528,6 @@ namespace insert_tests {
 
     BOOST_TEST(x.count(test::get_key<X>(y)) == (is_unique ? 1u : 2u));
     BOOST_TEST(*x.equal_range(test::get_key<X>(y)).first == y);
-#endif
   }
 
   template <class X> void map_tests(X*, test::random_generator generator)
@@ -1229,11 +1227,9 @@ namespace insert_tests {
   template <class X> static void map_emplace_test(X*)
   {
     X x;
-#if !BOOST_UNORDERED_SUN_WORKAROUNDS1
     x.emplace();
     BOOST_TEST(
       x.find(0) != x.end() && x.find(0)->second == overloaded_constructor());
-#endif
 
     x.emplace(2, 3);
     BOOST_TEST(
@@ -1248,11 +1244,9 @@ namespace insert_tests {
   template <class X> static void multimap_emplace_test(X*)
   {
     X x;
-#if !BOOST_UNORDERED_SUN_WORKAROUNDS1
     x.emplace();
     BOOST_TEST(
       x.find(0) != x.end() && x.find(0)->second == overloaded_constructor());
-#endif
 
     x.emplace(2, 3);
     BOOST_TEST(
@@ -1292,10 +1286,8 @@ namespace insert_tests {
     X x;
     overloaded_constructor check;
 
-#if !BOOST_UNORDERED_SUN_WORKAROUNDS1
     x.emplace();
     BOOST_TEST(x.find(check) != x.end() && *x.find(check) == check);
-#endif
 
     x.clear();
     x.emplace(1);

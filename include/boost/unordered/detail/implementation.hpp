@@ -15,7 +15,6 @@
 #endif
 
 #include <boost/unordered/detail/fca.hpp>
-#include <boost/unordered/detail/fwd.hpp>
 #include <boost/unordered/detail/opt_storage.hpp>
 #include <boost/unordered/detail/serialize_tracked_address.hpp>
 #include <boost/unordered/detail/static_assert.hpp>
@@ -80,6 +79,10 @@ namespace boost {
 
 namespace boost {
   namespace unordered {
+
+    using std::piecewise_construct;
+    using std::piecewise_construct_t;
+
     namespace detail {
 
       template <typename Types> struct table;
