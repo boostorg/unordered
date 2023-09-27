@@ -1,3 +1,8 @@
+// Copyright (C) 2023 Christian Mazakas
+//
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
 #ifndef BOOST_UNORDERED_DETAIL_OPT_STORAGE_HPP
 #define BOOST_UNORDERED_DETAIL_OPT_STORAGE_HPP
 
