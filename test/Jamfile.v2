@@ -25,14 +25,13 @@ project
                    cxx11_nullptr
                    cxx11_defaulted_functions
                    cxx11_final
-                   cxx11_hdr_type_traits
                    cxx11_hdr_initializer_list
                    cxx11_static_assert
                    cxx11_smart_ptr
                    cxx11_constexpr
                    cxx11_noexcept
                    cxx11_decltype
-                   cxx11_alignas
+                   cxx11_thread_local
         ]
 
         <warnings>pedantic
