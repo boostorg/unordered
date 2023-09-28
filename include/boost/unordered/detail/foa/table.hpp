@@ -106,7 +106,7 @@ public:
   using element_type=
     typename std::conditional<Const,value_type const,value_type>::type;
 
-  table_iterator()=default;
+  table_iterator():pc_{nullptr},p_{nullptr}{};
   template<bool Const2,typename std::enable_if<!Const2>::type* =nullptr>
   table_iterator(const table_iterator<TypePolicy,GroupPtr,Const2>& x):
     pc_{x.pc_},p_{x.p_}{}
@@ -133,10 +133,10 @@ private:
   template<typename> friend class table_erase_return_type;
   template<typename,typename,typename,typename> friend class table;
 
-  table_iterator(group_type* pg,std::size_t n,const table_element_type* p):
+  table_iterator(group_type* pg,std::size_t n,const table_element_type* ptet):
     pc_{to_pointer<char_pointer>(
       reinterpret_cast<unsigned char*>(const_cast<group_type*>(pg))+n)},
-    p_{to_pointer<table_element_pointer>(const_cast<table_element_type*>(p))}
+    p_{to_pointer<table_element_pointer>(const_cast<table_element_type*>(ptet))}
   {}
 
   unsigned char* pc()const noexcept{return boost::to_address(pc_);}
@@ -568,7 +568,7 @@ private:
 
   struct erase_on_exit
   {
-    erase_on_exit(table& x_,const_iterator it_):x{x_},it{it_}{}
+    erase_on_exit(table& x_,const_iterator it_):x(x_),it(it_){}
     ~erase_on_exit(){if(!rollback_)x.erase(it);}
 
     void rollback(){rollback_=true;}

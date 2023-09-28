@@ -1043,7 +1043,13 @@ struct table_arrays
     initialize_groups(
       arrays.groups(),groups_size,
       std::integral_constant<
-        bool,std::is_trivially_constructible<group_type>::value
+        bool,
+#if BOOST_WORKAROUND(BOOST_LIBSTDCXX_VERSION,<50000)
+      /* std::is_trivially_default_constructible not provided */
+      std::has_trivial_default_constructor<group_type>::value
+#else
+      std::is_trivially_default_constructible<group_type>::value
+#endif 
       >{});
     arrays.groups()[groups_size-1].set_sentinel();
   }
@@ -2016,7 +2022,14 @@ private:
     copy_elements_array_from(
       x,
       std::integral_constant<
-        bool,std::is_trivially_copy_constructible<element_type>::value
+        bool,
+#if BOOST_WORKAROUND(BOOST_LIBSTDCXX_VERSION,<50000)
+        /* std::is_trivially_copy_constructible not provided */
+        std::is_copy_constructible<element_type>::value&&
+        std::has_trivial_copy_constructor<element_type>::value
+#else
+        std::is_trivially_copy_constructible<element_type>::value
+#endif
         &&(
           is_std_allocator<Allocator>::value||
           !alloc_has_construct<Allocator,value_type*,const value_type&>::value)
@@ -2060,7 +2073,13 @@ private:
 
   void copy_groups_array_from(const table_core& x) {
     copy_groups_array_from(x, std::integral_constant<bool,
+#if BOOST_WORKAROUND(BOOST_LIBSTDCXX_VERSION,<50000)
+      /* std::is_trivially_copy_assignable not provided */
+      std::is_copy_assignable<group_type>::value&&
+      std::has_trivial_copy_assign<group_type>::value
+#else
       std::is_trivially_copy_assignable<group_type>::value
+#endif
       >{}
     );
   }

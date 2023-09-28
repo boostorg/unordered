@@ -126,7 +126,7 @@ template<typename Mutex>
 class shared_lock
 {
 public:
-  shared_lock(Mutex& m_)noexcept:m{m_}{m.lock_shared();}
+  shared_lock(Mutex& m_)noexcept:m(m_){m.lock_shared();}
   ~shared_lock()noexcept{if(owns)m.unlock_shared();}
 
   /* not used but VS in pre-C++17 mode needs to see it for RVO */
@@ -148,7 +148,7 @@ template<typename Mutex>
 class lock_guard
 {
 public:
-  lock_guard(Mutex& m_)noexcept:m{m_}{m.lock();}
+  lock_guard(Mutex& m_)noexcept:m(m_){m.lock();}
   ~lock_guard()noexcept{m.unlock();}
 
   /* not used but VS in pre-C++17 mode needs to see it for RVO */
@@ -1029,7 +1029,7 @@ private:
     erase_on_exit(
       concurrent_table& x_,
       group_type* pg_,unsigned int pos_,element_type* p_):
-      x{x_},pg{pg_},pos{pos_},p{p_}{}
+      x(x_),pg(pg_),pos(pos_),p(p_){}
     ~erase_on_exit(){if(!rollback_)x.super::erase(pg,pos,p);}
 
     void rollback(){rollback_=true;}
@@ -1283,7 +1283,7 @@ private:
 
   struct reserve_size
   {
-    reserve_size(concurrent_table& x_):x{x_}
+    reserve_size(concurrent_table& x_):x(x_)
     {
       size_=++x.size_ctrl.size;
     }
