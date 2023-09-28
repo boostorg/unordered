@@ -1046,6 +1046,7 @@ struct table_arrays
         bool,
 #if BOOST_WORKAROUND(BOOST_LIBSTDCXX_VERSION,<50000)
       /* std::is_trivially_default_constructible not provided */
+      std::is_default_constructible<group_type>::value&&
       std::has_trivial_default_constructor<group_type>::value
 #else
       std::is_trivially_default_constructible<group_type>::value
