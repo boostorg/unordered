@@ -11,6 +11,8 @@
 #pragma once
 #endif
 
+#include <boost/config/workaround.hpp>
+
 #if !defined(BOOST_NO_CXX17_DEDUCTION_GUIDES)
 #include <iterator>
 #endif
@@ -45,6 +47,43 @@ namespace boost {
       };
 
       template <typename... Ts> using void_t = typename make_void<Ts...>::type;
+
+#if BOOST_WORKAROUND(BOOST_LIBSTDCXX_VERSION, < 50000)
+      /* std::is_trivially_default_constructible not provided */
+      template <class T> struct is_trivially_default_constructible
+      {
+        constexpr static const bool value =
+          std::is_default_constructible<T>::value &&
+          std::has_trivial_default_constructor<T>::value;
+      };
+#else
+      using std::is_trivially_default_constructible;
+#endif
+
+#if BOOST_WORKAROUND(BOOST_LIBSTDCXX_VERSION, < 50000)
+      /* std::is_trivially_copy_constructible not provided */
+      template <class T> struct is_trivially_copy_constructible
+      {
+
+        constexpr static bool const value =
+          std::is_copy_constructible<T>::value &&
+          std::has_trivial_copy_constructor<T>::value;
+      };
+#else
+      using std::is_trivially_copy_constructible;
+#endif
+
+#if BOOST_WORKAROUND(BOOST_LIBSTDCXX_VERSION, < 50000)
+      /* std::is_trivially_copy_assignable not provided */
+      template <class T> struct is_trivially_copy_assignable
+      {
+        constexpr static bool const value =
+          std::is_copy_assignable<T>::value &&
+          std::has_trivial_copy_assign<T>::value;
+      };
+#else
+      using std::is_trivially_copy_assignable;
+#endif
 
       namespace type_traits_detail {
         using std::swap;
