@@ -578,27 +578,27 @@ public:
     for(std::size_t i=0;i<M;++i){
       hashes[i]=this->hash_for(keys[i]);
       auto pos=this->position_for(hashes[i]);
-      BOOST_UNORDERED_PREFETCH(this->arrays.groups+pos);
+      BOOST_UNORDERED_PREFETCH(this->arrays.groups()+pos);
     }
 
     for(std::size_t i=0;i<M;++i){
       auto hash=hashes[i];
       auto pos=this->position_for(hash);
-      masks[i]=(this->arrays.groups+pos)->match(hash);
+      masks[i]=(this->arrays.groups()+pos)->match(hash);
       if(masks[i]){
-        BOOST_UNORDERED_PREFETCH(this->arrays.group_accesses+pos);
-        BOOST_UNORDERED_PREFETCH_ELEMENTS(this->arrays.elements+pos*N,N);
+        BOOST_UNORDERED_PREFETCH(this->arrays.group_accesses()+pos);
+        BOOST_UNORDERED_PREFETCH_ELEMENTS(this->arrays.elements()+pos*N,N);
       }
     }
 
     for(std::size_t i=0;i<M;++i){
       prober        pb(this->position_for(hashes[i]));
       auto          pos=pb.get();
-      auto          pg=this->arrays.groups+pos;
+      auto          pg=this->arrays.groups()+pos;
       auto          mask=masks[i];
       element_type *p;
       if(mask){
-        p=this->arrays.elements+pos*N;
+        p=this->arrays.elements()+pos*N;
         goto post_prefetch;
       }
       else{
@@ -606,10 +606,10 @@ public:
       }
       do{
         pos=pb.get();
-        pg=this->arrays.groups+pos;
+        pg=this->arrays.groups()+pos;
         mask=pg->match(hashes[i]);
         if(mask){
-          p=this->arrays.elements+pos*N;
+          p=this->arrays.elements()+pos*N;
           BOOST_UNORDERED_PREFETCH_ELEMENTS(p,N);
       post_prefetch:
           auto lck=access(group_shared{},pos);
