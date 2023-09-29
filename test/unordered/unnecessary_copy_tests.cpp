@@ -441,7 +441,7 @@ namespace unnecessary_copy_tests {
 #endif
 
     reset();
-    x.emplace(std::piecewise_construct, boost::make_tuple(),
+    x.emplace(boost::unordered::piecewise_construct, boost::make_tuple(),
       boost::make_tuple());
     COPY_COUNT(2);
     MOVE_COUNT(0);
@@ -508,7 +508,7 @@ namespace unnecessary_copy_tests {
     MOVE_COUNT(0);
 
     reset();
-    x.emplace(std::piecewise_construct,
+    x.emplace(boost::unordered::piecewise_construct,
       boost::make_tuple(boost::ref(b.first)),
       boost::make_tuple(boost::ref(b.second)));
     COPY_COUNT(0);

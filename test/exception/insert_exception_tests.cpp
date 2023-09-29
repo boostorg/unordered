@@ -295,7 +295,7 @@ struct pair_emplace_type : inserter_base
     x.emplace(std::piecewise_construct, std::make_tuple(it->first),
       std::make_tuple(it->second));
 #else
-    x.emplace(std::piecewise_construct,
+    x.emplace(boost::unordered::piecewise_construct,
       boost::make_tuple(it->first), boost::make_tuple(it->second));
 #endif
   }
@@ -310,7 +310,7 @@ struct pair_emplace2_type : inserter_base
       std::make_tuple(it->first),
       std::make_tuple(it->second.tag1_, it->second.tag2_));
 #else
-    x.emplace_hint(x.begin(), std::piecewise_construct,
+    x.emplace_hint(x.begin(), boost::unordered::piecewise_construct,
       boost::make_tuple(it->first),
       boost::make_tuple(it->second.tag1_, it->second.tag2_));
 #endif

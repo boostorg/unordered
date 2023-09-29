@@ -1323,7 +1323,7 @@ namespace insert_tests {
 #endif
 
   struct derived_from_piecewise_construct_t
-    : std::piecewise_construct_t
+    : boost::unordered::piecewise_construct_t
   {
   };
 
@@ -1334,18 +1334,14 @@ namespace insert_tests {
 
   struct convertible_to_piecewise
   {
-    operator std::piecewise_construct_t() const
+    operator boost::unordered::piecewise_construct_t() const
     {
-      return std::piecewise_construct;
+      return boost::unordered::piecewise_construct;
     }
   };
 
 #ifndef BOOST_UNORDERED_FOA_TESTS
   UNORDERED_AUTO_TEST (map_emplace_test2) {
-    // Emulating piecewise construction with boost::tuple bypasses the
-    // allocator's construct method, but still uses test destroy method.
-    test::detail::disable_construction_tracking _scoped;
-
     {
       boost::unordered_map<overloaded_constructor, overloaded_constructor,
         boost::hash<overloaded_constructor>,

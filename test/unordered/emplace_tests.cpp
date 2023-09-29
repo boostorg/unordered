@@ -11,9 +11,13 @@
 #include <boost/container_hash/hash.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <string>
+#include <type_traits>
 
 // Test that various emplace methods work with different numbers of
 // arguments.
+
+BOOST_UNORDERED_STATIC_ASSERT(std::is_same<std::piecewise_construct_t,
+  boost::unordered::piecewise_construct_t>::value);
 
 namespace emplace_tests {
   // Constructible with 2 to 10 arguments
@@ -529,7 +533,7 @@ namespace emplace_tests {
       emplace_value k1(5, "", 'b', 4, 5);
       emplace_value m1(8, "xxx", 'z', 4, 5, 6, 7, 8);
       r1 =
-        x.emplace(std::piecewise_construct, boost::make_tuple(5, "", 'b', 4, 5),
+        x.emplace(boost::unordered::piecewise_construct, boost::make_tuple(5, "", 'b', 4, 5),
           boost::make_tuple(8, "xxx", 'z', 4, 5, 6, 7, 8));
       BOOST_TEST_EQ(x.size(), 1u);
       BOOST_TEST(r1.second);
@@ -539,7 +543,7 @@ namespace emplace_tests {
       BOOST_TEST_EQ(check_.constructions(), 4);
 
       r2 =
-        x.emplace(std::piecewise_construct, boost::make_tuple(5, "", 'b', 4, 5),
+        x.emplace(boost::unordered::piecewise_construct, boost::make_tuple(5, "", 'b', 4, 5),
           boost::make_tuple(8, "xxx", 'z', 4, 5, 6, 7, 8));
       BOOST_TEST_EQ(x.size(), 1u);
       BOOST_TEST(!r2.second);
@@ -554,7 +558,7 @@ namespace emplace_tests {
 
       emplace_value k2(9, "", 'b', 4, 5, 6, 7, 8, 9);
       emplace_value m2(3, "aaa", 'm');
-      r1 = x.emplace(std::piecewise_construct,
+      r1 = x.emplace(boost::unordered::piecewise_construct,
         boost::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
         boost::make_tuple(3, "aaa", 'm'));
       BOOST_TEST_EQ(x.size(), 2u);
@@ -566,13 +570,16 @@ namespace emplace_tests {
       BOOST_TEST_EQ(check_.instances(), 8);
       BOOST_TEST_EQ(check_.constructions(), 10);
 
-      BOOST_TEST(r1.first == x.emplace_hint(r1.first, std::piecewise_construct,
+      BOOST_TEST(r1.first == x.emplace_hint(r1.first,
+                               boost::unordered::piecewise_construct,
                                boost::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
                                boost::make_tuple(15, "jkjk")));
-      BOOST_TEST(r1.first == x.emplace_hint(r2.first, std::piecewise_construct,
+      BOOST_TEST(r1.first == x.emplace_hint(r2.first,
+                               boost::unordered::piecewise_construct,
                                boost::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
                                boost::make_tuple(275, "xxx", 'm', 6)));
-      BOOST_TEST(r1.first == x.emplace_hint(x.end(), std::piecewise_construct,
+      BOOST_TEST(r1.first == x.emplace_hint(x.end(),
+                               boost::unordered::piecewise_construct,
                                boost::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
                                boost::make_tuple(-10, "blah blah", '\0')));
       BOOST_TEST_EQ(x.size(), 2u);
@@ -613,7 +620,7 @@ namespace emplace_tests {
 
     emplace_value k1(5, "", 'b', 4, 5);
     emplace_value m1(8, "xxx", 'z', 4, 5, 6, 7, 8);
-    i1 = x.emplace(std::piecewise_construct,
+    i1 = x.emplace(boost::unordered::piecewise_construct,
       boost::make_tuple(5, "", 'b', 4, 5),
       boost::make_tuple(8, "xxx", 'z', 4, 5, 6, 7, 8));
     BOOST_TEST_EQ(x.size(), 1u);
@@ -623,7 +630,7 @@ namespace emplace_tests {
     BOOST_TEST_EQ(check_.constructions(), 4);
 
     emplace_value m1a(8, "xxx", 'z', 4, 5, 6, 7, 8);
-    i2 = x.emplace(std::piecewise_construct,
+    i2 = x.emplace(boost::unordered::piecewise_construct,
       boost::make_tuple(5, "", 'b', 4, 5),
       boost::make_tuple(8, "xxx", 'z', 4, 5, 6, 7, 8));
     BOOST_TEST_EQ(x.size(), 2u);
@@ -637,7 +644,7 @@ namespace emplace_tests {
 
     emplace_value k2(9, "", 'b', 4, 5, 6, 7, 8, 9);
     emplace_value m2(3, "aaa", 'm');
-    i1 = x.emplace(std::piecewise_construct,
+    i1 = x.emplace(boost::unordered::piecewise_construct,
       boost::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
       boost::make_tuple(3, "aaa", 'm'));
     BOOST_TEST_EQ(x.size(), 3u);
@@ -647,15 +654,15 @@ namespace emplace_tests {
     BOOST_TEST_EQ(check_.constructions(), 11);
 
     emplace_value m2a(15, "jkjk");
-    i2 = x.emplace_hint(i2, std::piecewise_construct,
+    i2 = x.emplace_hint(i2, boost::unordered::piecewise_construct,
       boost::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
       boost::make_tuple(15, "jkjk"));
     emplace_value m2b(275, "xxx", 'm', 6);
-    i3 = x.emplace_hint(i1, std::piecewise_construct,
+    i3 = x.emplace_hint(i1, boost::unordered::piecewise_construct,
       boost::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
       boost::make_tuple(275, "xxx", 'm', 6));
     emplace_value m2c(-10, "blah blah", '\0');
-    i4 = x.emplace_hint(x.end(), std::piecewise_construct,
+    i4 = x.emplace_hint(x.end(), boost::unordered::piecewise_construct,
       boost::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
       boost::make_tuple(-10, "blah blah", '\0'));
     BOOST_TEST_EQ(x.size(), 6u);

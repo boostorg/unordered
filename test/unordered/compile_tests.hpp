@@ -446,7 +446,7 @@ void unordered_map_test(X& r, Key const& k, T const& v)
 #ifdef BOOST_UNORDERED_FOA_TESTS
   r.emplace(std::piecewise_construct, std::make_tuple(k), std::make_tuple(v));
 #else
-  r.emplace(std::piecewise_construct, boost::make_tuple(k),
+  r.emplace(boost::unordered::piecewise_construct, boost::make_tuple(k),
     boost::make_tuple(v));
 #endif
 
@@ -460,7 +460,7 @@ void unordered_map_test(X& r, Key const& k, T const& v)
   r.emplace_hint(r.begin(), std::piecewise_construct, std::make_tuple(k),
     std::make_tuple(v));
 #else
-  r.emplace_hint(r.begin(), std::piecewise_construct,
+  r.emplace_hint(r.begin(), boost::unordered::piecewise_construct,
     boost::make_tuple(k), boost::make_tuple(v));
 #endif
 
