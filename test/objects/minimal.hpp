@@ -14,7 +14,6 @@
 #include <boost/core/addressof.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <boost/core/pointer_traits.hpp>
-#include <boost/move/move.hpp>
 #include <cstddef>
 #include <utility>
 
@@ -165,19 +164,18 @@ namespace test {
 
     class movable1
     {
-      BOOST_MOVABLE_BUT_NOT_COPYABLE(movable1)
-
     public:
       movable1(constructor_param const&) {}
       movable1() {}
       explicit movable1(movable_init) {}
-      movable1(BOOST_RV_REF(movable1)) {}
-      movable1& operator=(BOOST_RV_REF(movable1)) { return *this; }
+      movable1(movable1 const&) = delete;
+      movable1& operator=(movable1 const&) = delete;
+      movable1(movable1&&) {}
+      movable1& operator=(movable1&&) { return *this; }
       ~movable1() {}
       void dummy_member() const {}
     };
 
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
     class movable2
     {
     public:
@@ -193,9 +191,6 @@ namespace test {
       movable2(movable2 const&);
       movable2& operator=(movable2 const&);
     };
-#else
-    typedef movable1 movable2;
-#endif
 
     template <class T> class hash
     {
@@ -344,7 +339,7 @@ namespace test {
       bool operator!() const { return !ptr_; }
 
       static ptr pointer_to(T& p) {
-        return ptr(boost::addressof(p));
+        return ptr(std::addressof(p));
       }
 
       // I'm not using the safe bool idiom because the containers should be
@@ -461,18 +456,11 @@ namespace test {
         ::operator delete((void*)p.ptr_);
       }
 
-#if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-      template <class U, class V> void construct(U* p, V const& v)
-      {
-        new ((void*)p) U(v);
-      }
-#else
       template <class U, class... Args>
-      void construct(U* p, BOOST_FWD_REF(Args)... args)
+      void construct(U* p, Args&&... args)
       {
-        new ((void*)p) U(boost::forward<Args>(args)...);
+        new ((void*)p) U(std::forward<Args>(args)...);
       }
-#endif
 
       template <class U> void destroy(U* p) { p->~U(); }
 
@@ -535,18 +523,11 @@ namespace test {
         ::operator delete((void*)p.ptr_);
       }
 
-#if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-      template <class U> void construct(U* p, U const& t)
-      {
-        new (p) U(t);
-      }
-#else
       template <class U, class... Args>
-      void construct(U* p, BOOST_FWD_REF(Args)... args)
+      void construct(U* p, Args&&... args)
       {
-        new (p) U(boost::forward<Args>(args)...);
+        new (p) U(std::forward<Args>(args)...);
       }
-#endif
 
       template <class U> void destroy(U* p) { p->~U(); }
 
@@ -613,18 +594,11 @@ namespace test {
 
       void deallocate(T* p, std::size_t) { ::operator delete((void*)p); }
 
-#if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-      template <class U, class V> void construct(U* p, V const& v)
-      {
-        new ((void*)p) U(v);
-      }
-#else
       template <class U, class... Args>
-      void construct(U* p, BOOST_FWD_REF(Args)... args)
+      void construct(U* p, Args&&... args)
       {
-        new ((void*)p) U(boost::forward<Args>(args)...);
+        new ((void*)p) U(std::forward<Args>(args)...);
       }
-#endif
 
       template <class U> void destroy(U* p) { p->~U(); }
 

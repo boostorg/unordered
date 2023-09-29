@@ -6,13 +6,18 @@
 
 #include "../helpers/unordered.hpp"
 
-#include <boost/functional/hash/hash.hpp>
-#include "../helpers/test.hpp"
 #include "../helpers/count.hpp"
+#include "../helpers/test.hpp"
+#include <boost/container_hash/hash.hpp>
+#include <boost/tuple/tuple.hpp>
 #include <string>
+#include <type_traits>
 
 // Test that various emplace methods work with different numbers of
 // arguments.
+
+BOOST_UNORDERED_STATIC_ASSERT(std::is_same<std::piecewise_construct_t,
+  boost::unordered::piecewise_construct_t>::value);
 
 namespace emplace_tests {
   // Constructible with 2 to 10 arguments
@@ -386,6 +391,7 @@ namespace emplace_tests {
 
   template <class X> static void emplace_map(X*)
   {
+#ifdef BOOST_UNORDERED_FOA_TESTS
     test::check_instances check_;
 
     typedef X container;
@@ -394,7 +400,6 @@ namespace emplace_tests {
     container x(10);
     return_type r1, r2;
 
-#ifdef BOOST_UNORDERED_FOA_TESTS
     // 5/8 args + duplicate
     emplace_value k1(5, "", 'b', 4, 5);
     BOOST_TEST_EQ(check_.constructions(), 1);
@@ -450,63 +455,138 @@ namespace emplace_tests {
     BOOST_TEST_EQ(check_.instances(), 8);
     BOOST_TEST_EQ(check_.constructions(), 20);
 #else
-    // 5/8 args + duplicate
-    emplace_value k1(5, "", 'b', 4, 5);
-    emplace_value m1(8, "xxx", 'z', 4, 5, 6, 7, 8);
-    r1 = x.emplace(boost::unordered::piecewise_construct,
-      boost::make_tuple(5, "", 'b', 4, 5),
-      boost::make_tuple(8, "xxx", 'z', 4, 5, 6, 7, 8));
-    BOOST_TEST_EQ(x.size(), 1u);
-    BOOST_TEST(r1.second);
-    BOOST_TEST(x.find(k1) == r1.first);
-    BOOST_TEST(x.find(k1)->second == m1);
-    BOOST_TEST_EQ(check_.instances(), 4);
-    BOOST_TEST_EQ(check_.constructions(), 4);
+    {
+      test::check_instances check_;
 
-    r2 = x.emplace(boost::unordered::piecewise_construct,
-      boost::make_tuple(5, "", 'b', 4, 5),
-      boost::make_tuple(8, "xxx", 'z', 4, 5, 6, 7, 8));
-    BOOST_TEST_EQ(x.size(), 1u);
-    BOOST_TEST(!r2.second);
-    BOOST_TEST(r1.first == r2.first);
-    BOOST_TEST(x.find(k1)->second == m1);
-    BOOST_TEST_EQ(check_.instances(), 4);
-    // constructions could possibly be 5 if the implementation only
-    // constructed the key.
-    BOOST_TEST_EQ(check_.constructions(), 6);
+      typedef X container;
+      typedef typename container::iterator iterator;
+      typedef std::pair<iterator, bool> return_type;
+      container x(10);
+      return_type r1, r2;
 
-    // 9/3 args + duplicates with hints, different mapped value.
+      // 5/8 args + duplicate
+      emplace_value k1(5, "", 'b', 4, 5);
+      emplace_value m1(8, "xxx", 'z', 4, 5, 6, 7, 8);
+      r1 =
+        x.emplace(std::piecewise_construct, std::make_tuple(5, "", 'b', 4, 5),
+          std::make_tuple(8, "xxx", 'z', 4, 5, 6, 7, 8));
+      BOOST_TEST_EQ(x.size(), 1u);
+      BOOST_TEST(r1.second);
+      BOOST_TEST(x.find(k1) == r1.first);
+      BOOST_TEST(x.find(k1)->second == m1);
+      BOOST_TEST_EQ(check_.instances(), 4);
+      BOOST_TEST_EQ(check_.constructions(), 4);
 
-    emplace_value k2(9, "", 'b', 4, 5, 6, 7, 8, 9);
-    emplace_value m2(3, "aaa", 'm');
-    r1 = x.emplace(boost::unordered::piecewise_construct,
-      boost::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
-      boost::make_tuple(3, "aaa", 'm'));
-    BOOST_TEST_EQ(x.size(), 2u);
-    BOOST_TEST(r1.second);
-    BOOST_TEST(r1.first->first.arg_count == 9);
-    BOOST_TEST(r1.first->second.arg_count == 3);
-    BOOST_TEST(x.find(k2) == r1.first);
-    BOOST_TEST(x.find(k2)->second == m2);
-    BOOST_TEST_EQ(check_.instances(), 8);
-    BOOST_TEST_EQ(check_.constructions(), 10);
+      r2 =
+        x.emplace(std::piecewise_construct, std::make_tuple(5, "", 'b', 4, 5),
+          std::make_tuple(8, "xxx", 'z', 4, 5, 6, 7, 8));
+      BOOST_TEST_EQ(x.size(), 1u);
+      BOOST_TEST(!r2.second);
+      BOOST_TEST(r1.first == r2.first);
+      BOOST_TEST(x.find(k1)->second == m1);
+      BOOST_TEST_EQ(check_.instances(), 4);
+      // constructions could possibly be 5 if the implementation only
+      // constructed the key.
+      BOOST_TEST_EQ(check_.constructions(), 6);
 
-    BOOST_TEST(r1.first == x.emplace_hint(r1.first,
-                             boost::unordered::piecewise_construct,
-                             boost::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
-                             boost::make_tuple(15, "jkjk")));
-    BOOST_TEST(r1.first == x.emplace_hint(r2.first,
-                             boost::unordered::piecewise_construct,
-                             boost::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
-                             boost::make_tuple(275, "xxx", 'm', 6)));
-    BOOST_TEST(
-      r1.first == x.emplace_hint(x.end(), boost::unordered::piecewise_construct,
-                    boost::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
-                    boost::make_tuple(-10, "blah blah", '\0')));
-    BOOST_TEST_EQ(x.size(), 2u);
-    BOOST_TEST(x.find(k2)->second == m2);
-    BOOST_TEST_EQ(check_.instances(), 8);
-    BOOST_TEST_EQ(check_.constructions(), 16);
+      // 9/3 args + duplicates with hints, different mapped value.
+
+      emplace_value k2(9, "", 'b', 4, 5, 6, 7, 8, 9);
+      emplace_value m2(3, "aaa", 'm');
+      r1 = x.emplace(std::piecewise_construct,
+        std::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
+        std::make_tuple(3, "aaa", 'm'));
+      BOOST_TEST_EQ(x.size(), 2u);
+      BOOST_TEST(r1.second);
+      BOOST_TEST(r1.first->first.arg_count == 9);
+      BOOST_TEST(r1.first->second.arg_count == 3);
+      BOOST_TEST(x.find(k2) == r1.first);
+      BOOST_TEST(x.find(k2)->second == m2);
+      BOOST_TEST_EQ(check_.instances(), 8);
+      BOOST_TEST_EQ(check_.constructions(), 10);
+
+      BOOST_TEST(r1.first == x.emplace_hint(r1.first, std::piecewise_construct,
+                               std::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
+                               std::make_tuple(15, "jkjk")));
+      BOOST_TEST(r1.first == x.emplace_hint(r2.first, std::piecewise_construct,
+                               std::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
+                               std::make_tuple(275, "xxx", 'm', 6)));
+      BOOST_TEST(r1.first == x.emplace_hint(x.end(), std::piecewise_construct,
+                               std::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
+                               std::make_tuple(-10, "blah blah", '\0')));
+      BOOST_TEST_EQ(x.size(), 2u);
+      BOOST_TEST(x.find(k2)->second == m2);
+      BOOST_TEST_EQ(check_.instances(), 8);
+      BOOST_TEST_EQ(check_.constructions(), 16);
+    }
+
+    {
+      test::check_instances check_;
+
+      typedef X container;
+      typedef typename container::iterator iterator;
+      typedef std::pair<iterator, bool> return_type;
+      container x(10);
+      return_type r1, r2;
+
+      // 5/8 args + duplicate
+      emplace_value k1(5, "", 'b', 4, 5);
+      emplace_value m1(8, "xxx", 'z', 4, 5, 6, 7, 8);
+      r1 =
+        x.emplace(boost::unordered::piecewise_construct, boost::make_tuple(5, "", 'b', 4, 5),
+          boost::make_tuple(8, "xxx", 'z', 4, 5, 6, 7, 8));
+      BOOST_TEST_EQ(x.size(), 1u);
+      BOOST_TEST(r1.second);
+      BOOST_TEST(x.find(k1) == r1.first);
+      BOOST_TEST(x.find(k1)->second == m1);
+      BOOST_TEST_EQ(check_.instances(), 4);
+      BOOST_TEST_EQ(check_.constructions(), 4);
+
+      r2 =
+        x.emplace(boost::unordered::piecewise_construct, boost::make_tuple(5, "", 'b', 4, 5),
+          boost::make_tuple(8, "xxx", 'z', 4, 5, 6, 7, 8));
+      BOOST_TEST_EQ(x.size(), 1u);
+      BOOST_TEST(!r2.second);
+      BOOST_TEST(r1.first == r2.first);
+      BOOST_TEST(x.find(k1)->second == m1);
+      BOOST_TEST_EQ(check_.instances(), 4);
+      // constructions could possibly be 5 if the implementation only
+      // constructed the key.
+      BOOST_TEST_EQ(check_.constructions(), 6);
+
+      // 9/3 args + duplicates with hints, different mapped value.
+
+      emplace_value k2(9, "", 'b', 4, 5, 6, 7, 8, 9);
+      emplace_value m2(3, "aaa", 'm');
+      r1 = x.emplace(boost::unordered::piecewise_construct,
+        boost::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
+        boost::make_tuple(3, "aaa", 'm'));
+      BOOST_TEST_EQ(x.size(), 2u);
+      BOOST_TEST(r1.second);
+      BOOST_TEST(r1.first->first.arg_count == 9);
+      BOOST_TEST(r1.first->second.arg_count == 3);
+      BOOST_TEST(x.find(k2) == r1.first);
+      BOOST_TEST(x.find(k2)->second == m2);
+      BOOST_TEST_EQ(check_.instances(), 8);
+      BOOST_TEST_EQ(check_.constructions(), 10);
+
+      BOOST_TEST(r1.first == x.emplace_hint(r1.first,
+                               boost::unordered::piecewise_construct,
+                               boost::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
+                               boost::make_tuple(15, "jkjk")));
+      BOOST_TEST(r1.first == x.emplace_hint(r2.first,
+                               boost::unordered::piecewise_construct,
+                               boost::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
+                               boost::make_tuple(275, "xxx", 'm', 6)));
+      BOOST_TEST(r1.first == x.emplace_hint(x.end(),
+                               boost::unordered::piecewise_construct,
+                               boost::make_tuple(9, "", 'b', 4, 5, 6, 7, 8, 9),
+                               boost::make_tuple(-10, "blah blah", '\0')));
+      BOOST_TEST_EQ(x.size(), 2u);
+      BOOST_TEST(x.find(k2)->second == m2);
+      BOOST_TEST_EQ(check_.instances(), 8);
+      BOOST_TEST_EQ(check_.constructions(), 16);
+    }
 #endif
   }
 

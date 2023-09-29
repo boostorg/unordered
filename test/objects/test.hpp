@@ -96,7 +96,6 @@ namespace test {
     friend class less;
     int tag1_, tag2_;
 
-    BOOST_COPYABLE_AND_MOVABLE(movable)
   public:
     explicit movable(int t1 = 0, int t2 = 0) : tag1_(t1), tag2_(t2) {}
 
@@ -106,7 +105,7 @@ namespace test {
       BOOST_TEST(x.tag1_ != -1);
     }
 
-    movable(BOOST_RV_REF(movable) x)
+    movable(movable&& x)
         : counted_object(x), tag1_(x.tag1_), tag2_(x.tag2_)
     {
       BOOST_TEST(x.tag1_ != -1);
@@ -114,7 +113,7 @@ namespace test {
       x.tag2_ = -1;
     }
 
-    movable& operator=(BOOST_COPY_ASSIGN_REF(movable) x) // Copy assignment
+    movable& operator=(movable const& x) // Copy assignment
     {
       BOOST_TEST(x.tag1_ != -1);
       tag1_ = x.tag1_;
@@ -122,7 +121,7 @@ namespace test {
       return *this;
     }
 
-    movable& operator=(BOOST_RV_REF(movable) x) // Move assignment
+    movable& operator=(movable&& x) // Move assignment
     {
       BOOST_TEST(x.tag1_ != -1);
       tag1_ = x.tag1_;
@@ -410,11 +409,10 @@ namespace test {
       ::operator delete((void*)p);
     }
 
-#if BOOST_UNORDERED_CXX11_CONSTRUCTION
     template <typename U, typename... Args> void construct(U* p, Args&&... args)
     {
       detail::tracker.track_construct((void*)p, sizeof(U), tag_);
-      new (p) U(boost::forward<Args>(args)...);
+      new (p) U(std::forward<Args>(args)...);
     }
 
     template <typename U> void destroy(U* p)
@@ -425,22 +423,6 @@ namespace test {
       // Work around MSVC buggy unused parameter warning.
       ignore_variable(&p);
     }
-#else
-  private:
-    // I'm going to claim in the documentation that construct/destroy
-    // is never used when C++11 support isn't available, so might as
-    // well check that in the text.
-    // TODO: Or maybe just disallow them for values?
-    template <typename U> void construct(U* p);
-    template <typename U, typename A0> void construct(U* p, A0 const&);
-    template <typename U, typename A0, typename A1>
-    void construct(U* p, A0 const&, A1 const&);
-    template <typename U, typename A0, typename A1, typename A2>
-    void construct(U* p, A0 const&, A1 const&, A2 const&);
-    template <typename U> void destroy(U* p);
-
-  public:
-#endif
 
     bool operator==(allocator1 const& x) const { return tag_ == x.tag_; }
 
@@ -674,20 +656,12 @@ namespace test {
       ::operator delete((void*)p.ptr_);
     }
 
-#if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-    template <class U, class V> void construct(U* p, V const& v)
-    {
-      detail::tracker.track_construct((void*)p, sizeof(U), tag_);
-      new (p) U(v);
-    }
-#else
     template <class U, class... Args>
-    void construct(U* p, BOOST_FWD_REF(Args)... args)
+    void construct(U* p, Args&&... args)
     {
       detail::tracker.track_construct((void*)p, sizeof(U), tag_);
-      new (p) U(boost::forward<Args>(args)...);
+      new (p) U(std::forward<Args>(args)...);
     }
-#endif
 
     template <class U> void destroy(U* p)
     {

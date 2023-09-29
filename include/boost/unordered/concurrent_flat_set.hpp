@@ -22,7 +22,6 @@
 #include <boost/container_hash/hash.hpp>
 #include <boost/core/allocator_access.hpp>
 #include <boost/core/serialization.hpp>
-#include <boost/type_traits/type_identity.hpp>
 
 #include <utility>
 
@@ -60,9 +59,9 @@ namespace boost {
       using init_type = typename type_policy::init_type;
       using size_type = std::size_t;
       using difference_type = std::ptrdiff_t;
-      using hasher = typename boost::type_identity<Hash>::type;
-      using key_equal = typename boost::type_identity<Pred>::type;
-      using allocator_type = typename boost::type_identity<Allocator>::type;
+      using hasher = typename boost::unordered::detail::type_identity<Hash>::type;
+      using key_equal = typename boost::unordered::detail::type_identity<Pred>::type;
+      using allocator_type = typename boost::unordered::detail::type_identity<Allocator>::type;
       using reference = value_type&;
       using const_reference = value_type const&;
       using pointer = typename boost::allocator_pointer<allocator_type>::type;

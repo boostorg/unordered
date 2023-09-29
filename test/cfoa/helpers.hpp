@@ -536,7 +536,7 @@ public:
   T& operator[](std::ptrdiff_t s) const { return ptr_[s]; }
   bool operator!() const { return !ptr_; }
 
-  static ptr pointer_to(T& p) { return ptr(boost::addressof(p)); }
+  static ptr pointer_to(T& p) { return ptr(std::addressof(p)); }
 
   // I'm not using the safe bool idiom because the containers should be
   // able to cope with bool conversions.

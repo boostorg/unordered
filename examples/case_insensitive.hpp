@@ -14,7 +14,7 @@
 #define BOOST_HASH_EXAMPLES_CASE_INSENSITIVE_HEADER
 
 #include <boost/algorithm/string/predicate.hpp>
-#include <boost/functional/hash.hpp>
+#include <boost/container_hash/hash.hpp>
 
 namespace hash_examples
 {

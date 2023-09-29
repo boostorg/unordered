@@ -57,13 +57,10 @@ namespace noexcept_tests {
     bool nothrow_swap>
   class hash_nothrow : boost::hash<int>
   {
-    BOOST_COPYABLE_AND_MOVABLE(hash_nothrow)
-
     typedef boost::hash<int> base;
 
   public:
-    hash_nothrow(BOOST_RV_REF(hash_nothrow))
-      BOOST_NOEXCEPT_IF(nothrow_move_construct)
+    hash_nothrow(hash_nothrow&&) noexcept(nothrow_move_construct)
     {
       if (!nothrow_move_construct) {
         test_throw("Move Constructor");
@@ -72,13 +69,13 @@ namespace noexcept_tests {
 
     hash_nothrow() { test_throw("Constructor"); }
     hash_nothrow(hash_nothrow const&) { test_throw("Copy"); }
-    hash_nothrow& operator=(BOOST_COPY_ASSIGN_REF(hash_nothrow))
+    hash_nothrow& operator=(hash_nothrow const&)
     {
       test_throw("Assign");
       return *this;
     }
-    hash_nothrow& operator=(BOOST_RV_REF(hash_nothrow))
-      BOOST_NOEXCEPT_IF(nothrow_move_assign)
+    hash_nothrow& operator=(hash_nothrow&&)
+      noexcept(nothrow_move_assign)
     {
       if (!nothrow_move_assign) {
         test_throw("Move Assign");
@@ -90,8 +87,7 @@ namespace noexcept_tests {
       test_throw("Operator");
       return static_cast<base const&>(*this)(x);
     }
-    friend void swap(hash_nothrow&, hash_nothrow&)
-      BOOST_NOEXCEPT_IF(nothrow_swap)
+    friend void swap(hash_nothrow&, hash_nothrow&) noexcept(nothrow_swap)
     {
       if (!nothrow_swap) {
         test_throw("Swap");
@@ -107,13 +103,11 @@ namespace noexcept_tests {
     bool nothrow_swap>
   class equal_to_nothrow
   {
-    BOOST_COPYABLE_AND_MOVABLE(equal_to_nothrow)
-
     typedef boost::hash<int> base;
 
   public:
-    equal_to_nothrow(BOOST_RV_REF(equal_to_nothrow))
-      BOOST_NOEXCEPT_IF(nothrow_move_construct)
+    equal_to_nothrow(equal_to_nothrow&&)
+      noexcept(nothrow_move_construct)
     {
       if (!nothrow_move_construct) {
         test_throw("Move Constructor");
@@ -122,13 +116,13 @@ namespace noexcept_tests {
 
     equal_to_nothrow() { test_throw("Constructor"); }
     equal_to_nothrow(equal_to_nothrow const&) { test_throw("Copy"); }
-    equal_to_nothrow& operator=(BOOST_COPY_ASSIGN_REF(equal_to_nothrow))
+    equal_to_nothrow& operator=(equal_to_nothrow const&)
     {
       test_throw("Assign");
       return *this;
     }
-    equal_to_nothrow& operator=(BOOST_RV_REF(equal_to_nothrow))
-      BOOST_NOEXCEPT_IF(nothrow_move_assign)
+    equal_to_nothrow& operator=(equal_to_nothrow&&)
+      noexcept(nothrow_move_assign)
     {
       if (!nothrow_move_assign) {
         test_throw("Move Assign");
@@ -141,7 +135,7 @@ namespace noexcept_tests {
       return x == y;
     }
     friend void swap(equal_to_nothrow&, equal_to_nothrow&)
-      BOOST_NOEXCEPT_IF(nothrow_swap)
+      noexcept(nothrow_swap)
     {
       if (!nothrow_swap) {
         test_throw("Swap");
@@ -178,18 +172,9 @@ namespace noexcept_tests {
       boost::is_nothrow_swappable<hash_nothrow_swap>::value;
 
 // Check that the traits work when expected.
-#if !defined(BOOST_NO_CXX11_NOEXCEPT) && !defined(BOOST_NO_SFINAE_EXPR) &&     \
-  !BOOST_WORKAROUND(BOOST_GCC_VERSION, < 40800)
     BOOST_TEST(have_is_nothrow_move);
     BOOST_TEST(have_is_nothrow_move_assign);
-#endif
-
-#if !defined(BOOST_NO_SFINAE_EXPR) && !defined(BOOST_NO_CXX11_NOEXCEPT) &&     \
-  !defined(BOOST_NO_CXX11_DECLTYPE) &&                                         \
-  !defined(BOOST_NO_CXX11_FUNCTION_TEMPLATE_DEFAULT_ARGS) &&                   \
-  !BOOST_WORKAROUND(BOOST_GCC_VERSION, < 40700)
     BOOST_TEST(have_is_nothrow_swap);
-#endif
 
     BOOST_LIGHTWEIGHT_TEST_OSTREAM
       << "have_is_nothrow_move: " << have_is_nothrow_move << std::endl
@@ -257,7 +242,7 @@ namespace noexcept_tests {
     try {
       throwing_test_exception = true;
 
-      X x2 = boost::move(x1);
+      X x2 = std::move(x1);
       BOOST_TEST(x2.size() == 2);
       BOOST_TEST(*x2.begin() == 10 || *x2.begin() == 50);
       BOOST_TEST(have_is_nothrow_move);
@@ -289,7 +274,7 @@ namespace noexcept_tests {
       try {
         throwing_test_exception = true;
 
-        x2 = boost::move(x1);
+        x2 = std::move(x1);
         BOOST_TEST(x2.size() == 2);
         BOOST_TEST(*x2.begin() == 10 || *x2.begin() == 50);
         BOOST_TEST(have_is_nothrow_move_assign);
@@ -318,7 +303,7 @@ namespace noexcept_tests {
       try {
         throwing_test_exception = true;
 
-        x1 = boost::move(x2);
+        x1 = std::move(x2);
         BOOST_TEST(x1.size() == 100);
         BOOST_TEST(have_is_nothrow_move_assign);
       } catch (test_exception) {
@@ -367,9 +352,8 @@ namespace noexcept_tests {
 
 template <class T> class allocator1
 {
-  BOOST_COPYABLE_AND_MOVABLE(allocator1)
-  allocator1 operator=(BOOST_COPY_ASSIGN_REF(allocator1));
-  allocator1 operator=(BOOST_RV_REF(allocator1));
+  allocator1 operator=(allocator1 const&);
+  allocator1 operator=(allocator1&&);
 
 public:
   typedef T value_type;
@@ -393,8 +377,7 @@ public:
 
 template <class T> class allocator2
 {
-  BOOST_COPYABLE_AND_MOVABLE(allocator2)
-  allocator2 operator=(BOOST_COPY_ASSIGN_REF(allocator2));
+  allocator2 operator=(allocator2 const&);
 
 public:
   typedef T value_type;
@@ -405,7 +388,7 @@ public:
 
   template <class U> allocator2(allocator2<U> const&) {}
 
-  allocator2& operator=(BOOST_RV_REF(allocator2)) { return *this; }
+  allocator2& operator=(allocator2&&) { return *this; }
 
   T* allocate(std::size_t n)
   {

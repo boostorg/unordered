@@ -18,7 +18,7 @@
 #include <boost/unordered/unordered_flat_map_fwd.hpp>
 
 #include <boost/core/allocator_access.hpp>
-#include <boost/functional/hash.hpp>
+#include <boost/container_hash/hash.hpp>
 #include <boost/throw_exception.hpp>
 
 #include <initializer_list>
@@ -65,9 +65,9 @@ namespace boost {
       using init_type = typename map_types::init_type;
       using size_type = std::size_t;
       using difference_type = std::ptrdiff_t;
-      using hasher = typename boost::type_identity<Hash>::type;
-      using key_equal = typename boost::type_identity<KeyEqual>::type;
-      using allocator_type = typename boost::type_identity<Allocator>::type;
+      using hasher = typename boost::unordered::detail::type_identity<Hash>::type;
+      using key_equal = typename boost::unordered::detail::type_identity<KeyEqual>::type;
+      using allocator_type = typename boost::unordered::detail::type_identity<Allocator>::type;
       using reference = value_type&;
       using const_reference = value_type const&;
       using pointer = typename boost::allocator_pointer<allocator_type>::type;
@@ -729,8 +729,8 @@ namespace boost {
         Allocator>;
 
     template <class Key, class T,
-      class Hash = boost::hash<boost::remove_const_t<Key> >,
-      class Pred = std::equal_to<boost::remove_const_t<Key> >,
+      class Hash = boost::hash<std::remove_const_t<Key> >,
+      class Pred = std::equal_to<std::remove_const_t<Key> >,
       class Allocator = std::allocator<std::pair<const Key, T> >,
       class = boost::enable_if_t<detail::is_hash_v<Hash> >,
       class = boost::enable_if_t<detail::is_pred_v<Pred> >,
@@ -738,7 +738,7 @@ namespace boost {
     unordered_flat_map(std::initializer_list<std::pair<Key, T> >,
       std::size_t = boost::unordered::detail::foa::default_bucket_count,
       Hash = Hash(), Pred = Pred(), Allocator = Allocator())
-      -> unordered_flat_map<boost::remove_const_t<Key>, T, Hash, Pred,
+      -> unordered_flat_map<std::remove_const_t<Key>, T, Hash, Pred,
         Allocator>;
 
     template <class InputIterator, class Allocator,
@@ -775,23 +775,23 @@ namespace boost {
     template <class Key, class T, class Allocator,
       class = boost::enable_if_t<detail::is_allocator_v<Allocator> > >
     unordered_flat_map(std::initializer_list<std::pair<Key, T> >, std::size_t,
-      Allocator) -> unordered_flat_map<boost::remove_const_t<Key>, T,
-      boost::hash<boost::remove_const_t<Key> >,
-      std::equal_to<boost::remove_const_t<Key> >, Allocator>;
+      Allocator) -> unordered_flat_map<std::remove_const_t<Key>, T,
+      boost::hash<std::remove_const_t<Key> >,
+      std::equal_to<std::remove_const_t<Key> >, Allocator>;
 
     template <class Key, class T, class Allocator,
       class = boost::enable_if_t<detail::is_allocator_v<Allocator> > >
     unordered_flat_map(std::initializer_list<std::pair<Key, T> >, Allocator)
-      -> unordered_flat_map<boost::remove_const_t<Key>, T,
-        boost::hash<boost::remove_const_t<Key> >,
-        std::equal_to<boost::remove_const_t<Key> >, Allocator>;
+      -> unordered_flat_map<std::remove_const_t<Key>, T,
+        boost::hash<std::remove_const_t<Key> >,
+        std::equal_to<std::remove_const_t<Key> >, Allocator>;
 
     template <class Key, class T, class Hash, class Allocator,
       class = boost::enable_if_t<detail::is_hash_v<Hash> >,
       class = boost::enable_if_t<detail::is_allocator_v<Allocator> > >
     unordered_flat_map(std::initializer_list<std::pair<Key, T> >, std::size_t,
-      Hash, Allocator) -> unordered_flat_map<boost::remove_const_t<Key>, T,
-      Hash, std::equal_to<boost::remove_const_t<Key> >, Allocator>;
+      Hash, Allocator) -> unordered_flat_map<std::remove_const_t<Key>, T,
+      Hash, std::equal_to<std::remove_const_t<Key> >, Allocator>;
 #endif
 
   } // namespace unordered

@@ -19,7 +19,6 @@
 #include <boost/core/serialization.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/mp11/tuple.hpp>
-#include <boost/static_assert.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/unordered/detail/archive_constructed.hpp>
 #include <boost/unordered/detail/bad_archive_exception.hpp>
@@ -28,6 +27,7 @@
 #include <boost/unordered/detail/foa/rw_spinlock.hpp>
 #include <boost/unordered/detail/foa/tuple_rotate_right.hpp>
 #include <boost/unordered/detail/serialization_version.hpp>
+#include <boost/unordered/detail/static_assert.hpp>
 #include <cstddef>
 #include <functional>
 #include <initializer_list>
@@ -88,7 +88,7 @@ private:
   static constexpr std::size_t element_offset=
     (sizeof(T)+cacheline_size-1)/cacheline_size*cacheline_size;
 
-  BOOST_STATIC_ASSERT(alignof(T)<=cacheline_size);
+  BOOST_UNORDERED_STATIC_ASSERT(alignof(T)<=cacheline_size);
 
   T* data(std::size_t pos)noexcept
   {
@@ -126,7 +126,7 @@ template<typename Mutex>
 class shared_lock
 {
 public:
-  shared_lock(Mutex& m_)noexcept:m{m_}{m.lock_shared();}
+  shared_lock(Mutex& m_)noexcept:m(m_){m.lock_shared();}
   ~shared_lock()noexcept{if(owns)m.unlock_shared();}
 
   /* not used but VS in pre-C++17 mode needs to see it for RVO */
@@ -148,7 +148,7 @@ template<typename Mutex>
 class lock_guard
 {
 public:
-  lock_guard(Mutex& m_)noexcept:m{m_}{m.lock();}
+  lock_guard(Mutex& m_)noexcept:m(m_){m.lock();}
   ~lock_guard()noexcept{m.unlock();}
 
   /* not used but VS in pre-C++17 mode needs to see it for RVO */
@@ -341,7 +341,7 @@ struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy,Allocator>
 struct atomic_size_control
 {
   static constexpr auto atomic_size_t_size=sizeof(std::atomic<std::size_t>);
-  BOOST_STATIC_ASSERT(atomic_size_t_size<cacheline_size);
+  BOOST_UNORDERED_STATIC_ASSERT(atomic_size_t_size<cacheline_size);
 
   atomic_size_control(std::size_t ml_,std::size_t size_):
     pad0_{},ml{ml_},pad1_{},size{size_}{}
@@ -1029,7 +1029,7 @@ private:
     erase_on_exit(
       concurrent_table& x_,
       group_type* pg_,unsigned int pos_,element_type* p_):
-      x{x_},pg{pg_},pos{pos_},p{p_}{}
+      x(x_),pg(pg_),pos(pos_),p(p_){}
     ~erase_on_exit(){if(!rollback_)x.super::erase(pg,pos,p);}
 
     void rollback(){rollback_=true;}
@@ -1283,7 +1283,7 @@ private:
 
   struct reserve_size
   {
-    reserve_size(concurrent_table& x_):x{x_}
+    reserve_size(concurrent_table& x_):x(x_)
     {
       size_=++x.size_ctrl.size;
     }

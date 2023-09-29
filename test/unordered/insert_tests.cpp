@@ -17,7 +17,7 @@
 #include "../helpers/input_iterator.hpp"
 #include "../helpers/helpers.hpp"
 
-#include <boost/move/core.hpp>
+#include <boost/tuple/tuple.hpp>
 #include <vector>
 
 namespace insert_tests {
@@ -75,7 +75,7 @@ namespace insert_tests {
         float b = x.max_load_factor();
 
         typename X::value_type value = *it;
-        std::pair<iterator, bool> r1 = x.insert(boost::move(value));
+        std::pair<iterator, bool> r1 = x.insert(std::move(value));
         std::pair<typename ordered::iterator, bool> r2 = tracker.insert(*it);
 
         BOOST_TEST(r1.second == r2.second);
@@ -137,7 +137,7 @@ namespace insert_tests {
         float b = x.max_load_factor();
 
         typename X::value_type value = *it;
-        typename X::iterator r1 = x.insert(boost::move(value));
+        typename X::iterator r1 = x.insert(std::move(value));
         typename test::ordered<X>::iterator r2 = tracker.insert(*it);
 
         BOOST_TEST(*r1 == *r2);
@@ -258,7 +258,7 @@ namespace insert_tests {
         float b = x.max_load_factor();
 
         typename X::value_type value = *it;
-        pos = x.insert(pos, boost::move(value));
+        pos = x.insert(pos, std::move(value));
         tracker_iterator r2 = tracker.insert(tracker.begin(), *it);
         BOOST_TEST(*pos == *r2);
         tracker.compare_key(x, *it);
@@ -484,7 +484,7 @@ namespace insert_tests {
       float b = x.max_load_factor();
 
       typename X::value_type value = *it;
-      x.emplace(boost::move(value));
+      x.emplace(std::move(value));
       tracker.insert(*it);
       tracker.compare_key(x, *it);
 
@@ -499,7 +499,6 @@ namespace insert_tests {
 
   template <class X> void default_emplace_tests(X*, test::random_generator)
   {
-#if !BOOST_UNORDERED_SUN_WORKAROUNDS1
     bool is_unique = test::has_unique_keys<X>::value;
 
     X x;
@@ -529,7 +528,6 @@ namespace insert_tests {
 
     BOOST_TEST(x.count(test::get_key<X>(y)) == (is_unique ? 1u : 2u));
     BOOST_TEST(*x.equal_range(test::get_key<X>(y)).first == y);
-#endif
   }
 
   template <class X> void map_tests(X*, test::random_generator generator)
@@ -701,7 +699,7 @@ namespace insert_tests {
     pointer_constructible(int x_) : x(x_) {}
     pointer_constructible(pointer_constructible const& p) : x(p.x) {}
     pointer_constructible(pointer_constructible* const&) : x(-1) {}
-    pointer_constructible(BOOST_RV_REF(pointer_constructible*)) : x(-1) {}
+    pointer_constructible(pointer_constructible*&&) : x(-1) {}
   };
 
   struct pointer_constructible_hash
@@ -1079,8 +1077,6 @@ namespace insert_tests {
   UNORDERED_TEST(set_tests2, ((test_pc_set)))
 #endif
 
-#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
-
   struct initialize_from_two_ints
   {
     int a, b;
@@ -1203,8 +1199,6 @@ namespace insert_tests {
   }
 #endif
 
-#endif
-
   struct overloaded_constructor
   {
     overloaded_constructor(int x1_ = 1, int x2_ = 2, int x3_ = 3, int x4_ = 4)
@@ -1233,11 +1227,9 @@ namespace insert_tests {
   template <class X> static void map_emplace_test(X*)
   {
     X x;
-#if !BOOST_UNORDERED_SUN_WORKAROUNDS1
     x.emplace();
     BOOST_TEST(
       x.find(0) != x.end() && x.find(0)->second == overloaded_constructor());
-#endif
 
     x.emplace(2, 3);
     BOOST_TEST(
@@ -1252,11 +1244,9 @@ namespace insert_tests {
   template <class X> static void multimap_emplace_test(X*)
   {
     X x;
-#if !BOOST_UNORDERED_SUN_WORKAROUNDS1
     x.emplace();
     BOOST_TEST(
       x.find(0) != x.end() && x.find(0)->second == overloaded_constructor());
-#endif
 
     x.emplace(2, 3);
     BOOST_TEST(
@@ -1296,10 +1286,8 @@ namespace insert_tests {
     X x;
     overloaded_constructor check;
 
-#if !BOOST_UNORDERED_SUN_WORKAROUNDS1
     x.emplace();
     BOOST_TEST(x.find(check) != x.end() && *x.find(check) == check);
-#endif
 
     x.clear();
     x.emplace(1);
@@ -1354,10 +1342,6 @@ namespace insert_tests {
 
 #ifndef BOOST_UNORDERED_FOA_TESTS
   UNORDERED_AUTO_TEST (map_emplace_test2) {
-    // Emulating piecewise construction with boost::tuple bypasses the
-    // allocator's construct method, but still uses test destroy method.
-    test::detail::disable_construction_tracking _scoped;
-
     {
       boost::unordered_map<overloaded_constructor, overloaded_constructor,
         boost::hash<overloaded_constructor>,
@@ -1497,7 +1481,11 @@ namespace insert_tests {
 #define EMULATING_PIECEWISE_CONSTRUCTION 1
 #include "./insert_tests.cpp"
 
-#if BOOST_UNORDERED_HAVE_PIECEWISE_CONSTRUCT
+#define PIECEWISE_TEST_NAME std_tuple_boost_piecewise_tests
+#define PIECEWISE_NAMESPACE boost::unordered
+#define TUPLE_NAMESPACE std
+#define EMULATING_PIECEWISE_CONSTRUCTION 0
+#include "./insert_tests.cpp"
 
 #define PIECEWISE_TEST_NAME boost_tuple_std_piecewise_tests
 #define PIECEWISE_NAMESPACE std
@@ -1506,21 +1494,6 @@ namespace insert_tests {
 #include "./insert_tests.cpp"
 
 #endif
-
-#if !defined(BOOST_NO_CXX11_HDR_TUPLE)
-
-#define PIECEWISE_TEST_NAME std_tuple_boost_piecewise_tests
-#define PIECEWISE_NAMESPACE boost::unordered
-#define TUPLE_NAMESPACE std
-#define EMULATING_PIECEWISE_CONSTRUCTION 0
-#include "./insert_tests.cpp"
-
-#endif
-
-#endif
-
-#if !defined(BOOST_NO_CXX11_HDR_TUPLE) &&                                      \
-  BOOST_UNORDERED_HAVE_PIECEWISE_CONSTRUCT
 
 #ifdef BOOST_UNORDERED_FOA_TESTS
   static boost::unordered_flat_set<std::pair<overloaded_constructor,
@@ -1535,8 +1508,6 @@ namespace insert_tests {
 #define TUPLE_NAMESPACE std
 #define EMULATING_PIECEWISE_CONSTRUCTION 0
 #include "./insert_tests.cpp"
-
-#endif
 }
 
 RUN_TESTS_QUIET()
@@ -1549,10 +1520,6 @@ RUN_TESTS_QUIET()
   template <class X>
   static void MAP_PIECEWISE_TEST(X*)
   {
-#if EMULATING_PIECEWISE_CONSTRUCTION
-  test::detail::disable_construction_tracking _scoped;
-#endif
-
     X x;
 
     x.emplace(PIECEWISE_NAMESPACE::piecewise_construct,
@@ -1601,10 +1568,6 @@ RUN_TESTS_QUIET()
   template <class X>
   static void SET_PIECEWISE_TEST(X*)
   {
-#if EMULATING_PIECEWISE_CONSTRUCTION
-    test::detail::disable_construction_tracking _scoped;
-#endif
-
     X x;
     std::pair<overloaded_constructor, overloaded_constructor> check;
 
@@ -1645,9 +1608,6 @@ RUN_TESTS_QUIET()
 #ifndef BOOST_UNORDERED_FOA_TESTS
   UNORDERED_AUTO_TEST (BOOST_PP_CAT(multimap_, PIECEWISE_TEST_NAME)) {
     {
-#if EMULATING_PIECEWISE_CONSTRUCTION
-      test::detail::disable_construction_tracking _scoped;
-#endif
       boost::unordered_multimap<overloaded_constructor, overloaded_constructor,
         boost::hash<overloaded_constructor>,
         std::equal_to<overloaded_constructor>,

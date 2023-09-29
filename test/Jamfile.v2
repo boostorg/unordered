@@ -20,21 +20,6 @@ local msvc-flags = /wd4494 ;
 
 project
     : requirements
-        [ requires cxx11_rvalue_references
-                   cxx11_auto_declarations
-                   cxx11_nullptr
-                   cxx11_defaulted_functions
-                   cxx11_final
-                   cxx11_hdr_type_traits
-                   cxx11_hdr_initializer_list
-                   cxx11_static_assert
-                   cxx11_smart_ptr
-                   cxx11_constexpr
-                   cxx11_noexcept
-                   cxx11_decltype
-                   cxx11_alignas
-        ]
-
         <warnings>pedantic
         <toolset>intel:<warnings>on
 
@@ -146,12 +131,6 @@ for local test in $(FCA_TESTS)
 
 run unordered/link_test_1.cpp unordered/link_test_2.cpp : : : : link_test ;
 
-run unordered/compile_set.cpp  : : : <define>BOOST_UNORDERED_USE_MOVE : bmove_compile_set ;
-run unordered/compile_map.cpp  : : : <define>BOOST_UNORDERED_USE_MOVE : bmove_compile_map ;
-run unordered/copy_tests.cpp   : : : <define>BOOST_UNORDERED_USE_MOVE : bmove_copy ;
-run unordered/move_tests.cpp   : : : <define>BOOST_UNORDERED_USE_MOVE : bmove_move ;
-run unordered/assign_tests.cpp : : : <define>BOOST_UNORDERED_USE_MOVE : bmove_assign ;
-
 run unordered/serialization_tests.cpp
     : $(BOOST_UNORDERED_TEST_DIR)
     :
@@ -198,11 +177,6 @@ alias fca_tests :
   $(FCA_TESTS)
   $(FCA_EXCEPTION_TESTS)
   link_test
-  bmove_compile_set
-  bmove_compile_map
-  bmove_copy
-  bmove_move
-  bmove_assign
   insert_node_type_fail_map
   insert_node_type_fail_multimap
   insert_node_type_fail_set

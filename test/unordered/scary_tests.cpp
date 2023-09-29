@@ -87,15 +87,11 @@ public:
     ::operator delete((void*)p.operator->());
   }
 
-#if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-  template <class U, class V> void construct(U* p, V const& v) { new (p) U(v); }
-#else
   template <class U, class... Args>
-  void construct(U* p, BOOST_FWD_REF(Args)... args)
+  void construct(U* p, Args&&... args)
   {
-    new (p) U(boost::forward<Args>(args)...);
+    new (p) U(std::forward<Args>(args)...);
   }
-#endif
 
   // msvc-12.0 and msvc-14.0 seem to eliminate the destructor call as we're only
   // ever using it with an int with has a trivial destructor so it eliminates
@@ -171,15 +167,11 @@ public:
 
   void deallocate(pointer p, size_type) { ::operator delete((void*)p.ptr_); }
 
-#if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-  template <class U, class V> void construct(U* p, V const& v) { new (p) U(v); }
-#else
   template <class U, class... Args>
-  void construct(U* p, BOOST_FWD_REF(Args)... args)
+  void construct(U* p, Args&&... args)
   {
-    new (p) U(boost::forward<Args>(args)...);
+    new (p) U(std::forward<Args>(args)...);
   }
-#endif
 
   // msvc-12.0 and msvc-14.0 seem to eliminate the destructor call as we're only
   // ever using it with an int with has a trivial destructor so it eliminates

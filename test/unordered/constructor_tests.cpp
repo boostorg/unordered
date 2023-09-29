@@ -324,7 +324,6 @@ namespace constructor_tests {
       test::check_equivalent_keys(x);
     }
 
-#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
     typedef typename T::value_type value_type;
 
     std::initializer_list<value_type> list;
@@ -525,7 +524,6 @@ namespace constructor_tests {
         test::check_container(x, expected);
       }
     }
-#endif
   }
 
   template <class T>
@@ -608,7 +606,6 @@ namespace constructor_tests {
       BOOST_TEST_EQ(test::detail::tracker.count_allocations, 0u);
     }
 
-#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
     UNORDERED_SUB_TEST("Initializer list 1")
     {
       std::initializer_list<typename T::value_type> list;
@@ -633,7 +630,6 @@ namespace constructor_tests {
         BOOST_TEST_GT(test::detail::tracker.count_allocations, 0u);
       }
     }
-#endif
   }
 
   template <class T>
@@ -721,8 +717,6 @@ namespace constructor_tests {
       (default_generator)(generate_collisions)(limited_range)))
 #endif
 
-#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
-
   UNORDERED_AUTO_TEST (test_default_initializer_list) {
     std::initializer_list<int> init;
 #ifdef BOOST_UNORDERED_FOA_TESTS
@@ -734,10 +728,6 @@ namespace constructor_tests {
 #endif
     BOOST_TEST(x1.empty());
   }
-
-#endif
-
-#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
 
   UNORDERED_AUTO_TEST (test_initializer_list) {
 #ifdef BOOST_UNORDERED_FOA_TESTS
@@ -752,8 +742,6 @@ namespace constructor_tests {
     BOOST_TEST(x1.find(10) != x1.end());
     BOOST_TEST(x1.find(46) == x1.end());
   }
-
-#endif
 } // namespace constructor_tests
 
 RUN_TESTS_QUIET()

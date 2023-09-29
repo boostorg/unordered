@@ -451,14 +451,14 @@ namespace rehash_tests {
 
     typedef typename X::iterator iterator;
     for (iterator pos = x.begin(); pos != x.end(); ++pos) {
-      elements.insert(boost::addressof(*pos));
+      elements.insert(std::addressof(*pos));
     }
 
     x.rehash(2 * x.bucket_count());
 
     for (iterator pos = x.begin(); pos != x.end(); ++pos) {
       if (!BOOST_TEST(
-            elements.find(boost::addressof(*pos)) != elements.end())) {
+            elements.find(std::addressof(*pos)) != elements.end())) {
         break;
       }
     }

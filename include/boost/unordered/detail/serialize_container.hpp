@@ -9,12 +9,8 @@
 #ifndef BOOST_UNORDERED_DETAIL_SERIALIZE_CONTAINER_HPP
 #define BOOST_UNORDERED_DETAIL_SERIALIZE_CONTAINER_HPP
 
-#include <boost/core/addressof.hpp>
 #include <boost/core/serialization.hpp>
-#include <boost/move/move.hpp>
 #include <boost/throw_exception.hpp>
-#include <boost/type_traits/is_same.hpp>
-#include <boost/type_traits/remove_const.hpp>
 #include <boost/unordered/detail/archive_constructed.hpp>
 #include <boost/unordered/detail/bad_archive_exception.hpp>
 #include <boost/unordered/detail/serialization_version.hpp>
@@ -66,7 +62,7 @@ template<typename Set> struct load_or_save_unordered_set<Set,true> /* save */
     ar<<core::make_nvp("value_version",value_version);
 
     for(const_iterator first=x.begin(),last=x.end();first!=last;++first){
-      core::save_construct_data_adl(ar,boost::addressof(*first),value_version);
+      core::save_construct_data_adl(ar,std::addressof(*first),value_version);
       ar<<core::make_nvp("item",*first);
       serialization_track(ar,first);
     }
@@ -94,10 +90,10 @@ template<typename Set> struct load_or_save_unordered_set<Set,false> /* load */
       archive_constructed<value_type> value("item",ar,value_version);
 
       std::pair<iterator,bool> p=adapt_insert_return_type(
-        x.insert(boost::move(value.get())));
+        x.insert(std::move(value.get())));
       if(!p.second)throw_exception(bad_archive_exception());
       ar.reset_object_address(
-        boost::addressof(*p.first),boost::addressof(value.get()));
+        std::addressof(*p.first),std::addressof(value.get()));
       serialization_track(ar,p.first);
     }
   }
@@ -110,9 +106,9 @@ template<typename Map> struct load_or_save_unordered_map<Map,true> /* save */
   template<typename Archive>
   void operator()(Archive& ar,const Map& x,unsigned int)const
   {
-    typedef typename boost::remove_const<
+    typedef typename std::remove_const<
       typename Map::key_type>::type       key_type;
-    typedef typename boost::remove_const<
+    typedef typename std::remove_const<
       typename Map::mapped_type>::type    mapped_type;
     typedef typename Map::const_iterator  const_iterator;
 
@@ -132,10 +128,10 @@ template<typename Map> struct load_or_save_unordered_map<Map,true> /* save */
        */
 
       core::save_construct_data_adl(
-        ar,boost::addressof(first->first),key_version);
+        ar,std::addressof(first->first),key_version);
       ar<<core::make_nvp("key",first->first);
       core::save_construct_data_adl(
-        ar,boost::addressof(first->second),mapped_version);
+        ar,std::addressof(first->second),mapped_version);
       ar<<core::make_nvp("mapped",first->second);
       serialization_track(ar,first);
     }
@@ -147,9 +143,9 @@ template<typename Map> struct load_or_save_unordered_map<Map,false> /* load */
   template<typename Archive>
   void operator()(Archive& ar,Map& x,unsigned int)const
   {
-    typedef typename boost::remove_const<
+    typedef typename std::remove_const<
       typename Map::key_type>::type       key_type;
-    typedef typename boost::remove_const<
+    typedef typename std::remove_const<
       typename Map::mapped_type>::type    mapped_type;
     typedef typename Map::iterator        iterator;
 
@@ -169,12 +165,12 @@ template<typename Map> struct load_or_save_unordered_map<Map,false> /* load */
       archive_constructed<mapped_type> mapped("mapped",ar,mapped_version);
 
       std::pair<iterator,bool> p=adapt_insert_return_type(
-        x.emplace(boost::move(key.get()),boost::move(mapped.get())));
+        x.emplace(std::move(key.get()),std::move(mapped.get())));
       if(!p.second)throw_exception(bad_archive_exception());
       ar.reset_object_address(
-        boost::addressof(p.first->first),boost::addressof(key.get()));
+        std::addressof(p.first->first),std::addressof(key.get()));
       ar.reset_object_address(
-        boost::addressof(p.first->second),boost::addressof(mapped.get()));
+        std::addressof(p.first->second),std::addressof(mapped.get()));
       serialization_track(ar,p.first);
     }
   }
@@ -196,7 +192,7 @@ void serialize_container(Archive& ar,Container& x,unsigned int version)
 {
   load_or_save_container<
     Container,
-    boost::is_same<
+    std::is_same<
       typename Container::key_type,typename Container::value_type>::value,
     Archive::is_saving::value>()(ar,x,version);
 }

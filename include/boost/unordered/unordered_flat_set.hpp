@@ -18,7 +18,7 @@
 #include <boost/unordered/unordered_flat_set_fwd.hpp>
 
 #include <boost/core/allocator_access.hpp>
-#include <boost/functional/hash.hpp>
+#include <boost/container_hash/hash.hpp>
 
 #include <initializer_list>
 #include <iterator>

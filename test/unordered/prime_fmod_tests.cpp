@@ -64,7 +64,7 @@ void prime_sizes_test()
   BOOST_TEST(!is_prime(100));
   BOOST_TEST(!is_prime(49));
 
-  std::size_t* sizes = boost::unordered::detail::prime_fmod_size<>::sizes;
+  std::size_t const* sizes = boost::unordered::detail::prime_fmod_size<>::sizes;
   std::size_t sizes_len =
     boost::unordered::detail::prime_fmod_size<>::sizes_len;
 
@@ -88,7 +88,7 @@ void prime_sizes_test()
   // correct amount of them, i.e. one for every entry in sizes[] that fits in 32
   // bits
   //
-  boost::uint64_t* inv_sizes32 =
+  boost::uint64_t const* inv_sizes32 =
     boost::unordered::detail::prime_fmod_size<>::inv_sizes32;
 
   std::size_t inv_sizes32_len =
@@ -171,7 +171,7 @@ void get_remainder_test()
 
 void modulo_test()
 {
-  std::size_t* sizes = boost::unordered::detail::prime_fmod_size<>::sizes;
+  std::size_t const* sizes = boost::unordered::detail::prime_fmod_size<>::sizes;
 
   std::size_t const sizes_len =
     boost::unordered::detail::prime_fmod_size<>::sizes_len;

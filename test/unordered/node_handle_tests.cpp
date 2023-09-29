@@ -4,6 +4,8 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+#include <boost/config.hpp>
+
 #include "../helpers/postfix.hpp"
 #include "../helpers/prefix.hpp"
 #include "../helpers/unordered.hpp"
@@ -16,6 +18,11 @@
 #include <boost/type_traits/is_same.hpp>
 #include <set>
 #include <string>
+
+#if defined(BOOST_GCC) && BOOST_GCC >= 130000
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wself-move"
+#endif
 
 template <template <class Key, class T, class Hash = boost::hash<Key>,
   class Pred = std::equal_to<Key>,
@@ -119,12 +126,12 @@ static void failed_insertion_with_hint()
 
     typename Set<int>::node_type nh = src.extract(10);
 
-    BOOST_TEST(dst.insert(dst.find(10), boost::move(nh)) == dst.find(10));
+    BOOST_TEST(dst.insert(dst.find(10), std::move(nh)) == dst.find(10));
     BOOST_TEST(nh);
     BOOST_TEST(!nh.empty());
     BOOST_TEST(nh.value() == 10);
 
-    BOOST_TEST(dst.insert(dst.find(20), boost::move(nh)) == dst.find(10));
+    BOOST_TEST(dst.insert(dst.find(20), std::move(nh)) == dst.find(10));
     BOOST_TEST(nh);
     BOOST_TEST(!nh.empty());
     BOOST_TEST(nh.value() == 10);
@@ -144,14 +151,14 @@ static void failed_insertion_with_hint()
     dst.emplace(20, 2);
 
     typename Map<int, int>::node_type nh = src.extract(10);
-    BOOST_TEST(dst.insert(dst.find(10), boost::move(nh)) == dst.find(10));
+    BOOST_TEST(dst.insert(dst.find(10), std::move(nh)) == dst.find(10));
     BOOST_TEST(nh);
     BOOST_TEST(!nh.empty());
     BOOST_TEST(nh.key() == 10);
     BOOST_TEST(nh.mapped() == 30);
     BOOST_TEST(dst[10] == 20);
 
-    BOOST_TEST(dst.insert(dst.find(20), boost::move(nh)) == dst.find(10));
+    BOOST_TEST(dst.insert(dst.find(20), std::move(nh)) == dst.find(10));
     BOOST_TEST(nh);
     BOOST_TEST(!nh.empty());
     BOOST_TEST(nh.key() == 10);
@@ -195,7 +202,7 @@ template <typename Container> void node_handle_tests_impl(Container& c)
   BOOST_TEST(!n2.empty());
   node_handle_compare(n2, value);
 
-  node_type n3 = boost::move(n2);
+  node_type n3 = std::move(n2);
   BOOST_TEST(n3);
   BOOST_TEST(!n2);
   node_handle_compare(n3, value);
@@ -203,16 +210,16 @@ template <typename Container> void node_handle_tests_impl(Container& c)
   //       Maybe by swapping and observing that the allocator is
   //       swapped rather than moved?
 
-  n1 = boost::move(n3);
+  n1 = std::move(n3);
   BOOST_TEST(n1);
   BOOST_TEST(!n3);
   node_handle_compare(n1, value);
 
   // Self move-assignment empties the node_handle.
-  n1 = boost::move(n1);
+  n1 = std::move(n1);
   BOOST_TEST(!n1);
 
-  n3 = boost::move(n3);
+  n3 = std::move(n3);
   BOOST_TEST(!n3);
 
   typename Container::value_type value1 = *c.begin();

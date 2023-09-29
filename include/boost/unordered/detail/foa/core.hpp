@@ -22,13 +22,10 @@
 #include <boost/core/pointer_traits.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/predef.h>
-#include <boost/static_assert.hpp>
-#include <boost/type_traits/has_trivial_constructor.hpp>
-#include <boost/type_traits/has_trivial_copy.hpp>
-#include <boost/type_traits/has_trivial_assign.hpp>
-#include <boost/type_traits/is_nothrow_swappable.hpp>
 #include <boost/unordered/detail/narrow_cast.hpp>
 #include <boost/unordered/detail/mulx.hpp>
+#include <boost/unordered/detail/static_assert.hpp>
+#include <boost/unordered/detail/type_traits.hpp>
 #include <boost/unordered/hash_traits.hpp>
 #include <climits>
 #include <cmath>
@@ -133,10 +130,10 @@
 #define BOOST_UNORDERED_THREAD_SANITIZER
 #endif
 
-#define BOOST_UNORDERED_STATIC_ASSERT_HASH_PRED(Hash, Pred)          \
-  static_assert(boost::is_nothrow_swappable<Hash>::value,            \
-    "Template parameter Hash is required to be nothrow Swappable."); \
-  static_assert(boost::is_nothrow_swappable<Pred>::value,            \
+#define BOOST_UNORDERED_STATIC_ASSERT_HASH_PRED(Hash, Pred)                    \
+  static_assert(boost::unordered::detail::is_nothrow_swappable<Hash>::value,   \
+    "Template parameter Hash is required to be nothrow Swappable.");           \
+  static_assert(boost::unordered::detail::is_nothrow_swappable<Pred>::value,   \
     "Template parameter Pred is required to be nothrow Swappable");
 
 namespace boost{
@@ -311,7 +308,7 @@ struct group15
 
 private:
   using slot_type=IntegralWrapper<unsigned char>;
-  BOOST_STATIC_ASSERT(sizeof(slot_type)==1);
+  BOOST_UNORDERED_STATIC_ASSERT(sizeof(slot_type)==1);
 
   static constexpr unsigned char available_=0,
                                  sentinel_=1;
@@ -514,7 +511,7 @@ struct group15
 
 private:
   using slot_type=IntegralWrapper<unsigned char>;
-  BOOST_STATIC_ASSERT(sizeof(slot_type)==1);
+  BOOST_UNORDERED_STATIC_ASSERT(sizeof(slot_type)==1);
 
   static constexpr unsigned char available_=0,
                                  sentinel_=1;
@@ -707,7 +704,7 @@ struct group15
 
 private:
   using word_type=IntegralWrapper<uint64_t>;
-  BOOST_STATIC_ASSERT(sizeof(word_type)==8);
+  BOOST_UNORDERED_STATIC_ASSERT(sizeof(word_type)==8);
 
   static constexpr unsigned char available_=0,
                                  sentinel_=1;
@@ -1045,15 +1042,7 @@ struct table_arrays
 
     initialize_groups(
       arrays.groups(),groups_size,
-      std::integral_constant<
-        bool,
-#if BOOST_WORKAROUND(BOOST_LIBSTDCXX_VERSION,<50000)
-      /* std::is_trivially_constructible not provided */
-      boost::has_trivial_constructor<group_type>::value
-#else
-      std::is_trivially_constructible<group_type>::value
-#endif  
-      >{});
+      is_trivially_default_constructible<group_type>{});
     arrays.groups()[groups_size-1].set_sentinel();
   }
 
@@ -2026,13 +2015,7 @@ private:
       x,
       std::integral_constant<
         bool,
-#if BOOST_WORKAROUND(BOOST_LIBSTDCXX_VERSION,<50000)
-        /* std::is_trivially_copy_constructible not provided */
-        boost::has_trivial_copy<element_type>::value
-#else
-        std::is_trivially_copy_constructible<element_type>::value
-#endif
-        &&(
+        is_trivially_copy_constructible<element_type>::value&&(
           is_std_allocator<Allocator>::value||
           !alloc_has_construct<Allocator,value_type*,const value_type&>::value)
       >{}
@@ -2074,15 +2057,7 @@ private:
   }
 
   void copy_groups_array_from(const table_core& x) {
-    copy_groups_array_from(x, std::integral_constant<bool,
-#if BOOST_WORKAROUND(BOOST_LIBSTDCXX_VERSION,<50000)
-      /* std::is_trivially_copy_assignable not provided */
-      boost::has_trivial_assign<group_type>::value
-#else
-      std::is_trivially_copy_assignable<group_type>::value
-#endif
-      >{}
-    );
+    copy_groups_array_from(x,is_trivially_copy_assignable<group_type>{});
   }
 
   void copy_groups_array_from(

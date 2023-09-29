@@ -10,6 +10,9 @@
 #include "../helpers/random_values.hpp"
 #include "../helpers/strong.hpp"
 #include "../helpers/tracker.hpp"
+
+#include <boost/tuple/tuple.hpp>
+
 #include <cmath>
 #include <string>
 

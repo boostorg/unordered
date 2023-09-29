@@ -182,9 +182,7 @@ namespace test
 
     ~cxx11_allocator_base() { detail::tracker.allocator_unref(); }
 
-#if !defined(BOOST_NO_CXX11_DEFAULTED_FUNCTIONS)
     cxx11_allocator_base& operator=(cxx11_allocator_base const& x) = default;
-#endif
 
     pointer address(reference r) { return pointer(&r); }
 
@@ -214,21 +212,12 @@ namespace test
       ::operator delete((void*)p);
     }
 
-#if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-    template <class U, class V>
-    void construct(U* p, V const& v)
-    {
-      detail::tracker.track_construct((void*)p, sizeof(U), tag_);
-      new (p) U(v);
-    }
-#else
     template <class U, typename... Args>
-    void construct(U* p, BOOST_FWD_REF(Args)... args)
+    void construct(U* p, Args&&... args)
     {
       detail::tracker.track_construct((void*)p, sizeof(U), tag_);
-      new (p) U(boost::forward<Args>(args)...);
+      new (p) U(std::forward<Args>(args)...);
     }
-#endif
 
     template <class U>
     void destroy(U* p)
@@ -272,9 +261,7 @@ namespace test
 
     cxx11_allocator(cxx11_allocator const& x) : cxx11_allocator_base<T>(x) {}
 
-#if !defined(BOOST_NO_CXX11_DEFAULTED_FUNCTIONS)
     cxx11_allocator& operator=(cxx11_allocator const& x) = default;
-#endif 
 
     // When not propagating swap, allocators are always equal
     // to avoid undefined behaviour.
@@ -319,9 +306,7 @@ namespace test
 
     cxx11_allocator(cxx11_allocator const& x) : cxx11_allocator_base<T>(x) {}
 
-#if !defined(BOOST_NO_CXX11_DEFAULTED_FUNCTIONS)
     cxx11_allocator& operator=(cxx11_allocator const& x) = default;
-#endif
 
     // When not propagating swap, allocators are always equal
     // to avoid undefined behaviour.

@@ -16,6 +16,7 @@
 #include "../helpers/list.hpp"
 #include "../helpers/invariants.hpp"
 #include "../helpers/helpers.hpp"
+#include <algorithm>
 #include <set>
 #include <iterator>
 #include "../objects/test.hpp"

@@ -501,28 +501,15 @@ namespace test {
         }
       }
 
-#if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-      template <class U, class Arg>
-      void construct(U* p, Arg const& t)
+      template <class U, class... Args> void construct(U* p, Args&&... args)
       {
-        UNORDERED_SCOPE(allocator::construct(U*, Arg))
+        UNORDERED_SCOPE(allocator::construct(U*, Args&&...))
         {
           UNORDERED_EPOINT("Mock allocator construct function.")
-          new (p) U(t);
+          new (p) U(std::forward<Args>(args)...);
         }
         test::detail::tracker.track_construct((void*)p, sizeof(U), tag_);
       }
-#else
-      template <class U, class... Args> void construct(U* p, BOOST_FWD_REF(Args)... args)
-      {
-        UNORDERED_SCOPE(allocator::construct(U*, BOOST_FWD_REF(Args)...))
-        {
-          UNORDERED_EPOINT("Mock allocator construct function.")
-          new (p) U(boost::forward<Args>(args)...);
-        }
-        test::detail::tracker.track_construct((void*)p, sizeof(U), tag_);
-      }
-#endif
 
       template <class U>
       void destroy(U* p)
@@ -682,29 +669,16 @@ namespace test {
         }
       }
 
-#if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
-      template <class U, class V>
-      void construct(U* p, V const& v)
-      {
-        UNORDERED_SCOPE(allocator2::construct(U*, V))
-        {
-          UNORDERED_EPOINT("Mock allocator2 construct function.")
-          new (p) U(v);
-        }
-        test::detail::tracker.track_construct((void*)p, sizeof(U), tag_);
-      }
-#else
       template <class U, class... Args> 
-      void construct(U* p, BOOST_FWD_REF(Args)... args)
+      void construct(U* p, Args&&... args)
       {
-        UNORDERED_SCOPE(allocator2::construct(U*, BOOST_FWD_REF(Args)...))
+        UNORDERED_SCOPE(allocator2::construct(U*, Args&&...))
         {
           UNORDERED_EPOINT("Mock allocator2 construct function.")
-          new (p) U(boost::forward<Args>(args)...);
+          new (p) U(std::forward<Args>(args)...);
         }
         test::detail::tracker.track_construct((void*)p, sizeof(U), tag_);
       }
-#endif
 
       template <class U>
       void destroy(U* p)
