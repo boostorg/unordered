@@ -18,7 +18,6 @@
 #include <boost/unordered/detail/set.hpp>
 #include <boost/unordered/detail/type_traits.hpp>
 
-#include <boost/core/explicit_operator_bool.hpp>
 #include <boost/container_hash/hash.hpp>
 
 #include <initializer_list>
@@ -1876,7 +1875,10 @@ namespace boost {
 
       allocator_type get_allocator() const { return *alloc_; }
 
-      BOOST_EXPLICIT_OPERATOR_BOOL_NOEXCEPT()
+      BOOST_FORCEINLINE explicit operator bool() const noexcept
+      {
+        return !this->operator!();
+      }
 
       bool operator!() const noexcept { return ptr_ ? 0 : 1; }
 
