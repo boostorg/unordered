@@ -2252,7 +2252,7 @@ namespace boost {
 
       allocator_type get_allocator() const { return *alloc_; }
 
-      BOOST_FORCEINLINE explicit operator bool() const noexcept
+      explicit operator bool() const noexcept
       {
         return !this->operator!();
       }
