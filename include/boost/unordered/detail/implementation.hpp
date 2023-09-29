@@ -21,7 +21,6 @@
 #include <boost/unordered/detail/type_traits.hpp>
 
 #include <boost/assert.hpp>
-#include <boost/core/addressof.hpp>
 #include <boost/core/allocator_traits.hpp>
 #include <boost/core/bit.hpp>
 #include <boost/core/invoke_swap.hpp>

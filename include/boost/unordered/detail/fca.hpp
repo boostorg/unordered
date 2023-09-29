@@ -118,7 +118,6 @@ to normal separate chaining implementations.
 #include <boost/unordered/detail/opt_storage.hpp>
 
 #include <boost/assert.hpp>
-#include <boost/core/addressof.hpp>
 #include <boost/core/allocator_access.hpp>
 #include <boost/core/bit.hpp>
 #include <boost/core/empty_value.hpp>

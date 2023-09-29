@@ -9,7 +9,6 @@
 #ifndef BOOST_UNORDERED_DETAIL_SERIALIZE_CONTAINER_HPP
 #define BOOST_UNORDERED_DETAIL_SERIALIZE_CONTAINER_HPP
 
-#include <boost/core/addressof.hpp>
 #include <boost/core/serialization.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/unordered/detail/archive_constructed.hpp>
