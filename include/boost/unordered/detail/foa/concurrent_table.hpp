@@ -565,7 +565,6 @@ public:
     return visit(x,std::forward<F>(f));
   }
 
-#if 1
   template<typename Key,std::size_t M,typename F>
   BOOST_FORCEINLINE
   std::size_t bulk_visit(const std::array<Key,M>& keys,F&& f)const
@@ -635,30 +634,30 @@ public:
     }
     return res;
   }
-#else
+
   template<typename Key,std::size_t M,typename F>
   BOOST_FORCEINLINE
-  std::size_t bulk_visit(const std::array<Key,M>& keys,F&& f)const
+  std::size_t bulk_visit2(const std::array<Key,M>& keys,F&& f)const
   {
     auto        lck=shared_access();
     std::size_t res=0,
-                hashes[M];
+                hashes[M],
+                positions[M];
 
     for(std::size_t i=0;i<M;++i){
       hashes[i]=this->hash_for(keys[i]);
-      auto pos=this->position_for(hashes[i]);
-      BOOST_UNORDERED_PREFETCH(this->arrays.groups+pos);
-      BOOST_UNORDERED_PREFETCH(this->arrays.group_accesses+pos);
-      BOOST_UNORDERED_PREFETCH_ELEMENTS(this->arrays.elements+pos*N,N);
+      auto pos=positions[i]=this->position_for(hashes[i]);
+      BOOST_UNORDERED_PREFETCH(this->arrays.groups()+pos);
+      BOOST_UNORDERED_PREFETCH(this->arrays.group_accesses()+pos);
+      BOOST_UNORDERED_PREFETCH_ELEMENTS(this->arrays.elements()+pos*N,N);
     }
     for(std::size_t i=0;i<M;++i){
       res+=unprotected_visit(
-        group_shared{},keys[i],this->position_for(hashes[i]),hashes[i],
+        group_shared{},keys[i],positions[i],hashes[i],
         std::forward<F>(f));
     }
     return res;
   }
-#endif
 
   template<typename F> std::size_t visit_all(F&& f)
   {
