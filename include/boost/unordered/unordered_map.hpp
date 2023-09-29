@@ -15,7 +15,6 @@
 #endif
 
 #include <boost/unordered/detail/map.hpp>
-#include <boost/unordered/detail/requires_cxx11.hpp>
 #include <boost/unordered/detail/serialize_fca_container.hpp>
 #include <boost/unordered/detail/type_traits.hpp>
 
