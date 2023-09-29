@@ -1042,10 +1042,7 @@ struct table_arrays
 
     initialize_groups(
       arrays.groups(),groups_size,
-      std::integral_constant<
-        bool,
-        is_trivially_default_constructible<group_type>::value
-      >{});
+      is_trivially_default_constructible<group_type>{});
     arrays.groups()[groups_size-1].set_sentinel();
   }
 
@@ -2060,10 +2057,7 @@ private:
   }
 
   void copy_groups_array_from(const table_core& x) {
-    copy_groups_array_from(x, std::integral_constant<bool,
-      is_trivially_copy_assignable<group_type>::value
-      >{}
-    );
+    copy_groups_array_from(x,is_trivially_copy_assignable<group_type>{});
   }
 
   void copy_groups_array_from(

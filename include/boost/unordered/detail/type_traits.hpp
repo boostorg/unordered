@@ -1,4 +1,4 @@
-// Copyright (C) 2022 Christian Mazakas
+// Copyright (C) 2022-2023 Christian Mazakas
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -50,11 +50,12 @@ namespace boost {
 
 #if BOOST_WORKAROUND(BOOST_LIBSTDCXX_VERSION, < 50000)
       /* std::is_trivially_default_constructible not provided */
-      template <class T> struct is_trivially_default_constructible
+      template <class T>
+      struct is_trivially_default_constructible
+          : public std::integral_constant<bool,
+              std::is_default_constructible<T>::value &&
+                std::has_trivial_default_constructor<T>::value>
       {
-        constexpr static const bool value =
-          std::is_default_constructible<T>::value &&
-          std::has_trivial_default_constructor<T>::value;
       };
 #else
       using std::is_trivially_default_constructible;
@@ -62,12 +63,12 @@ namespace boost {
 
 #if BOOST_WORKAROUND(BOOST_LIBSTDCXX_VERSION, < 50000)
       /* std::is_trivially_copy_constructible not provided */
-      template <class T> struct is_trivially_copy_constructible
+      template <class T>
+      struct is_trivially_copy_constructible
+          : public std::integral_constant<bool,
+              std::is_copy_constructible<T>::value &&
+                std::has_trivial_copy_constructor<T>::value>
       {
-
-        constexpr static bool const value =
-          std::is_copy_constructible<T>::value &&
-          std::has_trivial_copy_constructor<T>::value;
       };
 #else
       using std::is_trivially_copy_constructible;
@@ -75,11 +76,12 @@ namespace boost {
 
 #if BOOST_WORKAROUND(BOOST_LIBSTDCXX_VERSION, < 50000)
       /* std::is_trivially_copy_assignable not provided */
-      template <class T> struct is_trivially_copy_assignable
+      template <class T>
+      struct is_trivially_copy_assignable
+          : public std::integral_constant<bool,
+              std::is_copy_assignable<T>::value &&
+                std::has_trivial_copy_assign<T>::value>
       {
-        constexpr static bool const value =
-          std::is_copy_assignable<T>::value &&
-          std::has_trivial_copy_assign<T>::value;
       };
 #else
       using std::is_trivially_copy_assignable;
@@ -103,10 +105,11 @@ namespace boost {
 
       } // namespace type_traits_detail
 
-      template <class T> struct is_nothrow_swappable
+      template <class T>
+      struct is_nothrow_swappable
+          : public std::integral_constant<bool,
+              type_traits_detail::is_nothrow_swappable_helper<T>::value>
       {
-        constexpr static bool const value =
-          type_traits_detail::is_nothrow_swappable_helper<T>::value;
       };
 
       ////////////////////////////////////////////////////////////////////////////
