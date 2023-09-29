@@ -188,7 +188,7 @@ namespace test {
 #define UNORDERED_MULTI_TEST_OP2(name, n, params)                              \
   {                                                                            \
     UNORDERED_SUB_TEST(BOOST_PP_STRINGIZE(                                     \
-      BOOST_PP_SEQ_FOLD_LEFT(UNORDERED_TEST_OP_JOIN, name, params)))                                  \
+      BOOST_PP_SEQ_FOLD_LEFT(UNORDERED_TEST_OP_JOIN, name, params)))           \
     {                                                                          \
       for (int i = 0; i < n; ++i)                                              \
         name BOOST_PP_SEQ_TO_TUPLE(params);                                    \
