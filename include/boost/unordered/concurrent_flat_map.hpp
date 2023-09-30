@@ -245,6 +245,7 @@ namespace boost {
       }
 
       template<typename FwdIterator,typename F>
+      BOOST_FORCEINLINE
       std::size_t visit(FwdIterator first,FwdIterator last,F f)const
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)

@@ -567,6 +567,7 @@ public:
 
   static constexpr std::size_t bulk_visit_size=16;
 
+#if 0
 #define BOOST_UNORDERED_BULK_VISIT_CASE(r,b)  \
 case r:                                       \
   res+=unprotected_bulk_visit<b>(             \
@@ -584,7 +585,7 @@ case r:                                       \
     auto        lck=shared_access();
 
     if(m){
-      for(std::size_t i=0;i<m-1;++i){
+      for(std::size_t i=m-1;i--;){
         res+=unprotected_bulk_visit<bulk_visit_size>(
           group_shared{},first,std::forward<F>(f));
         std::advance(first,bulk_visit_size);
@@ -635,6 +636,25 @@ case r:                                       \
   }
 
 #undef BOOST_UNORDERED_BULK_VISIT_CASE
+#else
+  template<typename FwdIterator,typename F>
+  BOOST_FORCEINLINE
+  std::size_t visit(FwdIterator first,FwdIterator last,F&& f)const
+  {
+    std::size_t res=0;
+    auto        n=static_cast<std::size_t>(std::distance(first,last));
+    auto        lck=shared_access();
+
+    while(n){
+      auto m=n<2*bulk_visit_size?n:bulk_visit_size;
+      res+=unprotected_bulk_visit(group_shared{},first,m,std::forward<F>(f));
+      n-=m;
+      std::advance(first,m);
+    }
+
+    return res;
+  }
+#endif
 
   template<typename F> std::size_t visit_all(F&& f)
   {
@@ -1221,6 +1241,7 @@ private:
     return 0;
   }
 
+#if 0
   template<
     std::size_t M,typename GroupAccessMode,
     typename FwdIterator,typename F
@@ -1296,6 +1317,84 @@ private:
     }
     return res;
   }
+#else
+  template<typename GroupAccessMode,
+    typename FwdIterator,typename F
+  >
+  BOOST_FORCEINLINE
+  std::size_t unprotected_bulk_visit(
+    GroupAccessMode access_mode,FwdIterator first,std::size_t m,F&& f)const
+  {
+    BOOST_ASSERT(s<2*bulk_visit_size);
+
+    std::size_t res=0,
+                hashes[2*bulk_visit_size-1],
+                positions[2*bulk_visit_size-1];
+    int         masks[2*bulk_visit_size-1];
+    auto        it=first;
+
+    for(std::size_t i=0;i<m;++i,++it){
+      hashes[i]=this->hash_for(*it);
+      auto pos=positions[i]=this->position_for(hashes[i]);
+      BOOST_UNORDERED_PREFETCH(this->arrays.groups()+pos);
+    }
+
+    for(std::size_t i=0;i<m;++i){
+      auto hash=hashes[i];
+      auto pos=positions[i];
+      masks[i]=(this->arrays.groups()+pos)->match(hash);
+      if(masks[i]){
+        BOOST_UNORDERED_PREFETCH(this->arrays.group_accesses()+pos);
+        BOOST_UNORDERED_PREFETCH_ELEMENTS(this->arrays.elements()+pos*N,N);
+      }
+    }
+
+    it=first;
+    for(std::size_t i=0;i<m;++i,++it){
+      auto          pos=positions[i];
+      prober        pb(pos);
+      auto          pg=this->arrays.groups()+pos;
+      auto          mask=masks[i];
+      element_type *p;
+      if(mask){
+        p=this->arrays.elements()+pos*N;
+        goto post_prefetch;
+      }
+      else{
+        goto post_mask;
+      }
+      do{
+        pos=pb.get();
+        pg=this->arrays.groups()+pos;
+        mask=pg->match(hashes[i]);
+        if(BOOST_UNLIKELY(mask!=0)){ /* unlikely bc we're past the 1st probe */
+          p=this->arrays.elements()+pos*N;
+          BOOST_UNORDERED_PREFETCH_ELEMENTS(p,N);
+      post_prefetch:
+          auto lck=access(access_mode,pos);
+          do{
+            auto n=unchecked_countr_zero(mask);
+            if(BOOST_LIKELY(
+              pg->is_occupied(n)&&
+              bool(this->pred()(*it,this->key_from(p[n]))))){
+              f(cast_for(access_mode,type_policy::value_from(p[n])));
+              ++res;
+              goto next_key;
+            }
+            mask&=mask-1;
+          }while(mask);
+        }
+      post_mask:
+        if(BOOST_LIKELY(pg->is_not_overflowed(hashes[i]))){
+          goto next_key;
+        }
+      }
+      while(BOOST_LIKELY(pb.next(this->arrays.groups_size_mask)));
+      next_key:;
+    }
+    return res;
+  }
+#endif
 
 #if defined(BOOST_MSVC)
 #pragma warning(pop) /* C4800 */
