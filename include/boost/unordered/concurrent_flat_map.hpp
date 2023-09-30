@@ -252,14 +252,6 @@ namespace boost {
         return table_.bulk_visit(keys, f);
       }
 
-      template<std::size_t M,typename F>
-      BOOST_FORCEINLINE
-      std::size_t bulk_visit2(const std::array<key_type,M>& keys,F f)const
-      {
-        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
-        return table_.bulk_visit2(keys, f);
-      }
-
       template <class K, class F>
       BOOST_FORCEINLINE typename std::enable_if<
         detail::are_transparent<K, hasher, key_equal>::value, size_type>::type
