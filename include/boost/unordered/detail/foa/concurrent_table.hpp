@@ -12,7 +12,6 @@
 #define BOOST_UNORDERED_DETAIL_FOA_CONCURRENT_TABLE_HPP
 
 #include <atomic>
-#include <array>
 #include <boost/assert.hpp>
 #include <boost/config.hpp>
 #include <boost/core/ignore_unused.hpp>
@@ -32,6 +31,7 @@
 #include <cstddef>
 #include <functional>
 #include <initializer_list>
+#include <iterator>
 #include <memory>
 #include <new>
 #include <type_traits>
@@ -565,100 +565,76 @@ public:
     return visit(x,std::forward<F>(f));
   }
 
-#if 1
-  template<typename Key,std::size_t M,typename F>
-  BOOST_FORCEINLINE
-  std::size_t bulk_visit(const std::array<Key,M>& keys,F&& f)const
+  static constexpr std::size_t bulk_visit_size=16;
+
+#define BOOST_UNORDERED_BULK_VISIT_CASE(r,b)  \
+case r:                                       \
+  res+=unprotected_bulk_visit<b>(             \
+    group_shared{},first,std::forward<F>(f)); \
+  break;
+
+  template<typename FwdIterator,typename F>
+  std::size_t visit(FwdIterator first,FwdIterator last,F&& f)const
   {
+    BOOST_STATIC_ASSERT(bulk_visit_size==16);
+
+    std::size_t res=0;
+    auto        n=static_cast<std::size_t>(std::distance(first,last));
+    auto        m=n/bulk_visit_size;
     auto        lck=shared_access();
-    std::size_t res=0,
-                hashes[M];
-    int         masks[M];
 
-    for(std::size_t i=0;i<M;++i){
-      hashes[i]=this->hash_for(keys[i]);
-      auto pos=this->position_for(hashes[i]);
-      BOOST_UNORDERED_PREFETCH(this->arrays.groups()+pos);
+    if(m){
+      for(std::size_t i=0;i<m-1;++i){
+        res+=unprotected_bulk_visit<bulk_visit_size>(
+          group_shared{},first,std::forward<F>(f));
+        std::advance(first,bulk_visit_size);
+      }
+
+      switch(n-m*bulk_visit_size){
+        BOOST_UNORDERED_BULK_VISIT_CASE(0,bulk_visit_size)
+        BOOST_UNORDERED_BULK_VISIT_CASE(1,bulk_visit_size+1)
+        BOOST_UNORDERED_BULK_VISIT_CASE(2,bulk_visit_size+2)
+        BOOST_UNORDERED_BULK_VISIT_CASE(3,bulk_visit_size+3)
+        BOOST_UNORDERED_BULK_VISIT_CASE(4,bulk_visit_size+4)
+        BOOST_UNORDERED_BULK_VISIT_CASE(5,bulk_visit_size+5)
+        BOOST_UNORDERED_BULK_VISIT_CASE(6,bulk_visit_size+6)
+        BOOST_UNORDERED_BULK_VISIT_CASE(7,bulk_visit_size+7)
+        BOOST_UNORDERED_BULK_VISIT_CASE(8,bulk_visit_size+8)
+        BOOST_UNORDERED_BULK_VISIT_CASE(9,bulk_visit_size+9)
+        BOOST_UNORDERED_BULK_VISIT_CASE(10,bulk_visit_size+10)
+        BOOST_UNORDERED_BULK_VISIT_CASE(11,bulk_visit_size+11)
+        BOOST_UNORDERED_BULK_VISIT_CASE(12,bulk_visit_size+12)
+        BOOST_UNORDERED_BULK_VISIT_CASE(13,bulk_visit_size+13)
+        BOOST_UNORDERED_BULK_VISIT_CASE(14,bulk_visit_size+14)
+        BOOST_UNORDERED_BULK_VISIT_CASE(15,bulk_visit_size+15)
+        default:break;
+      }
     }
-
-    for(std::size_t i=0;i<M;++i){
-      auto hash=hashes[i];
-      auto pos=this->position_for(hash);
-      masks[i]=(this->arrays.groups()+pos)->match(hash);
-      if(masks[i]){
-        BOOST_UNORDERED_PREFETCH(this->arrays.group_accesses()+pos);
-        BOOST_UNORDERED_PREFETCH_ELEMENTS(this->arrays.elements()+pos*N,N);
+    else{
+      switch(n){
+        case 0:break;
+        BOOST_UNORDERED_BULK_VISIT_CASE(1,1)
+        BOOST_UNORDERED_BULK_VISIT_CASE(2,2)
+        BOOST_UNORDERED_BULK_VISIT_CASE(3,3)
+        BOOST_UNORDERED_BULK_VISIT_CASE(4,4)
+        BOOST_UNORDERED_BULK_VISIT_CASE(5,5)
+        BOOST_UNORDERED_BULK_VISIT_CASE(6,6)
+        BOOST_UNORDERED_BULK_VISIT_CASE(7,7)
+        BOOST_UNORDERED_BULK_VISIT_CASE(8,8)
+        BOOST_UNORDERED_BULK_VISIT_CASE(9,9)
+        BOOST_UNORDERED_BULK_VISIT_CASE(10,10)
+        BOOST_UNORDERED_BULK_VISIT_CASE(11,11)
+        BOOST_UNORDERED_BULK_VISIT_CASE(12,12)
+        BOOST_UNORDERED_BULK_VISIT_CASE(13,13)
+        BOOST_UNORDERED_BULK_VISIT_CASE(14,14)
+        BOOST_UNORDERED_BULK_VISIT_CASE(15,15)
+        default:break;
       }
-    }
-
-    for(std::size_t i=0;i<M;++i){
-      prober        pb(this->position_for(hashes[i]));
-      auto          pos=pb.get();
-      auto          pg=this->arrays.groups()+pos;
-      auto          mask=masks[i];
-      element_type *p;
-      if(mask){
-        p=this->arrays.elements()+pos*N;
-        goto post_prefetch;
-      }
-      else{
-        goto post_mask;
-      }
-      do{
-        pos=pb.get();
-        pg=this->arrays.groups()+pos;
-        mask=pg->match(hashes[i]);
-        if(mask){
-          p=this->arrays.elements()+pos*N;
-          BOOST_UNORDERED_PREFETCH_ELEMENTS(p,N);
-      post_prefetch:
-          auto lck=access(group_shared{},pos);
-          do{
-            auto n=unchecked_countr_zero(mask);
-            if(BOOST_LIKELY(
-              pg->is_occupied(n)&&
-              bool(this->pred()(keys[i],this->key_from(p[n]))))){
-              f(p+n);
-              ++res;
-              goto next_key;
-            }
-            mask&=mask-1;
-          }while(mask);
-        }
-      post_mask:
-        if(BOOST_LIKELY(pg->is_not_overflowed(hashes[i]))){
-          goto next_key;
-        }
-      }
-      while(BOOST_LIKELY(pb.next(this->arrays.groups_size_mask)));
-      next_key:;
     }
     return res;
   }
-#else
-  template<typename Key,std::size_t M,typename F>
-  BOOST_FORCEINLINE
-  std::size_t bulk_visit(const std::array<Key,M>& keys,F&& f)const
-  {
-    auto        lck=shared_access();
-    std::size_t res=0,
-                hashes[M];
 
-    for(std::size_t i=0;i<M;++i){
-      hashes[i]=this->hash_for(keys[i]);
-      auto pos=this->position_for(hashes[i]);
-      BOOST_UNORDERED_PREFETCH(this->arrays.groups+pos);
-      BOOST_UNORDERED_PREFETCH(this->arrays.group_accesses+pos);
-      BOOST_UNORDERED_PREFETCH_ELEMENTS(this->arrays.elements+pos*N,N);
-    }
-    for(std::size_t i=0;i<M;++i){
-      res+=unprotected_visit(
-        group_shared{},keys[i],this->position_for(hashes[i]),hashes[i],
-        std::forward<F>(f));
-    }
-    return res;
-  }
-#endif
+#undef BOOST_UNORDERED_BULK_VISIT_CASE
 
   template<typename F> std::size_t visit_all(F&& f)
   {
@@ -1243,6 +1219,82 @@ private:
     }
     while(BOOST_LIKELY(pb.next(this->arrays.groups_size_mask)));
     return 0;
+  }
+
+  template<
+    std::size_t M,typename GroupAccessMode,
+    typename FwdIterator,typename F
+  >
+  BOOST_FORCEINLINE
+  std::size_t unprotected_bulk_visit(
+    GroupAccessMode access_mode,FwdIterator first,F&& f)const
+  {
+    std::size_t res=0,
+                hashes[M],
+                positions[M];
+    int         masks[M];
+    auto        it=first;
+
+    for(std::size_t i=0;i<M;++i,++it){
+      hashes[i]=this->hash_for(*it);
+      auto pos=positions[i]=this->position_for(hashes[i]);
+      BOOST_UNORDERED_PREFETCH(this->arrays.groups()+pos);
+    }
+
+    for(std::size_t i=0;i<M;++i){
+      auto hash=hashes[i];
+      auto pos=positions[i];
+      masks[i]=(this->arrays.groups()+pos)->match(hash);
+      if(masks[i]){
+        BOOST_UNORDERED_PREFETCH(this->arrays.group_accesses()+pos);
+        BOOST_UNORDERED_PREFETCH_ELEMENTS(this->arrays.elements()+pos*N,N);
+      }
+    }
+
+    it=first;
+    for(std::size_t i=0;i<M;++i,++it){
+      auto          pos=positions[i];
+      prober        pb(pos);
+      auto          pg=this->arrays.groups()+pos;
+      auto          mask=masks[i];
+      element_type *p;
+      if(mask){
+        p=this->arrays.elements()+pos*N;
+        goto post_prefetch;
+      }
+      else{
+        goto post_mask;
+      }
+      do{
+        pos=pb.get();
+        pg=this->arrays.groups()+pos;
+        mask=pg->match(hashes[i]);
+        if(BOOST_UNLIKELY(mask!=0)){ /* unlikely bc we're past the 1st probe */
+          p=this->arrays.elements()+pos*N;
+          BOOST_UNORDERED_PREFETCH_ELEMENTS(p,N);
+      post_prefetch:
+          auto lck=access(access_mode,pos);
+          do{
+            auto n=unchecked_countr_zero(mask);
+            if(BOOST_LIKELY(
+              pg->is_occupied(n)&&
+              bool(this->pred()(*it,this->key_from(p[n]))))){
+              f(cast_for(access_mode,type_policy::value_from(p[n])));
+              ++res;
+              goto next_key;
+            }
+            mask&=mask-1;
+          }while(mask);
+        }
+      post_mask:
+        if(BOOST_LIKELY(pg->is_not_overflowed(hashes[i]))){
+          goto next_key;
+        }
+      }
+      while(BOOST_LIKELY(pb.next(this->arrays.groups_size_mask)));
+      next_key:;
+    }
+    return res;
   }
 
 #if defined(BOOST_MSVC)

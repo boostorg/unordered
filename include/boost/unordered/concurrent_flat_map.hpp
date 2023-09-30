@@ -244,12 +244,11 @@ namespace boost {
         return table_.visit(k, f);
       }
 
-      template<std::size_t M,typename F>
-      BOOST_FORCEINLINE
-      std::size_t bulk_visit(const std::array<key_type,M>& keys,F f)const
+      template<typename FwdIterator,typename F>
+      std::size_t visit(FwdIterator first,FwdIterator last,F f)const
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
-        return table_.bulk_visit(keys, f);
+        return table_.visit(first, last, f);
       }
 
       template <class K, class F>
