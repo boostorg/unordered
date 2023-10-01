@@ -1333,24 +1333,24 @@ private:
     int         masks[2*bulk_visit_size-1];
     auto        it=first;
 
-    for(std::size_t i=0;i<m;++i,++it){
-      hashes[i]=this->hash_for(*it);
-      auto pos=positions[i]=this->position_for(hashes[i]);
+    for(auto i=m;i--;++it){
+      auto hash=hashes[i]=this->hash_for(*it);
+      auto pos=positions[i]=this->position_for(hash);
       BOOST_UNORDERED_PREFETCH(this->arrays.groups()+pos);
     }
 
-    for(std::size_t i=0;i<m;++i){
+    for(auto i=m;i--;){
       auto hash=hashes[i];
       auto pos=positions[i];
-      masks[i]=(this->arrays.groups()+pos)->match(hash);
-      if(masks[i]){
+      auto mask=masks[i]=(this->arrays.groups()+pos)->match(hash);
+      if(mask){
         BOOST_UNORDERED_PREFETCH(this->arrays.group_accesses()+pos);
         BOOST_UNORDERED_PREFETCH_ELEMENTS(this->arrays.elements()+pos*N,N);
       }
     }
 
     it=first;
-    for(std::size_t i=0;i<m;++i,++it){
+    for(auto i=m;i--;++it){
       auto          pos=positions[i];
       prober        pb(pos);
       auto          pg=this->arrays.groups()+pos;
