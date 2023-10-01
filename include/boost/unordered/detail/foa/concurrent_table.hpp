@@ -1318,11 +1318,8 @@ private:
     return res;
   }
 #else
-  template<typename GroupAccessMode,
-    typename FwdIterator,typename F
-  >
-  BOOST_FORCEINLINE
-  std::size_t unprotected_bulk_visit(
+  template<typename GroupAccessMode,typename FwdIterator,typename F>
+  BOOST_FORCEINLINE std::size_t unprotected_bulk_visit(
     GroupAccessMode access_mode,FwdIterator first,std::size_t m,F&& f)const
   {
     BOOST_ASSERT(s<2*bulk_visit_size);
@@ -1356,21 +1353,10 @@ private:
       auto          pg=this->arrays.groups()+pos;
       auto          mask=masks[i];
       element_type *p;
-      if(mask){
-        p=this->arrays.elements()+pos*N;
-        goto post_prefetch;
-      }
-      else{
-        goto post_mask;
-      }
-      do{
-        pos=pb.get();
-        pg=this->arrays.groups()+pos;
-        mask=pg->match(hashes[i]);
-        if(BOOST_UNLIKELY(mask!=0)){ /* unlikely bc we're past the 1st probe */
-          p=this->arrays.elements()+pos*N;
-          BOOST_UNORDERED_PREFETCH_ELEMENTS(p,N);
-      post_prefetch:
+      if(!mask)goto post_mask;
+      p=this->arrays.elements()+pos*N;
+      for(;;){
+        {
           auto lck=access(access_mode,pos);
           do{
             auto n=unchecked_countr_zero(mask);
@@ -1385,11 +1371,17 @@ private:
           }while(mask);
         }
       post_mask:
-        if(BOOST_LIKELY(pg->is_not_overflowed(hashes[i]))){
+        if(BOOST_LIKELY(pg->is_not_overflowed(hashes[i]))||
+           BOOST_UNLIKELY(!pb.next(this->arrays.groups_size_mask))){
           goto next_key;
         }
+        pos=pb.get();
+        pg=this->arrays.groups()+pos;
+        mask=pg->match(hashes[i]);
+        if(BOOST_LIKELY(mask==0))goto next_key;
+        p=this->arrays.elements()+pos*N;
+        BOOST_UNORDERED_PREFETCH_ELEMENTS(p,N);
       }
-      while(BOOST_LIKELY(pb.next(this->arrays.groups_size_mask)));
       next_key:;
     }
     return res;
