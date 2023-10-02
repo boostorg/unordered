@@ -606,17 +606,27 @@ namespace boost {
         void deallocate() noexcept
         {
           if (buckets) {
+            size_type const num_buckets = buckets_len();
+
+            for (size_type i = 0; i < num_buckets; ++i) {
+              buckets[i].~bucket_type();
+            }
+
             bucket_allocator_type bucket_alloc = this->get_bucket_allocator();
-            boost::allocator_deallocate(
-              bucket_alloc, buckets, this->buckets_len());
+            boost::allocator_deallocate(bucket_alloc, buckets, num_buckets);
 
             buckets = bucket_pointer();
           }
 
           if (groups) {
+            size_type const num_groups = groups_len();
+
+            for (size_type i = 0; i < num_groups; ++i) {
+              groups[i].~group();
+            }
+
             group_allocator_type group_alloc = this->get_group_allocator();
-            boost::allocator_deallocate(
-              group_alloc, groups, this->groups_len());
+            boost::allocator_deallocate(group_alloc, groups, num_groups);
 
             groups = group_pointer();
           }

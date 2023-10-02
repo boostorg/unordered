@@ -646,6 +646,119 @@ namespace constructor_tests {
     test::check_equivalent_keys(x);
   }
 
+  static std::size_t counted_pointer_count = 0;
+
+  template <typename T>
+  class counted_pointer {
+   public:
+    counted_pointer(T* p_ = nullptr) : p{p_} {
+      ++counted_pointer_count; 
+    }
+    counted_pointer(const counted_pointer& x) : p{x.p} {
+      ++counted_pointer_count; 
+    }
+    ~counted_pointer() { 
+      --counted_pointer_count;
+    }
+
+    operator T*() const noexcept { return p; }
+
+    template <typename Q = T>
+    Q& operator*() const noexcept {
+      return *p;
+    }
+
+    T* operator->() const noexcept { return p; }
+    counted_pointer& operator++() noexcept {
+      ++p;
+      return *this;
+    }
+    counted_pointer operator++(int) noexcept {
+      auto x = *this;
+      ++p;
+      ;
+      return x;
+    }
+    counted_pointer& operator+=(std::ptrdiff_t n) noexcept {
+      p += n;
+      return *this;
+    }
+    friend bool operator==(const counted_pointer& x, const counted_pointer& y)
+    {
+      return x.p == y.p;
+    }
+    friend bool operator!=(const counted_pointer& x, const counted_pointer& y)
+    {
+      return x.p != y.p;
+    }
+    friend bool operator<(const counted_pointer& x, const counted_pointer& y)
+    {
+      return x.p < y.p;
+    }
+    friend bool operator<=(const counted_pointer& x, const counted_pointer& y)
+    {
+      return x.p <= y.p;
+    }
+    friend bool operator>(const counted_pointer& x, const counted_pointer& y)
+    {
+      return x.p > y.p;
+    }
+    friend bool operator>=(const counted_pointer& x, const counted_pointer& y)
+    {
+      return x.p >= y.p;
+    }
+
+    template <typename Q = T>
+    static counted_pointer pointer_to(Q& x) noexcept {
+      return std::addressof(x);
+    }
+
+   private:
+    T* p;
+  };
+
+  template <class T>
+  struct counted_pointer_allocator {
+    using value_type = T;
+    using pointer = counted_pointer<T>;
+
+    counted_pointer_allocator() = default;
+    template <class U>
+    counted_pointer_allocator(const counted_pointer_allocator<U>&) noexcept {}
+
+    template <class U>
+    bool operator==(const counted_pointer_allocator<U>&) const noexcept {
+      return true;
+    }
+
+    template <class U>
+    bool operator!=(const counted_pointer_allocator<U>&) const noexcept {
+      return false;
+    }
+
+    pointer allocate(std::size_t n) const {
+      return std::allocator<T>().allocate(n);
+    }
+
+    void deallocate(pointer p, std::size_t n) const noexcept {
+      std::allocator<T>().deallocate(p, n);
+    }
+  };
+
+  template <class T>
+  void fancy_pointer_noleak_test(T*, test::random_generator const& generator)
+  {
+    // https://github.com/boostorg/unordered/issues/201
+
+    auto const pointer_count = counted_pointer_count;
+    {
+      test::random_values<T> v(1000, generator);
+      T x(v.begin(), v.end());
+      (void)x.begin();
+    }
+    BOOST_TEST_EQ(pointer_count, counted_pointer_count);
+  }
+
   using test::default_generator;
   using test::generate_collisions;
   using test::limited_range;
@@ -672,6 +785,18 @@ namespace constructor_tests {
   boost::unordered_node_map<test::object, test::object, test::hash,
     test::equal_to, test::allocator2<test::object> >* test_node_map;
 
+  boost::unordered_flat_set<test::object, test::hash, test::equal_to,
+    counted_pointer_allocator<test::object> >* test_set_counted_pointer;
+  boost::unordered_node_set<test::object, test::hash, test::equal_to,
+    counted_pointer_allocator<test::object> >* test_node_set_counted_pointer;
+  boost::unordered_flat_map<test::object, test::object, test::hash,
+    test::equal_to, counted_pointer_allocator<
+      std::pair<test::object const,test::object> > >* test_map_counted_pointer;
+  boost::unordered_node_map<test::object, test::object, test::hash,
+    test::equal_to, counted_pointer_allocator<
+      std::pair<test::object const,test::object> >
+  >* test_node_map_counted_pointer;
+
   UNORDERED_TEST(constructor_tests1,
     ((test_map_std_alloc)(test_set)(test_node_set)(test_map)(test_node_map))(
       (default_generator)(generate_collisions)(limited_range)))
@@ -683,6 +808,11 @@ namespace constructor_tests {
   UNORDERED_TEST(map_constructor_test,
     ((test_map_std_alloc)(test_map)(test_node_map))(
       (default_generator)(generate_collisions)(limited_range)))
+
+  UNORDERED_TEST(fancy_pointer_noleak_test,
+    ((test_set_counted_pointer)(test_node_set_counted_pointer)
+       (test_map_counted_pointer)(test_node_map_counted_pointer))
+     ((default_generator)))
 
   UNORDERED_TEST(no_alloc_default_construct_test,
     ((test_set_raw_ptr)(test_node_set_raw_ptr)(test_map_raw_ptr)(test_node_map_raw_ptr))(
@@ -700,6 +830,18 @@ namespace constructor_tests {
   boost::unordered_multimap<test::object, test::object, test::hash,
     test::equal_to, test::allocator1<test::object> >* test_multimap;
 
+  boost::unordered_set<test::object, test::hash, test::equal_to,
+    counted_pointer_allocator<test::object> >* test_set_counted_pointer;
+  boost::unordered_multiset<test::object, test::hash, test::equal_to,
+    counted_pointer_allocator<test::object> >* test_multiset_counted_pointer;
+  boost::unordered_map<test::object, test::object, test::hash,
+    test::equal_to, counted_pointer_allocator<
+      std::pair<test::object const,test::object> > >* test_map_counted_pointer;
+  boost::unordered_multimap<test::object, test::object, test::hash,
+    test::equal_to, counted_pointer_allocator<
+      std::pair<test::object const,test::object> >
+  >* test_multimap_counted_pointer;
+
   UNORDERED_TEST(constructor_tests1,
     ((test_map_std_alloc)(test_set)(test_multiset)(test_map)(test_multimap))(
       (default_generator)(generate_collisions)(limited_range)))
@@ -711,6 +853,11 @@ namespace constructor_tests {
   UNORDERED_TEST(map_constructor_test,
     ((test_map_std_alloc)(test_map)(test_multimap))(
       (default_generator)(generate_collisions)(limited_range)))
+
+  UNORDERED_TEST(fancy_pointer_noleak_test,
+    ((test_set_counted_pointer)(test_multiset_counted_pointer)
+       (test_map_counted_pointer)(test_multimap_counted_pointer))
+     ((default_generator)))
 
   UNORDERED_TEST(no_alloc_default_construct_test,
     ((test_set)(test_multiset)(test_map)(test_multimap))(

@@ -1501,6 +1501,7 @@ namespace boost {
 
           value_allocator val_alloc(alloc);
           boost::allocator_destroy(val_alloc, p->value_ptr());
+          boost::unordered::detail::func::destroy(boost::to_address(p));
           boost::allocator_deallocate(alloc, p, 1);
         }
 
