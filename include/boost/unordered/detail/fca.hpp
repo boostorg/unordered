@@ -613,6 +613,7 @@ namespace boost {
           if (buckets) {
             size_type const num_buckets = buckets_len();
             bucket_type* pb = boost::to_address(buckets);
+            (void)pb; // VS complains when dtor is trivial
 
             for (size_type i = 0; i < num_buckets; ++i) {
               (pb + i)->~bucket_type();
@@ -627,6 +628,8 @@ namespace boost {
           if (groups) {
             size_type const num_groups = groups_len();
             group* pg = boost::to_address(groups);
+            (void)pg; // VS complains when dtor is trivial
+
             for (size_type i = 0; i < num_groups; ++i) {
               (pg + i)->~group();
             }
