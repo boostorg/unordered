@@ -661,7 +661,7 @@ namespace constructor_tests {
       --counted_pointer_count;
     }
 
-    counted_pointer& operator=(counted_pointer&) = default;
+    counted_pointer& operator=(counted_pointer const&) = default;
 
     counted_pointer& operator=(T* p_) {
       p = p_;
