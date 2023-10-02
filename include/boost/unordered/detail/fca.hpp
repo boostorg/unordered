@@ -603,13 +603,19 @@ namespace boost {
           return *this;
         }
 
+#if defined(BOOST_MSVC)
+#pragma warning(push)
+#pragma warning(disable : 4100) // unreferenced formal parameter (dtor calls)
+#endif
+
         void deallocate() noexcept
         {
           if (buckets) {
             size_type const num_buckets = buckets_len();
+            bucket_type* pb = boost::to_address(buckets);
 
             for (size_type i = 0; i < num_buckets; ++i) {
-              buckets[i].~bucket_type();
+              (pb + i)->~bucket_type();
             }
 
             bucket_allocator_type bucket_alloc = this->get_bucket_allocator();
@@ -620,9 +626,9 @@ namespace boost {
 
           if (groups) {
             size_type const num_groups = groups_len();
-
+            group* pg = boost::to_address(groups);
             for (size_type i = 0; i < num_groups; ++i) {
-              groups[i].~group();
+              (pg + i)->~group();
             }
 
             group_allocator_type group_alloc = this->get_group_allocator();
@@ -631,6 +637,10 @@ namespace boost {
             groups = group_pointer();
           }
         }
+
+#if defined(BOOST_MSVC)
+#pragma warning(pop)
+#endif
 
         void swap(grouped_bucket_array& other)
         {
