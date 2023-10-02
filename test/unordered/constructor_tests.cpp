@@ -654,11 +654,18 @@ namespace constructor_tests {
     counted_pointer(T* p_ = nullptr) : p{p_} {
       ++counted_pointer_count; 
     }
-    counted_pointer(const counted_pointer& x) : p{x.p} {
+    counted_pointer(counted_pointer const& x) : p{x.p} {
       ++counted_pointer_count; 
     }
     ~counted_pointer() { 
       --counted_pointer_count;
+    }
+
+    counted_pointer& operator=(counted_pointer&) = default;
+
+    counted_pointer& operator=(T* p_) {
+      p = p_;
+      return *this;
     }
 
     operator T*() const noexcept { return p; }
