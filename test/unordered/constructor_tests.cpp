@@ -683,6 +683,10 @@ namespace constructor_tests {
       p += n;
       return *this;
     }
+    counted_pointer& operator-=(std::ptrdiff_t n) noexcept {
+      p -= n;
+      return *this;
+    }
     friend bool operator==(const counted_pointer& x, const counted_pointer& y)
     {
       return x.p == y.p;
