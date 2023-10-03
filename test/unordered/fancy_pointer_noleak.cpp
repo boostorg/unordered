@@ -8,6 +8,13 @@
 #include "../helpers/random_values.hpp"
 #include "../objects/test.hpp"
 
+#include <boost/config.hpp>
+#include <boost/config/workaround.hpp>
+
+#if BOOST_WORKAROUND(BOOST_MSVC, < 1910)
+#pragma warning(disable:4714) /* marked as __forceinline not inlined */
+#endif
+
 namespace {
 
   test::seed_t initialize_seed(1002310);
