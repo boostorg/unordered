@@ -646,19 +646,23 @@ namespace constructor_tests {
     test::check_equivalent_keys(x);
   }
 
-  static std::size_t counted_pointer_count = 0;
+   inline std::size_t& counted_pointer_count()
+   {
+     static std::size_t count = 0;
+     return count;
+   }
 
   template <typename T>
   class counted_pointer {
    public:
     counted_pointer(T* p_ = nullptr) : p{p_} {
-      ++counted_pointer_count; 
+      ++counted_pointer_count();
     }
     counted_pointer(counted_pointer const& x) : p{x.p} {
-      ++counted_pointer_count; 
+      ++counted_pointer_count();
     }
     ~counted_pointer() { 
-      --counted_pointer_count;
+      --counted_pointer_count();
     }
 
     counted_pointer& operator=(counted_pointer const&) = default;
@@ -683,7 +687,6 @@ namespace constructor_tests {
     counted_pointer operator++(int) noexcept {
       auto x = *this;
       ++p;
-      ;
       return x;
     }
     counted_pointer& operator+=(std::ptrdiff_t n) noexcept {
@@ -761,13 +764,13 @@ namespace constructor_tests {
   {
     // https://github.com/boostorg/unordered/issues/201
 
-    auto const pointer_count = counted_pointer_count;
+    auto const pointer_count = counted_pointer_count();
     {
       test::random_values<T> v(1000, generator);
       T x(v.begin(), v.end());
       (void)x.begin();
     }
-    BOOST_TEST_EQ(pointer_count, counted_pointer_count);
+    BOOST_TEST_EQ(pointer_count, counted_pointer_count());
   }
 
   using test::default_generator;
