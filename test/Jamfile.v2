@@ -116,6 +116,7 @@ local FCA_TESTS =
   swap_tests
   transparent_tests
   unnecessary_copy_tests
+  fancy_pointer_noleak
 ;
 
 for local test in $(FCA_TESTS)
@@ -220,6 +221,7 @@ local FOA_TESTS =
   node_handle_tests
   uses_allocator
   hash_is_avalanching_test
+  fancy_pointer_noleak
 ;
 
 for local test in $(FOA_TESTS)
