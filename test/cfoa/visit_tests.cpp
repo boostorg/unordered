@@ -3,6 +3,14 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+#include <boost/config.hpp>
+
+#if defined(BOOST_GCC)
+#pragma GCC diagnostic push
+// warning triggered in transform_iterator.hpp transitive includes
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#endif
+
 #include "helpers.hpp"
 
 #include <boost/unordered/concurrent_flat_map.hpp>
@@ -10,6 +18,10 @@
 
 #include <boost/core/ignore_unused.hpp>
 #include <boost/iterator/transform_iterator.hpp>
+
+#if defined(BOOST_GCC)
+#pragma GCC diagnostic pop
+#endif
 
 #include <algorithm>
 #include <array>
