@@ -871,6 +871,9 @@ namespace {
       X x(values.begin(), values.end());
       X const& cx = x;
 
+      BOOST_TEST_EQ(x.size(), values.size());
+
+
       std::uint64_t old_default_constructor = raii::default_constructor;
       std::uint64_t old_copy_constructor = raii::copy_constructor;
       std::uint64_t old_move_constructor = raii::move_constructor;
