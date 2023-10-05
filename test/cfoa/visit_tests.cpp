@@ -8,7 +8,7 @@
 
 #if BOOST_WORKAROUND(BOOST_GCC_VERSION, < 40900)
 // warning triggered in transform_iterator.hpp transitive includes
-#pragma GCC diagnostic ignored "-Wsign-conversion"
+#pragma GCC diagnostic ignored "-Wconversion"
 #endif
 
 #include "helpers.hpp"
