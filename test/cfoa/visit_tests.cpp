@@ -868,11 +868,11 @@ namespace {
     raii::reset_counts();
 
     {
-      X x(values.begin(), values.end());
+      X x;
+      for (auto const& v: values) {
+        if (get_key(v).x_ % 3 != 0) x.insert(v);
+      }
       X const& cx = x;
-
-      BOOST_TEST_EQ(x.size(), values.size());
-
 
       std::uint64_t old_default_constructor = raii::default_constructor;
       std::uint64_t old_copy_constructor = raii::copy_constructor;
@@ -880,10 +880,10 @@ namespace {
       std::uint64_t old_copy_assignment = raii::copy_assignment;
       std::uint64_t old_move_assignment = raii::move_assignment;
 
-      thread_runner(values, [&x, &cx, key_extract]
-        (boost::span<span_value_type> s) {
-        std::atomic<std::uint64_t> num_visits{0};
+      std::atomic<std::size_t> num_visits{0};
 
+      thread_runner(values, [&x, &cx, &num_visits, key_extract]
+        (boost::span<span_value_type> s) {
         auto it = boost::make_transform_iterator(s.begin(), key_extract);
 
         std::size_t n = s.size(), m = 0, q = 0;
@@ -929,8 +929,9 @@ namespace {
             ++ q;
           }
         }
-        BOOST_TEST_EQ(num_visits, s.size());
       });     
+
+      BOOST_TEST_EQ(num_visits, x.size());
 
       BOOST_TEST_EQ(old_default_constructor, raii::default_constructor);
       BOOST_TEST_EQ(old_copy_constructor, raii::copy_constructor);
