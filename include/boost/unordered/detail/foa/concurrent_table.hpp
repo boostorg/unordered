@@ -31,6 +31,7 @@
 #include <cstddef>
 #include <functional>
 #include <initializer_list>
+#include <iterator>
 #include <memory>
 #include <new>
 #include <type_traits>
@@ -465,6 +466,7 @@ public:
   using key_equal=typename super::key_equal;
   using allocator_type=typename super::allocator_type;
   using size_type=typename super::size_type;
+  static constexpr std::size_t bulk_visit_size=16;
 
 private:
   template<typename Value,typename T>
@@ -562,6 +564,27 @@ public:
   BOOST_FORCEINLINE std::size_t cvisit(const Key& x,F&& f)const
   {
     return visit(x,std::forward<F>(f));
+  }
+
+  template<typename FwdIterator,typename F>
+  BOOST_FORCEINLINE
+  std::size_t visit(FwdIterator first,FwdIterator last,F&& f)
+  {
+    return bulk_visit_impl(group_exclusive{},first,last,std::forward<F>(f));
+  }
+
+  template<typename FwdIterator,typename F>
+  BOOST_FORCEINLINE
+  std::size_t visit(FwdIterator first,FwdIterator last,F&& f)const
+  {
+    return bulk_visit_impl(group_shared{},first,last,std::forward<F>(f));
+  }
+
+  template<typename FwdIterator,typename F>
+  BOOST_FORCEINLINE
+  std::size_t cvisit(FwdIterator first,FwdIterator last,F&& f)const
+  {
+    return visit(first,last,std::forward<F>(f));
   }
 
   template<typename F> std::size_t visit_all(F&& f)
@@ -1051,6 +1074,23 @@ private:
       access_mode,x,this->position_for(hash),hash,std::forward<F>(f));
   }
 
+  template<typename GroupAccessMode,typename FwdIterator,typename F>
+  BOOST_FORCEINLINE
+  std::size_t bulk_visit_impl(
+    GroupAccessMode access_mode,FwdIterator first,FwdIterator last,F&& f)const
+  {
+    auto        lck=shared_access();
+    std::size_t res=0;
+    auto        n=static_cast<std::size_t>(std::distance(first,last));
+    while(n){
+      auto m=n<2*bulk_visit_size?n:bulk_visit_size;
+      res+=unprotected_bulk_visit(access_mode,first,m,std::forward<F>(f));
+      n-=m;
+      std::advance(first,m);
+    }
+    return res;
+  }
+
   template<typename GroupAccessMode,typename F>
   std::size_t visit_all_impl(GroupAccessMode access_mode,F&& f)const
   {
@@ -1147,6 +1187,75 @@ private:
     }
     while(BOOST_LIKELY(pb.next(this->arrays.groups_size_mask)));
     return 0;
+  }
+
+ template<typename GroupAccessMode,typename FwdIterator,typename F>
+  BOOST_FORCEINLINE std::size_t unprotected_bulk_visit(
+    GroupAccessMode access_mode,FwdIterator first,std::size_t m,F&& f)const
+  {
+    BOOST_ASSERT(m<2*bulk_visit_size);
+
+    std::size_t res=0,
+                hashes[2*bulk_visit_size-1],
+                positions[2*bulk_visit_size-1];
+    int         masks[2*bulk_visit_size-1];
+    auto        it=first;
+
+    for(auto i=m;i--;++it){
+      auto hash=hashes[i]=this->hash_for(*it);
+      auto pos=positions[i]=this->position_for(hash);
+      BOOST_UNORDERED_PREFETCH(this->arrays.groups()+pos);
+    }
+
+    for(auto i=m;i--;){
+      auto hash=hashes[i];
+      auto pos=positions[i];
+      auto mask=masks[i]=(this->arrays.groups()+pos)->match(hash);
+      if(mask){
+        BOOST_UNORDERED_PREFETCH(this->arrays.group_accesses()+pos);
+        BOOST_UNORDERED_PREFETCH_ELEMENTS(this->arrays.elements()+pos*N,N);
+      }
+    }
+
+    it=first;
+    for(auto i=m;i--;++it){
+      auto          pos=positions[i];
+      prober        pb(pos);
+      auto          pg=this->arrays.groups()+pos;
+      auto          mask=masks[i];
+      element_type *p;
+      if(!mask)goto post_mask;
+      p=this->arrays.elements()+pos*N;
+      for(;;){
+        {
+          auto lck=access(access_mode,pos);
+          do{
+            auto n=unchecked_countr_zero(mask);
+            if(BOOST_LIKELY(
+              pg->is_occupied(n)&&
+              bool(this->pred()(*it,this->key_from(p[n]))))){
+              f(cast_for(access_mode,type_policy::value_from(p[n])));
+              ++res;
+              goto next_key;
+            }
+            mask&=mask-1;
+          }while(mask);
+        }
+      post_mask:
+        if(BOOST_LIKELY(pg->is_not_overflowed(hashes[i]))||
+           BOOST_UNLIKELY(!pb.next(this->arrays.groups_size_mask))){
+          goto next_key;
+        }
+        pos=pb.get();
+        pg=this->arrays.groups()+pos;
+        mask=pg->match(hashes[i]);
+        if(BOOST_LIKELY(mask==0))goto next_key;
+        p=this->arrays.elements()+pos*N;
+        BOOST_UNORDERED_PREFETCH_ELEMENTS(p,N);
+      }
+      next_key:;
+    }
+    return res;
   }
 
 #if defined(BOOST_MSVC)

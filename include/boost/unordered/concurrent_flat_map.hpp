@@ -1,6 +1,7 @@
 /* Fast open-addressing concurrent hashmap.
  *
  * Copyright 2023 Christian Mazakas.
+ * Copyright 2023 Joaquin M Lopez Munoz.
  * Distributed under the Boost Software License, Version 1.0.
  * (See accompanying file LICENSE_1_0.txt or copy at
  * http://www.boost.org/LICENSE_1_0.txt)
@@ -72,6 +73,7 @@ namespace boost {
       using pointer = typename boost::allocator_pointer<allocator_type>::type;
       using const_pointer =
         typename boost::allocator_const_pointer<allocator_type>::type;
+      static constexpr size_type bulk_visit_size = table_type::bulk_visit_size;
 
       concurrent_flat_map()
           : concurrent_flat_map(detail::foa::default_bucket_count)
@@ -268,6 +270,33 @@ namespace boost {
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         return table_.visit(std::forward<K>(k), f);
+      }
+
+      template<class FwdIterator, class F>
+      BOOST_FORCEINLINE
+      size_t visit(FwdIterator first, FwdIterator last, F f)
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_BULK_VISIT_ITERATOR(FwdIterator)
+        BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
+        return table_.visit(first, last, f);
+      }
+
+      template<class FwdIterator, class F>
+      BOOST_FORCEINLINE
+      size_t visit(FwdIterator first, FwdIterator last, F f) const
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_BULK_VISIT_ITERATOR(FwdIterator)
+        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        return table_.visit(first, last, f);
+      }
+
+      template<class FwdIterator, class F>
+      BOOST_FORCEINLINE
+      size_t cvisit(FwdIterator first, FwdIterator last, F f) const
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_BULK_VISIT_ITERATOR(FwdIterator)
+        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        return table_.visit(first, last, f);
       }
 
       template <class F> size_type visit_all(F f)
