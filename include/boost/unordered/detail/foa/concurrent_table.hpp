@@ -1245,14 +1245,15 @@ private:
           }while(mask);
         }
       post_mask:
-        if(BOOST_LIKELY(pg->is_not_overflowed(hashes[i]))||
-           BOOST_UNLIKELY(!pb.next(this->arrays.groups_size_mask))){
-          goto next_key;
-        }
-        pos=pb.get();
-        pg=this->arrays.groups()+pos;
-        mask=pg->match(hashes[i]);
-        if(BOOST_LIKELY(mask==0))goto next_key;
+        do{
+          if(BOOST_LIKELY(pg->is_not_overflowed(hashes[i]))||
+             BOOST_UNLIKELY(!pb.next(this->arrays.groups_size_mask))){
+            goto next_key;
+          }
+          pos=pb.get();
+          pg=this->arrays.groups()+pos;
+          mask=pg->match(hashes[i]);
+        }while(!mask);
         p=this->arrays.elements()+pos*N;
         BOOST_UNORDERED_PREFETCH_ELEMENTS(p,N);
       }
