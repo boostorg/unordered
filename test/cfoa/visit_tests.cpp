@@ -886,7 +886,8 @@ namespace {
         std::size_t n = s.size(), m = 0, q = 0;
 
         auto found = [&it, &m](value_type const& v) {
-          return std::find(it, it + m, get_key(v)) != it + m;
+          return std::find(
+            it, it + (std::ptrdiff_t)m, get_key(v)) != it + (std::ptrdiff_t)m;
         };
 
         while (n) {
@@ -895,21 +896,21 @@ namespace {
           switch (q % 3) {
             case 0:
               x.visit(
-                it, it + m,
+                it, it + (std::ptrdiff_t)m,
                 [&num_visits, &found](arg_type& v) {
                   if ( found(v) ) ++num_visits;
                 });
               break;
             case 1:
               cx.visit(
-                it, it + m,
+                it, it + (std::ptrdiff_t)m,
                 [&num_visits, &found](value_type const& v) {
                   if ( found(v) ) ++num_visits;
                 });
               break;
             case 2:
               cx.cvisit(
-                it, it + m,
+                it, it + (std::ptrdiff_t)m,
                 [&num_visits, &found](value_type const& v) {
                   if ( found(v) ) ++num_visits;
                 });
@@ -917,7 +918,7 @@ namespace {
             default:
               break;
           }
-          it += m;
+          it += (std::ptrdiff_t)m;
           n -= m;
           ++m;
           if (m > 5*X::bulk_visit_size){
