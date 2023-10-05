@@ -8,7 +8,9 @@
 
 #if BOOST_WORKAROUND(BOOST_GCC_VERSION, < 40900)
 // warning triggered in transform_iterator.hpp transitive includes
+#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wconversion"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
 #endif
 
 #include "helpers.hpp"
@@ -23,6 +25,10 @@
 #include <array>
 #include <functional>
 #include <vector>
+
+#if BOOST_WORKAROUND(BOOST_GCC_VERSION, < 40900)
+#pragma GCC diagnostic pop
+#endif
 
 namespace {
   test::seed_t initialize_seed(335740237);
