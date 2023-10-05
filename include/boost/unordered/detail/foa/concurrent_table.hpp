@@ -1086,7 +1086,10 @@ private:
       auto m=n<2*bulk_visit_size?n:bulk_visit_size;
       res+=unprotected_bulk_visit(access_mode,first,m,std::forward<F>(f));
       n-=m;
-      std::advance(first,m);
+      std::advance(
+        first,
+        static_cast<
+          typename std::iterator_traits<FwdIterator>::difference_type>(m));
     }
     return res;
   }
