@@ -4,9 +4,9 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/config.hpp>
+#include <boost/config/workaround.hpp>
 
-#if defined(BOOST_GCC)
-#pragma GCC diagnostic push
+#if BOOST_WORKAROUND(BOOST_GCC_VERSION, < 40900)
 // warning triggered in transform_iterator.hpp transitive includes
 #pragma GCC diagnostic ignored "-Wsign-conversion"
 #endif
@@ -18,10 +18,6 @@
 
 #include <boost/core/ignore_unused.hpp>
 #include <boost/iterator/transform_iterator.hpp>
-
-#if defined(BOOST_GCC)
-#pragma GCC diagnostic pop
-#endif
 
 #include <algorithm>
 #include <array>
