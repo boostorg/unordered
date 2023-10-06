@@ -21,14 +21,14 @@
 #include <boost/core/ignore_unused.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 
+#if BOOST_WORKAROUND(BOOST_GCC_VERSION, < 40900)
+#pragma GCC diagnostic pop
+#endif
+
 #include <algorithm>
 #include <array>
 #include <functional>
 #include <vector>
-
-#if BOOST_WORKAROUND(BOOST_GCC_VERSION, < 40900)
-#pragma GCC diagnostic pop
-#endif
 
 namespace {
   test::seed_t initialize_seed(335740237);
