@@ -447,6 +447,10 @@ operations follow a https://en.wikipedia.org/wiki/Zipf%27s_law#Formal_definition
 with different _skew_ parameters: the higher the skew, the more concentrated are the keys in the lower values
 of the covered range.
 
+`boost::concurrent_flat_map` is exercised using both regular and xref:#concurrent_bulk_visitation[bulk visitation]:
+in the latter case, lookup keys are buffered in a local array and then processed at
+once each time the buffer reaches xref:#concurrent_flat_map_constants[`bulk_visit_size`].
+
 === GCC 12, x64
 
 
