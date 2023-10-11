@@ -92,7 +92,7 @@
 #elif defined(BOOST_UNORDERED_SSE2)
 #define BOOST_UNORDERED_PREFETCH(p) _mm_prefetch((const char*)(p),_MM_HINT_T0)
 #else
-#define BOOST_UNORDERED_PREFETCH(p) ((void)0)
+#define BOOST_UNORDERED_PREFETCH(p) ((void)(p))
 #endif
 
 /* We have experimentally confirmed that ARM architectures get a higher

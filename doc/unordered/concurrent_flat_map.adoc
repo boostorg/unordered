@@ -50,6 +50,9 @@ namespace boost {
     using size_type            = std::size_t;
     using difference_type      = std::ptrdiff_t;
 
+    // constants
+    static constexpr size_type xref:#concurrent_flat_map_constants[bulk_visit_size] = _implementation-defined_;
+
     // construct/copy/destroy
     xref:#concurrent_flat_map_default_constructor[concurrent_flat_map]();
     explicit xref:#concurrent_flat_map_bucket_count_constructor[concurrent_flat_map](size_type n,
@@ -105,6 +108,13 @@ namespace boost {
     template<class K, class F> size_t xref:#concurrent_flat_map_cvisit[visit](const K& k, F f);
     template<class K, class F> size_t xref:#concurrent_flat_map_cvisit[visit](const K& k, F f) const;
     template<class K, class F> size_t xref:#concurrent_flat_map_cvisit[cvisit](const K& k, F f) const;
+
+    template<class FwdIterator, class F>
+      size_t xref:concurrent_flat_map_bulk_visit[visit](FwdIterator first, FwdIterator last, F f);
+    template<class FwdIterator, class F>
+      size_t xref:concurrent_flat_map_bulk_visit[visit](FwdIterator first, FwdIterator last, F f) const;
+    template<class FwdIterator, class F>
+      size_t xref:concurrent_flat_map_bulk_visit[cvisit](FwdIterator first, FwdIterator last, F f) const;
 
     template<class F> size_t xref:#concurrent_flat_map_cvisit_all[visit_all](F f);
     template<class F> size_t xref:#concurrent_flat_map_cvisit_all[visit_all](F f) const;
@@ -386,6 +396,13 @@ a function visiting elements of `m`) are detected and signalled through `BOOST_A
 When run-time speed is a concern, the feature can be disabled by globally defining
 this macro.
 
+=== Constants
+
+```cpp
+static constexpr size_type bulk_visit_size;
+```
+
+Chunk size internally used in xref:concurrent_flat_map_bulk_visit[bulk visit] operations.
 
 === Constructors
 
@@ -719,6 +736,42 @@ Such reference is const iff `*this` is const.
 [horizontal]
 Returns:;; The number of elements visited (0 or 1).
 Notes:;; The `template<class K, class F>` overloads only participate in overload resolution if `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs. The library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent. This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
+
+---
+
+==== Bulk visit
+
+```c++
+template<class FwdIterator, class F>
+  size_t visit(FwdIterator first, FwdIterator last, F f);
+template<class FwdIterator, class F>
+  size_t visit(FwdIterator first, FwdIterator last, F f) const;
+template<class FwdIterator, class F>
+  size_t cvisit(FwdIterator first, FwdIterator last, F f) const;
+```
+
+For each element `k` in the range [`first`, `last`),
+if there is an element `x` in the container with key equivalent to `k`,
+invokes `f` with a reference to `x`.
+Such reference is const iff `*this` is const.
+
+Although functionally equivalent to individually invoking
+xref:concurrent_flat_map_cvisit[`[c\]visit`] for each key, bulk visitation
+performs generally faster due to internal streamlining optimizations.
+It is advisable that `std::distance(first,last)` be at least
+xref:#concurrent_flat_map_constants[`bulk_visit_size`] to enjoy
+a performance gain: beyond this size, performance is not expected
+to increase further.
+
+[horizontal]
+Requires:;; `FwdIterator` is a https://en.cppreference.com/w/cpp/named_req/ForwardIterator[LegacyForwardIterator^]
+({cpp}11 to {cpp}17), 
+or satisfies https://en.cppreference.com/w/cpp/iterator/forward_iterator[std::forward_iterator^] ({cpp}20 and later).
+For `K` = `std::iterator_traits<FwdIterator>::value_type`, either `K` is `key_type` or
+else `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs.
+In the latter case, the library assumes that `Hash` is callable with both `K` and `Key` and that `Pred` is transparent.
+This enables heterogeneous lookup which avoids the cost of instantiating an instance of the `Key` type.
+Returns:;; The number of elements visited.
 
 ---
 

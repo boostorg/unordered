@@ -10,10 +10,12 @@
 #ifndef BOOST_UNORDERED_DETAIL_CONCURRENT_STATIC_ASSERTS_HPP
 #define BOOST_UNORDERED_DETAIL_CONCURRENT_STATIC_ASSERTS_HPP
 
+#include <boost/config.hpp>
 #include <boost/mp11/algorithm.hpp>
 #include <boost/mp11/list.hpp>
 
 #include <functional>
+#include <iterator>
 #include <type_traits>
 
 #define BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)                             \
@@ -71,5 +73,33 @@ namespace boost {
   } // namespace unordered
 
 } // namespace boost
+
+#if defined(BOOST_NO_CXX20_HDR_CONCEPTS)
+#define BOOST_UNORDERED_STATIC_ASSERT_FWD_ITERATOR(Iterator)                   \
+  static_assert(                                                               \
+    std::is_base_of<                                                           \
+      std::forward_iterator_tag,                                               \
+      typename std::iterator_traits<Iterator>::iterator_category>::value,      \
+    "The provided iterator must be at least forward");
+#else
+#define BOOST_UNORDERED_STATIC_ASSERT_FWD_ITERATOR(Iterator)                   \
+  static_assert(std::forward_iterator<Iterator>,                               \
+    "The provided iterator must be at least forward");
+
+#endif
+
+#define BOOST_UNORDERED_STATIC_ASSERT_KEY_COMPATIBLE_ITERATOR(Iterator)        \
+  static_assert(                                                               \
+    std::is_same<                                                              \
+      typename std::iterator_traits<Iterator>::value_type,                     \
+      key_type>::value ||                                                      \
+    detail::are_transparent<                                                   \
+      typename std::iterator_traits<Iterator>::value_type,                     \
+      hasher, key_equal>::value,                                               \
+    "The provided iterator must dereference to a compatible key value");
+
+#define BOOST_UNORDERED_STATIC_ASSERT_BULK_VISIT_ITERATOR(Iterator)            \
+  BOOST_UNORDERED_STATIC_ASSERT_FWD_ITERATOR(Iterator)                         \
+  BOOST_UNORDERED_STATIC_ASSERT_KEY_COMPATIBLE_ITERATOR(Iterator)
 
 #endif // BOOST_UNORDERED_DETAIL_CONCURRENT_STATIC_ASSERTS_HPP

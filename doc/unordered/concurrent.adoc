@@ -194,6 +194,55 @@ may be inserted, modified or erased by other threads during visitation. It is
 advisable not to assume too much about the exact global state of a concurrent container
 at any point in your program.
 
+== Bulk visitation
+
+Suppose you have an `std::array` of keys you want to look up for in a concurrent map:
+
+[source,c++]
+----
+std::array<int, N> keys;
+...
+for(const auto& key: keys) {
+  m.visit(key, [](auto& x) { ++x.second; });
+}
+----
+
+_Bulk visitation_ allows us to pass all the keys in one operation:
+
+[source,c++]
+----
+m.visit(keys.begin(), keys.end(), [](auto& x) { ++x.second; });
+----
+
+This functionality is not provided for mere syntactic convenience, though: by processing all the
+keys at once, some internal optimizations can be applied that increase
+performance over the regular, one-at-a-time case (consult the
+xref:#benchmarks_boostconcurrent_flat_map[benchmarks]). In fact, it may be beneficial
+to buffer incoming keys so that they can be bulk visited in chunks:
+
+[source,c++]
+----
+static constexpr auto bulk_visit_size = boost::concurrent_flat_map<int,int>::bulk_visit_size;
+std::array<int, bulk_visit_size> buffer;
+std::size_t                      i=0;
+while(...) { // processing loop
+  ...
+  buffer[i++] = k;
+  if(i == bulk_visit_size) {
+    map.visit(buffer.begin(), buffer.end(), [](auto& x) { ++x.second; });
+    i = 0;
+  }
+  ...
+}
+// flush remaining keys
+map.visit(buffer.begin(), buffer.begin() + i, [](auto& x) { ++x.second; });
+----
+
+There's a latency/throughput tradeoff here: it will take longer for incoming keys to
+be processed (since they are buffered), but the number of processed keys per second
+is higher. `bulk_visit_size` is the recommended chunk size —smaller buffers
+may yield worse performance.
+
 == Blocking Operations
 
 ``boost::concurrent_flat_set``s  and ``boost::concurrent_flat_map``s can be copied, assigned, cleared and merged just like any

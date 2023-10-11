@@ -38,7 +38,10 @@ namespace boost {
 
       using type_policy = detail::foa::flat_set_types<Key>;
 
-      detail::foa::concurrent_table<type_policy, Hash, Pred, Allocator> table_;
+      using table_type =
+        detail::foa::concurrent_table<type_policy, Hash, Pred, Allocator>;
+
+      table_type table_;
 
       template <class K, class H, class KE, class A>
       bool friend operator==(concurrent_flat_set<K, H, KE, A> const& lhs,
@@ -67,6 +70,7 @@ namespace boost {
       using pointer = typename boost::allocator_pointer<allocator_type>::type;
       using const_pointer =
         typename boost::allocator_const_pointer<allocator_type>::type;
+      static constexpr size_type bulk_visit_size = table_type::bulk_visit_size;
 
       concurrent_flat_set()
           : concurrent_flat_set(detail::foa::default_bucket_count)
@@ -249,6 +253,24 @@ namespace boost {
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
         return table_.visit(std::forward<K>(k), f);
+      }
+
+      template<class FwdIterator, class F>
+      BOOST_FORCEINLINE
+      size_t visit(FwdIterator first, FwdIterator last, F f) const
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_BULK_VISIT_ITERATOR(FwdIterator)
+        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        return table_.visit(first, last, f);
+      }
+
+      template<class FwdIterator, class F>
+      BOOST_FORCEINLINE
+      size_t cvisit(FwdIterator first, FwdIterator last, F f) const
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_BULK_VISIT_ITERATOR(FwdIterator)
+        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        return table_.visit(first, last, f);
       }
 
       template <class F> size_type visit_all(F f) const

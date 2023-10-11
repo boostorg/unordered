@@ -13,6 +13,7 @@
 with serial and parallel variants.
 * Added efficient move construction of `boost::unordered_flat_(map|set)` from
 `boost::concurrent_flat_(map|set)` and vice versa.
+* Added bulk visitation to concurrent containers for increased lookup performance.
 * Added debug-mode mechanisms for detecting illegal reentrancies into
 a concurrent container from user code.
 * Added Boost.Serialization support to all containers and their (non-local) iterator types.

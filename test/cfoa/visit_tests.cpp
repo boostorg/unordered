@@ -3,13 +3,29 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+#include <boost/config.hpp>
+#include <boost/config/workaround.hpp>
+
+#if BOOST_WORKAROUND(BOOST_GCC_VERSION, < 40900)
+// warning triggered in transform_iterator.hpp transitive includes
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#endif
+
 #include "helpers.hpp"
 
 #include <boost/unordered/concurrent_flat_map.hpp>
 #include <boost/unordered/concurrent_flat_set.hpp>
 
 #include <boost/core/ignore_unused.hpp>
+#include <boost/iterator/transform_iterator.hpp>
 
+#if BOOST_WORKAROUND(BOOST_GCC_VERSION, < 40900)
+#pragma GCC diagnostic pop
+#endif
+
+#include <algorithm>
 #include <array>
 #include <functional>
 #include <vector>
@@ -825,6 +841,129 @@ namespace {
     check_raii_counts();
   }
 
+  struct regular_key_extractor
+  {
+    template<typename T>
+    auto operator()(const T& x) const -> decltype(get_key(x))
+    {
+      return get_key(x);
+    }
+  } regular_key_extract;
+
+  struct transp_key_extractor
+  {
+    template<typename T>
+    auto operator()(const T& x) const -> decltype((get_key(x).x_))
+    {
+      return get_key(x).x_;
+    }
+  } transp_key_extract;
+
+  template <class X, class KeyExtractor, class GF>
+  void bulk_visit(
+    X*, KeyExtractor key_extract, GF gen_factory, test::random_generator rg)
+  {
+    using key_type = typename X::key_type;
+    using value_type = typename X::value_type;
+
+    // concurrent_flat_set visit is always const access
+    using arg_type = typename std::conditional<
+      std::is_same<key_type, value_type>::value,
+      value_type const,
+      value_type
+    >::type;
+
+    auto gen = gen_factory.template get<X>();
+    auto values = make_random_values(16384 * 16, [&] { return gen(rg); });
+
+    using values_type = decltype(values);
+    using span_value_type = typename values_type::value_type;
+
+    raii::reset_counts();
+
+    {
+      X x;
+      for (auto const& v: values) {
+        if (get_key(v).x_ % 3 != 0) x.insert(v);
+      }
+      X const& cx = x;
+
+      std::uint64_t old_default_constructor = raii::default_constructor;
+      std::uint64_t old_copy_constructor = raii::copy_constructor;
+      std::uint64_t old_move_constructor = raii::move_constructor;
+      std::uint64_t old_copy_assignment = raii::copy_assignment;
+      std::uint64_t old_move_assignment = raii::move_assignment;
+
+      std::atomic<std::size_t> num_visits{0};
+
+      thread_runner(values, [&x, &cx, &num_visits, key_extract]
+        (boost::span<span_value_type> s) {
+        auto it = boost::make_transform_iterator(s.begin(), key_extract);
+
+        std::size_t n = s.size(), m = 0, q = 0;
+
+        auto found = [&it, &m](value_type const& v) {
+          return std::find(
+            it, it + (std::ptrdiff_t)m, get_key(v)) != it + (std::ptrdiff_t)m;
+        };
+
+        while (n) {
+          if (m > n) m = n;
+
+          switch (q % 3) {
+            case 0:
+              x.visit(
+                it, it + (std::ptrdiff_t)m,
+                [&num_visits, &found](arg_type& v) {
+                  if ( found(v) ) ++num_visits;
+                });
+              break;
+            case 1:
+              cx.visit(
+                it, it + (std::ptrdiff_t)m,
+                [&num_visits, &found](value_type const& v) {
+                  if ( found(v) ) ++num_visits;
+                });
+              break;
+            case 2:
+              cx.cvisit(
+                it, it + (std::ptrdiff_t)m,
+                [&num_visits, &found](value_type const& v) {
+                  if ( found(v) ) ++num_visits;
+                });
+              break;
+            default:
+              break;
+          }
+          it += (std::ptrdiff_t)m;
+          n -= m;
+          ++m;
+          if (m > 5*X::bulk_visit_size){
+            m = 0;
+            ++ q;
+          }
+        }
+      });     
+
+      BOOST_TEST_EQ(num_visits, x.size());
+
+      BOOST_TEST_EQ(old_default_constructor, raii::default_constructor);
+      BOOST_TEST_EQ(old_copy_constructor, raii::copy_constructor);
+      BOOST_TEST_EQ(old_move_constructor, raii::move_constructor);
+      BOOST_TEST_EQ(old_copy_assignment, raii::copy_assignment);
+      BOOST_TEST_EQ(old_move_assignment, raii::move_assignment);
+    }
+
+    BOOST_TEST_GE(raii::default_constructor, 0u);
+    BOOST_TEST_GE(raii::copy_constructor, 0u);
+    BOOST_TEST_GE(raii::move_constructor, 0u);
+    BOOST_TEST_GT(raii::destructor, 0u);
+
+    BOOST_TEST_EQ(raii::default_constructor + raii::copy_constructor +
+                    raii::move_constructor,
+      raii::destructor);
+  }
+
   boost::unordered::concurrent_flat_map<raii, raii>* map;
   boost::unordered::concurrent_flat_map<raii, raii, transp_hash,
     transp_key_equal>* transp_map;
@@ -865,6 +1004,22 @@ UNORDERED_TEST(
 UNORDERED_TEST(
   insert_and_visit,
   ((map)(set))
+  ((value_type_generator_factory))
+  ((sequential))
+)
+
+UNORDERED_TEST(
+  bulk_visit,
+  ((map)(set))
+  ((regular_key_extract))
+  ((value_type_generator_factory))
+  ((sequential))
+)
+
+UNORDERED_TEST(
+  bulk_visit,
+  ((transp_map)(transp_set))
+  ((transp_key_extract))
   ((value_type_generator_factory))
   ((sequential))
 )
