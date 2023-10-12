@@ -810,10 +810,10 @@ namespace boost {
         std::equal_to<boost::unordered::detail::iter_key_t<InputIterator> >,
       class Allocator = std::allocator<
         boost::unordered::detail::iter_to_alloc_t<InputIterator> >,
-      class = boost::enable_if_t<detail::is_input_iterator_v<InputIterator> >,
-      class = boost::enable_if_t<detail::is_hash_v<Hash> >,
-      class = boost::enable_if_t<detail::is_pred_v<Pred> >,
-      class = boost::enable_if_t<detail::is_allocator_v<Allocator> > >
+      class = std::enable_if_t<detail::is_input_iterator_v<InputIterator> >,
+      class = std::enable_if_t<detail::is_hash_v<Hash> >,
+      class = std::enable_if_t<detail::is_pred_v<Pred> >,
+      class = std::enable_if_t<detail::is_allocator_v<Allocator> > >
     unordered_node_map(InputIterator, InputIterator,
       std::size_t = boost::unordered::detail::foa::default_bucket_count,
       Hash = Hash(), Pred = Pred(), Allocator = Allocator())
@@ -825,9 +825,9 @@ namespace boost {
       class Hash = boost::hash<std::remove_const_t<Key> >,
       class Pred = std::equal_to<std::remove_const_t<Key> >,
       class Allocator = std::allocator<std::pair<const Key, T> >,
-      class = boost::enable_if_t<detail::is_hash_v<Hash> >,
-      class = boost::enable_if_t<detail::is_pred_v<Pred> >,
-      class = boost::enable_if_t<detail::is_allocator_v<Allocator> > >
+      class = std::enable_if_t<detail::is_hash_v<Hash> >,
+      class = std::enable_if_t<detail::is_pred_v<Pred> >,
+      class = std::enable_if_t<detail::is_allocator_v<Allocator> > >
     unordered_node_map(std::initializer_list<std::pair<Key, T> >,
       std::size_t = boost::unordered::detail::foa::default_bucket_count,
       Hash = Hash(), Pred = Pred(), Allocator = Allocator())
@@ -835,8 +835,8 @@ namespace boost {
         Allocator>;
 
     template <class InputIterator, class Allocator,
-      class = boost::enable_if_t<detail::is_input_iterator_v<InputIterator> >,
-      class = boost::enable_if_t<detail::is_allocator_v<Allocator> > >
+      class = std::enable_if_t<detail::is_input_iterator_v<InputIterator> >,
+      class = std::enable_if_t<detail::is_allocator_v<Allocator> > >
     unordered_node_map(InputIterator, InputIterator, std::size_t, Allocator)
       -> unordered_node_map<boost::unordered::detail::iter_key_t<InputIterator>,
         boost::unordered::detail::iter_val_t<InputIterator>,
@@ -845,8 +845,8 @@ namespace boost {
         Allocator>;
 
     template <class InputIterator, class Allocator,
-      class = boost::enable_if_t<detail::is_input_iterator_v<InputIterator> >,
-      class = boost::enable_if_t<detail::is_allocator_v<Allocator> > >
+      class = std::enable_if_t<detail::is_input_iterator_v<InputIterator> >,
+      class = std::enable_if_t<detail::is_allocator_v<Allocator> > >
     unordered_node_map(InputIterator, InputIterator, Allocator)
       -> unordered_node_map<boost::unordered::detail::iter_key_t<InputIterator>,
         boost::unordered::detail::iter_val_t<InputIterator>,
@@ -855,9 +855,9 @@ namespace boost {
         Allocator>;
 
     template <class InputIterator, class Hash, class Allocator,
-      class = boost::enable_if_t<detail::is_hash_v<Hash> >,
-      class = boost::enable_if_t<detail::is_input_iterator_v<InputIterator> >,
-      class = boost::enable_if_t<detail::is_allocator_v<Allocator> > >
+      class = std::enable_if_t<detail::is_hash_v<Hash> >,
+      class = std::enable_if_t<detail::is_input_iterator_v<InputIterator> >,
+      class = std::enable_if_t<detail::is_allocator_v<Allocator> > >
     unordered_node_map(
       InputIterator, InputIterator, std::size_t, Hash, Allocator)
       -> unordered_node_map<boost::unordered::detail::iter_key_t<InputIterator>,
@@ -866,22 +866,22 @@ namespace boost {
         Allocator>;
 
     template <class Key, class T, class Allocator,
-      class = boost::enable_if_t<detail::is_allocator_v<Allocator> > >
+      class = std::enable_if_t<detail::is_allocator_v<Allocator> > >
     unordered_node_map(std::initializer_list<std::pair<Key, T> >, std::size_t,
       Allocator) -> unordered_node_map<std::remove_const_t<Key>, T,
       boost::hash<std::remove_const_t<Key> >,
       std::equal_to<std::remove_const_t<Key> >, Allocator>;
 
     template <class Key, class T, class Allocator,
-      class = boost::enable_if_t<detail::is_allocator_v<Allocator> > >
+      class = std::enable_if_t<detail::is_allocator_v<Allocator> > >
     unordered_node_map(std::initializer_list<std::pair<Key, T> >, Allocator)
       -> unordered_node_map<std::remove_const_t<Key>, T,
         boost::hash<std::remove_const_t<Key> >,
         std::equal_to<std::remove_const_t<Key> >, Allocator>;
 
     template <class Key, class T, class Hash, class Allocator,
-      class = boost::enable_if_t<detail::is_hash_v<Hash> >,
-      class = boost::enable_if_t<detail::is_allocator_v<Allocator> > >
+      class = std::enable_if_t<detail::is_hash_v<Hash> >,
+      class = std::enable_if_t<detail::is_allocator_v<Allocator> > >
     unordered_node_map(std::initializer_list<std::pair<Key, T> >, std::size_t,
       Hash, Allocator) -> unordered_node_map<std::remove_const_t<Key>, T,
       Hash, std::equal_to<std::remove_const_t<Key> >, Allocator>;

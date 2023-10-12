@@ -640,10 +640,10 @@ namespace boost {
         std::equal_to<typename std::iterator_traits<InputIterator>::value_type>,
       class Allocator = std::allocator<
         typename std::iterator_traits<InputIterator>::value_type>,
-      class = boost::enable_if_t<detail::is_input_iterator_v<InputIterator> >,
-      class = boost::enable_if_t<detail::is_hash_v<Hash> >,
-      class = boost::enable_if_t<detail::is_pred_v<Pred> >,
-      class = boost::enable_if_t<detail::is_allocator_v<Allocator> > >
+      class = std::enable_if_t<detail::is_input_iterator_v<InputIterator> >,
+      class = std::enable_if_t<detail::is_hash_v<Hash> >,
+      class = std::enable_if_t<detail::is_pred_v<Pred> >,
+      class = std::enable_if_t<detail::is_allocator_v<Allocator> > >
     concurrent_flat_set(InputIterator, InputIterator,
       std::size_t = boost::unordered::detail::foa::default_bucket_count,
       Hash = Hash(), Pred = Pred(), Allocator = Allocator())
@@ -653,17 +653,17 @@ namespace boost {
 
     template <class T, class Hash = boost::hash<T>,
       class Pred = std::equal_to<T>, class Allocator = std::allocator<T>,
-      class = boost::enable_if_t<detail::is_hash_v<Hash> >,
-      class = boost::enable_if_t<detail::is_pred_v<Pred> >,
-      class = boost::enable_if_t<detail::is_allocator_v<Allocator> > >
+      class = std::enable_if_t<detail::is_hash_v<Hash> >,
+      class = std::enable_if_t<detail::is_pred_v<Pred> >,
+      class = std::enable_if_t<detail::is_allocator_v<Allocator> > >
     concurrent_flat_set(std::initializer_list<T>,
       std::size_t = boost::unordered::detail::foa::default_bucket_count,
       Hash = Hash(), Pred = Pred(), Allocator = Allocator())
       -> concurrent_flat_set< T, Hash, Pred, Allocator>;
 
     template <class InputIterator, class Allocator,
-      class = boost::enable_if_t<detail::is_input_iterator_v<InputIterator> >,
-      class = boost::enable_if_t<detail::is_allocator_v<Allocator> > >
+      class = std::enable_if_t<detail::is_input_iterator_v<InputIterator> >,
+      class = std::enable_if_t<detail::is_allocator_v<Allocator> > >
     concurrent_flat_set(InputIterator, InputIterator, std::size_t, Allocator)
       -> concurrent_flat_set<
         typename std::iterator_traits<InputIterator>::value_type,
@@ -672,8 +672,8 @@ namespace boost {
         Allocator>;
 
     template <class InputIterator, class Allocator,
-      class = boost::enable_if_t<detail::is_input_iterator_v<InputIterator> >,
-      class = boost::enable_if_t<detail::is_allocator_v<Allocator> > >
+      class = std::enable_if_t<detail::is_input_iterator_v<InputIterator> >,
+      class = std::enable_if_t<detail::is_allocator_v<Allocator> > >
     concurrent_flat_set(InputIterator, InputIterator, Allocator)
       -> concurrent_flat_set<
         typename std::iterator_traits<InputIterator>::value_type,
@@ -682,9 +682,9 @@ namespace boost {
         Allocator>;
 
     template <class InputIterator, class Hash, class Allocator,
-      class = boost::enable_if_t<detail::is_hash_v<Hash> >,
-      class = boost::enable_if_t<detail::is_input_iterator_v<InputIterator> >,
-      class = boost::enable_if_t<detail::is_allocator_v<Allocator> > >
+      class = std::enable_if_t<detail::is_hash_v<Hash> >,
+      class = std::enable_if_t<detail::is_input_iterator_v<InputIterator> >,
+      class = std::enable_if_t<detail::is_allocator_v<Allocator> > >
     concurrent_flat_set(
       InputIterator, InputIterator, std::size_t, Hash, Allocator)
       -> concurrent_flat_set<
@@ -693,18 +693,18 @@ namespace boost {
         Allocator>;
 
     template <class T, class Allocator,
-      class = boost::enable_if_t<detail::is_allocator_v<Allocator> > >
+      class = std::enable_if_t<detail::is_allocator_v<Allocator> > >
     concurrent_flat_set(std::initializer_list<T>, std::size_t, Allocator)
       -> concurrent_flat_set<T, boost::hash<T>,std::equal_to<T>, Allocator>;
 
     template <class T, class Allocator,
-      class = boost::enable_if_t<detail::is_allocator_v<Allocator> > >
+      class = std::enable_if_t<detail::is_allocator_v<Allocator> > >
     concurrent_flat_set(std::initializer_list<T >, Allocator)
       -> concurrent_flat_set<T, boost::hash<T>, std::equal_to<T>, Allocator>;
 
     template <class T, class Hash, class Allocator,
-      class = boost::enable_if_t<detail::is_hash_v<Hash> >,
-      class = boost::enable_if_t<detail::is_allocator_v<Allocator> > >
+      class = std::enable_if_t<detail::is_hash_v<Hash> >,
+      class = std::enable_if_t<detail::is_allocator_v<Allocator> > >
     concurrent_flat_set(std::initializer_list<T >, std::size_t,Hash, Allocator)
       -> concurrent_flat_set<T, Hash, std::equal_to<T>, Allocator>;
 
