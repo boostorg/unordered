@@ -1216,7 +1216,8 @@ private:
       auto mask=masks[i]=(this->arrays.groups()+pos)->match(hash);
       if(mask){
         BOOST_UNORDERED_PREFETCH(this->arrays.group_accesses()+pos);
-        BOOST_UNORDERED_PREFETCH_ELEMENTS(this->arrays.elements()+pos*N,N);
+        //BOOST_UNORDERED_PREFETCH_ELEMENTS(this->arrays.elements()+pos*N,N);
+        BOOST_UNORDERED_PREFETCH(this->arrays.elements()+pos*N+unchecked_countr_zero(mask));
       }
     }
 
