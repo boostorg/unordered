@@ -529,6 +529,7 @@ namespace boost {
         unordered_node_map<key_type, mapped_type, H2, P2, allocator_type>&
           source)
       {
+        BOOST_ASSERT(get_allocator() == source.get_allocator());
         table_.merge(source.table_);
       }
 
@@ -537,6 +538,7 @@ namespace boost {
         unordered_node_map<key_type, mapped_type, H2, P2, allocator_type>&&
           source)
       {
+        BOOST_ASSERT(get_allocator() == source.get_allocator());
         table_.merge(std::move(source.table_));
       }
 

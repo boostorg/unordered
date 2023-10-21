@@ -1030,6 +1030,12 @@ template<class H2, class P2>
 
 Transfers all the element nodes from `source` whose key is not already present in `*this`.
 
+[horizontal]
+Requires:;; `this\->get_allocator() == source.get_allocator()`.
+Notes:;; Invalidates iterators to the elements transferred.
+If the resulting size of `*this` is greater than its original maximum load,
+invalidates all iterators associated to `*this`.
+
 ---
 
 === Observers
