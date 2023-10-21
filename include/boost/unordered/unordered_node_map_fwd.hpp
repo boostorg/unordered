@@ -39,10 +39,6 @@ namespace boost {
   } // namespace unordered
 
   using boost::unordered::unordered_node_map;
-
-  using boost::unordered::swap;
-  using boost::unordered::operator==;
-  using boost::unordered::operator!=;
 } // namespace boost
 
 #endif
