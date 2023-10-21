@@ -1,6 +1,6 @@
 
 // Copyright 2005-2009 Daniel James.
-// Copyright 2022 Christian Mazakas.
+// Copyright 2022-2023 Christian Mazakas.
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -496,8 +496,11 @@ template <class X> void equality_test(X& r)
 
   test::check_return_type<bool>::equals(a == b);
   test::check_return_type<bool>::equals(a != b);
+
+#ifndef BOOST_UNORDERED_FOA_TESTS
   test::check_return_type<bool>::equals(boost::operator==(a, b));
   test::check_return_type<bool>::equals(boost::operator!=(a, b));
+#endif
 }
 
 template <class X, class T> void unordered_unique_test(X& r, T const& t)
