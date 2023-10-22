@@ -58,11 +58,8 @@ namespace boost {
     template <class Iter, class NodeType> struct insert_return_type_set;
   } // namespace unordered
 
-  using boost::unordered::swap;
   using boost::unordered::unordered_multiset;
   using boost::unordered::unordered_set;
-  using boost::unordered::operator==;
-  using boost::unordered::operator!=;
 } // namespace boost
 
 #endif

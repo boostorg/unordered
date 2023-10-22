@@ -496,11 +496,6 @@ template <class X> void equality_test(X& r)
 
   test::check_return_type<bool>::equals(a == b);
   test::check_return_type<bool>::equals(a != b);
-
-#ifndef BOOST_UNORDERED_FOA_TESTS
-  test::check_return_type<bool>::equals(boost::operator==(a, b));
-  test::check_return_type<bool>::equals(boost::operator!=(a, b));
-#endif
 }
 
 template <class X, class T> void unordered_unique_test(X& r, T const& t)
