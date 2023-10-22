@@ -855,8 +855,6 @@ namespace boost {
 #endif
 
   } // namespace unordered
-
-  using unordered::concurrent_flat_map;
 } // namespace boost
 
 #endif // BOOST_UNORDERED_CONCURRENT_FLAT_MAP_HPP

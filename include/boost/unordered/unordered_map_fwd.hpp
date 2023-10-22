@@ -60,11 +60,8 @@ namespace boost {
     template <class Iter, class NodeType> struct insert_return_type_map;
   } // namespace unordered
 
-  using boost::unordered::swap;
   using boost::unordered::unordered_map;
   using boost::unordered::unordered_multimap;
-  using boost::unordered::operator==;
-  using boost::unordered::operator!=;
 } // namespace boost
 
 #endif

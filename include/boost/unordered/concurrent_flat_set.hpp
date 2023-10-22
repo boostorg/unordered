@@ -711,8 +711,6 @@ namespace boost {
 #endif
 
   } // namespace unordered
-
-  using unordered::concurrent_flat_set;
 } // namespace boost
 
 #endif // BOOST_UNORDERED_CONCURRENT_FLAT_SET_HPP
