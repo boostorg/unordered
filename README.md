@@ -1,49 +1,61 @@
 # Boost.Unordered
 
-Part of collection of the [Boost C++ Libraries](http://github.com/boostorg).
+[![Branch](https://img.shields.io/badge/branch-master-brightgreen.svg)](https://github.com/boostorg/unordered/tree/master) [![CI](https://github.com/boostorg/unordered/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/boostorg/unordered/actions/workflows/ci.yml) [![Build status](https://ci.appveyor.com/api/projects/status/github/boostorg/unordered?branch=master&svg=true)](https://ci.appveyor.com/project/danieljames/unordered-qtwe6/branch/master)  [![codecov](https://codecov.io/gh/boostorg/unordered/branch/master/graph/badge.svg)](https://codecov.io/gh/boostorg/unordered/branch/master)  [![Deps](https://img.shields.io/badge/deps-master-brightgreen.svg)](https://pdimov.github.io/boostdep-report/master/unordered.html)  [![Documentation](https://img.shields.io/badge/docs-master-brightgreen.svg)](https://www.boost.org/doc/libs/master/libs/unordered/doc/html/unordered.html)  [![Enter the Matrix](https://img.shields.io/badge/matrix-master-brightgreen.svg)](http://www.boost.org/development/tests/master/developer/unordered.html)<br/>
+[![Branch](https://img.shields.io/badge/branch-develop-brightgreen.svg)](https://github.com/boostorg/unordered/tree/develop) [![CI](https://github.com/boostorg/unordered/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/boostorg/unordered/actions/workflows/ci.yml) [![Build status](https://ci.appveyor.com/api/projects/status/github/boostorg/unordered?branch=develop&svg=true)](https://ci.appveyor.com/project/danieljames/unordered-qtwe6/branch/develop) [![codecov](https://codecov.io/gh/boostorg/unordered/branch/develop/graph/badge.svg)](https://codecov.io/gh/boostorg/unordered/branch/develop) [![Deps](https://img.shields.io/badge/deps-develop-brightgreen.svg)](https://pdimov.github.io/boostdep-report/develop/unordered.html) [![Documentation](https://img.shields.io/badge/docs-develop-brightgreen.svg)](https://www.boost.org/doc/libs/develop/libs/unordered/doc/html/unordered.html) [![Enter the Matrix](https://img.shields.io/badge/matrix-develop-brightgreen.svg)](http://www.boost.org/development/tests/develop/developer/unordered.html)<br/>
+[![BSL 1.0](https://img.shields.io/badge/license-BSL_1.0-blue.svg)](https://www.boost.org/users/license.html) <picture><img alt="C++11 required" src="https://img.shields.io/badge/standard-C%2b%2b11-blue.svg"></picture> <picture><img alt="Header-only library" src="https://img.shields.io/badge/build-header--only-blue.svg"></picture>
 
-For accessing data based on key lookup, the C++ standard library offers `std::set`, `std::map`, `std::multiset` and `std::multimap`.
-These are generally implemented using balanced binary trees so that lookup time has logarithmic complexity.
-That is generally okay, but in many cases a hash table can perform better, as accessing data has constant complexity, on average.
-The worst case complexity is linear, but that occurs rarely and with some care, can be avoided.
+Boost.Unordered offers a catalog of hash containers with different standards compliance levels, performances and intented usage scenarios:
 
-Also, the existing containers require a 'less than' comparison object to order their elements.
-For some data types this is impossible to implement or isn’t practical.
-In contrast, a hash table only needs an equality function and a hash function for the key.
+**`boost::unordered_set` `boost::unordered_map` `boost::unordered_multiset` `boost::unordered_multimap`**
 
-With this in mind, unordered associative containers were added to the C++ standard.
-This is an implementation of the containers described in C++11, with some deviations from the standard in order to work with non-C++11 compilers and libraries.
+<ul>Fully conformant implementations of <code>std::unordered_[multi](set|map)</code>,
+but faster and up to the latest revisions of the standard even if you're working in an older version of C++ (heterogeneous lookup,
+<code>try_emplace</code>, <code>contains</code>, etc.)</ul>
 
+**`boost::unordered_flat_set` `boost::unordered_flat_map`**
 
-### License
+<ul>The fastest of the lot. Based on open addressing, these containers slightly
+deviate from the standard in exchange for top performance.</ul>
 
-Distributed under the [Boost Software License, Version 1.0](http://www.boost.org/LICENSE_1_0.txt).
+**`boost::unordered_node_set` `boost::unordered_node_map`**
 
-### Properties
+<ul>Variations of <code>boost::unordered_flat_(set|map)</code> providing pointer stability.</ul>
 
-* C++03
-* Header-Only
+**`boost::concurrent_flat_set` `boost::concurrent_flat_map`**
 
-### Build Status
+<ul>High performance for multithreaded scenarios. Introducing a new non-standard, iterator-free API.</ul>
 
-Branch          | GH Actions | Appveyor | codecov.io | Deps | Docs | Tests |
-:-------------: | ---------- | -------- | ---------- | ---- | ---- | ----- |
-[`master`](https://github.com/boostorg/unordered/tree/master)   | [![CI](https://github.com/boostorg/unordered/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/boostorg/unordered/actions/workflows/ci.yml)  | [![Build status](https://ci.appveyor.com/api/projects/status/github/boostorg/unordered?branch=master&svg=true)](https://ci.appveyor.com/project/danieljames/unordered-qtwe6/branch/master)   | [![codecov](https://codecov.io/gh/boostorg/unordered/branch/master/graph/badge.svg)](https://codecov.io/gh/boostorg/unordered/branch/master)   | [![Deps](https://img.shields.io/badge/deps-master-brightgreen.svg)](https://pdimov.github.io/boostdep-report/master/unordered.html)   | [![Documentation](https://img.shields.io/badge/docs-master-brightgreen.svg)](https://www.boost.org/doc/libs/master/libs/unordered/doc/html/unordered.html)   | [![Enter the Matrix](https://img.shields.io/badge/matrix-master-brightgreen.svg)](http://www.boost.org/development/tests/master/developer/unordered.html)
-[`develop`](https://github.com/boostorg/unordered/tree/develop) | [![CI](https://github.com/boostorg/unordered/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/boostorg/unordered/actions/workflows/ci.yml) | [![Build status](https://ci.appveyor.com/api/projects/status/github/boostorg/unordered?branch=develop&svg=true)](https://ci.appveyor.com/project/danieljames/unordered-qtwe6/branch/develop) | [![codecov](https://codecov.io/gh/boostorg/unordered/branch/develop/graph/badge.svg)](https://codecov.io/gh/boostorg/unordered/branch/develop) | [![Deps](https://img.shields.io/badge/deps-develop-brightgreen.svg)](https://pdimov.github.io/boostdep-report/develop/unordered.html) | [![Documentation](https://img.shields.io/badge/docs-develop-brightgreen.svg)](https://www.boost.org/doc/libs/develop/libs/unordered/doc/html/unordered.html) | [![Enter the Matrix](https://img.shields.io/badge/matrix-develop-brightgreen.svg)](http://www.boost.org/development/tests/develop/developer/unordered.html)
+## Learn about Boost.Unordered
 
-### Directories
+* [Online documentation](https://www.boost.org/libs/unordered/doc/html/unordered.html)
+* [Some benchmarks](https://github.com/boostorg/boost_unordered_benchmarks)
+* Technical articles on Boost.Unordered internal design:
+  * [Advancing the state of the art for `std::unordered_map` implementations](https://bannalia.blogspot.com/2022/06/advancing-state-of-art-for.html)
+  * [Inside `boost::unordered_flat_map`](https://bannalia.blogspot.com/2022/11/inside-boostunorderedflatmap.html)
+  * [Inside `boost::concurrent_flat_map`](https://bannalia.blogspot.com/2023/07/inside-boostconcurrentflatmap.html)
+  * [Bulk visitation in `boost::concurrent_flat_map`](https://bannalia.blogspot.com/2023/10/bulk-visitation-in-boostconcurrentflatm.html)
 
-| Name        | Purpose                        |
-| ----------- | ------------------------------ |
-| `doc`       | documentation                  |
-| `example`   | examples                       |
-| `include`   | headers                        |
-| `test`      | unit tests                     |
+## Get the library
 
-### More information
+Boost.Unordered can be installed in a number of ways:
 
-* [Ask questions](http://stackoverflow.com/questions/ask?tags=c%2B%2B,boost,boost-unordered)
-* [Report bugs](https://github.com/boostorg/unordered/issues): Be sure to mention Boost version, platform and compiler you're using. A small compilable code sample to reproduce the problem is always good as well.
-* Submit your patches as pull requests against **develop** branch. Note that by submitting patches you agree to license your modifications under the [Boost Software License, Version 1.0](http://www.boost.org/LICENSE_1_0.txt).
-* Discussions about the library are held on the [Boost developers mailing list](http://www.boost.org/community/groups.html#main). Be sure to read the [discussion policy](http://www.boost.org/community/policy.html) before posting and add the `[unordered]` tag at the beginning of the subject line.
+* [Download Boost](https://www.boost.org/users/download/) and you're ready to go (this is a header-only library requiring no building).
+* Using Conan: [TBW]
+* Using vcpkg:
+```
+vcpkg install boost-unordered
+```
+* Using CMake: [TBW]
 
+## Support
+
+* Join the **#boost-unordered** discussion group at [cpplang.slack.com](https://cpplang.slack.com/)
+([ask for an invite](https://cppalliance.org/slack/) if you’re not a member of this workspace yet)
+* Ask in the [Boost Users mailing list](https://lists.boost.org/mailman/listinfo.cgi/boost-users)
+(add the `[unordered]` tag at the beginning of the subject line)
+* [File an issue](https://github.com/boostorg/unordered/issues)
+
+## Contribute
+
+* [Pull requests](https://github.com/boostorg/unordered/pulls) against **develop** branch are most welcome.
+Note that by submitting patches you agree to license your modifications under the [Boost Software License, Version 1.0](http://www.boost.org/LICENSE_1_0.txt).
