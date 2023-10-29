@@ -40,12 +40,24 @@ deviate from the standard in exchange for top performance.</ul>
 Boost.Unordered can be installed in a number of ways:
 
 * [Download Boost](https://www.boost.org/users/download/) and you're ready to go (this is a header-only library requiring no building).
-* Using Conan: [TBW]
-* Using vcpkg:
+* Using Conan 2: In case you don't have it yet, add en entry for Boost in your `conanfile.txt` (the example requires at least Boost 1.83):
+```
+[requires]
+boost/[>=1.83.0]
+```
+<ul>If you're not using any compiled Boost library, the following will skip building altogether:</ul>
+
+```
+[options]
+boost:header_only=True
+```
+* Using vcpkg: Execute the command
 ```
 vcpkg install boost-unordered
 ```
-* Using CMake: [TBW]
+* Using CMake: [Boost CMake support infrastructure](https://github.com/boostorg/cmake)
+allows you to use CMake directly to download, build and consume all of Boost or
+some specific libraries.
 
 ## Support
 
