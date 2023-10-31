@@ -40,7 +40,7 @@ deviate from the standard in exchange for top performance.</ul>
 Boost.Unordered can be installed in a number of ways:
 
 * [Download Boost](https://www.boost.org/users/download/) and you're ready to go (this is a header-only library requiring no building).
-* Using Conan 2: In case you don't have it yet, add en entry for Boost in your `conanfile.txt` (the example requires at least Boost 1.83):
+* Using Conan 2: In case you don't have it yet, add an entry for Boost in your `conanfile.txt` (the example requires at least Boost 1.83):
 ```
 [requires]
 boost/[>=1.83.0]
