@@ -345,6 +345,7 @@ void unordered_map_test(X& r, Key const& k, T const& v)
 {
   typedef typename X::value_type value_type;
   typedef typename X::key_type key_type;
+  typedef typename X::mapped_type mapped_type;
 
   BOOST_STATIC_ASSERT(
     (boost::is_same<value_type, std::pair<key_type const, T> >::value));
@@ -455,6 +456,18 @@ void unordered_map_test(X& r, Key const& k, T const& v)
   r.emplace_hint(r.begin(), k, v);
   r.emplace_hint(r.begin(), k_lvalue, v_lvalue);
   r.emplace_hint(r.begin(), rvalue(k), rvalue(v));
+
+  // Iterator dereferencing
+  test::check_return_type<value_type>::equals(*r.find(k));
+  test::check_return_type<Key>::equals(r.find(k)->first);
+  test::check_return_type<mapped_type>::equals(r.find(k)->second);
+
+#ifndef BOOST_UNORDERED_FOA_TESTS
+  // Local iterator dereferencing
+  test::check_return_type<value_type>::equals(*r.begin(r.bucket(k)));
+  test::check_return_type<Key>::equals(r.begin(r.bucket(k))->first);
+  test::check_return_type<mapped_type>::equals(r.begin(r.bucket(k))->second);
+#endif
 
 #ifdef BOOST_UNORDERED_FOA_TESTS
   r.emplace_hint(r.begin(), std::piecewise_construct, std::make_tuple(k),

@@ -317,8 +317,7 @@ namespace boost {
         grouped_local_bucket_iterator() : p() {}
 
         reference operator*() const noexcept { return dereference(); }
-
-        pointer operator->() const noexcept { return boost::to_address(p); }
+        pointer operator->() const noexcept { return get_address(); }
 
         grouped_local_bucket_iterator& operator++() noexcept
         {
@@ -354,6 +353,7 @@ namespace boost {
         grouped_local_bucket_iterator(node_pointer p_) : p(p_) {}
 
         value_type& dereference() const noexcept { return p->value(); }
+        value_type* get_address() const noexcept { return p->value_ptr(); }
 
         bool equal(const grouped_local_bucket_iterator& x) const noexcept
         {
@@ -385,8 +385,7 @@ namespace boost {
         }
 
         reference operator*() const noexcept { return dereference(); }
-
-        pointer operator->() const noexcept { return boost::to_address(p); }
+        pointer operator->() const noexcept { return get_address(); }
 
         const_grouped_local_bucket_iterator& operator++() noexcept
         {
@@ -420,6 +419,7 @@ namespace boost {
         const_grouped_local_bucket_iterator(node_pointer p_) : p(p_) {}
 
         value_type& dereference() const noexcept { return p->value(); }
+        value_type* get_address() const noexcept { return p->value_ptr(); }
 
         bool equal(const const_grouped_local_bucket_iterator& x) const noexcept
         {
