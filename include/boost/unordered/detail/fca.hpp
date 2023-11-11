@@ -318,7 +318,10 @@ namespace boost {
 
         reference operator*() const noexcept { return dereference(); }
 
-        pointer operator->() const noexcept { return boost::to_address(p); }
+        pointer operator->() const noexcept
+        {
+          return std::addressof(dereference());
+        }
 
         grouped_local_bucket_iterator& operator++() noexcept
         {
@@ -386,7 +389,10 @@ namespace boost {
 
         reference operator*() const noexcept { return dereference(); }
 
-        pointer operator->() const noexcept { return boost::to_address(p); }
+        pointer operator->() const noexcept
+        {
+          return std::addressof(dereference());
+        }
 
         const_grouped_local_bucket_iterator& operator++() noexcept
         {
