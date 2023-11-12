@@ -95,12 +95,12 @@ jobs:
           - { name: "clang-14 w/ sanitizers (17)", sanitize: yes,
               compiler: clang-14,  cxxstd: '17',    os: 'ubuntu-22.04', ccache_key: "san2" }
           - { name: "clang-14 w/ sanitizers (20)", sanitize: yes,
-              compiler: clang-14,  cxxstd: '20',    os: 'ubuntu-22.04', ccache_key: "san2" }
+              compiler: clang-14,  cxxstd: '20',   container: 'ubuntu:22.04',  os: 'ubuntu-latest', ccache_key: "san2" }
           - { name: "clang-14 w/ sanitizers (2b)", sanitize: yes,
-              compiler: clang-14,  cxxstd: '2b',    os: 'ubuntu-22.04', ccache_key: "san2" }
+              compiler: clang-14,  cxxstd: '2b',   container: 'ubuntu:22.04',  os: 'ubuntu-latest', ccache_key: "san2" }
 
           - { name: "cfoa tsan (clang-14)", cxxstd: '11,14,17,20,2b', os: 'ubuntu-22.04', compiler: clang-14,
-              targets: 'libs/unordered/test//cfoa_tests', thread-sanitize: yes, 
+              targets: 'libs/unordered/test//cfoa_tests', thread-sanitize: yes,
               stdlib: libc++, install: 'clang-14 libc++-14-dev libc++abi-14-dev', ccache_key: "tsan" }
 
           - { compiler: 'clang-15', cxxstd: '11,14',    os: 'ubuntu-22.04', stdlib: libc++, install: 'clang-15 libc++-15-dev libc++abi-15-dev' }
