@@ -95,9 +95,9 @@ jobs:
           - { name: "clang-14 w/ sanitizers (17)", sanitize: yes,
               compiler: clang-14,  cxxstd: '17',    os: 'ubuntu-22.04', ccache_key: "san2" }
           - { name: "clang-14 w/ sanitizers (20)", sanitize: yes,
-              compiler: clang-14,  cxxstd: '20',   container: 'ubuntu:22.04',  os: 'ubuntu-latest', install: 'python2 libpython2-dev', ccache_key: "san2" }
+              compiler: clang-14,  cxxstd: '20',   container: 'ubuntu:22.04',  os: 'ubuntu-latest', ccache_key: "san2" }
           - { name: "clang-14 w/ sanitizers (2b)", sanitize: yes,
-              compiler: clang-14,  cxxstd: '2b',   container: 'ubuntu:22.04',  os: 'ubuntu-latest', install: 'python2 libpython2-dev', ccache_key: "san2" }
+              compiler: clang-14,  cxxstd: '2b',   container: 'ubuntu:22.04',  os: 'ubuntu-latest', ccache_key: "san2" }
 
           - { name: "cfoa tsan (clang-14)", cxxstd: '11,14,17,20,2b', os: 'ubuntu-22.04', compiler: clang-14,
               targets: 'libs/unordered/test//cfoa_tests', thread-sanitize: yes,
@@ -134,7 +134,6 @@ jobs:
                 apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys E1DD270288B4E6030699E45FA1715D88E1DF1F24
                 for i in {1..${NET_RETRY_COUNT:-3}}; do sudo -E add-apt-repository -y ppa:git-core/ppa && break || sleep 10; done
                 apt-get -o Acquire::Retries=$NET_RETRY_COUNT update
-                apt-get -o Acquire::Retries=$NET_RETRY_COUNT install -y g++ python libpython-dev git
             fi
             # For jobs not compatible with ccache, use "ccache: no" in the matrix
             if [[ "${{ matrix.ccache }}" == "no" ]]; then
