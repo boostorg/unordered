@@ -15,6 +15,7 @@
 #include "../objects/test.hpp"
 #include "../helpers/random_values.hpp"
 #include "../helpers/helpers.hpp"
+#include "../helpers/metafunctions.hpp"
 
 #if BOOST_WORKAROUND(BOOST_MSVC, < 1400)
 #pragma warning(disable : 4267) // conversion from 'size_t' to 'unsigned int',
@@ -31,6 +32,7 @@ namespace bucket_tests {
 
     typedef typename X::size_type size_type;
     typedef typename X::const_local_iterator const_local_iterator;
+    typedef typename X::value_type value_type;
     test::random_values<X> v(1000, generator);
 
     X x(v.begin(), v.end());
@@ -58,15 +60,42 @@ namespace bucket_tests {
     }
 
     for (size_type i = 0; i < x.bucket_count(); ++i) {
-      BOOST_TEST(x.bucket_size(i) ==
-                 static_cast<size_type>(std::distance(x.begin(i), x.end(i))));
-      BOOST_TEST(x.bucket_size(i) ==
-                 static_cast<size_type>(std::distance(x.cbegin(i), x.cend(i))));
-      X const& x_ref = x;
-      BOOST_TEST(x.bucket_size(i) == static_cast<size_type>(std::distance(
-                                       x_ref.begin(i), x_ref.end(i))));
-      BOOST_TEST(x.bucket_size(i) == static_cast<size_type>(std::distance(
-                                       x_ref.cbegin(i), x_ref.cend(i))));
+      {
+        auto begin = x.begin(i);
+        auto end = x.end(i);
+
+        BOOST_TEST(x.bucket_size(i) ==
+                   static_cast<size_type>(std::distance(begin, end)));
+
+        for (auto pos = begin; pos != end; ++pos) {
+          using pointer_type = typename std::conditional<test::is_set<X>::value,
+            value_type const*, value_type*>::type;
+
+          pointer_type p = pos.operator->();
+          BOOST_TEST_EQ(p, std::addressof(*pos));
+        }
+
+        auto cbegin = x.cbegin(i);
+        auto cend = x.cend(i);
+        BOOST_TEST(x.bucket_size(i) ==
+                   static_cast<size_type>(std::distance(cbegin, cend)));
+
+        for (auto pos = cbegin; pos != cend; ++pos) {
+          value_type const* p = pos.operator->();
+          BOOST_TEST_EQ(p, std::addressof(*pos));
+        }
+      }
+
+      {
+        X const& x_ref = x;
+        BOOST_TEST_TRAIT_SAME(
+          decltype(x_ref.begin()), decltype(x_ref.cbegin()));
+
+        BOOST_TEST(x.bucket_size(i) == static_cast<size_type>(std::distance(
+                                         x_ref.begin(i), x_ref.end(i))));
+        BOOST_TEST(x.bucket_size(i) == static_cast<size_type>(std::distance(
+                                         x_ref.cbegin(i), x_ref.cend(i))));
+      }
     }
   }
 

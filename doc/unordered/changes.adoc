@@ -19,6 +19,9 @@ a concurrent container from user code.
 * Added Boost.Serialization support to all containers and their (non-local) iterator types.
 * Added support for fancy pointers to open-addressing and concurrent containers.
   This enables scenarios like the use of Boost.Interprocess allocators to construct containers in shared memory.
+* Fixed bug in member of pointer operator for local iterators of closed-addressing
+  containers ({github-pr-url}/221[PR#221^], credit goes to GitHub user vslashg for finding
+  and fixing this issue).
 * Starting with this release, `boost::unordered_[multi]set` and `boost::unordered_[multi]map`
   only work with C++11 onwards.
 
@@ -39,7 +42,7 @@ when the returned proxy is not used.
   `boost::unordered_node_map` and `boost::unordered_node_set`.
 * Extended heterogeneous lookup to more member functions as specified in
   https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2363r5.html[P2363].
-* Replaced the previous post-mixing process for open-addressing containers with 
+* Replaced the previous post-mixing process for open-addressing containers with
   a new algorithm based on extended multiplication by a constant.
 * Fixed bug in internal emplace() impl where stack-local types were not properly
   constructed using the Allocator of the container which breaks uses-allocator
@@ -56,20 +59,20 @@ when the returned proxy is not used.
 
 * Refactor internal implementation to be dramatically faster
 * Allow `final` Hasher and KeyEqual objects
-* Update documentation, adding benchmark graphs and notes on the new internal 
+* Update documentation, adding benchmark graphs and notes on the new internal
   data structures
 
 == Release 1.79.0
 
 * Improved {cpp}20 support:
-  ** All containers have been updated to support 
+  ** All containers have been updated to support
     heterogeneous `count`, `equal_range` and `find`.
   ** All containers now implement the member function `contains`.
   ** `erase_if` has been implemented for all containers.
 * Improved {cpp}23 support:
   ** All containers have been updated to support
     heterogeneous `erase` and `extract`.
-* Changed behavior of `reserve` to eagerly 
+* Changed behavior of `reserve` to eagerly
   allocate ({github-pr-url}/59[PR#59^]).
 * Various warning fixes in the test suite.
 * Update code to internally use `boost::allocator_traits`.
