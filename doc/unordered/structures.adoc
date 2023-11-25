@@ -152,7 +152,7 @@ performing container-wide operations such as swapping or assignment.
 
 By using atomic operations to access the group metadata, lookup is (group-level)
 lock-free up to the point where an actual comparison needs to be done with an element
-that has been previously SIMD-matched: only then it's the group's spinlock used.
+that has been previously SIMD-matched: only then is the group's spinlock used.
 
 Insertion uses the following _optimistic algorithm_:
 
