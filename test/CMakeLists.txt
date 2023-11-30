@@ -9,7 +9,7 @@ if(HAVE_BOOST_TEST)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-set(BOOST_TEST_LINK_LIBRARIES Boost::unordered Boost::core Boost::concept_check)
+set(BOOST_TEST_LINK_LIBRARIES Boost::unordered Boost::core Boost::concept_check Boost::tuple)
 
 function(fca_tests)
   boost_test(PREFIX boost_unordered ${ARGN})
