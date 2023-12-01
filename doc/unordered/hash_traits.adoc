@@ -38,7 +38,7 @@ Users can then declare a hash function `Hash` as avalanching either by embedding
 into the definition of `Hash`, or directly by specializing `hash_is_avalanching<Hash>` to a class with
 an embedded compile-time constant `value` set to `true`.
 
-xref:unordered_flat_set[`boost::unordered_flat_set`] and xref:unordered_flat_map[`boost::unordered_flat_map`]
+Open-addressing and concurrent containers
 use the provided hash function `Hash` as-is if `hash_is_avalanching<Hash>::value` is `true`; otherwise, they
 implement a bit-mixing post-processing stage to increase the quality of hashing at the expense of
 extra computational cost.
