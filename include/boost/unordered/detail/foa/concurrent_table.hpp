@@ -972,21 +972,26 @@ private:
     reentrancy_bichecked<scoped_bilock<multimutex_type>>;
 
 #if defined(BOOST_UNORDERED_LATCH_FREE)
+  using epoch_type=std::atomic<std::size_t>;
+  using epoch_array=cache_aligned_array<epoch_type,128>; // TODO: adapt 128 to the machine
+#endif
+
+#if defined(BOOST_UNORDERED_LATCH_FREE)
   struct group_shared_lock_guard
   {
-    group_shared_lock_guard(std::atomic_int& cs_):cs{cs_}{cs.store(1);}
-    ~group_shared_lock_guard(){cs.store(0);}
+    group_shared_lock_guard(epoch_type& e_):e{e_}{++e;}
+    ~group_shared_lock_guard(){++e;}
 
-    std::atomic_int& cs;
+    epoch_type& e;
   };
   struct group_exclusive_lock_guard
   {
     group_exclusive_lock_guard(
-      std::atomic_int& cs_,group_access::exclusive_lock_guard&& lck_):
-      cs{cs_},lck{std::move(lck_)}{cs.store(1);}
-    ~group_exclusive_lock_guard(){cs.store(0);}
+      epoch_type& e_,group_access::exclusive_lock_guard&& lck_):
+      e{e_},lck{std::move(lck_)}{++e;}
+    ~group_exclusive_lock_guard(){++e;}
 
-    std::atomic_int&                   cs;
+    epoch_type&                        e;
     group_access::exclusive_lock_guard lck;
   };
 #else
@@ -1047,7 +1052,7 @@ private:
   inline group_shared_lock_guard access(group_shared,std::size_t pos)const
   {
 #if defined(BOOST_UNORDERED_LATCH_FREE)
-    return {csections[thread_id()%csections.size()]};
+    return {epochs[thread_id()%epochs.size()]};
 #else
     return this->arrays.group_accesses()[pos].shared_access();
 #endif
@@ -1058,7 +1063,7 @@ private:
   {
 #if defined(BOOST_UNORDERED_LATCH_FREE)
     return {
-      csections[thread_id()%csections.size()],
+      epochs[thread_id()%epochs.size()],
       this->arrays.group_accesses()[pos].exclusive_access()
     };
 #else
@@ -1505,7 +1510,7 @@ private:
               /* slot wasn't empty */
               goto startover;
             }
-            wait_for_csections(); // WHY BEFORE THE FOLLOWING?
+            wait_for_epochs(); // WHY BEFORE THE FOLLOWING?
             if(BOOST_UNLIKELY(insert_counter(pos0)++!=counter)){
               /* other thread inserted from pos0, need to start over */
               pg->reset(n);
@@ -1815,13 +1820,16 @@ private:
   mutable multimutex_type         mutexes;
 
 #if defined(BOOST_UNORDERED_LATCH_FREE)
-  mutable cache_aligned_array<
-    std::atomic_int,128>          csections;
+  static epoch_array              epochs;
 
-  void wait_for_csections()const
+  static void wait_for_epochs()
   {
-    for(std::size_t i=0;i<csections.size();++i){
-      while(csections[i].load(std::memory_order_acquire)){}
+    for(std::size_t i=0;i<epochs.size();++i){
+      auto e=epochs[i].load(std::memory_order_acquire),
+           e1=e|1u;
+      while(e==e1){
+        e=epochs[i].load(std::memory_order_acquire);
+      }
     }
   }
 #endif
@@ -1829,6 +1837,10 @@ private:
 
 template<typename T,typename H,typename P,typename A>
 std::atomic<std::size_t> concurrent_table<T,H,P,A>::thread_counter={};
+
+template<typename T,typename H,typename P,typename A>
+typename concurrent_table<T,H,P,A>::epoch_array
+concurrent_table<T,H,P,A>::epochs={};
 
 #if defined(BOOST_MSVC)
 #pragma warning(pop) /* C4714 */
