@@ -973,7 +973,7 @@ private:
 
 #if defined(BOOST_UNORDERED_LATCH_FREE)
   using epoch_type=std::atomic<std::size_t>;
-  using epoch_array=cache_aligned_array<epoch_type,16>; // TODO: adapt 16 to the machine
+  using epoch_array=cache_aligned_array<epoch_type,128>; // TODO: adapt 128 to the machine
 #endif
 
 #if defined(BOOST_UNORDERED_LATCH_FREE)
@@ -1825,10 +1825,10 @@ private:
   static void wait_for_epochs()
   {
     for(std::size_t i=0;i<epochs.size();++i){
-      auto e=epochs[i].load(std::memory_order_relaxed),
+      auto e=epochs[i].load(std::memory_order_acquire),
            e1=e|1u;
       while(e==e1){
-        e=epochs[i].load(std::memory_order_relaxed);
+        e=epochs[i].load(std::memory_order_acquire);
       }
     }
   }
@@ -1838,9 +1838,11 @@ private:
 template<typename T,typename H,typename P,typename A>
 std::atomic<std::size_t> concurrent_table<T,H,P,A>::thread_counter={};
 
+#if defined(BOOST_UNORDERED_LATCH_FREE)
 template<typename T,typename H,typename P,typename A>
 typename concurrent_table<T,H,P,A>::epoch_array
 concurrent_table<T,H,P,A>::epochs={};
+#endif
 
 #if defined(BOOST_MSVC)
 #pragma warning(pop) /* C4714 */
