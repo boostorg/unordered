@@ -1828,7 +1828,7 @@ private:
       auto e=epochs[i].load(std::memory_order_acquire),
            e1=e|1u;
       while(e==e1){
-        e=epochs[i].load(std::memory_order_acquire);
+        e=epochs[i].load(std::memory_order_relaxed);
       }
     }
   }
