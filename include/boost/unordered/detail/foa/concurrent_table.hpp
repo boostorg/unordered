@@ -1825,7 +1825,7 @@ private:
   static void wait_for_epochs()
   {
     for(std::size_t i=0;i<epochs.size();++i){
-      auto e=epochs[i].load(std::memory_order_acquire),
+      auto e=epochs[i].load(std::memory_order_relaxed),
            e1=e|1u;
       while(e==e1){
         e=epochs[i].load(std::memory_order_relaxed);
