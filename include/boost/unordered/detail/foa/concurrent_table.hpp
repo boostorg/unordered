@@ -973,7 +973,7 @@ private:
 
 #if defined(BOOST_UNORDERED_LATCH_FREE)
   using epoch_type=std::atomic<std::size_t>;
-  using epoch_array=cache_aligned_array<epoch_type,128>; // TODO: adapt 128 to the machine
+  using epoch_array=cache_aligned_array<epoch_type,16>; // TODO: adapt 16 to the machine
 #endif
 
 #if defined(BOOST_UNORDERED_LATCH_FREE)
