@@ -1492,7 +1492,7 @@ private:
 
     for(;;){
     startover:
-      boost::uint32_t counter=insert_counter(pos0);
+      boost::uint32_t counter=++insert_counter(pos0);
       if(unprotected_visit(
         access_mode,k,pos0,hash,std::forward<F>(f)))return 0;
 
@@ -1510,8 +1510,8 @@ private:
               /* slot wasn't empty */
               goto startover;
             }
-            wait_for_epochs(); // WHY BEFORE THE FOLLOWING?
-            if(BOOST_UNLIKELY(insert_counter(pos0)++!=counter)){
+            auto lck=access(group_exclusive{},pos0);
+            if(BOOST_UNLIKELY(insert_counter(pos0)!=counter)){
               /* other thread inserted from pos0, need to start over */
               pg->reset(n);
               goto startover;
