@@ -980,7 +980,7 @@ private:
   struct group_shared_lock_guard
   {
     group_shared_lock_guard(epoch_type& e_):e{e_}{++e;}
-    ~group_shared_lock_guard(){++e;}
+    ~group_shared_lock_guard(){--e;}
 
     epoch_type& e;
   };
@@ -989,7 +989,7 @@ private:
     group_exclusive_lock_guard(
       epoch_type& e_,group_access::exclusive_lock_guard&& lck_):
       e{e_},lck{std::move(lck_)}{++e;}
-    ~group_exclusive_lock_guard(){++e;}
+    ~group_exclusive_lock_guard(){--e;}
 
     epoch_type&                        e;
     group_access::exclusive_lock_guard lck;
@@ -1820,16 +1820,12 @@ private:
   mutable multimutex_type         mutexes;
 
 #if defined(BOOST_UNORDERED_LATCH_FREE)
-  static epoch_array              epochs;
+  mutable epoch_array             epochs;
 
-  static void wait_for_epochs()
+  void wait_for_epochs()
   {
     for(std::size_t i=0;i<epochs.size();++i){
-      auto e=epochs[i].load(std::memory_order_acquire),
-           e1=e|1u;
-      while(e==e1){
-        e=epochs[i].load(std::memory_order_acquire);
-      }
+      while(epochs[i].load(std::memory_order_acquire)){}
     }
   }
 #endif
@@ -1837,12 +1833,6 @@ private:
 
 template<typename T,typename H,typename P,typename A>
 std::atomic<std::size_t> concurrent_table<T,H,P,A>::thread_counter={};
-
-#if defined(BOOST_UNORDERED_LATCH_FREE)
-template<typename T,typename H,typename P,typename A>
-typename concurrent_table<T,H,P,A>::epoch_array
-concurrent_table<T,H,P,A>::epochs={};
-#endif
 
 #if defined(BOOST_MSVC)
 #pragma warning(pop) /* C4714 */
