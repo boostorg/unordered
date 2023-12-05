@@ -799,6 +799,34 @@ public:
     return erase_if(x,[](const value_type&){return true;});
   }
 
+#if defined(BOOST_UNORDERED_LATCH_FREE)
+  template<typename Key,typename F>
+  BOOST_FORCEINLINE auto erase_if(const Key& x,F&& f)->typename std::enable_if<
+    !is_execution_policy<Key>::value,std::size_t>::type
+  {
+    auto        lck=shared_access();
+    auto        hash=this->hash_for(x);
+    std::size_t res=0;
+    unprotected_internal_visit(
+      group_shared{},x,this->position_for(hash),hash,
+      [&,this](group_type* pg,unsigned int n,element_type* p)
+      {
+        auto expected=group_type::reduced_hash(hash);
+        if(reinterpret_cast<std::atomic<unsigned char>*>(pg)[n].
+           compare_exchange_strong(expected,1)){
+          if(f(cast_for(group_shared{},type_policy::value_from(*p)))){
+            wait_for_epochs();
+            super::erase(pg,n,p);
+            res=1;
+          }
+          else{
+            pg->set(n,expected);
+          }
+        }
+      });
+    return res;
+  }
+#else
   template<typename Key,typename F>
   BOOST_FORCEINLINE auto erase_if(const Key& x,F&& f)->typename std::enable_if<
     !is_execution_policy<Key>::value,std::size_t>::type
@@ -817,6 +845,7 @@ public:
       });
     return res;
   }
+#endif
 
   template<typename F>
   std::size_t erase_if(F&& f)
@@ -1825,7 +1854,7 @@ private:
   void wait_for_epochs()
   {
     for(std::size_t i=0;i<epochs.size();++i){
-      while(epochs[i].load(std::memory_order_acquire)){}
+      while(epochs[i].load(std::memory_order_acquire)>1){}
     }
   }
 #endif

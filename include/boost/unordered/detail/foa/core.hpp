@@ -382,11 +382,13 @@ private:
     return (int)word[narrow_cast<unsigned char>(hash)];
   }
 
+public:
   inline static unsigned char reduced_hash(std::size_t hash)
   {
     return narrow_cast<unsigned char>(match_word(hash));
   }
 
+private:
   inline slot_type& at(std::size_t pos)
   {
     return m[pos];
@@ -532,6 +534,7 @@ private:
 #endif
   }
 
+public:
   inline static unsigned char reduced_hash(std::size_t hash)
   {
     static constexpr unsigned char table[]={
@@ -556,6 +559,7 @@ private:
     return table[(unsigned char)hash];
   }
 
+private:
   /* Copied from 
    * https://github.com/simd-everywhere/simde/blob/master/simde/x86/
    * sse2.h#L3763
