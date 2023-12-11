@@ -206,8 +206,8 @@ template<typename Integral>
 struct atomic_integral
 {
 #if defined(BOOST_UNORDERED_LATCH_FREE)
-  operator Integral()const{return n.load();}
-  void operator=(Integral m){n.store(m);}
+  operator Integral()const{return n.load(std::memory_order_acquire);}
+  void operator=(Integral m){n.store(m,std::memory_order_release);}
   void operator|=(Integral m){n.fetch_or(m);}
   void operator&=(Integral m){n.fetch_and(m);}
 
@@ -1564,6 +1564,8 @@ private:
               goto startover;
             }
             auto lck=access(group_exclusive{},pos0);
+            reinterpret_cast<std::atomic<unsigned char>*>(pg)[n].
+              load(std::memory_order_acquire);
             if(BOOST_UNLIKELY(insert_counter(pos0)!=counter)){
               /* other thread inserted from pos0, need to start over */
               pg->reset(n);
