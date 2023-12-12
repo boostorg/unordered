@@ -136,18 +136,16 @@ template<typename Mutex>
 class shared_lock
 {
 public:
-  shared_lock(Mutex& m_)noexcept:m(m_){m.lock_shared();}
-  ~shared_lock()noexcept{if(owns)m.unlock_shared();}
+  shared_lock(Mutex& m)noexcept:pm(&m){pm->lock_shared();}
+  shared_lock(shared_lock&& x)noexcept:pm(x.pm){x.pm=nullptr;x.owns=false;}
+  ~shared_lock()noexcept{if(owns&&pm)pm->unlock_shared();}
 
-  /* not used but VS in pre-C++17 mode needs to see it for RVO */
-  shared_lock(const shared_lock&);
-
-  void lock(){BOOST_ASSERT(!owns);m.lock_shared();owns=true;}
-  void unlock(){BOOST_ASSERT(owns);m.unlock_shared();owns=false;}
+  void lock(){BOOST_ASSERT(!owns&&pm);pm->lock_shared();owns=true;}
+  void unlock(){BOOST_ASSERT(owns&&pm);pm->unlock_shared();owns=false;}
 
 private:
-  Mutex &m;
-  bool owns=true;
+  Mutex* pm;
+  bool   owns=true;
 };
 
 /* VS in pre-C++17 mode can't implement RVO for std::lock_guard due to
@@ -1404,8 +1402,13 @@ private:
   template<typename... Args>
   BOOST_FORCEINLINE bool construct_and_emplace(Args&&... args)
   {
+#if defined(BOOST_UNORDERED_LATCH_FREE)
+    return construct_and_emplace_or_visit(
+      group_synchronized_shared{},[](const value_type&){},std::forward<Args>(args)...);
+#else
     return construct_and_emplace_or_visit(
       group_shared{},[](const value_type&){},std::forward<Args>(args)...);
+#endif
   }
 
   struct call_construct_and_emplace_or_visit
@@ -1590,7 +1593,6 @@ private:
         for(prober pb(pos0);;pb.next(this->arrays.groups_size_mask)){
           auto pos=pb.get();
           auto pg=this->arrays.groups()+pos;
-          auto lck=access(group_exclusive{},pos);
           auto mask=pg->match_available();
           if(BOOST_LIKELY(mask!=0)){
             auto n=unchecked_countr_zero(mask);
@@ -1600,6 +1602,7 @@ private:
               /* slot wasn't empty */
               goto startover;
             }
+            auto lck=access(group_exclusive{},pos);
             auto p=this->arrays.elements()+pos*N+n;
             this->construct_element(p,std::forward<Args>(args)...);
             if(BOOST_UNLIKELY(insert_counter(pos0)++!=counter)){
