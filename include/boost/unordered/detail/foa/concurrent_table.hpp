@@ -1592,9 +1592,8 @@ private:
       if(unprotected_visit(
         access_mode,k,pos0,hash,std::forward<F>(f)))return 0;
 
-      //reserve_size rsize(*this);
-      //if(BOOST_LIKELY(rsize.succeeded())){
-      if(true){
+      reserve_size rsize(*this);
+      if(BOOST_LIKELY(rsize.succeeded())){
         for(prober pb(pos0);;pb.next(this->arrays.groups_size_mask)){
           auto pos=pb.get();
           auto pg=this->arrays.groups()+pos;
@@ -1616,7 +1615,7 @@ private:
             auto p=this->arrays.elements()+pos*N+n;
             this->construct_element(p,std::forward<Args>(args)...);
             pg->set(n,hash);
-            //rsize.commit();
+            rsize.commit();
             return 1;
           }
           pg->mark_overflow(hash);
@@ -1970,8 +1969,8 @@ private:
         e.mco=mco;
         e.epoch=v.epoch.load();
         ++v.wpos;
-        //--this->size_ctrl.ml;
-        //--this->size_ctrl.size;
+        --this->size_ctrl.ml;
+        --this->size_ctrl.size;
 /*        if(wpos-v.rpos>=garbage_vector::min_for_garbage_collection){
           v.epoch=++current_epoch;
           garbage_collect();
@@ -2014,7 +2013,7 @@ private:
         e.epoch=retired_element::available_;
         ++rpos;
       }
-      //this->size_ctrl.ml+=(rpos-v.rpos)-num_mcos;
+      this->size_ctrl.ml+=(rpos-v.rpos)-num_mcos;
       v.rpos=rpos;
       v.reading=false;
     }
