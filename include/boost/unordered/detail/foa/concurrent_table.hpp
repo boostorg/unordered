@@ -1402,7 +1402,7 @@ private:
   template<typename... Args>
   BOOST_FORCEINLINE bool construct_and_emplace(Args&&... args)
   {
-#if defined(BOOST_UNORDERED_LATCH_FREE)
+#if 0 && defined(BOOST_UNORDERED_LATCH_FREE)
     return construct_and_emplace_or_visit(
       group_synchronized_shared{},[](const value_type&){},std::forward<Args>(args)...);
 #else
@@ -1457,7 +1457,7 @@ private:
   template<typename... Args>
   BOOST_FORCEINLINE bool emplace_impl(Args&&... args)
   {
-#if defined(BOOST_UNORDERED_LATCH_FREE)
+#if 0 && defined(BOOST_UNORDERED_LATCH_FREE)
     return emplace_or_visit_impl(
       group_synchronized_shared{},
       [](const value_type&){},std::forward<Args>(args)...);
@@ -1584,7 +1584,11 @@ private:
 
     for(;;){
     startover:
-      boost::uint32_t counter=insert_counter(pos0);
+      boost::uint32_t counter=0;
+      {
+        auto lck=access(group_exclusive{},pos0);
+        counter=insert_counter(pos0);
+      }
       if(unprotected_visit(
         access_mode,k,pos0,hash,std::forward<F>(f)))return 0;
 
@@ -1602,15 +1606,14 @@ private:
               /* slot wasn't empty */
               goto startover;
             }
-            auto lck=access(group_exclusive{},pos);
-            auto p=this->arrays.elements()+pos*N+n;
-            this->construct_element(p,std::forward<Args>(args)...);
+            auto lck=access(group_exclusive{},pos0);
             if(BOOST_UNLIKELY(insert_counter(pos0)++!=counter)){
               /* other thread inserted from pos0, need to start over */
-              this->destroy_element(p);
               pg->reset(n);
               goto startover;
             }
+            auto p=this->arrays.elements()+pos*N+n;
+            this->construct_element(p,std::forward<Args>(args)...);
             pg->set(n,hash);
             rsize.commit();
             return 1;
