@@ -841,7 +841,8 @@ public:
           auto mco=group_type::maybe_caused_overflow(pc);
           if(reinterpret_cast<std::atomic<unsigned char>*>(pg)[n].
              compare_exchange_strong(expected,1)){
-            retire_element(static_cast<std::size_t>(p-this->arrays.elements()),mco);
+            super::erase(pg,n,p);
+            //retire_element(static_cast<std::size_t>(p-this->arrays.elements()),mco);
             res=1;
           }
         }
