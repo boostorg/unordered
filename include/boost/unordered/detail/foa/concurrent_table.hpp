@@ -841,7 +841,8 @@ public:
           auto mco=group_type::maybe_caused_overflow(pc);
           if(reinterpret_cast<std::atomic<unsigned char>*>(pg)[n].
              compare_exchange_strong(expected,1)){
-            super::erase(pg,n,p);
+            super::destroy_element(p);
+            pg->reset(n);
             //retire_element(static_cast<std::size_t>(p-this->arrays.elements()),mco);
             res=1;
           }
@@ -1593,8 +1594,9 @@ private:
       if(unprotected_visit(
         access_mode,k,pos0,hash,std::forward<F>(f)))return 0;
 
-      reserve_size rsize(*this);
-      if(BOOST_LIKELY(rsize.succeeded())){
+      //reserve_size rsize(*this);
+      //if(BOOST_LIKELY(rsize.succeeded())){
+      if(true){
         for(prober pb(pos0);;pb.next(this->arrays.groups_size_mask)){
           auto pos=pb.get();
           auto pg=this->arrays.groups()+pos;
@@ -1616,7 +1618,7 @@ private:
             auto p=this->arrays.elements()+pos*N+n;
             this->construct_element(p,std::forward<Args>(args)...);
             pg->set(n,hash);
-            rsize.commit();
+            //rsize.commit();
             return 1;
           }
           pg->mark_overflow(hash);
