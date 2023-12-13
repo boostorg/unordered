@@ -1589,7 +1589,7 @@ private:
       boost::uint32_t counter=0;
       {
         //auto lck=access(group_exclusive{},pos0);
-        counter=insert_counter(pos0);
+        //counter=insert_counter(pos0);
       }
       if(unprotected_visit(
         access_mode,k,pos0,hash,std::forward<F>(f)))return 0;
@@ -1610,7 +1610,8 @@ private:
               goto startover;
             }
             //auto lck=access(group_exclusive{},pos0);
-            if(BOOST_UNLIKELY(insert_counter(pos0)++!=counter)){
+            //if(BOOST_UNLIKELY(insert_counter(pos0)++!=counter)){
+            if(false){
               /* other thread inserted from pos0, need to start over */
               pg->reset(n);
               goto startover;
