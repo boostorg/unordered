@@ -1588,7 +1588,7 @@ private:
     startover:
       boost::uint32_t counter=0;
       {
-        auto lck=access(group_exclusive{},pos0);
+        //auto lck=access(group_exclusive{},pos0);
         counter=insert_counter(pos0);
       }
       if(unprotected_visit(
@@ -1609,7 +1609,7 @@ private:
               /* slot wasn't empty */
               goto startover;
             }
-            auto lck=access(group_exclusive{},pos0);
+            //auto lck=access(group_exclusive{},pos0);
             if(BOOST_UNLIKELY(insert_counter(pos0)++!=counter)){
               /* other thread inserted from pos0, need to start over */
               pg->reset(n);
