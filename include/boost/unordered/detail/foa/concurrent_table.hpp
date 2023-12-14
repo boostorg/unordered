@@ -841,9 +841,9 @@ public:
           auto mco=group_type::maybe_caused_overflow(pc);
           if(reinterpret_cast<std::atomic<unsigned char>*>(pg)[n].
              compare_exchange_strong(expected,1)){
-            super::destroy_element(p);
-            pg->reset(n);
-            //retire_element(static_cast<std::size_t>(p-this->arrays.elements()),mco);
+            //super::destroy_element(p);
+            //pg->reset(n);
+            retire_element(static_cast<std::size_t>(p-this->arrays.elements()),mco);
             res=1;
           }
         }
@@ -1036,16 +1036,6 @@ private:
 
     epoch_type& e;
   };
-  struct group_synchronized_shared_lock_guard
-  {
-    group_synchronized_shared_lock_guard(
-      epoch_type& e_,group_access::shared_lock_guard&& lck_):
-      e{e_},lck{std::move(lck_)}{}
-    ~group_synchronized_shared_lock_guard(){e=0;}
-
-    epoch_type&                     e;
-    group_access::shared_lock_guard lck;
-  };
   struct group_exclusive_lock_guard
   {
     group_exclusive_lock_guard(
@@ -1109,11 +1099,6 @@ private:
   /* Tag-dispatched shared/exclusive group access */
 
   using group_shared=std::false_type;
-
-#if defined(BOOST_UNORDERED_LATCH_FREE)
-  using group_synchronized_shared=int;
-#endif
-
   using group_exclusive=std::true_type;
 
   inline group_shared_lock_guard access(group_shared,std::size_t pos)const
@@ -1126,16 +1111,6 @@ private:
     return this->arrays.group_accesses()[pos].shared_access();
 #endif
   }
-
-#if defined(BOOST_UNORDERED_LATCH_FREE)
-  inline group_synchronized_shared_lock_guard access(
-    group_synchronized_shared,std::size_t pos)const
-  {
-    auto& e=garbage_vectors[thread_id()%garbage_vectors.size()].epoch;
-    e=current_epoch.load(std::memory_order_relaxed);
-    return {e,this->arrays.group_accesses()[pos].shared_access()};
-  }
-#endif
 
   inline group_exclusive_lock_guard access(
     group_exclusive,std::size_t pos)const
@@ -1161,11 +1136,6 @@ private:
 
   static inline const value_type&
   cast_for(group_shared,value_type& x){return x;}
-
-#if defined(BOOST_UNORDERED_LATCH_FREE)
-  static inline const value_type&
-  cast_for(group_synchronized_shared,value_type& x){return x;}
-#endif
 
   static inline typename std::conditional<
     std::is_same<key_type,value_type>::value,
@@ -1404,13 +1374,8 @@ private:
   template<typename... Args>
   BOOST_FORCEINLINE bool construct_and_emplace(Args&&... args)
   {
-#if 0 && defined(BOOST_UNORDERED_LATCH_FREE)
-    return construct_and_emplace_or_visit(
-      group_synchronized_shared{},[](const value_type&){},std::forward<Args>(args)...);
-#else
     return construct_and_emplace_or_visit(
       group_shared{},[](const value_type&){},std::forward<Args>(args)...);
-#endif
   }
 
   struct call_construct_and_emplace_or_visit
@@ -1459,14 +1424,8 @@ private:
   template<typename... Args>
   BOOST_FORCEINLINE bool emplace_impl(Args&&... args)
   {
-#if 0 && defined(BOOST_UNORDERED_LATCH_FREE)
-    return emplace_or_visit_impl(
-      group_synchronized_shared{},
-      [](const value_type&){},std::forward<Args>(args)...);
-#else
     return emplace_or_visit_impl(
       group_shared{},[](const value_type&){},std::forward<Args>(args)...);
-#endif
   }
 
   template<typename GroupAccessMode,typename F,typename... Args>
@@ -1587,16 +1546,13 @@ private:
     for(;;){
     startover:
       boost::uint32_t counter=0;
-      {
-        //auto lck=access(group_exclusive{},pos0);
-        //counter=insert_counter(pos0);
-      }
+      while(BOOST_UNLIKELY((counter=insert_counter(pos0))%2==1)){}
+
       if(unprotected_visit(
         access_mode,k,pos0,hash,std::forward<F>(f)))return 0;
 
-      //reserve_size rsize(*this);
-      //if(BOOST_LIKELY(rsize.succeeded())){
-      if(true){
+      reserve_size rsize(*this);
+      if(BOOST_LIKELY(rsize.succeeded())){
         for(prober pb(pos0);;pb.next(this->arrays.groups_size_mask)){
           auto pos=pb.get();
           auto pg=this->arrays.groups()+pos;
@@ -1609,9 +1565,8 @@ private:
               /* slot wasn't empty */
               goto startover;
             }
-            //auto lck=access(group_exclusive{},pos0);
-            //if(BOOST_UNLIKELY(insert_counter(pos0)++!=counter)){
-            if(false){
+            if(BOOST_UNLIKELY(
+              !insert_counter(pos0).compare_exchange_weak(counter,counter+1))){
               /* other thread inserted from pos0, need to start over */
               pg->reset(n);
               goto startover;
@@ -1619,7 +1574,8 @@ private:
             auto p=this->arrays.elements()+pos*N+n;
             this->construct_element(p,std::forward<Args>(args)...);
             pg->set(n,hash);
-            //rsize.commit();
+            ++insert_counter(pos0);
+            rsize.commit();
             return 1;
           }
           pg->mark_overflow(hash);
