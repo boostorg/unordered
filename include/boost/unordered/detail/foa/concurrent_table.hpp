@@ -877,14 +877,12 @@ public:
       [&,this](group_type* pg,unsigned int n,element_type* p)
       {
         if(f(cast_for(group_shared{},type_policy::value_from(*p)))){
-          auto expected=group_type::reduced_hash(hash); // TODO: prove no ABA
+          // TODO: prove no ABA
           auto pc=reinterpret_cast<unsigned char*>(pg)+n;
           auto mco=group_type::maybe_caused_overflow(pc);
-          if(reinterpret_cast<std::atomic<unsigned char>*>(pg)[n].
-             compare_exchange_strong(expected,1)){
-            //super::destroy_element(p);
-            //pg->reset(n);
-            retire_element(static_cast<std::size_t>(p-this->arrays.elements()),mco);
+          if(reinterpret_cast<std::atomic<unsigned char>*>(pc)->exchange(1)!=1){
+            retire_element(
+              static_cast<std::size_t>(p-this->arrays.elements()),mco);
             res=1;
           }
         }
@@ -1941,7 +1939,6 @@ private:
   {
     static constexpr std::size_t N=128;
     static constexpr std::size_t min_for_epoch_bump=64;
-    static constexpr std::size_t min_for_garbage_collection=64;
 
     using ssize_t=std::make_signed<std::size_t>::type;
 
