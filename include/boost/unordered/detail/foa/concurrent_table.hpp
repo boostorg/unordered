@@ -881,8 +881,7 @@ public:
           auto pc=reinterpret_cast<unsigned char*>(pg)+n;
           auto mco=group_type::maybe_caused_overflow(pc);
           if(reinterpret_cast<std::atomic<unsigned char>*>(pc)->exchange(1)!=1){
-            retire_element(
-              static_cast<std::size_t>(p-this->arrays.elements()),mco);
+            retire_element(p,mco);
             res=1;
           }
         }
@@ -1932,8 +1931,8 @@ private:
     retired_element()=default;
     retired_element(const retired_element&){}
 
-    std::atomic<std::size_t>  epoch=available_;
-    std::atomic<std::size_t>  pos;
+    std::atomic<std::size_t>   epoch=available_;
+    std::atomic<element_type*> p;
   };
   struct garbage_vector
   {
@@ -1973,7 +1972,7 @@ private:
   }
 
   BOOST_FORCEINLINE void
-  retire_element(std::size_t pos,bool mco)
+  retire_element(element_type* p,bool mco)
   {
     auto&       v=local_garbage_vector();
     std::size_t wpos=v.wpos;
@@ -1981,7 +1980,7 @@ private:
     for(;;){
       auto& e=v.retired_elements[wpos%v.garbage_vector::N];
       if(e.epoch.compare_exchange_strong(expected,retired_element::reserved_)){
-        e.pos=pos;
+        e.p=p;
         e.epoch=v.epoch.load();
         ++v.wpos;
         --v.size;
@@ -2029,8 +2028,10 @@ private:
         auto& e=v.retired_elements[rpos%v.garbage_vector::N];
         if(e.epoch>max_epoch)break;
         //++garbage_collected;
-        this->destroy_element(this->arrays.elements()+e.pos);
-        this->arrays.groups()[e.pos/N].reset(e.pos%N);
+        auto p=e.p.load();
+        this->destroy_element(p);
+        auto pos=static_cast<std::size_t>(e.p-this->arrays.elements());
+        this->arrays.groups()[pos/N].reset(pos%N);
         e.epoch=retired_element::available_;
         ++rpos;
       }
