@@ -512,8 +512,7 @@ public:
     retired_element_allocator_type ral=this->al();
     for(std::size_t i=0;i<garbage_vectors.size();++i){
       auto& v=garbage_vectors[i];
-      //v.epoch_bump=(i*251)%garbage_vector::min_for_epoch_bump;
-      v.epoch_bump=i==0?0:garbage_vector::min_for_epoch_bump+1;
+      v.epoch_bump=(i*251)%garbage_vector::min_for_epoch_bump;
       v.retired_elements=retired_element_traits::allocate(
         ral,garbage_vector::N);
       for(std::size_t j=0;j<garbage_vector::N;++j){
