@@ -16,6 +16,7 @@
 
 #include <boost/unordered/detail/map.hpp>
 #include <boost/unordered/detail/serialize_fca_container.hpp>
+#include <boost/unordered/detail/throw_exception.hpp>
 #include <boost/unordered/detail/type_traits.hpp>
 
 #include <boost/container_hash/hash.hpp>
@@ -1586,8 +1587,8 @@ namespace boost {
           return p->value().second;
       }
 
-      boost::throw_exception(
-        std::out_of_range("Unable to find key in unordered_map."));
+      boost::unordered::detail::throw_out_of_range(
+        "Unable to find key in unordered_map.");
     }
 
     template <class K, class T, class H, class P, class A>
@@ -1602,8 +1603,8 @@ namespace boost {
           return p->value().second;
       }
 
-      boost::throw_exception(
-        std::out_of_range("Unable to find key in unordered_map."));
+      boost::unordered::detail::throw_out_of_range(
+        "Unable to find key in unordered_map.");
     }
 
     template <class K, class T, class H, class P, class A>
@@ -1620,8 +1621,8 @@ namespace boost {
           return p->value().second;
       }
 
-      boost::throw_exception(
-        std::out_of_range("Unable to find key in unordered_map."));
+      boost::unordered::detail::throw_out_of_range(
+        "Unable to find key in unordered_map.");
     }
 
     template <class K, class T, class H, class P, class A>
@@ -1638,8 +1639,8 @@ namespace boost {
           return p->value().second;
       }
 
-      boost::throw_exception(
-        std::out_of_range("Unable to find key in unordered_map."));
+      boost::unordered::detail::throw_out_of_range(
+        "Unable to find key in unordered_map.");
     }
 
     template <class K, class T, class H, class P, class A>
