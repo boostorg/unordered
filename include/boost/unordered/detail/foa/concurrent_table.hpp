@@ -1602,14 +1602,15 @@ private:
             /* slot wasn't empty */
             goto startover;
           }
+          auto p=this->arrays.elements()+pos*N+n;
+          this->construct_element(p,std::forward<Args>(args)...);
           if(BOOST_UNLIKELY(
             !insert_counter(pos0).compare_exchange_weak(counter,counter+1))){
             /* other thread inserted from pos0, need to start over */
+            this->destroy_element(p);
             pg->reset(n);
             goto startover;
           }
-          auto p=this->arrays.elements()+pos*N+n;
-          this->construct_element(p,std::forward<Args>(args)...);
           pg->set(n,hash);
           insert_counter(pos0)=counter+2;
           ++local_garbage_vector().size;
