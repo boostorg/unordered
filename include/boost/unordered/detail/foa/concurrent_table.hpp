@@ -512,7 +512,8 @@ public:
     retired_element_allocator_type ral=this->al();
     for(std::size_t i=0;i<garbage_vectors.size();++i){
       auto& v=garbage_vectors[i];
-      v.epoch_bump=(i*251)%garbage_vector::min_for_epoch_bump;
+      //v.epoch_bump=(i*251)%garbage_vector::min_for_epoch_bump;
+      v.epoch_bump=0;
       v.retired_elements=retired_element_traits::allocate(
         ral,garbage_vector::N);
       for(std::size_t j=0;j<garbage_vector::N;++j){
@@ -881,7 +882,14 @@ public:
           auto pc=reinterpret_cast<unsigned char*>(pg)+n;
           auto mco=group_type::maybe_caused_overflow(pc);
           if(reinterpret_cast<std::atomic<unsigned char>*>(pc)->exchange(1)!=1){
+#if 1
+            auto& v=local_garbage_vector();
+            --v.size;
+            v.mcos+=mco;
+            pg->reset(n);
+#else
             retire_element(p,mco);
+#endif
             res=1;
           }
         }
@@ -1949,7 +1957,7 @@ private:
     std::atomic<std::size_t> rpos=0;
     std::atomic<bool>        reading=false;
     std::atomic<ssize_t>     size=0;
-    std::atomic<ssize_t>     mcos=0;
+    std::atomic<std::size_t> mcos=0;
   };
   static constexpr std::size_t default_max_probe=3;
 
@@ -1975,10 +1983,10 @@ private:
   BOOST_FORCEINLINE void
   retire_element(element_type* p,bool mco)
   {
-    auto&       v=local_garbage_vector();
-    std::size_t wpos=v.wpos;
-    std::size_t expected=retired_element::available_;
+    auto& v=local_garbage_vector();
     for(;;){
+      std::size_t wpos=v.wpos;
+      std::size_t expected=retired_element::available_;
       auto& e=v.retired_elements[wpos%v.garbage_vector::N];
       if(e.epoch.compare_exchange_strong(expected,retired_element::reserved_)){
         e.p=p;
@@ -2000,8 +2008,6 @@ private:
         v.epoch=++current_epoch;
         garbage_collect();
       }
-      wpos=v.wpos;
-      expected=retired_element::available_;
     }
   }
 
@@ -2015,12 +2021,12 @@ private:
       v.size=0;
       v.mcos=0;
     }
-    //std::cout<<"("<<this->size_ctrl.size<<","<<this->size_ctrl.ml<<")";
   }
 
   void garbage_collect(garbage_vector& v,std::size_t max_epoch)
   {
     if(v.rpos==v.wpos)return;
+    v.epoch_bump=0;
 
     bool expected=false;
     if(v.reading.compare_exchange_strong(expected,true)){
