@@ -203,17 +203,6 @@ private:
 template<typename Integral>
 struct atomic_integral
 {
-#if defined(BOOST_UNORDERED_LATCH_FREE)
-  operator Integral()const{return n.load(std::memory_order_acquire);}
-  void operator=(Integral m){n.store(m,std::memory_order_release);}
-  void operator|=(Integral m){n.fetch_or(m);}
-  void operator&=(Integral m){n.fetch_and(m);}
-
-  atomic_integral& operator=(atomic_integral const& rhs) {
-    n.store(rhs.n.load());
-    return *this;
-  }
-#else
   operator Integral()const{return n.load(std::memory_order_relaxed);}
   void operator=(Integral m){n.store(m,std::memory_order_relaxed);}
   void operator|=(Integral m){n.fetch_or(m,std::memory_order_relaxed);}
@@ -223,7 +212,6 @@ struct atomic_integral
     n.store(rhs.n.load(std::memory_order_relaxed),std::memory_order_relaxed);
     return *this;
   }
-#endif
 
   std::atomic<Integral> n;
 };
@@ -880,15 +868,14 @@ public:
         if(f(cast_for(group_shared{},type_policy::value_from(*p)))){
           // TODO: prove no ABA
           auto pc=reinterpret_cast<unsigned char*>(pg)+n;
-          auto mco=group_type::maybe_caused_overflow(pc);
           if(reinterpret_cast<std::atomic<unsigned char>*>(pc)->exchange(1)!=1){
-#if 1
+#if 0
             auto& v=local_garbage_vector();
             --v.size;
-            v.mcos+=mco;
+            v.mcos+=!pg->is_not_overflowed(hash);
             pg->reset(n);
 #else
-            retire_element(p,mco);
+            retire_element(p,!pg->is_not_overflowed(hash));
 #endif
             res=1;
           }
@@ -1621,7 +1608,9 @@ private:
           }
           pg->set(n,hash);
           insert_counter(pos0)=counter+2;
-          ++local_garbage_vector().size;
+          auto& v=local_garbage_vector();            
+          ++v.size;
+          v.mcos-=!pg->is_not_overflowed(hash);
           return 1;
         }
         if(!pbn--)return -1;
@@ -1957,7 +1946,7 @@ private:
     std::atomic<std::size_t> rpos=0;
     std::atomic<bool>        reading=false;
     std::atomic<ssize_t>     size=0;
-    std::atomic<std::size_t> mcos=0;
+    std::atomic<ssize_t>     mcos=0;
   };
   static constexpr std::size_t default_max_probe=3;
 
@@ -2013,13 +2002,14 @@ private:
 
   void update_size_ctrl()
   {
+    using ssize_t=std::make_signed<std::size_t>::type;
+
     for(std::size_t i=0;i<garbage_vectors.size();++i){
       auto &v=garbage_vectors[i];
-      this->size_ctrl.size+=v.size;
-      if(this->size_ctrl.ml>=v.mcos)this->size_ctrl.ml-=v.mcos;
-      else                          this->size_ctrl.ml=0;
-      v.size=0;
-      v.mcos=0;
+      this->size_ctrl.size+=v.size.exchange(0);
+      auto mcos=v.mcos.exchange(0);
+      if(ssize_t(this->size_ctrl.ml)>=mcos)this->size_ctrl.ml-=mcos;
+      else                                 this->size_ctrl.ml=0;
     }
   }
 
