@@ -18,6 +18,7 @@
 #include <boost/core/serialization.hpp>
 #include <boost/unordered/detail/foa/core.hpp>
 #include <boost/unordered/detail/serialize_tracked_address.hpp>
+#include <boost/unordered/detail/type_traits.hpp>
 #include <cstddef>
 #include <iterator>
 #include <memory>
@@ -403,6 +404,16 @@ public:
     auto x=alloc_make_insert_type<type_policy>(
       this->al(),std::forward<Args>(args)...);
     return emplace_impl(type_policy::move(x.value()));
+  }
+
+  /* Optimization for value_type and init_type, to avoid constructing twice */
+  template <typename T>
+  BOOST_FORCEINLINE typename std::enable_if<
+    detail::is_similar_to_any<T, value_type, init_type>::value,
+    std::pair<iterator, bool> >::type
+  emplace(T&& x)
+  {
+    return emplace_impl(std::forward<T>(x));
   }
 
   template<typename Key,typename... Args>

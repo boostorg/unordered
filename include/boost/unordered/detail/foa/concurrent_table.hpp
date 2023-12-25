@@ -28,6 +28,7 @@
 #include <boost/unordered/detail/foa/tuple_rotate_right.hpp>
 #include <boost/unordered/detail/serialization_version.hpp>
 #include <boost/unordered/detail/static_assert.hpp>
+#include <boost/unordered/detail/type_traits.hpp>
 #include <cstddef>
 #include <functional>
 #include <initializer_list>
@@ -680,6 +681,14 @@ public:
   BOOST_FORCEINLINE bool emplace(Args&&... args)
   {
     return construct_and_emplace(std::forward<Args>(args)...);
+  }
+
+  /* Optimization for value_type and init_type, to avoid constructing twice */
+  template<typename Value>
+  BOOST_FORCEINLINE auto emplace(Value&& x)->typename std::enable_if<
+    detail::is_similar_to_any<Value,value_type,init_type>::value,bool>::type
+  {
+    return emplace_impl(std::forward<Value>(x));
   }
 
   BOOST_FORCEINLINE bool
