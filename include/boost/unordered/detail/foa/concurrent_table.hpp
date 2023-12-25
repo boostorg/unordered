@@ -2011,6 +2011,8 @@ private:
       if(ssize_t(this->size_ctrl.ml)>=mcos)this->size_ctrl.ml-=mcos;
       else                                 this->size_ctrl.ml=0;
     }
+    auto max_ml=super::initial_max_load();
+    if(this->size_ctrl.ml>max_ml)this->size_ctrl.ml=max_ml;
   }
 
   void garbage_collect(garbage_vector& v,std::size_t max_epoch)
