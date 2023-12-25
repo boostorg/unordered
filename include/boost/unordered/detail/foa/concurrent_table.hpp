@@ -1436,9 +1436,102 @@ private:
     bool        commit_=false;
   };
 
+  struct latch_free_reserve_slot
+  {
+    latch_free_reserve_slot(group_type* pg_,std::size_t pos_):pg{pg_},pos{pos_}
+    {
+      unsigned char expected=0;
+      succeeded_=reinterpret_cast<std::atomic<unsigned char>*>(pg)[pos].
+        compare_exchange_weak(expected,1);
+    }
+
+    ~latch_free_reserve_slot()
+    {
+      if(succeeded_&&!commit_)pg->reset(pos);
+    }
+
+    bool succeeded()const{return succeeded_;}
+
+    void commit(){commit_=true;}
+
+    group_type  *pg;
+    std::size_t pos;
+    bool        succeeded_;
+    bool        commit_=false;
+  };
+
+  struct assign_insert_counter_on_exit
+  {
+    ~assign_insert_counter_on_exit(){counter=x;}
+
+    group_insert_counter_type &counter;
+    boost::uint32_t            x;
+  };
+
   template<typename GroupAccessMode,typename F,typename... Args>
   BOOST_FORCEINLINE int
   unprotected_norehash_emplace_or_visit(
+    GroupAccessMode access_mode,F&& f,Args&&... args)
+  {
+    return unprotected_norehash_emplace_or_visit_with_layout(
+      std::integral_constant<bool,group_type::regular_layout>{},
+      access_mode,std::forward<F>(f),std::forward<Args>(args)...);
+  }
+
+  template<typename GroupAccessMode,typename F,typename... Args>
+  BOOST_FORCEINLINE int
+  unprotected_norehash_emplace_or_visit_with_layout(
+    std::true_type, /* regular layout, almost-latch-free */
+    GroupAccessMode access_mode,F&& f,Args&&... args)
+  {
+    const auto &k=this->key_from(std::forward<Args>(args)...);
+    auto        hash=this->hash_for(k);
+    auto        pos0=this->position_for(hash);
+
+    for(;;){
+    startover:
+      boost::uint32_t counter=0;
+      while(BOOST_UNLIKELY((counter=insert_counter(pos0))%2==1)){}
+      if(unprotected_visit(
+        access_mode,k,pos0,hash,std::forward<F>(f)))return 0;
+
+      reserve_size rsize(*this);
+      if(BOOST_LIKELY(rsize.succeeded())){
+        for(prober pb(pos0);;pb.next(this->arrays.groups_size_mask)){
+          auto pos=pb.get();
+          auto pg=this->arrays.groups()+pos;
+          auto mask=pg->match_available();
+          if(BOOST_LIKELY(mask!=0)){
+            auto n=unchecked_countr_zero(mask);
+            latch_free_reserve_slot rslot{pg,n};
+            if(BOOST_UNLIKELY(!rslot.succeeded())){
+              /* slot wasn't empty */
+              goto startover;
+            }
+            if(BOOST_UNLIKELY(
+              !insert_counter(pos0).compare_exchange_weak(counter,counter+1))){
+              /* other thread inserted from pos0, need to start over */
+              goto startover;
+            }
+            assign_insert_counter_on_exit a{insert_counter(pos0),counter+2};
+            auto p=this->arrays.elements()+pos*N+n;
+            this->construct_element(p,std::forward<Args>(args)...);
+            pg->set(n,hash);
+            rslot.commit();
+            rsize.commit();
+            return 1;
+          }
+          pg->mark_overflow(hash);
+        }
+      }
+      else return -1;
+    }
+  }
+
+  template<typename GroupAccessMode,typename F,typename... Args>
+  BOOST_FORCEINLINE int
+  unprotected_norehash_emplace_or_visit_with_layout(
+    std::false_type, /* non-regular layout, latched */
     GroupAccessMode access_mode,F&& f,Args&&... args)
   {
     const auto &k=this->key_from(std::forward<Args>(args)...);
