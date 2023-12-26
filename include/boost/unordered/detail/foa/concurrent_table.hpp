@@ -203,6 +203,17 @@ private:
 template<typename Integral>
 struct atomic_integral
 {
+#if defined(BOOST_UNORDERED_LATCH_FREE)
+  operator Integral()const{return n.load(std::memory_order_acquire);}
+  void operator=(Integral m){n.store(m,std::memory_order_release);}
+  void operator|=(Integral m){n.fetch_or(m);}
+  void operator&=(Integral m){n.fetch_and(m);}
+
+  atomic_integral& operator=(atomic_integral const& rhs) {
+    n.store(rhs.n.load());
+    return *this;
+  }
+#else
   operator Integral()const{return n.load(std::memory_order_relaxed);}
   void operator=(Integral m){n.store(m,std::memory_order_relaxed);}
   void operator|=(Integral m){n.fetch_or(m,std::memory_order_relaxed);}
@@ -212,6 +223,7 @@ struct atomic_integral
     n.store(rhs.n.load(std::memory_order_relaxed),std::memory_order_relaxed);
     return *this;
   }
+#endif
 
   std::atomic<Integral> n;
 };
