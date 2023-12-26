@@ -1579,6 +1579,38 @@ private:
   };
 
 #if defined(BOOST_UNORDERED_LATCH_FREE)
+  struct latch_free_reserve_slot
+  {
+    latch_free_reserve_slot(group_type* pg_,std::size_t pos_):pg{pg_},pos{pos_}
+    {
+      unsigned char expected=0;
+      succeeded_=reinterpret_cast<std::atomic<unsigned char>*>(pg)[pos].
+        compare_exchange_weak(expected,1);
+    }
+
+    ~latch_free_reserve_slot()
+    {
+      if(succeeded_&&!commit_)pg->reset(pos);
+    }
+
+    bool succeeded()const{return succeeded_;}
+
+    void commit(){commit_=true;}
+
+    group_type  *pg;
+    std::size_t pos;
+    bool        succeeded_;
+    bool        commit_=false;
+  };
+
+  struct assign_insert_counter_on_exit
+  {
+    ~assign_insert_counter_on_exit(){counter=x;}
+
+    group_insert_counter_type &counter;
+    boost::uint32_t            x;
+  };
+
   template<typename GroupAccessMode,typename F,typename... Args>
   BOOST_FORCEINLINE int
   unprotected_norehash_emplace_or_visit(
@@ -1592,7 +1624,6 @@ private:
     startover:
       boost::uint32_t counter=0;
       while(BOOST_UNLIKELY((counter=insert_counter(pos0))%2==1)){}
-
       if(unprotected_visit(
         access_mode,k,pos0,hash,std::forward<F>(f)))return 0;
 
@@ -1603,23 +1634,23 @@ private:
         auto mask=pg->match_available();
         if(BOOST_LIKELY(mask!=0)){
           auto n=unchecked_countr_zero(mask);
-          unsigned char expected=0;
-          if(!reinterpret_cast<std::atomic<unsigned char>*>(pg)[n].
-              compare_exchange_weak(expected,1)){
+          latch_free_reserve_slot rslot{pg,n};
+          if(BOOST_UNLIKELY(!rslot.succeeded())){
             /* slot wasn't empty */
             goto startover;
           }
-          auto p=this->arrays.elements()+pos*N+n;
-          this->construct_element(p,std::forward<Args>(args)...);
           if(BOOST_UNLIKELY(
             !insert_counter(pos0).compare_exchange_weak(counter,counter+1))){
             /* other thread inserted from pos0, need to start over */
-            this->destroy_element(p);
-            pg->reset(n);
             goto startover;
           }
-          pg->set(n,hash);
-          insert_counter(pos0)=counter+2;
+          {
+            assign_insert_counter_on_exit a{insert_counter(pos0),counter+2};
+            auto p=this->arrays.elements()+pos*N+n;
+            this->construct_element(p,std::forward<Args>(args)...);
+            pg->set(n,hash);
+          }
+          rslot.commit();
           auto& v=local_garbage_vector();            
           ++v.size;
           v.mcos-=!pg->is_not_overflowed(hash);
