@@ -198,13 +198,13 @@ private:
 template<typename Integral>
 struct atomic_integral
 {
-  operator Integral()const{return n.load(std::memory_order_relaxed);}
-  void operator=(Integral m){n.store(m,std::memory_order_relaxed);}
-  void operator|=(Integral m){n.fetch_or(m,std::memory_order_relaxed);}
-  void operator&=(Integral m){n.fetch_and(m,std::memory_order_relaxed);}
+  operator Integral()const{return n.load(std::memory_order_acquire);}
+  void operator=(Integral m){n.store(m,std::memory_order_release);}
+  void operator|=(Integral m){n.fetch_or(m);}
+  void operator&=(Integral m){n.fetch_and(m);}
 
   atomic_integral& operator=(atomic_integral const& rhs) {
-    n.store(rhs.n.load(std::memory_order_relaxed),std::memory_order_relaxed);
+    n.store(rhs.n.load());
     return *this;
   }
 
@@ -1579,6 +1579,26 @@ private:
     }
   }
 
+  static bool is_reserved(group_type* pg,std::size_t pos)
+  {
+    return is_reserved(
+      std::integral_constant<bool,group_type::regular_layout>{},pg,pos);
+  }
+
+  static bool is_reserved(
+    std::true_type, /* regular layout */
+    group_type* pg,std::size_t pos)
+  {
+    return reinterpret_cast<std::atomic<unsigned char>*>(pg)[pos]==1;
+  }
+
+  static bool is_reserved(
+    std::false_type, /* non-regular layout, never reserved */
+    group_type*,std::size_t)
+  {
+    return false;
+  }
+
   template<typename GroupAccessMode,typename F>
   auto for_all_elements(GroupAccessMode access_mode,F f)const
     ->decltype(f(nullptr),void())
@@ -1616,7 +1636,7 @@ private:
         auto mask=this->match_really_occupied(pg,last);
         while(mask){
           auto n=unchecked_countr_zero(mask);
-          if(!f(pg,n,p+n))return false;
+          if(BOOST_LIKELY(!is_reserved(pg,n))&&!f(pg,n,p+n))return false;
           mask&=mask-1;
         }
       }
@@ -1651,7 +1671,7 @@ private:
         auto mask=this->match_really_occupied(&g,last);
         while(mask){
           auto n=unchecked_countr_zero(mask);
-          f(&g,n,p+n);
+          if(BOOST_LIKELY(!is_reserved(&g,n)))f(&g,n,p+n);
           mask&=mask-1;
         }
       }
@@ -1673,7 +1693,7 @@ private:
         auto mask=this->match_really_occupied(&g,last);
         while(mask){
           auto n=unchecked_countr_zero(mask);
-          if(!f(p+n))return false;
+          if(BOOST_LIKELY(!is_reserved(&g,n))&&!f(p+n))return false;
           mask&=mask-1;
         }
         return true;
