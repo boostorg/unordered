@@ -1579,24 +1579,24 @@ private:
     }
   }
 
-  static bool is_reserved(group_type* pg,std::size_t pos)
+  static bool is_really_occupied(group_type* pg,std::size_t pos)
   {
-    return is_reserved(
+    return is_really_occupied(
       std::integral_constant<bool,group_type::regular_layout>{},pg,pos);
   }
 
-  static bool is_reserved(
-    std::true_type, /* regular layout */
-    group_type* pg,std::size_t pos)
+  static bool is_really_occupied(
+    /* regular layout, almost-latch-free insertion -> spurious non-zeros */
+    std::true_type,group_type* pg,std::size_t pos)
   {
-    return reinterpret_cast<std::atomic<unsigned char>*>(pg)[pos]==1;
+    return reinterpret_cast<std::atomic<unsigned char>*>(pg)[pos]>1;
   }
 
-  static bool is_reserved(
-    std::false_type, /* non-regular layout, never reserved */
-    group_type*,std::size_t)
+  static bool is_really_occupied(
+    /* non-regular layout, latched insertion -> no false positives */
+    std::false_type,group_type*,std::size_t)
   {
-    return false;
+    return true;
   }
 
   template<typename GroupAccessMode,typename F>
@@ -1636,7 +1636,7 @@ private:
         auto mask=this->match_really_occupied(pg,last);
         while(mask){
           auto n=unchecked_countr_zero(mask);
-          if(BOOST_LIKELY(!is_reserved(pg,n))&&!f(pg,n,p+n))return false;
+          if(BOOST_LIKELY(is_really_occupied(pg,n))&&!f(pg,n,p+n))return false;
           mask&=mask-1;
         }
       }
@@ -1671,7 +1671,7 @@ private:
         auto mask=this->match_really_occupied(&g,last);
         while(mask){
           auto n=unchecked_countr_zero(mask);
-          if(BOOST_LIKELY(!is_reserved(&g,n)))f(&g,n,p+n);
+          if(BOOST_LIKELY(is_really_occupied(&g,n)))f(&g,n,p+n);
           mask&=mask-1;
         }
       }
@@ -1693,7 +1693,7 @@ private:
         auto mask=this->match_really_occupied(&g,last);
         while(mask){
           auto n=unchecked_countr_zero(mask);
-          if(BOOST_LIKELY(!is_reserved(&g,n))&&!f(p+n))return false;
+          if(BOOST_LIKELY(is_really_occupied(&g,n))&&!f(p+n))return false;
           mask&=mask-1;
         }
         return true;
