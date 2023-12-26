@@ -1946,7 +1946,7 @@ private:
   };
   struct garbage_vector
   {
-    static constexpr std::size_t N=128;
+    static constexpr std::size_t N=256;
     static constexpr std::size_t min_for_epoch_bump=64;
 
     using ssize_t=std::make_signed<std::size_t>::type;
@@ -1964,6 +1964,7 @@ private:
 
   mutable std::array<garbage_vector,128> garbage_vectors;
   epoch_type                             current_epoch=1;
+  unsigned char                          pad_[cacheline_size-sizeof(epoch_type)];
   std::size_t                            max_probe=default_max_probe;
 
   garbage_vector& local_garbage_vector()const
