@@ -1296,6 +1296,20 @@ private:
         {f(cast_for(access_mode,type_policy::value_from(*p)));});
   }
 
+  /* check occupation with previous unsynced match */
+
+#if defined(BOOST_UNORDERED_LATCH_FREE)
+  static bool is_occupied(group_type* pg,std::size_t pos)
+  {
+    return reinterpret_cast<std::atomic<unsigned char>*>(pg)[pos]>1;
+  }
+#else
+  static bool is_occupied(group_type* pg,std::size_t pos)
+  {
+    return pg->is_occupied(pos);
+  }
+#endif
+
 #if defined(BOOST_MSVC)
 /* warning: forcing value to bool 'true' or 'false' in bool(pred()...) */
 #pragma warning(push)
@@ -1319,7 +1333,7 @@ private:
         do{
           auto n=unchecked_countr_zero(mask);
           if(BOOST_LIKELY(
-            pg->is_occupied(n)&&bool(this->pred()(x,this->key_from(p[n]))))){
+            is_occupied(pg,n)&&bool(this->pred()(x,this->key_from(p[n]))))){
             f(pg,n,p+n);
             return 1;
           }
@@ -1378,7 +1392,7 @@ private:
           do{
             auto n=unchecked_countr_zero(mask);
             if(BOOST_LIKELY(
-              pg->is_occupied(n)&&
+              is_occupied(pg,n)&&
               bool(this->pred()(*it,this->key_from(p[n]))))){
               f(cast_for(access_mode,type_policy::value_from(p[n])));
               ++res;
