@@ -1177,7 +1177,7 @@ private:
         do{
           auto n=unchecked_countr_zero(mask);
           if(BOOST_LIKELY(
-            pg->is_occupied(n)&&bool(this->pred()(x,this->key_from(p[n]))))){
+            is_occupied(pg,n)&&bool(this->pred()(x,this->key_from(p[n]))))){
             f(pg,n,p+n);
             return 1;
           }
@@ -1236,7 +1236,7 @@ private:
           do{
             auto n=unchecked_countr_zero(mask);
             if(BOOST_LIKELY(
-              pg->is_occupied(n)&&
+              is_occupied(pg,n)&&
               bool(this->pred()(*it,this->key_from(p[n]))))){
               f(cast_for(access_mode,type_policy::value_from(p[n])));
               ++res;
@@ -1579,23 +1579,43 @@ private:
     }
   }
 
+  /* check occupation with previous unsynced match */
+
+  static bool is_occupied(group_type* pg,std::size_t pos)
+  {
+    return is_occupied(
+      std::integral_constant<bool,group_type::regular_layout>{},pg,pos);
+  }
+
+  static bool is_occupied(std::true_type,group_type* pg,std::size_t pos)
+  {
+    /* regular layout, almost-latch-free insertion -> possible reserved slot */
+    return reinterpret_cast<std::atomic<unsigned char>*>(pg)[pos]>1;
+  }
+
+  static bool is_occupied(std::false_type,group_type* pg,std::size_t pos)
+  {
+    /* non-regular layout, latched insertion -> no reserved slots */
+    return pg->is_occupied(pos);
+  }
+
+  /* check occupation with previous synced match */
+
   static bool is_really_occupied(group_type* pg,std::size_t pos)
   {
     return is_really_occupied(
       std::integral_constant<bool,group_type::regular_layout>{},pg,pos);
   }
 
-  static bool is_really_occupied(
-    /* regular layout, almost-latch-free insertion -> spurious non-zeros */
-    std::true_type,group_type* pg,std::size_t pos)
+  static bool is_really_occupied(std::true_type,group_type* pg,std::size_t pos)
   {
+    /* regular layout, almost-latch-free insertion -> possible reserved slot */
     return reinterpret_cast<std::atomic<unsigned char>*>(pg)[pos]>1;
   }
 
-  static bool is_really_occupied(
-    /* non-regular layout, latched insertion -> no false positives */
-    std::false_type,group_type*,std::size_t)
+  static bool is_really_occupied(std::false_type,group_type*,std::size_t)
   {
+    /* non-regular layout, latched insertion -> no false positives */
     return true;
   }
 
