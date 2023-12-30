@@ -159,7 +159,7 @@ namespace {
 #elif BOOST_WORKAROUND(BOOST_GCC_VERSION, >= 40900) && \
       BOOST_WORKAROUND(BOOST_GCC_VERSION, <  50000)
       // seemingly same problem, though the snippet above does not reveal it
-#else      
+#else
       BOOST_TEST_EQ(raii::copy_constructor, 0u);
 #endif
       BOOST_TEST_EQ(raii::copy_assignment, 0u);
@@ -491,8 +491,10 @@ namespace {
 
       BOOST_TEST_EQ(
         raii::default_constructor, value_type_cardinality * values2.size());
-#if BOOST_WORKAROUND(BOOST_GCC_VERSION, >= 50300) && \
-    BOOST_WORKAROUND(BOOST_GCC_VERSION, <  50500)
+#if (BOOST_WORKAROUND(BOOST_GCC_VERSION, >= 50300) && \
+     BOOST_WORKAROUND(BOOST_GCC_VERSION, <  50500)) || \
+    (BOOST_WORKAROUND(BOOST_GCC_VERSION, >= 40900) && \
+     BOOST_WORKAROUND(BOOST_GCC_VERSION, <  50000))
       // skip test
 #else
       BOOST_TEST_EQ(raii::copy_constructor, 0u);
@@ -528,8 +530,10 @@ namespace {
 
       BOOST_TEST_EQ(
         raii::default_constructor, value_type_cardinality * values2.size());
-#if BOOST_WORKAROUND(BOOST_GCC_VERSION, >= 50300) && \
-    BOOST_WORKAROUND(BOOST_GCC_VERSION, <  50500)
+#if (BOOST_WORKAROUND(BOOST_GCC_VERSION, >= 50300) && \
+     BOOST_WORKAROUND(BOOST_GCC_VERSION, <  50500)) || \
+    (BOOST_WORKAROUND(BOOST_GCC_VERSION, >= 40900) && \
+     BOOST_WORKAROUND(BOOST_GCC_VERSION, <  50000))
       // skip test
 #else
       BOOST_TEST_EQ(raii::copy_constructor, 0u);
