@@ -147,6 +147,23 @@ namespace boost {
           !std::is_convertible<Key, const_iterator>::value;
       };
 
+      template <class T>
+      using remove_cvref_t =
+        typename std::remove_cv<typename std::remove_reference<T>::type>::type;
+
+      template <class T, class U>
+      using is_similar = std::is_same<remove_cvref_t<T>, remove_cvref_t<U> >;
+
+      template <class, class...> struct is_similar_to_any : std::false_type
+      {
+      };
+      template <class T, class U, class... Us>
+      struct is_similar_to_any<T, U, Us...>
+          : std::conditional<is_similar<T, U>::value, is_similar<T, U>,
+              is_similar_to_any<T, Us...> >::type
+      {
+      };
+
 #if BOOST_UNORDERED_TEMPLATE_DEDUCTION_GUIDES
       // https://eel.is/c++draft/container.requirements#container.alloc.reqmts-34
       // https://eel.is/c++draft/container.requirements#unord.req.general-243

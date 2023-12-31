@@ -170,6 +170,74 @@ namespace {
     }
   } lvalue_emplace_or_visit;
 
+  struct copy_emplacer_type
+  {
+    template <class T, class X> void operator()(std::vector<T>& values, X& x)
+    {
+      static constexpr auto value_type_cardinality =
+        value_cardinality<typename X::value_type>::value;
+
+      std::atomic<std::uint64_t> num_inserts{0};
+      thread_runner(values, [&x, &num_inserts](boost::span<T> s) {
+        for (auto const& r : s) {
+          bool b = x.emplace(r);
+          if (b) {
+            ++num_inserts;
+          }
+        }
+      });
+      BOOST_TEST_EQ(num_inserts, x.size());
+      BOOST_TEST_EQ(raii::default_constructor, 0u);
+
+      BOOST_TEST_EQ(raii::copy_constructor, value_type_cardinality * x.size());
+      BOOST_TEST_GT(raii::move_constructor, 0u);
+
+      BOOST_TEST_EQ(raii::copy_assignment, 0u);
+      BOOST_TEST_EQ(raii::move_assignment, 0u);
+    }
+  } copy_emplacer;
+
+  struct move_emplacer_type
+  {
+    template <class T, class X> void operator()(std::vector<T>& values, X& x)
+    {
+      static constexpr auto value_type_cardinality =
+        value_cardinality<typename X::value_type>::value;
+
+      std::atomic<std::uint64_t> num_inserts{0};
+      thread_runner(values, [&x, &num_inserts](boost::span<T> s) {
+        for (auto& r : s) {
+          bool b = x.emplace(std::move(r));
+          if (b) {
+            ++num_inserts;
+          }
+        }
+      });
+      BOOST_TEST_EQ(num_inserts, x.size());
+      BOOST_TEST_EQ(raii::default_constructor, 0u);
+
+#if defined(BOOST_MSVC)
+#pragma warning(push)
+#pragma warning(disable : 4127) // conditional expression is constant
+#endif
+      if (std::is_same<T, typename X::value_type>::value &&
+          !std::is_same<typename X::key_type,
+            typename X::value_type>::value) { // map value_type can only be
+                                              // copied, no move
+        BOOST_TEST_EQ(raii::copy_constructor, x.size());
+      } else {
+        BOOST_TEST_EQ(raii::copy_constructor, 0u);
+      }
+#if defined(BOOST_MSVC)
+#pragma warning(pop) // C4127
+#endif
+      BOOST_TEST_GT(raii::move_constructor, value_type_cardinality * x.size());
+
+      BOOST_TEST_EQ(raii::copy_assignment, 0u);
+      BOOST_TEST_EQ(raii::move_assignment, 0u);
+    }
+  } move_emplacer;
+
   template <class X, class GF, class F>
   void emplace(X*, GF gen_factory, F emplacer, test::random_generator rg)
   {
@@ -220,7 +288,7 @@ UNORDERED_TEST(
   ((map)(set))
   ((value_type_generator_factory)(init_type_generator_factory))
   ((lvalue_emplacer)(norehash_lvalue_emplacer)
-   (lvalue_emplace_or_cvisit)(lvalue_emplace_or_visit))
+   (lvalue_emplace_or_cvisit)(lvalue_emplace_or_visit)(copy_emplacer)(move_emplacer))
   ((default_generator)(sequential)(limited_range)))
 
 // clang-format on

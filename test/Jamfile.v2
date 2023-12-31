@@ -85,6 +85,7 @@ local FCA_TESTS =
   contains_tests
   copy_tests
   deduction_tests
+  emplace_smf_tests
   emplace_tests
   equality_tests
   equivalent_keys_tests
@@ -201,6 +202,7 @@ local FOA_TESTS =
   assign_tests
   insert_tests
   insert_hint_tests
+  emplace_smf_tests
   emplace_tests
   erase_tests
   merge_tests
