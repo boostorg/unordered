@@ -53,6 +53,7 @@
 #if defined(BOOST_UNORDERED_LATCH_FREE)
 #include <algorithm>
 #include <vector>
+#include <iostream>
 #endif
 
 std::atomic<std::size_t> garbage_collected=0;
@@ -568,6 +569,11 @@ public:
       retired_element_traits::deallocate(
         ral,v.retired_elements,garbage_vector::N);
     }
+
+    std::cout
+      <<"capacity: "<<capacity()<<"; "
+      <<"rehashes: "<<rehashes<<"; "
+      <<"max probe:" <<max_probe<<"\n";
   }
 #else
   ~concurrent_table()=default;
@@ -1724,8 +1730,9 @@ private:
 #if defined(BOOST_UNORDERED_LATCH_FREE)
     auto lck=exclusive_access();
     update_size_ctrl();
+    garbage_collect();
     if(this->size_ctrl.size>=this->size_ctrl.ml){ // NB >=
-      garbage_collect();
+      ++rehashes;
       this->unchecked_rehash_for_growth();
       max_probe=default_max_probe;
     }
@@ -2011,6 +2018,7 @@ private:
   epoch_type                             current_epoch=1;
   unsigned char                          pad_[cacheline_size-sizeof(epoch_type)];
   std::size_t                            max_probe=default_max_probe;
+  std::size_t                            rehashes=0;
 
   garbage_vector& local_garbage_vector()const
   {
@@ -2062,13 +2070,15 @@ private:
   {
     using ssize_t=std::make_signed<std::size_t>::type;
 
+    ssize_t ssize=0,smcos=0;
     for(std::size_t i=0;i<garbage_vectors.size();++i){
       auto &v=garbage_vectors[i];
-      this->size_ctrl.size+=v.size.exchange(0);
-      auto mcos=v.mcos.exchange(0);
-      if(ssize_t(this->size_ctrl.ml)>=mcos)this->size_ctrl.ml-=mcos;
-      else                                 this->size_ctrl.ml=0;
+      ssize+=v.size.exchange(0);
+      smcos+=v.mcos.exchange(0);
     }
+    this->size_ctrl.size+=ssize;
+    if(ssize_t(this->size_ctrl.ml)>=smcos)this->size_ctrl.ml-=smcos;
+    else                                 this->size_ctrl.ml=0;
     auto max_ml=super::initial_max_load();
     if(this->size_ctrl.ml>max_ml)this->size_ctrl.ml=max_ml;
   }
