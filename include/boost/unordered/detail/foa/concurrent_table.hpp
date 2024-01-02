@@ -571,6 +571,7 @@ public:
     }
 
     std::cout
+      <<"version: 2024/01/02 11:57; "
       <<"capacity: "<<capacity()<<"; "
       <<"rehashes: "<<rehashes<<"; "
       <<"max probe:" <<max_probe<<"\n";
@@ -1669,6 +1670,10 @@ private:
             auto p=this->arrays.elements()+pos*N+n;
             this->construct_element(p,std::forward<Args>(args)...);
             pg->set(n,hash);
+            for(prober pb2(pos0);pb2.get()!=pos;
+                pb2.next(this->arrays.groups_size_mask)){
+              this->arrays.groups()[pb2.get()].mark_overflow(hash);
+            }
           }
           rslot.commit();
           auto& v=local_garbage_vector();            
@@ -1677,7 +1682,7 @@ private:
           return 1;
         }
         if(!pbn--)return -1;
-        pg->mark_overflow(hash);
+        //pg->mark_overflow(hash);
       }
     }
   }
@@ -1999,7 +2004,7 @@ private:
   struct garbage_vector
   {
     static constexpr std::size_t N=256;
-    static constexpr std::size_t min_for_epoch_bump=64;
+    static constexpr std::size_t min_for_epoch_bump=16;
 
     using ssize_t=std::make_signed<std::size_t>::type;
 
