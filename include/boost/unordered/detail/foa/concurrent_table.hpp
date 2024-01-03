@@ -571,7 +571,7 @@ public:
     }
 
     std::cout
-      <<"version: 2024/01/03 12:44; "
+      <<"version: 2024/01/03 13:23; "
       <<"capacity: "<<capacity()<<"; "
       <<"rehashes: "<<rehashes<<"; "
       <<"max probe:" <<max_probe<<"\n";
@@ -888,7 +888,7 @@ public:
           // TODO: prove no ABA
           auto pc=reinterpret_cast<unsigned char*>(pg)+n;
           if(reinterpret_cast<std::atomic<unsigned char>*>(pc)->exchange(1,std::memory_order_relaxed)!=1){
-#if 1
+#if 0
             auto& v=local_garbage_vector();
             --v.size;
             v.mcos+=!pg->is_not_overflowed(hash);
