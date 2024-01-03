@@ -204,7 +204,7 @@ private:
 template<typename Integral>
 struct atomic_integral
 {
-#if defined(BOOST_UNORDERED_LATCH_FREE)
+#if 0&&defined(BOOST_UNORDERED_LATCH_FREE)
   operator Integral()const{return n.load(std::memory_order_acquire);}
   void operator=(Integral m){n.store(m,std::memory_order_release);}
   void operator|=(Integral m){n.fetch_or(m);}
@@ -571,7 +571,7 @@ public:
     }
 
     std::cout
-      <<"version: 2024/01/02 19:42; "
+      <<"version: 2024/01/03 11:52; "
       <<"capacity: "<<capacity()<<"; "
       <<"rehashes: "<<rehashes<<"; "
       <<"max probe:" <<max_probe<<"\n";
@@ -887,7 +887,7 @@ public:
         if(f(cast_for(group_shared{},type_policy::value_from(*p)))){
           // TODO: prove no ABA
           auto pc=reinterpret_cast<unsigned char*>(pg)+n;
-          if(reinterpret_cast<std::atomic<unsigned char>*>(pc)->exchange(1)!=1){
+          if(reinterpret_cast<std::atomic<unsigned char>*>(pc)->exchange(1,std::memory_order_relaxed)!=1){
 #if 1
             auto& v=local_garbage_vector();
             --v.size;
@@ -2022,7 +2022,7 @@ private:
   mutable std::array<garbage_vector,128> garbage_vectors;
   epoch_type                             current_epoch=1;
   unsigned char                          pad_[cacheline_size-sizeof(epoch_type)];
-  std::size_t                            max_probe=default_max_probe;
+  std::atomic<std::size_t>               max_probe=default_max_probe;
   std::size_t                            rehashes=0;
 
   garbage_vector& local_garbage_vector()const
