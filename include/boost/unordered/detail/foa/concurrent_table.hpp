@@ -204,7 +204,7 @@ private:
 template<typename Integral>
 struct atomic_integral
 {
-#if 0&&defined(BOOST_UNORDERED_LATCH_FREE)
+#if defined(BOOST_UNORDERED_LATCH_FREE)
   operator Integral()const{return n.load(std::memory_order_acquire);}
   void operator=(Integral m){n.store(m,std::memory_order_release);}
   void operator|=(Integral m){n.fetch_or(m);}
@@ -571,7 +571,8 @@ public:
     }
 
     std::cout
-      <<"version: 2024/01/03 17:45; "
+      <<"version: 2024/01/03 20:50; "
+      <<"lf: "<<(double)size()/capacity()<<"; "
       <<"capacity: "<<capacity()<<"; "
       <<"rehashes: "<<rehashes<<"; "
       <<"max probe:" <<max_probe<<"\n";
@@ -1308,8 +1309,8 @@ private:
 #if defined(BOOST_UNORDERED_LATCH_FREE)
   static bool is_occupied(group_type* pg,std::size_t pos)
   {
-    //return reinterpret_cast<std::atomic<unsigned char>*>(pg)[pos]>1;
-    return true;
+    return reinterpret_cast<std::atomic<unsigned char>*>(pg)[pos]>1;
+    //return true;
   }
 #else
   static bool is_occupied(group_type* pg,std::size_t pos)
@@ -2005,7 +2006,7 @@ private:
   struct garbage_vector
   {
     static constexpr std::size_t N=256;
-    static constexpr std::size_t min_for_epoch_bump=32;
+    static constexpr std::size_t min_for_epoch_bump=64;
 
     using ssize_t=std::make_signed<std::size_t>::type;
 
