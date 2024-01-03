@@ -571,7 +571,7 @@ public:
     }
 
     std::cout
-      <<"version: 2024/01/03 11:52; "
+      <<"version: 2024/01/03 12:44; "
       <<"capacity: "<<capacity()<<"; "
       <<"rehashes: "<<rehashes<<"; "
       <<"max probe:" <<max_probe<<"\n";
@@ -1308,7 +1308,8 @@ private:
 #if defined(BOOST_UNORDERED_LATCH_FREE)
   static bool is_occupied(group_type* pg,std::size_t pos)
   {
-    return reinterpret_cast<std::atomic<unsigned char>*>(pg)[pos]>1;
+    //return reinterpret_cast<std::atomic<unsigned char>*>(pg)[pos]>1;
+    return true;
   }
 #else
   static bool is_occupied(group_type* pg,std::size_t pos)
