@@ -571,7 +571,7 @@ public:
     }
 
     std::cout
-      <<"version: 2024/01/03 13:23; "
+      <<"version: 2024/01/03 17:45; "
       <<"capacity: "<<capacity()<<"; "
       <<"rehashes: "<<rehashes<<"; "
       <<"max probe:" <<max_probe<<"\n";
@@ -2005,7 +2005,7 @@ private:
   struct garbage_vector
   {
     static constexpr std::size_t N=256;
-    static constexpr std::size_t min_for_epoch_bump=16;
+    static constexpr std::size_t min_for_epoch_bump=32;
 
     using ssize_t=std::make_signed<std::size_t>::type;
 
