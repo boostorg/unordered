@@ -513,7 +513,6 @@ public:
     retired_element_allocator_type ral=this->al();
     for(std::size_t i=0;i<garbage_vectors.size();++i){
       auto& v=garbage_vectors[i];
-      //v.epoch_bump=(i*251)%garbage_vector::min_for_epoch_bump;
       v.epoch_bump=0;
       v.retired_elements=retired_element_traits::allocate(
         ral,garbage_vector::N);
@@ -571,7 +570,7 @@ public:
     }
 
     std::cout
-      <<"version: 2024/01/03 20:50; "
+      <<"version: 2024/01/08 11:30; "
       <<"lf: "<<(double)size()/capacity()<<"; "
       <<"capacity: "<<capacity()<<"; "
       <<"rehashes: "<<rehashes<<"; "
@@ -1085,7 +1084,7 @@ private:
   struct group_shared_lock_guard
   {
     group_shared_lock_guard(epoch_type& e_):e{e_}{}
-    ~group_shared_lock_guard(){e=0;}
+    ~group_shared_lock_guard(){e=std::size_t(-1);}
 
     epoch_type& e;
   };
@@ -1094,7 +1093,7 @@ private:
     group_exclusive_lock_guard(
       epoch_type& e_,group_access::exclusive_lock_guard&& lck_):
       e{e_},lck{std::move(lck_)}{}
-    ~group_exclusive_lock_guard(){e=0;}
+    ~group_exclusive_lock_guard(){e=std::size_t(-1);}
 
     epoch_type&                        e;
     group_access::exclusive_lock_guard lck;
@@ -2006,11 +2005,12 @@ private:
   struct garbage_vector
   {
     static constexpr std::size_t N=256;
-    static constexpr std::size_t min_for_epoch_bump=64;
+    static constexpr std::size_t min_for_epoch_bump=16;
+    static constexpr std::size_t min_for_garbage_collection=64;
 
     using ssize_t=std::make_signed<std::size_t>::type;
 
-    epoch_type               epoch=0;
+    epoch_type               epoch=std::size_t(-1);
     std::atomic<std::size_t> epoch_bump=0;
     retired_element*         retired_elements;
     std::atomic<std::size_t> wpos=0;
@@ -2037,7 +2037,7 @@ private:
     std::size_t e=retired_element::reserved_;
     for(std::size_t i=0;i<garbage_vectors.size();++i){
       std::size_t le=garbage_vectors[i].epoch.load(std::memory_order_relaxed);
-      if(le&&le<e)e=le;
+      if(le<e)e=le;
     }
     return e-1;
   }
@@ -2046,6 +2046,11 @@ private:
   retire_element(element_type* p,bool mco)
   {
     auto& v=local_garbage_vector();
+    if(++v.epoch_bump%garbage_vector::min_for_epoch_bump==0){
+      v.epoch=current_epoch.fetch_add(1,std::memory_order_relaxed);
+    }
+    --v.size;
+    v.mcos+=mco;
     for(;;){
       std::size_t wpos=v.wpos;
       std::size_t expected=retired_element::available_;
@@ -2053,22 +2058,15 @@ private:
       if(e.epoch.compare_exchange_strong(expected,retired_element::reserved_)){
         e.p=p;
         e.epoch=v.epoch.load();
-        ++v.wpos;
-        --v.size;
-        v.mcos+=mco;
-        if(++v.epoch_bump==garbage_vector::min_for_epoch_bump)
-        {
-          v.epoch=++current_epoch;
-          v.epoch_bump=0;
-          garbage_collect();
+        if(++v.wpos%garbage_vector::min_for_garbage_collection==0){
+          garbage_collect(v,max_safe_epoch());
         }
         return;
       }
       if(expected==retired_element::reserved_){ /* other thread wrote */
       }
       else{ /* vector full */
-        v.epoch=++current_epoch;
-        garbage_collect();
+        garbage_collect(v,max_safe_epoch());
       }
     }
   }
@@ -2093,7 +2091,6 @@ private:
   void garbage_collect(garbage_vector& v,std::size_t max_epoch)
   {
     if(v.rpos==v.wpos)return;
-    v.epoch_bump=0;
 
     bool expected=false;
     if(v.reading.compare_exchange_strong(expected,true)){
