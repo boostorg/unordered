@@ -570,7 +570,7 @@ public:
     }
 
     std::cout
-      <<"version: 2024/01/08 18:50; "
+      <<"version: 2024/01/13 13:10; "
       <<"lf: "<<(double)size()/capacity()<<"; "
       <<"capacity: "<<capacity()<<"; "
       <<"rehashes: "<<rehashes<<"; "
@@ -1734,10 +1734,13 @@ private:
   void rehash_if_full()
   {
 #if defined(BOOST_UNORDERED_LATCH_FREE)
-    auto lck=exclusive_access();
-    update_size_ctrl();
-    garbage_collect();
-    if(this->size_ctrl.size>=this->size_ctrl.ml){ // NB >=
+    auto lck=shared_access();
+    auto p=calculate_size_ctrl();
+    lck.unlock();
+    if(p.first>=p.second){ // NB >=
+      auto lck=exclusive_access();
+      update_size_ctrl();
+      garbage_collect();
       ++rehashes;
       this->unchecked_rehash_for_growth();
       max_probe=default_max_probe;
@@ -2005,7 +2008,7 @@ private:
   struct garbage_vector
   {
     static constexpr std::size_t N=256;
-    static constexpr std::size_t min_for_epoch_bump=16;
+    static constexpr std::size_t min_for_epoch_bump=4;
     static constexpr std::size_t min_for_garbage_collection=16;
 
     using ssize_t=std::make_signed<std::size_t>::type;
@@ -2059,16 +2062,36 @@ private:
         e.p=p;
         e.epoch=v.epoch.load();
         if(++v.wpos%garbage_vector::min_for_garbage_collection==0){
-          garbage_collect(v,max_safe_epoch());
+          garbage_collect();
         }
         return;
       }
       if(expected==retired_element::reserved_){ /* other thread wrote */
       }
       else{ /* vector full */
-        garbage_collect(v,max_safe_epoch());
+        garbage_collect();
       }
     }
+  }
+
+  std::pair<std::size_t,std::size_t> calculate_size_ctrl()
+  {
+    using ssize_t=std::make_signed<std::size_t>::type;
+
+    ssize_t ssize=0,smcos=0;
+    for(std::size_t i=0;i<garbage_vectors.size();++i){
+      auto &v=garbage_vectors[i];
+      ssize+=v.size.load(std::memory_order_relaxed);
+      smcos+=v.mcos.load(std::memory_order_relaxed);
+    }
+    std::size_t size_=this->size_ctrl.size.load(std::memory_order_relaxed),
+                ml_=this->size_ctrl.ml.load(std::memory_order_relaxed);
+    size_+=ssize;
+    if(ssize_t(ml_)>=smcos)ml_-=smcos;
+    else                   ml_=0;
+    auto max_ml=super::initial_max_load();
+    if(ml_>max_ml)ml_=max_ml;
+    return {size_,ml_};
   }
 
   void update_size_ctrl()
