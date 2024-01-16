@@ -52,7 +52,7 @@ namespace {
 
   struct lvalue_emplacer_type
   {
-    template <class T, class X> void operator()(std::vector<T>& values, X& x)
+    template <class T, class X> void call_impl(std::vector<T>& values, X& x)
     {
       static constexpr auto value_type_cardinality = 
         value_cardinality<typename X::value_type>::value;
@@ -67,15 +67,23 @@ namespace {
         }
       });
       BOOST_TEST_EQ(num_inserts, x.size());
-      BOOST_TEST_EQ(
-        raii::default_constructor, value_type_cardinality * values.size());
 
-      BOOST_TEST_EQ(raii::copy_constructor, 0u);
-      BOOST_TEST_GE(raii::move_constructor, value_type_cardinality * x.size());
+      std::uint64_t const default_constructors = value_type_cardinality == 2
+                                                   ? values.size() + num_inserts
+                                                   : values.size();
+      BOOST_TEST_EQ(raii::default_constructor, default_constructors);
 
       BOOST_TEST_EQ(raii::copy_constructor, 0u);
       BOOST_TEST_EQ(raii::copy_assignment, 0u);
       BOOST_TEST_EQ(raii::move_assignment, 0u);
+    }
+    template <class T, class X> void operator()(std::vector<T>& values, X& x)
+    {
+      static constexpr auto value_type_cardinality =
+        value_cardinality<typename X::value_type>::value;
+
+      call_impl(values, x);
+      BOOST_TEST_GE(raii::move_constructor, value_type_cardinality * x.size());
     }
   } lvalue_emplacer;
 
@@ -83,12 +91,9 @@ namespace {
   {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
     {
-      static constexpr auto value_type_cardinality = 
-        value_cardinality<typename X::value_type>::value;
-
       x.reserve(values.size());
-      lvalue_emplacer_type::operator()(values, x);
-      BOOST_TEST_EQ(raii::move_constructor, value_type_cardinality * x.size());
+      lvalue_emplacer_type::call_impl(values, x);
+      BOOST_TEST_EQ(raii::move_constructor, x.size());
     }
   } norehash_lvalue_emplacer;
 
