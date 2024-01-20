@@ -882,20 +882,12 @@ public:
     std::size_t res=0;
     unprotected_internal_visit(
       group_shared{},x,this->position_for(hash),hash, // NB: shared access
-      [&,this](group_type* pg,unsigned int n,element_type* p)
+      [&,this](group_type* pg,unsigned int n,element_type* p,value_type *pv)
       {
-        if(f(cast_for(group_shared{},type_policy::value_from(*p)))){
-          // TODO: prove no ABA
-          auto pc=reinterpret_cast<unsigned char*>(pg)+n;
-          if(reinterpret_cast<std::atomic<unsigned char>*>(pc)->exchange(1,std::memory_order_relaxed)!=1){
-#if 0
-            auto& v=local_garbage_vector();
-            --v.size;
-            v.mcos+=!pg->is_not_overflowed(hash);
+        if(f(cast_for(group_shared{},*pv))){
+          if(p->p.compare_exchange_weak(pv,nullptr)){
             pg->reset(n);
-#else
-            retire_element(p,!pg->is_not_overflowed(hash));
-#endif
+            retire_element(pv,!pg->is_not_overflowed(hash));
             res=1;
           }
         }
@@ -1297,10 +1289,17 @@ private:
     GroupAccessMode access_mode,
     const Key& x,std::size_t pos0,std::size_t hash,F&& f)const
   {
+#if defined(BOOST_UNORDERED_LATCH_FREE)
+    return unprotected_internal_visit(
+      access_mode,x,pos0,hash,
+      [&](group_type*,unsigned int,element_type* p,value_type* pv)
+        {f(cast_for(access_mode,*pv));});
+#else
     return unprotected_internal_visit(
       access_mode,x,pos0,hash,
       [&](group_type*,unsigned int,element_type* p)
         {f(cast_for(access_mode,type_policy::value_from(*p)));});
+#endif
   }
 
   /* check occupation with previous unsynced match */
@@ -1340,10 +1339,10 @@ private:
         auto lck=access(access_mode,pos);
         do{
           auto n=unchecked_countr_zero(mask);
-          if(BOOST_LIKELY(
-            is_occupied(pg,n)&&bool(this->pred()(x,this->key_from(p[n]))))){
-            f(pg,n,p+n);
-            return 1;
+          auto pv=p[n].p.load(std::memory_order_relaxed);
+          if(BOOST_LIKELY(pv&&bool(this->pred()(x,this->key_from(*pv))))){
+              f(pg,n,p+n,pv);
+              return 1;
           }
           mask&=mask-1;
         }while(mask);
@@ -2003,13 +2002,13 @@ private:
     retired_element(const retired_element&){}
 
     std::atomic<std::size_t>   epoch=available_;
-    std::atomic<element_type*> p;
+    std::atomic<value_type*>   p;
   };
   struct garbage_vector
   {
     static constexpr std::size_t N=256;
-    static constexpr std::size_t min_for_epoch_bump=4;
-    static constexpr std::size_t min_for_garbage_collection=16;
+    static constexpr std::size_t min_for_epoch_bump=16;
+    static constexpr std::size_t min_for_garbage_collection=64;
 
     using ssize_t=std::make_signed<std::size_t>::type;
 
@@ -2046,7 +2045,7 @@ private:
   }
 
   BOOST_FORCEINLINE void
-  retire_element(element_type* p,bool mco)
+  retire_element(value_type* p,bool mco)
   {
     auto& v=local_garbage_vector();
     if(++v.epoch_bump%garbage_vector::min_for_epoch_bump==0){
@@ -2122,10 +2121,8 @@ private:
         auto& e=v.retired_elements[rpos%v.garbage_vector::N];
         if(e.epoch>max_epoch)break;
         //++garbage_collected;
-        auto p=e.p.load();
-        this->destroy_element(p);
-        auto pos=static_cast<std::size_t>(p-this->arrays.elements());
-        this->arrays.groups()[pos/N].reset(pos%N);
+        element_type x{e.p.load()};
+        this->destroy_element(&x);
         e.epoch=retired_element::available_;
         ++rpos;
       }
