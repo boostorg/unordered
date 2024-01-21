@@ -570,7 +570,7 @@ public:
     }
 
     std::cout
-      <<"version: 2024/01/13 13:10; "
+      <<"version: 2024/01/21 18:40; "
       <<"lf: "<<(double)size()/capacity()<<"; "
       <<"capacity: "<<capacity()<<"; "
       <<"rehashes: "<<rehashes<<"; "
@@ -1668,7 +1668,9 @@ private:
           {
             assign_insert_counter_on_exit a{insert_counter(pos0),counter+2};
             auto p=this->arrays.elements()+pos*N+n;
-            this->construct_element(p,std::forward<Args>(args)...);
+            auto pv=new_element();
+            new (pv) value_type(std::forward<Args>(args)...);
+            p->p=pv;
             pg->set(n,hash);
             for(prober pb2(pos0);pb2.get()!=pos;
                 pb2.next(this->arrays.groups_size_mask)){
@@ -2002,7 +2004,7 @@ private:
     retired_element(const retired_element&){}
 
     std::atomic<std::size_t>   epoch=available_;
-    std::atomic<value_type*>   p;
+    std::atomic<value_type*>   p={};
   };
   struct garbage_vector
   {
@@ -2017,7 +2019,7 @@ private:
     retired_element*         retired_elements;
     std::atomic<std::size_t> wpos=0;
     std::atomic<std::size_t> rpos=0;
-    std::atomic<bool>        reading=false;
+    std::atomic<std::size_t> apos=0;
     std::atomic<ssize_t>     size=0;
     std::atomic<ssize_t>     mcos=0;
   };
@@ -2044,8 +2046,7 @@ private:
     return e-1;
   }
 
-  BOOST_FORCEINLINE void
-  retire_element(value_type* p,bool mco)
+  BOOST_FORCEINLINE void retire_element(value_type* p,bool mco)
   {
     auto& v=local_garbage_vector();
     if(++v.epoch_bump%garbage_vector::min_for_epoch_bump==0){
@@ -2058,19 +2059,41 @@ private:
       std::size_t expected=retired_element::available_;
       auto& e=v.retired_elements[wpos%v.garbage_vector::N];
       if(e.epoch.compare_exchange_strong(expected,retired_element::reserved_)){
-        e.p=p;
+        p=e.p.exchange(p);
+        if(p){
+          element_type x{p};
+          this->destroy_element(&x);
+          ++v.apos;
+        }
         e.epoch=v.epoch.load();
         if(++v.wpos%garbage_vector::min_for_garbage_collection==0){
-          garbage_collect();
+          garbage_collect(v,max_safe_epoch());
         }
         return;
       }
       if(expected==retired_element::reserved_){ /* other thread wrote */
       }
       else{ /* vector full */
-        garbage_collect();
+        garbage_collect(v,max_safe_epoch());
       }
     }
+  }
+
+  BOOST_FORCEINLINE value_type* new_element()
+  {
+    auto& v=local_garbage_vector();
+    for(;;){
+      std::size_t apos=v.apos;
+      if(apos>=v.rpos)break; /*`no available elements*/
+      auto pv=v.retired_elements[apos%v.garbage_vector::N].p.load();
+      if(v.apos.compare_exchange_weak(apos,apos+1)){
+        v.retired_elements[apos%v.garbage_vector::N].p=nullptr;
+        return pv;
+      }
+    }
+
+    /* allocate */
+    return boost::allocator_allocate(this->al(),1);
   }
 
   std::pair<std::size_t,std::size_t> calculate_size_ctrl()
@@ -2114,21 +2137,15 @@ private:
   {
     if(v.rpos==v.wpos)return;
 
-    bool expected=false;
-    if(v.reading.compare_exchange_strong(expected,true)){
-      std::size_t rpos=v.rpos;
-      for(;;){
-        auto& e=v.retired_elements[rpos%v.garbage_vector::N];
-        if(e.epoch>max_epoch)break;
-        //++garbage_collected;
-        element_type x{e.p.load()};
-        this->destroy_element(&x);
-        e.epoch=retired_element::available_;
-        ++rpos;
-      }
-      v.rpos=rpos;
-      v.reading=false;
+    std::size_t rpos=v.rpos;
+    for(;;){
+      auto& e=v.retired_elements[rpos%v.garbage_vector::N];
+      if(e.epoch>max_epoch)break;
+      //++garbage_collected;
+      e.epoch=retired_element::available_;
+      ++rpos;
     }
+    v.rpos=rpos;
   }
 
   BOOST_NOINLINE void garbage_collect()
