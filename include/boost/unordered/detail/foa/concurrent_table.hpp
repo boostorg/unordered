@@ -570,7 +570,7 @@ public:
     }
 
     std::cout
-      <<"version: 2024/01/21 18:40; "
+      <<"version: 2024/01/22 09:50; "
       <<"lf: "<<(double)size()/capacity()<<"; "
       <<"capacity: "<<capacity()<<"; "
       <<"rehashes: "<<rehashes<<"; "
@@ -885,7 +885,7 @@ public:
       [&,this](group_type* pg,unsigned int n,element_type* p,value_type *pv)
       {
         if(f(cast_for(group_shared{},*pv))){
-          if(p->p.compare_exchange_weak(pv,nullptr)){
+          if(p->p.compare_exchange_strong(pv,nullptr)){
             pg->reset(n);
             retire_element(pv,!pg->is_not_overflowed(hash));
             res=1;
@@ -2006,7 +2006,7 @@ private:
     std::atomic<std::size_t>   epoch=available_;
     std::atomic<value_type*>   p={};
   };
-  struct garbage_vector
+  struct alignas(64) garbage_vector
   {
     static constexpr std::size_t N=256;
     static constexpr std::size_t min_for_epoch_bump=16;
