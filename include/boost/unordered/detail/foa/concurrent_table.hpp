@@ -56,7 +56,7 @@
 #include <iostream>
 #endif
 
-std::atomic<std::size_t> garbage_collected=0;
+std::atomic<std::size_t> garbage_vector_full=0;
 
 namespace boost{
 namespace unordered{
@@ -520,6 +520,8 @@ public:
         retired_element_traits::construct(ral,&v.retired_elements[j]);
       }
     }
+
+    garbage_vector_full=0;
 #endif
   }
 
@@ -570,11 +572,12 @@ public:
     }
 
     std::cout
-      <<"version: 2024/01/22 09:50; "
+      <<"version: 2024/01/26 11:15; "
       <<"lf: "<<(double)size()/capacity()<<"; "
       <<"capacity: "<<capacity()<<"; "
       <<"rehashes: "<<rehashes<<"; "
-      <<"max probe:" <<max_probe<<"\n";
+      <<"max probe:"<<max_probe<<", "
+      <<"garbage vector full:"<<garbage_vector_full<<"\n";
   }
 #else
   ~concurrent_table()=default;
@@ -2074,6 +2077,7 @@ private:
       if(expected==retired_element::reserved_){ /* other thread wrote */
       }
       else{ /* vector full */
+        ++garbage_vector_full;
         garbage_collect(v,max_safe_epoch());
       }
     }
@@ -2141,7 +2145,6 @@ private:
     for(;;){
       auto& e=v.retired_elements[rpos%v.garbage_vector::N];
       if(e.epoch>max_epoch)break;
-      //++garbage_collected;
       e.epoch=retired_element::available_;
       ++rpos;
     }
