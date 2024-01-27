@@ -56,7 +56,7 @@
 #include <iostream>
 #endif
 
-std::atomic<std::size_t> garbage_vector_full=0;
+std::atomic<std::size_t> nodes_wasted=0;
 
 namespace boost{
 namespace unordered{
@@ -521,7 +521,7 @@ public:
       }
     }
 
-    garbage_vector_full=0;
+    nodes_wasted=0;
 #endif
   }
 
@@ -572,12 +572,12 @@ public:
     }
 
     std::cout
-      <<"version: 2024/01/26 11:15; "
+      <<"version: 2024/01/27 11:50; "
       <<"lf: "<<(double)size()/capacity()<<"; "
       <<"capacity: "<<capacity()<<"; "
       <<"rehashes: "<<rehashes<<"; "
       <<"max probe:"<<max_probe<<", "
-      <<"garbage vector full:"<<garbage_vector_full<<"\n";
+      <<"nodes wasted:"<<nodes_wasted<<"\n";
   }
 #else
   ~concurrent_table()=default;
@@ -2064,6 +2064,7 @@ private:
       if(e.epoch.compare_exchange_strong(expected,retired_element::reserved_)){
         p=e.p.exchange(p);
         if(p){
+          ++nodes_wasted;
           element_type x{p};
           this->destroy_element(&x);
           ++v.apos;
@@ -2077,7 +2078,6 @@ private:
       if(expected==retired_element::reserved_){ /* other thread wrote */
       }
       else{ /* vector full */
-        ++garbage_vector_full;
         garbage_collect(v,max_safe_epoch());
       }
     }
