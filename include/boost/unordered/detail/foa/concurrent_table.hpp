@@ -572,7 +572,7 @@ public:
     }
 
     std::cout
-      <<"version: 2024/01/29 11:50; "
+      <<"version: 2024/01/29 13:10; "
       <<"lf: "<<(double)size()/capacity()<<"; "
       <<"capacity: "<<capacity()<<"; "
       <<"rehashes: "<<rehashes<<"; "
@@ -2053,7 +2053,13 @@ private:
   {
     auto& v=local_garbage_vector();
     if(++v.epoch_bump%garbage_vector::min_for_epoch_bump==0){
-      v.epoch=current_epoch.fetch_add(1,std::memory_order_relaxed);
+      //v.epoch=current_epoch.fetch_add(1,std::memory_order_relaxed);
+      auto ce=current_epoch.load();
+      v.epoch=ce;
+      if(max_safe_epoch()>=ce-1&&
+         current_epoch.compare_exchange_strong(ce,ce+1)){
+        v.epoch=ce+1;
+      }
     }
     --v.size;
     v.mcos+=mco;
@@ -2078,6 +2084,7 @@ private:
       if(expected==retired_element::reserved_){ /* other thread wrote */
       }
       else{ /* vector full */
+        v.epoch=current_epoch.load();
         garbage_collect(v,max_safe_epoch());
       }
     }
