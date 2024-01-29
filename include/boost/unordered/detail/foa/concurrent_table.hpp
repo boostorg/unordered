@@ -572,7 +572,7 @@ public:
     }
 
     std::cout
-      <<"version: 2024/01/27 11:50; "
+      <<"version: 2024/01/29 11:50; "
       <<"lf: "<<(double)size()/capacity()<<"; "
       <<"capacity: "<<capacity()<<"; "
       <<"rehashes: "<<rehashes<<"; "
@@ -2011,7 +2011,7 @@ private:
   };
   struct alignas(64) garbage_vector
   {
-    static constexpr std::size_t N=256;
+    static constexpr std::size_t N=256*16;
     static constexpr std::size_t min_for_epoch_bump=16;
     static constexpr std::size_t min_for_garbage_collection=64;
 
