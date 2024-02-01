@@ -572,7 +572,7 @@ public:
     }
 
     std::cout
-      <<"version: 2024/01/29 13:10; "
+      <<"version: 2024/02/02 20:00; "
       <<"lf: "<<(double)size()/capacity()<<"; "
       <<"capacity: "<<capacity()<<"; "
       <<"rehashes: "<<rehashes<<"; "
@@ -2049,14 +2049,20 @@ private:
     return e-1;
   }
 
+  bool everybody_reached_epoch(std::size_t e)const
+  {
+    for(std::size_t i=0;i<garbage_vectors.size();++i){
+      if(garbage_vectors[i].epoch.load(std::memory_order_relaxed)<e)return false;
+    }
+    return true;
+  }
+
   BOOST_FORCEINLINE void retire_element(value_type* p,bool mco)
   {
     auto& v=local_garbage_vector();
     if(++v.epoch_bump%garbage_vector::min_for_epoch_bump==0){
-      //v.epoch=current_epoch.fetch_add(1,std::memory_order_relaxed);
-      auto ce=current_epoch.load();
-      v.epoch=ce;
-      if(max_safe_epoch()>=ce-1&&
+      auto ce=current_epoch.load(std::memory_order_relaxed);
+      if(everybody_reached_epoch(ce)&&
          current_epoch.compare_exchange_strong(ce,ce+1)){
         v.epoch=ce+1;
       }
