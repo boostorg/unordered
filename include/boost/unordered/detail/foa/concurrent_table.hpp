@@ -572,7 +572,7 @@ public:
     }
 
     std::cout
-      <<"version: 2024/02/03 11:30; "
+      <<"version: 2024/02/03 19:10; "
       <<"lf: "<<(double)size()/capacity()<<"; "
       <<"capacity: "<<capacity()<<"; "
       <<"rehashes: "<<rehashes<<"; "
@@ -2022,7 +2022,7 @@ private:
     retired_element*         retired_elements;
     std::atomic<std::size_t> wpos=0;
     std::atomic<std::size_t> rpos=0;
-    std::atomic<std::size_t> apos=0;
+    //std::atomic<std::size_t> apos=0;
     std::atomic<ssize_t>     size=0;
     std::atomic<ssize_t>     mcos=0;
   };
@@ -2074,13 +2074,14 @@ private:
       std::size_t expected=retired_element::available_;
       auto& e=v.retired_elements[wpos%v.garbage_vector::N];
       if(e.epoch.compare_exchange_strong(expected,retired_element::reserved_)){
-        p=e.p.exchange(p);
-        if(p){
-          ++nodes_wasted;
-          element_type x{p};
-          this->destroy_element(&x);
-          ++v.apos;
-        }
+        e.p=p;
+        //p=e.p.exchange(p);
+        //if(p){
+        //  ++nodes_wasted;
+        //  element_type x{p};
+        //  this->destroy_element(&x);
+        //  ++v.apos;
+        //}
         e.epoch=v.epoch.load();
         if(++v.wpos%garbage_vector::min_for_garbage_collection==0){
           garbage_collect(v,max_safe_epoch());
@@ -2098,16 +2099,16 @@ private:
 
   BOOST_FORCEINLINE value_type* new_element()
   {
-    auto& v=local_garbage_vector();
-    for(;;){
-      std::size_t apos=v.apos;
-      if(apos>=v.rpos)break; /*`no available elements*/
-      auto pv=v.retired_elements[apos%v.garbage_vector::N].p.load();
-      if(v.apos.compare_exchange_weak(apos,apos+1)){
-        v.retired_elements[apos%v.garbage_vector::N].p=nullptr;
-        return pv;
-      }
-    }
+    //auto& v=local_garbage_vector();
+    //for(;;){
+    //  std::size_t apos=v.apos;
+    //  if(apos>=v.rpos)break; /*`no available elements*/
+    //  auto pv=v.retired_elements[apos%v.garbage_vector::N].p.load();
+    //  if(v.apos.compare_exchange_weak(apos,apos+1)){
+    //    v.retired_elements[apos%v.garbage_vector::N].p=nullptr;
+    //    return pv;
+    //  }
+    //}
 
     /* allocate */
     return boost::allocator_allocate(this->al(),1);
@@ -2158,6 +2159,8 @@ private:
     for(;;){
       auto& e=v.retired_elements[rpos%v.garbage_vector::N];
       if(e.epoch>max_epoch)break;
+      element_type x{e.p};
+      this->destroy_element(&x);
       e.epoch=retired_element::available_;
       ++rpos;
     }
