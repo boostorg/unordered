@@ -204,7 +204,7 @@ private:
 template<typename Integral>
 struct atomic_integral
 {
-#if 0&&defined(BOOST_UNORDERED_LATCH_FREE)
+#if defined(BOOST_UNORDERED_LATCH_FREE)
   operator Integral()const{return n.load(std::memory_order_acquire);}
   void operator=(Integral m){n.store(m,std::memory_order_release);}
   void operator|=(Integral m){n.fetch_or(m);}
@@ -2076,7 +2076,7 @@ private:
       if(e.epoch.compare_exchange_strong(expected,retired_element::reserved_)){
         p=e.p.exchange(p);
         if(p){
-          //++nodes_wasted;
+          ++nodes_wasted;
           element_type x{p};
           this->destroy_element(&x);
           ++v.apos;
