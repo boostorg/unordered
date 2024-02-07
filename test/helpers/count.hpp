@@ -147,6 +147,8 @@ namespace test {
     static smf_count count;
     static void reset_count() { count.reset(); }
 
+    smf_counted_object(int index) : smf_counted_object() { index_ = index; }
+
     smf_counted_object() : index_(++running_index)
     {
       count.default_construct();
@@ -184,9 +186,10 @@ namespace test {
       return boost::hash<int>()(x.index_);
     }
 
+    int index_;
+
   private:
     static int running_index;
-    int index_;
   };
   template <class Tag> smf_count smf_counted_object<Tag>::count = {};
   template <class Tag> int smf_counted_object<Tag>::running_index = 0;

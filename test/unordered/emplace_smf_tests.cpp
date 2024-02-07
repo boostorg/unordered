@@ -12,12 +12,30 @@ namespace emplace_smf_tests {
   using test::smf_count;
   using test::smf_counted_object;
 
-  using counted_key = smf_counted_object<struct key_tag_>;
-  using counted_value = smf_counted_object<struct value_tag_>;
+  using converting_key = smf_counted_object<struct cvt_key_tag_>;
+  using converting_value = smf_counted_object<struct cvt_value_tag_>;
+
+  class counted_key : public smf_counted_object<struct key_tag_>
+  {
+  public:
+    using smf_counted_object::smf_counted_object;
+    counted_key() = default;
+    counted_key(const converting_key& k) : counted_key(k.index_) {}
+  };
+  class counted_value : public smf_counted_object<struct value_tag_>
+  {
+  public:
+    using smf_counted_object::smf_counted_object;
+    counted_value() = default;
+    counted_value(const converting_value& v) : counted_value(v.index_) {}
+  };
+
   void reset_counts()
   {
     counted_key::reset_count();
     counted_value::reset_count();
+    converting_key::reset_count();
+    converting_value::reset_count();
   }
 
 #ifdef BOOST_UNORDERED_FOA_TESTS
@@ -170,6 +188,120 @@ namespace emplace_smf_tests {
   }
 
   UNORDERED_TEST(emplace_smf_value_type_set, EMPLACE_SMF_TESTS_SET_ARGS)
+
+  enum emplace_kind
+  {
+    copy,
+    move
+  };
+
+  enum emplace_status
+  {
+    fail,
+    success
+  };
+
+  struct counted_key_checker_type
+  {
+    using key_type = counted_key;
+    void operator()(emplace_kind kind, emplace_status status)
+    {
+      int copies = (kind == copy && status == success) ? 1 : 0;
+      int moves = (kind == move && status == success) ? 1 : 0;
+      BOOST_TEST_EQ(counted_key::count, (smf_count{0, copies, moves, 0, 0, 0}));
+    }
+  } counted_key_checker;
+
+  struct converting_key_checker_type
+  {
+    using key_type = converting_key;
+    void operator()(emplace_kind, emplace_status status)
+    {
+      int moves = (status == success) ? 1 : 0;
+      BOOST_TEST_EQ(counted_key::count, (smf_count{1, 0, moves, 0, 0, 1}));
+    }
+  } converting_key_checker;
+
+  struct counted_value_checker_type
+  {
+    using mapped_type = counted_value;
+    void operator()(emplace_kind kind, emplace_status status)
+    {
+      int copies = (kind == copy && status == success) ? 1 : 0;
+      int moves = (kind == move && status == success) ? 1 : 0;
+      BOOST_TEST_EQ(
+        counted_value::count, (smf_count{0, copies, moves, 0, 0, 0}));
+    }
+  } counted_value_checker;
+
+  struct converting_value_checker_type
+  {
+    using mapped_type = converting_value;
+    void operator()(emplace_kind, emplace_status status)
+    {
+      int ctors = (status == success) ? 1 : 0;
+      BOOST_TEST_EQ(counted_value::count, (smf_count{ctors, 0, 0, 0, 0, 0}));
+    }
+  } converting_value_checker;
+
+  template <class X, class KC, class VC>
+  static void emplace_smf_key_value_map(
+    X*, emplace_kind kind, KC key_checker, VC value_checker)
+  {
+    using container = X;
+    using key_type = typename KC::key_type;
+    using mapped_type = typename VC::mapped_type;
+
+    container x;
+    key_type key{};
+    key_type key2 = key;
+    mapped_type value{};
+    mapped_type value2 = value;
+
+    {
+      reset_counts();
+      auto ret = (kind == copy) ? x.emplace(key, value)
+                                : x.emplace(std::move(key), std::move(value));
+      BOOST_TEST_EQ(ret.second, true);
+      key_checker(kind, success);
+      value_checker(kind, success);
+      BOOST_TEST_EQ(converting_key::count, (smf_count{0, 0, 0, 0, 0, 0}));
+      BOOST_TEST_EQ(converting_value::count, (smf_count{0, 0, 0, 0, 0, 0}));
+    }
+
+    {
+      reset_counts();
+      auto ret = x.emplace(key2, value2);
+      BOOST_TEST_EQ(ret.second, false);
+      key_checker(kind, fail);
+      value_checker(kind, fail);
+      BOOST_TEST_EQ(converting_key::count, (smf_count{0, 0, 0, 0, 0, 0}));
+      BOOST_TEST_EQ(converting_value::count, (smf_count{0, 0, 0, 0, 0, 0}));
+    }
+
+    {
+      reset_counts();
+      auto ret = x.emplace(std::move(key2), std::move(value2));
+      BOOST_TEST_EQ(ret.second, false);
+      key_checker(kind, fail);
+      value_checker(kind, fail);
+      BOOST_TEST_EQ(converting_key::count, (smf_count{0, 0, 0, 0, 0, 0}));
+      BOOST_TEST_EQ(converting_value::count, (smf_count{0, 0, 0, 0, 0, 0}));
+    }
+  }
+
+  // clang-format off
+
+  UNORDERED_TEST(
+    emplace_smf_key_value_map,
+    EMPLACE_SMF_TESTS_MAP_ARGS
+    ((copy)(move))
+    ((counted_key_checker)(converting_key_checker))
+    ((counted_value_checker)(converting_value_checker))
+  )
+
+  // clang-format on
+
 } // namespace emplace_smf_tests
 
 RUN_TESTS()
