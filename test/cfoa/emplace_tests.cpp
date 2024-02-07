@@ -4,6 +4,7 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include "helpers.hpp"
+#include "../helpers/count.hpp"
 
 #include <boost/unordered/concurrent_flat_map.hpp>
 #include <boost/unordered/concurrent_flat_set.hpp>
@@ -290,6 +291,176 @@ UNORDERED_TEST(
   ((lvalue_emplacer)(norehash_lvalue_emplacer)
    (lvalue_emplace_or_cvisit)(lvalue_emplace_or_visit)(copy_emplacer)(move_emplacer))
   ((default_generator)(sequential)(limited_range)))
+
+// clang-format on
+
+namespace {
+  using converting_key_type = basic_raii<struct converting_key_tag_>;
+  using converting_value_type = basic_raii<struct converting_value_tag_>;
+
+  class counted_key_type : public basic_raii<struct counted_key_tag_>
+  {
+  public:
+    using basic_raii::basic_raii;
+    counted_key_type() = default;
+    counted_key_type(const converting_key_type& k) : counted_key_type(k.x_) {}
+  };
+  class counted_value_type : public basic_raii<struct counted_value_tag_>
+  {
+  public:
+    using basic_raii::basic_raii;
+    counted_value_type() = default;
+    counted_value_type(const converting_value_type& v)
+        : counted_value_type(v.x_)
+    {
+    }
+  };
+
+  void reset_counts()
+  {
+    counted_key_type::reset_counts();
+    counted_value_type::reset_counts();
+    converting_key_type::reset_counts();
+    converting_value_type::reset_counts();
+  }
+
+  using test::smf_count;
+
+  template <class T> smf_count count_for()
+  {
+    return test::smf_count{
+      (int)T::default_constructor.load(std::memory_order_relaxed),
+      (int)T::copy_constructor.load(std::memory_order_relaxed),
+      (int)T::move_constructor.load(std::memory_order_relaxed),
+      (int)T::copy_assignment.load(std::memory_order_relaxed),
+      (int)T::move_assignment.load(std::memory_order_relaxed),
+      (int)T::destructor.load(std::memory_order_relaxed)};
+  }
+
+  enum emplace_kind
+  {
+    copy,
+    move
+  };
+
+  enum emplace_status
+  {
+    fail,
+    success
+  };
+
+  struct counted_key_checker_type
+  {
+    using key_type = counted_key_type;
+    void operator()(emplace_kind kind, emplace_status status)
+    {
+      int copies = (kind == copy && status == success) ? 1 : 0;
+      int moves = (kind == move && status == success) ? 1 : 0;
+      BOOST_TEST_EQ(
+        count_for<counted_key_type>(), (smf_count{0, copies, moves, 0, 0, 0}));
+    }
+  } counted_key_checker;
+
+  struct converting_key_checker_type
+  {
+    using key_type = converting_key_type;
+    void operator()(emplace_kind, emplace_status status)
+    {
+      int moves = (status == success) ? 1 : 0;
+      BOOST_TEST_EQ(
+        count_for<counted_key_type>(), (smf_count{1, 0, moves, 0, 0, 1}));
+    }
+  } converting_key_checker;
+
+  struct counted_value_checker_type
+  {
+    using mapped_type = counted_value_type;
+    void operator()(emplace_kind kind, emplace_status status)
+    {
+      int copies = (kind == copy && status == success) ? 1 : 0;
+      int moves = (kind == move && status == success) ? 1 : 0;
+      BOOST_TEST_EQ(count_for<counted_value_type>(),
+        (smf_count{0, copies, moves, 0, 0, 0}));
+    }
+  } counted_value_checker;
+
+  struct converting_value_checker_type
+  {
+    using mapped_type = converting_value_type;
+    void operator()(emplace_kind, emplace_status status)
+    {
+      int ctors = (status == success) ? 1 : 0;
+      BOOST_TEST_EQ(
+        count_for<counted_value_type>(), (smf_count{ctors, 0, 0, 0, 0, 0}));
+    }
+  } converting_value_checker;
+
+  template <class X, class KC, class VC>
+  void emplace_map_key_value(
+    X*, emplace_kind kind, KC key_checker, VC value_checker)
+  {
+    using container = X;
+    using key_type = typename KC::key_type;
+    using mapped_type = typename VC::mapped_type;
+
+    container x;
+    key_type key{};
+    key_type key2 = key;
+    mapped_type value{};
+    mapped_type value2 = value;
+
+    {
+      reset_counts();
+      auto ret = (kind == copy) ? x.emplace(key, value)
+                                : x.emplace(std::move(key), std::move(value));
+      BOOST_TEST_EQ(ret, true);
+      key_checker(kind, success);
+      value_checker(kind, success);
+      BOOST_TEST_EQ(
+        count_for<converting_key_type>(), (smf_count{0, 0, 0, 0, 0, 0}));
+      BOOST_TEST_EQ(
+        count_for<converting_value_type>(), (smf_count{0, 0, 0, 0, 0, 0}));
+    }
+
+    {
+      reset_counts();
+      bool ret = x.emplace(key2, value2);
+      BOOST_TEST_EQ(ret, false);
+      key_checker(kind, fail);
+      value_checker(kind, fail);
+      BOOST_TEST_EQ(
+        count_for<converting_key_type>(), (smf_count{0, 0, 0, 0, 0, 0}));
+      BOOST_TEST_EQ(
+        count_for<converting_value_type>(), (smf_count{0, 0, 0, 0, 0, 0}));
+    }
+
+    {
+      reset_counts();
+      bool ret = x.emplace(std::move(key2), std::move(value2));
+      BOOST_TEST_EQ(ret, false);
+      key_checker(kind, fail);
+      value_checker(kind, fail);
+      BOOST_TEST_EQ(
+        count_for<converting_key_type>(), (smf_count{0, 0, 0, 0, 0, 0}));
+      BOOST_TEST_EQ(
+        count_for<converting_value_type>(), (smf_count{0, 0, 0, 0, 0, 0}));
+    }
+  }
+
+  boost::unordered::concurrent_flat_map<counted_key_type, counted_value_type>*
+    test_counted_flat_map = {};
+
+} // namespace
+
+// clang-format off
+
+UNORDERED_TEST(
+  emplace_map_key_value,
+  ((test_counted_flat_map))
+  ((copy)(move))
+  ((counted_key_checker)(converting_key_checker))
+  ((counted_value_checker)(converting_value_checker))
+)
 
 // clang-format on
 
