@@ -38,6 +38,7 @@
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
+#include <tuple> // std::forward_as_tuple
 
 namespace boost {
   namespace tuples {
