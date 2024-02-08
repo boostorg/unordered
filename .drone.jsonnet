@@ -488,4 +488,10 @@ local windows_pipeline(name, image, environment, arch = "amd64") =
         "cppalliance/dronevs2022:1",
         { TOOLSET: 'msvc-14.3', CXXSTD: '14,17,20,latest' },
     ),
+
+    windows_pipeline(
+        "Windows VS2022 msvc-14.3 permissive-",
+        "cppalliance/dronevs2022:1",
+        { TOOLSET: 'msvc-14.3', CXXSTD: '14,17', CXXFLAGS: '/permissive-' },
+    ),
 ]
