@@ -557,7 +557,7 @@ public:
 #if defined(BOOST_UNORDERED_LATCH_FREE)
   ~concurrent_table(){
     std::cout
-      <<"version: 2024/02/09 19:00; "
+      <<"version: 2024/02/09 19:40; "
       <<"lf: "<<(double)size()/capacity()<<"; "
       <<"size: "<<size()<<", "
       <<"capacity: "<<capacity()<<"; "
@@ -1338,6 +1338,7 @@ private:
       if(mask){
         auto p=this->arrays.elements()+pos*N;
         BOOST_UNORDERED_PREFETCH_ELEMENTS(p,N);
+        auto lck=access(access_mode,pos);
         do{
           auto n=unchecked_countr_zero(mask);
           if(BOOST_LIKELY(pg->is_occupied(n))){
