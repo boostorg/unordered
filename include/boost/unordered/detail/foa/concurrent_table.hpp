@@ -554,7 +554,7 @@ public:
     concurrent_table(std::move(x),x.make_empty_arrays())
   {}
 
-#if 0&&defined(BOOST_UNORDERED_LATCH_FREE)
+#if defined(BOOST_UNORDERED_LATCH_FREE)
   ~concurrent_table(){
     std::cout
       <<"version: 2024/02/09 12:00; "
