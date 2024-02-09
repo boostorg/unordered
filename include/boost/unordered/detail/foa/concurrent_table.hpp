@@ -209,7 +209,7 @@ struct atomic_integral
   void operator&=(Integral m){n.fetch_and(m);}
 
   atomic_integral& operator=(atomic_integral const& rhs) {
-    n.store(rhs.n.load());
+    n.store(rhs.n.load(std::memory_order_acquire),std::memory_order_release);
     return *this;
   }
 #else
@@ -557,8 +557,9 @@ public:
 #if defined(BOOST_UNORDERED_LATCH_FREE)
   ~concurrent_table(){
     std::cout
-      <<"version: 2024/02/09 12:00; "
+      <<"version: 2024/02/09 19:00; "
       <<"lf: "<<(double)size()/capacity()<<"; "
+      <<"size: "<<size()<<", "
       <<"capacity: "<<capacity()<<"; "
       <<"rehashes: "<<rehashes<<"; "
       <<"max probe:"<<max_probe<<"\n";
@@ -718,11 +719,13 @@ public:
 
   bool empty()const noexcept{return size()==0;}
   
-  std::size_t size()const noexcept
+  auto size()const noexcept
   {
 #if defined(BOOST_UNORDERED_LATCH_FREE)
+    using ssize_t=std::make_signed<std::size_t>::type;
+
     auto lck=exclusive_access();
-    std::size_t res=this->size_ctrl.size;
+    ssize_t res=static_cast<ssize_t>(this->size_ctrl.size);
     for(const auto& sc:local_size_ctrls){
       res+=sc.size;
     }
@@ -873,8 +876,9 @@ public:
         if(f(cast_for(group_shared{},type_policy::value_from(*p)))){
           pg->reset(n);
           auto& sc=local_size_ctrl();
-          sc.size-=1;
-          sc.mcos+=!pg->is_not_overflowed(hash);
+          sc.size.fetch_sub(1,std::memory_order_relaxed);
+          sc.mcos.fetch_add(
+            !pg->is_not_overflowed(hash),std::memory_order_relaxed);
           res=1;
         }
       });
@@ -1267,7 +1271,8 @@ private:
 #if defined(BOOST_UNORDERED_LATCH_FREE)
   static bool is_occupied(group_type* pg,std::size_t pos)
   {
-    return reinterpret_cast<std::atomic<unsigned char>*>(pg)[pos]>1;
+    return reinterpret_cast<std::atomic<unsigned char>*>(pg)[pos].
+      load(std::memory_order_acquire)>1;
   }
 #else
   static bool is_occupied(group_type* pg,std::size_t pos)
@@ -1299,20 +1304,23 @@ private:
     }
   }
 
+  template<typename... Args>
   BOOST_FORCEINLINE void save_element(
-    element_type* p,const element_type& x,std::size_t pos)const
+    element_type* p,std::size_t pos,Args&&... args)
   {
     auto& acnt=access_counter(pos);
     for(;;){
-      auto n=acnt.load(std::memory_order_acquire);
-      if(n%2==1)continue;
-      if(!acnt.compare_exchange_strong(
-        n,n+1,std::memory_order_release))continue;
+      //auto n=acnt.load(std::memory_order_acquire);
+      //if(n%2==1)continue;
+      //if(!acnt.compare_exchange_strong(
+      //  n,n+1,std::memory_order_release))continue;
+      acnt.fetch_add(1,std::memory_order_release);
 
-      *p=x;
+      this->construct_element(p,std::forward<Args>(args)...);
 
       std::atomic_thread_fence(std::memory_order_release);
-      acnt.store(n+2,std::memory_order_release);
+      //acnt.store(n+2,std::memory_order_release);
+      acnt.fetch_add(1,std::memory_order_release);
       return;
     }
   }
@@ -1631,39 +1639,34 @@ private:
 #if defined(BOOST_UNORDERED_LATCH_FREE)
   struct latch_free_reserve_slot
   {
-    latch_free_reserve_slot(group_type* pg_,std::size_t pos_):pg{pg_},pos{pos_}
+    latch_free_reserve_slot(group_type* pg,std::size_t pos):
+      pc{reinterpret_cast<std::atomic<unsigned char>*>(pg)+pos}
     {
       unsigned char expected=0;
-      succeeded_=reinterpret_cast<std::atomic<unsigned char>*>(pg)[pos].
-        compare_exchange_weak(expected,1);
+      succeeded_=pc->compare_exchange_weak(
+          expected,1,std::memory_order_relaxed,std::memory_order_relaxed);
     }
 
     ~latch_free_reserve_slot()
     {
-      if(succeeded_&&!commit_)pg->reset(pos);
+      if(succeeded_&&!commit_)pc->store(0,std::memory_order_relaxed);
     }
 
     bool succeeded()const{return succeeded_;}
 
     void commit(){commit_=true;}
 
-    group_type  *pg;
-    std::size_t pos;
-    bool        succeeded_;
-    bool        commit_=false;
-  };
-
-  struct assign_access_counter_on_exit
-  {
-    ~assign_access_counter_on_exit(){counter=x;}
-
-    group_access_counter_type &counter;
-    boost::uint32_t            x;
+    std::atomic<unsigned char>* pc;
+    bool                        succeeded_;
+    bool                        commit_=false;
   };
 
   struct assign_insert_counter_on_exit
   {
-    ~assign_insert_counter_on_exit(){counter=x;}
+    ~assign_insert_counter_on_exit()
+    {
+      counter.store(x,std::memory_order_relaxed);
+    }
 
     group_insert_counter_type &counter;
     boost::uint32_t            x;
@@ -1680,7 +1683,7 @@ private:
 
     for(;;){
     startover:
-      boost::uint32_t counter=insert_counter(pos0);
+      boost::uint32_t counter=insert_counter(pos0).load(std::memory_order_relaxed);
       if(unprotected_visit(
         access_mode,k,pos0,hash,std::forward<F>(f)))return 0;
 
@@ -1697,24 +1700,19 @@ private:
             /* slot wasn't empty */
             goto startover;
           }
-          if(BOOST_UNLIKELY(insert_counter(pos0)++!=counter)){
+          if(BOOST_UNLIKELY(
+            !insert_counter(pos0).compare_exchange_strong(
+              counter,counter+1,std::memory_order_relaxed))){
             /* other thread inserted from pos0, need to start over */
             goto startover;
           }
-          {
-            auto p=this->arrays.elements()+pos*N+n;
-            {
-              auto acounter=++access_counter(pos);
-              assign_access_counter_on_exit aa{access_counter(pos),acounter+1};
-              this->construct_element(p,std::forward<Args>(args)...);
-              std::atomic_thread_fence(std::memory_order_release);
-            }
-            pg->set(n,hash);
-          }
+          save_element(
+            this->arrays.elements()+pos*N+n,pos,std::forward<Args>(args)...);
+          pg->set(n,hash);
           rslot.commit();
           auto& sc=local_size_ctrl();            
-          sc.size+=1;
-          sc.mcos-=!pg->is_not_overflowed(hash);
+          sc.size.fetch_add(1,std::memory_order_relaxed);
+          sc.mcos.fetch_sub(!pg->is_not_overflowed(hash),std::memory_order_relaxed);
           return 1;
         }
         if(!pbn--)return -1;
