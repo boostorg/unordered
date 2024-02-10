@@ -18,6 +18,7 @@ namespace boost {
         typedef std::pair<K const, M> value_type;
         typedef H hasher;
         typedef P key_equal;
+        typedef K key_type;
         typedef K const const_key_type;
 
         typedef
