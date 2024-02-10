@@ -30,12 +30,29 @@ namespace emplace_smf_tests {
     counted_value(const converting_value& v) : counted_value(v.index_) {}
   };
 
+  class immovable_key : public smf_counted_object<struct imm_key_tag_>
+  {
+  public:
+    using smf_counted_object::smf_counted_object;
+    immovable_key(immovable_key&&) = delete;
+    immovable_key& operator=(immovable_key&&) = delete;
+  };
+  class immovable_value : public smf_counted_object<struct imm_value_tag_>
+  {
+  public:
+    using smf_counted_object::smf_counted_object;
+    immovable_value(immovable_value&&) = delete;
+    immovable_value& operator=(immovable_value&&) = delete;
+  };
+
   void reset_counts()
   {
     counted_key::reset_count();
     counted_value::reset_count();
     converting_key::reset_count();
     converting_value::reset_count();
+    immovable_key::reset_count();
+    immovable_value::reset_count();
   }
 
 #ifdef BOOST_UNORDERED_FOA_TESTS
@@ -298,6 +315,59 @@ namespace emplace_smf_tests {
     ((copy)(move))
     ((counted_key_checker)(converting_key_checker))
     ((counted_value_checker)(converting_value_checker))
+  )
+
+  // clang-format on
+
+  template <class X> static void emplace_smf_key_value_map_immovable_key(X*)
+  {
+#ifndef BOOST_UNORDERED_NO_INIT_TYPE_TESTS
+    using container = X;
+    BOOST_STATIC_ASSERT(
+      std::is_same<immovable_key, typename X::key_type>::value);
+    using mapped_type = typename X::mapped_type;
+
+    container x;
+
+    {
+      reset_counts();
+      auto ret = x.emplace(0, 0);
+      BOOST_TEST_EQ(ret.second, true);
+      BOOST_TEST_EQ(immovable_key::count, (smf_count{1, 0, 0, 0, 0, 0}));
+      BOOST_TEST_EQ(mapped_type::count, (smf_count{1, 0, 0, 0, 0, 0}));
+    }
+
+    {
+      reset_counts();
+      auto ret = x.emplace(0, 1);
+      BOOST_TEST_EQ(ret.second, false);
+      BOOST_TEST_EQ(immovable_key::count, (smf_count{1, 0, 0, 0, 0, 1}));
+      BOOST_TEST_EQ(mapped_type::count, (smf_count{1, 0, 0, 0, 0, 1}));
+    }
+#endif
+  }
+
+#ifdef BOOST_UNORDERED_FOA_TESTS
+  static boost::unordered_node_map<immovable_key, counted_value>*
+    test_smf_node_map_immovable_key_counted_value;
+  static boost::unordered_node_map<immovable_key, immovable_value>*
+    test_smf_node_map_immovable_key_immovable_value;
+#define EMPLACE_SMF_TESTS_MAP_IMMOVABLE_ARGS                                   \
+  ((test_smf_node_map_immovable_key_counted_value)(test_smf_node_map_immovable_key_immovable_value))
+#else
+  static boost::unordered_map<immovable_key, counted_value>*
+    test_smf_map_immovable_key_counted_value;
+  static boost::unordered_map<immovable_key, immovable_value>*
+    test_smf_map_immovable_key_immovable_value;
+#define EMPLACE_SMF_TESTS_MAP_IMMOVABLE_ARGS                                   \
+  ((test_smf_map_immovable_key_counted_value)(test_smf_map_immovable_key_immovable_value))
+#endif
+
+  // clang-format off
+
+  UNORDERED_TEST(
+    emplace_smf_key_value_map_immovable_key,
+    EMPLACE_SMF_TESTS_MAP_IMMOVABLE_ARGS
   )
 
   // clang-format on
