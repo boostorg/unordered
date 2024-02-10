@@ -401,7 +401,7 @@ public:
   template<typename... Args>
   BOOST_FORCEINLINE std::pair<iterator,bool> emplace(Args&&... args)
   {
-    auto x=alloc_make_insert_type<type_policy>(
+    alloc_cted_insert_type<type_policy,Allocator,Args...> x(
       this->al(),std::forward<Args>(args)...);
     return emplace_impl(type_policy::move(x.value()));
   }

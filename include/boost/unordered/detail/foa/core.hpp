@@ -22,6 +22,7 @@
 #include <boost/core/pointer_traits.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/predef.h>
+#include <boost/unordered/detail/allocator_constructed.hpp>
 #include <boost/unordered/detail/narrow_cast.hpp>
 #include <boost/unordered/detail/mulx.hpp>
 #include <boost/unordered/detail/static_assert.hpp>
@@ -1220,30 +1221,16 @@ class alloc_cted_insert_type
     emplace_type,typename TypePolicy::element_type
   >::type;
 
-  alignas(insert_type) unsigned char storage[sizeof(insert_type)];
-  Allocator                          al;
+  using alloc_cted = allocator_constructed<Allocator, insert_type, TypePolicy>;
+  alloc_cted val;
 
 public:
-  alloc_cted_insert_type(const Allocator& al_,Args&&... args):al{al_}
+  alloc_cted_insert_type(const Allocator& al_,Args&&... args):val{al_,std::forward<Args>(args)...}
   {
-    TypePolicy::construct(al,data(),std::forward<Args>(args)...);
   }
 
-  ~alloc_cted_insert_type()
-  {
-    TypePolicy::destroy(al,data());
-  }
-
-  insert_type* data(){return reinterpret_cast<insert_type*>(&storage);}
-  insert_type& value(){return *data();}
+  insert_type& value(){return val.value();}
 };
-
-template<typename TypePolicy,typename Allocator,typename... Args>
-alloc_cted_insert_type<TypePolicy,Allocator,Args...>
-alloc_make_insert_type(const Allocator& al,Args&&... args)
-{
-  return {al,std::forward<Args>(args)...};
-}
 
 /* table_core. The TypePolicy template parameter is used to generate
  * instantiations suitable for either maps or sets, and introduces non-standard

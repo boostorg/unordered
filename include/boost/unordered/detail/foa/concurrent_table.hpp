@@ -1320,7 +1320,7 @@ private:
   {
     auto lck=shared_access();
 
-    auto x=alloc_make_insert_type<type_policy>(
+    alloc_cted_insert_type<type_policy,Allocator,Args...> x(
       this->al(),std::forward<Args>(args)...);
     int res=unprotected_norehash_emplace_or_visit(
       access_mode,std::forward<F>(f),type_policy::move(x.value()));
