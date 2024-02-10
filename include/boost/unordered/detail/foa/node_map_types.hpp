@@ -83,6 +83,12 @@ namespace boost {
           }
 
           template <class A, class... Args>
+          static void construct(A& al, key_type* p, Args&&... args)
+          {
+            boost::allocator_construct(al, p, std::forward<Args>(args)...);
+          }
+
+          template <class A, class... Args>
           static void construct(A& al, element_type* p, Args&&... args)
           {
             p->p = boost::allocator_allocate(al, 1);
@@ -105,6 +111,11 @@ namespace boost {
           }
 
           template <class A> static void destroy(A& al, init_type* p) noexcept
+          {
+            boost::allocator_destroy(al, p);
+          }
+
+          template <class A> static void destroy(A& al, key_type* p) noexcept
           {
             boost::allocator_destroy(al, p);
           }

@@ -691,6 +691,18 @@ public:
     return emplace_impl(std::forward<Value>(x));
   }
 
+  /* Optimizations for maps for (k,v) to avoid eagerly constructing value */
+  template <typename K, typename V>
+  BOOST_FORCEINLINE auto emplace(K&& k, V&& v) ->
+    typename std::enable_if<is_emplace_kv_able<concurrent_table, K>::value,
+      bool>::type
+  {
+    alloc_cted_or_fwded_key_type<type_policy, Allocator, K&&> x(
+      this->al(), std::forward<K>(k));
+    return emplace_impl(
+      try_emplace_args_t{}, x.move_or_fwd(), std::forward<V>(v));
+  }
+
   BOOST_FORCEINLINE bool
   insert(const init_type& x){return emplace_impl(x);}
 

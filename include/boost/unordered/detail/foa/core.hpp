@@ -1232,6 +1232,58 @@ public:
   insert_type& value(){return val.value();}
 };
 
+template<typename TypePolicy,typename Allocator,typename... Args>
+alloc_cted_insert_type<TypePolicy,Allocator,Args...>
+alloc_make_insert_type(const Allocator& al,Args&&... args)
+{
+  return {al,std::forward<Args>(args)...};
+}
+
+template <typename TypePolicy, typename Allocator, typename KFwdRef,
+  typename = void>
+class alloc_cted_or_fwded_key_type
+{
+  using key_type = typename TypePolicy::key_type;
+  allocator_constructed<Allocator, key_type, TypePolicy> val;
+
+public:
+  alloc_cted_or_fwded_key_type(const Allocator& al_, KFwdRef k)
+      : val(al_, std::forward<KFwdRef>(k))
+  {
+  }
+
+  key_type&& move_or_fwd() { return std::move(val.value()); }
+};
+
+template <typename TypePolicy, typename Allocator, typename KFwdRef>
+class alloc_cted_or_fwded_key_type<TypePolicy, Allocator, KFwdRef,
+  typename std::enable_if<
+    is_similar<KFwdRef, typename TypePolicy::key_type>::value>::type>
+{
+  // This specialization acts as a forwarding-reference wrapper
+  BOOST_UNORDERED_STATIC_ASSERT(std::is_reference<KFwdRef>::value);
+  KFwdRef ref;
+
+public:
+  alloc_cted_or_fwded_key_type(const Allocator&, KFwdRef k)
+      : ref(std::forward<KFwdRef>(k))
+  {
+  }
+
+  KFwdRef move_or_fwd() { return std::forward<KFwdRef>(ref); }
+};
+
+template <typename Container>
+using is_map =
+  std::integral_constant<bool, !std::is_same<typename Container::key_type,
+                                 typename Container::value_type>::value>;
+
+template <typename Container, typename K>
+using is_emplace_kv_able = std::integral_constant<bool,
+  is_map<Container>::value &&
+    (is_similar<K, typename Container::key_type>::value ||
+      is_complete_and_move_constructible<typename Container::key_type>::value)>;
+
 /* table_core. The TypePolicy template parameter is used to generate
  * instantiations suitable for either maps or sets, and introduces non-standard
  * init_type and element_type:
@@ -1249,7 +1301,7 @@ public:
  *
  *   - TypePolicy::construct and TypePolicy::destroy are used for the
  *     construction and destruction of the internal types: value_type,
- *     init_type and element_type.
+ *     init_type, element_type, and key_type.
  * 
  *   - TypePolicy::move is used to provide move semantics for the internal
  *     types used by the container during rehashing and emplace. These types

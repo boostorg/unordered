@@ -416,6 +416,19 @@ public:
     return emplace_impl(std::forward<T>(x));
   }
 
+  /* Optimizations for maps for (k,v) to avoid eagerly constructing value */
+  template <typename K, typename V>
+  BOOST_FORCEINLINE
+    typename std::enable_if<is_emplace_kv_able<table, K>::value,
+      std::pair<iterator, bool> >::type
+    emplace(K&& k, V&& v)
+  {
+    alloc_cted_or_fwded_key_type<type_policy, Allocator, K&&> x(
+      this->al(), std::forward<K>(k));
+    return emplace_impl(
+      try_emplace_args_t{}, x.move_or_fwd(), std::forward<V>(v));
+  }
+
   template<typename Key,typename... Args>
   BOOST_FORCEINLINE std::pair<iterator,bool> try_emplace(
     Key&& x,Args&&... args)
