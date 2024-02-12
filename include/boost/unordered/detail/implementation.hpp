@@ -2,6 +2,7 @@
 // Copyright (C) 2005-2016 Daniel James
 // Copyright (C) 2022-2023 Joaquin M Lopez Munoz.
 // Copyright (C) 2022-2023 Christian Mazakas
+// Copyright (C) 2024 Braden Ganetsky
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -14,6 +15,7 @@
 #pragma once
 #endif
 
+#include <boost/unordered/detail/allocator_constructed.hpp>
 #include <boost/unordered/detail/fca.hpp>
 #include <boost/unordered/detail/opt_storage.hpp>
 #include <boost/unordered/detail/serialize_tracked_address.hpp>
@@ -102,6 +104,10 @@ namespace boost {
       {
         no_key() {}
         template <class T> no_key(T const&) {}
+      };
+
+      struct converting_key
+      {
       };
 
       namespace func {
@@ -1913,6 +1919,16 @@ namespace boost {
           }
         }
 
+        template <typename K, typename V>
+        emplace_return emplace_unique(converting_key, K&& k, V&& v)
+        {
+          using alloc_cted = allocator_constructed<node_allocator_type,
+            typename Types::key_type>;
+          alloc_cted key(this->node_alloc(), std::forward<K>(k));
+          return emplace_unique(
+            key.value(), std::move(key.value()), std::forward<V>(v));
+        }
+
         template <typename Key> emplace_return try_emplace_unique(Key&& k)
         {
           std::size_t key_hash = this->hash(k);
@@ -2835,9 +2851,13 @@ namespace boost {
         }
 
         template <class Arg1, class Arg2>
-        static no_key extract(Arg1 const&, Arg2 const&)
+        static typename std::conditional<
+          (is_similar<Arg1, key_type>::value ||
+            is_complete_and_move_constructible<key_type>::value),
+          converting_key, no_key>::type
+        extract(Arg1 const&, Arg2 const&)
         {
-          return no_key();
+          return {};
         }
 
         template <class Arg1, class Arg2, class Arg3, class... Args>
