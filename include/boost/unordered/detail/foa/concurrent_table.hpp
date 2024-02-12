@@ -553,7 +553,7 @@ public:
 #if defined(BOOST_UNORDERED_LATCH_FREE)
   ~concurrent_table(){
     std::cout
-      <<"version: 2024/02/12 12:00; "
+      <<"version: 2024/02/12 13:40; "
       <<"lf: "<<(double)size()/capacity()<<"; "
       <<"size: "<<size()<<", "
       <<"capacity: "<<capacity()<<"; "
@@ -872,7 +872,8 @@ public:
         if(f(cast_for(group_shared{},type_policy::value_from(*p)))){
           //pg->reset(n);
           auto pc=reinterpret_cast<std::atomic<unsigned char>*>(pg)+n;
-          if(pc->exchange(0)!=0){
+          auto c=pc->load(std::memory_order_relaxed);
+          if(c>1&&pc->compare_exchange_strong(c,0,std::memory_order_acq_rel)){
             auto& sc=local_size_ctrl();
             sc.size.fetch_sub(1,std::memory_order_relaxed);
             sc.mcos.fetch_add(
@@ -1313,7 +1314,7 @@ private:
   BOOST_FORCEINLINE bool save_access(std::size_t pos,boost::uint32_t n,F f)const
   {
     auto& acnt=access_counter(pos);
-    if(!acnt.compare_exchange_strong(n,n+1,std::memory_order_release)){
+    if(!acnt.compare_exchange_strong(n,n+1,std::memory_order_acq_rel)){
       return false;
     }
     std::atomic_thread_fence(std::memory_order_release);
@@ -1354,20 +1355,38 @@ private:
         BOOST_UNORDERED_PREFETCH_ELEMENTS(p,N);
         do{
           auto n=unchecked_countr_zero(mask);
-          if(BOOST_LIKELY(pg->is_occupied(n))){
-            auto [e,acnt]=load_access(pos,[&]{return *(p+n);});
-            if(BOOST_LIKELY(this->pred()(x,this->key_from(e)))){
-              if constexpr(std::is_same<GroupAccessMode,group_exclusive>::value){
-                // ALTERNATIVE: offline f(pg,n,&e)
+#if 0
+          auto [e,acnt]=load_access(pos,[&]{return *(p+n);});
+          if(BOOST_LIKELY(this->pred()(x,this->key_from(e)))){
+            if constexpr(std::is_same<GroupAccessMode,group_exclusive>::value){
+              // ALTERNATIVE: offline f(pg,n,&e)
 
-                if(!save_access(pos,acnt,[&]{f(pg,n,p+n);}))goto startover;
-                return 1;
-              }else{
-                f(pg,n,&e);
-                return 1;
-              }
+              if(!save_access(pos,acnt,[&]{f(pg,n,p+n);}))goto startover;
+              return 1;
+            }else{
+              f(pg,n,&e);
+              return 1;
             }
           }
+#else
+          if constexpr(std::is_same<GroupAccessMode,group_exclusive>::value){
+            bool res=false;
+            save_access(pos,[&]{
+              if(BOOST_LIKELY(this->pred()(x,this->key_from(p[n])))){
+                f(pg,n,p+n);
+                res=true;
+              }
+            });
+            if(res)return 1;
+          }
+          else{
+            auto [e,acnt]=load_access(pos,[&]{return *(p+n);});
+            if(BOOST_LIKELY(this->pred()(x,this->key_from(e)))){
+              f(pg,n,&e);
+              return 1;
+            }
+          }
+#endif
           mask&=mask-1;
         }while(mask);
       }
