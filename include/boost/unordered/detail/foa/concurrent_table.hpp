@@ -202,7 +202,7 @@ private:
 template<typename Integral>
 struct atomic_integral
 {
-#if defined(BOOST_UNORDERED_LATCH_FREE)
+#if 0&&defined(BOOST_UNORDERED_LATCH_FREE)
   operator Integral()const{return n.load(std::memory_order_acquire);}
   void operator=(Integral m){n.store(m,std::memory_order_release);}
   void operator|=(Integral m){n.fetch_or(m);}
@@ -553,7 +553,7 @@ public:
 #if defined(BOOST_UNORDERED_LATCH_FREE)
   ~concurrent_table(){
     std::cout
-      <<"version: 2024/02/10 20:50; "
+      <<"version: 2024/02/12 12:00; "
       <<"lf: "<<(double)size()/capacity()<<"; "
       <<"size: "<<size()<<", "
       <<"capacity: "<<capacity()<<"; "
@@ -872,7 +872,7 @@ public:
         if(f(cast_for(group_shared{},type_policy::value_from(*p)))){
           //pg->reset(n);
           auto pc=reinterpret_cast<std::atomic<unsigned char>*>(pg)+n;
-          if(pc->exchange(0,std::memory_order_release)!=0){
+          if(pc->exchange(0)!=0){
             auto& sc=local_size_ctrl();
             sc.size.fetch_sub(1,std::memory_order_relaxed);
             sc.mcos.fetch_add(
@@ -1274,8 +1274,9 @@ private:
 #if defined(BOOST_UNORDERED_LATCH_FREE)
   static bool is_occupied(group_type* pg,std::size_t pos)
   {
-    return reinterpret_cast<std::atomic<unsigned char>*>(pg)[pos].
-      load(std::memory_order_acquire)>1;
+    //return reinterpret_cast<std::atomic<unsigned char>*>(pg)[pos].
+    //  load(std::memory_order_acquire)>1;
+    return true;
   }
 #else
   static bool is_occupied(group_type* pg,std::size_t pos)
@@ -1297,14 +1298,14 @@ private:
   {
     auto& acnt=access_counter(pos);
     for(;;){
-      auto n=acnt.load(std::memory_order_acquire);
-      if(n%2==1)continue;
+      auto n=
+        acnt.load(std::memory_order_acquire)&
+        ~boost::uint32_t(1);
 
       auto res=f();
 
       std::atomic_thread_fence(std::memory_order_acquire);
-      if(acnt.load(std::memory_order_acquire)!=n)continue;
-      else return {res,n};
+      if(BOOST_LIKELY(acnt.load(std::memory_order_relaxed)==n))return {res,n};
     }
   }
 
@@ -1328,8 +1329,10 @@ private:
   {
     auto &acnt=access_counter(pos);
     for(;;){
-      auto n=acnt.load(std::memory_order_acquire);
-      if(n%2==1)continue;
+      auto n=
+        acnt.load(std::memory_order_acquire)&
+        ~boost::uint32_t(1);
+      //if(n%2==1)continue;
 
       if(save_access(pos,n,f))return;
     }
