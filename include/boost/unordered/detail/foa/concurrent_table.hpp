@@ -553,7 +553,7 @@ public:
 #if defined(BOOST_UNORDERED_LATCH_FREE)
   ~concurrent_table(){
     std::cout
-      <<"version: 2024/02/12 13:40; "
+      <<"version: 2024/02/14 20:10; "
       <<"lf: "<<(double)size()/capacity()<<"; "
       <<"size: "<<size()<<", "
       <<"capacity: "<<capacity()<<"; "
@@ -869,17 +869,14 @@ public:
       group_exclusive{},x,this->position_for(hash),hash,
       [&,this](group_type* pg,unsigned int n,element_type* p)
       {
-        if(f(cast_for(group_shared{},type_policy::value_from(*p)))){
-          //pg->reset(n);
-          auto pc=reinterpret_cast<std::atomic<unsigned char>*>(pg)+n;
-          auto c=pc->load(std::memory_order_relaxed);
-          if(c>1&&pc->compare_exchange_strong(c,0,std::memory_order_acq_rel)){
-            auto& sc=local_size_ctrl();
-            sc.size.fetch_sub(1,std::memory_order_relaxed);
-            sc.mcos.fetch_add(
-              !pg->is_not_overflowed(hash),std::memory_order_relaxed);
-            res=1;
-          }
+        if(/*is_occupied(pg,n)&&*/
+           f(cast_for(group_shared{},type_policy::value_from(*p)))){
+          pg->reset(n);
+          auto& sc=local_size_ctrl();
+          sc.size.fetch_sub(1,std::memory_order_relaxed);
+          sc.mcos.fetch_add(
+            !pg->is_not_overflowed(hash),std::memory_order_relaxed);
+          res=1;
         }
       });
     return res;
@@ -1275,9 +1272,8 @@ private:
 #if defined(BOOST_UNORDERED_LATCH_FREE)
   static bool is_occupied(group_type* pg,std::size_t pos)
   {
-    //return reinterpret_cast<std::atomic<unsigned char>*>(pg)[pos].
-    //  load(std::memory_order_acquire)>1;
-    return true;
+    return pg->is_occupied(pos);
+    //return true;
   }
 #else
   static bool is_occupied(group_type* pg,std::size_t pos)
@@ -1355,13 +1351,23 @@ private:
         BOOST_UNORDERED_PREFETCH_ELEMENTS(p,N);
         do{
           auto n=unchecked_countr_zero(mask);
-#if 0
-          auto [e,acnt]=load_access(pos,[&]{return *(p+n);});
+#if 1
+          auto [pr,acnt]=load_access(pos,[&]{
+            return std::make_pair(is_occupied(pg,n),*(p+n));
+          });
+          auto [occupied,e]=pr;
+          if(!occupied)return 0;
           if(BOOST_LIKELY(this->pred()(x,this->key_from(e)))){
             if constexpr(std::is_same<GroupAccessMode,group_exclusive>::value){
               // ALTERNATIVE: offline f(pg,n,&e)
 
-              if(!save_access(pos,acnt,[&]{f(pg,n,p+n);}))goto startover;
+              if(!save_access(pos,acnt,[&]{f(pg,n,p+n);})){
+                // SPECIFIC FOR erase: if the element changed, it can only be
+                // bc someone erased it.
+                // WATCH OUT: only approximate as acnt controls 15 elements,
+                // not just this one.
+                return 0;
+              }
               return 1;
             }else{
               f(pg,n,&e);
@@ -1737,26 +1743,38 @@ private:
       auto mask=pg->match_available();
       if(BOOST_LIKELY(mask!=0)){
         auto n=unchecked_countr_zero(mask);
-        latch_free_reserve_slot rslot{pg,n};
-        if(BOOST_UNLIKELY(!rslot.succeeded())){
-          /* slot wasn't empty */
-          goto startover;
-        }
-        if(BOOST_UNLIKELY(
-          !insert_counter(pos0).compare_exchange_strong(
-            counter,counter+1,std::memory_order_relaxed))){
-          /* other thread inserted from pos0, need to start over */
-          goto startover;
-        }
+        //latch_free_reserve_slot rslot{pg,n};
+        //if(BOOST_UNLIKELY(!rslot.succeeded())){
+        //  /* slot wasn't empty */
+        //  goto startover;
+        //}
+        //if(BOOST_UNLIKELY(
+        //  !insert_counter(pos0).compare_exchange_strong(
+        //    counter,counter+1,std::memory_order_relaxed))){
+        //  /* other thread inserted from pos0, need to start over */
+        //  goto startover;
+        //}
         {
-          assign_insert_counter_on_exit a{insert_counter(pos0),counter+2};
-          save_access(pos,[&]{
-            this->construct_element(
-              this->arrays.elements()+pos*N+n,std::forward<Args>(args)...);
-          });
-          pg->set(n,hash); // SHOULD GO INSIDE save_access?
+          //assign_insert_counter_on_exit a{insert_counter(pos0),counter+2};
+
+          auto [ocuppied,acnt]=load_access(pos,[&]{return is_occupied(pg,n);});
+          if(ocuppied)goto startover;
+
+
+          auto res=false;
+          if(!save_access(pos,acnt,[&]{
+            if(insert_counter(pos0).compare_exchange_strong(
+                  counter,counter+1,std::memory_order_relaxed)){
+              assign_insert_counter_on_exit a{
+                insert_counter(pos0),counter+2};
+              this->construct_element(
+                this->arrays.elements()+pos*N+n,std::forward<Args>(args)...);
+              pg->set(n,hash);
+              res=true;
+            }
+          })||!res)goto startover;
         }
-        rslot.commit();
+        //rslot.commit();
         auto& sc=local_size_ctrl();            
         sc.size.fetch_add(1,std::memory_order_relaxed);
         sc.mcos.fetch_sub(!pg->is_not_overflowed(hash),std::memory_order_relaxed);
@@ -2086,6 +2104,7 @@ private:
   mutable std::array<local_size_ctrl_type,128> local_size_ctrls;
   std::atomic<std::size_t>                     max_probe=default_max_probe;
   std::size_t                                  rehashes=0;
+  //unsigned char paddd[64];
 
   local_size_ctrl_type& local_size_ctrl()const
   {
