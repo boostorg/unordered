@@ -46,32 +46,6 @@ template <class T> struct explicit_allocator
   }
 };
 
-template <typename Container>
-struct explicit_allocator_container_impl;
-
-template<
-  template <typename...> class Map,
-  typename K, typename T, typename Hash, typename Pred, typename Allocator
->
-struct explicit_allocator_container_impl<Map<K, T, Hash, Pred, Allocator> >
-{
-  using type = 
-    Map<K, T, Hash, Pred, explicit_allocator<std::pair<const K, T> > >;
-};
-
-template<
-  template <typename...> class Set,
-  typename K, typename Hash, typename Pred, typename Allocator
->
-struct explicit_allocator_container_impl<Set<K, Hash, Pred, Allocator> >
-{
-  using type = Set<K, Hash, Pred, explicit_allocator<K>>;
-};
-
-template <typename Container>
-using explicit_allocator_container = 
-  typename explicit_allocator_container_impl<Container>::type;
-
 template<typename Container,typename = void> struct has_extract:
 std::false_type {};
 
@@ -101,17 +75,16 @@ template <class Container> void test_explicit_alloc_ctor_extract(Container& c)
 
 template <class Container> void test_explicit_alloc_ctor()
 {
-  using container_type = explicit_allocator_container<Container>;
-  using key_type = typename container_type::key_type;
-  using value_type = typename container_type::value_type;
-  using hasher = typename container_type::hasher;
-  using allocator_type = typename container_type::allocator_type;
+  using key_type = typename Container::key_type;
+  using value_type = typename Container::value_type;
+  using hasher = typename Container::hasher;
+  using allocator_type = typename Container::allocator_type;
 
   allocator_type                    al;
   std::initializer_list<value_type> il{};
   hasher                            h;
   std::vector<value_type>           v;
-  container_type                    c,
+  Container                         c,
                                     c2(0),
                                     c3(v.begin(), v.end()),
                                     c4(c3),
@@ -146,19 +119,33 @@ template <class Container> void test_explicit_alloc_ctor()
 
 UNORDERED_AUTO_TEST (explicit_alloc_ctor) {
 #if defined(BOOST_UNORDERED_CFOA_TESTS)
-  test_explicit_alloc_ctor<boost::concurrent_flat_map<int, int> >();
-  test_explicit_alloc_ctor<boost::concurrent_flat_set<int> >();
+  test_explicit_alloc_ctor<boost::concurrent_flat_map<int, int,
+    boost::hash<int>, std::equal_to<int>,
+    explicit_allocator<std::pair<const int, int> > > >();
+  test_explicit_alloc_ctor<boost::concurrent_flat_set<
+    int, boost::hash<int>, std::equal_to<int>, explicit_allocator<int> > >();
 #elif defined(BOOST_UNORDERED_FOA_TESTS)
-  test_explicit_alloc_ctor<boost::unordered_flat_map<int, int> >();
-  test_explicit_alloc_ctor<boost::unordered_flat_set<int> >();
-  test_explicit_alloc_ctor<boost::unordered_node_map<int, int> >();
-  test_explicit_alloc_ctor<boost::unordered_node_set<int> >();
+  test_explicit_alloc_ctor<boost::unordered_flat_map<int, int,
+    boost::hash<int>, std::equal_to<int>,
+    explicit_allocator<std::pair<const int, int> > > >();
+  test_explicit_alloc_ctor<boost::unordered_flat_set<
+    int, boost::hash<int>, std::equal_to<int>, explicit_allocator<int> > >();
+  test_explicit_alloc_ctor<boost::unordered_node_map<int, int,
+    boost::hash<int>, std::equal_to<int>,
+    explicit_allocator<std::pair<const int, int> > > >();
+  test_explicit_alloc_ctor<boost::unordered_node_set<
+    int, boost::hash<int>, std::equal_to<int>, explicit_allocator<int> > >();
 #else
-  test_explicit_alloc_ctor<boost::unordered_map<int, int> >();
-  test_explicit_alloc_ctor<boost::unordered_multimap<int, int> >();
-
-  test_explicit_alloc_ctor<boost::unordered_set<int> >();
-  test_explicit_alloc_ctor<boost::unordered_multiset<int> >();
+  test_explicit_alloc_ctor<boost::unordered_map<int, int,
+    boost::hash<int>, std::equal_to<int>,
+    explicit_allocator<std::pair<const int, int> > > >();
+  test_explicit_alloc_ctor<boost::unordered_multimap<int, int,
+    boost::hash<int>, std::equal_to<int>,
+    explicit_allocator<std::pair<const int, int> > > >();
+  test_explicit_alloc_ctor<boost::unordered_set<
+    int, boost::hash<int>, std::equal_to<int>, explicit_allocator<int> > >();
+  test_explicit_alloc_ctor<boost::unordered_multiset<
+    int, boost::hash<int>, std::equal_to<int>, explicit_allocator<int> > >();
 #endif
 }
 
