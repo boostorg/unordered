@@ -101,8 +101,8 @@ template <class Container> void test_explicit_alloc_ctor()
                                     c15(il, al),
                                     c16(il, 0, al),
                                     c17(il, 0, h, al);
-  value_type                        x;
-  key_type                          k;
+  value_type                        x{};
+  key_type                          k{};
 
   c = c2;
   c = std::move(c2);
