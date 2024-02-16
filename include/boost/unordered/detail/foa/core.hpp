@@ -1,6 +1,6 @@
 /* Common base for Boost.Unordered open-addressing tables.
  *
- * Copyright 2022-2023 Joaquin M Lopez Munoz.
+ * Copyright 2022-2024 Joaquin M Lopez Munoz.
  * Copyright 2023 Christian Mazakas.
  * Copyright 2024 Braden Ganetsky.
  * Distributed under the Boost Software License, Version 1.0.
@@ -977,7 +977,12 @@ struct arrays_holder
   arrays_holder(arrays_holder const&);
   arrays_holder& operator=(arrays_holder const&)=delete;
 
-  ~arrays_holder(){if(!released_)arrays_.delete_(al_,arrays_);}
+  ~arrays_holder()
+  {
+    if(!released_){
+      arrays_.delete_(typename Arrays::allocator_type(al_),arrays_);
+    }
+  }
 
   const Arrays& release()
   {
@@ -1974,7 +1979,7 @@ private:
 
   arrays_type new_arrays(std::size_t n)const
   {
-    return arrays_type::new_(al(),n);
+    return arrays_type::new_(typename arrays_type::allocator_type(al()),n);
   }
 
   arrays_type new_arrays_for_growth()const
@@ -1995,7 +2000,7 @@ private:
 
   void delete_arrays(arrays_type& arrays_)noexcept
   {
-    arrays_type::delete_(al(),arrays_);
+    arrays_type::delete_(typename arrays_type::allocator_type(al()),arrays_);
   }
 
   arrays_holder_type make_arrays(std::size_t n)const

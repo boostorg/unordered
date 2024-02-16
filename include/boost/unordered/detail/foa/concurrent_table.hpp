@@ -1,6 +1,6 @@
 /* Fast open-addressing concurrent hash table.
  *
- * Copyright 2023 Joaquin M Lopez Munoz.
+ * Copyright 2023-2024 Joaquin M Lopez Munoz.
  * Copyright 2024 Braden Ganetsky.
  * Distributed under the Boost Software License, Version 1.0.
  * (See accompanying file LICENSE_1_0.txt or copy at
@@ -259,6 +259,7 @@ struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy,Allocator>
     typename boost::allocator_pointer<group_access_allocator_type>::type;
 
   using super=table_arrays<Value,Group,SizePolicy,Allocator>;
+  using allocator_type=typename super::allocator_type;
 
   concurrent_table_arrays(const super& arrays,group_access_pointer pga):
     super{arrays},group_accesses_{pga}{}
@@ -267,12 +268,11 @@ struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy,Allocator>
     return boost::to_address(group_accesses_);
   }
 
-  static concurrent_table_arrays new_(
-    group_access_allocator_type al,std::size_t n)
+  static concurrent_table_arrays new_(allocator_type al,std::size_t n)
   {
     super x{super::new_(al,n)};
     BOOST_TRY{
-      return new_group_access(al,x);
+      return new_group_access(group_access_allocator_type(al),x);
     }
     BOOST_CATCH(...){
       super::delete_(al,x);
@@ -322,10 +322,9 @@ struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy,Allocator>
     return arrays;
   }
 
-  static void delete_(
-    group_access_allocator_type al,concurrent_table_arrays& arrays)noexcept
+  static void delete_(allocator_type al,concurrent_table_arrays& arrays)noexcept
   {
-    delete_group_access(al,arrays);
+    delete_group_access(group_access_allocator_type(al),arrays);
     super::delete_(al,arrays);
   }
 
