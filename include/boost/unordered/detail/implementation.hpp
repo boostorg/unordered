@@ -1,6 +1,6 @@
 // Copyright (C) 2003-2004 Jeremy B. Maitin-Shepard.
 // Copyright (C) 2005-2016 Daniel James
-// Copyright (C) 2022-2023 Joaquin M Lopez Munoz.
+// Copyright (C) 2022-2024 Joaquin M Lopez Munoz.
 // Copyright (C) 2022-2023 Christian Mazakas
 // Copyright (C) 2024 Braden Ganetsky
 //
@@ -1366,14 +1366,14 @@ namespace boost {
         }
 
         table(std::size_t num_buckets, hasher const& hf, key_equal const& eq,
-          node_allocator_type const& a)
+          value_allocator const& a)
             : functions(hf, eq), size_(0), mlf_(1.0f), max_load_(0),
               buckets_(num_buckets, a)
         {
           recalculate_max_load();
         }
 
-        table(table const& x, node_allocator_type const& a)
+        table(table const& x, value_allocator const& a)
             : functions(x), size_(0), mlf_(x.mlf_), max_load_(0),
               buckets_(x.size_, a)
         {
@@ -1388,7 +1388,7 @@ namespace boost {
           x.max_load_ = 0;
         }
 
-        table(table& x, node_allocator_type const& a,
+        table(table& x, value_allocator const& a,
           boost::unordered::detail::move_tag m)
             : functions(x, m), size_(0), mlf_(x.mlf_), max_load_(0),
               buckets_(x.bucket_count(), a)
@@ -2722,7 +2722,7 @@ namespace boost {
       inline void table<Types>::rehash_impl(std::size_t num_buckets)
       {
         bucket_array_type new_buckets(
-          num_buckets, buckets_.get_node_allocator());
+          num_buckets, buckets_.get_allocator());
 
         BOOST_TRY
         {
