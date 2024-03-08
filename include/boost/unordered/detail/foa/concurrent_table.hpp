@@ -235,14 +235,11 @@ struct atomic_integral
 #if defined(BOOST_UNORDERED_LATCH_FREE)
 struct group_access
 {
-  using access_counter_type=std::atomic<boost::uint32_t>;
   using insert_counter_type=std::atomic<boost::uint32_t>;
 
-  access_counter_type& access_counter(){return acnt;}
   insert_counter_type& insert_counter(){return icnt;}
 
 private:
-  access_counter_type acnt{0};
   insert_counter_type icnt{0};
 };
 #else
@@ -328,6 +325,16 @@ struct concurrent_table_arrays:table_arrays<Value,Group,SizePolicy,Allocator>
       for(std::size_t i=0;i<arrays.groups_size_mask+1;++i){
         ::new (arrays.group_accesses()+i) group_access();
       }
+
+#if defined(BOOST_UNORDERED_LATCH_FREE)
+    // initialize element access counters
+
+    static constexpr auto N=super::N;
+
+    for(std::size_t i=0;i<(arrays.groups_size_mask+1)*N-1;++i){
+      arrays.elements()[i].access=0;
+    }
+#endif
   }
 
   static void set_group_access(
@@ -553,7 +560,7 @@ public:
 #if defined(BOOST_UNORDERED_LATCH_FREE)
   ~concurrent_table(){
     std::cout
-      <<"version: 2024/02/14 20:10; "
+      <<"version: 2024/03/08 20:10; "
       <<"lf: "<<(double)size()/capacity()<<"; "
       <<"size: "<<size()<<", "
       <<"capacity: "<<capacity()<<"; "
@@ -869,8 +876,7 @@ public:
       group_exclusive{},x,this->position_for(hash),hash,
       [&,this](group_type* pg,unsigned int n,element_type* p)
       {
-        if(/*is_occupied(pg,n)&&*/
-           f(cast_for(group_shared{},type_policy::value_from(*p)))){
+        if(f(cast_for(group_shared{},type_policy::value_from(*p)))){
           pg->reset(n);
           auto& sc=local_size_ctrl();
           sc.size.fetch_sub(1,std::memory_order_relaxed);
@@ -1058,7 +1064,6 @@ private:
 #if defined(BOOST_UNORDERED_LATCH_FREE)
   struct group_shared_lock_guard{};
   struct group_exclusive_lock_guard{};
-  using group_access_counter_type=typename group_access::access_counter_type;
   using group_insert_counter_type=typename group_access::insert_counter_type;
 #else
   using group_shared_lock_guard=typename group_access::shared_lock_guard;
@@ -1132,13 +1137,6 @@ private:
     return this->arrays.group_accesses()[pos].exclusive_access();
 #endif
   }
-
-#if defined(BOOST_UNORDERED_LATCH_FREE)
-  inline group_access_counter_type& access_counter(std::size_t pos)const
-  {
-    return this->arrays.group_accesses()[pos].access_counter();
-  }
-#endif
 
   inline group_insert_counter_type& insert_counter(std::size_t pos)const
   {
@@ -1290,10 +1288,10 @@ private:
 
 #if defined(BOOST_UNORDERED_LATCH_FREE)
   template<typename F>
-  BOOST_FORCEINLINE auto load_access(std::size_t pos,F f)const
+  BOOST_FORCEINLINE auto load_access(element_type* p,F f)const
     ->std::pair<decltype(f()),boost::uint32_t>
   {
-    auto& acnt=access_counter(pos);
+    auto& acnt=p->access;
     for(;;){
       auto n=
         acnt.load(std::memory_order_acquire)&
@@ -1307,9 +1305,9 @@ private:
   }
 
   template<typename F>
-  BOOST_FORCEINLINE bool save_access(std::size_t pos,boost::uint32_t n,F f)const
+  BOOST_FORCEINLINE bool save_access(element_type* p,boost::uint32_t n,F f)const
   {
-    auto& acnt=access_counter(pos);
+    auto& acnt=p->access;
     if(!acnt.compare_exchange_strong(n,n+1,std::memory_order_acq_rel)){
       return false;
     }
@@ -1322,9 +1320,9 @@ private:
   }
 
   template<typename F>
-  BOOST_FORCEINLINE void save_access(std::size_t pos,F f)const /* no previous load cnt */
+  BOOST_FORCEINLINE void save_access(element_type* p,F f)const /* no previous load cnt */
   {
-    auto &acnt=access_counter(pos);
+    auto &acnt=p->access;
     for(;;){
       auto n=
         acnt.load(std::memory_order_acquire)&
@@ -1351,48 +1349,23 @@ private:
         BOOST_UNORDERED_PREFETCH_ELEMENTS(p,N);
         do{
           auto n=unchecked_countr_zero(mask);
-#if 1
-          auto [pr,acnt]=load_access(pos,[&]{
-            return std::make_pair(is_occupied(pg,n),*(p+n));
+          auto [pr,acnt]=load_access(p+n,[&]{
+            return std::make_pair(is_occupied(pg,n),p[n].value);
           });
-          auto [occupied,e]=pr;
-          if(!occupied)return 0;
-          if(BOOST_LIKELY(this->pred()(x,this->key_from(e)))){
-            if constexpr(std::is_same<GroupAccessMode,group_exclusive>::value){
-              // ALTERNATIVE: offline f(pg,n,&e)
+          auto [occupied,v]=pr;
 
-              if(!save_access(pos,acnt,[&]{f(pg,n,p+n);})){
-                // SPECIFIC FOR erase: if the element changed, it can only be
-                // bc someone erased it.
-                // WATCH OUT: only approximate as acnt controls 15 elements,
-                // not just this one.
-                return 0;
+          if(BOOST_LIKELY(occupied&&this->pred()(x,this->key_from(v)))){
+            if constexpr(std::is_same<GroupAccessMode,group_exclusive>::value){
+              if(BOOST_UNLIKELY(!save_access(p+n,acnt,[&]{f(pg,n,p+n);}))){
+                goto startover;
               }
               return 1;
             }else{
+              element_type e{v};
               f(pg,n,&e);
               return 1;
             }
           }
-#else
-          if constexpr(std::is_same<GroupAccessMode,group_exclusive>::value){
-            bool res=false;
-            save_access(pos,[&]{
-              if(BOOST_LIKELY(this->pred()(x,this->key_from(p[n])))){
-                f(pg,n,p+n);
-                res=true;
-              }
-            });
-            if(res)return 1;
-          }
-          else{
-            auto [e,acnt]=load_access(pos,[&]{return *(p+n);});
-            if(BOOST_LIKELY(this->pred()(x,this->key_from(e)))){
-              f(pg,n,&e);
-              return 1;
-            }
-          }
-#endif
           mask&=mask-1;
         }while(mask);
       }
@@ -1739,42 +1712,26 @@ private:
     std::size_t pbn=max_probe;
     for(prober pb(pos0);;pb.next(this->arrays.groups_size_mask)){
       auto pos=pb.get();
+      auto p=this->arrays.elements()+pos*N;
+      BOOST_UNORDERED_PREFETCH_ELEMENTS(p,N);
       auto pg=this->arrays.groups()+pos;
       auto mask=pg->match_available();
       if(BOOST_LIKELY(mask!=0)){
         auto n=unchecked_countr_zero(mask);
-        //latch_free_reserve_slot rslot{pg,n};
-        //if(BOOST_UNLIKELY(!rslot.succeeded())){
-        //  /* slot wasn't empty */
-        //  goto startover;
-        //}
-        //if(BOOST_UNLIKELY(
-        //  !insert_counter(pos0).compare_exchange_strong(
-        //    counter,counter+1,std::memory_order_relaxed))){
-        //  /* other thread inserted from pos0, need to start over */
-        //  goto startover;
-        //}
-        {
-          //assign_insert_counter_on_exit a{insert_counter(pos0),counter+2};
+        auto [ocuppied,acnt]=load_access(p+n,[&]{return is_occupied(pg,n);});
+        if(ocuppied)goto startover;
 
-          auto [ocuppied,acnt]=load_access(pos,[&]{return is_occupied(pg,n);});
-          if(ocuppied)goto startover;
+        auto res=false;
+        if(!save_access(p+n,acnt,[&]{
+          if(insert_counter(pos0).compare_exchange_strong(
+                counter,counter+1,std::memory_order_relaxed)){
+            assign_insert_counter_on_exit a{insert_counter(pos0),counter+2};
+            this->construct_element(p+n,std::forward<Args>(args)...);
+            pg->set(n,hash);
+            res=true;
+          }
+        })||!res)goto startover;
 
-
-          auto res=false;
-          if(!save_access(pos,acnt,[&]{
-            if(insert_counter(pos0).compare_exchange_strong(
-                  counter,counter+1,std::memory_order_relaxed)){
-              assign_insert_counter_on_exit a{
-                insert_counter(pos0),counter+2};
-              this->construct_element(
-                this->arrays.elements()+pos*N+n,std::forward<Args>(args)...);
-              pg->set(n,hash);
-              res=true;
-            }
-          })||!res)goto startover;
-        }
-        //rslot.commit();
         auto& sc=local_size_ctrl();            
         sc.size.fetch_add(1,std::memory_order_relaxed);
         sc.mcos.fetch_sub(!pg->is_not_overflowed(hash),std::memory_order_relaxed);
