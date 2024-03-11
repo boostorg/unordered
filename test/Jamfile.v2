@@ -7,7 +7,7 @@
 import path ;
 import regex ;
 import testing ;
-import ../../config/checks/config : requires ;
+import config : requires ;
 
 path-constant TOP : . ;
 
@@ -20,6 +20,9 @@ local msvc-flags = /wd4494 ;
 
 project
     : requirements
+        <source>/boost/concept_check//boost_concept_check
+        <source>/boost/compat//boost_compat
+        <source>/boost/iterator//boost_iterator
         <warnings>pedantic
         <toolset>intel:<warnings>on
 
@@ -146,7 +149,7 @@ run unordered/serialization_tests.cpp
       <toolset>gcc:<optimization>space
       <toolset>clang:<inlining>on
       <toolset>clang:<optimization>space
-      <library>/boost//serialization/<warnings>off ;
+      <library>/boost/serialization//boost_serialization/<warnings>off ;
 
 compile-fail unordered/insert_node_type_fail.cpp : <define>UNORDERED_TEST_MAP      : insert_node_type_fail_map ;
 compile-fail unordered/insert_node_type_fail.cpp : <define>UNORDERED_TEST_MULTIMAP : insert_node_type_fail_multimap ;
@@ -247,7 +250,7 @@ run unordered/serialization_tests.cpp
       <toolset>gcc:<optimization>space
       <toolset>clang:<inlining>on
       <toolset>clang:<optimization>space
-      <library>/boost//serialization/<warnings>off
+      <library>/boost/serialization//boost_serialization/<warnings>off
     : foa_serialization_tests ;
 
 local FOA_EXCEPTION_TESTS =
@@ -282,7 +285,12 @@ local MMAP_CONTAINERS =
 
 for local container in $(MMAP_CONTAINERS)
 {
-  run unordered/mmap_tests.cpp /boost/filesystem//boost_filesystem : :
+  run unordered/mmap_tests.cpp
+    /boost/filesystem//boost_filesystem
+    /boost/interprocess//boost_interprocess
+    /boost/process//boost_process
+    /boost/uuid//boost_uuid
+  : :
   : <define>BOOST_UNORDERED_FOA_MMAP_MAP_TYPE="boost::$(container)"
     <warnings>off
     <link>static
@@ -351,7 +359,7 @@ run cfoa/serialization_tests.cpp
       <toolset>gcc:<optimization>space
       <toolset>clang:<inlining>on
       <toolset>clang:<optimization>space
-      <library>/boost//serialization/<warnings>off
+      <library>/boost/serialization//boost_serialization/<warnings>off
     : cfoa_serialization_tests ;
 
 alias cfoa_tests :
