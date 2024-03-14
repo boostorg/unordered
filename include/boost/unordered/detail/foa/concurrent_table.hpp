@@ -1329,7 +1329,7 @@ private:
         ~boost::uint32_t(1);
       //if(n%2==1)continue;
 
-      if(save_access(pos,n,f))return;
+      if(save_access(p,n,f))return;
     }
   }
 
