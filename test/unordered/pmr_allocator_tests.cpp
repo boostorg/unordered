@@ -15,6 +15,12 @@
 BOOST_PRAGMA_MESSAGE(
   "Test skipped because C++17 header <memory_resource> is not available.")
 
+#elif defined(__MAC_OS_X_VERSION_MIN_REQUIRED) &&                              \
+  __MAC_OS_X_VERSION_MIN_REQUIRED < 140000
+
+BOOST_PRAGMA_MESSAGE(
+  "Test skipped because __MAC_OS_X_VERSION_MIN_REQUIRED < 140000");
+
 #else
 
 namespace pmr_allocator_tests {
