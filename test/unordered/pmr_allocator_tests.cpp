@@ -176,6 +176,66 @@ namespace pmr_allocator_tests {
 
   // clang-format on
 
+  enum operation
+  {
+    copy_op,
+    move_op,
+  };
+
+  template <class X> void do_operation(X& x1, X& x2, operation op)
+  {
+    switch (op) {
+    case copy_op:
+      x2 = x1;
+      return;
+    case move_op:
+      x2 = std::move(x1);
+      return;
+    default:
+      BOOST_TEST(false);
+    }
+  }
+
+  template <class X> static void pmr_no_propagate_on_operation(X*, operation op)
+  {
+    using container = X;
+    using allocator_type = typename container::allocator_type;
+    BOOST_STATIC_ASSERT(
+      !std::allocator_traits<
+        allocator_type>::propagate_on_container_copy_assignment::value);
+    BOOST_STATIC_ASSERT(
+      !std::allocator_traits<
+        allocator_type>::propagate_on_container_move_assignment::value);
+    BOOST_STATIC_ASSERT(!std::allocator_traits<
+                        allocator_type>::propagate_on_container_swap::value);
+
+    test::counted_new_delete_resource resource1;
+    test::counted_new_delete_resource resource2;
+
+    allocator_type alloc1(&resource1);
+    allocator_type alloc2(&resource2);
+
+    container x1(alloc1);
+    container x2(alloc2);
+    bool allocators_not_equal = x1.get_allocator() != x2.get_allocator();
+    BOOST_TEST(allocators_not_equal);
+
+    emplace_strings(x1);
+    do_operation(x1, x2, op);
+    allocators_not_equal = x1.get_allocator() != x2.get_allocator();
+    BOOST_TEST(allocators_not_equal);
+  }
+
+  // clang-format off
+
+  UNORDERED_TEST(
+    pmr_no_propagate_on_operation,
+    PMR_ALLOCATOR_TESTS_ARGS
+    ((copy_op)(move_op))
+  )
+
+  // clang-format on
+
 } // namespace pmr_allocator_tests
 
 #endif
