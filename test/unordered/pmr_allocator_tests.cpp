@@ -180,6 +180,7 @@ namespace pmr_allocator_tests {
   {
     copy_op,
     move_op,
+    swap_op,
   };
 
   template <class X> void do_operation(X& x1, X& x2, operation op)
@@ -190,6 +191,9 @@ namespace pmr_allocator_tests {
       return;
     case move_op:
       x2 = std::move(x1);
+      return;
+    case swap_op:
+      x1.swap(x1); // Swapping with non-equal non-pocs allocators is UB
       return;
     default:
       BOOST_TEST(false);
@@ -231,7 +235,7 @@ namespace pmr_allocator_tests {
   UNORDERED_TEST(
     pmr_no_propagate_on_operation,
     PMR_ALLOCATOR_TESTS_ARGS
-    ((copy_op)(move_op))
+    ((copy_op)(move_op)(swap_op))
   )
 
   // clang-format on
