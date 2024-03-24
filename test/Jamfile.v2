@@ -119,6 +119,7 @@ local FCA_TESTS =
   transparent_tests
   unnecessary_copy_tests
   fancy_pointer_noleak
+  pmr_allocator_tests
 ;
 
 for local test in $(FCA_TESTS)
@@ -226,6 +227,7 @@ local FOA_TESTS =
   uses_allocator
   hash_is_avalanching_test
   fancy_pointer_noleak
+  pmr_allocator_tests
 ;
 
 for local test in $(FOA_TESTS)
@@ -330,6 +332,7 @@ local CFOA_TESTS =
   rw_spinlock_test8
   reentrancy_check_test
   explicit_alloc_ctor_tests
+  pmr_allocator_tests
 ;
 
 for local test in $(CFOA_TESTS)
