@@ -6,6 +6,10 @@
 :github-pr-url: https://github.com/boostorg/unordered/pull
 :cpp: C++
 
+== Release 1.86.0
+
+* Added container `pmr` aliases when header `<memory_resource>` is available. The alias `boost::unordered::pmr::[container]` refers to `boost::unordered::[container]` with a `std::pmr::polymorphic_allocator` allocator type.
+
 == Release 1.85.0
 
 * Optimized `emplace()` for a `value_type` or `init_type` (if applicable) argument to bypass creating an intermediate object. The argument is already the same type as the would-be intermediate object.
