@@ -6,7 +6,7 @@
 `boost::unordered_node_set` — A node-based, open-addressing unordered associative container that stores unique values.
 
 `boost::unordered_node_set` uses an open-addressing layout like `boost::unordered_flat_set`, but,
-being node-based, it provides pointer/iterator stability and node handling functionalities.
+being node-based, it provides pointer stability and node handling functionalities.
 Its performance lies between those of `boost::unordered_set` and `boost::unordered_flat_set`.
 
 As a result of its using open addressing, the interface of `boost::unordered_node_set` deviates in
