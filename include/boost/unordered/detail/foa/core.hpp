@@ -40,6 +40,10 @@
 #include <type_traits>
 #include <utility>
 
+#if defined(BOOST_UNORDERED_ENABLE_STATS)
+#include <boost/unordered/detail/cumulative_stats.hpp>
+#endif
+
 #if !defined(BOOST_UNORDERED_DISABLE_SSE2)
 #if defined(BOOST_UNORDERED_ENABLE_SSE2)|| \
     defined(__SSE2__)|| \
@@ -864,6 +868,7 @@ struct pow2_quadratic_prober
   pow2_quadratic_prober(std::size_t pos_):pos{pos_}{}
 
   inline std::size_t get()const{return pos;}
+  inline std::size_t length()const{return step+1;}
 
   /* next returns false when the whole array has been traversed, which ends
    * probing (in practice, full-table probing will only happen with very small
@@ -1124,6 +1129,39 @@ struct table_arrays
   group_type_pointer groups_;
   value_type_pointer elements_;
 };
+
+#if defined(BOOST_UNORDERED_ENABLE_STATS)
+/* stats support */
+
+struct table_core_insertion_stats
+{
+  cumulative_stats_summary probe_length;
+};
+
+struct table_core_lookup_stats
+{
+  cumulative_stats_summary probe_length;
+  cumulative_stats_summary num_comparisons;
+};
+
+struct table_core_stats
+{
+  table_core_insertion_stats insertion;
+  table_core_lookup_stats    successful_lookup,
+                             unsuccessful_lookup;
+};
+
+#define BOOST_UNORDERED_ADD_STATS(stats,args) stats.add args
+#define BOOST_UNORDERED_STATS_COUNTER(name) std::size_t name=0
+#define BOOST_UNORDERED_INCREMENT_STATS_COUNTER(name) ++name
+
+#else
+
+#define BOOST_UNORDERED_ADD_STATS(stats,args)
+#define BOOST_UNORDERED_STATS_COUNTER(name)
+#define BOOST_UNORDERED_INCREMENT_STATS_COUNTER(name)
+
+#endif
 
 struct if_constexpr_void_else{void operator()()const{}};
 
@@ -1395,6 +1433,10 @@ public:
   using locator=table_locator<group_type,element_type>;
   using arrays_holder_type=arrays_holder<arrays_type,Allocator>;
 
+#if defined(BOOST_UNORDERED_ENABLE_STATS)
+  using stats=table_core_stats;
+#endif
+
   table_core(
     std::size_t n=default_bucket_count,const Hash& h_=Hash(),
     const Pred& pred_=Pred(),const Allocator& al_=Allocator()):
@@ -1639,6 +1681,7 @@ public:
   BOOST_FORCEINLINE locator find(
     const Key& x,std::size_t pos0,std::size_t hash)const
   {    
+    BOOST_UNORDERED_STATS_COUNTER(num_cmps);
     prober pb(pos0);
     do{
       auto pos=pb.get();
@@ -1650,18 +1693,25 @@ public:
         auto p=elements+pos*N;
         BOOST_UNORDERED_PREFETCH_ELEMENTS(p,N);
         do{
+          BOOST_UNORDERED_INCREMENT_STATS_COUNTER(num_cmps);
           auto n=unchecked_countr_zero(mask);
           if(BOOST_LIKELY(bool(pred()(x,key_from(p[n]))))){
+            BOOST_UNORDERED_ADD_STATS(
+              successful_lookup_stats,(pb.length(),num_cmps));
             return {pg,n,p+n};
           }
           mask&=mask-1;
         }while(mask);
       }
       if(BOOST_LIKELY(pg->is_not_overflowed(hash))){
+        BOOST_UNORDERED_ADD_STATS(
+          unsuccessful_lookup_stats,(pb.length(),num_cmps));
         return {};
       }
     }
     while(BOOST_LIKELY(pb.next(arrays.groups_size_mask)));
+    BOOST_UNORDERED_ADD_STATS(
+      unsuccessful_lookup_stats,(pb.length(),num_cmps));
     return {};
   }
 
@@ -1745,6 +1795,32 @@ public:
   {
     rehash(std::size_t(std::ceil(float(n)/mlf)));
   }
+
+#if defined(BOOST_UNORDERED_ENABLE_STATS)
+  stats get_stats()const
+  {
+    return {
+      {
+        insertion_stats.get_summary<0>()
+      },
+      {
+        successful_lookup_stats.get_summary<0>(),
+        successful_lookup_stats.get_summary<1>()
+      },
+      {
+        unsuccessful_lookup_stats.get_summary<0>(),
+        unsuccessful_lookup_stats.get_summary<1>()
+      }
+    };
+  }
+
+  void reset_stats()
+  {
+    insertion_stats.reset();
+    successful_lookup_stats.reset();
+    unsuccessful_lookup_stats.reset();
+  }
+#endif
 
   friend bool operator==(const table_core& x,const table_core& y)
   {
@@ -1955,6 +2031,12 @@ public:
 
   arrays_type    arrays;
   size_ctrl_type size_ctrl;
+
+#if defined(BOOST_UNORDERED_ENABLE_STATS)
+  concurrent_cumulative_stats<1>         insertion_stats;
+  mutable concurrent_cumulative_stats<2> successful_lookup_stats,
+                                         unsuccessful_lookup_stats;
+#endif
 
 private:
   template<
@@ -2243,6 +2325,7 @@ private:
         auto p=arrays_.elements()+pos*N+n;
         construct_element(p,std::forward<Args>(args)...);
         pg->set(n,hash);
+        BOOST_UNORDERED_ADD_STATS(insertion_stats,(pb.length()));
         return {pg,n,p};
       }
       else pg->mark_overflow(hash);
