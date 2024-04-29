@@ -1435,6 +1435,9 @@ public:
 
 #if defined(BOOST_UNORDERED_ENABLE_STATS)
   using stats=table_core_stats;
+  using cumulative_insertion_stats=concurrent_cumulative_stats<1>;
+  using cumulative_successful_lookup_stats=concurrent_cumulative_stats<2>;
+  using cumulative_unsuccessful_lookup_stats=concurrent_cumulative_stats<2>;
 #endif
 
   table_core(
@@ -1814,6 +1817,23 @@ public:
     };
   }
 
+  cumulative_insertion_stats& insertion_cumulative_stats()noexcept
+  {
+    return insertion_stats;
+  }
+
+  cumulative_successful_lookup_stats&
+  successful_lookup_cumulative_stats()const noexcept
+  {
+    return successful_lookup_stats;
+  }
+
+  cumulative_unsuccessful_lookup_stats&
+  unsuccessful_lookup_cumulative_stats()const noexcept
+  {
+    return unsuccessful_lookup_stats;
+  }
+
   void reset_stats()
   {
     insertion_stats.reset();
@@ -2033,9 +2053,9 @@ public:
   size_ctrl_type size_ctrl;
 
 #if defined(BOOST_UNORDERED_ENABLE_STATS)
-  concurrent_cumulative_stats<1>         insertion_stats;
-  mutable concurrent_cumulative_stats<2> successful_lookup_stats,
-                                         unsuccessful_lookup_stats;
+  cumulative_insertion_stats                   insertion_stats;
+  mutable cumulative_successful_lookup_stats   successful_lookup_stats;
+  mutable cumulative_unsuccessful_lookup_stats unsuccessful_lookup_stats;
 #endif
 
 private:

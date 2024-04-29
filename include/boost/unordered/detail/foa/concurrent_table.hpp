@@ -469,6 +469,10 @@ public:
   using size_type=typename super::size_type;
   static constexpr std::size_t bulk_visit_size=16;
 
+#if defined(BOOST_UNORDERED_ENABLE_STATS)
+  using stats=typename super::stats;
+#endif
+
 private:
   template<typename Value,typename T>
   using enable_if_is_value_type=typename std::enable_if<
@@ -965,6 +969,13 @@ public:
     super::reserve(n);
   }
 
+#if defined(BOOST_UNORDERED_ENABLE_STATS)
+  /* already thread safe */
+
+  using super::get_stats;
+  using super::reset_stats;
+#endif
+
   template<typename Predicate>
   friend std::size_t erase_if(concurrent_table& x,Predicate&& pr)
   {
@@ -1186,6 +1197,7 @@ private:
     GroupAccessMode access_mode,
     const Key& x,std::size_t pos0,std::size_t hash,F&& f)const
   {    
+    BOOST_UNORDERED_STATS_COUNTER(num_cmps);
     prober pb(pos0);
     do{
       auto pos=pb.get();
@@ -1197,19 +1209,30 @@ private:
         auto lck=access(access_mode,pos);
         do{
           auto n=unchecked_countr_zero(mask);
-          if(BOOST_LIKELY(
-            pg->is_occupied(n)&&bool(this->pred()(x,this->key_from(p[n]))))){
-            f(pg,n,p+n);
-            return 1;
+          if(BOOST_LIKELY(pg->is_occupied(n))){
+            BOOST_UNORDERED_INCREMENT_STATS_COUNTER(num_cmps);
+            if(BOOST_LIKELY(bool(this->pred()(x,this->key_from(p[n]))))){
+              f(pg,n,p+n);
+              BOOST_UNORDERED_ADD_STATS(
+                this->successful_lookup_cumulative_stats(),
+                (pb.length(),num_cmps));
+              return 1;
+            }
           }
           mask&=mask-1;
         }while(mask);
       }
       if(BOOST_LIKELY(pg->is_not_overflowed(hash))){
+        BOOST_UNORDERED_ADD_STATS(
+          this->unsuccessful_lookup_cumulative_stats(),
+          (pb.length(),num_cmps));
         return 0;
       }
     }
     while(BOOST_LIKELY(pb.next(this->arrays.groups_size_mask)));
+    BOOST_UNORDERED_ADD_STATS(
+      this->unsuccessful_lookup_cumulative_stats(),
+      (pb.length(),num_cmps));
     return 0;
   }
 
@@ -1490,6 +1513,8 @@ private:
             this->construct_element(p,std::forward<Args>(args)...);
             rslot.commit();
             rsize.commit();
+            BOOST_UNORDERED_ADD_STATS(
+              this->insertion_cumulative_stats(),(pb.length()));
             return 1;
           }
           pg->mark_overflow(hash);
