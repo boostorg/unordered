@@ -44,8 +44,12 @@ struct cumulative_stats_data
 struct welfords_algorithm /* 0-based */
 {
   template<typename T>
-  int operator()(T&& x,cumulative_stats_data& d)const
+  int operator()(T&& x,cumulative_stats_data& d)const noexcept
   {
+    static_assert(
+      noexcept(static_cast<double>(x)),
+      "Argument conversion to double must not throw.");
+
     d.m_prior=d.m;
     d.m+=(static_cast<double>(x)-d.m)/static_cast<double>(n);
     d.s+=(n!=1)*
@@ -68,7 +72,7 @@ public:
   void reset()noexcept{*this=cumulative_stats();}
   
   template<typename... Ts>
-  void add(Ts&&... xs)
+  void add(Ts&&... xs)noexcept
   {
     static_assert(
       sizeof...(Ts)==N,"A sample must be provided for each sequence.");
@@ -122,7 +126,7 @@ public:
   }
   
   template<typename... Ts>
-  void add(Ts&&... xs)
+  void add(Ts&&... xs)noexcept
   {
     lock_guard lck{mut};
     super::add(std::forward<Ts>(xs)...);
