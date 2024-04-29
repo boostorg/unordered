@@ -1133,6 +1133,13 @@ struct table_arrays
 #if defined(BOOST_UNORDERED_ENABLE_STATS)
 /* stats support */
 
+struct table_core_cumulative_stats
+{
+  cumulative_stats<1> insertion;
+  cumulative_stats<2> successful_lookup,
+                      unsuccessful_lookup;
+};
+
 struct table_core_insertion_stats
 {
   cumulative_stats_summary probe_length;
@@ -1434,10 +1441,8 @@ public:
   using arrays_holder_type=arrays_holder<arrays_type,Allocator>;
 
 #if defined(BOOST_UNORDERED_ENABLE_STATS)
+  using cumulative_stats=table_core_cumulative_stats;
   using stats=table_core_stats;
-  using cumulative_insertion_stats=concurrent_cumulative_stats<1>;
-  using cumulative_successful_lookup_stats=concurrent_cumulative_stats<2>;
-  using cumulative_unsuccessful_lookup_stats=concurrent_cumulative_stats<2>;
 #endif
 
   table_core(
@@ -1700,7 +1705,7 @@ public:
           auto n=unchecked_countr_zero(mask);
           if(BOOST_LIKELY(bool(pred()(x,key_from(p[n]))))){
             BOOST_UNORDERED_ADD_STATS(
-              successful_lookup_stats,(pb.length(),num_cmps));
+              get_cumulative_stats().successful_lookup,(pb.length(),num_cmps));
             return {pg,n,p+n};
           }
           mask&=mask-1;
@@ -1708,13 +1713,13 @@ public:
       }
       if(BOOST_LIKELY(pg->is_not_overflowed(hash))){
         BOOST_UNORDERED_ADD_STATS(
-          unsuccessful_lookup_stats,(pb.length(),num_cmps));
+          get_cumulative_stats().unsuccessful_lookup,(pb.length(),num_cmps));
         return {};
       }
     }
     while(BOOST_LIKELY(pb.next(arrays.groups_size_mask)));
     BOOST_UNORDERED_ADD_STATS(
-      unsuccessful_lookup_stats,(pb.length(),num_cmps));
+      get_cumulative_stats().unsuccessful_lookup,(pb.length(),num_cmps));
     return {};
   }
 
@@ -1804,41 +1809,28 @@ public:
   {
     return {
       {
-        insertion_stats.get_summary<0>()
+        cstats.insertion.get_summary<0>()
       },
       {
-        successful_lookup_stats.get_summary<0>(),
-        successful_lookup_stats.get_summary<1>()
+        cstats.successful_lookup.get_summary<0>(),
+        cstats.successful_lookup.get_summary<1>()
       },
       {
-        unsuccessful_lookup_stats.get_summary<0>(),
-        unsuccessful_lookup_stats.get_summary<1>()
+        cstats.unsuccessful_lookup.get_summary<0>(),
+        cstats.unsuccessful_lookup.get_summary<1>()
       }
     };
   }
 
-  cumulative_insertion_stats& insertion_cumulative_stats()noexcept
+  cumulative_stats& get_cumulative_stats()const noexcept
   {
-    return insertion_stats;
+    return cstats;
   }
-
-  cumulative_successful_lookup_stats&
-  successful_lookup_cumulative_stats()const noexcept
-  {
-    return successful_lookup_stats;
-  }
-
-  cumulative_unsuccessful_lookup_stats&
-  unsuccessful_lookup_cumulative_stats()const noexcept
-  {
-    return unsuccessful_lookup_stats;
-  }
-
   void reset_stats()
   {
-    insertion_stats.reset();
-    successful_lookup_stats.reset();
-    unsuccessful_lookup_stats.reset();
+    cstats.insertion.reset();
+    cstats.successful_lookup.reset();
+    cstats.unsuccessful_lookup.reset();
   }
 #endif
 
@@ -2049,13 +2041,11 @@ public:
     return true;
   }
 
-  arrays_type    arrays;
-  size_ctrl_type size_ctrl;
+  arrays_type              arrays;
+  size_ctrl_type           size_ctrl;
 
 #if defined(BOOST_UNORDERED_ENABLE_STATS)
-  cumulative_insertion_stats                   insertion_stats;
-  mutable cumulative_successful_lookup_stats   successful_lookup_stats;
-  mutable cumulative_unsuccessful_lookup_stats unsuccessful_lookup_stats;
+  mutable cumulative_stats cstats;
 #endif
 
 private:
@@ -2345,7 +2335,8 @@ private:
         auto p=arrays_.elements()+pos*N+n;
         construct_element(p,std::forward<Args>(args)...);
         pg->set(n,hash);
-        BOOST_UNORDERED_ADD_STATS(insertion_stats,(pb.length()));
+        BOOST_UNORDERED_ADD_STATS(
+          get_cumulative_stats().insertion,(pb.length()));
         return {pg,n,p};
       }
       else pg->mark_overflow(hash);

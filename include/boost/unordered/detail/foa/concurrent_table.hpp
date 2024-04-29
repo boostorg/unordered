@@ -1214,7 +1214,7 @@ private:
             if(BOOST_LIKELY(bool(this->pred()(x,this->key_from(p[n]))))){
               f(pg,n,p+n);
               BOOST_UNORDERED_ADD_STATS(
-                this->successful_lookup_cumulative_stats(),
+                this->get_cumulative_stats().successful_lookup,
                 (pb.length(),num_cmps));
               return 1;
             }
@@ -1224,15 +1224,14 @@ private:
       }
       if(BOOST_LIKELY(pg->is_not_overflowed(hash))){
         BOOST_UNORDERED_ADD_STATS(
-          this->unsuccessful_lookup_cumulative_stats(),
+          this->get_cumulative_stats().unsuccessful_lookup,
           (pb.length(),num_cmps));
         return 0;
       }
     }
     while(BOOST_LIKELY(pb.next(this->arrays.groups_size_mask)));
     BOOST_UNORDERED_ADD_STATS(
-      this->unsuccessful_lookup_cumulative_stats(),
-      (pb.length(),num_cmps));
+      this->get_cumulative_stats().unsuccessful_lookup,(pb.length(),num_cmps));
     return 0;
   }
 
@@ -1514,7 +1513,7 @@ private:
             rslot.commit();
             rsize.commit();
             BOOST_UNORDERED_ADD_STATS(
-              this->insertion_cumulative_stats(),(pb.length()));
+              this->get_cumulative_stats().insertion,(pb.length()));
             return 1;
           }
           pg->mark_overflow(hash);
