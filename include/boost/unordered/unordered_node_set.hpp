@@ -569,8 +569,7 @@ namespace boost {
 
 #if defined(BOOST_UNORDERED_ENABLE_STATS)
       /// Stats
-      /// 
-      
+      ///
       stats get_stats() const { return table_.get_stats(); }
 
       void reset_stats() { table_.reset_stats(); }
