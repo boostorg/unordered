@@ -77,8 +77,12 @@ public:
     static_assert(
       sizeof...(Ts)==N,"A sample must be provided for each sequence.");
 
+    if(BOOST_UNLIKELY(++n==0)){ /* wraparound */
+      reset();
+      n=1;
+    }
     mp11::tuple_transform(
-      welfords_algorithm{++n},
+      welfords_algorithm{n},
       std::forward_as_tuple(std::forward<Ts>(xs)...),
       data);
   }
