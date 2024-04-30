@@ -1142,11 +1142,13 @@ struct table_core_cumulative_stats
 
 struct table_core_insertion_stats
 {
+  std::size_t              count;
   cumulative_stats_summary probe_length;
 };
 
 struct table_core_lookup_stats
 {
+  std::size_t              count;
   cumulative_stats_summary probe_length;
   cumulative_stats_summary num_comparisons;
 };
@@ -1809,13 +1811,16 @@ public:
   {
     return {
       {
+        cstats.insertion.count(),
         cstats.insertion.get_summary<0>()
       },
       {
+        cstats.successful_lookup.count(),
         cstats.successful_lookup.get_summary<0>(),
         cstats.successful_lookup.get_summary<1>()
       },
       {
+        cstats.unsuccessful_lookup.count(),
         cstats.unsuccessful_lookup.get_summary<0>(),
         cstats.unsuccessful_lookup.get_summary<1>()
       }
@@ -1826,6 +1831,7 @@ public:
   {
     return cstats;
   }
+
   void reset_stats()
   {
     cstats.insertion.reset();

@@ -87,6 +87,8 @@ public:
       data);
   }
   
+  std::size_t count()const noexcept{return n;}
+
   template<std::size_t I>
   cumulative_stats_summary get_summary()const noexcept
   {
