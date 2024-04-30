@@ -1164,9 +1164,9 @@ struct table_core_stats
 
 #else
 
-#define BOOST_UNORDERED_ADD_STATS(stats,args)
-#define BOOST_UNORDERED_STATS_COUNTER(name)
-#define BOOST_UNORDERED_INCREMENT_STATS_COUNTER(name)
+#define BOOST_UNORDERED_ADD_STATS(stats,args) ((void)0)
+#define BOOST_UNORDERED_STATS_COUNTER(name) ((void)0)
+#define BOOST_UNORDERED_INCREMENT_STATS_COUNTER(name) ((void)0)
 
 #endif
 
