@@ -153,8 +153,8 @@ template <class Container> void test_stats()
   check_lookup_stats(s.unsuccessful_lookup, full);
 
 #if !defined(BOOST_UNORDERED_CFOA_TESTS)
-  // Due to rehashing.
-  // May not hold in concurrent containers because of insertion retries
+  // Inequality due to rehashing.
+  // May not hold in concurrent containers because of insertion retries.
   BOOST_TEST_GT(
     s.insertion.count, s.unsuccessful_lookup.count); 
 #endif
