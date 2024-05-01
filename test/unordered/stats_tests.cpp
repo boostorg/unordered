@@ -20,12 +20,12 @@ template <class T> struct unequal_allocator
 {
   typedef T value_type;
 
-  unequal_allocator(int n_ = 0): n{n_} {}
+  unequal_allocator(int n = 0): n_{n} {}
   unequal_allocator(unequal_allocator const&) = default;
   unequal_allocator(unequal_allocator&&) = default;
 
   template <class U>
-  unequal_allocator(unequal_allocator<U> const& x): n{x.n} {}
+  unequal_allocator(unequal_allocator<U> const& x): n_{x.n_} {}
 
   BOOST_ATTRIBUTE_NODISCARD T* allocate(std::size_t n)
   {
@@ -34,10 +34,10 @@ template <class T> struct unequal_allocator
 
   void deallocate(T* p, std::size_t) noexcept { ::operator delete(p); }
 
-  bool operator==(unequal_allocator const& x) const { return n == x.n; }
-  bool operator!=(unequal_allocator const& x) const { return n != x.n; }
+  bool operator==(unequal_allocator const& x) const { return n_ == x.n_; }
+  bool operator!=(unequal_allocator const& x) const { return n_ != x.n_; }
 
-  int n;
+  int n_;
 };
 
 template <class Stats> void check_stat(const Stats& s, bool full)
