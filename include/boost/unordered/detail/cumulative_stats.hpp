@@ -120,7 +120,7 @@ class concurrent_cumulative_stats:cumulative_stats<N>
   using lock_guard=std::lock_guard<std::mutex>;
 
 public:
-  using summary=super::summary;
+  using summary=typename super::summary;
 
   concurrent_cumulative_stats()noexcept:super{}{}
   concurrent_cumulative_stats(const concurrent_cumulative_stats& x)noexcept:
