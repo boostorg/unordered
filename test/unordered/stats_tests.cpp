@@ -117,7 +117,6 @@ void check_container_stats(const Stats& s1, const Stats& s2)
 
 template <class Container> void test_stats()
 {
-  using value_type = typename Container::value_type;
   using allocator_type = typename Container::allocator_type;
   using stats = typename Container::stats;
   const bool full = true, empty = false;
@@ -131,6 +130,7 @@ template <class Container> void test_stats()
   test::reset_sequence();
 
 #if defined(BOOST_UNORDERED_CFOA_TESTS)
+  using value_type = typename Container::value_type;
 
   test::random_values<Container> l(10000, test::sequential);
   std::vector<value_type> v(l.begin(), l.end());
