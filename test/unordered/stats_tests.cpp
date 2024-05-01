@@ -117,9 +117,9 @@ void check_container_stats(const Stats& s1, const Stats& s2)
 
 template <class Container> void test_stats()
 {
-  using value_type = Container::value_type;
-  using allocator_type = Container::allocator_type;
-  using stats = Container::stats;
+  using value_type = typename Container::value_type;
+  using allocator_type = typename Container::allocator_type;
+  using stats = typename Container::stats;
   const bool full = true, empty = false;
 
   Container        c;
