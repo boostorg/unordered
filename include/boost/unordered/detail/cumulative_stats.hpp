@@ -27,14 +27,7 @@ namespace detail{
  * running sequences.
  */
 
-struct cumulative_stats_summary
-{
-  double average;
-  double variance;
-  double deviation;
-};
-
-struct cumulative_stats_data
+struct sequence_stats_data
 {
   double m=0.0;
   double m_prior=0.0;
@@ -44,7 +37,7 @@ struct cumulative_stats_data
 struct welfords_algorithm /* 0-based */
 {
   template<typename T>
-  int operator()(T&& x,cumulative_stats_data& d)const noexcept
+  int operator()(T&& x,sequence_stats_data& d)const noexcept
   {
     static_assert(
       noexcept(static_cast<double>(x)),
@@ -61,14 +54,27 @@ struct welfords_algorithm /* 0-based */
   std::size_t n;
 };
 
+struct sequence_stats_summary
+{
+  double average;
+  double variance;
+  double deviation;
+};
+
 /* Stats calculated jointly for N same-sized sequences to save the space
- * for n.
+ * for count.
  */
 
 template<std::size_t N>
 class cumulative_stats
 {
 public:
+  struct summary
+  {
+    std::size_t                          count;
+    std::array<sequence_stats_summary,N> sequence_summary;
+  };
+
   void reset()noexcept{*this=cumulative_stats();}
   
   template<typename... Ts>
@@ -87,20 +93,22 @@ public:
       data);
   }
   
-  std::size_t count()const noexcept{return n;}
-
-  template<std::size_t I>
-  cumulative_stats_summary get_summary()const noexcept
+  summary get_summary()const noexcept
   {
-    double average=data[I].m,
-           variance=n!=0?data[I].s/static_cast<double>(n):0.0, /* biased */
-           deviation=std::sqrt(variance);
-    return {average,variance,deviation};
+    summary res;
+    res.count=n;
+    for(std::size_t i=0;i<N;++i){
+      double average=data[i].m,
+             variance=n!=0?data[i].s/static_cast<double>(n):0.0, /* biased */
+             deviation=std::sqrt(variance);
+      res.sequence_summary[i]={average,variance,deviation};
+    }
+    return res;
   }
 
 private:
-  std::size_t                         n=0;
-  std::array<cumulative_stats_data,N> data;
+  std::size_t                       n=0;
+  std::array<sequence_stats_data,N> data;
 };
 
 #if defined(BOOST_HAS_THREADS)
@@ -112,6 +120,8 @@ class concurrent_cumulative_stats:cumulative_stats<N>
   using lock_guard=std::lock_guard<std::mutex>;
 
 public:
+  using summary=super::summary;
+
   concurrent_cumulative_stats()noexcept:super{}{}
   concurrent_cumulative_stats(const concurrent_cumulative_stats& x)noexcept:
     concurrent_cumulative_stats{x,lock_guard{x.mut}}{}
@@ -138,11 +148,10 @@ public:
     super::add(std::forward<Ts>(xs)...);
   }
   
-  template<std::size_t I>
-  cumulative_stats_summary get_summary()const noexcept
+  summary get_summary()const noexcept
   {
     lock_guard lck{mut};
-    return super::template get_summary<I>();
+    return super::get_summary();
   }
 
 private:

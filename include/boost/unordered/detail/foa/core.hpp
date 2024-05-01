@@ -1135,22 +1135,22 @@ struct table_arrays
 
 struct table_core_cumulative_stats
 {
-  cumulative_stats<1> insertion;
-  cumulative_stats<2> successful_lookup,
-                      unsuccessful_lookup;
+  concurrent_cumulative_stats<1> insertion;
+  concurrent_cumulative_stats<2> successful_lookup,
+                                 unsuccessful_lookup;
 };
 
 struct table_core_insertion_stats
 {
-  std::size_t              count;
-  cumulative_stats_summary probe_length;
+  std::size_t            count;
+  sequence_stats_summary probe_length;
 };
 
 struct table_core_lookup_stats
 {
-  std::size_t              count;
-  cumulative_stats_summary probe_length;
-  cumulative_stats_summary num_comparisons;
+  std::size_t            count;
+  sequence_stats_summary probe_length;
+  sequence_stats_summary num_comparisons;
 };
 
 struct table_core_stats
@@ -1809,21 +1809,24 @@ public:
 #if defined(BOOST_UNORDERED_ENABLE_STATS)
   stats get_stats()const
   {
-    return {
+    auto insertion=cstats.insertion.get_summary();
+    auto successful_lookup=cstats.successful_lookup.get_summary();
+    auto unsuccessful_lookup=cstats.unsuccessful_lookup.get_summary();
+    return{
       {
-        cstats.insertion.count(),
-        cstats.insertion.get_summary<0>()
+        insertion.count,
+        insertion.sequence_summary[0]
       },
       {
-        cstats.successful_lookup.count(),
-        cstats.successful_lookup.get_summary<0>(),
-        cstats.successful_lookup.get_summary<1>()
+        successful_lookup.count,
+        successful_lookup.sequence_summary[0],
+        successful_lookup.sequence_summary[1]
       },
       {
-        cstats.unsuccessful_lookup.count(),
-        cstats.unsuccessful_lookup.get_summary<0>(),
-        cstats.unsuccessful_lookup.get_summary<1>()
-      }
+        unsuccessful_lookup.count,
+        unsuccessful_lookup.sequence_summary[0],
+        unsuccessful_lookup.sequence_summary[1]
+      },
     };
   }
 
