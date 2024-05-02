@@ -1162,6 +1162,7 @@ struct table_core_stats
 
 #define BOOST_UNORDERED_ADD_STATS(stats,args) stats.add args
 #define BOOST_UNORDERED_SWAP_STATS(stats1,stats2) std::swap(stats1,stats2)
+#define BOOST_UNORDERED_COPY_STATS(stats1,stats2) stats1=stats2
 #define BOOST_UNORDERED_RESET_STATS_OF(x) x.reset_stats()
 #define BOOST_UNORDERED_STATS_COUNTER(name) std::size_t name=0
 #define BOOST_UNORDERED_INCREMENT_STATS_COUNTER(name) ++name
@@ -1170,6 +1171,7 @@ struct table_core_stats
 
 #define BOOST_UNORDERED_ADD_STATS(stats,args) ((void)0)
 #define BOOST_UNORDERED_SWAP_STATS(stats1,stats2) ((void)0)
+#define BOOST_UNORDERED_COPY_STATS(stats1,stats2) ((void)0)
 #define BOOST_UNORDERED_RESET_STATS_OF(x) ((void)0)
 #define BOOST_UNORDERED_STATS_COUNTER(name) ((void)0)
 #define BOOST_UNORDERED_INCREMENT_STATS_COUNTER(name) ((void)0)
@@ -1633,9 +1635,11 @@ public:
         arrays=x.arrays;
         size_ctrl.ml=std::size_t(x.size_ctrl.ml);
         size_ctrl.size=std::size_t(x.size_ctrl.size);
+        BOOST_UNORDERED_COPY_STATS(cstats,x.cstats);
         x.arrays=ah.release();
         x.size_ctrl.ml=x.initial_max_load();
         x.size_ctrl.size=0;
+        BOOST_UNORDERED_RESET_STATS_OF(x);
       }
       else{
         swap(h(),x.h());
@@ -1645,6 +1649,7 @@ public:
         noshrink_reserve(x.size());
         clear_on_exit c{x};
         (void)c; /* unused var warning */
+        BOOST_UNORDERED_RESET_STATS_OF(x);
 
         /* This works because subsequent x.clear() does not depend on the
          * elements' values.

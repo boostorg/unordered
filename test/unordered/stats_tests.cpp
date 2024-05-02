@@ -129,6 +129,26 @@ void check_container_stats(const Stats& s1, const Stats& s2)
   check_lookup_stats(s1.unsuccessful_lookup, s2.unsuccessful_lookup);
 }
 
+template <class Container> void insert_n(Container& c, std::size_t n)
+{
+#if defined(BOOST_UNORDERED_CFOA_TESTS)
+  using value_type = typename Container::value_type;
+
+  test::reset_sequence();
+  test::random_values<Container> l(n, test::sequential);
+  std::vector<value_type> v(l.begin(), l.end());
+  thread_runner(v, [&c](boost::span<value_type> sp) {
+    for (auto const& x : sp) {
+      c.insert(x);
+    }
+  });
+#else
+  test::reset_sequence();
+  test::random_values<Container> l(n, test::sequential);
+  c.insert(l.begin(), l.end());
+#endif
+}
+
 template <class Container> void test_stats()
 {
   using allocator_type = typename Container::allocator_type;
@@ -138,48 +158,35 @@ template <class Container> void test_stats()
   Container        c;
   const Container& cc = c;
 
-  stats s = cc.get_stats();
+  // Stats initially empty
+  stats s = cc.get_stats(); // using cc -> get_stats() is const
   check_container_stats(s, empty);
 
-  test::reset_sequence();
-
-#if defined(BOOST_UNORDERED_CFOA_TESTS)
-  using value_type = typename Container::value_type;
-
-  test::random_values<Container> l(10000, test::sequential);
-  std::vector<value_type> v(l.begin(), l.end());
-  thread_runner(v, [&c](boost::span<value_type> sp) {
-    for (auto const& x : sp) {
-      c.insert(x);
-    }
-  });
-
-#else
-
-  test::random_values<Container> v(10000, test::sequential);
-  c.insert(v.begin(),v.end());
-
-#endif
-
+  // Stats after insertion
+  insert_n(c, 10000);
   s = cc.get_stats();
-  check_insertion_stats(s.insertion, full);
-  check_lookup_stats(s.successful_lookup, empty);
-  check_lookup_stats(s.unsuccessful_lookup, full);
+  check_insertion_stats(s.insertion, full); // insertions happened
+  check_lookup_stats(s.successful_lookup, empty); // no duplicate values
+  check_lookup_stats(s.unsuccessful_lookup, full); // from insertion
 
 #if !defined(BOOST_UNORDERED_CFOA_TESTS)
-  // Inequality due to rehashing.
-  // May not hold in concurrent containers because of insertion retries.
+  // Inequality due to rehashing
+  // May not hold in concurrent containers because of insertion retries
   BOOST_TEST_GT(
     s.insertion.count, s.unsuccessful_lookup.count); 
 #endif
 
+  // resets_stats() actually clears stats
   c.reset_stats();
-  s = cc.get_stats();
-  check_container_stats(s, empty);
+  check_container_stats(cc.get_stats(), empty);
+
+  // Stats after lookup
 
   test::reset_sequence();
 
 #if defined(BOOST_UNORDERED_CFOA_TESTS)
+
+  using value_type = typename Container::value_type;
 
   test::random_values<Container> l2(15000, test::sequential);
   std::vector<value_type> v2(l2.begin(), l2.end());
@@ -202,6 +209,7 @@ template <class Container> void test_stats()
 
 #endif
 
+  // As many [un]successful lookups as recorded externally
   s=cc.get_stats();
   check_lookup_stats(s.successful_lookup, full);
   check_lookup_stats(s.unsuccessful_lookup, full);
@@ -212,28 +220,62 @@ template <class Container> void test_stats()
   s = cc.get_stats();
   check_container_stats(s, empty);
 
-  test::reset_sequence();
-  test::random_values<Container> v3(1000, test::sequential);
-  c.clear();
-  c.insert(v.begin(),v.end());
-  c.insert(v.begin(),v.end()); // produces successful lookups
+  // Move constructor tests
 
+  c.clear();
+  insert_n(c, 1000);
+  insert_n(c, 1000); // produces successful lookups
+
+  // Move contructor
+  // Stats transferred to target and reset in source
   s = cc.get_stats();
   Container c2 = std::move(c);
   check_container_stats(c.get_stats(), empty);
   check_container_stats(c2.get_stats(), s);
 
+  // Move constructor with equal allocator
+  // Stats transferred to target and reset in source
   Container c3(std::move(c2), allocator_type());
   check_container_stats(c2.get_stats(), empty);
   check_container_stats(c3.get_stats(), s);
 
+  // Move constructor with unequal allocator
+  // Target only has insertions, stats reset in source
   Container c4(std::move(c3), allocator_type(1));
   check_container_stats(c3.get_stats(), empty);
   check_insertion_stats(c4.get_stats().insertion, full);
   check_lookup_stats(c4.get_stats().successful_lookup, empty);
   check_lookup_stats(c4.get_stats().unsuccessful_lookup, empty);
 
-  // TODO: move assignment
+  // Move assignment tests
+
+  // Move assignment with equal allocator
+  // Stats transferred to target and reset in source
+  Container c5, c6;
+  insert_n(c5,1000);
+  insert_n(c5,1000); // produces successful lookups
+  insert_n(c6,500);
+  insert_n(c6,500); // produces successful lookups
+  s = c5.get_stats();
+  check_container_stats(s, full);
+  check_container_stats(c6.get_stats(), full);
+  c6 = std::move(c5);
+  check_container_stats(c5.get_stats(), empty);
+  check_container_stats(c6.get_stats(), s);
+
+  // Move assignment with unequal allocator
+  // Target only has insertions (if reset previously), stats reset in source
+  Container c7(allocator_type(1));
+  insert_n(c7,250);
+  insert_n(c7,250); // produces successful lookups
+  check_container_stats(c7.get_stats(), full);
+  c7.reset_stats();
+  c7 = std::move(c6);
+  check_container_stats(c6.get_stats(), empty);
+  check_insertion_stats(c7.get_stats().insertion, full);
+  check_lookup_stats(c7.get_stats().successful_lookup, empty);
+  check_lookup_stats(c7.get_stats().unsuccessful_lookup, empty);
+
   // TODO: concurrent<->unordered interop
 }
 
