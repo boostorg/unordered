@@ -15,6 +15,7 @@
 #include "../helpers/helpers.hpp"
 #include "../helpers/random_values.hpp"
 #include "../helpers/test.hpp"
+#include <cstring>
 
 template <class T> struct unequal_allocator
 {
@@ -40,26 +41,39 @@ template <class T> struct unequal_allocator
   int n_;
 };
 
+bool exact_same(double x, double y)
+{
+  return std::memcmp(
+    reinterpret_cast<void*>(&x), reinterpret_cast<void*>(&y),
+    sizeof(double))==0;
+}
+
+bool not_exact_same(double x, double y)
+{
+  return !exact_same(x, y);
+}
+
 template <class Stats> void check_stat(const Stats& s, bool full)
 {
   if (full) {
-    BOOST_TEST_NE(s.average, 0.0);
-    if(s.variance) {
-      BOOST_TEST_NE(s.deviation, 0.0);
+    BOOST_TEST_GT(s.average, 0.0);
+    if(not_exact_same(s.variance, 0.0)) {
+      BOOST_TEST_GT(s.variance, 0.0);
+      BOOST_TEST_GT(s.deviation, 0.0);
     }
   }
   else {
-    BOOST_TEST_EQ(s.average, 0.0);
-    BOOST_TEST_EQ(s.variance, 0.0);
-    BOOST_TEST_EQ(s.deviation, 0.0);
+    BOOST_TEST(exact_same(s.average, 0.0));
+    BOOST_TEST(exact_same(s.variance, 0.0));
+    BOOST_TEST(exact_same(s.deviation, 0.0));
   }
 }
 
 template <class Stats> void check_stat(const Stats& s1, const Stats& s2)
 {
-  BOOST_TEST_EQ(s1.average, s2.average);
-  BOOST_TEST_EQ(s1.variance, s2.variance);
-  BOOST_TEST_EQ(s1.deviation, s2.deviation);
+  BOOST_TEST(exact_same(s1.average, s2.average));
+  BOOST_TEST(exact_same(s1.variance, s2.variance));
+  BOOST_TEST(exact_same(s1.deviation, s2.deviation));
 }
 
 template <class Stats> void check_insertion_stats(const Stats& s, bool full)
