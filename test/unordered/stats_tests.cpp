@@ -148,8 +148,8 @@ template <class Container> void test_stats()
 
   test::random_values<Container> l(10000, test::sequential);
   std::vector<value_type> v(l.begin(), l.end());
-  thread_runner(v, [&c](boost::span<value_type> s) {
-    for (auto const& x : s) {
+  thread_runner(v, [&c](boost::span<value_type> sp) {
+    for (auto const& x : sp) {
       c.insert(x);
     }
   });
@@ -184,8 +184,8 @@ template <class Container> void test_stats()
   test::random_values<Container> l2(15000, test::sequential);
   std::vector<value_type> v2(l2.begin(), l2.end());
   std::atomic<int> found = 0, not_found = 0;
-  thread_runner(v2, [&cc, &found, &not_found](boost::span<value_type> s) {
-    for (auto const& x : s) {
+  thread_runner(v2, [&cc, &found, &not_found](boost::span<value_type> sp) {
+    for (auto const& x : sp) {
       if(cc.contains(test::get_key<Container>(x))) ++found;
       else                                         ++not_found;
     }
