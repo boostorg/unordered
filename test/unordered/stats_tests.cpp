@@ -132,13 +132,13 @@ void check_container_stats(const Stats& s1, const Stats& s2)
 template <class Container> void test_stats()
 {
   using allocator_type = typename Container::allocator_type;
-  using stats = typename Container::stats;
+  using stats_type = typename Container::stats;
   const bool full = true, empty = false;
 
   Container        c;
   const Container& cc = c;
 
-  stats s = cc.get_stats();
+  stats_type s = cc.get_stats();
   check_container_stats(s, empty);
 
   test::reset_sequence();
