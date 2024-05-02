@@ -132,13 +132,13 @@ void check_container_stats(const Stats& s1, const Stats& s2)
 template <class Container> void test_stats()
 {
   using allocator_type = typename Container::allocator_type;
-  using stats_type = typename Container::stats;
+  using stats = typename Container::stats;
   const bool full = true, empty = false;
 
   Container        c;
   const Container& cc = c;
 
-  stats_type s = cc.get_stats();
+  stats s = cc.get_stats();
   check_container_stats(s, empty);
 
   test::reset_sequence();
@@ -237,7 +237,7 @@ template <class Container> void test_stats()
   // TODO: concurrent<->unordered interop
 }
 
-UNORDERED_AUTO_TEST (stats) {
+UNORDERED_AUTO_TEST (stats_) {
 #if defined(BOOST_UNORDERED_CFOA_TESTS)
   test_stats<
     boost::concurrent_flat_map<
