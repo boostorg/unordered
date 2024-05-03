@@ -1719,7 +1719,7 @@ public:
           auto n=unchecked_countr_zero(mask);
           if(BOOST_LIKELY(bool(pred()(x,key_from(p[n]))))){
             BOOST_UNORDERED_ADD_STATS(
-              get_cumulative_stats().successful_lookup,(pb.length(),num_cmps));
+              cstats.successful_lookup,(pb.length(),num_cmps));
             return {pg,n,p+n};
           }
           mask&=mask-1;
@@ -1727,13 +1727,13 @@ public:
       }
       if(BOOST_LIKELY(pg->is_not_overflowed(hash))){
         BOOST_UNORDERED_ADD_STATS(
-          get_cumulative_stats().unsuccessful_lookup,(pb.length(),num_cmps));
+          cstats.unsuccessful_lookup,(pb.length(),num_cmps));
         return {};
       }
     }
     while(BOOST_LIKELY(pb.next(arrays.groups_size_mask)));
     BOOST_UNORDERED_ADD_STATS(
-      get_cumulative_stats().unsuccessful_lookup,(pb.length(),num_cmps));
+      cstats.unsuccessful_lookup,(pb.length(),num_cmps));
     return {};
   }
 
@@ -1840,11 +1840,6 @@ public:
         unsuccessful_lookup.sequence_summary[1]
       },
     };
-  }
-
-  cumulative_stats& get_cumulative_stats()const noexcept
-  {
-    return cstats;
   }
 
   void reset_stats()
@@ -2356,8 +2351,7 @@ private:
         auto p=arrays_.elements()+pos*N+n;
         construct_element(p,std::forward<Args>(args)...);
         pg->set(n,hash);
-        BOOST_UNORDERED_ADD_STATS(
-          get_cumulative_stats().insertion,(pb.length()));
+        BOOST_UNORDERED_ADD_STATS(cstats.insertion,(pb.length()));
         return {pg,n,p};
       }
       else pg->mark_overflow(hash);

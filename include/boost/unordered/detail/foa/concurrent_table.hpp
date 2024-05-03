@@ -514,8 +514,7 @@ public:
     x.arrays=ah.release();
     x.size_ctrl.ml=x.initial_max_load();
     x.size_ctrl.size=0;
-    BOOST_UNORDERED_SWAP_STATS(
-      this->get_cumulative_stats(),x.get_cumulative_stats());
+    BOOST_UNORDERED_SWAP_STATS(this->cstats,x.cstats);
   }
 
   concurrent_table(compatible_nonconcurrent_table&& x):
@@ -1216,8 +1215,7 @@ private:
             if(BOOST_LIKELY(bool(this->pred()(x,this->key_from(p[n]))))){
               f(pg,n,p+n);
               BOOST_UNORDERED_ADD_STATS(
-                this->get_cumulative_stats().successful_lookup,
-                (pb.length(),num_cmps));
+                this->cstats.successful_lookup,(pb.length(),num_cmps));
               return 1;
             }
           }
@@ -1226,14 +1224,13 @@ private:
       }
       if(BOOST_LIKELY(pg->is_not_overflowed(hash))){
         BOOST_UNORDERED_ADD_STATS(
-          this->get_cumulative_stats().unsuccessful_lookup,
-          (pb.length(),num_cmps));
+          this->cstats.unsuccessful_lookup,(pb.length(),num_cmps));
         return 0;
       }
     }
     while(BOOST_LIKELY(pb.next(this->arrays.groups_size_mask)));
     BOOST_UNORDERED_ADD_STATS(
-      this->get_cumulative_stats().unsuccessful_lookup,(pb.length(),num_cmps));
+      this->cstats.unsuccessful_lookup,(pb.length(),num_cmps));
     return 0;
   }
 
@@ -1514,8 +1511,7 @@ private:
             this->construct_element(p,std::forward<Args>(args)...);
             rslot.commit();
             rsize.commit();
-            BOOST_UNORDERED_ADD_STATS(
-              this->get_cumulative_stats().insertion,(pb.length()));
+            BOOST_UNORDERED_ADD_STATS(this->cstats.insertion,(pb.length()));
             return 1;
           }
           pg->mark_overflow(hash);
