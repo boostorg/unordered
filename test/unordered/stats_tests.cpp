@@ -15,6 +15,7 @@
 #include "../helpers/helpers.hpp"
 #include "../helpers/random_values.hpp"
 #include "../helpers/test.hpp"
+#include <boost/assert.hpp>
 #include <cstring>
 
 template <class T> struct unequal_allocator
@@ -53,19 +54,38 @@ bool not_exact_same(double x, double y)
   return !exact_same(x, y);
 }
 
-template <class Stats> void check_stat(const Stats& s, bool full)
+enum check_stats_contition
 {
-  if (full) {
+  stats_empty=0,
+  stats_full,
+  stats_mostly_full // unsuccesful lookups may result in num_comparisons == 0
+};
+
+template <class Stats>
+void check_stat(const Stats& s, check_stats_contition cond)
+{
+  switch (cond) {
+  case stats_empty:
+    BOOST_TEST(exact_same(s.average, 0.0));
+    BOOST_TEST(exact_same(s.variance, 0.0));
+    BOOST_TEST(exact_same(s.deviation, 0.0));
+    break;
+  case stats_full:
     BOOST_TEST_GT(s.average, 0.0);
     if(not_exact_same(s.variance, 0.0)) {
       BOOST_TEST_GT(s.variance, 0.0);
       BOOST_TEST_GT(s.deviation, 0.0);
     }
-  }
-  else {
-    BOOST_TEST(exact_same(s.average, 0.0));
-    BOOST_TEST(exact_same(s.variance, 0.0));
-    BOOST_TEST(exact_same(s.deviation, 0.0));
+    break;
+  case stats_mostly_full:
+    if(not_exact_same(s.variance, 0.0)) {
+      BOOST_TEST_GT(s.average, 0.0);
+      BOOST_TEST_GT(s.variance, 0.0);
+      BOOST_TEST_GT(s.deviation, 0.0);
+    }
+    break;
+  default:
+    break;
   }
 }
 
@@ -76,15 +96,21 @@ template <class Stats> void check_stat(const Stats& s1, const Stats& s2)
   BOOST_TEST(exact_same(s1.deviation, s2.deviation));
 }
 
-template <class Stats> void check_insertion_stats(const Stats& s, bool full)
+template <class Stats>
+void check_insertion_stats(const Stats& s, check_stats_contition cond)
 {
-  if (full) {
-    BOOST_TEST_NE(s.count, 0);
-  }
-  else {
+  switch (cond) {
+  case stats_empty:
     BOOST_TEST_EQ(s.count, 0);
+    check_stat(s.probe_length, stats_empty);
+    break;
+  case stats_full:
+    BOOST_TEST_NE(s.count, 0);
+    check_stat(s.probe_length, stats_full);
+    break;
+  default:
+    BOOST_ASSERT(false); // insertion can't be mostly full
   }
-  check_stat(s.probe_length, full);
 }
 
 template <class Stats>
@@ -94,16 +120,11 @@ void check_insertion_stats(const Stats& s1, const Stats& s2)
   check_stat(s1.probe_length, s2.probe_length);
 }
 
-template <class Stats> void check_lookup_stats(const Stats& s, bool full)
+template <class Stats>
+void check_lookup_stats(const Stats& s, check_stats_contition cond)
 {
-  if (full) {
-    BOOST_TEST_NE(s.count, 0);
-  }
-  else {
-    BOOST_TEST_EQ(s.count, 0);
-  }
-  check_stat(s.probe_length, full);
-  check_stat(s.num_comparisons, full);
+  check_stat(s.probe_length, cond == stats_empty? stats_empty : stats_full);
+  check_stat(s.num_comparisons, cond);
 }
 
 template <class Stats>
@@ -114,11 +135,17 @@ void check_lookup_stats(const Stats& s1, const Stats& s2)
   check_stat(s1.num_comparisons, s2.num_comparisons);
 }
 
-template <class Stats> void check_container_stats(const Stats& s, bool full)
+template <class Stats>
+void check_container_stats(const Stats& s, check_stats_contition cond)
 {
-  check_insertion_stats(s.insertion, full);
-  check_lookup_stats(s.successful_lookup, full);
-  check_lookup_stats(s.unsuccessful_lookup, full);
+  if(cond == stats_mostly_full) {
+    BOOST_ASSERT(false); // mostly full only applies to unsuccessful lookup
+  }
+  check_insertion_stats(s.insertion, cond);
+  check_lookup_stats(s.successful_lookup, cond);
+  check_lookup_stats(
+    s.unsuccessful_lookup,
+    cond == stats_empty? stats_empty : stats_mostly_full);
 }
 
 template <class Stats>
@@ -153,21 +180,21 @@ template <class Container> void test_stats()
 {
   using allocator_type = typename Container::allocator_type;
   using stats = typename Container::stats;
-  const bool full = true, empty = false;
 
   Container        c;
   const Container& cc = c;
 
   // Stats initially empty
   stats s = cc.get_stats(); // using cc -> get_stats() is const
-  check_container_stats(s, empty);
+  check_container_stats(s, stats_empty);
 
   // Stats after insertion
   insert_n(c, 10000);
   s = cc.get_stats();
-  check_insertion_stats(s.insertion, full); // insertions happened
-  check_lookup_stats(s.successful_lookup, empty); // no duplicate values
-  check_lookup_stats(s.unsuccessful_lookup, full); // from insertion
+  check_insertion_stats(s.insertion, stats_full); // insertions happened
+  check_lookup_stats(s.successful_lookup, stats_empty); // no duplicate values
+  check_lookup_stats(
+    s.unsuccessful_lookup, stats_mostly_full); // from insertion
 
 #if !defined(BOOST_UNORDERED_CFOA_TESTS)
   // Inequality due to rehashing
@@ -178,7 +205,7 @@ template <class Container> void test_stats()
 
   // resets_stats() actually clears stats
   c.reset_stats();
-  check_container_stats(cc.get_stats(), empty);
+  check_container_stats(cc.get_stats(), stats_empty);
 
   // Stats after lookup
 
@@ -211,14 +238,14 @@ template <class Container> void test_stats()
 
   // As many [un]successful lookups as recorded externally
   s=cc.get_stats();
-  check_lookup_stats(s.successful_lookup, full);
-  check_lookup_stats(s.unsuccessful_lookup, full);
+  check_lookup_stats(s.successful_lookup, stats_full);
+  check_lookup_stats(s.unsuccessful_lookup, stats_mostly_full);
   BOOST_TEST_EQ(s.successful_lookup.count, found);
   BOOST_TEST_EQ(s.unsuccessful_lookup.count, not_found);
 
   c.reset_stats();
   s = cc.get_stats();
-  check_container_stats(s, empty);
+  check_container_stats(s, stats_empty);
 
   // Move constructor tests
 
@@ -230,22 +257,22 @@ template <class Container> void test_stats()
   // Stats transferred to target and reset in source
   s = cc.get_stats();
   Container c2 = std::move(c);
-  check_container_stats(c.get_stats(), empty);
+  check_container_stats(c.get_stats(), stats_empty);
   check_container_stats(c2.get_stats(), s);
 
   // Move constructor with equal allocator
   // Stats transferred to target and reset in source
   Container c3(std::move(c2), allocator_type());
-  check_container_stats(c2.get_stats(), empty);
+  check_container_stats(c2.get_stats(), stats_empty);
   check_container_stats(c3.get_stats(), s);
 
   // Move constructor with unequal allocator
   // Target only has insertions, stats reset in source
   Container c4(std::move(c3), allocator_type(1));
-  check_container_stats(c3.get_stats(), empty);
-  check_insertion_stats(c4.get_stats().insertion, full);
-  check_lookup_stats(c4.get_stats().successful_lookup, empty);
-  check_lookup_stats(c4.get_stats().unsuccessful_lookup, empty);
+  check_container_stats(c3.get_stats(), stats_empty);
+  check_insertion_stats(c4.get_stats().insertion, stats_full);
+  check_lookup_stats(c4.get_stats().successful_lookup, stats_empty);
+  check_lookup_stats(c4.get_stats().unsuccessful_lookup, stats_empty);
 
   // Move assignment tests
 
@@ -257,10 +284,10 @@ template <class Container> void test_stats()
   insert_n(c6,500);
   insert_n(c6,500); // produces successful lookups
   s = c5.get_stats();
-  check_container_stats(s, full);
-  check_container_stats(c6.get_stats(), full);
+  check_container_stats(s, stats_full);
+  check_container_stats(c6.get_stats(), stats_full);
   c6 = std::move(c5);
-  check_container_stats(c5.get_stats(), empty);
+  check_container_stats(c5.get_stats(), stats_empty);
   check_container_stats(c6.get_stats(), s);
 
   // Move assignment with unequal allocator
@@ -268,13 +295,13 @@ template <class Container> void test_stats()
   Container c7(allocator_type(1));
   insert_n(c7,250);
   insert_n(c7,250); // produces successful lookups
-  check_container_stats(c7.get_stats(), full);
+  check_container_stats(c7.get_stats(), stats_full);
   c7.reset_stats();
   c7 = std::move(c6);
-  check_container_stats(c6.get_stats(), empty);
-  check_insertion_stats(c7.get_stats().insertion, full);
-  check_lookup_stats(c7.get_stats().successful_lookup, empty);
-  check_lookup_stats(c7.get_stats().unsuccessful_lookup, empty);
+  check_container_stats(c6.get_stats(), stats_empty);
+  check_insertion_stats(c7.get_stats().insertion, stats_full);
+  check_lookup_stats(c7.get_stats().successful_lookup, stats_empty);
+  check_lookup_stats(c7.get_stats().unsuccessful_lookup, stats_empty);
 
   // TODO: concurrent<->unordered interop
 }
