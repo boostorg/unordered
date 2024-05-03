@@ -7,6 +7,8 @@
 #ifdef BOOST_UNORDERED_CFOA_TESTS
 #include <boost/unordered/concurrent_flat_map.hpp>
 #include <boost/unordered/concurrent_flat_set.hpp>
+#include <boost/unordered/unordered_flat_map.hpp>
+#include <boost/unordered/unordered_flat_set.hpp>
 #include "../cfoa/helpers.hpp"
 #else
 #include "../helpers/unordered.hpp"
@@ -302,9 +304,25 @@ template <class Container> void test_stats()
   check_insertion_stats(c7.get_stats().insertion, stats_full);
   check_lookup_stats(c7.get_stats().successful_lookup, stats_empty);
   check_lookup_stats(c7.get_stats().unsuccessful_lookup, stats_empty);
-
-  // TODO: concurrent<->unordered interop
 }
+
+#if defined(BOOST_UNORDERED_CFOA_TESTS)
+template <class Container, class ConcurrentContainer>
+void test_stats_concurrent_unordered_interop()
+{
+  ConcurrentContainer cc1;
+  insert_n(cc1,5000);
+  insert_n(cc1,5000); // produces successful lookups
+  auto s=cc1.get_stats();
+  Container c1(std::move(cc1));
+  check_container_stats(cc1.get_stats(),stats_empty);
+  check_container_stats(c1.get_stats(),s);
+
+  ConcurrentContainer cc2(std::move(c1));
+  check_container_stats(c1.get_stats(),stats_empty);
+  check_container_stats(cc2.get_stats(),s);
+}
+#endif
 
 UNORDERED_AUTO_TEST (stats_) {
 #if defined(BOOST_UNORDERED_CFOA_TESTS)
@@ -315,6 +333,12 @@ UNORDERED_AUTO_TEST (stats_) {
   test_stats<
     boost::concurrent_flat_set<
       int, boost::hash<int>, std::equal_to<int>, unequal_allocator<int>>>();
+  test_stats_concurrent_unordered_interop<
+    boost::unordered_flat_map<int, int>,
+    boost::concurrent_flat_map<int, int>>();
+  test_stats_concurrent_unordered_interop<
+    boost::unordered_flat_set<int>,
+    boost::concurrent_flat_set<int>>();
 #elif defined(BOOST_UNORDERED_FOA_TESTS)
   test_stats<
     boost::unordered_flat_map<

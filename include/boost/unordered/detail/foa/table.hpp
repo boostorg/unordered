@@ -1,6 +1,6 @@
 /* Fast open-addressing hash table.
  *
- * Copyright 2022-2023 Joaquin M Lopez Munoz.
+ * Copyright 2022-2024 Joaquin M Lopez Munoz.
  * Copyright 2023 Christian Mazakas.
  * Copyright 2024 Braden Ganetsky.
  * Distributed under the Boost Software License, Version 1.0.
@@ -593,6 +593,8 @@ private:
     x.arrays=ah.release();
     x.size_ctrl.ml=x.initial_max_load();
     x.size_ctrl.size=0;
+    BOOST_UNORDERED_SWAP_STATS(
+      this->get_cumulative_stats(),x.get_cumulative_stats());
   }
 
   template<typename ExclusiveLockGuard>

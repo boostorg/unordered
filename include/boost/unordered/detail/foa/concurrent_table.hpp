@@ -514,6 +514,8 @@ public:
     x.arrays=ah.release();
     x.size_ctrl.ml=x.initial_max_load();
     x.size_ctrl.size=0;
+    BOOST_UNORDERED_SWAP_STATS(
+      this->get_cumulative_stats(),x.get_cumulative_stats());
   }
 
   concurrent_table(compatible_nonconcurrent_table&& x):
