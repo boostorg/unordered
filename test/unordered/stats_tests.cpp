@@ -18,6 +18,7 @@
 #include "../helpers/random_values.hpp"
 #include "../helpers/test.hpp"
 #include <boost/assert.hpp>
+#include <boost/core/make_span.hpp>
 #include <cstring>
 
 template <class T> struct unequal_allocator
@@ -215,16 +216,29 @@ template <class Container> void test_stats()
 
 #if defined(BOOST_UNORDERED_CFOA_TESTS)
 
+  using key_type = typename Container::key_type;
   using value_type = typename Container::value_type;
 
   test::random_values<Container> l2(15000, test::sequential);
   std::vector<value_type> v2(l2.begin(), l2.end());
   std::atomic<int> found{0}, not_found{0};
   thread_runner(v2, [&cc, &found, &not_found](boost::span<value_type> sp) {
-    for (auto const& x : sp) {
+    // Half the span looked up elementwise
+    auto sp1 = boost::make_span(sp.begin(), sp.size()/2);
+    for (auto const& x : sp1) {
       if(cc.contains(test::get_key<Container>(x))) ++found;
       else                                         ++not_found;
     }
+
+    // Second half looked up in bulk
+    std::vector<key_type> ksp2;
+    for (auto const& x : boost::make_span(sp1.end(), sp.end())) {
+      ksp2.push_back(test::get_key<Container>(x));
+    }
+    auto visited = cc.visit(
+      ksp2.begin(), ksp2.end(), [](const value_type&) {});
+    found += visited;
+    not_found += ksp2.size() - visited;
   });
 
 #else

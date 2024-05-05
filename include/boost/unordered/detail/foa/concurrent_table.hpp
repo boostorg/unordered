@@ -1265,6 +1265,7 @@ private:
 
     it=first;
     for(auto i=m;i--;++it){
+      BOOST_UNORDERED_STATS_COUNTER(num_cmps);
       auto          pos=positions[i];
       prober        pb(pos);
       auto          pg=this->arrays.groups()+pos;
@@ -1277,12 +1278,15 @@ private:
           auto lck=access(access_mode,pos);
           do{
             auto n=unchecked_countr_zero(mask);
-            if(BOOST_LIKELY(
-              pg->is_occupied(n)&&
-              bool(this->pred()(*it,this->key_from(p[n]))))){
-              f(cast_for(access_mode,type_policy::value_from(p[n])));
-              ++res;
-              goto next_key;
+            if(BOOST_LIKELY(pg->is_occupied(n))){
+              BOOST_UNORDERED_INCREMENT_STATS_COUNTER(num_cmps);
+              if(bool(this->pred()(*it,this->key_from(p[n])))){
+                f(cast_for(access_mode,type_policy::value_from(p[n])));
+                ++res;
+                BOOST_UNORDERED_ADD_STATS(
+                  this->cstats.successful_lookup,(pb.length(),num_cmps));
+                goto next_key;
+              }
             }
             mask&=mask-1;
           }while(mask);
@@ -1291,6 +1295,8 @@ private:
         do{
           if(BOOST_LIKELY(pg->is_not_overflowed(hashes[i]))||
              BOOST_UNLIKELY(!pb.next(this->arrays.groups_size_mask))){
+            BOOST_UNORDERED_ADD_STATS(
+              this->cstats.unsuccessful_lookup,(pb.length(),num_cmps));
             goto next_key;
           }
           pos=pb.get();
