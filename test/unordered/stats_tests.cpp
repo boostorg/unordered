@@ -220,8 +220,8 @@ template <class Container> void test_stats()
   using value_type = typename Container::value_type;
 
   test::random_values<Container> l2(15000, test::sequential);
-  std::vector<value_type> v2(l2.begin(), l2.end());
-  std::atomic<int> found{0}, not_found{0};
+  std::vector<value_type>        v2(l2.begin(), l2.end());
+  std::atomic<std::size_t>       found{0}, not_found{0};
   thread_runner(v2, [&cc, &found, &not_found](boost::span<value_type> sp) {
     // Half the span looked up elementwise
     auto sp1 = boost::make_span(sp.begin(), sp.size()/2);
@@ -232,7 +232,8 @@ template <class Container> void test_stats()
 
     // Second half looked up in bulk
     std::vector<key_type> ksp2;
-    for (auto const& x : boost::make_span(sp1.end(), sp.end())) {
+    for (auto const& x : boost::make_span(
+          sp1.end(), static_cast<std::size_t>(sp.end() - sp1.end()))) {
       ksp2.push_back(test::get_key<Container>(x));
     }
     auto visited = cc.visit(
@@ -244,7 +245,7 @@ template <class Container> void test_stats()
 #else
 
   test::random_values<Container> v2(15000, test::sequential);
-  int found = 0, not_found = 0;
+  std::size_t                    found = 0, not_found = 0;
   for (const auto& x: v2) {
     if (cc.contains(test::get_key<Container>(x))) ++found;
     else                                          ++not_found;
