@@ -1842,7 +1842,7 @@ public:
     };
   }
 
-  void reset_stats()
+  void reset_stats()noexcept
   {
     cstats.insertion.reset();
     cstats.successful_lookup.reset();

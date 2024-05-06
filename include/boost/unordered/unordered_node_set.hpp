@@ -572,7 +572,7 @@ namespace boost {
       ///
       stats get_stats() const { return table_.get_stats(); }
 
-      void reset_stats() { table_.reset_stats(); }
+      void reset_stats() noexcept { table_.reset_stats(); }
 #endif
 
       /// Observers
