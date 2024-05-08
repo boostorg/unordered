@@ -228,6 +228,7 @@ local FOA_TESTS =
   hash_is_avalanching_test
   fancy_pointer_noleak
   pmr_allocator_tests
+  stats_tests
 ;
 
 for local test in $(FOA_TESTS)
@@ -333,6 +334,7 @@ local CFOA_TESTS =
   reentrancy_check_test
   explicit_alloc_ctor_tests
   pmr_allocator_tests
+  stats_tests
 ;
 
 for local test in $(CFOA_TESTS)
