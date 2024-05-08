@@ -71,7 +71,7 @@ int main()
 }
 ----
 
-The `stats` object provide the following information:
+The `stats` object provides the following information:
 
 [source,subs=+quotes]
 ----
