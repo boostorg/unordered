@@ -21,11 +21,12 @@ The rest of this section applies only to open-addressing and concurrent containe
 
 == Hash Post-mixing and the Avalanching Property
 
-Even if your supplied hash function is of bad quality, chances are that
+Even if your supplied hash function does not conform to the uniform behavior
+required by open addressing, chances are that
 the performance of Boost.Unordered containers will be acceptable, because the library
 executes an internal __post-mixing__ step that improves the statistical
 properties of the calculated hash values. This comes with an extra computational
-cost: if you'd like to opt out of post-mixing, annotate your hash function as
+cost; if you'd like to opt out of post-mixing, annotate your hash function as
 follows:
 
 [source,c++]
@@ -72,58 +73,43 @@ int main()
 
 The `stats` object provide the following information:
 
-[%noheader, cols="1,1,1,1,~", frame=all, grid=rows]
-|===
-|`stats`||||
-
-||`.insertion`|||**Insertion operations**
-
-|||`.count`||Number of operations
-
-|||`.probe_length`||Probe length per operation
-
-||||`.average` +
-`.variance` +
-`.deviation`|
-
-||`.successful_lookup`|||**Lookup operations (element found)**
-
-|||`.count`||Number of operations
-
-|||`.probe_length`||Probe length per operation
-
-||||`.average` +
-`.variance` +
-`.deviation`|
-
-|||`.num_comparisons`||Elements compared to the key per operation
-
-||||`.average` +
-`.variance` +
-`.deviation`|
-
-||`.unsuccessful_lookup`|||**Lookup operations (element not found)**
-
-|||`.count`||Number of operations
-
-|||`.probe_length`||Probe length per operation
-
-||||`.average` +
-`.variance` +
-`.deviation`|
-
-|||`.num_comparisons`||Elements compared to the key per operation
-
-||||`.average` +
-`.variance` +
-`.deviation`|
-|===
+[source,subs=+quotes]
+----
+stats 
+     .insertion                                     // *Insertion operations*
+               .count                               // Number of operations
+               .probe_length                        // Probe length per operation
+                            .average
+                            .variance
+                            .deviation
+	 .successful_lookup                             // *Lookup operations (element found)*
+                       .count                       // Number of operations
+                       .probe_length                // Probe length per operation
+                                    .average
+                                    .variance
+                                    .deviation
+                       .num_comparisons             // Elements compared per operation
+			                           .average
+                                       .variance
+                                       .deviation
+	 .unsuccessful_lookup                           // *Lookup operations (element not found)*
+                         .count                     // Number of operations
+                         .probe_length              // Probe length per operation
+                                      .average
+                                      .variance
+                                      .deviation
+                         .num_comparisons           // Elements compared per operation
+			                             .average
+                                         .variance
+                                         .deviation 
+----
 
 Statistics for three internal operations are maintained: insertions (without considering
-the previous lookup to determine that the key is not present yet), successful lookups
-and unsuccessful lookus. _Probe length_ is  the number of
+the previous lookup to determine that the key is not present yet), successful lookups,
+and unsuccessful lookups (including those issued internally when inserting elements).
+_Probe length_ is  the number of
 xref:#structures_open_addressing_containers[bucket groups] accessed per operation.
-If the hash function has good quality:
+If the hash function behaves properly:
 
 * Average probe lengths should be close to 1.0.
 * The average number of comparisons per successful lookup should be close to 1.0 (that is,
@@ -141,14 +127,17 @@ and two ill-behaved custom hash functions that have been incorrectly marked as a
                                    insertion: probe length 1.08771
                            successful lookup: probe length 1.06206, num comparisons 1.02121
                          unsuccessful lookup: probe length 1.12301, num comparisons 0.0388251
+
            boost::unordered_flat_map, FNV-1a:   301 ms
                                    insertion: probe length 1.09567
                            successful lookup: probe length 1.06202, num comparisons 1.0227
                          unsuccessful lookup: probe length 1.12195, num comparisons 0.040527
+
 boost::unordered_flat_map, slightly_bad_hash:   654 ms
                                    insertion: probe length 1.03443
                            successful lookup: probe length 1.04137, num comparisons 6.22152
                          unsuccessful lookup: probe length 1.29334, num comparisons 11.0335
+
          boost::unordered_flat_map, bad_hash: 12216 ms
                                    insertion: probe length 699.218
                            successful lookup: probe length 590.183, num comparisons 43.4886

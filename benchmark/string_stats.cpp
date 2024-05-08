@@ -337,6 +337,6 @@ int main()
                       << ", num comparisons " << x.stats_.successful_lookup.num_comparisons.average << "\n"
                   << std::setw( 46 ) << "unsuccessful lookup: "
                       << "probe length " << x.stats_.unsuccessful_lookup.probe_length.average 
-                      << ", num comparisons " << x.stats_.unsuccessful_lookup.num_comparisons.average << "\n";
+                      << ", num comparisons " << x.stats_.unsuccessful_lookup.num_comparisons.average << "\n\n";
     }
 }
