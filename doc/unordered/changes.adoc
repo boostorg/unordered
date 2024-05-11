@@ -9,6 +9,7 @@
 == Release 1.86.0
 
 * Added container `pmr` aliases when header `<memory_resource>` is available. The alias `boost::unordered::pmr::[container]` refers to `boost::unordered::[container]` with a `std::pmr::polymorphic_allocator` allocator type.
+* Equipped open-addressing and concurrent containers to internally calculate and provide statistical metrics affected by the quality of the hash function. This functionality is enabled by the global macro `BOOST_UNORDERED_ENABLE_STATS`.
 
 == Release 1.85.0
 
