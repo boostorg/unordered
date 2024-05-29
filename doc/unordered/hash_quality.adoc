@@ -33,7 +33,7 @@ follows:
 ----
 struct my_string_hash_function
 {
-  using is_avalanching = void; // instruct Boost.Unordered to not use post-mixing
+  using is_avalanching = std::true_type; // instruct Boost.Unordered to not use post-mixing
 
   std::size_t operator()(const std::string& x) const
   {
