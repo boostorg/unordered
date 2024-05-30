@@ -42,6 +42,12 @@ struct hash_is_avalanching_impl<
   avalanching_value<typename Hash::is_avalanching>::value
 >{};
 
+template<typename Hash>
+struct hash_is_avalanching_impl<
+  Hash,
+  typename std::enable_if<((void)Hash::is_avalanching,true)>::type
+>{}; /* Hash::is_avalanching is not a type: compile error downstream */
+
 } /* namespace detail */
 
 /* Each trait can be partially specialized by users for concrete hash functions
