@@ -53,7 +53,7 @@ struct hash_is_avalanching_impl<
  *   - Hash::is_avalanching::value if this is present and constexpr-convertible
  *     to a bool.
  *   - true if Hash::is_avalanching is void (deprecated).
- * UB otherwise.
+ *   - ill-formed otherwise.
  */
 template<typename Hash>
 struct hash_is_avalanching: detail::hash_is_avalanching_impl<Hash>::type{};

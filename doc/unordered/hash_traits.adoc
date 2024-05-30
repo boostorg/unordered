@@ -36,9 +36,9 @@ this property is critical for the proper behavior of open-addressing hash contai
 
  * `false` if `Hash::is_avalanching` is not present,
  * `Hash::is_avalanching::value` if this is present and convertible at compile time to a `bool`,
- * `true` if `Hash::is_avalanching` is `void` (this usage is deprecated).
+ * `true` if `Hash::is_avalanching` is `void` (this usage is deprecated),
+ * ill-formed otherwise.
  
-The behavior is undefined if none of the three cases above is met.
 Users can then declare a hash function `Hash` as avalanching either by embedding an appropriate `is_avalanching` typedef
 into the definition of `Hash`, or directly by specializing `hash_is_avalanching<Hash>` to a class with
 an embedded compile-time constant `value` set to `true`.
