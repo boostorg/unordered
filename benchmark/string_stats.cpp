@@ -18,6 +18,7 @@
 #include <iostream>
 #include <iomanip>
 #include <chrono>
+#include <type_traits>
 
 using namespace std::chrono_literals;
 
@@ -262,7 +263,7 @@ template<> struct fnv1a_hash_impl<64>
 
 struct fnv1a_hash: fnv1a_hash_impl< std::numeric_limits<std::size_t>::digits >
 {
-    using is_avalanching = void;
+    using is_avalanching = std::true_type;
 };
 
 template<class K, class V> using boost_unordered_flat_map_fnv1a =
@@ -272,7 +273,7 @@ template<class K, class V> using boost_unordered_flat_map_fnv1a =
 
 struct slightly_bad_hash
 {
-    using is_avalanching = void;
+    using is_avalanching = std::true_type;
 
     std::size_t operator()( std::string const& s ) const
     {
@@ -295,7 +296,7 @@ template<class K, class V> using boost_unordered_flat_map_slightly_bad_hash =
 
 struct bad_hash
 {
-    using is_avalanching = void;
+    using is_avalanching = std::true_type;
 
     std::size_t operator()( std::string const& s ) const
     {
