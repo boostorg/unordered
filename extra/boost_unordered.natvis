@@ -95,4 +95,16 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
         </Expand>
     </Type>
 
+    <!-- FCA iterators -->
+
+    <Type Name="boost::unordered::detail::iterator_detail::iterator&lt;*&gt;" Inheritable="false">
+        <AlternativeType Name="boost::unordered::detail::iterator_detail::c_iterator&lt;*&gt;" />
+        <Intrinsic Name="valid" Expression="p != nullptr &amp;&amp; itb.p != nullptr &amp;&amp; itb.pbg != nullptr" />
+        <DisplayString Condition="valid()">{p-&gt;buf.t_}</DisplayString>
+        <DisplayString Condition="!valid()">{{ end iterator }}</DisplayString>
+        <Expand>
+            <ExpandedItem Condition="valid()">p-&gt;buf.t_</ExpandedItem>
+        </Expand>
+    </Type>
+
 </AutoVisualizer>
