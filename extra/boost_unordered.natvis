@@ -7,4 +7,92 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
 
+    <!-- FCA containers -->
+
+    <Type Name="boost::unordered::detail::functions&lt;*&gt;" Inheritable="false">
+        <Intrinsic Name="active_idx" Expression="current_ &amp; 1" />
+        <Intrinsic Name="spare_idx" Expression="1 - active_idx()" />
+        <Intrinsic Name="has_spare" Expression="(current_ &amp; 2) != 0" />
+
+        <Intrinsic Name="hash" Expression="*reinterpret_cast&lt;$T1*&gt;(static_cast&lt;function_pair::base1*&gt;(&amp;funcs_[idx].t_))">
+            <Parameter Name="idx" Type="size_t" />
+        </Intrinsic>
+        <Intrinsic Name="key_eq" Expression="*reinterpret_cast&lt;$T2*&gt;(static_cast&lt;function_pair::base2*&gt;(&amp;funcs_[idx].t_))">
+            <Parameter Name="idx" Type="size_t" />
+        </Intrinsic>
+        
+        <Expand>
+            <Item Name="[hash_function]">hash(active_idx())</Item>
+            <Item Name="[key_eq]">key_eq(active_idx())</Item>
+            <Item Name="[spare_hash_function]" Condition="has_spare()">hash(spare_idx())</Item>
+            <Item Name="[spare_key_eq]" Condition="has_spare()">key_eq(spare_idx())</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="boost::unordered::detail::grouped_bucket_array&lt;*&gt;" Inheritable="false">
+        <Expand>
+            <CustomListItems MaxItemsPerView="100">
+                <Variable Name="size" InitialValue="size_" />
+                <Variable Name="bucket_index" InitialValue="0" />
+                <Variable Name="current_bucket" InitialValue="&amp;buckets[bucket_index]" />
+                <Variable Name="node" InitialValue="current_bucket->next" />
+                <Loop Condition="bucket_index != size">
+                    <Exec>current_bucket = &amp;buckets[bucket_index]</Exec>
+                    <Exec>node = current_bucket-&gt;next</Exec>
+                    <Loop Condition="node != nullptr">
+                        <Item>node-&gt;buf.t_</Item>
+                        <Exec>node = node-&gt;next</Exec>
+                    </Loop>
+                    <Exec>++bucket_index</Exec>
+                </Loop>
+            </CustomListItems>
+        </Expand>
+    </Type>
+
+    <Type Name="boost::unordered::detail::grouped_bucket_array&lt;*&gt;" Inheritable="false" IncludeView="MapHelper">
+        <Expand>
+            <CustomListItems MaxItemsPerView="100">
+                <Variable Name="size" InitialValue="size_" />
+                <Variable Name="bucket_index" InitialValue="0" />
+                <Variable Name="current_bucket" InitialValue="&amp;buckets[bucket_index]" />
+                <Variable Name="node" InitialValue="current_bucket->next" />
+                <Loop Condition="bucket_index != size">
+                    <Exec>current_bucket = &amp;buckets[bucket_index]</Exec>
+                    <Exec>node = current_bucket-&gt;next</Exec>
+                    <Loop Condition="node != nullptr">
+                        <Item Name="[{node-&gt;buf.t_.first}]">node-&gt;buf.t_</Item>
+                        <Exec>node = node-&gt;next</Exec>
+                    </Loop>
+                    <Exec>++bucket_index</Exec>
+                </Loop>
+            </CustomListItems>
+        </Expand>
+    </Type>
+
+    <Type Name="boost::unordered::unordered_map&lt;*&gt;" Priority="Medium">
+        <AlternativeType Name="boost::unordered::unordered_multimap&lt;*&gt;" />
+        <AlternativeType Name="boost::unordered::unordered_set&lt;*&gt;" />
+        <AlternativeType Name="boost::unordered::unordered_multiset&lt;*&gt;" />
+        <DisplayString>{{ size={table_.size_} }}</DisplayString>
+        <Expand>
+            <Item Name="[bucket_count]" IncludeView="detailed">table_.buckets_.size_</Item>
+            <Item Name="[max_load_factor]" IncludeView="detailed">table_.mlf_</Item>
+            <ExpandedItem ExcludeView="simple">*reinterpret_cast&lt;table::functions*&gt;(&amp;table_)</ExpandedItem>
+            <Item Name="[allocator]" ExcludeView="simple">*reinterpret_cast&lt;table::bucket_array_type::node_allocator_type*&gt;(&amp;table_.buckets_)</Item>
+            <ExpandedItem>table_.buckets_</ExpandedItem>
+        </Expand>
+    </Type>
+
+    <Type Name="boost::unordered::unordered_map&lt;*&gt;" Priority="MediumHigh" ExcludeView="ShowElementsByIndex">
+        <AlternativeType Name="boost::unordered::unordered_multimap&lt;*&gt;" />
+        <DisplayString>{{ size={table_.size_} }}</DisplayString>
+        <Expand>
+            <Item Name="[bucket_count]" IncludeView="detailed">table_.buckets_.size_</Item>
+            <Item Name="[max_load_factor]" IncludeView="detailed">table_.mlf_</Item>
+            <ExpandedItem ExcludeView="simple">*reinterpret_cast&lt;table::functions*&gt;(&amp;table_)</ExpandedItem>
+            <Item Name="[allocator]" ExcludeView="simple">*reinterpret_cast&lt;table::bucket_array_type::node_allocator_type*&gt;(&amp;table_.buckets_)</Item>
+            <ExpandedItem>table_.buckets_,view(MapHelper)</ExpandedItem>
+        </Expand>
+    </Type>
+
 </AutoVisualizer>
