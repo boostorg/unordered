@@ -159,4 +159,146 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
         </Intrinsic>
     </Type>
 
+    <!-- FOA and CFOA containers -->
+
+    <Type Name="boost::unordered::detail::foa::table&lt;*&gt;" Inheritable="false">
+        <AlternativeType Name="boost::unordered::detail::foa::concurrent_table&lt;*&gt;" />
+        
+        <Intrinsic Optional="true" Name="get_value" ReturnType="value_type*" Expression="e">
+            <Parameter Name="e" Type="value_type*" />
+        </Intrinsic>
+        <Intrinsic Optional="true" Name="get_value" ReturnType="value_type*" Expression="e-&gt;p">
+            <Parameter Name="e" Type="element_type*" />
+        </Intrinsic>
+
+        <Intrinsic Name="check_bit" Expression="(n &amp; (1 &lt;&lt; i)) != 0">
+            <Parameter Name="n" Type="unsigned int" />
+            <Parameter Name="i" Type="unsigned int" />
+        </Intrinsic>
+        <Intrinsic Name="countr_zero" Expression="
+            check_bit(n,  0) ?  0 : check_bit(n,  1) ?  1 : check_bit(n,  2) ?  2 : check_bit(n,  3) ?  3 :
+            check_bit(n,  4) ?  4 : check_bit(n,  5) ?  5 : check_bit(n,  6) ?  6 : check_bit(n,  7) ?  7 :
+            check_bit(n,  8) ?  8 : check_bit(n,  9) ?  9 : check_bit(n, 10) ? 10 : check_bit(n, 11) ? 11 :
+            check_bit(n, 12) ? 12 : check_bit(n, 13) ? 13 : check_bit(n, 14) ? 14 : check_bit(n, 15) ? 15 :
+            check_bit(n, 16) ? 16 : check_bit(n, 17) ? 17 : check_bit(n, 18) ? 18 : check_bit(n, 19) ? 19 :
+            check_bit(n, 20) ? 20 : check_bit(n, 21) ? 21 : check_bit(n, 22) ? 22 : check_bit(n, 23) ? 23 :
+            check_bit(n, 24) ? 24 : check_bit(n, 25) ? 25 : check_bit(n, 26) ? 26 : check_bit(n, 27) ? 27 :
+            check_bit(n, 28) ? 28 : check_bit(n, 29) ? 29 : check_bit(n, 30) ? 30 : check_bit(n, 31) ? 31 : 32
+        ">
+            <Parameter Name="n" Type="unsigned int" />
+        </Intrinsic>
+
+        <Expand>
+            <CustomListItems MaxItemsPerView="100">
+                <Variable Name="pc_" InitialValue="reinterpret_cast&lt;unsigned char*&gt;(arrays.groups_)" />
+                <Variable Name="p_" InitialValue="arrays.elements_" />
+                <Variable Name="first_time" InitialValue="true" />
+                <Variable Name="mask" InitialValue="(int)0" />
+                <Variable Name="n0" InitialValue="(size_t)0" />
+                <Variable Name="n" InitialValue="(unsigned int)0" />
+
+                <Loop Condition="p_ != nullptr">
+
+                    <!-- This if block mirrors the condition in the begin() call -->
+                    <If Condition="!first_time || !(arrays.elements_ &amp;&amp; !(arrays.groups_[0].match_occupied() &amp; 0x1))">
+                        <Item>*p_</Item>
+                    </If>
+                    <Exec>first_time = false</Exec>
+
+                    <Exec>n0 = reinterpret_cast&lt;uintptr_t&gt;(pc_) % sizeof(group_type)</Exec>
+                    <Exec>pc_ -= (ptrdiff_t)n0</Exec>
+
+                    <Exec>mask = (reinterpret_cast&lt;group_type*&gt;(pc_)-&gt;match_occupied() &gt;&gt; (n0+1)) &lt;&lt; (n0+1)</Exec>
+                    <Loop Condition="mask == 0">
+                        <Exec>pc_ += sizeof(group_type)</Exec>
+                        <Exec>p_ += group_type::N</Exec>
+                        <Exec>mask = reinterpret_cast&lt;group_type*&gt;(pc_)-&gt;match_occupied()</Exec>
+                    </Loop>
+                    
+                    <Exec>n = countr_zero(mask)</Exec>
+                    <If Condition="reinterpret_cast&lt;group_type*&gt;(pc_)-&gt;is_sentinel(n)">
+                        <Exec>p_ = nullptr</Exec>
+                    </If>
+                    <Else>
+                        <Exec>pc_ += (ptrdiff_t)n</Exec>
+                        <Exec>p_ -= (ptrdiff_t)n0</Exec>
+                        <Exec>p_ += (ptrdiff_t)n</Exec>
+                    </Else>
+                    
+                </Loop>
+            </CustomListItems>
+        </Expand>
+    </Type>
+
+    <Type Name="boost::unordered::detail::foa::table&lt;*&gt;" Inheritable="false" IncludeView="MapHelper">
+        <AlternativeType Name="boost::unordered::detail::foa::concurrent_table&lt;*&gt;" />
+        <Expand>
+            <CustomListItems MaxItemsPerView="100">
+                <Variable Name="pc_" InitialValue="reinterpret_cast&lt;unsigned char*&gt;(arrays.groups_)" />
+                <Variable Name="p_" InitialValue="arrays.elements_" />
+                <Variable Name="first_time" InitialValue="true" />
+                <Variable Name="mask" InitialValue="(int)0" />
+                <Variable Name="n0" InitialValue="(size_t)0" />
+                <Variable Name="n" InitialValue="(unsigned int)0" />
+
+                <Loop Condition="p_ != nullptr">
+
+                    <!-- This if block mirrors the condition in the begin() call -->
+                    <If Condition="!first_time || !(arrays.elements_ &amp;&amp; !(arrays.groups_[0].match_occupied() &amp; 0x1))">
+                        <Item Name="[{get_value(p_)-&gt;first}]">*p_</Item>
+                    </If>
+                    <Exec>first_time = false</Exec>
+
+                    <Exec>n0 = reinterpret_cast&lt;uintptr_t&gt;(pc_) % sizeof(group_type)</Exec>
+                    <Exec>pc_ -= (ptrdiff_t)n0</Exec>
+
+                    <Exec>mask = (reinterpret_cast&lt;group_type*&gt;(pc_)-&gt;match_occupied() &gt;&gt; (n0+1)) &lt;&lt; (n0+1)</Exec>
+                    <Loop Condition="mask == 0">
+                        <Exec>pc_ += sizeof(group_type)</Exec>
+                        <Exec>p_ += group_type::N</Exec>
+                        <Exec>mask = reinterpret_cast&lt;group_type*&gt;(pc_)-&gt;match_occupied()</Exec>
+                    </Loop>
+                    
+                    <Exec>n = countr_zero(mask)</Exec>
+                    <If Condition="reinterpret_cast&lt;group_type*&gt;(pc_)-&gt;is_sentinel(n)">
+                        <Exec>p_ = nullptr</Exec>
+                    </If>
+                    <Else>
+                        <Exec>pc_ += (ptrdiff_t)n</Exec>
+                        <Exec>p_ -= (ptrdiff_t)n0</Exec>
+                        <Exec>p_ += (ptrdiff_t)n</Exec>
+                    </Else>
+                    
+                </Loop>
+            </CustomListItems>
+        </Expand>
+    </Type>
+
+    <Type Name="boost::unordered::unordered_flat_map&lt;*&gt;" Priority="Medium">
+        <AlternativeType Name="boost::unordered::unordered_flat_set&lt;*&gt;" />
+        <AlternativeType Name="boost::unordered::unordered_node_map&lt;*&gt;" />
+        <AlternativeType Name="boost::unordered::unordered_node_set&lt;*&gt;" />
+        <AlternativeType Name="boost::unordered::concurrent_flat_map&lt;*&gt;" />
+        <AlternativeType Name="boost::unordered::concurrent_flat_set&lt;*&gt;" />
+        <DisplayString>{{ size={table_.size_ctrl.size} }}</DisplayString>
+        <Expand>
+            <Item Name="[hash_function]" ExcludeView="simple">*reinterpret_cast&lt;hasher*&gt;(static_cast&lt;table_type::super::base1*&gt;(&amp;table_))</Item>
+            <Item Name="[key_eq]" ExcludeView="simple">*reinterpret_cast&lt;key_equal*&gt;(static_cast&lt;table_type::super::base2*&gt;(&amp;table_))</Item>
+            <Item Name="[allocator]" ExcludeView="simple">*reinterpret_cast&lt;allocator_type*&gt;(static_cast&lt;table_type::super::base3*&gt;(&amp;table_))</Item>
+            <ExpandedItem>table_</ExpandedItem>
+        </Expand>
+    </Type>
+
+    <Type Name="boost::unordered::unordered_flat_map&lt;*&gt;" Priority="MediumHigh" ExcludeView="ShowElementsByIndex">
+        <AlternativeType Name="boost::unordered::unordered_node_map&lt;*&gt;" />
+        <AlternativeType Name="boost::unordered::concurrent_flat_map&lt;*&gt;" />
+        <DisplayString>{{ size={table_.size_ctrl.size} }}</DisplayString>
+        <Expand>
+            <Item Name="[hash_function]" ExcludeView="simple">*reinterpret_cast&lt;hasher*&gt;(static_cast&lt;table_type::super::base1*&gt;(&amp;table_))</Item>
+            <Item Name="[key_eq]" ExcludeView="simple">*reinterpret_cast&lt;key_equal*&gt;(static_cast&lt;table_type::super::base2*&gt;(&amp;table_))</Item>
+            <Item Name="[allocator]" ExcludeView="simple">*reinterpret_cast&lt;allocator_type*&gt;(static_cast&lt;table_type::super::base3*&gt;(&amp;table_))</Item>
+            <ExpandedItem>table_,view(MapHelper)</ExpandedItem>
+        </Expand>
+    </Type>
+
 </AutoVisualizer>
