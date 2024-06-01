@@ -107,4 +107,56 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
         </Expand>
     </Type>
 
+    <!-- FOA and CFOA helpers -->
+
+    <Type Name="boost::unordered::detail::foa::element_type&lt;*&gt;" Priority="Medium" Inheritable="false">
+        <DisplayString>{*p}</DisplayString>
+        <Expand>
+            <ExpandedItem>*p</ExpandedItem>
+        </Expand>
+    </Type>
+
+    <Type Name="boost::unordered::detail::foa::element_type&lt;std::pair&lt;*&gt;,*&gt;" Priority="MediumHigh" Inheritable="false">
+        <!-- Manually expand when holding a `std::pair`, otherwise the debugger complains about recursion-->
+        <DisplayString>({p-&gt;first}, {p-&gt;second})</DisplayString>
+        <Expand>
+            <Item Name="first">p-&gt;first</Item>
+            <Item Name="second">p-&gt;second</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="boost::unordered::detail::foa::plain_integral&lt;*&gt;" Inheritable="false">
+        <Intrinsic Name="get" Expression="n" />
+    </Type>
+
+    <Type Name="boost::unordered::detail::foa::atomic_integral&lt;*&gt;" Inheritable="false">
+        <Intrinsic Name="get" Expression="n._Storage._Value" />
+    </Type>
+
+    <Type Name="boost::unordered::detail::foa::group15&lt;*&gt;" Inheritable="false">
+        <Intrinsic Name="check_bit" Expression="(m[b].get() == 0) ? (1 &lt;&lt; b) : 0">
+            <Parameter Name="b" Type="int" />
+        </Intrinsic>
+        <Intrinsic Name="__match_occupied_regular_layout_true" Expression="0x7FFF &amp; ~(
+                check_bit( 0) + check_bit( 1) + check_bit( 2) + check_bit( 3) +
+                check_bit( 4) + check_bit( 5) + check_bit( 6) + check_bit( 7) +
+                check_bit( 8) + check_bit( 9) + check_bit(10) + check_bit(11) +
+                check_bit(12) + check_bit(13) + check_bit(14) + check_bit(15)
+        )" />
+        <Intrinsic Name="__match_occupied_x" Expression="m[0].get() | m[1].get()" />
+        <Intrinsic Name="__match_occupied_y" Expression="static_cast&lt;uint32_t&gt;(__match_occupied_x() | (__match_occupied_x() &gt;&gt; 32))" />
+        <Intrinsic Name="__match_occupied_regular_layout_false" Expression="0x7FFF &amp; (__match_occupied_y() | (__match_occupied_y() &gt;&gt; 16))" />
+        <Intrinsic Name="match_occupied" Expression="regular_layout ? __match_occupied_regular_layout_true() : __match_occupied_regular_layout_false()" />
+
+        <Intrinsic Name="__is_sentinel_regular_layout_true" Expression="pos == N-1 &amp;&amp; m[N-1].get() == sentinel_" >
+            <Parameter Name="pos" Type="size_t" />
+        </Intrinsic>
+        <Intrinsic Name="__is_sentinel_regular_layout_false" Expression="pos == N-1 &amp;&amp; (m[0].get() &amp; uint64_t(0x4000400040004000ull)) == uint64_t(0x4000ull) &amp;&amp; (m[1].get() &amp; uint64_t(0x4000400040004000ull))==0" >
+            <Parameter Name="pos" Type="size_t" />
+        </Intrinsic>
+        <Intrinsic Name="is_sentinel" Expression="regular_layout ? __is_sentinel_regular_layout_true(pos) : __is_sentinel_regular_layout_false(pos)" >
+            <Parameter Name="pos" Type="size_t" />
+        </Intrinsic>
+    </Type>
+
 </AutoVisualizer>
