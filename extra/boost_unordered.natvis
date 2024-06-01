@@ -301,4 +301,15 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
         </Expand>
     </Type>
 
+    <!-- FOA iterators -->
+
+    <Type Name="boost::unordered::detail::foa::table_iterator&lt;*&gt;" Inheritable="false">
+        <Intrinsic Name="valid" Expression="p_ != nullptr &amp;&amp; pc_ != nullptr" />
+        <DisplayString Condition="valid()">{*p_}</DisplayString>
+        <DisplayString Condition="!valid()">{{ end iterator }}</DisplayString>
+        <Expand>
+            <ExpandedItem Condition="valid()">*p_</ExpandedItem>
+        </Expand>
+    </Type>
+
 </AutoVisualizer>
