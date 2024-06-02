@@ -8,7 +8,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
 
     <!-- FCA containers -->
-
+    
     <Type Name="boost::unordered::detail::functions&lt;*&gt;" Inheritable="false">
         <Intrinsic Name="active_idx" Expression="current_ &amp; 1" />
         <Intrinsic Name="spare_idx" Expression="1 - active_idx()" />
@@ -20,7 +20,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
         <Intrinsic Name="key_eq" Expression="*reinterpret_cast&lt;$T2*&gt;(static_cast&lt;function_pair::base2*&gt;(&amp;funcs_[idx].t_))">
             <Parameter Name="idx" Type="size_t" />
         </Intrinsic>
-        
+
         <Expand>
             <Item Name="[hash_function]">hash(active_idx())</Item>
             <Item Name="[key_eq]">key_eq(active_idx())</Item>
@@ -159,6 +159,69 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
         </Intrinsic>
     </Type>
 
+    <!-- FOA and CFOA stats -->
+
+    <Type Name="boost::unordered::detail::foa::table_core_cumulative_stats" Inheritable="false">
+        <DisplayString>stats</DisplayString>
+        <Expand>
+            <Item Name="[insertion]">insertion</Item>
+            <Item Name="[successful_lookup]">successful_lookup</Item>
+            <Item Name="[unsuccessful_lookup]">unsuccessful_lookup</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="boost::unordered::detail::cumulative_stats&lt;*&gt;" Inheritable="true">
+        <Intrinsic Name="bit_cast_to_double" Expression="*reinterpret_cast&lt;double*&gt;(&amp;i)">
+            <Parameter Name="i" Type="uint64_t" />
+        </Intrinsic>
+        <Intrinsic Name="bit_cast_to_uint64_t" Expression="*reinterpret_cast&lt;uint64_t*&gt;(&amp;d)">
+            <Parameter Name="d" Type="double" />
+        </Intrinsic>
+        
+        <!-- https://en.wikipedia.org/wiki/Fast_inverse_square_root#Magic_number -->
+        <Intrinsic Name="__inv_sqrt_init" Expression="bit_cast_to_double(0x5FE6EB50C7B537A9ull - (bit_cast_to_uint64_t(x) &gt;&gt; 1))">
+            <Parameter Name="x" Type="double" />
+        </Intrinsic>
+        <Intrinsic Name="__inv_sqrt_iter" Expression="0.5 * f * (3 - x * f * f)">
+            <Parameter Name="x" Type="double" />
+            <Parameter Name="f" Type="double" />
+        </Intrinsic>
+        <Intrinsic Name="inv_sqrt" Expression="__inv_sqrt_iter(x, __inv_sqrt_iter(x, __inv_sqrt_iter(x, __inv_sqrt_iter(x, __inv_sqrt_init(x)))))">
+            <Parameter Name="x" Type="double" />
+        </Intrinsic>
+
+        <Intrinsic Name="average" Expression="data[idx].m">
+            <Parameter Name="idx" Type="size_t" />
+        </Intrinsic>
+        <Intrinsic Name="variance" Expression="n != 0 ? data[idx].s / static_cast&lt;double&gt;(n) : 0.0">
+            <Parameter Name="idx" Type="size_t" />
+        </Intrinsic>
+        <Intrinsic Name="deviation" Expression="variance(idx) == 0 ? 0.0 : 1/inv_sqrt(variance(idx))">
+            <Parameter Name="idx" Type="size_t" />
+        </Intrinsic>
+        
+        <DisplayString>{{ count = {n} }}</DisplayString>
+        <Expand>
+            <Item Name="[count]">n</Item>
+            <Synthetic Name="[probe_length]" Condition="$T1 > 0">
+                <DisplayString>{{ average = {average(0)} }}</DisplayString>
+                <Expand>
+                    <Item Name="[average]">average(0)</Item>
+                    <Item Name="[variance]">variance(0)</Item>
+                    <Item Name="[deviation]">deviation(0)</Item>
+                </Expand>
+            </Synthetic>
+            <Synthetic Name="[num_comparisons]" Condition="$T1 > 1">
+                <DisplayString>{{ average = {average(1)} }}</DisplayString>
+                <Expand>
+                    <Item Name="[average]">average(1)</Item>
+                    <Item Name="[variance]">variance(1)</Item>
+                    <Item Name="[deviation]">deviation(1)</Item>
+                </Expand>
+            </Synthetic>
+        </Expand>
+    </Type>
+
     <!-- FOA and CFOA containers -->
 
     <Type Name="boost::unordered::detail::foa::table&lt;*&gt;" Inheritable="false">
@@ -189,6 +252,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
         </Intrinsic>
 
         <Expand>
+            <Item Name="[stats]" Optional="true">cstats</Item>
             <CustomListItems MaxItemsPerView="100">
                 <Variable Name="pc_" InitialValue="reinterpret_cast&lt;unsigned char*&gt;(arrays.groups_)" />
                 <Variable Name="p_" InitialValue="arrays.elements_" />
@@ -233,6 +297,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
     <Type Name="boost::unordered::detail::foa::table&lt;*&gt;" Inheritable="false" IncludeView="MapHelper">
         <AlternativeType Name="boost::unordered::detail::foa::concurrent_table&lt;*&gt;" />
         <Expand>
+            <Item Name="[stats]" Optional="true">cstats</Item>
             <CustomListItems MaxItemsPerView="100">
                 <Variable Name="pc_" InitialValue="reinterpret_cast&lt;unsigned char*&gt;(arrays.groups_)" />
                 <Variable Name="p_" InitialValue="arrays.elements_" />
