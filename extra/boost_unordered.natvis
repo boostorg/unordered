@@ -347,9 +347,9 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
         <AlternativeType Name="boost::unordered::concurrent_flat_set&lt;*&gt;" />
         <DisplayString>{{ size={table_.size_ctrl.size} }}</DisplayString>
         <Expand>
-            <Item Name="[hash_function]" ExcludeView="simple">*reinterpret_cast&lt;hasher*&gt;(static_cast&lt;table_type::super::base1*&gt;(&amp;table_))</Item>
-            <Item Name="[key_eq]" ExcludeView="simple">*reinterpret_cast&lt;key_equal*&gt;(static_cast&lt;table_type::super::base2*&gt;(&amp;table_))</Item>
-            <Item Name="[allocator]" ExcludeView="simple">*reinterpret_cast&lt;allocator_type*&gt;(static_cast&lt;table_type::super::base3*&gt;(&amp;table_))</Item>
+            <Item Name="[hash_function]" ExcludeView="simple">*reinterpret_cast&lt;hasher*&gt;(static_cast&lt;table_type::super::hash_base*&gt;(&amp;table_))</Item>
+            <Item Name="[key_eq]" ExcludeView="simple">*reinterpret_cast&lt;key_equal*&gt;(static_cast&lt;table_type::super::pred_base*&gt;(&amp;table_))</Item>
+            <Item Name="[allocator]" ExcludeView="simple">*reinterpret_cast&lt;allocator_type*&gt;(static_cast&lt;table_type::super::allocator_base*&gt;(&amp;table_))</Item>
             <ExpandedItem>table_</ExpandedItem>
         </Expand>
     </Type>
@@ -359,9 +359,9 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
         <AlternativeType Name="boost::unordered::concurrent_flat_map&lt;*&gt;" />
         <DisplayString>{{ size={table_.size_ctrl.size} }}</DisplayString>
         <Expand>
-            <Item Name="[hash_function]" ExcludeView="simple">*reinterpret_cast&lt;hasher*&gt;(static_cast&lt;table_type::super::base1*&gt;(&amp;table_))</Item>
-            <Item Name="[key_eq]" ExcludeView="simple">*reinterpret_cast&lt;key_equal*&gt;(static_cast&lt;table_type::super::base2*&gt;(&amp;table_))</Item>
-            <Item Name="[allocator]" ExcludeView="simple">*reinterpret_cast&lt;allocator_type*&gt;(static_cast&lt;table_type::super::base3*&gt;(&amp;table_))</Item>
+            <Item Name="[hash_function]" ExcludeView="simple">*reinterpret_cast&lt;hasher*&gt;(static_cast&lt;table_type::super::hash_base*&gt;(&amp;table_))</Item>
+            <Item Name="[key_eq]" ExcludeView="simple">*reinterpret_cast&lt;key_equal*&gt;(static_cast&lt;table_type::super::pred_base*&gt;(&amp;table_))</Item>
+            <Item Name="[allocator]" ExcludeView="simple">*reinterpret_cast&lt;allocator_type*&gt;(static_cast&lt;table_type::super::allocator_base*&gt;(&amp;table_))</Item>
             <ExpandedItem>table_,view(MapHelper)</ExpandedItem>
         </Expand>
     </Type>

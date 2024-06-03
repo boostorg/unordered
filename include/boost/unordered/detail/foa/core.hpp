@@ -1413,12 +1413,6 @@ __declspec(empty_bases) /* activate EBO with multiple inheritance */
 
 table_core:empty_value<Hash,0>,empty_value<Pred,1>,empty_value<Allocator,2>
 {
-private:
-  // These `baseN` aliases are for debugger visualizations, like natvis
-  using base1=empty_value<Hash,0>;
-  using base2=empty_value<Pred,1>;
-  using base3=empty_value<Allocator,2>;
-
 public:
   using type_policy=TypePolicy;
   using group_type=Group;
