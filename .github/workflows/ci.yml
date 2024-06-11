@@ -18,7 +18,6 @@ on:
       - feature/**
       - fix/**
       - pr/**
-      - ci/**
 
 concurrency:
   group: ${{format('{0}:{1}', github.repository, github.ref)}}
