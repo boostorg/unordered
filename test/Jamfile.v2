@@ -1,6 +1,7 @@
 
 # Copyright 2006-2008 Daniel James.
 # Copyright 2022-2023 Christian Mazakas
+# Copyright 2024 Joaquin M Lopez Munoz
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -359,6 +360,13 @@ run cfoa/serialization_tests.cpp
       <library>/boost//serialization/<warnings>off
     : cfoa_serialization_tests ;
 
+run cfoa/interprocess_concurrency_tests.cpp /boost/filesystem//boost_filesystem : :
+    : <warnings>off
+      <link>static
+      <target-os>cygwin:<build>no
+    : cfoa_interprocess_concurrency_tests ;
+
 alias cfoa_tests :
   cfoa_$(CFOA_TESTS)
-  cfoa_serialization_tests ;
+  cfoa_serialization_tests
+  cfoa_interprocess_concurrency_tests ;
