@@ -21,6 +21,7 @@ namespace bip=boost::interprocess;
 
 static char const* container_name = "shared_map";
 static char const* start_name = "shared_start";
+static constexpr int NUM_OPS_PER_CHILD = 10000;
 
 using value_type = std::pair<const int, int>;
 using allocator = bip::allocator<
@@ -63,25 +64,22 @@ int parent(const char* exe_name)
 
   start.store(1);
 
-  int num_ops = 0;
   for (auto& child : children) {
     child.wait();
-    num_ops += child.exit_code();
+    BOOST_TEST_EQ(child.exit_code(), 0);
   }
 
-  int check_num_ops = 0;
+  int num_ops = 0;
   c.cvisit_all([&](const value_type& x) {
-    check_num_ops += x.second;
+    num_ops += x.second;
   });
-  BOOST_TEST_EQ(num_ops, check_num_ops);
+  BOOST_TEST_EQ(num_ops, NUM_CHILDS * NUM_OPS_PER_CHILD);
 
   return boost::report_errors();
 }
 
 int child(int id,const char* segment_name)
 {
-  static constexpr int NUM_OPS = 10000;
-
   bip::managed_shared_memory segment(bip::open_only, segment_name);
   container& c = *segment.find<container>(container_name).first;
   std::atomic_int& start = *segment.find<std::atomic_int>(start_name).first;
@@ -93,7 +91,7 @@ int child(int id,const char* segment_name)
   std::mt19937 rnd((unsigned int) id);
   std::geometric_distribution<int> d(0.15);
 
-  for(int i = 0; i < NUM_OPS; ++i) {
+  for(int i = 0; i < NUM_OPS_PER_CHILD; ++i) {
     c.emplace_or_visit(d(rnd), 1, [&](value_type& x) {
       ++x.second;
 
@@ -102,7 +100,7 @@ int child(int id,const char* segment_name)
       while(n--) ;
     });
   }
-  return NUM_OPS;
+  return 0;
 }
 
 int main(int argc, char** argv)
