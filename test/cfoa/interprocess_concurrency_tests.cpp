@@ -80,7 +80,7 @@ int parent(const char* exe_name)
 
 int child(int id,const char* segment_name)
 {
-  static constexpr int NUM_OPS = 10'000;
+  static constexpr int NUM_OPS = 10000;
 
   bip::managed_shared_memory segment(bip::open_only, segment_name);
   container& c = *segment.find<container>(container_name).first;
@@ -98,7 +98,7 @@ int child(int id,const char* segment_name)
       ++x.second;
 
       // artificially increase contention
-      volatile unsigned int n = 10'000;
+      volatile unsigned int n = 10000;
       while(n--) ;
     });
   }
