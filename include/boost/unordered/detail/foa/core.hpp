@@ -41,7 +41,7 @@
 #include <utility>
 
 #if defined(BOOST_UNORDERED_ENABLE_STATS)
-#include <boost/unordered/detail/cumulative_stats.hpp>
+#include <boost/unordered/detail/foa/cumulative_stats.hpp>
 #endif
 
 #if !defined(BOOST_UNORDERED_DISABLE_SSE2)

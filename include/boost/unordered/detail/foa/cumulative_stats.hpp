@@ -6,8 +6,8 @@
  * See https://www.boost.org/libs/unordered for library home page.
  */
 
-#ifndef BOOST_UNORDERED_DETAIL_CUMULATIVE_STATS_HPP
-#define BOOST_UNORDERED_DETAIL_CUMULATIVE_STATS_HPP
+#ifndef BOOST_UNORDERED_DETAIL_FOA_CUMULATIVE_STATS_HPP
+#define BOOST_UNORDERED_DETAIL_FOA_CUMULATIVE_STATS_HPP
 
 #include <array>
 #include <boost/config.hpp>
@@ -16,12 +16,14 @@
 #include <cstddef>
 
 #if defined(BOOST_HAS_THREADS)
+#include <boost/unordered/detail/foa/rw_spinlock.hpp>
 #include <mutex>
 #endif
 
 namespace boost{
 namespace unordered{
 namespace detail{
+namespace foa{
 
 /* Cumulative one-pass calculation of the average, variance and deviation of
  * running sequences.
@@ -117,7 +119,7 @@ template<std::size_t N>
 class concurrent_cumulative_stats:cumulative_stats<N>
 {
   using super=cumulative_stats<N>;
-  using lock_guard=std::lock_guard<std::mutex>;
+  using lock_guard=std::lock_guard<rw_spinlock>;
 
 public:
   using summary=typename super::summary;
@@ -157,7 +159,7 @@ public:
 private:
   concurrent_cumulative_stats(const super& x,lock_guard&&):super{x}{}
 
-  mutable std::mutex mut;
+  mutable rw_spinlock mut;
 };
 
 #else
@@ -167,6 +169,7 @@ using concurrent_cumulative_stats=cumulative_stats<N>;
 
 #endif
 
+} /* namespace foa */
 } /* namespace detail */
 } /* namespace unordered */
 } /* namespace boost */

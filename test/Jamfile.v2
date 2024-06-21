@@ -360,13 +360,23 @@ run cfoa/serialization_tests.cpp
       <library>/boost//serialization/<warnings>off
     : cfoa_serialization_tests ;
 
-run cfoa/interprocess_concurrency_tests.cpp /boost/filesystem//boost_filesystem : :
-    : <warnings>off
-      <link>static
-      <target-os>cygwin:<build>no
-    : cfoa_interprocess_concurrency_tests ;
+rule make_cfoa_interprocess_concurrency_tests ( name : defines ? )
+{
+    run cfoa/interprocess_concurrency_tests.cpp /boost/filesystem//boost_filesystem : :
+        : <define>$(defines)
+          <warnings>off
+          <link>static
+          <target-os>cygwin:<build>no
+        : $(name) ;
+}
+
+make_cfoa_interprocess_concurrency_tests cfoa_interprocess_concurrency_tests ;
+
+make_cfoa_interprocess_concurrency_tests cfoa_interprocess_concurrency_tests_stats
+    :  BOOST_UNORDERED_ENABLE_STATS ;
 
 alias cfoa_tests :
   cfoa_$(CFOA_TESTS)
   cfoa_serialization_tests
-  cfoa_interprocess_concurrency_tests ;
+  cfoa_interprocess_concurrency_tests
+  cfoa_interprocess_concurrency_tests_stats ;
