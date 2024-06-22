@@ -170,7 +170,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
         </Expand>
     </Type>
 
-    <Type Name="boost::unordered::detail::cumulative_stats&lt;*&gt;" Inheritable="true">
+    <Type Name="boost::unordered::detail::foa::cumulative_stats&lt;*&gt;" Inheritable="true">
         <Intrinsic Name="bit_cast_to_double" Expression="*reinterpret_cast&lt;double*&gt;(&amp;i)">
             <Parameter Name="i" Type="uint64_t" />
         </Intrinsic>
