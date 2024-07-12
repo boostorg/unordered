@@ -6,6 +6,10 @@
 :github-pr-url: https://github.com/boostorg/unordered/pull
 :cpp: C++
 
+== Release 1.87.0
+
+* In Visual Studio Natvis, supported any container with an allocator that uses fancy pointers. This applies to any fancy pointer type, as long as the proper Natvis customization point "Intrinsic" functions are written for the fancy pointer type.
+
 == Release 1.86.0
 
 * Added container `pmr` aliases when header `<memory_resource>` is available. The alias `boost::unordered::pmr::[container]` refers to `boost::unordered::[container]` with a `std::pmr::polymorphic_allocator` allocator type.
