@@ -9,7 +9,7 @@ All containers and iterators have custom visualizations in the Natvis framework.
 
 === Using in your project
 
-To visualize Boost.Unordered containers in the Natvis framework in your project, simply add the file "/extra/boost_unordered.natvis" to your Visual Studio project as an "Existing Item".
+To visualize Boost.Unordered containers in the Natvis framework in your project, simply add the file link:https://github.com/boostorg/unordered/blob/develop/extra/boost_unordered.natvis[/extra/boost_unordered.natvis] to your Visual Studio project as an "Existing Item".
 
 === Visualization structure
 
@@ -23,4 +23,4 @@ Iterators are displayed similarly to their standard counterparts. An iterator is
 
 === Fancy pointers
 
-The container visualizations also work if you are using fancy pointers in your allocator, such as `boost::interprocess::offset_ptr`. While this is rare, Boost.Unordered has natvis customization points to support any type of fancy pointer. `boost::interprocess::offset_ptr` has support already defined in the Boost.Interprocess library, and you can add support to your own type by following the instructions contained in a comment near the end of the file "/extra/boost_unordered.natvis".
+The container visualizations also work if you are using fancy pointers in your allocator, such as `boost::interprocess::offset_ptr`. While this is rare, Boost.Unordered has natvis customization points to support any type of fancy pointer. `boost::interprocess::offset_ptr` has support already defined in the Boost.Interprocess library, and you can add support to your own type by following the instructions contained in a comment near the end of the file link:https://github.com/boostorg/unordered/blob/develop/extra/boost_unordered.natvis[/extra/boost_unordered.natvis].
