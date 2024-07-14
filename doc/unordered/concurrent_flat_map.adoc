@@ -389,9 +389,13 @@ prior blocking operations on `x` synchronize with *op*. So, blocking operations 
 An operation is said to be _blocking on rehashing of_ ``__x__`` if it blocks on `x`
 only when an internal rehashing is issued.
 
-Access or modification of an element of a `boost::concurrent_flat_map` passed by reference to a
-user-provided visitation function do not introduce data races when the visitation function
-is executed internally by the `boost::concurrent_flat_map`.
+When executed internally by a `boost::concurrent_flat_map`, the following operations by a
+user-provided visitation function on the element passed do not introduce data races:
+
+* Read access to the element.
+* Non-mutable modification of the element.
+* Mutable modification of the element (if the container operation executing the visitation function is not const
+and its name does not contain `cvisit`.)
 
 Any `boost::concurrent_flat_map operation` that inserts or modifies an element `e`
 synchronizes with the internal invocation of a visitation function on `e`.

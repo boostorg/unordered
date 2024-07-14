@@ -6,6 +6,12 @@
 :github-pr-url: https://github.com/boostorg/unordered/pull
 :cpp: C++
 
+== Release 1.87.0
+
+* Made visitation exclusive-locked within certain
+`boost::concurrent_flat_set` operations to allow for safe mutable modification of elements
+({github-pr-url}/264[PR#264^]).
+
 == Release 1.86.0
 
 * Added container `pmr` aliases when header `<memory_resource>` is available. The alias `boost::unordered::pmr::[container]` refers to `boost::unordered::[container]` with a `std::pmr::polymorphic_allocator` allocator type.
