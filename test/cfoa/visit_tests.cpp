@@ -999,7 +999,7 @@ namespace {
       return boost::hash<int>{}(x.first);
     }
 
-    std::size_t operator()(const null_mutable_pair& x) const
+    std::size_t operator()(const null_mutable_pair&) const
     {
       return boost::hash<int>{}(0);
     }
@@ -1014,12 +1014,12 @@ namespace {
       return x.first == y.first;
     }
 
-    bool operator()(const null_mutable_pair& x, const mutable_pair& y) const
+    bool operator()(const null_mutable_pair&, const mutable_pair& y) const
     {
       return 0 == y.first;
     }
 
-    bool operator()(const mutable_pair& x, const null_mutable_pair& y) const
+    bool operator()(const mutable_pair& x, const null_mutable_pair&) const
     {
       return x.first == 0;
     }
