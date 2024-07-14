@@ -11,7 +11,7 @@ local triggers =
 
 local ubsan = { UBSAN: '1', UBSAN_OPTIONS: 'print_stacktrace=1' };
 local asan = { ASAN: '1', ASAN_OPTIONS: 'privileged=True' };
-local tsan = { TSAN: '1'  TSAN_OPTIONS: 'privileged=True' };
+local tsan = { TSAN: '1', TSAN_OPTIONS: 'privileged=True' };
 
 local linux_pipeline(name, image, environment, packages = "", sources = [], arch = "amd64") =
 {
