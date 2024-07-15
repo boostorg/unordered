@@ -10,7 +10,7 @@
 
 * Made visitation exclusive-locked within certain
 `boost::concurrent_flat_set` operations to allow for safe mutable modification of elements
-({github-pr-url}/264[PR#264^]).
+({github-pr-url}/265[PR#265^]).
 
 == Release 1.86.0
 
