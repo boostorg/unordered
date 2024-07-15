@@ -1017,6 +1017,11 @@ struct table_arrays
       rebind<group_type>;
   using group_type_pointer_traits=boost::pointer_traits<group_type_pointer>;
 
+  // For natvis purposes
+  using char_pointer=
+    typename boost::pointer_traits<value_type_pointer>::template
+      rebind<unsigned char>;
+
   table_arrays(
     std::size_t gsi,std::size_t gsm,
     group_type_pointer pg,value_type_pointer pe):
