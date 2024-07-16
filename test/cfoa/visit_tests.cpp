@@ -18,6 +18,7 @@
 #include <boost/unordered/concurrent_flat_map.hpp>
 #include <boost/unordered/concurrent_flat_set.hpp>
 
+#include <boost/compat/latch.hpp>
 #include <boost/core/ignore_unused.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 
@@ -28,10 +29,8 @@
 #include <algorithm>
 #include <array>
 #include <chrono>
-#include <condition_variable>
 #include <functional>
 #include <iterator>
-#include <mutex>
 #include <thread>
 #include <vector>
 
@@ -1028,23 +1027,16 @@ namespace {
   template<typename F>
   void exclusive_access_for(F f)
   {
-    std::atomic_int             num_started{0};
-    std::atomic_int             in_visit{0};
-    std::mutex                  m;
-    std::condition_variable     cv;
-    bool                        finish = false;
+    std::atomic_int      num_started{0};
+    std::atomic_int      in_visit{0};
+    boost::compat::latch finish{1};
 
     auto bound_f = [&] {
       ++num_started;
       f([&] (const mutable_pair& x) {
         ++in_visit;
         ++x.second;
-
-        {
-          std::unique_lock<std::mutex> lk(m);
-          cv.wait(lk, [&] { return finish; });
-        }
-
+        finish.wait();
         --in_visit;
         return true;
       });
@@ -1055,11 +1047,7 @@ namespace {
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
     BOOST_TEST(in_visit <= 1);
-    {
-      std::unique_lock<std::mutex> lk(m);
-      finish = true;
-    }
-    cv.notify_all();
+    finish.count_down();
     t1.join();
     t2.join();
   }  
