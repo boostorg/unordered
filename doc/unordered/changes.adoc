@@ -11,6 +11,7 @@
 * Made visitation exclusive-locked within certain
 `boost::concurrent_flat_set` operations to allow for safe mutable modification of elements
 ({github-pr-url}/265[PR#265^]).
+* In Visual Studio Natvis, supported any container with an allocator that uses fancy pointers. This applies to any fancy pointer type, as long as the proper Natvis customization point "Intrinsic" functions are written for the fancy pointer type.
 
 == Release 1.86.0
 

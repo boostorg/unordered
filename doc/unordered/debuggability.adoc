@@ -5,7 +5,13 @@
 
 == Visual Studio Natvis
 
-All containers and iterators have custom visualizations in the Natvis framework, as long as their allocator uses regular raw pointers. Any container or iterator with an allocator using fancy pointers does not have a custom visualization right now.
+All containers and iterators have custom visualizations in the Natvis framework.
+
+=== Using in your project
+
+To visualize Boost.Unordered containers in the Natvis framework in your project, simply add the file link:https://github.com/boostorg/unordered/blob/develop/extra/boost_unordered.natvis[/extra/boost_unordered.natvis] to your Visual Studio project as an "Existing Item".
+
+=== Visualization structure
 
 The visualizations mirror those for the standard unordered containers. A container has a maximum of 100 elements displayed at once. Each set element has its item name listed as `[i]`, where `i` is the index in the display, starting at `0`. Each map element has its item name listed as `[\{key-display}]` by default. For example, if the first element is the pair `("abc", 1)`, the item name will be `["abc"]`. This behaviour can be overridden by using the view "ShowElementsByIndex", which switches the map display behaviour to name the elements by index. This same view name is used in the standard unordered containers.
 
@@ -13,4 +19,8 @@ By default, the closed-addressing containers will show the `[hash_function]` and
 
 By default, the open-addressing containers will show the `[hash_function]`, `[key_eq]`, `[allocator]`, and the elements. Using the view "simple" shows only the elements, with no other items present. Both the SIMD and the non-SIMD implementations are viewable through the Natvis framework.
 
-Iterators are displayed similarly to their standard counterparts. An iterator is displayed as though it were the element that it points to. An end iterator is simply displayed as `\{ end iterator }`.
+Iterators are displayed similarly to their standard counterparts. An iterator is displayed as though it were the element that it points to. An end iterator is simply displayed as `{ end iterator }`.
+
+=== Fancy pointers
+
+The container visualizations also work if you are using fancy pointers in your allocator, such as `boost::interprocess::offset_ptr`. While this is rare, Boost.Unordered has natvis customization points to support any type of fancy pointer. `boost::interprocess::offset_ptr` has support already defined in the Boost.Interprocess library, and you can add support to your own type by following the instructions contained in a comment near the end of the file link:https://github.com/boostorg/unordered/blob/develop/extra/boost_unordered.natvis[/extra/boost_unordered.natvis].
