@@ -30,6 +30,7 @@ local linux_pipeline(name, image, environment, packages = "", sources = [], arch
             name: "everything",
             image: image,
             environment: environment,
+            privileged: true,
             commands:
             [
                 'set -e',

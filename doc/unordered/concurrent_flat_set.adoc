@@ -98,25 +98,35 @@ namespace boost {
 
 
     // visitation
+    template<class F> size_t xref:#concurrent_flat_set_cvisit[visit](const key_type& k, F f);
     template<class F> size_t xref:#concurrent_flat_set_cvisit[visit](const key_type& k, F f) const;
     template<class F> size_t xref:#concurrent_flat_set_cvisit[cvisit](const key_type& k, F f) const;
+    template<class K, class F> size_t xref:#concurrent_flat_set_cvisit[visit](const K& k, F f);
     template<class K, class F> size_t xref:#concurrent_flat_set_cvisit[visit](const K& k, F f) const;
     template<class K, class F> size_t xref:#concurrent_flat_set_cvisit[cvisit](const K& k, F f) const;
 
+    template<class FwdIterator, class F>
+      size_t xref:concurrent_flat_set_bulk_visit[visit](FwdIterator first, FwdIterator last, F f);
     template<class FwdIterator, class F>
       size_t xref:concurrent_flat_set_bulk_visit[visit](FwdIterator first, FwdIterator last, F f) const;
     template<class FwdIterator, class F>
       size_t xref:concurrent_flat_set_bulk_visit[cvisit](FwdIterator first, FwdIterator last, F f) const;
 
+    template<class F> size_t xref:#concurrent_flat_set_cvisit_all[visit_all](F f);
     template<class F> size_t xref:#concurrent_flat_set_cvisit_all[visit_all](F f) const;
     template<class F> size_t xref:#concurrent_flat_set_cvisit_all[cvisit_all](F f) const;
+    template<class ExecutionPolicy, class F>
+      void xref:#concurrent_flat_set_parallel_cvisit_all[visit_all](ExecutionPolicy&& policy, F f);
     template<class ExecutionPolicy, class F>
       void xref:#concurrent_flat_set_parallel_cvisit_all[visit_all](ExecutionPolicy&& policy, F f) const;
     template<class ExecutionPolicy, class F>
       void xref:#concurrent_flat_set_parallel_cvisit_all[cvisit_all](ExecutionPolicy&& policy, F f) const;
 
+    template<class F> bool xref:#concurrent_flat_set_cvisit_while[visit_while](F f);
     template<class F> bool xref:#concurrent_flat_set_cvisit_while[visit_while](F f) const;
     template<class F> bool xref:#concurrent_flat_set_cvisit_while[cvisit_while](F f) const;
+    template<class ExecutionPolicy, class F>
+      bool xref:#concurrent_flat_set_parallel_cvisit_while[visit_while](ExecutionPolicy&& policy, F f);
     template<class ExecutionPolicy, class F>
       bool xref:#concurrent_flat_set_parallel_cvisit_while[visit_while](ExecutionPolicy&& policy, F f) const;
     template<class ExecutionPolicy, class F>
@@ -340,9 +350,13 @@ prior blocking operations on `x` synchronize with *op*. So, blocking operations 
 An operation is said to be _blocking on rehashing of_ ``__x__`` if it blocks on `x`
 only when an internal rehashing is issued.
 
-Access or modification of an element of a `boost::concurrent_flat_set` passed by reference to a
-user-provided visitation function do not introduce data races when the visitation function
-is executed internally by the `boost::concurrent_flat_set`.
+When executed internally by a `boost::concurrent_flat_set`, the following operations by a
+user-provided visitation function on the element passed do not introduce data races:
+
+* Read access to the element.
+* Non-mutable modification of the element.
+* Mutable modification of the element (if the container operation executing the visitation function is not const
+and its name does not contain `cvisit`.)
 
 Any `boost::concurrent_flat_set operation` that inserts or modifies an element `e`
 synchronizes with the internal invocation of a visitation function on `e`.
@@ -708,8 +722,10 @@ Concurrency:;; Blocking on `*this`.
 ==== [c]visit
 
 ```c++
+template<class F> size_t visit(const key_type& k, F f);
 template<class F> size_t visit(const key_type& k, F f) const;
 template<class F> size_t cvisit(const key_type& k, F f) const;
+template<class K, class F> size_t visit(const K& k, F f);
 template<class K, class F> size_t visit(const K& k, F f) const;
 template<class K, class F> size_t cvisit(const K& k, F f) const;
 ```
@@ -725,6 +741,8 @@ Notes:;; The `template<class K, class F>` overloads only participate in overload
 ==== Bulk visit
 
 ```c++
+template<class FwdIterator, class F>
+  size_t visit(FwdIterator first, FwdIterator last, F f);
 template<class FwdIterator, class F>
   size_t visit(FwdIterator first, FwdIterator last, F f) const;
 template<class FwdIterator, class F>
@@ -758,6 +776,7 @@ Returns:;; The number of elements visited.
 ==== [c]visit_all
 
 ```c++
+template<class F> size_t visit_all(F f);
 template<class F> size_t visit_all(F f) const;
 template<class F> size_t cvisit_all(F f) const;
 ```
@@ -772,6 +791,7 @@ Returns:;; The number of elements visited.
 ==== Parallel [c]visit_all
 
 ```c++
+template<class ExecutionPolicy, class F> void visit_all(ExecutionPolicy&& policy, F f);
 template<class ExecutionPolicy, class F> void visit_all(ExecutionPolicy&& policy, F f) const;
 template<class ExecutionPolicy, class F> void cvisit_all(ExecutionPolicy&& policy, F f) const;
 ```
@@ -792,6 +812,7 @@ Unsequenced execution policies are not allowed.
 ==== [c]visit_while
 
 ```c++
+template<class F> bool visit_while(F f);
 template<class F> bool visit_while(F f) const;
 template<class F> bool cvisit_while(F f) const;
 ```
@@ -807,6 +828,7 @@ Returns:;; `false` iff `f` ever returns `false`.
 ==== Parallel [c]visit_while
 
 ```c++
+template<class ExecutionPolicy, class F> bool visit_while(ExecutionPolicy&& policy, F f);
 template<class ExecutionPolicy, class F> bool visit_while(ExecutionPolicy&& policy, F f) const;
 template<class ExecutionPolicy, class F> bool cvisit_while(ExecutionPolicy&& policy, F f) const;
 ```
