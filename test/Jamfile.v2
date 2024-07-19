@@ -384,6 +384,7 @@ rule make_cfoa_interprocess_concurrency_tests ( name : defines ? )
           <library>/boost/filesystem//boost_filesystem
           <library>/boost/interprocess//boost_interprocess
           <library>/boost/process//boost_process
+          <library>/boost/uuid//boost_uuid
         : $(name) ;
 }
 
