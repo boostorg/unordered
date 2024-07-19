@@ -372,7 +372,7 @@ run cfoa/serialization_tests.cpp
 
 rule make_cfoa_interprocess_concurrency_tests ( name : defines ? )
 {
-    run cfoa/interprocess_concurrency_tests.cpp /boost/filesystem//boost_filesystem : :
+    run cfoa/interprocess_concurrency_tests.cpp : :
         : <define>$(defines)
           <warnings>off
           <link>static
@@ -381,6 +381,8 @@ rule make_cfoa_interprocess_concurrency_tests ( name : defines ? )
           <toolset>clang-3.7:<build>no # idem
           <toolset>clang-3.8:<build>no # idem
           <target-os>cygwin:<build>no
+          <library>/boost/filesystem//boost_filesystem
+          <library>/boost/interprocess//boost_interprocess
         : $(name) ;
 }
 
