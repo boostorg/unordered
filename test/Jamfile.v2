@@ -21,9 +21,9 @@ local msvc-flags = /wd4494 ;
 
 project
     : requirements
-        <source>/boost/concept_check//boost_concept_check
-        <source>/boost/compat//boost_compat
-        <source>/boost/iterator//boost_iterator
+        <library>/boost/concept_check//boost_concept_check
+        <library>/boost/compat//boost_compat
+        <library>/boost/iterator//boost_iterator
         <warnings>pedantic
         <toolset>intel:<warnings>on
 
