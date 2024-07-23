@@ -6,6 +6,8 @@
 // Run this test and break manually at the variable called `break_here`.
 // Inspect the variables using the Visual Studio debugger to test correctness.
 
+#include <boost/config.hpp>
+
 #if !defined(BOOST_MSVC)
 
 #include <boost/config/pragma_message.hpp>
