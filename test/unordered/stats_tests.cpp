@@ -7,8 +7,12 @@
 #ifdef BOOST_UNORDERED_CFOA_TESTS
 #include <boost/unordered/concurrent_flat_map.hpp>
 #include <boost/unordered/concurrent_flat_set.hpp>
+#include <boost/unordered/concurrent_node_map.hpp>
+#include <boost/unordered/concurrent_node_set.hpp>
 #include <boost/unordered/unordered_flat_map.hpp>
 #include <boost/unordered/unordered_flat_set.hpp>
+#include <boost/unordered/unordered_node_map.hpp>
+#include <boost/unordered/unordered_node_set.hpp>
 #include "../cfoa/helpers.hpp"
 #else
 #include "../helpers/unordered.hpp"
@@ -346,14 +350,27 @@ UNORDERED_AUTO_TEST (stats_) {
       int, int, boost::hash<int>, std::equal_to<int>,
       unequal_allocator< std::pair< const int, int> >>>();
   test_stats<
+    boost::concurrent_node_map<
+      int, int, boost::hash<int>, std::equal_to<int>,
+      unequal_allocator< std::pair< const int, int> >>>();
+  test_stats<
     boost::concurrent_flat_set<
+      int, boost::hash<int>, std::equal_to<int>, unequal_allocator<int>>>();
+  test_stats<
+    boost::concurrent_node_set<
       int, boost::hash<int>, std::equal_to<int>, unequal_allocator<int>>>();
   test_stats_concurrent_unordered_interop<
     boost::unordered_flat_map<int, int>,
     boost::concurrent_flat_map<int, int>>();
   test_stats_concurrent_unordered_interop<
+    boost::unordered_node_map<int, int>,
+    boost::concurrent_node_map<int, int>>();
+  test_stats_concurrent_unordered_interop<
     boost::unordered_flat_set<int>,
     boost::concurrent_flat_set<int>>();
+  test_stats_concurrent_unordered_interop<
+    boost::unordered_node_set<int>,
+    boost::concurrent_node_set<int>>();
 #elif defined(BOOST_UNORDERED_FOA_TESTS)
   test_stats<
     boost::unordered_flat_map<

@@ -724,6 +724,14 @@ public:
   BOOST_FORCEINLINE bool
   insert(value_type&& x){return emplace_impl(std::move(x));}
 
+  template<typename T=element_type>
+  BOOST_FORCEINLINE
+  typename std::enable_if<
+    !std::is_same<T,value_type>::value,
+    bool
+  >::type
+  insert(element_type&& x){return emplace_impl(std::move(x));}
+
   template<typename Key,typename... Args>
   BOOST_FORCEINLINE bool try_emplace(Key&& x,Args&&... args)
   {
@@ -819,6 +827,30 @@ public:
       group_shared{},std::forward<F>(f),std::move(x));
   }
 
+  template<typename F,typename T=element_type>
+  BOOST_FORCEINLINE
+  typename std::enable_if<
+    !std::is_same<T,value_type>::value,
+    bool
+  >::type
+  insert_or_visit(element_type&& x, F&& f)
+  {
+    return emplace_or_visit_impl(
+      group_exclusive{},std::forward<F>(f),std::move(x));
+  }
+
+  template<typename F,typename T=element_type>
+  BOOST_FORCEINLINE
+  typename std::enable_if<
+    !std::is_same<T,value_type>::value,
+    bool
+  >::type
+  insert_or_cvisit(element_type&& x, F&& f)
+  {
+    return emplace_or_visit_impl(
+      group_shared{},std::forward<F>(f),std::move(x));
+  }
+
   template<typename Key>
   BOOST_FORCEINLINE std::size_t erase(const Key& x)
   {
@@ -887,6 +919,29 @@ public:
   {
     auto lck=exclusive_access();
     super::clear();
+  }
+
+  template<typename Key,typename Extractor>
+  BOOST_FORCEINLINE void extract(const Key& x,Extractor&& ext)
+  {
+    extract_if(
+      x,[](const value_type&){return true;},std::forward<Extractor>(ext));
+  }
+
+  template<typename Key,typename F,typename Extractor>
+  BOOST_FORCEINLINE void extract_if(const Key& x,F&& f,Extractor&& ext)
+  {
+    auto        lck=shared_access();
+    auto        hash=this->hash_for(x);
+    unprotected_internal_visit(
+      group_exclusive{},x,this->position_for(hash),hash,
+      [&,this](group_type* pg,unsigned int n,element_type* p)
+      {
+        if(f(cast_for(group_exclusive{},type_policy::value_from(*p)))){
+          ext(std::move(*p),this->al());
+          super::erase(pg,n,p);
+        }
+      });
   }
 
   // TODO: should we accept different allocator too?
@@ -1733,7 +1788,8 @@ private:
 
       if(this->find(x,pos0,hash))throw_exception(bad_archive_exception());
       auto loc=this->unchecked_emplace_at(pos0,hash,std::move(x));
-      ar.reset_object_address(std::addressof(*loc.p),std::addressof(x));
+      ar.reset_object_address(
+        std::addressof(type_policy::value_from(*loc.p)),std::addressof(x));
     }
   }
 
@@ -1742,7 +1798,7 @@ private:
   {
     using raw_key_type=typename std::remove_const<key_type>::type;
     using raw_mapped_type=typename std::remove_const<
-      typename TypePolicy::mapped_type>::type;
+      typename type_policy::mapped_type>::type;
 
     auto                                   lck=exclusive_access();
     std::size_t                            s;
@@ -1766,8 +1822,12 @@ private:
 
       if(this->find(k,pos0,hash))throw_exception(bad_archive_exception());
       auto loc=this->unchecked_emplace_at(pos0,hash,std::move(k),std::move(m));
-      ar.reset_object_address(std::addressof(loc.p->first),std::addressof(k));
-      ar.reset_object_address(std::addressof(loc.p->second),std::addressof(m));
+      ar.reset_object_address(
+        std::addressof(type_policy::value_from(*loc.p).first),
+        std::addressof(k));
+      ar.reset_object_address(
+        std::addressof(type_policy::value_from(*loc.p).second),
+        std::addressof(m));
     }
   }
 

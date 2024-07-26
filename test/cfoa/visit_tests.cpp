@@ -17,6 +17,8 @@
 
 #include <boost/unordered/concurrent_flat_map.hpp>
 #include <boost/unordered/concurrent_flat_set.hpp>
+#include <boost/unordered/concurrent_node_map.hpp>
+#include <boost/unordered/concurrent_node_set.hpp>
 
 #include <boost/compat/latch.hpp>
 #include <boost/core/ignore_unused.hpp>
@@ -971,9 +973,15 @@ namespace {
   boost::unordered::concurrent_flat_map<raii, raii>* map;
   boost::unordered::concurrent_flat_map<raii, raii, transp_hash,
     transp_key_equal>* transp_map;
+  boost::unordered::concurrent_node_map<raii, raii>* node_map;
+  boost::unordered::concurrent_node_map<raii, raii, transp_hash,
+    transp_key_equal>* transp_node_map;
   boost::unordered::concurrent_flat_set<raii>* set;
   boost::unordered::concurrent_flat_set<raii, transp_hash,
     transp_key_equal>* transp_set;
+  boost::unordered::concurrent_node_set<raii>* node_set;
+  boost::unordered::concurrent_node_set<raii, transp_hash,
+    transp_key_equal>* transp_node_set;
 
   struct mutable_pair
   {
@@ -1114,7 +1122,9 @@ namespace {
   }
 
   boost::concurrent_flat_set<
-    mutable_pair,  mutable_pair_hash,  mutable_pair_equal_to>* mutable_set;
+    mutable_pair, mutable_pair_hash, mutable_pair_equal_to>* mutable_set;
+  boost::concurrent_node_set<
+    mutable_pair, mutable_pair_hash, mutable_pair_equal_to>* mutable_node_set;
 
 } // namespace
 
@@ -1126,7 +1136,7 @@ using test::sequential;
 
 UNORDERED_TEST(
   visit,
-  ((map)(set))
+  ((map)(node_map)(set)(node_set))
   ((value_type_generator_factory)(init_type_generator_factory))
   ((lvalue_visitor)(visit_all)(visit_while)(exec_policy_visit_all)
    (exec_policy_visit_while))
@@ -1134,28 +1144,29 @@ UNORDERED_TEST(
 
 UNORDERED_TEST(
   visit,
-  ((transp_map)(transp_set))
+  ((transp_map)(transp_node_map)(transp_set)(transp_node_set))
   ((value_type_generator_factory)(init_type_generator_factory))
   ((transp_visitor))
   ((default_generator)(sequential)(limited_range)))
 
 UNORDERED_TEST(
   empty_visit,
-  ((map)(transp_map)(set)(transp_set))
+  ((map)(transp_map)(node_map)(transp_node_map)
+   (set)(transp_set)(node_set)(transp_node_set))
   ((value_type_generator_factory)(init_type_generator_factory))
   ((default_generator)(sequential)(limited_range))
 )
 
 UNORDERED_TEST(
   insert_and_visit,
-  ((map)(set))
+  ((map)(node_map)(set)(node_set))
   ((value_type_generator_factory))
   ((sequential))
 )
 
 UNORDERED_TEST(
   bulk_visit,
-  ((map)(set))
+  ((map)(node_map)(set)(node_set))
   ((regular_key_extract))
   ((value_type_generator_factory))
   ((sequential))
@@ -1163,7 +1174,7 @@ UNORDERED_TEST(
 
 UNORDERED_TEST(
   bulk_visit,
-  ((transp_map)(transp_set))
+  ((transp_map)(transp_node_map)(transp_set)(transp_node_set))
   ((transp_key_extract))
   ((value_type_generator_factory))
   ((sequential))
@@ -1173,7 +1184,7 @@ UNORDERED_TEST(
 
 UNORDERED_TEST(
   exclusive_access_set_visit,
-  ((mutable_set))
+  ((mutable_set)(mutable_node_set))
 )
 
 // clang-format on

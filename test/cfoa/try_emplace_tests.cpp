@@ -1,10 +1,12 @@
 // Copyright (C) 2023 Christian Mazakas
+// Copyright (C) 2024 Joaquin M Lopez Munoz
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include "helpers.hpp"
 
 #include <boost/unordered/concurrent_flat_map.hpp>
+#include <boost/unordered/concurrent_node_map.hpp>
 
 #include <boost/core/ignore_unused.hpp>
 
@@ -161,8 +163,15 @@ namespace {
 
       BOOST_TEST_EQ(raii::default_constructor, x.size());
       BOOST_TEST_EQ(raii::copy_constructor, x.size());
-      // don't check move construction count here because of rehashing
-      BOOST_TEST_GT(raii::move_constructor, 0u);
+
+      if (is_container_node_based<X>::value) {
+        BOOST_TEST_EQ(raii::move_constructor, 0u);
+      }
+      else{
+        // don't check move construction count here because of rehashing
+        BOOST_TEST_GT(raii::move_constructor, 0u);
+      }
+
       BOOST_TEST_EQ(raii::move_assignment, 0u);
       BOOST_TEST_EQ(raii::copy_assignment, 0u);
     }
@@ -194,8 +203,15 @@ namespace {
 
       BOOST_TEST_EQ(raii::default_constructor, x.size());
       BOOST_TEST_EQ(raii::copy_constructor, x.size());
-      // don't check move construction count here because of rehashing
-      BOOST_TEST_GT(raii::move_constructor, 0u);
+
+      if (is_container_node_based<X>::value) {
+        BOOST_TEST_EQ(raii::move_constructor, 0u);
+      }
+      else{
+        // don't check move construction count here because of rehashing
+        BOOST_TEST_GT(raii::move_constructor, 0u);
+      }
+
       BOOST_TEST_EQ(raii::move_assignment, 0u);
       BOOST_TEST_EQ(raii::copy_assignment, 0u);
     }
@@ -229,7 +245,12 @@ namespace {
 
       if (std::is_same<T, typename X::value_type>::value) {
         BOOST_TEST_EQ(raii::copy_constructor, x.size());
-        BOOST_TEST_GE(raii::move_constructor, x.size());
+        if (is_container_node_based<X>::value) {
+          BOOST_TEST_EQ(raii::move_constructor, 0u);
+        }
+        else{
+          BOOST_TEST_GE(raii::move_constructor, x.size());
+        }
       } else {
         BOOST_TEST_EQ(raii::copy_constructor, 0u);
         BOOST_TEST_GE(raii::move_constructor, x.size());
@@ -264,7 +285,12 @@ namespace {
       BOOST_TEST_EQ(raii::default_constructor, x.size());
       if (std::is_same<T, typename X::value_type>::value) {
         BOOST_TEST_EQ(raii::copy_constructor, x.size());
-        BOOST_TEST_GE(raii::move_constructor, x.size());
+        if (is_container_node_based<X>::value) {
+          BOOST_TEST_EQ(raii::move_constructor, 0u);
+        }
+        else{
+          BOOST_TEST_GE(raii::move_constructor, x.size());
+        }
       } else {
         BOOST_TEST_EQ(raii::copy_constructor, 0u);
         BOOST_TEST_GE(raii::move_constructor, x.size());
@@ -367,6 +393,10 @@ namespace {
   boost::unordered::concurrent_flat_map<raii, raii, transp_hash,
     transp_key_equal>* transp_map;
 
+  boost::unordered::concurrent_node_map<raii, raii>* node_map;
+  boost::unordered::concurrent_node_map<raii, raii, transp_hash,
+    transp_key_equal>* transp_node_map;
+
 } // namespace
 
 using test::default_generator;
@@ -379,7 +409,7 @@ value_generator<std::pair<raii, raii> > init_type_generator;
 // clang-format off
 UNORDERED_TEST(
   try_emplace,
-  ((map))
+  ((map)(node_map))
   ((value_type_generator)(init_type_generator))
   ((lvalue_try_emplacer)(norehash_lvalue_try_emplacer)
    (rvalue_try_emplacer)(norehash_rvalue_try_emplacer)
@@ -389,7 +419,7 @@ UNORDERED_TEST(
 
 UNORDERED_TEST(
   try_emplace,
-  ((transp_map))
+  ((transp_map)(transp_node_map))
   ((init_type_generator))
   ((transp_try_emplace)(norehash_transp_try_emplace)
    (transp_try_emplace_or_cvisit)(transp_try_emplace_or_visit))
