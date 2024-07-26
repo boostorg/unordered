@@ -61,12 +61,14 @@ struct node_handle_base
         std::integral_constant<bool,B>{}, std::move(nh));
     }
 
-    void move_assign_allocator_if(std::true_type,node_handle_base&& nh)noexcept
+    void move_assign_allocator_if(
+      std::true_type, node_handle_base&& nh)noexcept
     {
       al()=std::move(nh.al());
     }
 
-    void move_assign_allocator_if(std::false_type,node_handle_base&&)noexcept
+    void move_assign_allocator_if(
+      std::false_type, node_handle_base&&)noexcept
     {
     }
 

@@ -19,6 +19,7 @@
 #include <boost/unordered/detail/foa/node_set_handle.hpp>
 #include <boost/unordered/detail/foa/node_set_types.hpp>
 #include <boost/unordered/detail/type_traits.hpp>
+#include <boost/unordered/unordered_node_set_fwd.hpp>
 
 #include <boost/container_hash/hash.hpp>
 #include <boost/core/allocator_access.hpp>
