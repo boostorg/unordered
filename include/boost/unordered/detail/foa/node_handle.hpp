@@ -279,7 +279,7 @@ public:
 };
 
 template <class TypePolicy,class Allocator>
-typename node_handle_emplacer_class<TypePolicy, Allocator>
+node_handle_emplacer_class<TypePolicy, Allocator>
 node_handle_emplacer(node_handle_base<TypePolicy, Allocator>& nh)
 {
   return {nh};
