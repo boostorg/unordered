@@ -312,7 +312,6 @@ local CFOA_TESTS =
   try_emplace_tests
   emplace_tests
   extract_insert_tests
-  visit_tests
   constructor_tests
   assign_tests
   clear_tests
@@ -359,6 +358,17 @@ run cfoa/insert_tests.cpp
       <toolset>clang:<optimization>space
     : cfoa_insert_tests ;
 
+run cfoa/visit_tests.cpp
+    :
+    :
+    : $(CPP11) <threading>multi
+      <toolset>msvc:<cxxflags>/bigobj
+      <toolset>gcc:<inlining>on
+      <toolset>gcc:<optimization>space
+      <toolset>clang:<inlining>on
+      <toolset>clang:<optimization>space
+    : cfoa_visit_tests ;
+
 run cfoa/serialization_tests.cpp
     :
     :
@@ -395,6 +405,7 @@ make_cfoa_interprocess_concurrency_tests cfoa_interproc_conc_tests_stats
 alias cfoa_tests :
   cfoa_$(CFOA_TESTS)
   cfoa_insert_tests
+  cfoa_visit_tests
   cfoa_serialization_tests
   cfoa_interproc_conc_tests
   cfoa_interproc_conc_tests_stats ;
