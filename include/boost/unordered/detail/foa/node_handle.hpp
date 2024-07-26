@@ -14,6 +14,7 @@
 
 #include <boost/assert.hpp>
 #include <boost/config.hpp>
+#include <boost/config/workaround.hpp>
 #include <boost/core/allocator_access.hpp>
 #include <type_traits>
 
@@ -228,26 +229,39 @@ protected:
 
 struct node_handle_access
 {
-  template <class TypePolicy,class Allocator>
+  template <class TypePolicy, class Allocator>
   using node_type = node_handle_base<TypePolicy, Allocator>;
-  template <class TypePolicy,class Allocator>
-  using element_type = typename node_type<TypePolicy, Allocator>::element_type;
 
-  template <class TypePolicy,class Allocator>
+#if BOOST_WORKAROUND(BOOST_CLANG_VERSION,<190000)
+  // https://github.com/llvm/llvm-project/issues/25708
+
+  template <class TypePolicy, class Allocator>
+  struct element_type_impl
+  {
+    using type = typename node_type<TypePolicy, Allocator>::element_type;
+  };
+  template <class TypePolicy, class Allocator>
+  using element_type = typename element_type_impl<TypePolicy, Allocator>::type;
+#else
+  template <class TypePolicy, class Allocator>
+  using element_type = typename node_type<TypePolicy, Allocator>::element_type;
+#endif
+
+  template <class TypePolicy, class Allocator>
   static element_type<TypePolicy, Allocator>&
   element(node_type<TypePolicy, Allocator>& nh)noexcept
   {
     return nh.element();
   }
 
-  template <class TypePolicy,class Allocator>
+  template <class TypePolicy, class Allocator>
   static element_type<TypePolicy, Allocator>
   const& element(node_type<TypePolicy, Allocator> const& nh)noexcept
   {
     return nh.element();
   }
 
-  template <class TypePolicy,class Allocator>
+  template <class TypePolicy, class Allocator>
   static void emplace(
     node_type<TypePolicy, Allocator>& nh,
     element_type<TypePolicy, Allocator>&& x, Allocator a)
@@ -262,7 +276,7 @@ struct node_handle_access
   }
 };
 
-template <class TypePolicy,class Allocator>
+template <class TypePolicy, class Allocator>
 class node_handle_emplacer_class
 {
   using access = node_handle_access;
@@ -280,7 +294,7 @@ public:
   }
 };
 
-template <class TypePolicy,class Allocator>
+template <class TypePolicy, class Allocator>
 node_handle_emplacer_class<TypePolicy, Allocator>
 node_handle_emplacer(node_handle_base<TypePolicy, Allocator>& nh)
 {
