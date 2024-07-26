@@ -65,6 +65,7 @@ namespace {
             nh = in.extract_if(
               test::get_key<X>(v), [&](arg_visit_type& v2) {
                 BOOST_ASSERT(test::get_key<X>(v) == test::get_key<X>(v2));
+                (void)v2;
                 return false;
               });
             BOOST_ASSERT(nh.empty());
@@ -73,6 +74,7 @@ namespace {
             nh = in.extract_if(
               test::get_key<X>(v), [&](arg_visit_type& v2) {
                 BOOST_ASSERT(test::get_key<X>(v) == test::get_key<X>(v2));
+                (void)v2;
                 return true;
               });
             BOOST_ASSERT(!nh.empty());
@@ -92,12 +94,14 @@ namespace {
             r = o.insert_or_visit(
               std::move(nh), [&](arg_visit_type& v2) {
                 BOOST_ASSERT(test::get_key<X>(v) == test::get_key<X>(v2));
+                (void)v2;
               });
             break;
           case 2: default:
             r = o.insert_or_cvisit(
               std::move(nh), [&](arg_visit_type const& v2) {
                 BOOST_ASSERT(test::get_key<X>(v) == test::get_key<X>(v2));
+                (void)v2;
               });
             break;
           }
