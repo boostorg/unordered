@@ -286,7 +286,7 @@ class node_handle_emplacer_class
   node_type & nh;
 
 public:
-  node_handle_emplacer_class(node_type& nh_): nh{nh_} {}
+  node_handle_emplacer_class(node_type& nh_): nh(nh_) {}
 
   void operator()(element_type&& x,Allocator a)
   {
