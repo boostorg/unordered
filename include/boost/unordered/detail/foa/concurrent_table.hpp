@@ -397,10 +397,10 @@ inline void swap(atomic_size_control& x,atomic_size_control& y)
  *   - Parallel versions of [c]visit_all(f) and erase_if(f) are provided based
  *     on C++17 stdlib parallel algorithms.
  * 
- * Consult boost::concurrent_flat_(map|set) docs for the full API reference.
- * Heterogeneous lookup is suported by default, that is, without checking for
- * any ::is_transparent typedefs --this checking is done by the wrapping
- * containers.
+ * Consult boost::concurrent_(flat|node)_(map|set) docs for the full API
+ * reference. Heterogeneous lookup is suported by default, that is, without
+ * checking for any ::is_transparent typedefs --this checking is done by the
+ * wrapping containers.
  *
  * Thread-safe concurrency is implemented using a two-level lock system:
  * 
