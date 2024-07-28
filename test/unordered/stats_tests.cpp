@@ -25,6 +25,59 @@
 #include <boost/core/make_span.hpp>
 #include <cstring>
 
+// ripped from boost/endian/test/store_convenience_test.cpp
+
+#include <ostream>
+#include <iomanip>
+
+class byte_span
+{
+private:
+
+    unsigned char const * p_;
+    std::size_t n_;
+
+public:
+
+    byte_span( unsigned char const * p, std::size_t n ): p_( p ), n_( n )
+    {
+    }
+
+    template<std::size_t N> explicit byte_span( unsigned char const (&a)[ N ] ): p_( a ), n_( N )
+    {
+    }
+
+    bool operator==( byte_span const& r ) const
+    {
+        if( n_ != r.n_ ) return false;
+
+        for( std::size_t i = 0; i < n_; ++i )
+        {
+            if( p_[ i ] != r.p_[ i ] ) return false;
+        }
+
+        return true;
+    }
+
+    friend std::ostream& operator<<( std::ostream& os, byte_span s )
+    {
+        if( s.n_ == 0 ) return os;
+
+        os << std::hex << std::setfill( '0' ) << std::uppercase;
+
+        os << std::setw( 2 ) << +s.p_[ 0 ];
+
+        for( std::size_t i = 1; i < s.n_; ++i )
+        {
+            os << ':' << std::setw( 2 ) << +s.p_[ i ];
+        }
+
+        os << std::dec << std::setfill( ' ' ) << std::nouppercase;;
+
+        return os;
+    }
+};
+
 template <class T> struct unequal_allocator
 {
   typedef T value_type;
@@ -61,6 +114,13 @@ bool not_exact_same(double x, double y)
   return !exact_same(x, y);
 }
 
+void check_exact_same(double x, double y)
+{
+  BOOST_TEST_EQ(
+    byte_span(reinterpret_cast<unsigned char*>(&x),sizeof(double)),
+    byte_span(reinterpret_cast<unsigned char*>(&y),sizeof(double)));
+};
+
 enum check_stats_contition
 {
   stats_empty=0,
@@ -73,9 +133,9 @@ void check_stat(const Stats& s, check_stats_contition cond)
 {
   switch (cond) {
   case stats_empty:
-    BOOST_TEST(exact_same(s.average, 0.0));
-    BOOST_TEST(exact_same(s.variance, 0.0));
-    BOOST_TEST(exact_same(s.deviation, 0.0));
+    check_exact_same(s.average, 0.0);
+    check_exact_same(s.variance, 0.0);
+    check_exact_same(s.deviation, 0.0);
     break;
   case stats_full:
     BOOST_TEST_GT(s.average, 0.0);
@@ -98,9 +158,9 @@ void check_stat(const Stats& s, check_stats_contition cond)
 
 template <class Stats> void check_stat(const Stats& s1, const Stats& s2)
 {
-  BOOST_TEST(exact_same(s1.average, s2.average));
-  BOOST_TEST(exact_same(s1.variance, s2.variance));
-  BOOST_TEST(exact_same(s1.deviation, s2.deviation));
+  check_exact_same(s1.average, s2.average);
+  check_exact_same(s1.variance, s2.variance);
+  check_exact_same(s1.deviation, s2.deviation);
 }
 
 template <class Stats>
