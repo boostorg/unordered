@@ -117,9 +117,9 @@ bool not_exact_same(double x, double y)
 void check_exact_same(double x, double y)
 {
   BOOST_TEST_EQ(
-    byte_span(reinterpret_cast<unsigned char*>(&x),sizeof(double)),
-    byte_span(reinterpret_cast<unsigned char*>(&y),sizeof(double)));
-};
+    byte_span(reinterpret_cast<unsigned char*>(&x), sizeof(double)),
+    byte_span(reinterpret_cast<unsigned char*>(&y), sizeof(double)));
+}
 
 enum check_stats_contition
 {
