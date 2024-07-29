@@ -23,12 +23,35 @@
 #include "../helpers/test.hpp"
 #include <boost/assert.hpp>
 #include <boost/core/make_span.hpp>
+#include <iomanip>
 #include <cstring>
+#include <ostream>
+
+template <class T> struct unequal_allocator
+{
+  typedef T value_type;
+
+  unequal_allocator(int n = 0): n_{n} {}
+  unequal_allocator(unequal_allocator const&) = default;
+  unequal_allocator(unequal_allocator&&) = default;
+
+  template <class U>
+  unequal_allocator(unequal_allocator<U> const& x): n_{x.n_} {}
+
+  BOOST_ATTRIBUTE_NODISCARD T* allocate(std::size_t n)
+  {
+    return static_cast<T*>(::operator new(n * sizeof(T)));
+  }
+
+  void deallocate(T* p, std::size_t) noexcept { ::operator delete(p); }
+
+  bool operator==(unequal_allocator const& x) const { return n_ == x.n_; }
+  bool operator!=(unequal_allocator const& x) const { return n_ != x.n_; }
+
+  int n_;
+};
 
 // ripped from boost/endian/test/store_convenience_test.cpp
-
-#include <ostream>
-#include <iomanip>
 
 class byte_span
 {
@@ -72,41 +95,20 @@ public:
             os << ':' << std::setw( 2 ) << +s.p_[ i ];
         }
 
-        os << std::dec << std::setfill( ' ' ) << std::nouppercase;;
+        os << std::dec << std::setfill( ' ' ) << std::nouppercase;
 
         return os;
     }
 };
 
-template <class T> struct unequal_allocator
+byte_span double_span(const double& x)
 {
-  typedef T value_type;
-
-  unequal_allocator(int n = 0): n_{n} {}
-  unequal_allocator(unequal_allocator const&) = default;
-  unequal_allocator(unequal_allocator&&) = default;
-
-  template <class U>
-  unequal_allocator(unequal_allocator<U> const& x): n_{x.n_} {}
-
-  BOOST_ATTRIBUTE_NODISCARD T* allocate(std::size_t n)
-  {
-    return static_cast<T*>(::operator new(n * sizeof(T)));
-  }
-
-  void deallocate(T* p, std::size_t) noexcept { ::operator delete(p); }
-
-  bool operator==(unequal_allocator const& x) const { return n_ == x.n_; }
-  bool operator!=(unequal_allocator const& x) const { return n_ != x.n_; }
-
-  int n_;
-};
+  return byte_span(reinterpret_cast<const unsigned char*>(&x), sizeof(double));
+}
 
 bool exact_same(double x, double y)
 {
-  return std::memcmp(
-    reinterpret_cast<void*>(&x), reinterpret_cast<void*>(&y),
-    sizeof(double))==0;
+  return double_span(x) == double_span(y);
 }
 
 bool not_exact_same(double x, double y)
@@ -116,9 +118,7 @@ bool not_exact_same(double x, double y)
 
 void check_exact_same(double x, double y)
 {
-  BOOST_TEST_EQ(
-    byte_span(reinterpret_cast<unsigned char*>(&x), sizeof(double)),
-    byte_span(reinterpret_cast<unsigned char*>(&y), sizeof(double)));
+  BOOST_TEST_EQ(double_span(x), double_span(y));
 }
 
 enum check_stats_contition
