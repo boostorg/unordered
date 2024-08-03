@@ -43,8 +43,8 @@ namespace boost {
           }
         };
       } // namespace foa
-    }   // namespace detail
-  }     // namespace unordered
+    } // namespace detail
+  } // namespace unordered
 } // namespace boost
 
 #endif // BOOST_UNORDERED_DETAIL_FOA_FLAT_SET_TYPES_HPP
