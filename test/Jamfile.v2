@@ -110,6 +110,7 @@ local FCA_TESTS =
   move_tests
   narrow_cast_tests
   node_handle_tests
+  node_handle_allocator_tests
   noexcept_tests
   post_move_tests
   prime_fmod_tests
@@ -232,6 +233,7 @@ local FOA_TESTS =
   fancy_pointer_noleak
   pmr_allocator_tests
   stats_tests
+  node_handle_allocator_tests
 ;
 
 for local test in $(FOA_TESTS)
@@ -337,6 +339,7 @@ local CFOA_TESTS =
   explicit_alloc_ctor_tests
   pmr_allocator_tests
   stats_tests
+  node_handle_allocator_tests
 ;
 
 for local test in $(CFOA_TESTS)
