@@ -119,6 +119,33 @@ namespace {
     BOOST_TEST_EQ(raii::destructor, 0u);
   }
 
+  template <class X>
+  void insert_empty_node_tests(X*)
+  {
+    using value_type = typename X::value_type;
+    using node_type = typename X::node_type ;
+
+    X x;
+    {
+      node_type nh;
+      auto r = x.insert(std::move(nh));
+      BOOST_TEST(!r.inserted);
+      BOOST_TEST(r.node.empty());
+    }
+    {
+      node_type nh;
+      auto r = x.insert_or_visit(std::move(nh), [](value_type const&) {});
+      BOOST_TEST(!r.inserted);
+      BOOST_TEST(r.node.empty());
+    }
+    {
+      node_type nh;
+      auto r = x.insert_or_cvisit(std::move(nh), [](value_type const&) {});
+      BOOST_TEST(!r.inserted);
+      BOOST_TEST(r.node.empty());
+    }
+  }
+
 } // namespace
 
 // clang-format off
@@ -126,6 +153,10 @@ UNORDERED_TEST(
   extract_insert_tests,
   ((test_node_map)(test_node_set))
   ((value_type_generator_factory)))
+
+UNORDERED_TEST(
+  insert_empty_node_tests,
+  ((test_node_map)(test_node_set)))  
 // clang-format on
 
 RUN_TESTS()
