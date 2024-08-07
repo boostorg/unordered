@@ -11,28 +11,23 @@
 
 #include "../helpers/test.hpp"
 
+#include <boost/config/workaround.hpp>
 #include <boost/core/allocator_access.hpp>
 #include <memory>
 #include <type_traits>
 
 namespace {
-  template <class T> struct pocma_allocator
+  template <class T> struct nonassignable_allocator
   {
-    int x_ = -1;
-
     using value_type = T;
-    using propagate_on_container_move_assignment = std::true_type;
 
-    pocma_allocator() = default;
-    pocma_allocator(pocma_allocator const&) = default;
-    pocma_allocator(int const x) : x_{x} {}
+    nonassignable_allocator() = default;
+    nonassignable_allocator(nonassignable_allocator const&) = default;
 
     template <class U>
-    pocma_allocator(pocma_allocator<U> const& rhs) : x_{rhs.x_}
-    {
-    }
+    nonassignable_allocator(nonassignable_allocator<U> const&) {}
 
-    pocma_allocator& operator=(pocma_allocator const&) = default;
+    nonassignable_allocator& operator=(nonassignable_allocator const&) = delete;
 
     T* allocate(std::size_t n)
     {
@@ -41,8 +36,39 @@ namespace {
 
     void deallocate(T* p, std::size_t) { ::operator delete(p); }
 
-    bool operator==(pocma_allocator const& rhs) const { return x_ == rhs.x_; }
-    bool operator!=(pocma_allocator const& rhs) const { return x_ != rhs.x_; }
+    bool operator==(nonassignable_allocator const&) const { return true; }
+    bool operator!=(nonassignable_allocator const&) const { return false; }
+  };
+
+  template <class T> struct pocx_allocator
+  {
+    int x_;
+
+    using value_type = T;
+    using propagate_on_container_copy_assignment = std::true_type;
+    using propagate_on_container_move_assignment = std::true_type;
+    using propagate_on_container_swap = std::true_type;
+
+    pocx_allocator() : x_{-1} {}
+    pocx_allocator(pocx_allocator const&) = default;
+    pocx_allocator(int const x) : x_{x} {}
+
+    template <class U>
+    pocx_allocator(pocx_allocator<U> const& rhs) : x_{rhs.x_}
+    {
+    }
+
+    pocx_allocator& operator=(pocx_allocator const&) = default;
+
+    T* allocate(std::size_t n)
+    {
+      return static_cast<T*>(::operator new(n * sizeof(T)));
+    }
+
+    void deallocate(T* p, std::size_t) { ::operator delete(p); }
+
+    bool operator==(pocx_allocator const& rhs) const { return x_ == rhs.x_; }
+    bool operator!=(pocx_allocator const& rhs) const { return x_ != rhs.x_; }
   };
 
   template <typename Container, typename Allocator>
@@ -101,9 +127,51 @@ namespace {
     BOOST_TEST(nh.get_allocator() == x2.get_allocator());
   }
 
+  template<typename X, typename Allocator>
+  void node_handle_allocator_swap_tests(
+    X*, std::pair<Allocator, Allocator> allocators)
+  {
+    using value_type = typename X::value_type;
+    using replaced_allocator_container = replace_allocator<X, Allocator>;
+    using node_type = typename replaced_allocator_container::node_type;
+
+    replaced_allocator_container x1(allocators.first), x2(allocators.second);
+    x1.emplace(value_type());
+    x2.emplace(value_type());
+
+    node_type nh1, nh2;
+
+    nh1 = x1.extract(0);
+    swap(nh1, nh2);
+
+    BOOST_TEST(nh1.empty());
+    BOOST_TEST(!nh2.empty());
+    BOOST_TEST(nh2.get_allocator() == x1.get_allocator());
+
+    nh1 = x2.extract(0);
+    swap(nh1, nh2);
+
+    BOOST_TEST(!nh1.empty());
+    BOOST_TEST(nh1.get_allocator() == x1.get_allocator());
+    BOOST_TEST(!nh2.empty());
+    BOOST_TEST(nh2.get_allocator() == x2.get_allocator());
+  }
+
+#if BOOST_WORKAROUND(BOOST_MSVC, <= 1900)
+#pragma warning(push)
+#pragma warning(disable : C4592) // symbol will be dynamically initialized
+#endif
+
   std::pair<std::allocator<int>, std::allocator<int> > test_std_allocators;
   std::pair<
-    pocma_allocator<int>, pocma_allocator<int> > test_pocma_allocators(5,6);
+    nonassignable_allocator<int>,
+    nonassignable_allocator<int> > test_nonassignable_allocators;
+  std::pair<
+    pocx_allocator<int>, pocx_allocator<int> > test_pocx_allocators(5,6);
+
+#if BOOST_WORKAROUND(BOOST_MSVC, <= 1900)
+#pragma warning(pop) // C4592
+#endif
 
 #if defined(BOOST_UNORDERED_FOA_TESTS)
   boost::unordered_node_map<int, int>* test_map;
@@ -121,7 +189,13 @@ namespace {
 UNORDERED_TEST(
   node_handle_allocator_tests,
   ((test_map)(test_set))
-  ((test_std_allocators)(test_pocma_allocators)))
+  ((test_std_allocators)(test_nonassignable_allocators)
+   (test_pocx_allocators)))
+
+UNORDERED_TEST(
+  node_handle_allocator_swap_tests,
+  ((test_map)(test_set))
+  ((test_std_allocators)(test_pocx_allocators)))
 // clang-format on
 
 RUN_TESTS()
