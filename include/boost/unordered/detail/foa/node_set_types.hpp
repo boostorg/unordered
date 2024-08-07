@@ -6,6 +6,7 @@
 #define BOOST_UNORDERED_DETAIL_FOA_NODE_SET_TYPES_HPP
 
 #include <boost/unordered/detail/foa/element_type.hpp>
+#include <boost/unordered/detail/foa/types_constructibility.hpp>
 
 #include <boost/core/allocator_access.hpp>
 #include <boost/core/no_exceptions_support.hpp>
@@ -25,6 +26,9 @@ namespace boost {
           static Key const& extract(value_type const& key) { return key; }
 
           using element_type = foa::element_type<value_type, VoidPtr>;
+
+          using types = node_set_types<Key, VoidPtr>;
+          using constructibility_checker = set_types_constructibility<types>;
 
           static value_type& value_from(element_type const& x) { return *x.p; }
           static Key const& extract(element_type const& k) { return *k.p; }
@@ -49,6 +53,7 @@ namespace boost {
           template <class A, class... Args>
           static void construct(A& al, value_type* p, Args&&... args)
           {
+            constructibility_checker::check(al, p, std::forward<Args>(args)...);
             boost::allocator_construct(al, p, std::forward<Args>(args)...);
           }
 
@@ -58,8 +63,11 @@ namespace boost {
             p->p = boost::allocator_allocate(al, 1);
             BOOST_TRY
             {
+              auto address = boost::to_address(p->p);
+              constructibility_checker::check(
+                al, address, std::forward<Args>(args)...);
               boost::allocator_construct(
-                al, boost::to_address(p->p), std::forward<Args>(args)...);
+                al, address, std::forward<Args>(args)...);
             }
             BOOST_CATCH(...)
             {
