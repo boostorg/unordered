@@ -159,7 +159,7 @@ namespace {
 
 #if BOOST_WORKAROUND(BOOST_MSVC, <= 1900)
 #pragma warning(push)
-#pragma warning(disable : C4592) // symbol will be dynamically initialized
+#pragma warning(disable : 4592) // symbol will be dynamically initialized
 #endif
 
   std::pair<std::allocator<int>, std::allocator<int> > test_std_allocators;
