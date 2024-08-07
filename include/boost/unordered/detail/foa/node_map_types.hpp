@@ -8,6 +8,7 @@
 
 #include <boost/unordered/detail/foa/element_type.hpp>
 #include <boost/unordered/detail/foa/types_constructibility.hpp>
+#include <boost/unordered/detail/type_traits.hpp>
 
 #include <boost/core/allocator_access.hpp>
 #include <boost/core/no_exceptions_support.hpp>
@@ -72,7 +73,7 @@ namespace boost {
           static void construct(
             A& al, element_type* p, element_type const& copy)
           {
-            construct(al, p, *copy.p);
+            construct(al, p, detail::as_const(*copy.p));
           }
 
           template <class A, class... Args>
