@@ -101,6 +101,12 @@ namespace {
       boost::allocator_rebind_t<Allocator, std::pair<K const, T> > >;
   };
 
+#if BOOST_WORKAROUND(BOOST_GCC, < 130000)
+// maybe related to https://gcc.gnu.org/bugzilla/show_bug.cgi?id=108230
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
+
   template<typename X, typename Allocator>
   void node_handle_allocator_tests(
     X*, std::pair<Allocator, Allocator> allocators)
@@ -156,6 +162,10 @@ namespace {
     BOOST_TEST(!nh2.empty());
     BOOST_TEST(nh2.get_allocator() == x2.get_allocator());
   }
+
+#if BOOST_WORKAROUND(BOOST_GCC, < 130000)
+#pragma GCC diagnostic pop // -Wmaybe-uninitialized
+#endif
 
 #if BOOST_WORKAROUND(BOOST_MSVC, <= 1900)
 #pragma warning(push)
