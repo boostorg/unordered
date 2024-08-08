@@ -168,6 +168,11 @@ namespace {
     BOOST_TEST(nh2.get_allocator() == x2.get_allocator());
   }
 
+#if BOOST_WORKAROUND(BOOST_MSVC, <= 1900)
+#pragma warning(push)
+#pragma warning(disable : 4592) // symbol will be dynamically initialized
+#endif
+
   std::pair<
     std::allocator<int>, std::allocator<int> > test_std_allocators({},{});
   std::pair<
@@ -175,6 +180,10 @@ namespace {
     nonassignable_allocator<int> > test_nonassignable_allocators({},{});
   std::pair<
     pocx_allocator<int>, pocx_allocator<int> > test_pocx_allocators(5,6);
+
+#if BOOST_WORKAROUND(BOOST_MSVC, <= 1900)
+#pragma warning(pop) // C4592
+#endif
 
 #if defined(BOOST_UNORDERED_FOA_TESTS)
   boost::unordered_node_map<int, int>* test_map;
