@@ -29,6 +29,8 @@ int main() {}
 #include <boost/interprocess/managed_shared_memory.hpp>
 #include <boost/unordered/concurrent_flat_map.hpp>
 #include <boost/unordered/concurrent_flat_set.hpp>
+#include <boost/unordered/concurrent_node_map.hpp>
+#include <boost/unordered/concurrent_node_set.hpp>
 #include <boost/unordered/unordered_flat_map.hpp>
 #include <boost/unordered/unordered_flat_set.hpp>
 #include <boost/unordered/unordered_map.hpp>
@@ -61,6 +63,8 @@ template <class Tester> void natvis_test(Tester& tester)
 
     auto cfoa_flat_map = tester.template construct_map<boost::concurrent_flat_map>();
     auto cfoa_flat_set = tester.template construct_set<boost::concurrent_flat_set>();
+    auto cfoa_node_map = tester.template construct_map<boost::concurrent_node_map>();
+    auto cfoa_node_set = tester.template construct_set<boost::concurrent_node_set>();
   // clang-format on
 
   for (int i = 0; i < 5; ++i) {
@@ -73,6 +77,7 @@ template <class Tester> void natvis_test(Tester& tester)
     foa_flat_map->emplace(str, num);
     foa_node_map->emplace(str, num);
     cfoa_flat_map->emplace(str, num);
+    cfoa_node_map->emplace(str, num);
 
     fca_set->emplace(str);
     fca_multiset->emplace(str);
@@ -80,6 +85,7 @@ template <class Tester> void natvis_test(Tester& tester)
     foa_flat_set->emplace(str);
     foa_node_set->emplace(str);
     cfoa_flat_set->emplace(str);
+    cfoa_node_set->emplace(str);
   }
 
   auto fca_map_begin = fca_map->begin();
@@ -100,7 +106,7 @@ template <class Tester> void natvis_test(Tester& tester)
   auto foa_node_set_begin = foa_node_set->begin();
   auto foa_node_set_end = foa_node_set->end();
 
-  use(cfoa_flat_map, cfoa_flat_set);
+  use(cfoa_flat_map, cfoa_flat_set, cfoa_node_map, cfoa_node_set);
   use(fca_map_begin, fca_map_end, fca_multimap_begin, fca_multimap_end,
     fca_set_begin, fca_set_end, fca_multiset_begin, fca_multiset_end);
   use(foa_flat_map_begin, foa_flat_map_end, foa_flat_set_begin,

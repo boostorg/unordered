@@ -3,4 +3,4 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #define BOOST_UNORDERED_CFOA_TESTS
-#include "../unordered/explicit_alloc_ctor_tests.cpp"
+#include "../unordered/node_handle_allocator_tests.cpp"
