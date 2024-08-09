@@ -2,17 +2,6 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/config.hpp>
-#include <boost/config/workaround.hpp>
-
-#if BOOST_WORKAROUND(BOOST_GCC, < 130000)
-// Spurious maybe-uninitialized warnings with allocators contained
-// in node handles.
-// Maybe related to https://gcc.gnu.org/bugzilla/show_bug.cgi?id=108230
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
-
 #ifdef BOOST_UNORDERED_CFOA_TESTS
 #include <boost/unordered/concurrent_node_map.hpp>
 #include <boost/unordered/concurrent_node_set.hpp>
@@ -22,6 +11,8 @@
 
 #include "../helpers/test.hpp"
 
+#include <boost/config.hpp>
+#include <boost/config/workaround.hpp>
 #include <boost/core/allocator_access.hpp>
 #include <memory>
 #include <type_traits>

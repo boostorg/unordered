@@ -182,7 +182,17 @@ protected:
       }
     }
 
-    allocator_type get_allocator()const noexcept{return al();}
+    allocator_type get_allocator()const
+    {
+#if defined(BOOST_GCC)
+      /* GCC lifetime analysis incorrectly warns about uninitialized
+       * allocator object under some circumstances.
+       */
+      if(empty())__builtin_unreachable();
+#endif
+      return al();
+    }
+
     explicit operator bool()const noexcept{ return !empty();}
     BOOST_ATTRIBUTE_NODISCARD bool empty()const noexcept{return p_.p==nullptr;}
 
