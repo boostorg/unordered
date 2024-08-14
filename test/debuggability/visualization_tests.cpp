@@ -2,19 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
-// This test applies to MSVC only. This is a file for manual testing.
-// Run this test and break manually at the variable called `break_here`.
-// Inspect the variables using the Visual Studio debugger to test correctness.
-
-#include <boost/config.hpp>
-
-#if !defined(BOOST_MSVC)
-
-#include <boost/config/pragma_message.hpp>
-BOOST_PRAGMA_MESSAGE("These tests are for Visual Studio only.")
-int main() {}
-
-#else
+// This is a file for testing of visualizations,
+// such as Visual Studio Natvis or GDB pretty printers.
+// Run this test and break at the label called `break_here`.
+// Inspect the variables to test correctness.
 
 #if 0 // Change to `#if 1` to test turning off SIMD optimizations
 #define BOOST_UNORDERED_DISABLE_SSE2
@@ -37,6 +28,7 @@ int main() {}
 #include <boost/unordered/unordered_set.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <memory>
 #include <string>
 #include <typeinfo>
 
@@ -46,7 +38,7 @@ template <class... Args> void use(Args&&...) {}
 using map_value_type = std::pair<const std::string, int>;
 using set_value_type = std::string;
 
-template <class Tester> void natvis_test(Tester& tester)
+template <class Tester> void visualization_test(Tester& tester)
 {
   // clang-format off
     auto fca_map      = tester.template construct_map<boost::unordered_map>();
@@ -107,8 +99,8 @@ template <class Tester> void natvis_test(Tester& tester)
     foa_flat_set_end, foa_node_map_begin, foa_node_map_end, foa_node_set_begin,
     foa_node_set_end);
 
-  int break_here = 0;
-  use(break_here);
+  goto break_here;
+break_here:;
 }
 
 class offset_ptr_tester_
@@ -169,21 +161,21 @@ public:
   template <template <class...> class MapTemplate>
   std::unique_ptr<map_type<MapTemplate> > construct_map()
   {
-    return std::make_unique<map_type<MapTemplate> >();
+    using type = map_type<MapTemplate>;
+    return std::unique_ptr<type>(new type());
   }
   template <template <class...> class SetTemplate>
   std::unique_ptr<set_type<SetTemplate> > construct_set()
   {
-    return std::make_unique<set_type<SetTemplate> >();
+    using type = set_type<SetTemplate>;
+    return std::unique_ptr<type>(new type());
   }
 } default_tester;
 
 int main()
 {
-  natvis_test(default_tester);
-  natvis_test(offset_ptr_tester);
+  visualization_test(default_tester);
+  visualization_test(offset_ptr_tester);
 
   return boost::report_errors();
 }
-
-#endif // !defined(BOOST_MSVC)
