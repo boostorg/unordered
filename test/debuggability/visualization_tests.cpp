@@ -41,56 +41,66 @@ using set_value_type = std::string;
 template <class Tester> void visualization_test(Tester& tester)
 {
   // clang-format off
-    auto fca_map      = tester.template construct_map<boost::unordered_map>();
-    auto fca_multimap = tester.template construct_map<boost::unordered_multimap>();
-    auto fca_set      = tester.template construct_set<boost::unordered_set>();
-    auto fca_multiset = tester.template construct_set<boost::unordered_multiset>();
+    auto fca_map_ptr      = tester.template construct_map<boost::unordered_map>();
+    auto fca_multimap_ptr = tester.template construct_map<boost::unordered_multimap>();
+    auto fca_set_ptr      = tester.template construct_set<boost::unordered_set>();
+    auto fca_multiset_ptr = tester.template construct_set<boost::unordered_multiset>();
+    auto& fca_map      = *fca_map_ptr;
+    auto& fca_multimap = *fca_multimap_ptr;
+    auto& fca_set      = *fca_set_ptr;
+    auto& fca_multiset = *fca_multiset_ptr;
 
-    auto foa_flat_map = tester.template construct_map<boost::unordered_flat_map>();
-    auto foa_flat_set = tester.template construct_set<boost::unordered_flat_set>();
-    auto foa_node_map = tester.template construct_map<boost::unordered_node_map>();
-    auto foa_node_set = tester.template construct_set<boost::unordered_node_set>();
+    auto foa_flat_map_ptr = tester.template construct_map<boost::unordered_flat_map>();
+    auto foa_flat_set_ptr = tester.template construct_set<boost::unordered_flat_set>();
+    auto foa_node_map_ptr = tester.template construct_map<boost::unordered_node_map>();
+    auto foa_node_set_ptr = tester.template construct_set<boost::unordered_node_set>();
+    auto& foa_flat_map = *foa_flat_map_ptr;
+    auto& foa_flat_set = *foa_flat_set_ptr;
+    auto& foa_node_map = *foa_node_map_ptr;
+    auto& foa_node_set = *foa_node_set_ptr;
 
-    auto cfoa_flat_map = tester.template construct_map<boost::concurrent_flat_map>();
-    auto cfoa_flat_set = tester.template construct_set<boost::concurrent_flat_set>();
+    auto cfoa_flat_map_ptr = tester.template construct_map<boost::concurrent_flat_map>();
+    auto cfoa_flat_set_ptr = tester.template construct_set<boost::concurrent_flat_set>();
+    auto& cfoa_flat_map = *cfoa_flat_map_ptr;
+    auto& cfoa_flat_set = *cfoa_flat_set_ptr;
   // clang-format on
 
   for (int i = 0; i < 5; ++i) {
     const auto str = std::to_string(i * 2);
     const auto num = i * 11;
 
-    fca_map->emplace(str, num);
-    fca_multimap->emplace(str, num);
-    fca_multimap->emplace(str, num + 1);
-    foa_flat_map->emplace(str, num);
-    foa_node_map->emplace(str, num);
-    cfoa_flat_map->emplace(str, num);
+    fca_map.emplace(str, num);
+    fca_multimap.emplace(str, num);
+    fca_multimap.emplace(str, num + 1);
+    foa_flat_map.emplace(str, num);
+    foa_node_map.emplace(str, num);
+    cfoa_flat_map.emplace(str, num);
 
-    fca_set->emplace(str);
-    fca_multiset->emplace(str);
-    fca_multiset->emplace(str);
-    foa_flat_set->emplace(str);
-    foa_node_set->emplace(str);
-    cfoa_flat_set->emplace(str);
+    fca_set.emplace(str);
+    fca_multiset.emplace(str);
+    fca_multiset.emplace(str);
+    foa_flat_set.emplace(str);
+    foa_node_set.emplace(str);
+    cfoa_flat_set.emplace(str);
   }
 
-  auto fca_map_begin = fca_map->begin();
-  auto fca_map_end = fca_map->end();
-  auto fca_multimap_begin = fca_multimap->begin();
-  auto fca_multimap_end = fca_multimap->end();
-  auto fca_set_begin = fca_set->begin();
-  auto fca_set_end = fca_set->end();
-  auto fca_multiset_begin = fca_multiset->begin();
-  auto fca_multiset_end = fca_multiset->end();
+  auto fca_map_begin = fca_map.begin();
+  auto fca_map_end = fca_map.end();
+  auto fca_multimap_begin = fca_multimap.begin();
+  auto fca_multimap_end = fca_multimap.end();
+  auto fca_set_begin = fca_set.begin();
+  auto fca_set_end = fca_set.end();
+  auto fca_multiset_begin = fca_multiset.begin();
+  auto fca_multiset_end = fca_multiset.end();
 
-  auto foa_flat_map_begin = foa_flat_map->begin();
-  auto foa_flat_map_end = foa_flat_map->end();
-  auto foa_flat_set_begin = foa_flat_set->begin();
-  auto foa_flat_set_end = foa_flat_set->end();
-  auto foa_node_map_begin = foa_node_map->begin();
-  auto foa_node_map_end = foa_node_map->end();
-  auto foa_node_set_begin = foa_node_set->begin();
-  auto foa_node_set_end = foa_node_set->end();
+  auto foa_flat_map_begin = foa_flat_map.begin();
+  auto foa_flat_map_end = foa_flat_map.end();
+  auto foa_flat_set_begin = foa_flat_set.begin();
+  auto foa_flat_set_end = foa_flat_set.end();
+  auto foa_node_map_begin = foa_node_map.begin();
+  auto foa_node_map_end = foa_node_map.end();
+  auto foa_node_set_begin = foa_node_set.begin();
+  auto foa_node_set_end = foa_node_set.end();
 
   use(cfoa_flat_map, cfoa_flat_set);
   use(fca_map_begin, fca_map_end, fca_multimap_begin, fca_multimap_end,
