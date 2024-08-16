@@ -18,6 +18,12 @@ class BoostUnorderedHelpers:
         else:
             return e
 
+    def maybe_unwrap_reference(value):
+        if value.type.code == gdb.TYPE_CODE_REF:
+            return value.referenced_value()
+        else:
+            return value
+
     def countr_zero(n):
         for i in range(32):
             if (n & (1 << i)) != 0:
@@ -36,7 +42,7 @@ class BoostUnorderedPointerCustomizationPoint:
 
 class BoostUnorderedFcaPrinter:
     def __init__(self, val):
-        self.val = val
+        self.val = BoostUnorderedHelpers.maybe_unwrap_reference(val)
         self.name = f"{self.val.type.strip_typedefs()}".split("<")[0]
         self.name = self.name.replace("boost::unordered::", "boost::")
         self.is_map = self.name.endswith("map")
@@ -94,7 +100,7 @@ class BoostUnorderedFcaIteratorPrinter:
 
 class BoostUnorderedFoaPrinter:
     def __init__(self, val):
-        self.val = val
+        self.val = BoostUnorderedHelpers.maybe_unwrap_reference(val)
         self.name = f"{self.val.type.strip_typedefs()}".split("<")[0]
         self.name = self.name.replace("boost::unordered::", "boost::")
         self.is_map = self.name.endswith("map")
