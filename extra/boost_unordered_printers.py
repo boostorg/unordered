@@ -3,6 +3,9 @@
 # https://www.boost.org/LICENSE_1_0.txt
 
 import gdb.printing
+import gdb.xmethod
+import re
+import math
 
 class BoostUnorderedHelpers:
     def maybe_unwrap_atomic(n):
@@ -97,6 +100,57 @@ class BoostUnorderedFcaIteratorPrinter:
 
     def valid(self):
         return (self.cpo.to_address(self.val["p"]) != 0) and (self.cpo.to_address(self.val["itb"]["p"]) != 0)
+
+class BoostUnorderedFoaTableCoreCumulativeStatsPrinter:
+    def __init__(self, val):
+        self.val = val
+
+    def to_string(self):
+        return "[stats]"
+
+    def display_hint(self):
+        return "map"
+
+    def children(self):
+        def generator():
+            members = ["insertion", "successful_lookup", "unsuccessful_lookup"]
+            for member in members:
+                yield "", member
+                yield "", self.val[member]
+        return generator()
+    
+class BoostUnorderedFoaCumulativeStatsPrinter:
+    def __init__(self, val):
+        self.val = val
+        self.n = self.val["n"]
+        self.N = self.val.type.template_argument(0)
+
+    def display_hint(self):
+        return "map"
+    
+    def children(self):
+        def generator():
+            yield "", "count"
+            yield "", self.n
+
+            sequence_stats_data = gdb.lookup_type("boost::unordered::detail::foa::sequence_stats_data")
+            data = self.val["data"]
+            arr = data.address.reinterpret_cast(sequence_stats_data.pointer())
+            def build_string(idx):
+                entry = arr[idx]
+                avg = float(entry["m"])
+                var = float(entry["s"] / self.n) if (self.n != 0) else 0.0
+                dev = math.sqrt(var)
+                return f"{{avg = {avg}, var = {var}, dev = {dev}}}"
+
+            if self.N > 0:
+                yield "", "probe_length"
+                yield "", build_string(0)
+            if self.N > 1:
+                yield "", "num_comparisons"
+                yield "", build_string(1)
+
+        return generator()
 
 class BoostUnorderedFoaPrinter:
     def __init__(self, val):
@@ -212,6 +266,7 @@ class BoostUnorderedFoaIteratorPrinter:
 def boost_unordered_build_pretty_printer():
     pp = gdb.printing.RegexpCollectionPrettyPrinter("boost_unordered")
     add_template_printer = lambda name, printer: pp.add_printer(name, f"^{name}<.*>$", printer)
+    add_concrete_printer = lambda name, printer: pp.add_printer(name, f"^{name}$", printer)
 
     add_template_printer("boost::unordered::unordered_map", BoostUnorderedFcaPrinter)
     add_template_printer("boost::unordered::unordered_multimap", BoostUnorderedFcaPrinter)
@@ -230,9 +285,59 @@ def boost_unordered_build_pretty_printer():
     
     add_template_printer("boost::unordered::detail::foa::table_iterator", BoostUnorderedFoaIteratorPrinter)
 
+    add_concrete_printer("boost::unordered::detail::foa::table_core_cumulative_stats", BoostUnorderedFoaTableCoreCumulativeStatsPrinter)
+    add_template_printer("boost::unordered::detail::foa::cumulative_stats", BoostUnorderedFoaCumulativeStatsPrinter)
+    add_template_printer("boost::unordered::detail::foa::concurrent_cumulative_stats", BoostUnorderedFoaCumulativeStatsPrinter)
+
     return pp
 
 gdb.printing.register_pretty_printer(gdb.current_objfile(), boost_unordered_build_pretty_printer())
+
+
+
+# https://sourceware.org/gdb/current/onlinedocs/gdb.html/Writing-an-Xmethod.html
+class BoostUnorderedFoaGetStatsMethod(gdb.xmethod.XMethod):
+    def __init__(self):
+        gdb.xmethod.XMethod.__init__(self, "get_stats")
+ 
+    def get_worker(self, method_name):
+        if method_name == "get_stats":
+            return BoostUnorderedFoaGetStatsWorker()
+
+class BoostUnorderedFoaGetStatsWorker(gdb.xmethod.XMethodWorker):
+    def get_arg_types(self):
+        return None
+
+    def get_result_type(self, obj):
+        return gdb.lookup_type("boost::unordered::detail::foa::table_core_cumulative_stats")
+ 
+    def __call__(self, obj):
+        try:
+            return obj["table_"]["cstats"]
+        except gdb.error:
+            print("Error: Binary was compiled without stats. Recompile with `BOOST_UNORDERED_ENABLE_STATS` defined.")
+            return
+ 
+class BoostUnorderedFoaMatcher(gdb.xmethod.XMethodMatcher):
+    def __init__(self):
+        gdb.xmethod.XMethodMatcher.__init__(self, 'BoostUnorderedFoaMatcher')
+        self.methods = [BoostUnorderedFoaGetStatsMethod()]
+ 
+    def match(self, class_type, method_name):
+        template_name = f"{class_type.strip_typedefs()}".split("<")[0]
+        regex = "^boost::unordered::(unordered|concurrent)_(flat|node)_(map|set)$"
+        if not re.match(regex, template_name):
+            return None
+
+        workers = []
+        for method in self.methods:
+            if method.enabled:
+                worker = method.get_worker(method_name)
+                if worker:
+                    workers.append(worker)
+        return workers
+
+gdb.xmethod.register_xmethod_matcher(None, BoostUnorderedFoaMatcher())
 
 
 
