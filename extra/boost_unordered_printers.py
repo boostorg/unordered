@@ -233,3 +233,52 @@ def boost_unordered_build_pretty_printer():
     return pp
 
 gdb.printing.register_pretty_printer(gdb.current_objfile(), boost_unordered_build_pretty_printer())
+
+
+
+""" Fancy pointer support """
+
+"""
+To allow your own fancy pointer type to interact with Boost.Unordered GDB pretty-printers,
+create a pretty-printer for your own type with the following additional methods.
+
+(Note, this is assuming the presence of a type alias `pointer` for the underlying
+raw pointer type, Substitute whichever name is applicable in your case.)
+
+`boost_to_address(fancy_ptr)`
+    * A static method, but `@staticmethod` is not required
+    * Parameter `fancy_ptr` of type `gdb.Value`
+        * Its `.type` will be your fancy pointer type
+    * Returns a `gdb.Value` with the raw pointer equivalent to your fancy pointer
+        * This method should be equivalent to calling `operator->()` on your fancy pointer in C++
+
+`boost_next(raw_ptr, offset)`
+    * Parameter `raw_ptr` of type `gdb.Value`
+        * Its `.type` will be `pointer`
+    * Parameter `offset`
+        * Either has integer type, or is of type `gdb.Value` with an underlying integer
+    * Returns a `gdb.Value` with the raw pointer equivalent to your fancy pointer, as if you did the following operations
+        1. Convert the incoming raw pointer to your fancy pointer
+        2. Use operator+= to add the offset to the fancy pointer
+        3. Convert back to the raw pointer
+    * Note, you will not actually do these operations as stated. You will do equivalent lower-level operations that emulate having done the above
+        * Ultimately, it will be as if you called `operator+()` on your fancy pointer in C++, but using only raw pointers
+
+Example
+```
+class MyFancyPtrPrinter:
+    ...
+
+    # Equivalent to `operator->()`
+    def boost_to_address(fancy_ptr):
+        ...
+        return ...
+        
+    # Equivalent to `operator+()`
+    def boost_next(raw_ptr, offset):
+        ...
+        return ...
+    
+    ...
+```
+"""

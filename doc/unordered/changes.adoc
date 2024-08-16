@@ -12,6 +12,7 @@
 `boost::concurrent_flat_set` operations to allow for safe mutable modification of elements
 ({github-pr-url}/265[PR#265^]).
 * In Visual Studio Natvis, supported any container with an allocator that uses fancy pointers. This applies to any fancy pointer type, as long as the proper Natvis customization point "Intrinsic" functions are written for the fancy pointer type.
+* Added GDB pretty-printers for all containers and iterators. For a container with an allocator that uses fancy pointers, these only work if the proper pretty-printer is written for the fancy pointer type itself.
 
 == Release 1.86.0
 
