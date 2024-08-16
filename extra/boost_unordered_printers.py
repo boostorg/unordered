@@ -24,12 +24,23 @@ class BoostUnorderedHelpers:
                 return i
         return 32
 
+class BoostUnorderedPointerCustomizationPoint:
+    def __init__(self, any_ptr):
+        vis = gdb.default_visualizer(any_ptr)
+        if vis is None:
+            self.to_address = lambda ptr: ptr
+            self.next = lambda ptr, offset: ptr + offset
+        else:
+            self.to_address = lambda ptr: ptr if (ptr.type.code == gdb.TYPE_CODE_PTR) else type(vis).boost_to_address(ptr)
+            self.next = lambda ptr, offset: type(vis).boost_next(ptr, offset)
+
 class BoostUnorderedFcaPrinter:
     def __init__(self, val):
         self.val = val
         self.name = f"{self.val.type.strip_typedefs()}".split("<")[0]
         self.name = self.name.replace("boost::unordered::", "boost::")
         self.is_map = self.name.endswith("map")
+        self.cpo = BoostUnorderedPointerCustomizationPoint(self.val["table_"]["buckets_"]["buckets"])
 
     def to_string(self):
         size = self.val["table_"]["size_"]
@@ -37,12 +48,6 @@ class BoostUnorderedFcaPrinter:
 
     def display_hint(self):
         return "map"
-
-    def to_address(self, arg):
-        return arg # TODO: Add fancy pointer support
-
-    def next(self, arg, n):
-        return arg + n # TODO: Add fancy pointer support
 
     def children(self):
         def generator():
@@ -54,8 +59,8 @@ class BoostUnorderedFcaPrinter:
 
             count = 0
             while bucket_index != size:
-                current_bucket = self.next(self.to_address(buckets), bucket_index)
-                node = self.to_address(current_bucket.dereference()["next"])
+                current_bucket = self.cpo.next(self.cpo.to_address(buckets), bucket_index)
+                node = self.cpo.to_address(current_bucket.dereference()["next"])
                 while node != 0:
                     value = node.dereference()["buf"]["t_"]
                     if self.is_map:
@@ -67,7 +72,7 @@ class BoostUnorderedFcaPrinter:
                         yield "", count
                         yield "", value
                     count += 1
-                    node = self.to_address(node.dereference()["next"])
+                    node = self.cpo.to_address(node.dereference()["next"])
                 bucket_index += 1
         
         return generator()
@@ -75,19 +80,17 @@ class BoostUnorderedFcaPrinter:
 class BoostUnorderedFcaIteratorPrinter:
     def __init__(self, val):
         self.val = val
+        self.cpo = BoostUnorderedPointerCustomizationPoint(self.val["p"])
 
     def to_string(self):
         if self.valid():
-            value = self.to_address(self.val["p"]).dereference()["buf"]["t_"]
+            value = self.cpo.to_address(self.val["p"]).dereference()["buf"]["t_"]
             return f"iterator = {{ {value} }}"
         else:
             return "iterator = { end iterator }"
 
-    def to_address(self, arg):
-        return arg # TODO: Add fancy pointer support
-
     def valid(self):
-        return (self.to_address(self.val["p"]) != 0) and (self.to_address(self.val["itb"]["p"]) != 0)
+        return (self.cpo.to_address(self.val["p"]) != 0) and (self.cpo.to_address(self.val["itb"]["p"]) != 0)
 
 class BoostUnorderedFoaPrinter:
     def __init__(self, val):
@@ -95,6 +98,7 @@ class BoostUnorderedFoaPrinter:
         self.name = f"{self.val.type.strip_typedefs()}".split("<")[0]
         self.name = self.name.replace("boost::unordered::", "boost::")
         self.is_map = self.name.endswith("map")
+        self.cpo = BoostUnorderedPointerCustomizationPoint(self.val["table_"]["arrays"]["groups_"])
 
     def to_string(self):
         size = BoostUnorderedHelpers.maybe_unwrap_atomic(self.val["table_"]["size_ctrl"]["size"])
@@ -102,12 +106,6 @@ class BoostUnorderedFoaPrinter:
 
     def display_hint(self):
         return "map"
-
-    def to_address(self, arg):
-        return arg # TODO: Add fancy pointer support
-
-    def next(self, arg, n):
-        return arg + n # TODO: Add fancy pointer support
 
     def is_regular_layout(self, group):
         typename = group["m"].type.strip_typedefs()
@@ -143,8 +141,8 @@ class BoostUnorderedFoaPrinter:
     def children(self):
         def generator():
             table = self.val["table_"]
-            groups = self.to_address(table["arrays"]["groups_"])
-            elements = self.to_address(table["arrays"]["elements_"])
+            groups = self.cpo.to_address(table["arrays"]["groups_"])
+            elements = self.cpo.to_address(table["arrays"]["elements_"])
 
             pc_ = groups.cast(gdb.lookup_type("unsigned char").pointer())
             p_ = elements
@@ -158,7 +156,7 @@ class BoostUnorderedFoaPrinter:
                 # This if block mirrors the condition in the begin() call
                 if (not first_time) or (self.match_occupied(groups.dereference()) & 1):
                     pointer = BoostUnorderedHelpers.maybe_unwrap_foa_element(p_)
-                    value = self.to_address(pointer).dereference()
+                    value = self.cpo.to_address(pointer).dereference()
                     if self.is_map:
                         first = value["first"]
                         second = value["second"]
@@ -171,40 +169,39 @@ class BoostUnorderedFoaPrinter:
                 first_time = False
 
                 n0 = pc_.cast(gdb.lookup_type("uintptr_t")) % groups.dereference().type.sizeof
-                pc_ = self.next(pc_, -n0)
+                pc_ = self.cpo.next(pc_, -n0)
 
                 mask = (self.match_occupied(pc_.cast(groups.type).dereference()) >> (n0+1)) << (n0+1)
                 while mask == 0:
-                    pc_ = self.next(pc_, groups.dereference().type.sizeof)
-                    p_ = self.next(p_, groups.dereference()["N"])
+                    pc_ = self.cpo.next(pc_, groups.dereference().type.sizeof)
+                    p_ = self.cpo.next(p_, groups.dereference()["N"])
                     mask = self.match_occupied(pc_.cast(groups.type).dereference())
                 
                 n = BoostUnorderedHelpers.countr_zero(mask)
                 if self.is_sentinel(pc_.cast(groups.type).dereference(), n):
                     p_ = 0
                 else:
-                    pc_ = self.next(pc_, n)
-                    p_ = self.next(p_, n - n0)
+                    pc_ = self.cpo.next(pc_, n)
+                    p_ = self.cpo.next(p_, n - n0)
 
         return generator()
 
 class BoostUnorderedFoaIteratorPrinter:
     def __init__(self, val):
         self.val = val
+        self.cpo = BoostUnorderedPointerCustomizationPoint(self.val["p_"])
 
     def to_string(self):
         if self.valid():
-            pointer = BoostUnorderedHelpers.maybe_unwrap_foa_element(self.val["p_"])
-            value = self.to_address(pointer).dereference()
+            element = self.cpo.to_address(self.val["p_"])
+            pointer = BoostUnorderedHelpers.maybe_unwrap_foa_element(element)
+            value = self.cpo.to_address(pointer).dereference()
             return f"iterator = {{ {value} }}"
         else:
             return "iterator = { end iterator }"
 
-    def to_address(self, arg):
-        return arg # TODO: Add fancy pointer support
-
     def valid(self):
-        return (self.to_address(self.val["p_"]) != 0) and (self.to_address(self.val["pc_"]) != 0)
+        return (self.cpo.to_address(self.val["p_"]) != 0) and (self.cpo.to_address(self.val["pc_"]) != 0)
 
 def boost_unordered_build_pretty_printer():
     pp = gdb.printing.RegexpCollectionPrettyPrinter("boost_unordered")
