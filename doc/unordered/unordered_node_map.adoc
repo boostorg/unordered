@@ -541,7 +541,7 @@ and always calls `other.reset_stats()`.
 ==== Move Constructor from concurrent_node_map
 
 ```c++
-unordered_flat_map(concurrent_node_map<Key, T, Hash, Pred, Allocator>&& other);
+unordered_node_map(concurrent_node_map<Key, T, Hash, Pred, Allocator>&& other);
 ```
 
 Move construction from a xref:#concurrent_node_map[`concurrent_node_map`].
