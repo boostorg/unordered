@@ -43,7 +43,7 @@ By default, if you compile into an ELF binary format, your binary will contain t
 (gdb) add-auto-load-safe-path [/path/to/executable]
 ```
 
-You can choose to compile your binary _without_ embedding the pretty-printers by defining `BOOST_ALL_NO_EMBEDDED_GDB_PRINTERS`, which disables the embedded GDB pretty-printers for all Boost libraries that have this feature.
+You can choose to compile your binary _without_ embedding the pretty-printers by defining `BOOST_ALL_NO_EMBEDDED_GDB_SCRIPTS`, which disables the embedded GDB pretty-printers for all Boost libraries that have this feature.
 
 You can load the pretty-printers externally from the non-embedded Python script. Add the script, link:https://github.com/boostorg/unordered/blob/develop/extra/boost_unordered_printers.py[/extra/boost_unordered_printers.py], using the `source` command as shown below.
 
