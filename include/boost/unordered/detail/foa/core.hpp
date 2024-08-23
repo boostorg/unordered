@@ -29,6 +29,7 @@
 #include <boost/unordered/detail/static_assert.hpp>
 #include <boost/unordered/detail/type_traits.hpp>
 #include <boost/unordered/hash_traits.hpp>
+#include <boost/unordered/unordered_printers.hpp>
 #include <climits>
 #include <cmath>
 #include <cstddef>
