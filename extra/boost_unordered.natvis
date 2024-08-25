@@ -421,6 +421,8 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
         <AlternativeType Name="boost::unordered::unordered_node_set&lt;*&gt;" />
         <AlternativeType Name="boost::unordered::concurrent_flat_map&lt;*&gt;" />
         <AlternativeType Name="boost::unordered::concurrent_flat_set&lt;*&gt;" />
+        <AlternativeType Name="boost::unordered::concurrent_node_map&lt;*&gt;" />
+        <AlternativeType Name="boost::unordered::concurrent_node_set&lt;*&gt;" />
         <DisplayString>{{ size={table_.size_ctrl.size} }}</DisplayString>
         <Expand>
             <Item Name="[hash_function]" ExcludeView="simple">*reinterpret_cast&lt;hasher*&gt;(static_cast&lt;table_type::super::hash_base*&gt;(&amp;table_))</Item>
@@ -433,6 +435,7 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
     <Type Name="boost::unordered::unordered_flat_map&lt;*&gt;" Priority="MediumHigh" ExcludeView="ShowElementsByIndex">
         <AlternativeType Name="boost::unordered::unordered_node_map&lt;*&gt;" />
         <AlternativeType Name="boost::unordered::concurrent_flat_map&lt;*&gt;" />
+        <AlternativeType Name="boost::unordered::concurrent_node_map&lt;*&gt;" />
         <DisplayString>{{ size={table_.size_ctrl.size} }}</DisplayString>
         <Expand>
             <Item Name="[hash_function]" ExcludeView="simple">*reinterpret_cast&lt;hasher*&gt;(static_cast&lt;table_type::super::hash_base*&gt;(&amp;table_))</Item>

@@ -1,5 +1,5 @@
 // Copyright (C) 2023 Christian Mazakas
-// Copyright (C) 2023 Joaquin M Lopez Munoz
+// Copyright (C) 2023-2024 Joaquin M Lopez Munoz
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -7,6 +7,8 @@
 
 #include <boost/unordered/concurrent_flat_map.hpp>
 #include <boost/unordered/concurrent_flat_set.hpp>
+#include <boost/unordered/concurrent_node_map.hpp>
+#include <boost/unordered/concurrent_node_set.hpp>
 
 #if defined(__clang__) && defined(__has_warning)
 
@@ -37,19 +39,35 @@ using key_equal = stateful_key_equal;
 using map_type = boost::unordered::concurrent_flat_map<raii, raii, hasher,
   key_equal, stateful_allocator<std::pair<raii const, raii> > >;
 
+using node_map_type = boost::unordered::concurrent_node_map<raii, raii, hasher,
+  key_equal, stateful_allocator<std::pair<raii const, raii> > >;
+
 using set_type = boost::unordered::concurrent_flat_set<raii, hasher,
+  key_equal, stateful_allocator<raii> >;
+
+using node_set_type = boost::unordered::concurrent_node_set<raii, hasher,
   key_equal, stateful_allocator<raii> >;
 
 using fancy_map_type = boost::unordered::concurrent_flat_map<raii, raii, hasher,
   key_equal, stateful_allocator2<std::pair<raii const, raii> > >;
 
+using fancy_node_map_type = boost::unordered::concurrent_node_map<raii, raii, hasher,
+  key_equal, stateful_allocator2<std::pair<raii const, raii> > >;
+
 using fancy_set_type = boost::unordered::concurrent_flat_set<raii, hasher,
   key_equal, stateful_allocator2<raii> >;
 
+using fancy_node_set_type = boost::unordered::concurrent_node_set<raii, hasher,
+  key_equal, stateful_allocator2<raii> >;
+
 map_type* test_map;
+node_map_type* test_node_map;
 set_type* test_set;
+node_set_type* test_node_set;
 fancy_map_type* fancy_test_map;
+fancy_node_map_type* fancy_test_node_map;
 fancy_set_type* fancy_test_set;
+fancy_node_set_type* fancy_test_node_set;
 
 std::initializer_list<map_type::value_type> map_init_list{
   {raii{0}, raii{0}},
@@ -102,7 +120,9 @@ std::initializer_list<set_type::value_type> set_init_list{
 };
 
 auto test_map_and_init_list=std::make_pair(test_map,map_init_list);
+auto test_node_map_and_init_list=std::make_pair(test_node_map,map_init_list);
 auto test_set_and_init_list=std::make_pair(test_set,set_init_list);
+auto test_node_set_and_init_list=std::make_pair(test_node_set,set_init_list);
 
 template <class T,bool POCCA, bool POCMA>
 struct poca_allocator: fancy_allocator<T>
@@ -928,7 +948,7 @@ namespace {
   }
 
   template <class X, class GF>
-  void flat_move_assign(X*, GF gen_factory, test::random_generator rg)
+  void nonconcurrent_move_assign(X*, GF gen_factory, test::random_generator rg)
   {
     using value_type = typename X::value_type;
     static constexpr auto value_type_cardinality = 
@@ -950,16 +970,17 @@ namespace {
     {
       raii::reset_counts();
 
-      flat_container<X> flat(values.begin(), values.end(), values.size(),
+      nonconcurrent_container<X> nonc(
+        values.begin(), values.end(), values.size(),
         hasher(1), key_equal(2), allocator_type(3));
 
       X x(0, hasher(2), key_equal(1), allocator_type(3));
 
-      BOOST_TEST(flat.get_allocator() == x.get_allocator());
+      BOOST_TEST(nonc.get_allocator() == x.get_allocator());
 
-      x = std::move(flat);
+      x = std::move(nonc);
 
-      BOOST_TEST(flat.empty());
+      BOOST_TEST(nonc.empty());
       BOOST_TEST_EQ(x.size(), reference_cont.size());
 
       test_fuzzy_matches_reference(x, reference_cont, rg);
@@ -983,17 +1004,18 @@ namespace {
       X x(values.begin(), values.end(), values.size(), hasher(1),
         key_equal(2), allocator_type(3));
 
-      flat_container<X> flat(0, hasher(2), key_equal(1), allocator_type(3));
+      nonconcurrent_container<X> nonc(
+        0, hasher(2), key_equal(1), allocator_type(3));
 
-      BOOST_TEST(flat.get_allocator() == x.get_allocator());
+      BOOST_TEST(nonc.get_allocator() == x.get_allocator());
 
-      flat = std::move(x);
+      nonc = std::move(x);
 
       BOOST_TEST(x.empty());
-      BOOST_TEST_EQ(flat.size(), reference_cont.size());
+      BOOST_TEST_EQ(nonc.size(), reference_cont.size());
 
-      BOOST_TEST_EQ(flat.hash_function(), hasher(1));
-      BOOST_TEST_EQ(flat.key_eq(), key_equal(2));
+      BOOST_TEST_EQ(nonc.hash_function(), hasher(1));
+      BOOST_TEST_EQ(nonc.key_eq(), key_equal(2));
 
       BOOST_TEST_EQ(
         raii::copy_constructor, value_type_cardinality * reference_cont.size());
@@ -1008,16 +1030,17 @@ namespace {
     {
       raii::reset_counts();
 
-      flat_container<X> flat(values.begin(), values.end(), values.size(),
+      nonconcurrent_container<X> nonc(
+        values.begin(), values.end(), values.size(),
         hasher(1), key_equal(2), allocator_type(3));
 
       X x(0, hasher(2), key_equal(1), allocator_type(4));
 
-      BOOST_TEST(flat.get_allocator() != x.get_allocator());
+      BOOST_TEST(nonc.get_allocator() != x.get_allocator());
 
-      x = std::move(flat);
+      x = std::move(nonc);
 
-      BOOST_TEST(flat.empty());
+      BOOST_TEST(nonc.empty());
       BOOST_TEST_EQ(x.size(), reference_cont.size());
 
       test_fuzzy_matches_reference(x, reference_cont, rg);
@@ -1043,17 +1066,18 @@ namespace {
       X x(values.begin(), values.end(), values.size(), hasher(1),
         key_equal(2), allocator_type(3));
 
-      flat_container<X> flat(0, hasher(2), key_equal(1), allocator_type(4));
+      nonconcurrent_container<X> nonc(
+        0, hasher(2), key_equal(1), allocator_type(4));
 
-      BOOST_TEST(flat.get_allocator() != x.get_allocator());
+      BOOST_TEST(nonc.get_allocator() != x.get_allocator());
 
-      flat = std::move(x);
+      nonc = std::move(x);
 
       BOOST_TEST(x.empty());
-      BOOST_TEST_EQ(flat.size(), reference_cont.size());
+      BOOST_TEST_EQ(nonc.size(), reference_cont.size());
 
-      BOOST_TEST_EQ(flat.hash_function(), hasher(1));
-      BOOST_TEST_EQ(flat.key_eq(), key_equal(2));
+      BOOST_TEST_EQ(nonc.hash_function(), hasher(1));
+      BOOST_TEST_EQ(nonc.key_eq(), key_equal(2));
 
       BOOST_TEST_EQ(
         raii::copy_constructor, value_type_cardinality * reference_cont.size());
@@ -1073,29 +1097,31 @@ namespace {
 // clang-format off
 UNORDERED_TEST(
   copy_assign,
-  ((test_map)(test_set))
+  ((test_map)(test_node_map)(test_set)(test_node_set))
   ((value_type_generator_factory))
   ((default_generator)(sequential)(limited_range)))
 
 UNORDERED_TEST(
   move_assign,
-  ((test_map)(test_set))
+  ((test_map)(test_node_map)(test_set)(test_node_set))
   ((value_type_generator_factory))
   ((default_generator)(sequential)(limited_range)))
 
 UNORDERED_TEST(
   initializer_list_assign,
-  ((test_map_and_init_list)(test_set_and_init_list)))
+  ((test_map_and_init_list)(test_node_map_and_init_list)
+   (test_set_and_init_list)(test_node_set_and_init_list)))
 
 UNORDERED_TEST(
   insert_and_assign,
-  ((test_map)(test_set))
+  ((test_map)(test_node_map)(test_set)(test_node_set))
   ((init_type_generator_factory))
   ((default_generator)(sequential)(limited_range)))
 
 UNORDERED_TEST(
-  flat_move_assign,
-  ((test_map)(test_set)(fancy_test_map)(fancy_test_set))
+  nonconcurrent_move_assign,
+  ((test_map)(test_node_map)(test_set)(test_node_set)
+   (fancy_test_map)(fancy_test_node_map)(fancy_test_set)(fancy_test_node_set))
   ((init_type_generator_factory))
   ((default_generator)(sequential)(limited_range)))
 // clang-format on
