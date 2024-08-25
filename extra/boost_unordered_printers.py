@@ -282,6 +282,8 @@ def boost_unordered_build_pretty_printer():
     add_template_printer("boost::unordered::unordered_node_set", BoostUnorderedFoaPrinter)
     add_template_printer("boost::unordered::concurrent_flat_map", BoostUnorderedFoaPrinter)
     add_template_printer("boost::unordered::concurrent_flat_set", BoostUnorderedFoaPrinter)
+    add_template_printer("boost::unordered::concurrent_node_map", BoostUnorderedFoaPrinter)
+    add_template_printer("boost::unordered::concurrent_node_set", BoostUnorderedFoaPrinter)
     
     add_template_printer("boost::unordered::detail::foa::table_iterator", BoostUnorderedFoaIteratorPrinter)
 
