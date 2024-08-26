@@ -113,6 +113,7 @@ local FCA_TESTS =
   move_tests
   narrow_cast_tests
   node_handle_tests
+  node_handle_allocator_tests
   noexcept_tests
   post_move_tests
   prime_fmod_tests
@@ -235,6 +236,7 @@ local FOA_TESTS =
   fancy_pointer_noleak
   pmr_allocator_tests
   stats_tests
+  node_handle_allocator_tests
 ;
 
 for local test in $(FOA_TESTS)
@@ -316,11 +318,10 @@ alias foa_tests :
 ;
 
 local CFOA_TESTS =
-  insert_tests
   erase_tests
   try_emplace_tests
   emplace_tests
-  visit_tests
+  extract_insert_tests
   constructor_tests
   assign_tests
   clear_tests
@@ -346,6 +347,7 @@ local CFOA_TESTS =
   explicit_alloc_ctor_tests
   pmr_allocator_tests
   stats_tests
+  node_handle_allocator_tests
 ;
 
 for local test in $(CFOA_TESTS)
@@ -355,6 +357,28 @@ for local test in $(CFOA_TESTS)
   : target-name cfoa_$(test)
   ;
 }
+
+run cfoa/insert_tests.cpp
+    :
+    :
+    : $(CPP11) <threading>multi
+      <toolset>msvc:<cxxflags>/bigobj
+      <toolset>gcc:<inlining>on
+      <toolset>gcc:<optimization>space
+      <toolset>clang:<inlining>on
+      <toolset>clang:<optimization>space
+    : cfoa_insert_tests ;
+
+run cfoa/visit_tests.cpp
+    :
+    :
+    : $(CPP11) <threading>multi
+      <toolset>msvc:<cxxflags>/bigobj
+      <toolset>gcc:<inlining>on
+      <toolset>gcc:<optimization>space
+      <toolset>clang:<inlining>on
+      <toolset>clang:<optimization>space
+    : cfoa_visit_tests ;
 
 run cfoa/serialization_tests.cpp
     :
@@ -395,6 +419,8 @@ make_cfoa_interprocess_concurrency_tests cfoa_interproc_conc_tests_stats
 
 alias cfoa_tests :
   cfoa_$(CFOA_TESTS)
+  cfoa_insert_tests
+  cfoa_visit_tests
   cfoa_serialization_tests
   cfoa_interproc_conc_tests
   cfoa_interproc_conc_tests_stats ;
