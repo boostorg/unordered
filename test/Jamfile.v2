@@ -45,7 +45,9 @@ path-constant BOOST_UNORDERED_TEST_DIR : . ;
 
 run quick.cpp ;
 
-compile debuggability/visualization_tests.cpp ;
+compile debuggability/visualization_tests.cpp
+  : <target-os>cygwin:<define>_XOPEN_SOURCE=600
+  ;
 
 compile unordered/self_include_tests_obj.cpp
   : <define>BOOST_UNORDERED_HEADER="boost/unordered_map.hpp"
