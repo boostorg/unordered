@@ -20,7 +20,8 @@
 #endif
 
 #include "../helpers/test.hpp"
-
+#include "../helpers/replace_allocator.hpp"
+  
 #include <boost/config/workaround.hpp>
 #include <boost/core/allocator_access.hpp>
 #include <memory>
@@ -82,42 +83,12 @@ namespace {
     bool operator!=(pocx_allocator const& rhs) const { return x_ != rhs.x_; }
   };
 
-  template <typename Container, typename Allocator>
-  struct replace_allocator_impl;
-
-  template <typename Container, typename Allocator>
-  using replace_allocator = 
-    typename replace_allocator_impl<Container, Allocator>::type;
-
-  template <
-    typename K, typename H, typename P, typename A,
-    template <typename, typename, typename, typename> class Set,
-    typename Allocator
-  >
-  struct replace_allocator_impl<Set<K, H, P, A>, Allocator>
-  {
-    using type = Set<
-      K, H, P, boost::allocator_rebind_t<Allocator, K> >;
-  };
-
-  template <
-    typename K, typename H, typename T, typename P, typename A,
-    template <typename, typename, typename, typename, typename> class Map,
-    typename Allocator
-  >
-  struct replace_allocator_impl<Map<K, T, H, P, A>, Allocator>
-  {
-    using type = Map<
-      K, T, H, P,
-      boost::allocator_rebind_t<Allocator, std::pair<K const, T> > >;
-  };
-
   template<typename X, typename Allocator>
   void node_handle_allocator_tests(
     X*, std::pair<Allocator, Allocator> allocators)
   {
     using value_type = typename X::value_type;
-    using replaced_allocator_container = replace_allocator<X, Allocator>;
+    using replaced_allocator_container = test::replace_allocator<X, Allocator>;
     using node_type = typename replaced_allocator_container::node_type;
 
     replaced_allocator_container x1(allocators.first);
@@ -143,7 +114,7 @@ namespace {
     X*, std::pair<Allocator, Allocator> allocators)
   {
     using value_type = typename X::value_type;
-    using replaced_allocator_container = replace_allocator<X, Allocator>;
+    using replaced_allocator_container = test::replace_allocator<X, Allocator>;
     using node_type = typename replaced_allocator_container::node_type;
 
     replaced_allocator_container x1(allocators.first), x2(allocators.second);

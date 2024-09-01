@@ -5,6 +5,9 @@
 
 #include "helpers.hpp"
 
+#include "../helpers/replace_allocator.hpp"
+#include "../objects/non_default_ctble_allocator.hpp"
+
 #include <boost/unordered/concurrent_flat_map.hpp>
 #include <boost/unordered/concurrent_flat_set.hpp>
 #include <boost/unordered/concurrent_node_map.hpp>
@@ -882,6 +885,21 @@ namespace {
     check_raii_counts();
   }
 
+  template <class X>
+  void initializer_list_assign_gh276(X*)
+  {
+    // https://github.com/boostorg/unordered/issues/276
+
+    using replaced_allocator_container = test::replace_allocator<
+      X, test::non_default_ctble_allocator<int> >;
+    using value_type = typename replaced_allocator_container::value_type;
+    using replaced_allocator_type = 
+      typename replaced_allocator_container::allocator_type;
+      
+    replaced_allocator_container x(replaced_allocator_type(0));
+    x = std::initializer_list<value_type>();
+  }
+
   template <class X, class GF>
   void insert_and_assign(X*, GF gen_factory, test::random_generator rg)
   {
@@ -1111,6 +1129,10 @@ UNORDERED_TEST(
   initializer_list_assign,
   ((test_map_and_init_list)(test_node_map_and_init_list)
    (test_set_and_init_list)(test_node_set_and_init_list)))
+
+UNORDERED_TEST(
+  initializer_list_assign_gh276,
+  ((test_map)(test_node_map)(test_set)(test_node_set)))
 
 UNORDERED_TEST(
   insert_and_assign,

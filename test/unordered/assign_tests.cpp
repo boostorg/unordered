@@ -7,8 +7,10 @@
 #include "../helpers/unordered.hpp"
 
 #include "../helpers/test.hpp"
+#include "../helpers/replace_allocator.hpp"
 #include "../objects/test.hpp"
 #include "../objects/cxx11_allocator.hpp"
+#include "../objects/non_default_ctble_allocator.hpp"
 #include "../helpers/random_values.hpp"
 #include "../helpers/tracker.hpp"
 #include "../helpers/equivalent.hpp"
@@ -287,6 +289,20 @@ namespace assign_tests {
         }
       }
 #endif
+    }
+  
+    BOOST_LIGHTWEIGHT_TEST_OSTREAM << "gh276\n";
+    {
+      // https://github.com/boostorg/unordered/issues/276
+
+      using replaced_allocator_container = test::replace_allocator<
+        T, test::non_default_ctble_allocator<int> >;
+      using value_type = typename replaced_allocator_container::value_type;
+      using replaced_allocator_type = 
+        typename replaced_allocator_container::allocator_type;
+      
+      replaced_allocator_container x(replaced_allocator_type(0));
+      x = std::initializer_list<value_type>();
     }
   }
 
