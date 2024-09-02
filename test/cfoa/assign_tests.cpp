@@ -5,10 +5,15 @@
 
 #include "helpers.hpp"
 
+#include "../helpers/replace_allocator.hpp"
+#include "../objects/non_default_ctble_allocator.hpp"
+
 #include <boost/unordered/concurrent_flat_map.hpp>
 #include <boost/unordered/concurrent_flat_set.hpp>
 #include <boost/unordered/concurrent_node_map.hpp>
 #include <boost/unordered/concurrent_node_set.hpp>
+
+#include <vector>
 
 #if defined(__clang__) && defined(__has_warning)
 
@@ -883,6 +888,28 @@ namespace {
   }
 
   template <class X, class GF>
+  void initializer_list_assign_gh276(
+    X*, GF gen_factory, test::random_generator rg)
+  {
+    // https://github.com/boostorg/unordered/issues/276
+
+    using replaced_allocator_container = test::replace_allocator<
+      X, test::non_default_ctble_allocator<int> >;
+    using replaced_allocator_type = 
+      typename replaced_allocator_container::allocator_type;
+      
+    auto gen = gen_factory.template get<X>();
+    auto values = make_random_values(4, [&] { return gen(rg); });
+
+    replaced_allocator_container
+      x(replaced_allocator_type(0)),
+      y(values.begin(), values.end(), replaced_allocator_type(0));
+
+    x = {values[0], values[1], values[2], values[3]};
+    BOOST_TEST(x == y);
+  }
+
+  template <class X, class GF>
   void insert_and_assign(X*, GF gen_factory, test::random_generator rg)
   {
     using allocator_type = typename X::allocator_type;
@@ -1111,6 +1138,12 @@ UNORDERED_TEST(
   initializer_list_assign,
   ((test_map_and_init_list)(test_node_map_and_init_list)
    (test_set_and_init_list)(test_node_set_and_init_list)))
+
+UNORDERED_TEST(
+  initializer_list_assign_gh276,
+  ((test_map)(test_node_map)(test_set)(test_node_set))
+  ((value_type_generator_factory))
+  ((default_generator)))
 
 UNORDERED_TEST(
   insert_and_assign,
