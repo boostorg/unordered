@@ -210,8 +210,8 @@ namespace boost {
 
       unordered_node_set& operator=(std::initializer_list<value_type> il)
       {
-        clear();
-        insert(il);
+        this->clear();
+        this->insert(il.begin(), il.end());
         return *this;
       }
 
