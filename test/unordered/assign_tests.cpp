@@ -15,6 +15,8 @@
 #include "../helpers/tracker.hpp"
 #include "../helpers/equivalent.hpp"
 
+#include <vector>
+
 #if defined(BOOST_MSVC)
 #pragma warning(disable : 4127) // conditional expression is constant
 #endif
@@ -295,14 +297,21 @@ namespace assign_tests {
     {
       // https://github.com/boostorg/unordered/issues/276
 
+      using value_type = typename T::value_type;
       using replaced_allocator_container = test::replace_allocator<
         T, test::non_default_ctble_allocator<int> >;
-      using value_type = typename replaced_allocator_container::value_type;
       using replaced_allocator_type = 
         typename replaced_allocator_container::allocator_type;
       
-      replaced_allocator_container x(replaced_allocator_type(0));
-      x = std::initializer_list<value_type>();
+      test::random_values<T> v(4, generator);
+      std::vector<value_type> vv(v.begin(), v.end());
+
+      replaced_allocator_container
+        x(replaced_allocator_type(0)),
+        y(vv.begin(), vv.begin() + 4, replaced_allocator_type(0));
+
+      x = {vv[0], vv[1], vv[2], vv[3]};
+      BOOST_TEST(x == y);
     }
   }
 

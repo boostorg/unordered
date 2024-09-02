@@ -13,6 +13,8 @@
 #include <boost/unordered/concurrent_node_map.hpp>
 #include <boost/unordered/concurrent_node_set.hpp>
 
+#include <vector>
+
 #if defined(__clang__) && defined(__has_warning)
 
 #if __has_warning("-Wself-assign-overloaded")
@@ -885,19 +887,26 @@ namespace {
     check_raii_counts();
   }
 
-  template <class X>
-  void initializer_list_assign_gh276(X*)
+  template <class X, class GF>
+  void initializer_list_assign_gh276(
+    X*, GF gen_factory, test::random_generator rg)
   {
     // https://github.com/boostorg/unordered/issues/276
 
     using replaced_allocator_container = test::replace_allocator<
       X, test::non_default_ctble_allocator<int> >;
-    using value_type = typename replaced_allocator_container::value_type;
     using replaced_allocator_type = 
       typename replaced_allocator_container::allocator_type;
       
-    replaced_allocator_container x(replaced_allocator_type(0));
-    x = std::initializer_list<value_type>();
+    auto gen = gen_factory.template get<X>();
+    auto values = make_random_values(4, [&] { return gen(rg); });
+
+    replaced_allocator_container
+      x(replaced_allocator_type(0)),
+      y(values.begin(), values.end(), replaced_allocator_type(0));
+
+    x = {values[0], values[1], values[2], values[3]};
+    BOOST_TEST(x == y);
   }
 
   template <class X, class GF>
@@ -1132,7 +1141,9 @@ UNORDERED_TEST(
 
 UNORDERED_TEST(
   initializer_list_assign_gh276,
-  ((test_map)(test_node_map)(test_set)(test_node_set)))
+  ((test_map)(test_node_map)(test_set)(test_node_set))
+  ((value_type_generator_factory))
+  ((default_generator)))
 
 UNORDERED_TEST(
   insert_and_assign,
