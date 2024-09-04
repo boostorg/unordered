@@ -208,6 +208,13 @@ namespace boost {
         return *this;
       }
 
+      unordered_node_set& operator=(std::initializer_list<value_type> il)
+      {
+        this->clear();
+        this->insert(il.begin(), il.end());
+        return *this;
+      }
+
       allocator_type get_allocator() const noexcept
       {
         return table_.get_allocator();
