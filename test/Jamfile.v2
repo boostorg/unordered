@@ -304,6 +304,8 @@ for local container in $(MMAP_CONTAINERS)
   : <define>BOOST_UNORDERED_FOA_MMAP_MAP_TYPE="boost::$(container)"
     <warnings>off
     <link>static
+    <toolset>gcc-4.8:<build>no # Boost.Process does not compile
+    <toolset>gcc-4.9:<build>no # ditto
     <target-os>cygwin:<build>no
   : foa_mmap_$(container)_tests ;
 }
