@@ -307,6 +307,7 @@ for local container in $(MMAP_CONTAINERS)
     <toolset>gcc-4.8:<build>no # Boost.Process does not compile
     <toolset>gcc-4.9:<build>no # ditto
     <target-os>cygwin:<build>no
+    <toolset>gcc,<target-os>windows:<build>no # Process on MinGW on Appveyor doesn't compile
   : foa_mmap_$(container)_tests ;
 }
 
@@ -411,6 +412,7 @@ rule make_cfoa_interprocess_concurrency_tests ( name : defines ? )
           <toolset>gcc-4.8:<build>no # idem
           <toolset>gcc-4.9:<build>no # idem
           <target-os>cygwin:<build>no
+          <toolset>gcc,<target-os>windows:<build>no # Process on MinGW on Appveyor doesn't compile
           <library>/boost/filesystem//boost_filesystem
           <library>/boost/interprocess//boost_interprocess
           <library>/boost/process//boost_process
