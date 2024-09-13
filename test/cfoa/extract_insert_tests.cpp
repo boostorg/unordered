@@ -86,7 +86,7 @@ namespace {
         while (!nh.empty()) {
           auto& o = out[br2++ % out.size()];
           typename X::insert_return_type r;
-          switch (br3++ % 3) {
+          switch (br3++ % 5) {
           case 0:
             r = o.insert(std::move(nh));
             break;
@@ -97,9 +97,33 @@ namespace {
                 (void)v2;
               });
             break;
-          case 2: default:
+          case 2:
             r = o.insert_or_cvisit(
               std::move(nh), [&](arg_visit_type const& v2) {
+                BOOST_ASSERT(test::get_key<X>(v) == test::get_key<X>(v2));
+                (void)v2;
+              });
+            break;
+          case 3:
+            r = o.insert_and_visit(
+              std::move(nh), 
+              [&](arg_visit_type& v2) {
+                BOOST_ASSERT(test::get_key<X>(v) == test::get_key<X>(v2));
+                (void)v2;
+              },
+              [&](arg_visit_type& v2) {
+                BOOST_ASSERT(test::get_key<X>(v) == test::get_key<X>(v2));
+                (void)v2;
+              });
+            break;
+          case 4: default:
+            r = o.insert_and_cvisit(
+              std::move(nh), 
+              [&](arg_visit_type& v2) {
+                BOOST_ASSERT(test::get_key<X>(v) == test::get_key<X>(v2));
+                (void)v2;
+              },
+              [&](arg_visit_type const& v2) {
                 BOOST_ASSERT(test::get_key<X>(v) == test::get_key<X>(v2));
                 (void)v2;
               });
@@ -144,6 +168,20 @@ namespace {
       BOOST_TEST(!r.inserted);
       BOOST_TEST(r.node.empty());
     }
+    {
+      node_type nh;
+      auto r = x.insert_and_visit(
+        std::move(nh), [](value_type const&) {}, [](value_type const&) {});
+      BOOST_TEST(!r.inserted);
+      BOOST_TEST(r.node.empty());
+    }
+    {
+      node_type nh;
+      auto r = x.insert_and_cvisit(
+        std::move(nh), [](value_type const&) {}, [](value_type const&) {});
+      BOOST_TEST(!r.inserted);
+      BOOST_TEST(r.node.empty());
+    }
   }
 
 } // namespace
@@ -156,7 +194,7 @@ UNORDERED_TEST(
 
 UNORDERED_TEST(
   insert_empty_node_tests,
-  ((test_node_map)(test_node_set)))  
+  ((test_node_map)(test_node_set)))
 // clang-format on
 
 RUN_TESTS()

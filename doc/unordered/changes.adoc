@@ -9,6 +9,9 @@
 == Release 1.87.0 - Major update
 
 * Added concurrent, node-based containers `boost::concurrent_node_map` and `boost::concurrent_node_set`.
+* Added `insert_and_visit(x, f1, f2)` and similar operations to concurrent containers, which
+allow for visitation of an element right after insertion (by contrast, `insert_or_visit(x, f)` only
+visits the element if insertion did _not_ take place).
 * Made visitation exclusive-locked within certain
 `boost::concurrent_flat_set` operations to allow for safe mutable modification of elements
 ({github-pr-url}/265[PR#265^]).

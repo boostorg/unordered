@@ -132,6 +132,23 @@ will grant visitation functions const/non-const access to  the element depending
 by using `cvisit` overloads (for instance, `insert_or_cvisit`) and may result
 in higher parallelization. For concurrent sets, on the other hand,
 visitation is always const access.
+
+Although expected to be used much less frequently, concurrent containers
+also provide insertion operations where an element can be visited right after
+element creation (in addition to the usual visitation when an equivalent
+element already exists):
+
+[source,c++]
+----
+  m.insert_and_cvisit(x,
+    [](const auto& y) { 
+      std::cout<< "(" << y.first << ", " << y.second <<") inserted\n"; 
+    },
+    [](const auto& y) { 
+      std::cout<< "(" << y.first << ", " << y.second << ") already exists\n"; 
+    });
+----
+
 Consult the references of
 xref:#concurrent_node_set[`boost::concurrent_node_set`],
 xref:#concurrent_flat_map[`boost::concurrent_node_map`],

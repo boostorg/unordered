@@ -215,7 +215,7 @@ struct atomic_integral
 
 /* Group-level concurrency protection. It provides a rw mutex plus an
  * atomic insertion counter for optimistic insertion (see
- * unprotected_norehash_emplace_or_visit).
+ * unprotected_norehash_emplace_and_visit).
  */
 
 struct group_access
@@ -755,6 +755,22 @@ public:
       try_emplace_args_t{},std::forward<Key>(x),std::forward<Args>(args)...);
   }
 
+  template<typename Key,typename... Args>
+  BOOST_FORCEINLINE bool try_emplace_and_visit(Key&& x,Args&&... args)
+  {
+    return emplace_and_visit_flast(
+      group_exclusive{},
+      try_emplace_args_t{},std::forward<Key>(x),std::forward<Args>(args)...);
+  }
+
+  template<typename Key,typename... Args>
+  BOOST_FORCEINLINE bool try_emplace_and_cvisit(Key&& x,Args&&... args)
+  {
+    return emplace_and_visit_flast(
+      group_shared{},
+      try_emplace_args_t{},std::forward<Key>(x),std::forward<Args>(args)...);
+  }
+
   template<typename... Args>
   BOOST_FORCEINLINE bool emplace_or_visit(Args&&... args)
   {
@@ -769,86 +785,121 @@ public:
       group_shared{},std::forward<Args>(args)...);
   }
 
-  template<typename F>
-  BOOST_FORCEINLINE bool insert_or_visit(const init_type& x,F&& f)
+  template<typename... Args>
+  BOOST_FORCEINLINE bool emplace_and_visit(Args&&... args)
   {
-    return emplace_or_visit_impl(group_exclusive{},std::forward<F>(f),x);
+    return construct_and_emplace_and_visit_flast(
+      group_exclusive{},std::forward<Args>(args)...);
   }
 
-  template<typename F>
-  BOOST_FORCEINLINE bool insert_or_cvisit(const init_type& x,F&& f)
+  template<typename... Args>
+  BOOST_FORCEINLINE bool emplace_and_cvisit(Args&&... args)
   {
-    return emplace_or_visit_impl(group_shared{},std::forward<F>(f),x);
+    return construct_and_emplace_and_visit_flast(
+      group_shared{},std::forward<Args>(args)...);
   }
 
-  template<typename F>
-  BOOST_FORCEINLINE bool insert_or_visit(init_type&& x,F&& f)
+  template<typename Value,typename F>
+  BOOST_FORCEINLINE bool insert_or_visit(Value&& x,F&& f)
   {
-    return emplace_or_visit_impl(
-      group_exclusive{},std::forward<F>(f),std::move(x));
+    return insert_and_visit(
+      std::forward<Value>(x),[](const value_type&){},std::forward<F>(f));
   }
 
-  template<typename F>
-  BOOST_FORCEINLINE bool insert_or_cvisit(init_type&& x,F&& f)
+  template<typename Value,typename F>
+  BOOST_FORCEINLINE bool insert_or_cvisit(Value&& x,F&& f)
   {
-    return emplace_or_visit_impl(
-      group_shared{},std::forward<F>(f),std::move(x));
+    return insert_and_cvisit(
+      std::forward<Value>(x),[](const value_type&){},std::forward<F>(f));
+  }
+
+  template<typename F1,typename F2>
+  BOOST_FORCEINLINE bool insert_and_visit(const init_type& x,F1&& f1,F2&& f2)
+  {
+    return emplace_and_visit_impl(
+      group_exclusive{},std::forward<F1>(f1),std::forward<F2>(f2),x);
+  }
+
+  template<typename F1,typename F2>
+  BOOST_FORCEINLINE bool insert_and_cvisit(const init_type& x,F1&& f1,F2&& f2)
+  {
+    return emplace_and_visit_impl(
+      group_shared{},std::forward<F1>(f1),std::forward<F2>(f2),x);
+  }
+
+  template<typename F1,typename F2>
+  BOOST_FORCEINLINE bool insert_and_visit(init_type&& x,F1&& f1,F2&& f2)
+  {
+    return emplace_and_visit_impl(
+      group_exclusive{},std::forward<F1>(f1),std::forward<F2>(f2),
+      std::move(x));
+  }
+
+  template<typename F1,typename F2>
+  BOOST_FORCEINLINE bool insert_and_cvisit(init_type&& x,F1&& f1,F2&& f2)
+  {
+    return emplace_and_visit_impl(
+      group_shared{},std::forward<F1>(f1),std::forward<F2>(f2),std::move(x));
   }
 
   /* SFINAE tilts call ambiguities in favor of init_type */
 
-  template<typename Value,typename F>
-  BOOST_FORCEINLINE auto insert_or_visit(const Value& x,F&& f)
+  template<typename Value,typename F1,typename F2>
+  BOOST_FORCEINLINE auto insert_and_visit(const Value& x,F1&& f1,F2&& f2)
     ->enable_if_is_value_type<Value,bool>
   {
-    return emplace_or_visit_impl(group_exclusive{},std::forward<F>(f),x);
+    return emplace_and_visit_impl(
+      group_exclusive{},std::forward<F1>(f1),std::forward<F2>(f2),x);
   }
 
-  template<typename Value,typename F>
-  BOOST_FORCEINLINE auto insert_or_cvisit(const Value& x,F&& f)
+  template<typename Value,typename F1,typename F2>
+  BOOST_FORCEINLINE auto insert_and_cvisit(const Value& x,F1&& f1,F2&& f2)
     ->enable_if_is_value_type<Value,bool>
   {
-    return emplace_or_visit_impl(group_shared{},std::forward<F>(f),x);
+    return emplace_and_visit_impl(
+      group_shared{},std::forward<F1>(f1),std::forward<F2>(f2),x);
   }
 
-  template<typename Value,typename F>
-  BOOST_FORCEINLINE auto insert_or_visit(Value&& x,F&& f)
+  template<typename Value,typename F1,typename F2>
+  BOOST_FORCEINLINE auto insert_and_visit(Value&& x,F1&& f1,F2&& f2)
     ->enable_if_is_value_type<Value,bool>
   {
-    return emplace_or_visit_impl(
-      group_exclusive{},std::forward<F>(f),std::move(x));
+    return emplace_and_visit_impl(
+      group_exclusive{},std::forward<F1>(f1),std::forward<F2>(f2),
+      std::move(x));
   }
 
-  template<typename Value,typename F>
-  BOOST_FORCEINLINE auto insert_or_cvisit(Value&& x,F&& f)
+  template<typename Value,typename F1,typename F2>
+  BOOST_FORCEINLINE auto insert_and_cvisit(Value&& x,F1&& f1,F2&& f2)
     ->enable_if_is_value_type<Value,bool>
   {
-    return emplace_or_visit_impl(
-      group_shared{},std::forward<F>(f),std::move(x));
+    return emplace_and_visit_impl(
+      group_shared{},std::forward<F1>(f1),std::forward<F2>(f2),std::move(x));
   }
 
-  template<typename F,typename T=element_type>
+  template<typename F1,typename F2,typename T=element_type>
   BOOST_FORCEINLINE
   typename std::enable_if<
     !std::is_same<T,value_type>::value,
     bool
   >::type
-  insert_or_visit(element_type&& x, F&& f)
+  insert_and_visit(element_type&& x,F1&& f1,F2&& f2)
   {
-    return emplace_or_visit_impl(
-      group_exclusive{},std::forward<F>(f),std::move(x));
+    return emplace_and_visit_impl(
+      group_exclusive{},std::forward<F1>(f1),std::forward<F2>(f2),
+      std::move(x));
   }
 
-  template<typename F,typename T=element_type>
+  template<typename F1,typename F2,typename T=element_type>
   BOOST_FORCEINLINE
   typename std::enable_if<
     !std::is_same<T,value_type>::value,
     bool
   >::type
-  insert_or_cvisit(element_type&& x, F&& f)
+  insert_and_cvisit(element_type&& x,F1&& f1,F2&& f2)
   {
-    return emplace_or_visit_impl(
-      group_shared{},std::forward<F>(f),std::move(x));
+    return emplace_and_visit_impl(
+      group_shared{},std::forward<F1>(f1),std::forward<F2>(f2),std::move(x));
   }
 
   template<typename Key>
@@ -1408,23 +1459,59 @@ private:
     );
   }
 
+  struct call_construct_and_emplace_and_visit
+  {
+    template<typename... Args>
+    BOOST_FORCEINLINE bool operator()(
+      concurrent_table* this_,Args&&... args)const
+    {
+      return this_->construct_and_emplace_and_visit(
+        std::forward<Args>(args)...);
+    }
+  };
+
+  template<typename GroupAccessMode,typename... Args>
+  BOOST_FORCEINLINE bool construct_and_emplace_and_visit_flast(
+    GroupAccessMode access_mode,Args&&... args)
+  {
+    return mp11::tuple_apply(
+      call_construct_and_emplace_and_visit{},
+      std::tuple_cat(
+        std::make_tuple(this,access_mode),
+        tuple_rotate_right<2>(
+          std::forward_as_tuple(std::forward<Args>(args)...))
+      )
+    );
+  }
+
   template<typename GroupAccessMode,typename F,typename... Args>
   BOOST_FORCEINLINE bool construct_and_emplace_or_visit(
     GroupAccessMode access_mode,F&& f,Args&&... args)
+  {
+    return construct_and_emplace_and_visit(
+      access_mode,[](const value_type&){},std::forward<F>(f),
+      std::forward<Args>(args)...);
+  }
+
+  template<typename GroupAccessMode,typename F1,typename F2,typename... Args>
+  BOOST_FORCEINLINE bool construct_and_emplace_and_visit(
+    GroupAccessMode access_mode,F1&& f1,F2&& f2,Args&&... args)
   {
     auto lck=shared_access();
 
     alloc_cted_insert_type<type_policy,Allocator,Args...> x(
       this->al(),std::forward<Args>(args)...);
-    int res=unprotected_norehash_emplace_or_visit(
-      access_mode,std::forward<F>(f),type_policy::move(x.value()));
+    int res=unprotected_norehash_emplace_and_visit(
+      access_mode,std::forward<F1>(f1),std::forward<F2>(f2),
+      type_policy::move(x.value()));
     if(BOOST_LIKELY(res>=0))return res!=0;
 
     lck.unlock();
 
     rehash_if_full();
-    return noinline_emplace_or_visit(
-      access_mode,std::forward<F>(f),type_policy::move(x.value()));
+    return noinline_emplace_and_visit(
+      access_mode,std::forward<F1>(f1),std::forward<F2>(f2),
+      type_policy::move(x.value()));
   }
 
   template<typename... Args>
@@ -1440,6 +1527,15 @@ private:
   {
     return emplace_or_visit_impl(
       access_mode,std::forward<F>(f),std::forward<Args>(args)...);
+  }
+
+  template<typename GroupAccessMode,typename F1,typename F2,typename... Args>
+  BOOST_NOINLINE bool noinline_emplace_and_visit(
+    GroupAccessMode access_mode,F1&& f1,F2&& f2,Args&&... args)
+  {
+    return emplace_and_visit_impl(
+      access_mode,std::forward<F1>(f1),std::forward<F2>(f2),
+      std::forward<Args>(args)...);
   }
 
   struct call_emplace_or_visit_impl
@@ -1465,15 +1561,49 @@ private:
     );
   }
 
+  struct call_emplace_and_visit_impl
+  {
+    template<typename... Args>
+    BOOST_FORCEINLINE bool operator()(
+      concurrent_table* this_,Args&&... args)const
+    {
+      return this_->emplace_and_visit_impl(std::forward<Args>(args)...);
+    }
+  };
+
+  template<typename GroupAccessMode,typename... Args>
+  BOOST_FORCEINLINE bool emplace_and_visit_flast(
+    GroupAccessMode access_mode,Args&&... args)
+  {
+    return mp11::tuple_apply(
+      call_emplace_and_visit_impl{},
+      std::tuple_cat(
+        std::make_tuple(this,access_mode),
+        tuple_rotate_right<2>(
+          std::forward_as_tuple(std::forward<Args>(args)...))
+      )
+    );
+  }
+
   template<typename GroupAccessMode,typename F,typename... Args>
   BOOST_FORCEINLINE bool emplace_or_visit_impl(
     GroupAccessMode access_mode,F&& f,Args&&... args)
   {
+    return emplace_and_visit_impl(
+      access_mode,[](const value_type&){},std::forward<F>(f),
+      std::forward<Args>(args)...);
+  }
+
+  template<typename GroupAccessMode,typename F1,typename F2,typename... Args>
+  BOOST_FORCEINLINE bool emplace_and_visit_impl(
+    GroupAccessMode access_mode,F1&& f1,F2&& f2,Args&&... args)
+  {
     for(;;){
       {
         auto lck=shared_access();
-        int res=unprotected_norehash_emplace_or_visit(
-          access_mode,std::forward<F>(f),std::forward<Args>(args)...);
+        int res=unprotected_norehash_emplace_and_visit(
+          access_mode,std::forward<F1>(f1),std::forward<F2>(f2),
+          std::forward<Args>(args)...);
         if(BOOST_LIKELY(res>=0))return res!=0;
       }
       rehash_if_full();
@@ -1496,6 +1626,16 @@ private:
       this->unchecked_emplace_with_rehash(hash,std::forward<Args>(args)...);
     }
     return true;
+  }
+
+  template<typename GroupAccessMode,typename F,typename... Args>
+  BOOST_FORCEINLINE int
+  unprotected_norehash_emplace_or_visit(
+    GroupAccessMode access_mode,F&& f,Args&&... args)
+  {
+    return unprotected_norehash_emplace_and_visit(
+      access_mode,[&](const value_type&){},
+      std::forward<F>(f),std::forward<Args>(args)...);
   }
 
   struct reserve_size
@@ -1539,10 +1679,10 @@ private:
     bool        commit_=false;
   };
 
-  template<typename GroupAccessMode,typename F,typename... Args>
+  template<typename GroupAccessMode,typename F1,typename F2,typename... Args>
   BOOST_FORCEINLINE int
-  unprotected_norehash_emplace_or_visit(
-    GroupAccessMode access_mode,F&& f,Args&&... args)
+  unprotected_norehash_emplace_and_visit(
+    GroupAccessMode access_mode,F1&& f1,F2&& f2,Args&&... args)
   {
     const auto &k=this->key_from(std::forward<Args>(args)...);
     auto        hash=this->hash_for(k);
@@ -1552,7 +1692,7 @@ private:
     startover:
       boost::uint32_t counter=insert_counter(pos0);
       if(unprotected_visit(
-        access_mode,k,pos0,hash,std::forward<F>(f)))return 0;
+        access_mode,k,pos0,hash,std::forward<F2>(f2)))return 0;
 
       reserve_size rsize(*this);
       if(BOOST_LIKELY(rsize.succeeded())){
@@ -1572,6 +1712,7 @@ private:
             this->construct_element(p,std::forward<Args>(args)...);
             rslot.commit();
             rsize.commit();
+            f1(cast_for(group_exclusive{},type_policy::value_from(*p)));
             BOOST_UNORDERED_ADD_STATS(this->cstats.insertion,(pb.length()));
             return 1;
           }
