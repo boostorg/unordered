@@ -1,5 +1,5 @@
 /* Copyright 2023 Christian Mazakas.
- * Copyright 2023 Joaquin M Lopez Munoz.
+ * Copyright 2023-2024 Joaquin M Lopez Munoz.
  * Distributed under the Boost Software License, Version 1.0.
  * (See accompanying file LICENSE_1_0.txt or copy at
  * http://www.boost.org/LICENSE_1_0.txt)
@@ -57,6 +57,24 @@
 #define BOOST_UNORDERED_STATIC_ASSERT_LAST_ARG_CONST_INVOCABLE(Arg, Args)      \
   BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(                               \
     BOOST_UNORDERED_DETAIL_LAST_ARG(Arg, Args))
+
+#define BOOST_UNORDERED_DETAIL_PENULTIMATE_ARG(Arg1, Arg2, Args)               \
+  mp11::mp_at_c<mp11::mp_list<                                                 \
+    Arg1 BOOST_UNORDERED_DETAIL_COMMA Arg2 BOOST_UNORDERED_DETAIL_COMMA Args   \
+    >,                                                                         \
+    mp11::mp_size<mp11::mp_list<                                               \
+      Arg1 BOOST_UNORDERED_DETAIL_COMMA Arg2 BOOST_UNORDERED_DETAIL_COMMA Args \
+    >>::value - 2>
+
+#define BOOST_UNORDERED_STATIC_ASSERT_PENULTIMATE_ARG_INVOCABLE(               \
+  Arg1, Arg2, Args)                                                            \
+  BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(                                     \
+    BOOST_UNORDERED_DETAIL_PENULTIMATE_ARG(Arg1, Arg2, Args))
+
+#define BOOST_UNORDERED_STATIC_ASSERT_PENULTIMATE_ARG_CONST_INVOCABLE(         \
+  Arg1, Arg2, Args)                                                            \
+  BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(                               \
+    BOOST_UNORDERED_DETAIL_PENULTIMATE_ARG(Arg1, Arg2, Args))
 
 namespace boost {
   namespace unordered {

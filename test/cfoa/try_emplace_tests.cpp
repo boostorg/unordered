@@ -177,6 +177,53 @@ namespace {
     }
   } lvalue_try_emplace_or_cvisit;
 
+  struct lvalue_try_emplace_and_cvisit_type
+  {
+    template <class T, class X> void operator()(std::vector<T>& values, X& x)
+    {
+      std::atomic<std::uint64_t> num_inserts{0}, num_inserts_internal{0};
+      std::atomic<std::uint64_t> num_invokes{0};
+      thread_runner(values, 
+        [&x, &num_inserts, &num_inserts_internal, &num_invokes](boost::span<T> s) {
+        for (auto& r : s) {
+          bool b = x.try_emplace_and_cvisit(
+            r.first, r.second.x_,
+            [&num_inserts_internal](typename X::value_type& v)
+            {
+              (void)v;
+              ++num_inserts_internal;
+            },
+            [&num_invokes](typename X::value_type const& v) {
+              (void)v;
+              ++num_invokes;
+            });
+
+          if (b) {
+            ++num_inserts;
+          }
+        }
+      });
+
+      BOOST_TEST_EQ(num_inserts, num_inserts_internal);
+      BOOST_TEST_EQ(num_inserts, x.size());
+      BOOST_TEST_EQ(num_invokes, values.size() - x.size());
+
+      BOOST_TEST_EQ(raii::default_constructor, x.size());
+      BOOST_TEST_EQ(raii::copy_constructor, x.size());
+
+      if (is_container_node_based<X>::value) {
+        BOOST_TEST_EQ(raii::move_constructor, 0u);
+      }
+      else{
+        // don't check move construction count here because of rehashing
+        BOOST_TEST_GT(raii::move_constructor, 0u);
+      }
+
+      BOOST_TEST_EQ(raii::move_assignment, 0u);
+      BOOST_TEST_EQ(raii::copy_assignment, 0u);
+    }
+  } lvalue_try_emplace_and_cvisit;
+
   struct lvalue_try_emplace_or_visit_type
   {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
@@ -216,6 +263,53 @@ namespace {
       BOOST_TEST_EQ(raii::copy_assignment, 0u);
     }
   } lvalue_try_emplace_or_visit;
+
+  struct lvalue_try_emplace_and_visit_type
+  {
+    template <class T, class X> void operator()(std::vector<T>& values, X& x)
+    {
+      std::atomic<std::uint64_t> num_inserts{0}, num_inserts_internal{0};
+      std::atomic<std::uint64_t> num_invokes{0};
+      thread_runner(values, 
+        [&x, &num_inserts, &num_inserts_internal, &num_invokes](boost::span<T> s) {
+        for (auto& r : s) {
+          bool b = x.try_emplace_and_visit(
+            r.first, r.second.x_,
+            [&num_inserts_internal](typename X::value_type& v)
+            {
+              (void)v;
+              ++num_inserts_internal;
+            },
+            [&num_invokes](typename X::value_type& v) {
+              (void)v;
+              ++num_invokes;
+            });
+
+          if (b) {
+            ++num_inserts;
+          }
+        }
+      });
+
+      BOOST_TEST_EQ(num_inserts, num_inserts_internal);
+      BOOST_TEST_EQ(num_inserts, x.size());
+      BOOST_TEST_EQ(num_invokes, values.size() - x.size());
+
+      BOOST_TEST_EQ(raii::default_constructor, x.size());
+      BOOST_TEST_EQ(raii::copy_constructor, x.size());
+
+      if (is_container_node_based<X>::value) {
+        BOOST_TEST_EQ(raii::move_constructor, 0u);
+      }
+      else{
+        // don't check move construction count here because of rehashing
+        BOOST_TEST_GT(raii::move_constructor, 0u);
+      }
+
+      BOOST_TEST_EQ(raii::move_assignment, 0u);
+      BOOST_TEST_EQ(raii::copy_assignment, 0u);
+    }
+  } lvalue_try_emplace_and_visit;
 
   struct rvalue_try_emplace_or_cvisit_type
   {
@@ -258,6 +352,54 @@ namespace {
     }
   } rvalue_try_emplace_or_cvisit;
 
+  struct rvalue_try_emplace_and_cvisit_type
+  {
+    template <class T, class X> void operator()(std::vector<T>& values, X& x)
+    {
+      std::atomic<std::uint64_t> num_inserts{0}, num_inserts_internal{0};
+      std::atomic<std::uint64_t> num_invokes{0};
+      thread_runner(values, 
+        [&x, &num_inserts, &num_inserts_internal, &num_invokes](boost::span<T> s) {
+        for (auto& r : s) {
+          bool b = x.try_emplace_and_cvisit(
+            std::move(r.first), r.second.x_,
+            [&num_inserts_internal](typename X::value_type& v)
+            {
+              (void)v;
+              ++num_inserts_internal;
+            },
+            [&num_invokes](typename X::value_type const& v) {
+              (void)v;
+              ++num_invokes;
+            });
+
+          if (b) {
+            ++num_inserts;
+          }
+        }
+      });
+
+      BOOST_TEST_EQ(num_inserts, num_inserts_internal);
+      BOOST_TEST_EQ(num_inserts, x.size());
+      BOOST_TEST_EQ(num_invokes, values.size() - x.size());
+
+      BOOST_TEST_EQ(raii::default_constructor, x.size());
+
+      if (std::is_same<T, typename X::value_type>::value) {
+        BOOST_TEST_EQ(raii::copy_constructor, x.size());
+        if (is_container_node_based<X>::value) {
+          BOOST_TEST_EQ(raii::move_constructor, 0u);
+        }
+        else{
+          BOOST_TEST_GE(raii::move_constructor, x.size());
+        }
+      } else {
+        BOOST_TEST_EQ(raii::copy_constructor, 0u);
+        BOOST_TEST_GE(raii::move_constructor, x.size());
+      }
+    }
+  } rvalue_try_emplace_and_cvisit;
+
   struct rvalue_try_emplace_or_visit_type
   {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
@@ -298,6 +440,53 @@ namespace {
     }
   } rvalue_try_emplace_or_visit;
 
+  struct rvalue_try_emplace_and_visit_type
+  {
+    template <class T, class X> void operator()(std::vector<T>& values, X& x)
+    {
+      std::atomic<std::uint64_t> num_inserts{0}, num_inserts_internal{0};
+      std::atomic<std::uint64_t> num_invokes{0};
+      thread_runner(values, 
+        [&x, &num_inserts, &num_inserts_internal, &num_invokes](boost::span<T> s) {
+        for (auto& r : s) {
+          bool b = x.try_emplace_and_visit(
+            std::move(r.first), r.second.x_,
+            [&num_inserts_internal](typename X::value_type& v)
+            {
+              (void)v;
+              ++num_inserts_internal;
+            },
+            [&num_invokes](typename X::value_type& v) {
+              (void)v;
+              ++num_invokes;
+            });
+
+          if (b) {
+            ++num_inserts;
+          }
+        }
+      });
+
+      BOOST_TEST_EQ(num_inserts, num_inserts_internal);
+      BOOST_TEST_EQ(num_inserts, x.size());
+      BOOST_TEST_EQ(num_invokes, values.size() - x.size());
+
+      BOOST_TEST_EQ(raii::default_constructor, x.size());
+      if (std::is_same<T, typename X::value_type>::value) {
+        BOOST_TEST_EQ(raii::copy_constructor, x.size());
+        if (is_container_node_based<X>::value) {
+          BOOST_TEST_EQ(raii::move_constructor, 0u);
+        }
+        else{
+          BOOST_TEST_GE(raii::move_constructor, x.size());
+        }
+      } else {
+        BOOST_TEST_EQ(raii::copy_constructor, 0u);
+        BOOST_TEST_GE(raii::move_constructor, x.size());
+      }
+    }
+  } rvalue_try_emplace_and_visit;
+
   struct transp_try_emplace_or_cvisit_type
   {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
@@ -325,6 +514,41 @@ namespace {
       BOOST_TEST_EQ(raii::copy_constructor, 0u);
     }
   } transp_try_emplace_or_cvisit;
+
+  struct transp_try_emplace_and_cvisit_type
+  {
+    template <class T, class X> void operator()(std::vector<T>& values, X& x)
+    {
+      std::atomic<std::uint64_t> num_inserts{0}, num_inserts_internal{0};
+      std::atomic<std::uint64_t> num_invokes{0};
+      thread_runner(values, 
+        [&x, &num_inserts, &num_inserts_internal, &num_invokes](boost::span<T> s) {
+        for (auto& r : s) {
+          bool b = x.try_emplace_and_cvisit(
+            r.first.x_, r.second.x_,
+            [&num_inserts_internal](typename X::value_type& v)
+            {
+              (void)v;
+              ++num_inserts_internal;
+            },
+            [&num_invokes](typename X::value_type const& v) {
+              (void)v;
+              ++num_invokes;
+            });
+
+          if (b) {
+            ++num_inserts;
+          }
+        }
+      });
+
+      BOOST_TEST_EQ(num_inserts, num_inserts_internal);
+      BOOST_TEST_EQ(num_inserts, x.size());
+      BOOST_TEST_EQ(num_invokes, values.size() - x.size());
+      BOOST_TEST_EQ(raii::default_constructor, 2 * x.size());
+      BOOST_TEST_EQ(raii::copy_constructor, 0u);
+    }
+  } transp_try_emplace_and_cvisit;
 
   struct transp_try_emplace_or_visit_type
   {
@@ -354,6 +578,42 @@ namespace {
       BOOST_TEST_EQ(raii::copy_constructor, 0u);
     }
   } transp_try_emplace_or_visit;
+
+  struct transp_try_emplace_and_visit_type
+  {
+    template <class T, class X> void operator()(std::vector<T>& values, X& x)
+    {
+      std::atomic<std::uint64_t> num_inserts{0}, num_inserts_internal{0};
+      std::atomic<std::uint64_t> num_invokes{0};
+      thread_runner(values, 
+        [&x, &num_inserts, &num_inserts_internal, &num_invokes](boost::span<T> s) {
+        for (auto& r : s) {
+          bool b = x.try_emplace_and_visit(
+            r.first.x_, r.second.x_,
+            [&num_inserts_internal](typename X::value_type& v)
+            {
+              (void)v;
+              ++num_inserts_internal;
+            },
+            [&num_invokes](typename X::value_type& v) {
+              (void)v;
+              ++num_invokes;
+            });
+
+          if (b) {
+            ++num_inserts;
+          }
+        }
+      });
+
+      BOOST_TEST_EQ(num_inserts, num_inserts_internal);
+      BOOST_TEST_EQ(num_inserts, x.size());
+      BOOST_TEST_EQ(num_invokes, values.size() - x.size());
+
+      BOOST_TEST_EQ(raii::default_constructor, 2 * x.size());
+      BOOST_TEST_EQ(raii::copy_constructor, 0u);
+    }
+  } transp_try_emplace_and_visit;
 
   template <class X, class G, class F>
   void try_emplace(X*, G gen, F try_emplacer, test::random_generator rg)
@@ -419,10 +679,25 @@ UNORDERED_TEST(
 
 UNORDERED_TEST(
   try_emplace,
+  ((map)(node_map))
+  ((value_type_generator)(init_type_generator))
+  ((lvalue_try_emplace_and_cvisit)(lvalue_try_emplace_and_visit)
+   (rvalue_try_emplace_and_cvisit)(rvalue_try_emplace_and_visit))
+  ((default_generator)(sequential)(limited_range)))
+
+UNORDERED_TEST(
+  try_emplace,
   ((transp_map)(transp_node_map))
   ((init_type_generator))
   ((transp_try_emplace)(norehash_transp_try_emplace)
    (transp_try_emplace_or_cvisit)(transp_try_emplace_or_visit))
+  ((default_generator)(sequential)(limited_range)))
+
+UNORDERED_TEST(
+  try_emplace,
+  ((transp_map)(transp_node_map))
+  ((init_type_generator))
+  ((transp_try_emplace_and_cvisit)(transp_try_emplace_and_visit))
   ((default_generator)(sequential)(limited_range)))
 // clang-format on
 
