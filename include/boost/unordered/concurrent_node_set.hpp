@@ -432,16 +432,18 @@ namespace boost {
       }
 
       template <class InputIterator>
-      void insert(InputIterator begin, InputIterator end)
+      size_type insert(InputIterator begin, InputIterator end)
       {
-        for (auto pos = begin; pos != end; ++pos) {
+        size_type count_elements = 0;
+        for (auto pos = begin; pos != end; ++pos, ++count_elements) {
           table_.emplace(*pos);
         }
+        return count_elements;
       }
 
-      void insert(std::initializer_list<value_type> ilist)
+      size_type insert(std::initializer_list<value_type> ilist)
       {
-        this->insert(ilist.begin(), ilist.end());
+        return this->insert(ilist.begin(), ilist.end());
       }
 
       insert_return_type insert(node_type&& nh)
@@ -488,19 +490,21 @@ namespace boost {
       }
 
       template <class InputIterator, class F>
-      void insert_or_visit(InputIterator first, InputIterator last, F f)
+      size_type insert_or_visit(InputIterator first, InputIterator last, F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
-        for (; first != last; ++first) {
+        size_type count_elements = 0;
+        for (; first != last; ++first, ++count_elements) {
           table_.emplace_or_visit(*first, f);
         }
+        return count_elements;
       }
 
       template <class F>
-      void insert_or_visit(std::initializer_list<value_type> ilist, F f)
+      size_type insert_or_visit(std::initializer_list<value_type> ilist, F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
-        this->insert_or_visit(ilist.begin(), ilist.end(), f);
+        return this->insert_or_visit(ilist.begin(), ilist.end(), f);
       }
 
       template <class F>
@@ -549,19 +553,21 @@ namespace boost {
       }
 
       template <class InputIterator, class F>
-      void insert_or_cvisit(InputIterator first, InputIterator last, F f)
+      size_type insert_or_cvisit(InputIterator first, InputIterator last, F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
-        for (; first != last; ++first) {
+        size_type count_elements = 0;
+        for (; first != last; ++first, ++count_elements) {
           table_.emplace_or_cvisit(*first, f);
         }
+        return count_elements;
       }
 
       template <class F>
-      void insert_or_cvisit(std::initializer_list<value_type> ilist, F f)
+      size_type insert_or_cvisit(std::initializer_list<value_type> ilist, F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
-        this->insert_or_cvisit(ilist.begin(), ilist.end(), f);
+        return this->insert_or_cvisit(ilist.begin(), ilist.end(), f);
       }
 
       template <class F>
@@ -614,22 +620,25 @@ namespace boost {
       }
 
       template <class InputIterator, class F1, class F2>
-      void insert_and_visit(
+      size_type insert_and_visit(
         InputIterator first, InputIterator last, F1 f1, F2 f2)
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F1)
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F2)
-        for (; first != last; ++first) {
+        size_type count_elements = 0;
+        for (; first != last; ++first, ++count_elements) {
           table_.emplace_and_visit(*first, f1, f2);
         }
+        return count_elements;
       }
 
       template <class F1, class F2>
-      void insert_and_visit(std::initializer_list<value_type> ilist, F1 f1, F2 f2)
+      size_type insert_and_visit(
+        std::initializer_list<value_type> ilist, F1 f1, F2 f2)
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F1)
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F2)
-        this->insert_and_visit(ilist.begin(), ilist.end(), f1, f2);
+        return this->insert_and_visit(ilist.begin(), ilist.end(), f1, f2);
       }
 
       template <class F1, class F2>
@@ -683,23 +692,25 @@ namespace boost {
       }
 
       template <class InputIterator, class F1, class F2>
-      void insert_and_cvisit(
+      size_type insert_and_cvisit(
         InputIterator first, InputIterator last, F1 f1, F2 f2)
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F1)
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F2)
-        for (; first != last; ++first) {
+        size_type count_elements = 0;
+        for (; first != last; ++first, ++count_elements) {
           table_.emplace_and_cvisit(*first, f1, f2);
         }
+        return count_elements;
       }
 
       template <class F1, class F2>
-      void insert_and_cvisit(
+      size_type insert_and_cvisit(
         std::initializer_list<value_type> ilist, F1 f1, F2 f2)
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F1)
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F2)
-        this->insert_and_cvisit(ilist.begin(), ilist.end(), f1, f2);
+        return this->insert_and_cvisit(ilist.begin(), ilist.end(), f1, f2);
       }
 
       template <class F1, class F2>
