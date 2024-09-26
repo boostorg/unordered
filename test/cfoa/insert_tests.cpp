@@ -149,7 +149,7 @@ namespace {
       }
 
       thread_runner(values2, [&x](boost::span<raii_convertible> s) {
-        x.insert(s.begin(), s.end());
+        BOOST_TEST_EQ(x.insert(s.begin(), s.end()), s.size());
       });
 
       BOOST_TEST_EQ(
@@ -768,11 +768,12 @@ namespace {
       std::atomic<std::uint64_t> num_invokes{0};
       thread_runner(
         values2, [&x, &num_invokes](boost::span<raii_convertible> s) {
-          x.insert_or_cvisit(s.begin(), s.end(),
-            [&num_invokes](typename X::value_type const& v) {
-              (void)v;
-              ++num_invokes;
-            });
+          BOOST_TEST_EQ(x.insert_or_cvisit(s.begin(), s.end(),
+                          [&num_invokes](typename X::value_type const& v) {
+                            (void)v;
+                            ++num_invokes;
+                          }),
+            s.size());
         });
 
       BOOST_TEST_EQ(num_invokes, values.size() - x.size());
@@ -813,17 +814,19 @@ namespace {
 
       std::atomic<std::uint64_t> num_inserts{0};
       std::atomic<std::uint64_t> num_invokes{0};
-      thread_runner(
-        values2, [&x, &num_inserts, &num_invokes](boost::span<raii_convertible> s) {
-          x.insert_and_cvisit(s.begin(), s.end(),
-            [&num_inserts](arg_type& v) {
-              (void)v;
-              ++num_inserts;
-            },            
-            [&num_invokes](typename X::value_type const& v) {
-              (void)v;
-              ++num_invokes;
-            });
+      thread_runner(values2,
+        [&x, &num_inserts, &num_invokes](boost::span<raii_convertible> s) {
+          BOOST_TEST_EQ(x.insert_and_cvisit(
+                          s.begin(), s.end(),
+                          [&num_inserts](arg_type& v) {
+                            (void)v;
+                            ++num_inserts;
+                          },
+                          [&num_invokes](typename X::value_type const& v) {
+                            (void)v;
+                            ++num_invokes;
+                          }),
+            s.size());
         });
 
       BOOST_TEST_EQ(num_inserts, x.size());
@@ -866,11 +869,12 @@ namespace {
       std::atomic<std::uint64_t> num_invokes{0};
       thread_runner(
         values2, [&x, &num_invokes](boost::span<raii_convertible> s) {
-          x.insert_or_visit(s.begin(), s.end(),
-            [&num_invokes](arg_type& v) {
-              (void)v;
-              ++num_invokes;
-            });
+          BOOST_TEST_EQ(x.insert_or_visit(s.begin(), s.end(),
+                          [&num_invokes](arg_type& v) {
+                            (void)v;
+                            ++num_invokes;
+                          }),
+            s.size());
         });
 
       BOOST_TEST_EQ(num_invokes, values.size() - x.size());
@@ -911,17 +915,19 @@ namespace {
 
       std::atomic<std::uint64_t> num_inserts{0};
       std::atomic<std::uint64_t> num_invokes{0};
-      thread_runner(
-        values2, [&x, &num_inserts, &num_invokes](boost::span<raii_convertible> s) {
-          x.insert_and_visit(s.begin(), s.end(),
-            [&num_inserts](arg_type& v) {
-              (void)v;
-              ++num_inserts;
-            },            
-            [&num_invokes](typename X::value_type const& v) {
-              (void)v;
-              ++num_invokes;
-            });
+      thread_runner(values2,
+        [&x, &num_inserts, &num_invokes](boost::span<raii_convertible> s) {
+          BOOST_TEST_EQ(x.insert_and_visit(
+                          s.begin(), s.end(),
+                          [&num_inserts](arg_type& v) {
+                            (void)v;
+                            ++num_inserts;
+                          },
+                          [&num_invokes](typename X::value_type const& v) {
+                            (void)v;
+                            ++num_invokes;
+                          }),
+            s.size());
         });
 
       BOOST_TEST_EQ(num_inserts, x.size());
@@ -996,8 +1002,9 @@ namespace {
       {
         X x;
 
-        thread_runner(
-          dummy, [&x, &init_list](boost::span<raii>) { x.insert(init_list); });
+        thread_runner(dummy, [&x, &init_list](boost::span<raii>) {
+          BOOST_TEST_EQ(x.insert(init_list), init_list.size());
+        });
 
         BOOST_TEST_EQ(x.size(), reference_cont.size());
 
@@ -1027,16 +1034,19 @@ namespace {
         X x;
 
         thread_runner(dummy, [&x, &init_list, &num_invokes](boost::span<raii>) {
-          x.insert_or_visit(init_list, [&num_invokes](arg_type& v) {
-            (void)v;
-            ++num_invokes;
-          });
+          BOOST_TEST_EQ(x.insert_or_visit(init_list,
+                          [&num_invokes](arg_type& v) {
+                            (void)v;
+                            ++num_invokes;
+                          }),
+            init_list.size());
 
-          x.insert_or_cvisit(
-            init_list, [&num_invokes](typename X::value_type const& v) {
-              (void)v;
-              ++num_invokes;
-            });
+          BOOST_TEST_EQ(x.insert_or_cvisit(init_list,
+                          [&num_invokes](typename X::value_type const& v) {
+                            (void)v;
+                            ++num_invokes;
+                          }),
+            init_list.size());
         });
 
         BOOST_TEST_EQ(num_invokes, (init_list.size() - x.size()) +
@@ -1070,29 +1080,32 @@ namespace {
 
         X x;
 
-        thread_runner(dummy, 
+        thread_runner(dummy,
           [&x, &init_list, &num_inserts, &num_invokes](boost::span<raii>) {
-          x.insert_and_visit(init_list, 
-            [&num_inserts](arg_type& v) {
-              (void)v;
-              ++num_inserts;
-            },            
-            [&num_invokes](arg_type& v) {
-              (void)v;
-              ++num_invokes;
-            });
+            BOOST_TEST_EQ(x.insert_and_visit(
+                            init_list,
+                            [&num_inserts](arg_type& v) {
+                              (void)v;
+                              ++num_inserts;
+                            },
+                            [&num_invokes](arg_type& v) {
+                              (void)v;
+                              ++num_invokes;
+                            }),
+              init_list.size());
 
-          x.insert_and_cvisit(
-            init_list, 
-            [&num_inserts](arg_type& v) {
-              (void)v;
-              ++num_inserts;
-            },            
-            [&num_invokes](typename X::value_type const& v) {
-              (void)v;
-              ++num_invokes;
-            });
-        });
+            BOOST_TEST_EQ(x.insert_and_cvisit(
+                            init_list,
+                            [&num_inserts](arg_type& v) {
+                              (void)v;
+                              ++num_inserts;
+                            },
+                            [&num_invokes](typename X::value_type const& v) {
+                              (void)v;
+                              ++num_invokes;
+                            }),
+              init_list.size());
+          });
 
         BOOST_TEST_EQ(num_inserts, x.size());
         BOOST_TEST_EQ(num_invokes, (init_list.size() - x.size()) +
