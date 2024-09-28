@@ -330,7 +330,8 @@ jobs:
           - { sys: MINGW64, compiler: gcc, cxxstd: '11,17,20' }
 
     needs: [runner-selection]
-    runs-on: ${{ fromJSON(needs.runner-selection.outputs.labelmatrix)['windows-latest'] }}
+    # runs-on: ${{ fromJSON(needs.runner-selection.outputs.labelmatrix)['windows-latest'] }}
+    runs-on: 'windows-latest'
 
     steps:
       - uses: actions/checkout@v3
