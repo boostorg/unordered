@@ -341,8 +341,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { sys: MINGW32, compiler: gcc, cxxstd: '11,17,20' }
-          - { sys: MINGW64, compiler: gcc, cxxstd: '11,17,20' }
+          - { sys: MINGW32, compiler: gcc, cxxstd: '11,17,20', variant: 'release' }
+          - { sys: MINGW64, compiler: gcc, cxxstd: '11,17,20', variant: 'debug,release' }
 
     needs: [runner-selection]
     # runs-on: ${{ fromJSON(needs.runner-selection.outputs.labelmatrix)['windows-latest'] }}
@@ -377,9 +377,12 @@ jobs:
           B2_CXXSTD: ${{matrix.cxxstd}}
           B2_SANITIZE: ${{matrix.sanitize}}
           B2_STDLIB: ${{matrix.stdlib}}
+          B2_VARIANT: ${{matrix.variant}}
         run: ci/github/install.sh
 
       - name: Run tests
+        env:
+          B2_VARIANT: ${{matrix.variant}}
         run: ci/build.sh
 
       # Run also the CMake tests to avoid having to setup another matrix for CMake on MSYS
