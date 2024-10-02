@@ -947,6 +947,14 @@ namespace {
     }
   } iterator_range_insert_and_visit;
 
+  struct non_copyable_function
+  {
+    non_copyable_function() = default;
+    non_copyable_function(const non_copyable_function&) = delete;
+    non_copyable_function(non_copyable_function&&) = default;
+    template <class... Args> void operator()(Args&&...) const {}
+  };
+
   template <class X, class GF, class F>
   void insert(X*, GF gen_factory, F inserter, test::random_generator rg)
   {
@@ -1047,6 +1055,9 @@ namespace {
                             ++num_invokes;
                           }),
             init_list.size());
+
+          x.insert_or_visit(init_list, non_copyable_function{});
+          x.insert_or_cvisit(init_list, non_copyable_function{});
         });
 
         BOOST_TEST_EQ(num_invokes, (init_list.size() - x.size()) +
@@ -1105,6 +1116,11 @@ namespace {
                               ++num_invokes;
                             }),
               init_list.size());
+
+            x.insert_and_visit(
+              init_list, non_copyable_function{}, non_copyable_function{});
+            x.insert_and_cvisit(
+              init_list, non_copyable_function{}, non_copyable_function{});
           });
 
         BOOST_TEST_EQ(num_inserts, x.size());

@@ -504,7 +504,7 @@ namespace boost {
       size_type insert_or_visit(std::initializer_list<value_type> ilist, F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
-        return this->insert_or_visit(ilist.begin(), ilist.end(), f);
+        return this->insert_or_visit(ilist.begin(), ilist.end(), std::ref(f));
       }
 
       template <class F>
@@ -567,7 +567,7 @@ namespace boost {
       size_type insert_or_cvisit(std::initializer_list<value_type> ilist, F f)
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
-        return this->insert_or_cvisit(ilist.begin(), ilist.end(), f);
+        return this->insert_or_cvisit(ilist.begin(), ilist.end(), std::ref(f));
       }
 
       template <class F>
@@ -638,7 +638,8 @@ namespace boost {
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F1)
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F2)
-        return this->insert_and_visit(ilist.begin(), ilist.end(), f1, f2);
+        return this->insert_and_visit(
+          ilist.begin(), ilist.end(), std::ref(f1), std::ref(f2));
       }
 
       template <class F1, class F2>
@@ -710,7 +711,8 @@ namespace boost {
       {
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F1)
         BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F2)
-        return this->insert_and_cvisit(ilist.begin(), ilist.end(), f1, f2);
+        return this->insert_and_cvisit(
+          ilist.begin(), ilist.end(), std::ref(f1), std::ref(f2));
       }
 
       template <class F1, class F2>
