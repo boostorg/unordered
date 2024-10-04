@@ -13,10 +13,7 @@
 #include <boost/config.hpp>
 #include <boost/mp11/algorithm.hpp>
 #include <boost/mp11/list.hpp>
-
-#include <functional>
-#include <iterator>
-#include <type_traits>
+#include <boost/unordered/detail/type_traits.hpp>
 
 #define BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)                             \
   static_assert(boost::unordered::detail::is_invocable<F, value_type&>::value, \
@@ -79,12 +76,19 @@
 namespace boost {
   namespace unordered {
     namespace detail {
-      template <class F, class... Args>
-      struct is_invocable
-          : std::is_constructible<std::function<void(Args...)>,
-              std::reference_wrapper<typename std::remove_reference<F>::type> >
+      template <class...> struct is_invocable_helper : std::false_type
       {
       };
+
+      template <class F, class... Args>
+      struct is_invocable_helper<
+        void_t<decltype(std::declval<F>()(std::declval<Args>()...))>, F,
+        Args...> : std::true_type
+      {
+      };
+
+      template <class F, class... Args>
+      using is_invocable = is_invocable_helper<void, F, Args...>;
 
     } // namespace detail
 
