@@ -1207,7 +1207,7 @@ template<class F> size_type insert_or_cvisit(std::initializer_list<value_type> i
 Equivalent to
 [listing,subs="+macros,+quotes"]
 -----
-  this->xref:#concurrent_node_map_insert_iterator_range_or_visit[insert_or_[c\]visit](il.begin(), il.end(), f);
+  this->xref:#concurrent_node_map_insert_iterator_range_or_visit[insert_or_[c\]visit](il.begin(), il.end(), std::ref(f));
 -----
 
 [horizontal]
@@ -1320,15 +1320,15 @@ Returns:;; The number of elements inserted.
 ==== Insert Initializer List and Visit
 ```c++
 template<class F1, class F2>
-  size_type insert_or_visit(std::initializer_list<value_type> il, F1 f1, F2 f2);
+  size_type insert_and_visit(std::initializer_list<value_type> il, F1 f1, F2 f2);
 template<class F1, class F2>
-  size_type insert_or_cvisit(std::initializer_list<value_type> il, F1 f1, F2 f2);
+  size_type insert_and_cvisit(std::initializer_list<value_type> il, F1 f1, F2 f2);
 ```
 
 Equivalent to
 [listing,subs="+macros,+quotes"]
 -----
-  this->xref:#concurrent_node_map_insert_iterator_range_and_visit[insert_and_[c\]visit](il.begin(), il.end(), f1, f2);
+  this->xref:#concurrent_node_map_insert_iterator_range_and_visit[insert_and_[c\]visit](il.begin(), il.end(), std::ref(f1), std::ref(f2));
 -----
 
 [horizontal]

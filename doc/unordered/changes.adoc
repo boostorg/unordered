@@ -19,6 +19,7 @@ visits the element if insertion did _not_ take place).
 * Added GDB pretty-printers for all containers and iterators. For a container with an allocator that uses fancy pointers, these only work if the proper pretty-printer is written for the fancy pointer type itself.
 * Fixed `std::initializer_list` assignment issues for open-addressing containers
 ({github-pr-url}/277[PR#277^]).
+* Allowed non-copyable callables to be passed to the `std::initializer_list` overloads of `insert_{and|or}_[c]visit` for concurrent containers, by internally passing a `std::reference_wrapper` of the callable to the iterator-pair overloads.
 
 
 == Release 1.86.0
