@@ -178,6 +178,7 @@ namespace boost {
       {
       }
 
+      template <bool avoid_explicit_instantiation = true>
       unordered_flat_set(
         concurrent_flat_set<Key, Hash, KeyEqual, Allocator>&& other)
           : table_(std::move(other.table_))

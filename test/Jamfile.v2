@@ -163,6 +163,10 @@ compile-fail unordered/insert_node_type_fail.cpp : <define>UNORDERED_TEST_MULTIM
 compile-fail unordered/insert_node_type_fail.cpp : <define>UNORDERED_TEST_SET      : insert_node_type_fail_set ;
 compile-fail unordered/insert_node_type_fail.cpp : <define>UNORDERED_TEST_MULTISET : insert_node_type_fail_multiset ;
 
+compile unordered/explicit_instantiation_tests.cpp :                                   : fca_explicit_instantiation_tests ;
+compile unordered/explicit_instantiation_tests.cpp : <define>BOOST_UNORDERED_FOA_TESTS : foa_explicit_instantiation_tests ;
+compile cfoa/explicit_instantiation_tests.cpp      :                                   : cfoa_explicit_instantiation_tests ;
+
 local FCA_EXCEPTION_TESTS =
   constructor_exception_tests
   copy_exception_tests
