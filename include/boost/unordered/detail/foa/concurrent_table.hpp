@@ -51,6 +51,7 @@
 #endif
 
 #if defined(BOOST_UNORDERED_LATCH_FREE)
+#include <array>
 #include <algorithm>
 #include <vector>
 #include <iostream>
@@ -560,7 +561,7 @@ public:
 #if defined(BOOST_UNORDERED_LATCH_FREE)
   ~concurrent_table(){
     std::cout
-      <<"version: 2024/03/08 20:10; "
+      <<"version: 2024/10/21 12:15; "
       <<"lf: "<<(double)size()/capacity()<<"; "
       <<"size: "<<size()<<", "
       <<"capacity: "<<capacity()<<"; "
