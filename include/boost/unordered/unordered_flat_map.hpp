@@ -182,6 +182,7 @@ namespace boost {
       {
       }
 
+      template <bool avoid_explicit_instantiation = true>
       unordered_flat_map(
         concurrent_flat_map<Key, T, Hash, KeyEqual, Allocator>&& other)
           : table_(std::move(other.table_))

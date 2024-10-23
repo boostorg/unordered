@@ -187,6 +187,7 @@ namespace boost {
       {
       }
 
+      template <bool avoid_explicit_instantiation = true>
       unordered_node_set(
         concurrent_node_set<Key, Hash, KeyEqual, Allocator>&& other)
           : table_(std::move(other.table_))
