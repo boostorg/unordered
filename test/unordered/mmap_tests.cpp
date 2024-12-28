@@ -1,5 +1,5 @@
 // Copyright 2023 Christian Mazakas.
-// Copyright 2023 Joaquin M Lopez Munoz.
+// Copyright 2023-2024 Joaquin M Lopez Munoz.
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -28,8 +28,8 @@ int main() {}
 #include <boost/interprocess/containers/string.hpp>
 #include <boost/interprocess/managed_shared_memory.hpp>
 
-#include <boost/process/child.hpp>
-#include <boost/process/filesystem.hpp>
+#include <boost/asio.hpp>
+#include <boost/process/process.hpp>
 
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -141,7 +141,8 @@ parent(std::string const& shm_name_, char const* exe_name, C*)
 
   BOOST_TEST(c->empty());
 
-  boost::process::child child(exe_name, shm_name);
+  boost::asio::io_context ctx;
+  boost::process::process child(ctx.get_executor(), exe_name, {shm_name});
   child.wait();
   int ret = child.exit_code();
 
@@ -240,7 +241,8 @@ parent(std::string const& shm_name_, char const* exe_name, C*)
 
   BOOST_TEST(c->empty());
 
-  boost::process::child child(exe_name, shm_name);
+  boost::asio::io_context ctx;
+  boost::process::process child(ctx.get_executor(), exe_name, {shm_name});
   child.wait();
   int ret = child.exit_code();
 
