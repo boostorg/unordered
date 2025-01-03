@@ -53,7 +53,7 @@ You can load the pretty-printers externally from the non-embedded Python script.
 
 === Visualization structure
 
-The visualizations mirror the standard unordered containers. The map containers display an association from key to mapped value. The set containers display an association from index to value. An iterator is either displayed with its item, or as an end iterator. Here is what may be shown for an example `boost::unordered_map`, an example `boost::unordered_set`, and their respective begin and end iterators. 
+The visualizations mirror the standard unordered containers. The map containers display an association from key to mapped value. The set containers display an association from index to value. An iterator is either displayed with its item, or as an end iterator. Here is what may be shown for an example `boost::unordered_map`, an example `boost::unordered_set`, and their respective begin and end iterators.
 
 ```plaintext
 (gdb) print example_unordered_map
@@ -74,11 +74,11 @@ The other containers are identical other than replacing "`boost::unordered_{map|
 
 Both the SIMD and the non-SIMD implementations are viewable through the GDB pretty-printers.
 
-For open-addressing containers where xref:#hash_quality_container_statistics[container statistics] are enabled, you can obtain these statistics by calling `get_stats()` on the container, from within GDB. This is overridden in GDB as an link:https://sourceware.org/gdb/current/onlinedocs/gdb.html/Xmethod-API.html[xmethod], so it will not invoke any C++ synchronization code. See the following printout as an example for the expected format.
+For open-addressing containers where xref:hash_quality.adoc#hash_quality_container_statistics[container statistics] are enabled, you can obtain these statistics by calling `get_stats()` on the container, from within GDB. This is overridden in GDB as an link:https://sourceware.org/gdb/current/onlinedocs/gdb.html/Xmethod-API.html[xmethod], so it will not invoke any C++ synchronization code. See the following printout as an example for the expected format.
 
 ```plaintext
 (gdb) print example_flat_map.get_stats()
-$1 = [stats] = {[insertion] = {[count] = 5, [probe_length] = {avg = 1.0, var = 0.0, dev = 0.0}}, 
+$1 = [stats] = {[insertion] = {[count] = 5, [probe_length] = {avg = 1.0, var = 0.0, dev = 0.0}},
   [successful_lookup] = {[count] = 0, [probe_length] = {avg = 0.0, var = 0.0, dev = 0.0},
     [num_comparisons] = {avg = 0.0, var = 0.0, dev = 0.0}}, [unsuccessful_lookup] = {[count] = 5,
     [probe_length] = {avg = 1.0, var = 0.0, dev = 0.0},

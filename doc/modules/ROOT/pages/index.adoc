@@ -1,0 +1,100 @@
+= Boost.Unordered
+
+:toc: left
+:toclevels: 3
+:idprefix:
+:docinfo: private-footer
+:source-highlighter: rouge
+:source-language: c++
+:nofooter:
+:sectlinks:
+
+:leveloffset: +1
+
+Boost.Unordered offers a catalog of hash containers with different standards compliance levels, performances and intented usage scenarios:
+
+`*boost::unordered_set*` `*boost::unordered_map*` `*boost::unordered_multiset*` `*boost::unordered_multimap*`
+
+[none]
+* Fully conformant implementations of `std::unordered_[multi](set|map)`,
+but faster and up to the latest revisions of the standard even if you're working in an older version of C++ (heterogeneous lookup,
+`try_emplace`, `contains`, etc.)
+
+`*boost::unordered_flat_set*` `*boost::unordered_flat_map*`
+
+[none]
+* The fastest of the lot. Based on open addressing, these containers slightly
+deviate from the standard in exchange for top performance.
+
+`*boost::unordered_node_set*` `*boost::unordered_node_map*`
+
+[none]
+* Variations of `boost::unordered_flat_(set|map)` providing pointer stability.
+
+`*boost::concurrent_flat_set*` `*boost::concurrent_flat_map*`
+
+[none]
+* High performance for multithreaded scenarios. Introducing a new non-standard, iterator-free API.
+
+`*boost::concurrent_node_set*` `*boost::concurrent_node_map*`
+
+[none]
+* Variations of `boost::concurrent_flat_(set|map)` providing pointer stability.
+
+# Learn about Boost.Unordered
+
+* https://boost.org/libs/unordered[Online documentation]
+* https://github.com/boostorg/boost_unordered_benchmarks[Some benchmarks]
+* Technical articles on Boost.Unordered internal design:
+  ** https://bannalia.blogspot.com/2022/06/advancing-state-of-art-for.html[Advancing the state of the art for `std::unordered_map` implementations]
+  ** https://bannalia.blogspot.com/2022/11/inside-boostunorderedflatmap.html[Inside `boost::unordered_flat_map`]
+  ** https://bannalia.blogspot.com/2023/07/inside-boostconcurrentflatmap.html[Inside `boost::concurrent_flat_map`]
+  ** https://bannalia.blogspot.com/2023/10/bulk-visitation-in-boostconcurrentflatm.html[Bulk visitation in `boost::concurrent_flat_map`]
+* Debugging visualizers for Boost.Unordered:
+  ** https://blog.ganets.ky/NatvisForUnordered/[Natvis for boost::unordered_map, and how to use &lt;Intrinsic&gt; elements]
+  ** https://blog.ganets.ky/NatvisForUnordered2/[Natvis for boost::concurrent_flat_map, and why fancy pointers are hard]
+  ** https://blog.ganets.ky/PrettyPrinter/[Visualizing boost::unordered_map in GDB, with pretty-printer customization points]
+
+Boost.Unordered can be installed in a number of ways:
+
+* https://www.boost.org/users/download/[Download Boost] and you're ready to go (this is a header-only library requiring no building).
+* Using Conan 2: In case you don't have it yet, add an entry for Boost in your `conanfile.txt` (the example requires at least Boost 1.86):
++
+--
+```
+[requires]
+boost/[>=1.86.0]
+```
+
+If you're not using any compiled Boost library, the following will skip building altogether:
+
+```
+[options]
+boost:header_only=True
+```
+--
+
+* Using vcpkg: Execute the command
++
+--
+```
+vcpkg install boost-unordered
+```
+--
+
+* Using CMake: https://github.com/boostorg/cmake[Boost CMake support infrastructure]
+allows you to use CMake directly to download, build and consume all of Boost or
+some specific libraries.
+
+# Support
+
+* Join the **#boost-unordered** discussion group at https://cpplang.slack.com/[cpplang.slack.com]
+([https://cppalliance.org/slack/ask for an invite] if you're not a member of this workspace yet)
+* Ask in the https://lists.boost.org/mailman/listinfo.cgi/boost-users[Boost Users mailing list]
+(add the `[unordered]` tag at the beginning of the subject line)
+* https://github.com/boostorg/unordered/issues[File an issue]
+
+# Contribute
+
+* https://github.com/boostorg/unordered/pulls[Pull requests] against **develop** branch are most welcome.
+Note that by submitting patches you agree to license your modifications under the http://www.boost.org/LICENSE_1_0.txt[Boost Software License, Version 1.0].

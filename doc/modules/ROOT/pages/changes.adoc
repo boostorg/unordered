@@ -296,7 +296,7 @@ when the returned proxy is not used.
 
 This is major change which has been converted to use Boost.Move's move
 emulation, and be more compliant with the {cpp}11 standard. See the
-xref:unordered.adoc#compliance[compliance section] for details.
+xref:compliance.adoc[compliance section] for details.
 
 The container now meets {cpp}11's complexity requirements, but to do so
 uses a little more memory. This means that `quick_erase` and
@@ -456,5 +456,3 @@ many of the suggestions from the review.
 
 Initial review version, for the review conducted from 7th December 2007 to
 16th December 2007.
-
-
