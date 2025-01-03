@@ -74,7 +74,7 @@ Since release 1.80.0, prime numbers are chosen for the number of buckets in
 tandem with sophisticated modulo arithmetic. This removes the need for "mixing"
 the result of the user's hash function as was used for release 1.79.0.
 
-== Open-addresing Containers 
+== Open-addresing Containers
 
 The C++ standard specification of unordered associative containers impose
 severe limitations on permissible implementations, the most important being
@@ -129,15 +129,14 @@ concurrent scenarios.
 * Open-addressing layouts are eminently suitable for concurrent access and modification
 with minimal locking. In particular, the metadata array can be used for implementations of
 lookup that are lock-free up to the last step of actual element comparison.
-* Layout compatibility with Boost.Unordered flat containers allows for 
-xref:#concurrent_interoperability_with_non_concurrent_containers[fast transfer]
+* Layout compatibility with Boost.Unordered flat containers allows for
+xref:concurrent.adoc#concurrent_interoperability_with_non_concurrent_containers[fast transfer]
 of all elements between a concurrent container and its non-concurrent counterpart,
 and vice versa.
 
 === Hash Function and Platform Interoperability
 
 Concurrent containers make the same decisions and provide the same guarantees
-as Boost.Unordered open-addressing containers with regards to 
+as Boost.Unordered open-addressing containers with regards to
 xref:#rationale_hash_function[hash function defaults] and
 xref:#rationale_platform_interoperability[platform interoperability].
-
