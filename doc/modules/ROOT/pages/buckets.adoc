@@ -24,15 +24,15 @@ predicate `Pred`). If the hash function has worked well the elements will be
 evenly distributed amongst the buckets so only a small number of elements will
 need to be examined.
 
-There is <<hash_equality, more information on hash functions and
-equality predicates in the next section>>.
+There is xref:hash_equality.adoc#hash_equality[more information on hash functions and
+equality predicates in the next section].
 
 You can see in the diagram that `A` & `D` have been placed in the same bucket.
 When looking for elements in this bucket up to 2 comparisons are made, making
 the search slower. This is known as a *collision*. To keep things fast we try to
 keep collisions to a minimum.
 
-If instead of `boost::unordered_set` we had used <<unordered_flat_set,`boost::unordered_flat_set`>>, the
+If instead of `boost::unordered_set` we had used `xref:reference/unordered_flat_set.adoc[boost::unordered_flat_set]`, the
 diagram would look as follows:
 
 image::buckets-oa.png[]

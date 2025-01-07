@@ -87,7 +87,7 @@ number of available buckets, this function is logically equivalent to:
 x.rehash(std::ceil(n / x.max_load_factor()))
 ```
 +
-See the <<unordered_map_rehash,reference for more details>> on the `rehash` function.
+See the xref:reference/unordered_map.adoc#unordered_map_rehash[reference for more details] on the `rehash` function.
 
 [#comparison]
 

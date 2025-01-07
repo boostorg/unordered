@@ -12,9 +12,9 @@ array, and insertions into an already occupied bucket are diverted to available 
 vicinity of the original position. This type of data layout is known as _open addressing_.
 
 As a result of its using open addressing, the interface of `boost::unordered_flat_set` deviates in
-a number of aspects from that of `boost::unordered_flat_set`/`std::unordered_flat_set`: 
+a number of aspects from that of `boost::unordered_flat_set`/`std::unordered_flat_set`:
 
-  - `value_type` must be move-constructible. 
+  - `value_type` must be move-constructible.
   - Pointer stability is not kept under rehashing.
   - `begin()` is not constant-time.
   - There is no API for bucket handling (except `bucket_count`) or node extraction/insertion.
@@ -53,7 +53,7 @@ namespace boost {
     using iterator             = _implementation-defined_;
     using const_iterator       = _implementation-defined_;
 
-    using stats                = xref:stats_stats_type[__stats-type__]; // if statistics are xref:unordered_flat_set_boost_unordered_enable_stats[enabled]
+    using stats                = xref:reference/stats.adoc#stats_stats_type[__stats-type__]; // if statistics are xref:unordered_flat_set_boost_unordered_enable_stats[enabled]
 
     // construct/copy/destroy
     xref:#unordered_flat_set_default_constructor[unordered_flat_set]();
@@ -291,7 +291,7 @@ The size of the bucket array can be automatically increased by a call to `insert
 greater than `max_load_factor()`, except possibly for small sizes where the implementation may decide to
 allow for higher loads.
 
-If `xref:hash_traits_hash_is_avalanching[hash_is_avalanching]<Hash>::value` is `true`, the hash function
+If `xref:reference/hash_traits.adoc#hash_traits_hash_is_avalanching[hash_is_avalanching]<Hash>::value` is `true`, the hash function
 is used as-is; otherwise, a bit-mixing post-processing stage is added to increase the quality of hashing
 at the expense of extra computational cost.
 
@@ -301,7 +301,7 @@ at the expense of extra computational cost.
 
 ==== `BOOST_UNORDERED_ENABLE_STATS`
 
-Globally define this macro to enable xref:#stats[statistics calculation] for the container. Note
+Globally define this macro to enable xref:reference/stats.adoc#stats[statistics calculation] for the container. Note
 that this option decreases the overall performance of many operations.
 
 ---
@@ -601,7 +601,7 @@ Note:;; The destructor is applied to every element, and all memory is deallocate
 unordered_flat_set& operator=(unordered_flat_set const& other);
 ```
 
-The assignment operator. Destroys previously existing elements, copy-assigns the hash function and predicate from `other`, 
+The assignment operator. Destroys previously existing elements, copy-assigns the hash function and predicate from `other`,
 copy-assigns the allocator from `other` if `Alloc::propagate_on_container_copy_assignment` exists and `Alloc::propagate_on_container_copy_assignment::value` is `true`,
 and finally inserts copies of the elements of `other`.
 
@@ -1173,7 +1173,7 @@ stats get_stats() const;
 
 [horizontal]
 Returns:;; A statistical description of the insertion and lookup operations performed by the container so far.
-Notes:;; Only available if xref:stats[statistics calculation] is xref:unordered_flat_set_boost_unordered_enable_stats[enabled].
+Notes:;; Only available if xref:reference/stats.adoc#stats[statistics calculation] is xref:unordered_flat_set_boost_unordered_enable_stats[enabled].
 
 ---
 
@@ -1184,7 +1184,7 @@ void reset_stats() noexcept;
 
 [horizontal]
 Effects:;; Sets to zero the internal statistics kept by the container.
-Notes:;; Only available if xref:stats[statistics calculation] is xref:unordered_flat_set_boost_unordered_enable_stats[enabled].
+Notes:;; Only available if xref:reference/stats.adoc#stats[statistics calculation] is xref:unordered_flat_set_boost_unordered_enable_stats[enabled].
 
 ---
 
@@ -1283,7 +1283,7 @@ return original_size - c.size();
 
 ``unordered_flat_set``s can be archived/retrieved by means of
 link:../../../serialization/index.html[Boost.Serialization^] using the API provided
-by this library. Both regular and XML archives are supported. 
+by this library. Both regular and XML archives are supported.
 
 ==== Saving an unordered_flat_set to an archive
 
@@ -1294,7 +1294,7 @@ Requires:;; `value_type`
 is serializable (XML serializable), and it supports Boost.Serialization
 `save_construct_data`/`load_construct_data` protocol (automatically suported by
 https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[DefaultConstructible^]
-types).  
+types).
 
 ---
 

@@ -6,7 +6,7 @@
 * xref:reference/unordered_set.adoc[unordered_set]
 * xref:reference/unordered_multiset.adoc[unordered_multiset]
 * xref:reference/hash_traits.adoc[hash_traits]
-* xref:reference/stats.adoc[stats]
+* xref:reference/stats.adoc[Statistics]
 * xref:reference/unordered_flat_map.adoc[unordered_flat_map]
 * xref:reference/unordered_flat_set.adoc[unordered_flat_set]
 * xref:reference/unordered_node_map.adoc[unordered_node_map]

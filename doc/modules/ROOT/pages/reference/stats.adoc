@@ -30,7 +30,7 @@ struct xref:stats_lookup_stats_type[__lookup-stats-type__]
   xref:#stats_stats_summary_type[__stats-summary-type__] num_comparisons;
 };
 
-struct xref:stats_stats_type[__stats-type__]
+struct xref:reference/stats.adoc#stats_stats_type[__stats-type__]
 {
   xref:#stats_insertion_stats_type[__insertion-stats-type__] insertion;
   xref:stats_lookup_stats_type[__lookup-stats-type__]    successful_lookup,
@@ -46,14 +46,14 @@ Provides the average value, variance and standard deviation of a sequence of num
 
 Provides the number of insertion operations performed by a container and
 statistics on the associated __probe length__ (number of
-xref:#structures_open_addressing_containers[bucket groups] accessed per operation).
+xref:structures.adoc#structures_open_addressing_containers[bucket groups] accessed per operation).
 
 ==== __lookup-stats-type__
 
 For successful (element found) or unsuccessful (not found) lookup,
 provides the number of operations performed by a container and
 statistics on the associated __probe length__ (number of
-xref:#structures_open_addressing_containers[bucket groups] accessed)
+xref:structures.adoc#structures_open_addressing_containers[bucket groups] accessed)
 and number of element comparisons per operation.
 
 ==== __stats-type__
@@ -66,6 +66,6 @@ If the supplied hash function has good quality, then:
 * For unsuccessful lookups, the average number of element comparisons should be close to 0.0.
 
 These statistics can be used to determine if a given hash function
-can be marked as xref:hash_traits_hash_is_avalanching[__avalanching__].
+can be marked as xref:reference/hash_traits.adoc#hash_traits_hash_is_avalanching[__avalanching__].
 
 ---

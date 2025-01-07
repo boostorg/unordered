@@ -45,7 +45,7 @@ namespace boost {
     using size_type            = std::size_t;
     using difference_type      = std::ptrdiff_t;
 
-    using stats                = xref:stats_stats_type[__stats-type__]; // if statistics are xref:concurrent_flat_set_boost_unordered_enable_stats[enabled]
+    using stats                = xref:reference/stats.adoc#stats_stats_type[__stats-type__]; // if statistics are xref:concurrent_flat_set_boost_unordered_enable_stats[enabled]
 
     // constants
     static constexpr size_type xref:#concurrent_flat_set_constants[bulk_visit_size] = _implementation-defined_;
@@ -337,7 +337,7 @@ The size of the bucket array can be automatically increased by a call to `insert
 greater than `max_load_factor()`, except possibly for small sizes where the implementation may decide to
 allow for higher loads.
 
-If `xref:hash_traits_hash_is_avalanching[hash_is_avalanching]<Hash>::value` is `true`, the hash function
+If `xref:reference/hash_traits.adoc#hash_traits_hash_is_avalanching[hash_is_avalanching]<Hash>::value` is `true`, the hash function
 is used as-is; otherwise, a bit-mixing post-processing stage is added to increase the quality of hashing
 at the expense of extra computational cost.
 
@@ -402,7 +402,7 @@ this macro.
 
 ==== `BOOST_UNORDERED_ENABLE_STATS`
 
-Globally define this macro to enable xref:#stats[statistics calculation] for the table. Note
+Globally define this macro to enable xref:reference/stats.adoc#stats[statistics calculation] for the table. Note
 that this option decreases the overall performance of many operations.
 
 ---
@@ -560,7 +560,7 @@ If statistics are xref:concurrent_flat_set_boost_unordered_enable_stats[enabled]
 transfers the internal statistical information from `other` and calls `other.reset_stats()`.
 
 [horizontal]
-Complexity:;; O(`bucket_count()`) 
+Complexity:;; O(`bucket_count()`)
 
 ---
 
@@ -695,7 +695,7 @@ Note:;; The destructor is applied to every element, and all memory is deallocate
 concurrent_flat_set& operator=(concurrent_flat_set const& other);
 ```
 
-The assignment operator. Destroys previously existing elements, copy-assigns the hash function and predicate from `other`, 
+The assignment operator. Destroys previously existing elements, copy-assigns the hash function and predicate from `other`,
 copy-assigns the allocator from `other` if `Alloc::propagate_on_container_copy_assignment` exists and `Alloc::propagate_on_container_copy_assignment::value` is `true`,
 and finally inserts copies of the elements of `other`.
 
@@ -783,7 +783,7 @@ to increase further.
 
 [horizontal]
 Requires:;; `FwdIterator` is a https://en.cppreference.com/w/cpp/named_req/ForwardIterator[LegacyForwardIterator^]
-({cpp}11 to {cpp}17), 
+({cpp}11 to {cpp}17),
 or satisfies https://en.cppreference.com/w/cpp/iterator/forward_iterator[std::forward_iterator^] ({cpp}20 and later).
 For `K` = `std::iterator_traits<FwdIterator>::value_type`, either `K` is `key_type` or
 else `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs.
@@ -951,7 +951,7 @@ Inserts `obj` in the table if and only if there is no element in the table with 
 
 [horizontal]
 Requires:;; `value_type` is https://en.cppreference.com/w/cpp/named_req/MoveInsertable[MoveInsertable^].
-Returns:;; `true` if an insert took place. 
+Returns:;; `true` if an insert took place.
 Concurrency:;; Blocking on rehashing of `*this`.
 Notes:;; Invalidates pointers and references to elements if a rehashing is issued.
 
@@ -966,7 +966,7 @@ Inserts an element constructed from `std::forward<K>(k)` in the container if and
 
 [horizontal]
 Requires:;; `value_type` is https://en.cppreference.com/w/cpp/named_req/EmplaceConstructible[EmplaceConstructible^] from `k`.
-Returns:;; `true` if an insert took place. 
+Returns:;; `true` if an insert took place.
 Concurrency:;; Blocking on rehashing of `*this`.
 Notes:;; Invalidates pointers and references to elements if a rehashing is issued. +
 +
@@ -986,7 +986,7 @@ Equivalent to
 -----
 
 [horizontal]
-Returns:;; The number of elements inserted. 
+Returns:;; The number of elements inserted.
 
 ---
 
@@ -1002,7 +1002,7 @@ Equivalent to
 -----
 
 [horizontal]
-Returns:;; The number of elements inserted. 
+Returns:;; The number of elements inserted.
 
 ---
 
@@ -1070,7 +1070,7 @@ Otherwise, invokes `f` with a const reference to the equivalent element.
 
 [horizontal]
 Requires:;; `value_type` is https://en.cppreference.com/w/cpp/named_req/EmplaceConstructible[EmplaceConstructible^] from `k`.
-Returns:;; `true` if an insert took place. 
+Returns:;; `true` if an insert took place.
 Concurrency:;; Blocking on rehashing of `*this`.
 Notes:;; Invalidates pointers and references to elements if a rehashing is issued. +
 +
@@ -1093,7 +1093,7 @@ Equivalent to
 -----
 
 [horizontal]
-Returns:;; The number of elements inserted. 
+Returns:;; The number of elements inserted.
 
 ---
 
@@ -1110,7 +1110,7 @@ Equivalent to
 -----
 
 [horizontal]
-Returns:;; The number of elements inserted. 
+Returns:;; The number of elements inserted.
 
 ---
 
@@ -1184,7 +1184,7 @@ Otherwise, invokes `f2` with a const reference to the equivalent element.
 
 [horizontal]
 Requires:;; `value_type` is https://en.cppreference.com/w/cpp/named_req/EmplaceConstructible[EmplaceConstructible^] from `k`.
-Returns:;; `true` if an insert took place. 
+Returns:;; `true` if an insert took place.
 Concurrency:;; Blocking on rehashing of `*this`.
 Notes:;; Invalidates pointers and references to elements if a rehashing is issued. +
 +
@@ -1207,7 +1207,7 @@ Equivalent to
 -----
 
 [horizontal]
-Returns:;; The number of elements inserted. 
+Returns:;; The number of elements inserted.
 
 ---
 
@@ -1226,7 +1226,7 @@ Equivalent to
 -----
 
 [horizontal]
-Returns:;; The number of elements inserted. 
+Returns:;; The number of elements inserted.
 
 ---
 
@@ -1508,7 +1508,7 @@ stats get_stats() const;
 
 [horizontal]
 Returns:;; A statistical description of the insertion and lookup operations performed by the table so far.
-Notes:;; Only available if xref:stats[statistics calculation] is xref:concurrent_flat_set_boost_unordered_enable_stats[enabled].
+Notes:;; Only available if xref:reference/stats.adoc#stats[statistics calculation] is xref:concurrent_flat_set_boost_unordered_enable_stats[enabled].
 
 ---
 
@@ -1519,7 +1519,7 @@ void reset_stats() noexcept;
 
 [horizontal]
 Effects:;; Sets to zero the internal statistics kept by the table.
-Notes:;; Only available if xref:stats[statistics calculation] is xref:concurrent_flat_set_boost_unordered_enable_stats[enabled].
+Notes:;; Only available if xref:reference/stats.adoc#stats[statistics calculation] is xref:concurrent_flat_set_boost_unordered_enable_stats[enabled].
 
 ---
 
@@ -1608,7 +1608,7 @@ c.xref:#concurrent_flat_set_erase_if[erase_if](pred);
 
 ``concurrent_flat_set``s can be archived/retrieved by means of
 link:../../../serialization/index.html[Boost.Serialization^] using the API provided
-by this library. Both regular and XML archives are supported. 
+by this library. Both regular and XML archives are supported.
 
 ==== Saving an concurrent_flat_set to an archive
 
@@ -1618,7 +1618,7 @@ Saves all the elements of a `concurrent_flat_set` `x` to an archive (XML archive
 Requires:;; `value_type` is serializable (XML serializable), and it supports Boost.Serialization
 `save_construct_data`/`load_construct_data` protocol (automatically suported by
 https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[DefaultConstructible^]
-types).  
+types).
 Concurrency:;; Blocking on `x`.
 
 ---
