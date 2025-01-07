@@ -48,7 +48,7 @@ three,3
 ----
 
 There are other differences, which are listed in the
-<<comparison,Comparison with Associative Containers>> section.
+xref:regular.adoc#comparison[Comparison with Associative Containers] section.
 
 == Iterator Invalidation
 
@@ -123,7 +123,7 @@ See the xref:reference/unordered_map.adoc#unordered_map_rehash[reference for mor
 |`iterator`, `const_iterator` are of at least the forward category.
 
 |Iterators, pointers and references to the container's elements are never invalidated.
-|<<regular_iterator_invalidation,Iterators can be invalidated by calls to insert or rehash>>. +
+|xref:regular.adoc#regular_iterator_invalidation[Iterators can be invalidated by calls to insert or rehash]. +
 **Node-based containers:** Pointers and references to the container's elements are never invalidated. +
 **Flat containers:** Pointers and references to the container's elements are invalidated when rehashing occurs.
 
