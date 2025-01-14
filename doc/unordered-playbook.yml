@@ -10,6 +10,5 @@ output:
   dir: html
 ui:
   bundle:
-    url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/HEAD/raw/build/ui-bundle.zip?job=bundle-stable
-    snapshot: true
+    url: https://github.com/cmazakas/unordered-ui-bundle/raw/450505aa457796028a36e9d712e5d52f9f394c1a/ui-bundle.zip
   output_dir: unordered/_
