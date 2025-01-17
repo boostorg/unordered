@@ -4,11 +4,15 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/config.hpp>
+#include <boost/config/pragma_message.hpp>
 
 #if defined(BOOST_CLANG_VERSION) && BOOST_CLANG_VERSION < 30900
-#include <boost/config/pragma_message.hpp>
 BOOST_PRAGMA_MESSAGE(
   "This version of clang is incompatible with Boost.Process");
+int main() {}
+#elif defined(__MSVC_RUNTIME_CHECKS)
+BOOST_PRAGMA_MESSAGE(
+  "Test skipped because of /RTCc, which is incompatible with Boost.Interprocess");
 int main() {}
 #else
 #include "../helpers/test.hpp"
