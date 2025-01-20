@@ -22,7 +22,7 @@ are only available on {cpp}17 (or later) compilers.
 === Piecewise Pair Emplacement
 
 In accordance with the standard specification,
-`boost::unordered_[multi]map::emplace` supports piecewise pair construction: 
+`boost::unordered_[multi]map::emplace` supports piecewise pair construction:
 
 [source,c++]
 ----
@@ -66,7 +66,7 @@ radically different from that imposed by the standard (closed addressing).
 
 Open-addressing containers provided by Boost.Unordered only work with reasonably
 compliant C++11 (or later) compilers. Language-level features such as move semantics
-and variadic template parameters are then not emulated. 
+and variadic template parameters are then not emulated.
 The containers are fully https://en.cppreference.com/w/cpp/named_req/AllocatorAwareContainer[AllocatorAware^]
 and support https://en.cppreference.com/w/cpp/named_req/Allocator#Fancy_pointers[fancy pointers^].
 
@@ -103,7 +103,7 @@ except those implying iterators.
 
 In a non-concurrent unordered container, iterators serve two main purposes:
 
-* Access to an element previously located via lookup. 
+* Access to an element previously located via lookup.
 * Container traversal.
 
 In place of iterators, Boost.Unordered concurrent containers use _internal visitation_
@@ -136,7 +136,7 @@ template<class F> size_t visit_all(F f);
 of which there are parallelized versions in C++17 compilers with parallel
 algorithm support. In general, the interface of concurrent containers
 is derived from that of their non-concurrent counterparts by a fairly straightforward
-process of replacing iterators with visitation where applicable. If for 
+process of replacing iterators with visitation where applicable. If for
 regular maps `iterator` and `const_iterator` provide mutable and const access to elements,
 respectively, here visitation is granted mutable or const access depending on
 the constness of the member function used (there are also `*cvisit` overloads for
@@ -145,6 +145,6 @@ explicit const visitation); In the case of `boost::concurrent_flat_set`, visitat
 One notable operation not provided by `boost::concurrent_flat_map`/`boost::concurrent_node_map`
 is `operator[]`/`at`, which can be
 replaced, if in a more convoluted manner, by
-xref:#concurrent_flat_map_try_emplace_or_cvisit[`try_emplace_or_visit`].
+`xref:reference/concurrent_flat_map.adoc#concurrent_flat_map_try_emplace_or_cvisit[try_emplace_or_visit]`.
 
 //-

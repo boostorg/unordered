@@ -25,7 +25,7 @@ Canonical standard implementations will wind up looking like the diagram below:
 
 [.text-center]
 .The canonical standard approach
-image::singly-linked.png[align=center,link=../diagrams/singly-linked.png,window=_blank]
+image::singly-linked.png[align=center,link=_images/singly-linked.png,window=_blank]
 
 It's worth noting that this approach is only used by pass:[libc++] and pass:[libstdc++]; the MSVC Dinkumware implementation uses a different one. A more detailed analysis of the standard containers can be found http://bannalia.blogspot.com/2013/10/implementation-of-c-unordered.html[here].
 
@@ -63,7 +63,7 @@ A more detailed description of Boost.Unordered's closed-addressing implementatio
 given in an
 https://bannalia.blogspot.com/2022/06/advancing-state-of-art-for.html[external article].
 For more information on implementation rationale, read the
-xref:#rationale_closed_addressing_containers[corresponding section].
+xref:rationale.adoc#rationale_closed_addressing_containers[corresponding section].
 
 == Open-addressing Containers
 
@@ -125,13 +125,13 @@ A more detailed description of Boost.Unordered's open-addressing implementation 
 given in an
 https://bannalia.blogspot.com/2022/11/inside-boostunorderedflatmap.html[external article].
 For more information on implementation rationale, read the
-xref:#rationale_open_addresing_containers[corresponding section].
+xref:rationale.adoc#rationale_open_addresing_containers[corresponding section].
 
 == Concurrent Containers
 
 `boost::concurrent_flat_set`/`boost::concurrent_node_set` and
 `boost::concurrent_flat_map`/`boost::concurrent_node_map` use the basic
-xref:#structures_open_addressing_containers[open-addressing layout] described above
+xref:structures.adoc#structures_open_addressing_containers[open-addressing layout] described above
 augmented with synchronization mechanisms.
 
 
@@ -177,4 +177,4 @@ practice, the start-over frequency is extremely small, measured in the range
 of parts per million for some of our benchmarks.
 
 For more information on implementation rationale, read the
-xref:#rationale_concurrent_containers[corresponding section].
+xref:rationale.adoc#rationale_concurrent_containers[corresponding section].

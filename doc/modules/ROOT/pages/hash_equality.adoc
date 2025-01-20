@@ -6,10 +6,10 @@
 
 While the associative containers use an ordering relation to specify how the
 elements are stored, the unordered associative containers use an equality
-predicate and a hash function. For example, <<unordered_map,boost::unordered_map>>
+predicate and a hash function. For example, `xref:reference/unordered_map.adoc[boost::unordered_map]`
 is declared as:
 
-```
+```cpp
 template <
     class Key, class Mapped,
     class Hash = boost::hash<Key>,
@@ -22,7 +22,7 @@ The hash function comes first as you might want to change the hash function
 but not the equality predicate. For example, if you wanted to use the
 https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function#FNV-1a_hash[FNV-1a hash^] you could write:
 
-```
+```cpp
 boost::unordered_map<std::string, int, hash::fnv_1a>
     dictionary;
 ```
@@ -31,7 +31,7 @@ There is an link:../../examples/fnv1.hpp[implementation of FNV-1a^] in the examp
 
 If you wish to use a different equality function, you will also need to use a matching hash function. For example, to implement a case insensitive dictionary you need to define a case insensitive equality predicate and hash function:
 
-```
+```cpp
 struct iequal_to
 {
     bool operator()(std::string const& x,
@@ -60,7 +60,7 @@ struct ihash
 ```
 
 Which you can then use in a case insensitive dictionary:
-```
+```cpp
 boost::unordered_map<std::string, int, ihash, iequal_to>
     idictionary;
 ```
@@ -80,7 +80,7 @@ equality predicate (e.g. `boost::function`) then you can get into trouble.
 
 Similarly, a custom hash function can be used for custom types:
 
-```
+```cpp
 struct point {
     int x;
     int y;
@@ -108,7 +108,7 @@ boost::unordered_multiset<point, point_hash> points;
 Since the default hash function is link:../../../container_hash/index.html[Boost.Hash^],
 we can extend it to support the type so that the hash function doesn't need to be explicitly given:
 
-```
+```cpp
 struct point {
     int x;
     int y;
@@ -140,10 +140,10 @@ you'll need to explicitly use Boost.Hash.
 |===
 |Method |Description
 
-|`hasher hash_function() const` 
+|`hasher hash_function() const`
 |Returns the container's hash function.
 
-|`key_equal key_eq() const` 
+|`key_equal key_eq() const`
 |Returns the container's key equality function..
 
 |===

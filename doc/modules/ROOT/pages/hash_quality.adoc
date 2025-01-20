@@ -43,7 +43,7 @@ struct my_string_hash_function
 ----
 
 By setting the
-xref:#hash_traits_hash_is_avalanching[hash_is_avalanching] trait, we inform Boost.Unordered
+`xref:reference/hash_traits.adoc#hash_traits_hash_is_avalanching[hash_is_avalanching]` trait, we inform Boost.Unordered
 that `my_string_hash_function` is of sufficient quality to be used directly without
 any post-mixing safety net. This comes at the risk of degraded performance in the
 cases where the hash function is not as well-behaved as we've declared.
@@ -75,7 +75,7 @@ The `stats` object provides the following information:
 
 [source,subs=+quotes]
 ----
-stats 
+stats
      .insertion                                     // *Insertion operations*
                .count                               // Number of operations
                .probe_length                        // Probe length per operation
@@ -101,20 +101,20 @@ stats
                          .num_comparisons           // Elements compared per operation
 			                             .average
                                          .variance
-                                         .deviation 
+                                         .deviation
 ----
 
 Statistics for three internal operations are maintained: insertions (without considering
 the previous lookup to determine that the key is not present yet), successful lookups,
 and unsuccessful lookups (including those issued internally when inserting elements).
 _Probe length_ is  the number of
-xref:#structures_open_addressing_containers[bucket groups] accessed per operation.
+xref:structures.adoc#structures_open_addressing_containers[bucket groups] accessed per operation.
 If the hash function behaves properly:
 
 * Average probe lengths should be close to 1.0.
 * The average number of comparisons per successful lookup should be close to 1.0 (that is,
 just the element found is checked).
-* The average number of comparisons per unsuccessful lookup should be close to 0.0. 
+* The average number of comparisons per unsuccessful lookup should be close to 0.0.
 
 An link:../../benchmark/string_stats.cpp[example^] is provided that displays container
 statistics for `boost::hash<std::string>`, an implementation of the

@@ -5,12 +5,12 @@
 
 Boost.Unordered closed-addressing containers (`boost::unordered_set`, `boost::unordered_map`,
 `boost::unordered_multiset` and `boost::unordered_multimap`) are fully conformant with the
-C++ specification for unordered associative containers, so for those who know how to use 
+C++ specification for unordered associative containers, so for those who know how to use
 `std::unordered_set`, `std::unordered_map`, etc., their homonyms in Boost.Unordered are
-drop-in replacements. The interface of open-addressing containers (`boost::unordered_node_set`, 
+drop-in replacements. The interface of open-addressing containers (`boost::unordered_node_set`,
 `boost::unordered_node_map`, `boost::unordered_flat_set` and `boost::unordered_flat_map`)
 is very similar, but they present some minor differences listed in the dedicated
-xref:#compliance_open_addressing_containers[standard compliance section].
+xref:compliance.adoc#compliance_open_addressing_containers[standard compliance section].
 
 
 For readers without previous experience with hash containers but familiar
@@ -48,7 +48,7 @@ three,3
 ----
 
 There are other differences, which are listed in the
-<<comparison,Comparison with Associative Containers>> section.
+xref:regular.adoc#comparison[Comparison with Associative Containers] section.
 
 == Iterator Invalidation
 
@@ -60,7 +60,7 @@ change the number of buckets when this happens. Iterators can be
 invalidated by calls to `insert`, `rehash` and `reserve`.
 
 As for pointers and references,
-they are never invalidated for node-based containers 
+they are never invalidated for node-based containers
 (`boost::unordered_[multi]set`, `boost::unordered_[multi]map`, `boost::unordered_node_set`, `boost::unordered_node_map`),
 but they will be when rehashing occurs for
 `boost::unordered_flat_set` and `boost::unordered_flat_map`: this is because
@@ -87,7 +87,7 @@ number of available buckets, this function is logically equivalent to:
 x.rehash(std::ceil(n / x.max_load_factor()))
 ```
 +
-See the <<unordered_map_rehash,reference for more details>> on the `rehash` function.
+See the xref:reference/unordered_map.adoc#unordered_map_rehash[reference for more details] on the `rehash` function.
 
 [#comparison]
 
@@ -106,10 +106,10 @@ See the <<unordered_map_rehash,reference for more details>> on the `rehash` func
 |Keys can be compared using `key_compare` which is accessed by member function `key_comp()`, values can be compared using `value_compare` which is accessed by member function `value_comp()`.
 |Keys can be hashed using `hasher` which is accessed by member function `hash_function()`, and checked for equality using `key_equal` which is accessed by member function `key_eq()`. There is no function object for compared or hashing values.
 
-|Constructors have optional extra parameters for the comparison object. 
+|Constructors have optional extra parameters for the comparison object.
 |Constructors have optional extra parameters for the initial minimum number of buckets, a hash function and an equality object.
 
-|Keys `k1`, `k2` are considered equivalent if `!Compare(k1, k2) && !Compare(k2, k1)`. 
+|Keys `k1`, `k2` are considered equivalent if `!Compare(k1, k2) && !Compare(k2, k1)`.
 |Keys `k1`, `k2` are considered equivalent if `Pred(k1, k2)`
 
 |Member function `lower_bound(k)` and `upper_bound(k)`
@@ -123,7 +123,7 @@ See the <<unordered_map_rehash,reference for more details>> on the `rehash` func
 |`iterator`, `const_iterator` are of at least the forward category.
 
 |Iterators, pointers and references to the container's elements are never invalidated.
-|<<regular_iterator_invalidation,Iterators can be invalidated by calls to insert or rehash>>. +
+|xref:regular.adoc#regular_iterator_invalidation[Iterators can be invalidated by calls to insert or rehash]. +
 **Node-based containers:** Pointers and references to the container's elements are never invalidated. +
 **Flat containers:** Pointers and references to the container's elements are invalidated when rehashing occurs.
 

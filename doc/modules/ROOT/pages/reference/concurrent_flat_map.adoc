@@ -50,7 +50,7 @@ namespace boost {
     using size_type            = std::size_t;
     using difference_type      = std::ptrdiff_t;
 
-    using stats                = xref:stats_stats_type[__stats-type__]; // if statistics are xref:concurrent_flat_map_boost_unordered_enable_stats[enabled]
+    using stats                = xref:reference/stats.adoc#stats_stats_type[__stats-type__]; // if statistics are xref:concurrent_flat_map_boost_unordered_enable_stats[enabled]
 
     // constants
     static constexpr size_type xref:#concurrent_flat_map_constants[bulk_visit_size] = _implementation-defined_;
@@ -391,7 +391,7 @@ The size of the bucket array can be automatically increased by a call to `insert
 greater than `max_load_factor()`, except possibly for small sizes where the implementation may decide to
 allow for higher loads.
 
-If `xref:hash_traits_hash_is_avalanching[hash_is_avalanching]<Hash>::value` is `true`, the hash function
+If `xref:reference/hash_traits.adoc#hash_traits_hash_is_avalanching[hash_is_avalanching]<Hash>::value` is `true`, the hash function
 is used as-is; otherwise, a bit-mixing post-processing stage is added to increase the quality of hashing
 at the expense of extra computational cost.
 
@@ -456,7 +456,7 @@ this macro.
 
 ==== `BOOST_UNORDERED_ENABLE_STATS`
 
-Globally define this macro to enable xref:#stats[statistics calculation] for the table. Note
+Globally define this macro to enable xref:reference/stats.adoc#stats[statistics calculation] for the table. Note
 that this option decreases the overall performance of many operations.
 
 ---
@@ -614,7 +614,7 @@ If statistics are xref:concurrent_flat_map_boost_unordered_enable_stats[enabled]
 transfers the internal statistical information from `other` and calls `other.reset_stats()`.
 
 [horizontal]
-Complexity:;; O(`bucket_count()`) 
+Complexity:;; O(`bucket_count()`)
 
 ---
 
@@ -749,7 +749,7 @@ Note:;; The destructor is applied to every element, and all memory is deallocate
 concurrent_flat_map& operator=(concurrent_flat_map const& other);
 ```
 
-The assignment operator. Destroys previously existing elements, copy-assigns the hash function and predicate from `other`, 
+The assignment operator. Destroys previously existing elements, copy-assigns the hash function and predicate from `other`,
 copy-assigns the allocator from `other` if `Alloc::propagate_on_container_copy_assignment` exists and `Alloc::propagate_on_container_copy_assignment::value` is `true`,
 and finally inserts copies of the elements of `other`.
 
@@ -840,7 +840,7 @@ to increase further.
 
 [horizontal]
 Requires:;; `FwdIterator` is a https://en.cppreference.com/w/cpp/named_req/ForwardIterator[LegacyForwardIterator^]
-({cpp}11 to {cpp}17), 
+({cpp}11 to {cpp}17),
 or satisfies https://en.cppreference.com/w/cpp/iterator/forward_iterator[std::forward_iterator^] ({cpp}20 and later).
 For `K` = `std::iterator_traits<FwdIterator>::value_type`, either `K` is `key_type` or
 else `Hash::is_transparent` and `Pred::is_transparent` are valid member typedefs.
@@ -1017,7 +1017,7 @@ Inserts `obj` in the table if and only if there is no element in the table with 
 
 [horizontal]
 Requires:;; `value_type` is https://en.cppreference.com/w/cpp/named_req/MoveInsertable[MoveInsertable^].
-Returns:;; `true` if an insert took place. 
+Returns:;; `true` if an insert took place.
 Concurrency:;; Blocking on rehashing of `*this`.
 Notes:;; Invalidates pointers and references to elements if a rehashing is issued. +
 +
@@ -1037,7 +1037,7 @@ Equivalent to
 -----
 
 [horizontal]
-Returns:;; The number of elements inserted. 
+Returns:;; The number of elements inserted.
 
 ---
 
@@ -1053,7 +1053,7 @@ Equivalent to
 -----
 
 [horizontal]
-Returns:;; The number of elements inserted. 
+Returns:;; The number of elements inserted.
 
 ---
 
@@ -1135,7 +1135,7 @@ Equivalent to
 -----
 
 [horizontal]
-Returns:;; The number of elements inserted. 
+Returns:;; The number of elements inserted.
 
 ---
 
@@ -1152,7 +1152,7 @@ Equivalent to
 -----
 
 [horizontal]
-Returns:;; The number of elements inserted. 
+Returns:;; The number of elements inserted.
 
 ---
 
@@ -1239,7 +1239,7 @@ Equivalent to
 -----
 
 [horizontal]
-Returns:;; The number of elements inserted. 
+Returns:;; The number of elements inserted.
 
 ---
 
@@ -1258,7 +1258,7 @@ Equivalent to
 -----
 
 [horizontal]
-Returns:;; The number of elements inserted. 
+Returns:;; The number of elements inserted.
 
 ---
 
@@ -1708,7 +1708,7 @@ stats get_stats() const;
 
 [horizontal]
 Returns:;; A statistical description of the insertion and lookup operations performed by the table so far.
-Notes:;; Only available if xref:stats[statistics calculation] is xref:concurrent_flat_map_boost_unordered_enable_stats[enabled].
+Notes:;; Only available if xref:reference/stats.adoc#stats[statistics calculation] is xref:concurrent_flat_map_boost_unordered_enable_stats[enabled].
 
 ---
 
@@ -1719,7 +1719,7 @@ void reset_stats() noexcept;
 
 [horizontal]
 Effects:;; Sets to zero the internal statistics kept by the table.
-Notes:;; Only available if xref:stats[statistics calculation] is xref:concurrent_flat_map_boost_unordered_enable_stats[enabled].
+Notes:;; Only available if xref:reference/stats.adoc#stats[statistics calculation] is xref:concurrent_flat_map_boost_unordered_enable_stats[enabled].
 
 ---
 
@@ -1748,7 +1748,7 @@ template<class InputIterator>
 -----
 template<class InputIterator>
   using __iter-key-type__ = std::remove_const_t<
-    std::tuple_element_t<0, xref:#concurrent_map_iter_value_type[__iter-value-type__]<InputIterator>>>; // exposition only
+    std::tuple_element_t<0, xref:#concurrent_flat_map_iter_value_type[__iter-value-type__]<InputIterator>>>; // exposition only
 -----
 
 ==== __iter-mapped-type__
@@ -1756,7 +1756,7 @@ template<class InputIterator>
 -----
 template<class InputIterator>
   using __iter-mapped-type__ =
-    std::tuple_element_t<1, xref:#concurrent_map_iter_value_type[__iter-value-type__]<InputIterator>>;  // exposition only
+    std::tuple_element_t<1, xref:#concurrent_flat_map_iter_value_type[__iter-value-type__]<InputIterator>>;  // exposition only
 -----
 
 ==== __iter-to-alloc-type__
@@ -1764,8 +1764,8 @@ template<class InputIterator>
 -----
 template<class InputIterator>
   using __iter-to-alloc-type__ = std::pair<
-    std::add_const_t<std::tuple_element_t<0, xref:#concurrent_map_iter_value_type[__iter-value-type__]<InputIterator>>>,
-    std::tuple_element_t<1, xref:#concurrent_map_iter_value_type[__iter-value-type__]<InputIterator>>>; // exposition only
+    std::add_const_t<std::tuple_element_t<0, xref:#concurrent_flat_map_iter_value_type[__iter-value-type__]<InputIterator>>>,
+    std::tuple_element_t<1, xref:#concurrent_flat_map_iter_value_type[__iter-value-type__]<InputIterator>>>; // exposition only
 -----
 
 === Equality Comparisons
@@ -1833,7 +1833,7 @@ c.xref:#concurrent_flat_map_erase_if[erase_if](pred);
 
 ``concurrent_flat_map``s can be archived/retrieved by means of
 link:../../../serialization/index.html[Boost.Serialization^] using the API provided
-by this library. Both regular and XML archives are supported. 
+by this library. Both regular and XML archives are supported.
 
 ==== Saving an concurrent_flat_map to an archive
 
@@ -1844,7 +1844,7 @@ Requires:;; `std::remove_const<key_type>::type` and `std::remove_const<mapped_ty
 are serializable (XML serializable), and they do support Boost.Serialization
 `save_construct_data`/`load_construct_data` protocol (automatically suported by
 https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[DefaultConstructible^]
-types).  
+types).
 Concurrency:;; Blocking on `x`.
 
 ---

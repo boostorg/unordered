@@ -82,7 +82,7 @@ On the other hand, a visitation function can _not_ access the container itself:
 
 [source,c++]
 ----
-m.visit(k, [&](const auto& x) { 
+m.visit(k, [&](const auto& x) {
   some_function(x, m.size()); // forbidden: m can't be accessed inside visitation
 });
 ----
@@ -105,7 +105,7 @@ outside of visitation may be beneficial:
 [source,c++]
 ----
 std::optional<value_type> o;
-bool found = m.visit(k, [&](const auto& x) { 
+bool found = m.visit(k, [&](const auto& x) {
   o = x;
 });
 if (found) {
@@ -118,7 +118,7 @@ many classical operations have visitation-enabled variations:
 
 [source,c++]
 ----
-m.insert_or_visit(x, [](auto& y) { 
+m.insert_or_visit(x, [](auto& y) {
   // if insertion failed because of an equivalent element y,
   // do something with it, for instance:
   ++y.second; // increment the mapped part of the element
@@ -141,19 +141,19 @@ element already exists):
 [source,c++]
 ----
   m.insert_and_cvisit(x,
-    [](const auto& y) { 
-      std::cout<< "(" << y.first << ", " << y.second <<") inserted\n"; 
+    [](const auto& y) {
+      std::cout<< "(" << y.first << ", " << y.second <<") inserted\n";
     },
-    [](const auto& y) { 
-      std::cout<< "(" << y.first << ", " << y.second << ") already exists\n"; 
+    [](const auto& y) {
+      std::cout<< "(" << y.first << ", " << y.second << ") already exists\n";
     });
 ----
 
 Consult the references of
-xref:#concurrent_node_set[`boost::concurrent_node_set`],
-xref:#concurrent_flat_map[`boost::concurrent_node_map`],
-xref:#concurrent_flat_set[`boost::concurrent_flat_set`] and 
-xref:#concurrent_flat_map[`boost::concurrent_flat_map`]
+`xref:reference/concurrent_node_set.adoc#concurrent_node_set[boost::concurrent_node_set]`,
+`xref:reference/concurrent_node_map.adoc#concurrent_node_map[boost::concurrent_node_map]`,
+`xref:reference/concurrent_flat_set.adoc#concurrent_flat_set[boost::concurrent_flat_set]` and
+`xref:reference/concurrent_flat_map.adoc#concurrent_flat_map[boost::concurrent_flat_map]`
 for the complete list of visitation-enabled operations.
 
 == Whole-Table Visitation
@@ -237,7 +237,7 @@ m.visit(keys.begin(), keys.end(), [](auto& x) { ++x.second; });
 This functionality is not provided for mere syntactic convenience, though: by processing all the
 keys at once, some internal optimizations can be applied that increase
 performance over the regular, one-at-a-time case (consult the
-xref:#benchmarks_boostconcurrent_flat_map[benchmarks]). In fact, it may be beneficial
+xref:benchmarks.adoc#benchmarks_boostconcurrent_flatnode_map[benchmarks]). In fact, it may be beneficial
 to buffer incoming keys so that they can be bulk visited in chunks:
 
 [source,c++]

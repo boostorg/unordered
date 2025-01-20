@@ -1,11 +1,10 @@
 [#buckets]
 :idprefix: buckets_
-:imagesdir: ../diagrams
 
 = Basics of Hash Tables
 
 The containers are made up of a number of _buckets_, each of which can contain
-any number of elements. For example, the following diagram shows a <<unordered_set,`boost::unordered_set`>> with 7 buckets containing 5 elements, `A`,
+any number of elements. For example, the following diagram shows a `xref:reference/unordered_set.adoc#unordered_set[boost::unordered_set]` with 7 buckets containing 5 elements, `A`,
 `B`, `C`, `D` and `E` (this is just for illustration, containers will typically
 have more buckets).
 
@@ -25,15 +24,15 @@ predicate `Pred`). If the hash function has worked well the elements will be
 evenly distributed amongst the buckets so only a small number of elements will
 need to be examined.
 
-There is <<hash_equality, more information on hash functions and
-equality predicates in the next section>>.
+There is xref:hash_equality.adoc#hash_equality[more information on hash functions and
+equality predicates in the next section].
 
 You can see in the diagram that `A` & `D` have been placed in the same bucket.
 When looking for elements in this bucket up to 2 comparisons are made, making
 the search slower. This is known as a *collision*. To keep things fast we try to
 keep collisions to a minimum.
 
-If instead of `boost::unordered_set` we had used <<unordered_flat_set,`boost::unordered_flat_set`>>, the
+If instead of `boost::unordered_set` we had used `xref:reference/unordered_flat_set.adoc[boost::unordered_flat_set]`, the
 diagram would look as follows:
 
 image::buckets-oa.png[]
@@ -49,15 +48,15 @@ open-addressing containers offer a very limited API for accessing buckets.
 2+^h| *All containers*
 h|*Method* h|*Description*
 
-|`size_type bucket_count() const` 
+|`size_type bucket_count() const`
 |The number of buckets.
 
 2+^h| *Closed-addressing containers only*
 h|*Method* h|*Description*
 
-|`size_type max_bucket_count() const` 
+|`size_type max_bucket_count() const`
 |An upper bound on the number of buckets.
-|`size_type bucket_size(size_type n) const` 
+|`size_type bucket_size(size_type n) const`
 |The number of elements in bucket `n`.
 
 |`size_type bucket(key_type const& k) const`
@@ -112,13 +111,13 @@ or close to the hint - unless your hint is unreasonably small or large.
 2+^h| *All containers*
 h|*Method* h|*Description*
 
-|`X(size_type n)` 
+|`X(size_type n)`
 |Construct an empty container with at least `n` buckets (`X` is the container type).
 
-|`X(InputIterator i, InputIterator j, size_type n)` 
+|`X(InputIterator i, InputIterator j, size_type n)`
 |Construct an empty container with at least `n` buckets and insert elements from the range `[i, j)` (`X` is the container type).
 
-|`float load_factor() const` 
+|`float load_factor() const`
 |The average number of elements per bucket.
 
 |`float max_load_factor() const`
@@ -139,12 +138,10 @@ h|*Method* h|*Description*
 
 |===
 
-A note on `max_load` for open-addressing and concurrent containers: the maximum load will be 
+A note on `max_load` for open-addressing and concurrent containers: the maximum load will be
 (`max_load_factor() * bucket_count()`) right after `rehash` or on container creation, but may
 slightly decrease when erasing elements in high-load situations. For instance, if we
-have a <<unordered_flat_map,`boost::unordered_flat_map`>> with `size()` almost
+have a `xref:reference/unordered_flat_map.adoc#unordered_flat_map[boost::unordered_flat_map]` with `size()` almost
 at `max_load()` level and then erase 1,000 elements, `max_load()` may decrease by around a
 few dozen elements. This is done internally by Boost.Unordered in order
 to keep its performance stable, and must be taken into account when planning for rehash-free insertions.
-
-
