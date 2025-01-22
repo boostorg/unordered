@@ -6,6 +6,10 @@
 :github-pr-url: https://github.com/boostorg/unordered/pull
 :cpp: C++
 
+== Release 1.88.0
+
+* Migrated the documentation to a multipage format using Antora.
+
 == Release 1.87.0 - Major update
 
 * Added concurrent, node-based containers `boost::concurrent_node_map` and `boost::concurrent_node_set`.
