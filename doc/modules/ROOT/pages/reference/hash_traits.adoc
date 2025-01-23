@@ -1,14 +1,12 @@
 [#hash_traits]
-== Hash traits
+== Hash Traits
 
 :idprefix: hash_traits_
 
-=== Synopsis
+=== `<boost/unordered/hash_traits.hpp>` Synopsis
 
 [listing,subs="+macros,+quotes"]
 -----
-// #include <boost/unordered/hash_traits.hpp>
-
 namespace boost {
 namespace unordered {
 
