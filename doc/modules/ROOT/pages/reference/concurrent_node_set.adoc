@@ -383,7 +383,7 @@ if concurrent outstanding operations on `y` do not access `x` directly or indire
 ==== `BOOST_UNORDERED_DISABLE_REENTRANCY_CHECK`
 
 In debug builds (more precisely, when
-link:../../../assert/doc/html/assert.html#boost_assert_is_void[`BOOST_ASSERT_IS_VOID`^]
+link:../../../../../assert/doc/html/assert.html#boost_assert_is_void[`BOOST_ASSERT_IS_VOID`^]
 is not defined), __container reentrancies__ (illegaly invoking an operation on `m` from within
 a function visiting elements of `m`) are detected and signalled through `BOOST_ASSERT_MSG`.
 When run-time speed is a concern, the feature can be disabled by globally defining
@@ -1704,7 +1704,7 @@ c.xref:#concurrent_node_set_erase_if[erase_if](pred);
 === Serialization
 
 ``concurrent_node_set``s can be archived/retrieved by means of
-link:../../../serialization/index.html[Boost.Serialization^] using the API provided
+link:../../../../../serialization/index.html[Boost.Serialization^] using the API provided
 by this library. Both regular and XML archives are supported.
 
 ==== Saving an concurrent_node_set to an archive

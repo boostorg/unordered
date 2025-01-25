@@ -1364,7 +1364,7 @@ return original_size - c.size();
 === Serialization
 
 ``unordered_node_set``s can be archived/retrieved by means of
-link:../../../serialization/index.html[Boost.Serialization^] using the API provided
+link:../../../../../serialization/index.html[Boost.Serialization^] using the API provided
 by this library. Both regular and XML archives are supported.
 
 ==== Saving an unordered_node_set to an archive

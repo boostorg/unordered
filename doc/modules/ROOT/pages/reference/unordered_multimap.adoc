@@ -1490,7 +1490,7 @@ return original_size - c.size();
 === Serialization
 
 ``unordered_multimap``s can be archived/retrieved by means of
-link:../../../serialization/index.html[Boost.Serialization^] using the API provided
+link:../../../../../serialization/index.html[Boost.Serialization^] using the API provided
 by this library. Both regular and XML archives are supported.
 
 ==== Saving an unordered_multimap to an archive

@@ -13,7 +13,7 @@ Closed-addressing containers in Boost.Unordered are fairly robust against
 hash functions with less-than-ideal quality, but open-addressing and concurrent
 containers are much more sensitive to this factor, and their performance can
 degrade dramatically if the hash function is not appropriate. In general, if
-you're using functions provided by or generated with link:../../../container_hash/index.html[Boost.Hash^],
+you're using functions provided by or generated with link:../../../../container_hash/index.html[Boost.Hash^],
 the quality will be adequate, but you have to be careful when using alternative
 hash algorithms.
 
@@ -116,7 +116,7 @@ If the hash function behaves properly:
 just the element found is checked).
 * The average number of comparisons per unsuccessful lookup should be close to 0.0.
 
-An link:../../benchmark/string_stats.cpp[example^] is provided that displays container
+An link:../../../benchmark/string_stats.cpp[example^] is provided that displays container
 statistics for `boost::hash<std::string>`, an implementation of the
 https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function#FNV-1a_hash[FNV-1a hash^]
 and two ill-behaved custom hash functions that have been incorrectly marked as avalanching:

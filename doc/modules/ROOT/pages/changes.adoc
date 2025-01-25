@@ -406,7 +406,7 @@ future version.
 
 == Release 1.38.0
 
-* Use link:../../../core/swap.html[`boost::swap`^].
+* Use link:../../../../core/swap.html[`boost::swap`^].
 * {svn-ticket-url}/2237[Ticket 2237^]:
   Document that the equality and inequality operators are undefined for two
   objects if their equality predicates aren't equivalent. Thanks to Daniel
@@ -415,7 +415,7 @@ future version.
   Use a larger prime number list. Thanks to Thorsten Ottosen and Hervé
   Brönnimann.
 * Use
-  link:../../../type_traits/index.html[aligned storage^] to store the types.
+  link:../../../../type_traits/index.html[aligned storage^] to store the types.
   This changes the way the allocator is used to construct nodes. It used to
   construct the node with two calls to the allocator's `construct`
   method - once for the pointers and once for the value. It now constructs

@@ -27,7 +27,7 @@ boost::unordered_map<std::string, int, hash::fnv_1a>
     dictionary;
 ```
 
-There is an link:../../examples/fnv1.hpp[implementation of FNV-1a^] in the examples directory.
+There is an link:../../../examples/fnv1.hpp[implementation of FNV-1a^] in the examples directory.
 
 If you wish to use a different equality function, you will also need to use a matching hash function. For example, to implement a case insensitive dictionary you need to define a case insensitive equality predicate and hash function:
 
@@ -66,7 +66,7 @@ boost::unordered_map<std::string, int, ihash, iequal_to>
 ```
 
 This is a simplified version of the example at
-link:../../examples/case_insensitive.hpp[/libs/unordered/examples/case_insensitive.hpp^] which supports other locales and string types.
+link:../../../examples/case_insensitive.hpp[/libs/unordered/examples/case_insensitive.hpp^] which supports other locales and string types.
 
 CAUTION: Be careful when using the equality (`==`) operator with custom equality
 predicates, especially if you're using a function pointer. If you compare two
@@ -105,7 +105,7 @@ struct point_hash
 boost::unordered_multiset<point, point_hash> points;
 ```
 
-Since the default hash function is link:../../../container_hash/index.html[Boost.Hash^],
+Since the default hash function is link:../../../../container_hash/index.html[Boost.Hash^],
 we can extend it to support the type so that the hash function doesn't need to be explicitly given:
 
 ```cpp
@@ -130,7 +130,7 @@ std::size_t hash_value(point const& p) {
 boost::unordered_multiset<point> points;
 ```
 
-See the link:../../../container_hash/index.html[Boost.Hash documentation^] for more detail on how to
+See the link:../../../../container_hash/index.html[Boost.Hash documentation^] for more detail on how to
 do this. Remember that it relies on extensions to the standard - so it
 won't work for other implementations of the unordered associative containers,
 you'll need to explicitly use Boost.Hash.

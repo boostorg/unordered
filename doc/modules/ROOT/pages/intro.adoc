@@ -92,7 +92,7 @@ Storing an object in an unordered associative container requires both a
 key equality function and a hash function. The default function objects in
 the standard containers support a few basic types including integer types,
 floating point types, pointer types, and the standard strings. Since
-Boost.Unordered uses link:../../../container_hash/index.html[boost::hash^] it also supports some other types,
+Boost.Unordered uses link:../../../../container_hash/index.html[boost::hash^] it also supports some other types,
 including standard containers. To use any types not supported by these methods
 you have to extend Boost.Hash to support the type or use
 your own custom equality predicates and hash functions. See the
