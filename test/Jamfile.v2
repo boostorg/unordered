@@ -1,7 +1,7 @@
 
 # Copyright 2006-2008 Daniel James.
 # Copyright 2022-2023 Christian Mazakas
-# Copyright 2024 Joaquin M Lopez Munoz
+# Copyright 2024-2025 Joaquin M Lopez Munoz
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -241,6 +241,7 @@ local FOA_TESTS =
   hash_is_avalanching_test
   fancy_pointer_noleak
   pmr_allocator_tests
+  pull_tests
   stats_tests
   node_handle_allocator_tests
 ;
