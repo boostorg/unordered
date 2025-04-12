@@ -498,9 +498,9 @@ public:
   BOOST_FORCEINLINE init_type pull(const_iterator pos)
   {
     BOOST_ASSERT(pos!=end());
-    init_type res(type_policy::move(type_policy::value_from(*pos.p())));
-    super::erase(pos.pc(),pos.p());
-    return res;
+    erase_on_exit e{*this,pos};
+    (void)e;
+    return type_policy::move(type_policy::value_from(*pos.p()));
   }
 
   void swap(table& x)
