@@ -6,6 +6,11 @@
 :github-pr-url: https://github.com/boostorg/unordered/pull
 :cpp: C++
 
+== Release 1.89.0
+
+* Added `pull(const_iterator)` to open-addressing containers. This operation
+allows for efficient removal and retrieval of an element via move construction.
+
 == Release 1.88.0
 
 * Migrated the documentation to a multipage format using Antora.

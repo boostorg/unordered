@@ -168,6 +168,7 @@ namespace unordered {
     void      xref:#unordered_flat_map_swap[swap](unordered_flat_map& other)
       noexcept(boost::allocator_traits<Allocator>::is_always_equal::value ||
                boost::allocator_traits<Allocator>::propagate_on_container_swap::value);
+    init_type xref:#unordered_flat_map_pull[pull](const_iterator position);
     void      xref:#unordered_flat_map_clear[clear]() noexcept;
 
     template<class H2, class P2>
@@ -1123,6 +1124,16 @@ If `Allocator::propagate_on_container_swap` is declared and `Allocator::propagat
 
 [horizontal]
 Throws:;; Nothing unless `key_equal` or `hasher` throw on swapping.
+
+---
+
+==== pull
+```c++
+init_type pull(const_iterator position);
+```
+
+Move-constructs an `init_value` `x` from the element pointed to by `position`,
+erases the element and returns `x`.
 
 ---
 
