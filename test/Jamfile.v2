@@ -156,7 +156,8 @@ run unordered/serialization_tests.cpp
       <toolset>gcc:<optimization>space
       <toolset>clang:<inlining>on
       <toolset>clang:<optimization>space
-      <library>/boost/serialization//boost_serialization/<warnings>off ;
+      <library>/boost/serialization//boost_serialization/<warnings>off
+      <library>/boost/container//boost_container/<warnings-as-errors>off ;
 
 compile-fail unordered/insert_node_type_fail.cpp : <define>UNORDERED_TEST_MAP      : insert_node_type_fail_map ;
 compile-fail unordered/insert_node_type_fail.cpp : <define>UNORDERED_TEST_MULTIMAP : insert_node_type_fail_multimap ;
@@ -266,6 +267,7 @@ run unordered/serialization_tests.cpp
       <toolset>clang:<inlining>on
       <toolset>clang:<optimization>space
       <library>/boost/serialization//boost_serialization/<warnings>off
+      <library>/boost/container//boost_container/<warnings-as-errors>off
     : foa_serialization_tests ;
 
 local FOA_EXCEPTION_TESTS =
@@ -402,6 +404,7 @@ run cfoa/serialization_tests.cpp
       <toolset>clang:<inlining>on
       <toolset>clang:<optimization>space
       <library>/boost/serialization//boost_serialization/<warnings>off
+      <library>/boost/container//boost_container/<warnings-as-errors>off
     : cfoa_serialization_tests ;
 
 rule make_cfoa_interprocess_concurrency_tests ( name : defines ? )
