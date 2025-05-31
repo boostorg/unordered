@@ -408,8 +408,8 @@ run cfoa/serialization_tests.cpp
       <library>/boost/serialization//boost_serialization/<warnings>off
       <library>/boost/container//boost_container/<warnings-as-errors>off
       <toolset>gcc,<target-os>windows:<build>no # Boost.Atomic no longer supports MinGW
-      <toolset>gcc,<thread-sanitizer>:norecover<build>no # TSAN does not support atomic_thread_fence
-      <toolset>clang,<thread-sanitizer>:norecover<build>no # idem
+      <toolset>gcc,<thread-sanitizer>norecover:<build>no # TSAN does not support atomic_thread_fence
+      <toolset>clang,<thread-sanitizer>norecover:<build>no # idem
     : cfoa_serialization_tests ;
 
 rule make_cfoa_interprocess_concurrency_tests ( name : defines ? )
