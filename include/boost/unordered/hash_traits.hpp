@@ -11,15 +11,10 @@
 #ifndef BOOST_UNORDERED_HASH_TRAITS_HPP
 #define BOOST_UNORDERED_HASH_TRAITS_HPP
 
-#include <boost/config/pragma_message.hpp>
+#include <boost/config/header_deprecated.hpp>
 #include <boost/container_hash/hash_is_avalanching.hpp>
 
-#if !defined(BOOST_ALLOW_DEPRECATED_HEADERS)&&!defined(BOOST_ALLOW_DEPRECATED)
-BOOST_PRAGMA_MESSAGE("Deprecated boost::unordered::hash_is_avalanching is now "
-"a using-declaration of boost::hash_is_avalanching in "
-"<boost/container_hash/hash_is_avalanching.hpp>. "
-"Use that header directly instead.")
-#endif
+BOOST_HEADER_DEPRECATED("<boost/container_hash/hash_is_avalanching.hpp>")
 
 namespace boost{
 namespace unordered{
