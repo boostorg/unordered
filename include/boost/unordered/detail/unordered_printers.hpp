@@ -4,8 +4,8 @@
 
 // Generated on 2024-08-25T17:48:54
 
-#ifndef BOOST_UNORDERED_UNORDERED_PRINTERS_HPP
-#define BOOST_UNORDERED_UNORDERED_PRINTERS_HPP
+#ifndef BOOST_UNORDERED_DETAIL_UNORDERED_PRINTERS_HPP
+#define BOOST_UNORDERED_DETAIL_UNORDERED_PRINTERS_HPP
 
 #ifndef BOOST_ALL_NO_EMBEDDED_GDB_SCRIPTS
 #if defined(__ELF__)
@@ -14,7 +14,7 @@
 #pragma clang diagnostic ignored "-Woverlength-strings"
 #endif
 __asm__(".pushsection \".debug_gdb_scripts\", \"MS\",%progbits,1\n"
-        ".ascii \"\\4gdb.inlined-script.BOOST_UNORDERED_UNORDERED_PRINTERS_HPP\\n\"\n"
+        ".ascii \"\\4gdb.inlined-script.BOOST_UNORDERED_DETAIL_UNORDERED_PRINTERS_HPP\\n\"\n"
         ".ascii \"import gdb.printing\\n\"\n"
         ".ascii \"import gdb.xmethod\\n\"\n"
         ".ascii \"import re\\n\"\n"
@@ -411,4 +411,4 @@ __asm__(".pushsection \".debug_gdb_scripts\", \"MS\",%progbits,1\n"
 #endif // defined(__ELF__)
 #endif // !defined(BOOST_ALL_NO_EMBEDDED_GDB_SCRIPTS)
 
-#endif // !defined(BOOST_UNORDERED_UNORDERED_PRINTERS_HPP)
+#endif // !defined(BOOST_UNORDERED_DETAIL_UNORDERED_PRINTERS_HPP)
