@@ -1,4 +1,4 @@
-# Copyright 2024 Braden Ganetsky
+# Copyright 2024-2025 Braden Ganetsky
 # Distributed under the Boost Software License, Version 1.0.
 # https://www.boost.org/LICENSE_1_0.txt
 
@@ -45,14 +45,15 @@ class BoostUnorderedPointerCustomizationPoint:
 
 class BoostUnorderedFcaPrinter:
     def __init__(self, val):
-        self.val = BoostUnorderedHelpers.maybe_unwrap_reference(val)
-        self.name = f"{self.val.type.strip_typedefs()}".split("<")[0]
+        val = BoostUnorderedHelpers.maybe_unwrap_reference(val)
+        self.table = val["table_"]
+        self.name = f"{val.type.strip_typedefs()}".split("<")[0]
         self.name = self.name.replace("boost::unordered::", "boost::")
         self.is_map = self.name.endswith("map")
-        self.cpo = BoostUnorderedPointerCustomizationPoint(self.val["table_"]["buckets_"]["buckets"])
+        self.cpo = BoostUnorderedPointerCustomizationPoint(self.table["buckets_"]["buckets"])
 
     def to_string(self):
-        size = self.val["table_"]["size_"]
+        size = self.table["size_"]
         return f"{self.name} with {size} elements"
 
     def display_hint(self):
@@ -60,7 +61,7 @@ class BoostUnorderedFcaPrinter:
 
     def children(self):
         def generator():
-            grouped_buckets = self.val["table_"]["buckets_"]
+            grouped_buckets = self.table["buckets_"]
 
             size = grouped_buckets["size_"]
             buckets = grouped_buckets["buckets"]
@@ -154,14 +155,15 @@ class BoostUnorderedFoaCumulativeStatsPrinter:
 
 class BoostUnorderedFoaPrinter:
     def __init__(self, val):
-        self.val = BoostUnorderedHelpers.maybe_unwrap_reference(val)
-        self.name = f"{self.val.type.strip_typedefs()}".split("<")[0]
+        val = BoostUnorderedHelpers.maybe_unwrap_reference(val)
+        self.table = val["table_"]
+        self.name = f"{val.type.strip_typedefs()}".split("<")[0]
         self.name = self.name.replace("boost::unordered::", "boost::")
         self.is_map = self.name.endswith("map")
-        self.cpo = BoostUnorderedPointerCustomizationPoint(self.val["table_"]["arrays"]["groups_"])
+        self.cpo = BoostUnorderedPointerCustomizationPoint(self.table["arrays"]["groups_"])
 
     def to_string(self):
-        size = BoostUnorderedHelpers.maybe_unwrap_atomic(self.val["table_"]["size_ctrl"]["size"])
+        size = BoostUnorderedHelpers.maybe_unwrap_atomic(self.table["size_ctrl"]["size"])
         return f"{self.name} with {size} elements"
 
     def display_hint(self):
@@ -200,9 +202,8 @@ class BoostUnorderedFoaPrinter:
 
     def children(self):
         def generator():
-            table = self.val["table_"]
-            groups = self.cpo.to_address(table["arrays"]["groups_"])
-            elements = self.cpo.to_address(table["arrays"]["elements_"])
+            groups = self.cpo.to_address(self.table["arrays"]["groups_"])
+            elements = self.cpo.to_address(self.table["arrays"]["elements_"])
 
             pc_ = groups.cast(gdb.lookup_type("unsigned char").pointer())
             p_ = elements
