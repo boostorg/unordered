@@ -164,7 +164,7 @@ namespace boost {
       template <class ValueType, class VoidPtr> struct node
       {
         typedef node_value_type<node> value_type;
-        typedef node_pointer<node> node_pointer;
+        typedef detail::node_pointer<node> node_pointer;
 
         node_pointer next;
         opt_storage<value_type> buf;
