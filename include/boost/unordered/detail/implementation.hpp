@@ -969,7 +969,7 @@ namespace boost {
         template <class Node, class Bucket> class iterator
         {
         public:
-          typedef typename Node::value_type value_type;
+          typedef typename detail::node_value_type<Node> value_type;
           typedef value_type element_type;
           typedef value_type* pointer;
           typedef value_type& reference;
@@ -1023,7 +1023,7 @@ namespace boost {
           }
 
         private:
-          typedef typename Node::node_pointer node_pointer;
+          typedef detail::node_pointer<Node> node_pointer;
           typedef grouped_bucket_iterator<Bucket> bucket_iterator;
 
           node_pointer p;
@@ -1076,7 +1076,7 @@ namespace boost {
         template <class Node, class Bucket> class c_iterator
         {
         public:
-          typedef typename Node::value_type value_type;
+          typedef typename detail::node_value_type<Node> value_type;
           typedef value_type const element_type;
           typedef value_type const* pointer;
           typedef value_type const& reference;
@@ -1131,7 +1131,7 @@ namespace boost {
           }
 
         private:
-          typedef typename Node::node_pointer node_pointer;
+          typedef detail::node_pointer<Node> node_pointer;
           typedef grouped_bucket_iterator<Bucket> bucket_iterator;
 
           node_pointer p;
