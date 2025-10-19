@@ -23,13 +23,17 @@ target_link_libraries(boost_unordered
     Boost::throw_exception
 )
 
-if(CMAKE_VERSION VERSION_GREATER 3.18 AND CMAKE_GENERATOR MATCHES "Visual Studio")
-
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.12)
   file(GLOB_RECURSE boost_unordered_IDEFILES CONFIGURE_DEPENDS include/*.hpp)
+else()
+  file(GLOB_RECURSE boost_unordered_IDEFILES include/*.hpp)
+endif()
+target_sources(boost_unordered PRIVATE ${boost_unordered_IDEFILES})
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
   source_group(TREE ${PROJECT_SOURCE_DIR}/include FILES ${boost_unordered_IDEFILES} PREFIX "Header Files")
-  target_sources(boost_unordered PRIVATE ${boost_unordered_IDEFILES})
+endif()
+if(MSVC)
   target_sources(boost_unordered PUBLIC extra/boost_unordered.natvis)
-
 endif()
 
 target_compile_features(boost_unordered INTERFACE cxx_std_11)
