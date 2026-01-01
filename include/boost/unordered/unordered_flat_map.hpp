@@ -1,5 +1,6 @@
 // Copyright (C) 2022-2023 Christian Mazakas
 // Copyright (C) 2024-2025 Joaquin M Lopez Munoz
+// Copyright (C) 2026 Braden Ganetsky
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
@@ -182,10 +183,30 @@ namespace boost {
       {
       }
 
-      template <bool avoid_explicit_instantiation = true>
-      unordered_flat_map(
-        concurrent_flat_map<Key, T, Hash, KeyEqual, Allocator>&& other)
-          : table_(std::move(other.table_))
+      template <class U,
+        typename std::enable_if<
+          // Ensure we match exactly `concurrent_flat_map&&`.
+          // Any lvalue references to `concurrent_flat_map` are not supported.
+          std::is_same<U,
+            concurrent_flat_map<Key, T, Hash, KeyEqual, Allocator> >::value,
+          int>::type = 0>
+      unordered_flat_map(U&& other) : table_(std::move(other.table_))
+      {
+      }
+
+      template <class U,
+        typename std::enable_if<
+          // Ensure we don't match any cvref-qualified `concurrent_flat_map&&`,
+          !detail::is_similar<U,
+            concurrent_flat_map<Key, T, Hash, KeyEqual, Allocator> >::value
+            // but we do match anything convertible to `concurrent_flat_map`.
+            && std::is_convertible<U&&, concurrent_flat_map<Key, T, Hash,
+                                          KeyEqual, Allocator> >::value,
+          int>::type = 0>
+      unordered_flat_map(U&& other)
+          : unordered_flat_map(
+              concurrent_flat_map<Key, T, Hash, KeyEqual, Allocator>(
+                std::forward<U>(other)))
       {
       }
 
