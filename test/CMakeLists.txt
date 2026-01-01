@@ -169,4 +169,6 @@ fca_tests(TYPE compile NAME explicit_instantiation_tests SOURCES unordered/expli
 foa_tests(TYPE compile NAME explicit_instantiation_tests SOURCES unordered/explicit_instantiation_tests.cpp)
 cfoa_tests(TYPE compile NAME explicit_instantiation_tests SOURCES cfoa/explicit_instantiation_tests.cpp)
 
+foa_tests(TYPE compile NAME conversion_operator_tests SOURCES unordered/conversion_operator_tests.cpp)
+
 endif()
