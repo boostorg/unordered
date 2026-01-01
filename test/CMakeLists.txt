@@ -170,5 +170,6 @@ foa_tests(TYPE compile NAME explicit_instantiation_tests SOURCES unordered/expli
 cfoa_tests(TYPE compile NAME explicit_instantiation_tests SOURCES cfoa/explicit_instantiation_tests.cpp)
 
 foa_tests(TYPE compile NAME conversion_operator_tests SOURCES unordered/conversion_operator_tests.cpp)
+cfoa_tests(TYPE compile NAME conversion_operator_tests SOURCES cfoa/conversion_operator_tests.cpp)
 
 endif()
