@@ -22,7 +22,6 @@ move
 mp11
 predef
 preprocessor
-static_assert
 throw_exception
 tuple
 type_traits
