@@ -18,13 +18,9 @@ assert
 config
 container_hash
 core
-move
 mp11
 predef
-preprocessor
 throw_exception
-tuple
-type_traits
 
 # Secondary dependencies
 
