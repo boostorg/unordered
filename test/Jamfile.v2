@@ -166,6 +166,9 @@ compile unordered/explicit_instantiation_tests.cpp :                            
 compile unordered/explicit_instantiation_tests.cpp : <define>BOOST_UNORDERED_FOA_TESTS : foa_explicit_instantiation_tests ;
 compile cfoa/explicit_instantiation_tests.cpp      :                                   : cfoa_explicit_instantiation_tests ;
 
+compile unordered/conversion_operator_tests.cpp : <define>BOOST_UNORDERED_FOA_TESTS : foa_conversion_operator_tests ;
+compile cfoa/conversion_operator_tests.cpp      :                                   : cfoa_conversion_operator_tests ;
+
 local FCA_EXCEPTION_TESTS =
   constructor_exception_tests
   copy_exception_tests

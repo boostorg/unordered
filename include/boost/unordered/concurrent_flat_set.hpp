@@ -2,6 +2,7 @@
  *
  * Copyright 2023 Christian Mazakas.
  * Copyright 2023-2024 Joaquin M Lopez Munoz.
+ * Copyright 2026 Braden Ganetsky
  * Distributed under the Boost Software License, Version 1.0.
  * (See accompanying file LICENSE_1_0.txt or copy at
  * http://www.boost.org/LICENSE_1_0.txt)
@@ -186,11 +187,29 @@ namespace boost {
       {
       }
 
+      template <class U,
+        typename std::enable_if<
+          // Ensure we match exactly `unordered_flat_set&&`.
+          // Any lvalue references to `unordered_flat_set` are not supported.
+          std::is_same<U,
+            unordered_flat_set<Key, Hash, Pred, Allocator> >::value,
+          int>::type = 0>
+      concurrent_flat_set(U&& other) : table_(std::move(other.table_))
+      {
+      }
 
-      template <bool avoid_explicit_instantiation = true>
-      concurrent_flat_set(
-        unordered_flat_set<Key, Hash, Pred, Allocator>&& other)
-          : table_(std::move(other.table_))
+      template <class U,
+        typename std::enable_if<
+          // Ensure we don't match any cvref-qualified `unordered_flat_set&&`,
+          !detail::is_similar<U,
+            unordered_flat_set<Key, Hash, Pred, Allocator> >::value
+            // but we do match anything convertible to `unordered_flat_set`.
+            && std::is_convertible<U&&,
+                 unordered_flat_set<Key, Hash, Pred, Allocator> >::value,
+          int>::type = 0>
+      concurrent_flat_set(U&& other)
+          : concurrent_flat_set(unordered_flat_set<Key, Hash, Pred, Allocator>(
+              std::forward<U>(other)))
       {
       }
 

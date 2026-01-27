@@ -2,6 +2,7 @@
  *
  * Copyright 2023 Christian Mazakas.
  * Copyright 2023-2024 Joaquin M Lopez Munoz.
+ * Copyright 2026 Braden Ganetsky
  * Distributed under the Boost Software License, Version 1.0.
  * (See accompanying file LICENSE_1_0.txt or copy at
  * http://www.boost.org/LICENSE_1_0.txt)
@@ -194,10 +195,29 @@ namespace boost {
       {
       }
 
-      template <bool avoid_explicit_instantiation = true>
-      concurrent_node_set(
-        unordered_node_set<Key, Hash, Pred, Allocator>&& other)
-          : table_(std::move(other.table_))
+      template <class U,
+        typename std::enable_if<
+          // Ensure we match exactly `unordered_node_set&&`.
+          // Any lvalue references to `unordered_node_set` are not supported.
+          std::is_same<U,
+            unordered_node_set<Key, Hash, Pred, Allocator> >::value,
+          int>::type = 0>
+      concurrent_node_set(U&& other) : table_(std::move(other.table_))
+      {
+      }
+
+      template <class U,
+        typename std::enable_if<
+          // Ensure we don't match any cvref-qualified `unordered_node_set&&`,
+          !detail::is_similar<U,
+            unordered_node_set<Key, Hash, Pred, Allocator> >::value
+            // but we do match anything convertible to `unordered_node_set`.
+            && std::is_convertible<U&&,
+                 unordered_node_set<Key, Hash, Pred, Allocator> >::value,
+          int>::type = 0>
+      concurrent_node_set(U&& other)
+          : concurrent_node_set(unordered_node_set<Key, Hash, Pred, Allocator>(
+              std::forward<U>(other)))
       {
       }
 
