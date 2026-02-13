@@ -150,14 +150,16 @@ namespace {
 
       auto sz = x.size();
       std::atomic<std::uint64_t> num_inserts{0};
-      thread_runner(values2, [&x, &num_inserts](boost::span<raii_convertible> s) {
+      std::atomic<std::uint64_t> num_attempted_inserts{0};
+      thread_runner(values2, [&x, &num_inserts, &num_attempted_inserts](boost::span<raii_convertible> s) {
         num_inserts += x.insert(s.begin(), s.begin() + s.size() / 2);
         num_inserts += x.insert(s.begin(), s.end());
+        num_attempted_inserts += s.size() + s.size() / 2;
       });
       BOOST_TEST_EQ(x.size(), sz + num_inserts);
 
       BOOST_TEST_EQ(
-        raii::default_constructor, value_type_cardinality * (values2.size() + values2.size() / 2));
+        raii::default_constructor, value_type_cardinality * num_attempted_inserts);
 #if BOOST_WORKAROUND(BOOST_GCC_VERSION, >= 50300) && \
     BOOST_WORKAROUND(BOOST_GCC_VERSION, <  50500)
       // some versions of old gcc have trouble eliding copies here
