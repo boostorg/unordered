@@ -148,13 +148,13 @@ namespace {
         values2.push_back(raii_convertible(v));
       }
 
-      auto s = x.size();
+      auto sz = x.size();
       std::atomic<std::uint64_t> num_inserts{0};
       thread_runner(values2, [&x, &num_inserts](boost::span<raii_convertible> s) {
         num_inserts += x.insert(s.begin(), s.begin() + s.size() / 2);
         num_inserts += x.insert(s.begin(), s.end());
       });
-      BOOST_TEST_EQ(x.size(), s + num_inserts);
+      BOOST_TEST_EQ(x.size(), sz + num_inserts);
 
       BOOST_TEST_EQ(
         raii::default_constructor, value_type_cardinality * (values2.size() + values2.size() / 2));
