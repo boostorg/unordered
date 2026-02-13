@@ -1,7 +1,7 @@
 /* Fast open-addressing concurrent hashset.
  *
  * Copyright 2023 Christian Mazakas.
- * Copyright 2023-2024 Joaquin M Lopez Munoz.
+ * Copyright 2023-2026 Joaquin M Lopez Munoz.
  * Distributed under the Boost Software License, Version 1.0.
  * (See accompanying file LICENSE_1_0.txt or copy at
  * http://www.boost.org/LICENSE_1_0.txt)
@@ -429,8 +429,8 @@ namespace boost {
       size_type insert(InputIterator begin, InputIterator end)
       {
         size_type count_elements = 0;
-        for (auto pos = begin; pos != end; ++pos, ++count_elements) {
-          table_.emplace(*pos);
+        for (auto pos = begin; pos != end; ++pos) {
+          if (table_.emplace(*pos)) ++count_elements;
         }
         return count_elements;
       }
