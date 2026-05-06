@@ -2712,8 +2712,9 @@ namespace boost {
       inline void table<Types>::reserve_for_insert(std::size_t num_elements)
       {
         if (num_elements > max_load_) {
-          std::size_t const num_buckets = static_cast<std::size_t>(
-            1.0f + std::ceil(static_cast<float>(num_elements) / mlf_));
+          std::size_t const num_buckets = (std::max)(
+            static_cast<std::size_t>(1.0f + std::ceil(static_cast<float>(num_elements) / mlf_)),
+            static_cast<std::size_t>(bucket_count() + 1));
 
           this->rehash_impl(num_buckets);
         }
