@@ -925,8 +925,7 @@ size_type size() const noexcept;
 
 [horizontal]
 Returns:;; The number of elements in the table.
-
-[horizontal]
+Complexity:;; Constant time.
 Notes:;; In the presence of concurrent insertion operations, the value returned may not accurately reflect
 the true size of the table right after execution.
 
