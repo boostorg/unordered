@@ -1,6 +1,6 @@
 // Copyright (C) 2003-2004 Jeremy B. Maitin-Shepard.
 // Copyright (C) 2005-2016 Daniel James
-// Copyright (C) 2022-2024 Joaquin M Lopez Munoz.
+// Copyright (C) 2022-2026 Joaquin M Lopez Munoz.
 // Copyright (C) 2022-2023 Christian Mazakas
 // Copyright (C) 2024 Braden Ganetsky
 //
@@ -2851,10 +2851,10 @@ namespace boost {
           return no_key();
         }
 
-        template <class Arg1, class Arg2>
+        template <class Arg1, class Arg2, class Key = key_type>
         static typename std::conditional<
           (is_similar<Arg1, key_type>::value ||
-            is_complete_and_move_constructible<key_type>::value),
+            std::is_move_constructible<Key>::value),
           converting_key, no_key>::type
         extract(Arg1 const&, Arg2 const&)
         {
