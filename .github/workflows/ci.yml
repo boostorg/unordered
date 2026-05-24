@@ -147,13 +147,7 @@ jobs:
             fi
             if [ -n "${{matrix.container}}" ] && [ -f "/etc/debian_version" ]; then
                 apt-get -o Acquire::Retries=$NET_RETRY_COUNT update
-                apt-get -o Acquire::Retries=$NET_RETRY_COUNT install -y sudo software-properties-common dirmngr
-                # Need (newer) git, and the older Ubuntu container may require requesting the key manually using port 80
-                mkdir -p /etc/apt/trusted.gpg.d ~/.gnupg
-                gpg --no-default-keyring --keyring /etc/apt/trusted.gpg.d/git-core.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys E1DD270288B4E6030699E45FA1715D88E1DF1F24
-                for i in {1..${NET_RETRY_COUNT:-3}}; do sudo -E add-apt-repository -y ppa:git-core/ppa && break || sleep 10; done                
-                apt-get -o Acquire::Retries=$NET_RETRY_COUNT update
-                apt-get -o Acquire::Retries=$NET_RETRY_COUNT install -y g++ python-is-python3 git
+                apt-get -o Acquire::Retries=$NET_RETRY_COUNT install -y sudo software-properties-common git g++
             fi
             # For jobs not compatible with ccache, use "ccache: no" in the matrix
             if [[ "${{ matrix.ccache }}" == "no" ]]; then
