@@ -1,6 +1,6 @@
 // Copyright (C) 2003-2004 Jeremy B. Maitin-Shepard.
 // Copyright (C) 2005-2016 Daniel James
-// Copyright (C) 2022-2024 Joaquin M Lopez Munoz.
+// Copyright (C) 2022-2026 Joaquin M Lopez Munoz.
 // Copyright (C) 2022-2023 Christian Mazakas
 // Copyright (C) 2024 Braden Ganetsky
 //
@@ -1781,7 +1781,7 @@ namespace boost {
 
         static std::size_t min_buckets(std::size_t num_elements, float mlf)
         {
-          std::size_t num_buckets = static_cast<std::size_t>(
+          std::size_t num_buckets = boost::unordered::detail::double_to_size(
             std::ceil(static_cast<float>(num_elements) / mlf));
 
           if (num_buckets == 0 && num_elements > 0) { // mlf == inf
