@@ -45,6 +45,11 @@ local FCA_TESTS =
   reserve_tests
 ;
 
+for local test in $(FCA_TESTS)
+{
+  run unordered/$(test).cpp ;
+}
+
 
 alias fca_tests :
   $(FCA_TESTS)
