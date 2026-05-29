@@ -1781,7 +1781,7 @@ namespace boost {
 
         static std::size_t min_buckets(std::size_t num_elements, float mlf)
         {
-          std::size_t num_buckets = static_cast<std::size_t>(
+          std::size_t num_buckets = boost::unordered::detail::double_to_size(
             std::ceil(static_cast<float>(num_elements) / mlf));
 
           if (num_buckets == 0 && num_elements > 0) { // mlf == inf
@@ -2712,8 +2712,9 @@ namespace boost {
       inline void table<Types>::reserve_for_insert(std::size_t num_elements)
       {
         if (num_elements > max_load_) {
-          std::size_t const num_buckets = static_cast<std::size_t>(
-            1.0f + std::ceil(static_cast<float>(num_elements) / mlf_));
+          std::size_t const num_buckets = (std::max)(
+            static_cast<std::size_t>(1.0f + std::ceil(static_cast<float>(num_elements) / mlf_)),
+            static_cast<std::size_t>(bucket_count() + 1));
 
           this->rehash_impl(num_buckets);
         }
