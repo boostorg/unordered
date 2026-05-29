@@ -42,7 +42,7 @@ path-constant BOOST_UNORDERED_TEST_DIR : . ;
 
 
 local FCA_TESTS =
-  reserve_tests
+  rehash_tests
 ;
 
 for local test in $(FCA_TESTS)
