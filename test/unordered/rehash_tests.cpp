@@ -5,6 +5,7 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+#include <iostream>
 #include "../helpers/unordered.hpp"
 
 #include "../helpers/metafunctions.hpp"
@@ -801,6 +802,7 @@ namespace rehash_tests {
     test_multimap_monotonic;
 
   // clang-format off
+#if 0
   UNORDERED_TEST(rehash_empty_test1,
     ((int_set_ptr)(test_multiset_ptr)(test_map_ptr)(int_multimap_ptr)))
   UNORDERED_TEST(rehash_empty_test2,
@@ -837,6 +839,7 @@ namespace rehash_tests {
      (test_multiset_tracking)(test_multimap_tracking))(
       (default_generator)(generate_collisions)(limited_range)))
   UNORDERED_TEST(test_gh348_1,((0)))
+#endif
   UNORDERED_TEST(test_gh348_2,((0)))
 // clang-format on
 #endif

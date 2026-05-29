@@ -954,10 +954,13 @@ namespace boost {
 
       inline std::size_t double_to_size(double f)
       {
-        return f >= static_cast<double>(
+        std::cout << "    double_to_size\n";
+        auto ret = f >= static_cast<double>(
                       (std::numeric_limits<std::size_t>::max)())
                  ? (std::numeric_limits<std::size_t>::max)()
                  : static_cast<std::size_t>(f);
+        std::cout << "      ret: " << ret << "\n";
+        return ret;
       }
 
       //////////////////////////////////////////////////////////////////////////
@@ -1781,8 +1784,10 @@ namespace boost {
 
         static std::size_t min_buckets(std::size_t num_elements, float mlf)
         {
+          std::cout << "  min_buckets\n";
           std::size_t num_buckets = boost::unordered::detail::double_to_size(
             std::ceil(static_cast<float>(num_elements) / mlf));
+          std::cout << "    num_buckets: " << num_buckets << "\n";
 
           if (num_buckets == 0 && num_elements > 0) { // mlf == inf
             num_buckets = 1;
@@ -2704,7 +2709,10 @@ namespace boost {
       template <class Types>
       inline void table<Types>::reserve(std::size_t num_elements)
       {
+        std::cout << "reserve\n";
+        std::cout << "  num_elements: " <<  num_elements << "\n";
         std::size_t num_buckets = min_buckets(num_elements, mlf_);
+        std::cout << "  num_buckets: " <<  num_buckets << "\n";
         this->rehash(num_buckets);
       }
 
