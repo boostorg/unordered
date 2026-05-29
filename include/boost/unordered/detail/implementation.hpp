@@ -24,6 +24,7 @@
 #include <boost/unordered/detail/unordered_printers.hpp>
 
 #include <boost/assert.hpp>
+#include <boost/config/workaround.hpp>
 #include <boost/core/allocator_traits.hpp>
 #include <boost/core/bit.hpp>
 #include <boost/core/invoke_swap.hpp>
@@ -954,10 +955,14 @@ namespace boost {
 
       inline std::size_t double_to_size(double f)
       {
-        return f >= static_cast<double>(
-                      (std::numeric_limits<std::size_t>::max)())
-                 ? (std::numeric_limits<std::size_t>::max)()
-                 : static_cast<std::size_t>(f);
+#if BOOST_WORKAROUND(BOOST_CLANG_VERSION, < 30900)
+        // https://github.com/boostorg/unordered/pull/354
+        volatile
+#endif
+        const double double_size_t_max =
+          static_cast<double>((std::numeric_limits<std::size_t>::max)());
+        return f >= double_size_t_max? 
+          (std::numeric_limits<std::size_t>::max)(): static_cast<std::size_t>(f);
       }
 
       //////////////////////////////////////////////////////////////////////////

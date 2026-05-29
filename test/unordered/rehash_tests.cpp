@@ -836,8 +836,8 @@ namespace rehash_tests {
      (test_multiset_ptr)(int_multimap_ptr)
      (test_multiset_tracking)(test_multimap_tracking))(
       (default_generator)(generate_collisions)(limited_range)))
-  UNORDERED_TEST(test_gh348_1,((0)))
-  UNORDERED_TEST(test_gh348_2,((0)))
+  UNORDERED_TEST(test_gh348_1, ((0)))
+  UNORDERED_TEST(test_gh348_2, ((0)))
 // clang-format on
 #endif
 } // namespace rehash_tests
