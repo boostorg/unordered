@@ -957,6 +957,9 @@ namespace boost {
         std::cout << "    double_to_size\n";
         std::cout << "      f: " << f << "\n";
         std::cout << "      double(size_t_max): " << static_cast<double>((std::numeric_limits<std::size_t>::max)()) << "\n";
+        std::cout << "      comparison: " << (f >= static_cast<double>((std::numeric_limits<std::size_t>::max)())) << "\n";
+        std::cout << "      1st branch: " << (std::numeric_limits<std::size_t>::max)() << "\n";
+        std::cout << "      2nd branch: " << static_cast<std::size_t>(f) << "\n";
         auto ret = f >= static_cast<double>(
                       (std::numeric_limits<std::size_t>::max)())
                  ? (std::numeric_limits<std::size_t>::max)()
