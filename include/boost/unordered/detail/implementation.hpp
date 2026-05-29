@@ -955,6 +955,7 @@ namespace boost {
       inline std::size_t double_to_size(double f)
       {
         std::cout << "    double_to_size\n";
+        std::cout << "      f: " << f << "\n";
         auto ret = f >= static_cast<double>(
                       (std::numeric_limits<std::size_t>::max)())
                  ? (std::numeric_limits<std::size_t>::max)()
