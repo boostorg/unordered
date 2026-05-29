@@ -954,7 +954,7 @@ namespace boost {
 
       inline std::size_t double_to_size(double f)
       {
-        if(static_cast<double>((std::numeric_limits<std::size_t>::max)())) {
+        if(f >= static_cast<double>((std::numeric_limits<std::size_t>::max)())) {
           return (std::numeric_limits<std::size_t>::max)();
         }
         else{
