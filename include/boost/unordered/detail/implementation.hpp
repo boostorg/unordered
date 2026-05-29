@@ -956,6 +956,7 @@ namespace boost {
       inline std::size_t double_to_size(double f)
       {
 #if BOOST_WORKAROUND(BOOST_CLANG_VERSION, < 30900)
+        // https://github.com/boostorg/unordered/pull/354
         volatile
 #endif
         const double double_size_t_max =
