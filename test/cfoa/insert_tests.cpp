@@ -1112,7 +1112,7 @@ namespace {
     }
   } iterator_range_insert_and_visit;
 
-#if !defined(BOOT_UNORDERED_NO_RANGES)
+#if !defined(BOOST_UNORDERED_NO_RANGES)
   struct insert_range_and_visit_type
   {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
