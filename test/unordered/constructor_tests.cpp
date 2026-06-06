@@ -340,6 +340,9 @@ namespace constructor_tests {
     std::vector<value_type> expected(vec.begin(), vec.begin() + 3);
 
 #if !defined(BOOST_UNORDERED_NO_RANGES)
+    auto std_list = std::list{vec[0], vec[1], vec[2]};
+    auto sentineled_rg = std_list | std::views::take(3);
+
     UNORDERED_SUB_TEST("Range construct 1")
     {
       test::check_instances check_;
@@ -377,9 +380,7 @@ namespace constructor_tests {
       }
 
       {
-        T x(
-          boost::unordered::from_range, 
-          std::list{vec[0], vec[1], vec[2]} | std::views::take(3), 1000);
+        T x(boost::unordered::from_range, sentineled_rg, 1000);
         BOOST_TEST_NOT(x.empty());
         BOOST_TEST(x.bucket_count() >= 1000);
         BOOST_TEST(test::equivalent(x.hash_function(), hf));
@@ -433,10 +434,7 @@ namespace constructor_tests {
       {
         test::check_instances check_;
 
-        T x(
-          boost::unordered::from_range, 
-          std::list{vec[0], vec[1], vec[2]} | std::views::take(3),
-          10, hf1, eq1);
+        T x(boost::unordered::from_range, sentineled_rg, 10, hf1, eq1);
         BOOST_TEST_NOT(x.empty());
         BOOST_TEST(x.bucket_count() >= 10);
         BOOST_TEST(test::equivalent(x.hash_function(), hf1));
@@ -488,9 +486,7 @@ namespace constructor_tests {
       {
         test::check_instances check_;
 
-        T x(
-          boost::unordered::from_range,
-          std::list{vec[0], vec[1], vec[2]} | std::views::take(3), 10, al1);
+        T x(boost::unordered::from_range, sentineled_rg, 10, al1);
         BOOST_TEST_NOT(x.empty());
         BOOST_TEST(x.bucket_count() >= 10);
         BOOST_TEST(test::equivalent(x.get_allocator(), al1));
@@ -535,9 +531,7 @@ namespace constructor_tests {
       }
 
       {
-        T x(
-          boost::unordered::from_range, 
-          std::list{vec[0], vec[1], vec[2]} | std::views::take(3), al1);
+        T x(boost::unordered::from_range, sentineled_rg, al1);
         BOOST_TEST(test::equivalent(x.get_allocator(), al1));
         test::check_container(x, expected);
       }

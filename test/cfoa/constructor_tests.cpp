@@ -714,8 +714,8 @@ namespace {
     using allocator_type = typename X::allocator_type;
 
     auto init_list = p.second;
-    auto sentineled_rg = 
-      std::list<value_type>{init_list} | std::views::take(init_list.size());
+    auto init_std_list = std::list<value_type>{init_list};
+    auto sentineled_rg = init_std_list | std::views::take(init_list.size());
 
     {
       raii::reset_counts();
