@@ -17,6 +17,7 @@
 #include <boost/unordered/detail/concurrent_static_asserts.hpp>
 #include <boost/unordered/detail/foa/concurrent_table.hpp>
 #include <boost/unordered/detail/foa/flat_map_types.hpp>
+#include <boost/unordered/detail/ranges_support.hpp>
 #include <boost/unordered/detail/type_traits.hpp>
 #include <boost/unordered/unordered_flat_map_fwd.hpp>
 
@@ -102,6 +103,21 @@ namespace boost {
         this->insert(f, l);
       }
 
+#if !defined(BOOST_UNORDERED_NO_RANGES)
+      template<
+        detail::convertible_to_from_range_t FromRangeT,
+        detail::container_compatible_range<value_type> R
+      >
+      concurrent_flat_map(FromRangeT&&, R&& rg,
+        size_type n = detail::foa::default_bucket_count,
+        const hasher& hf = hasher(), const key_equal& eql = key_equal(),
+        const allocator_type& a = allocator_type())
+          : table_(n, hf, eql, a)
+      {
+        this->insert_range(std::forward<R>(rg));
+      }
+#endif
+
       concurrent_flat_map(concurrent_flat_map const& rhs)
           : table_(rhs.table_,
               boost::allocator_select_on_container_copy_construction(
@@ -120,6 +136,19 @@ namespace boost {
           : concurrent_flat_map(f, l, 0, hasher(), key_equal(), a)
       {
       }
+
+#if !defined(BOOST_UNORDERED_NO_RANGES)
+      template<
+        detail::convertible_to_from_range_t FromRangeT,
+        detail::container_compatible_range<value_type> R
+      >
+      concurrent_flat_map(
+        FromRangeT&& fr, R&& rg, allocator_type const& a)
+          : concurrent_flat_map(
+            fr, std::forward<R>(rg), 0, hasher(), key_equal(), a)
+      {
+      }
+#endif
 
       explicit concurrent_flat_map(allocator_type const& a)
           : table_(detail::foa::default_bucket_count, hasher(), key_equal(), a)
@@ -170,6 +199,29 @@ namespace boost {
           : concurrent_flat_map(f, l, n, hf, key_equal(), a)
       {
       }
+
+#if !defined(BOOST_UNORDERED_NO_RANGES)
+      template<
+        detail::convertible_to_from_range_t FromRangeT,
+        detail::container_compatible_range<value_type> R
+      >
+      concurrent_flat_map(
+        FromRangeT&& fr, R&& rg, size_type n, const allocator_type& a)
+          : concurrent_flat_map(
+            fr, std::forward<R>(rg), n, hasher(), key_equal(), a)
+      {
+      }
+
+      template<
+        detail::convertible_to_from_range_t FromRangeT,
+        detail::container_compatible_range<value_type> R
+      >
+      concurrent_flat_map(FromRangeT&& fr, R&& rg, size_type n,
+        const hasher& hf, const allocator_type& a)
+          : concurrent_flat_map(fr, std::forward<R>(rg), n, hf, key_equal(), a)
+      {
+      }
+#endif
 
       concurrent_flat_map(
         std::initializer_list<value_type> il, const allocator_type& a)
@@ -429,6 +481,20 @@ namespace boost {
         }
         return count_elements;
       }
+
+#if !defined(BOOST_UNORDERED_NO_RANGES)
+      template<detail::container_compatible_range<value_type> R>
+      size_type insert_range(R&& rg)
+      {
+        size_type count_elements = 0;
+        auto first = std::ranges::begin(rg);
+        auto last = std::ranges::end(rg);
+        while (first != last) {
+          if (table_.emplace(*first++)) ++count_elements;
+        }
+        return count_elements;
+      }
+#endif
 
       size_type insert(std::initializer_list<value_type> ilist)
       {
@@ -980,6 +1046,27 @@ namespace boost {
         boost::unordered::detail::iter_val_t<InputIterator>, Hash, Pred,
         Allocator>;
 
+#if !defined(BOOST_UNORDERED_NO_RANGES)
+    template <
+      boost::unordered::detail::convertible_to_from_range_t FromRangeT,
+      std::ranges::input_range R,
+      class Hash =
+        boost::hash<boost::unordered::detail::range_key_t<R> >,
+      class Pred =
+        std::equal_to<boost::unordered::detail::range_key_t<R> >,
+      class Allocator = std::allocator<
+        boost::unordered::detail::range_to_alloc_t<R> >,
+      class = std::enable_if_t<detail::is_hash_v<Hash> >,
+      class = std::enable_if_t<detail::is_pred_v<Pred> >,
+      class = std::enable_if_t<detail::is_allocator_v<Allocator> > >
+    concurrent_flat_map(FromRangeT&&, R&&,
+      std::size_t = boost::unordered::detail::foa::default_bucket_count,
+      Hash = Hash(), Pred = Pred(), Allocator = Allocator())
+      -> concurrent_flat_map<boost::unordered::detail::range_key_t<R>,
+        boost::unordered::detail::range_mapped_t<R>, Hash, Pred,
+        Allocator>;
+#endif
+
     template <class Key, class T,
       class Hash = boost::hash<std::remove_const_t<Key> >,
       class Pred = std::equal_to<std::remove_const_t<Key> >,
@@ -1026,6 +1113,42 @@ namespace boost {
         boost::unordered::detail::iter_val_t<InputIterator>, Hash,
         std::equal_to<boost::unordered::detail::iter_key_t<InputIterator> >,
         Allocator>;
+
+#if !defined(BOOST_UNORDERED_NO_RANGES)
+    template <boost::unordered::detail::convertible_to_from_range_t FromRangeT,
+      std::ranges::input_range R,
+      class Allocator,
+      class = std::enable_if_t<detail::is_allocator_v<Allocator> > >
+    concurrent_flat_map(FromRangeT&&, R&&, std::size_t, Allocator)
+      -> concurrent_flat_map<boost::unordered::detail::range_key_t<R>,
+        boost::unordered::detail::range_mapped_t<R>,
+        boost::hash<boost::unordered::detail::range_key_t<R> >,
+        std::equal_to<boost::unordered::detail::range_key_t<R> >,
+        Allocator>;
+
+    template <boost::unordered::detail::convertible_to_from_range_t FromRangeT,
+      std::ranges::input_range R,
+      class Allocator,
+      class = std::enable_if_t<detail::is_allocator_v<Allocator> > >
+    concurrent_flat_map(FromRangeT&&, R&&, Allocator)
+      -> concurrent_flat_map<boost::unordered::detail::range_key_t<R>,
+        boost::unordered::detail::range_mapped_t<R>,
+        boost::hash<boost::unordered::detail::range_key_t<R> >,
+        std::equal_to<boost::unordered::detail::range_key_t<R> >,
+        Allocator>;
+
+    template <boost::unordered::detail::convertible_to_from_range_t FromRangeT,
+      std::ranges::input_range R,
+      class Hash, class Allocator,
+      class = std::enable_if_t<detail::is_hash_v<Hash> >,
+      class = std::enable_if_t<detail::is_allocator_v<Allocator> > >
+    concurrent_flat_map(
+      FromRangeT&&, R&&, std::size_t, Hash, Allocator)
+      -> concurrent_flat_map<boost::unordered::detail::range_key_t<R>,
+        boost::unordered::detail::range_mapped_t<R>, Hash,
+        std::equal_to<boost::unordered::detail::range_key_t<R> >,
+        Allocator>;
+#endif
 
     template <class Key, class T, class Allocator,
       class = std::enable_if_t<detail::is_allocator_v<Allocator> > >

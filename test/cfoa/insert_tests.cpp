@@ -175,6 +175,39 @@ namespace {
     }
   } iterator_range_inserter;
 
+#if !defined(BOOST_UNORDERED_NO_RANGES)
+  struct range_inserter_type
+  {
+    template <class T, class X> void operator()(std::vector<T>& values, X& x)
+    {
+      static constexpr auto value_type_cardinality = 
+        value_cardinality<typename X::value_type>::value;
+
+      std::vector<raii_convertible> values2;
+      values2.reserve(values.size());
+      for (auto const& v : values) { 
+        values2.push_back(raii_convertible(v));
+      }
+
+      auto sz = x.size();
+      std::atomic<std::uint64_t> num_inserts{0};
+      std::atomic<std::uint64_t> num_attempted_inserts{0};
+      thread_runner(values2, [&x, &num_inserts, &num_attempted_inserts](boost::span<raii_convertible> s) {
+        num_inserts += x.insert_range(s | std::views::take(s.size() / 2));
+        num_inserts += x.insert_range(s);
+        num_attempted_inserts += s.size() + s.size() / 2;
+      });
+      BOOST_TEST_EQ(x.size(), sz + num_inserts);
+
+      BOOST_TEST_EQ(
+        raii::default_constructor, value_type_cardinality * num_attempted_inserts);
+      BOOST_TEST_EQ(raii::copy_constructor, 0u);
+      BOOST_TEST_EQ(raii::copy_assignment, 0u);
+      BOOST_TEST_EQ(raii::move_assignment, 0u);
+    }
+  } range_inserter;
+#endif
+
   struct lvalue_insert_or_assign_copy_assign_type
   {
     template <class T, class X> void operator()(std::vector<T>& values, X& x)
@@ -1265,13 +1298,19 @@ UNORDERED_TEST(
   ((map_and_init_list)(node_map_and_init_list)
    (set_and_init_list)(node_set_and_init_list)))
 
+#if !defined(BOOST_UNORDERED_NO_RANGES)
+#define RANGE_INSERTER (range_inserter)
+#else
+#define RANGE_INSERTER
+#endif
+
 UNORDERED_TEST(
   insert,
   ((map)(fancy_map)(node_map)(fancy_node_map)
    (set)(fancy_set)(node_set)(fancy_node_set))
   ((value_type_generator_factory)(init_type_generator_factory))
   ((lvalue_inserter)(rvalue_inserter)(iterator_range_inserter)
-   (norehash_lvalue_inserter)(norehash_rvalue_inserter)
+   RANGE_INSERTER (norehash_lvalue_inserter)(norehash_rvalue_inserter)
    (lvalue_insert_or_cvisit)(lvalue_insert_or_visit)
    (rvalue_insert_or_cvisit)(rvalue_insert_or_visit)
    (iterator_range_insert_or_cvisit)(iterator_range_insert_or_visit))
