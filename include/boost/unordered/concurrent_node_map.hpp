@@ -578,6 +578,21 @@ namespace boost {
         return count_elements;
       }
 
+#if !defined(BOOST_UNORDERED_NO_RANGES)
+      template<detail::container_compatible_range<value_type> R, class F>
+      size_type insert_range_or_visit(R&& rg, F f)
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F)
+        size_type count_elements = 0;
+        auto first = std::ranges::begin(rg);
+        auto last = std::ranges::end(rg);
+        for (; first != last; ++first, ++count_elements) {
+          table_.emplace_or_visit(*first, f);
+        }
+        return count_elements;
+      }
+#endif
+
       template <class F>
       size_type insert_or_visit(std::initializer_list<value_type> ilist, F f)
       {
@@ -631,6 +646,21 @@ namespace boost {
         }
         return count_elements;
       }
+
+#if !defined(BOOST_UNORDERED_NO_RANGES)
+      template<detail::container_compatible_range<value_type> R, class F>
+      size_type insert_range_or_cvisit(R&& rg, F f)
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_CONST_INVOCABLE(F)
+        size_type count_elements = 0;
+        auto first = std::ranges::begin(rg);
+        auto last = std::ranges::end(rg);
+        for (; first != last; ++first, ++count_elements) {
+          table_.emplace_or_cvisit(*first, f);
+        }
+        return count_elements;
+      }
+#endif
 
       template <class F>
       size_type insert_or_cvisit(std::initializer_list<value_type> ilist, F f)
@@ -689,6 +719,24 @@ namespace boost {
         }
         return count_elements;
       }
+
+#if !defined(BOOST_UNORDERED_NO_RANGES)
+      template<
+        detail::container_compatible_range<value_type> R, class F1, class F2
+      >
+      size_type insert_range_and_visit(R&& rg, F1 f1, F2 f2)
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F1)
+        BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F2)
+        size_type count_elements = 0;
+        auto first = std::ranges::begin(rg);
+        auto last = std::ranges::end(rg);
+        for (; first != last; ++first, ++count_elements) {
+          table_.emplace_and_visit(*first, f1, f2);
+        }
+        return count_elements;
+      }
+#endif
 
       template <class F1, class F2>
       size_type insert_and_visit(
@@ -751,6 +799,24 @@ namespace boost {
         }
         return count_elements;
       }
+
+#if !defined(BOOST_UNORDERED_NO_RANGES)
+      template<
+        detail::container_compatible_range<value_type> R, class F1, class F2
+      >
+      size_type insert_range_and_cvisit(R&& rg, F1 f1, F2 f2)
+      {
+        BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F1)
+        BOOST_UNORDERED_STATIC_ASSERT_INVOCABLE(F2)
+        size_type count_elements = 0;
+        auto first = std::ranges::begin(rg);
+        auto last = std::ranges::end(rg);
+        for (; first != last; ++first, ++count_elements) {
+          table_.emplace_and_cvisit(*first, f1, f2);
+        }
+        return count_elements;
+      }
+#endif
 
       template <class F1, class F2>
       size_type insert_and_cvisit(
