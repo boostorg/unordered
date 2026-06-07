@@ -494,7 +494,7 @@ template <template <class...> class UnorderedSet> void set_tests()
                      test_allocator<int> >);
   }
 
-#if !defined(BOOT_UNORDERED_NO_RANGES)
+#if !defined(BOOST_UNORDERED_NO_RANGES)
   /* 
    template<ranges::input_range R, class Allocator>
       unordered_set(from_range_t, R&&, 
