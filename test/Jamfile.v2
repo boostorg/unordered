@@ -380,7 +380,7 @@ run cfoa/insert_tests.cpp
       <toolset>msvc:<cxxflags>/bigobj
       <toolset>gcc:<inlining>on
       <toolset>gcc:<optimization>off
-      <toolset>gcc:<debug-symbols>off
+      <toolset>gcc:<cxxflags>-g0
       <toolset>clang:<inlining>on
       <toolset>clang:<optimization>space
     : cfoa_insert_tests ;
