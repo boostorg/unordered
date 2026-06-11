@@ -18,6 +18,7 @@
 #include <boost/unordered/detail/allocator_constructed.hpp>
 #include <boost/unordered/detail/fca.hpp>
 #include <boost/unordered/detail/opt_storage.hpp>
+#include <boost/unordered/detail/ranges_support.hpp>
 #include <boost/unordered/detail/serialize_tracked_address.hpp>
 #include <boost/unordered/detail/static_assert.hpp>
 #include <boost/unordered/detail/type_traits.hpp>
@@ -174,6 +175,29 @@ namespace boost {
         return (std::max)(
           boost::unordered::detail::insert_size(i, j), num_buckets);
       }
+
+#if !defined(BOOST_UNORDERED_NO_RANGES)
+      template<std::ranges::input_range R>
+      inline std::size_t insert_size(R&& rg)
+      {
+        if constexpr (std::ranges::sized_range<R>)
+          return std::ranges::size(std::forward<R>(rg));
+        else if constexpr (std::ranges::forward_range<R>)
+          return std::ranges::distance(std::forward<R>(rg));
+        else
+          return 1;
+      }
+
+      template <std::ranges::input_range R>
+      inline std::size_t initial_size(R&& rg,
+        std::size_t num_buckets =
+          boost::unordered::detail::default_bucket_count)
+      {
+        return (std::max)(
+          boost::unordered::detail::insert_size(std::forward<R>(rg)),
+          num_buckets);
+      }
+#endif
 
       //////////////////////////////////////////////////////////////////////////
       // compressed
@@ -2155,8 +2179,8 @@ namespace boost {
         // if hash function throws, or inserting > 1 element, basic exception
         // safety strong otherwise
 
-        template <class InputIt>
-        void insert_range_unique(no_key, InputIt i, InputIt j)
+        template <class InputIt, class Sentinel>
+        void insert_range_unique(no_key, InputIt i, Sentinel j)
         {
           hasher const& hf = this->hash_function();
           node_allocator_type alloc = this->node_alloc();
@@ -2543,14 +2567,20 @@ namespace boost {
 
         // if hash function throws, or inserting > 1 element, basic exception
         // safety. Strong otherwise
-        template <class I>
+        template <class I, class S>
         typename boost::unordered::detail::enable_if_forward<I, void>::type
-        insert_range_equiv(I i, I j)
+        insert_range_equiv(I i, S j)
         {
           if (i == j)
             return;
 
+#if !defined(BOOST_UNORDERED_NO_RANGES)
+          std::size_t distance = static_cast<std::size_t>(
+            std::ranges::distance(i, j));
+#else
           std::size_t distance = static_cast<std::size_t>(std::distance(i, j));
+#endif
+
           if (distance == 1) {
             emplace_equiv(boost::unordered::detail::func::construct_node(
               this->node_alloc(), *i));
@@ -2566,9 +2596,9 @@ namespace boost {
           }
         }
 
-        template <class I>
+        template <class I, class S>
         typename boost::unordered::detail::disable_if_forward<I, void>::type
-        insert_range_equiv(I i, I j)
+        insert_range_equiv(I i, S j)
         {
           for (; i != j; ++i) {
             emplace_equiv(boost::unordered::detail::func::construct_node(
