@@ -38,8 +38,11 @@ inline constexpr from_range_t from_range{};
 
 namespace detail {
 
-/* Code below picks std::from_range_t if it exists,
- * boost::unordered::from_range_t otherwise. Technique explained at
+/* Existence of std::from_range_t is governed by feature macro
+ * __cpp_lib_containers_ranges, but at least one stdlib implementation 
+ * (GCC 14.1) does not honor it, hence the workadound below: code picks 
+ * std::from_range_t if it exists, boost::unordered::from_range_t otherwise.
+ * Technique explained at
  https://bannalia.blogspot.com/2016/09/compile-time-checking-existence-of.html
  */
 
