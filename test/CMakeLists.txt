@@ -141,8 +141,8 @@ set(cfoa_insert_test_options $<$<CXX_COMPILER_ID:MSVC>:/bigobj>)
 if(MINGW AND CMAKE_SIZEOF_VOID_P EQUAL 4)
   list(APPEND cfoa_insert_test_options
     -O0 -g0
-    --param ggc-min-expand=10
-    --param ggc-min-heapsize=16384
+    -fparam=ggc-min-expand=10
+    -fparam=ggc-min-heapsize=16384
   ) # GCC MinGW32 OOMs otherwise
 endif()
 
