@@ -347,7 +347,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { sys: MINGW32, compiler: gcc, cxxstd: '11,17,20', variant: 'release', cxxflags: '--param ggc-min-expand=0 --param ggc-min-heapsize=4096' }
+          - { sys: MINGW32, compiler: gcc, cxxstd: '11,17,20', variant: 'release', cxxflags: '--param ggc-min-expand=10 --param ggc-min-heapsize=16384' }
           - { sys: MINGW64, compiler: gcc, cxxstd: '11,17,20', variant: 'debug,release' }
 
     needs: [runner-selection]
